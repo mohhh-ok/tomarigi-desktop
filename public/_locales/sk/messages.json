@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Čaká na vašu odpoveď, aby mohol pokračovať"
   },
+  "angerBadgeTitle": {
+    "message": "Vaša posledná správa v tejto relácii bola vyhodnotená ako urážlivá voči AI"
+  },
   "typeSafeApiKeyHeading": {
     "message": "API kľúč TypeSafe"
   },
   "typeSafeApiKeyDescription": {
     "message": "Voliteľné. TypeSafe je externá služba AI, ktorá posudzuje, či sa agent zastavil a čaká na vašu odpoveď. S uloženým kľúčom sa posledná odpoveď zastavenej relácie odošle do TypeSafe a vtáky, pri ktorých sa usúdi, že čakajú na odpoveď, dostanú „?“. Bez kľúča dostanú „?“ len vtáky zastavené pri nástroji na otázky."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Do TypeSafe sa odosielajú aj vaše vlastné správy agentovi. Ak je vaša posledná správa vyhodnotená ako urážlivá voči AI, vták dostane značku hnevu až do vašej ďalšej správy."
   },
   "bubblePlanApproval": {
     "message": "Schváliť plán?"

@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Wacht op je antwoord om verder te kunnen"
   },
+  "angerBadgeTitle": {
+    "message": "Je laatste bericht in deze sessie is beoordeeld als beledigend tegenover de AI"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API-sleutel"
   },
   "typeSafeApiKeyDescription": {
     "message": "Optioneel. TypeSafe is een externe AI-dienst die beoordeelt of een agent is gestopt om op jouw antwoord te wachten. Met een opgeslagen sleutel wordt het laatste antwoord van een gestopte sessie naar TypeSafe gestuurd, en vogels die op antwoord wachten krijgen een ‘?’. Zonder sleutel krijgen alleen vogels die bij een vraagtool stilstaan het ‘?’."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Je eigen berichten aan de agent worden ook naar TypeSafe gestuurd. Als je laatste bericht als beledigend tegenover de AI wordt beoordeeld, krijgt die vogel een boosheidsteken tot je volgende bericht."
   },
   "bubblePlanApproval": {
     "message": "Plan goedkeuren?"

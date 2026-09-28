@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "A válaszodra vár, hogy folytathassa"
   },
+  "angerBadgeTitle": {
+    "message": "Az ebben a munkamenetben küldött utolsó üzenetedet az MI felé sértőnek ítéltük"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API-kulcs"
   },
   "typeSafeApiKeyDescription": {
     "message": "Nem kötelező. A TypeSafe egy külső MI-szolgáltatás, amely megítéli, hogy egy ügynök azért állt-e meg, mert a válaszodra vár. Mentett kulccsal a megállt munkamenet utolsó válaszát elküldjük a TypeSafe-nek, és a válaszra várónak ítélt madarak „?” jelet kapnak. Kulcs nélkül csak a kérdezőeszköznél megállt madarak kapnak „?” jelet."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Az ügynöknek küldött saját üzeneteidet is elküldjük a TypeSafe-nek. Ha a legutóbbi üzenetedet az MI felé sértőnek ítéljük, az a madár a következő üzenetedig dühjelet kap."
   },
   "bubblePlanApproval": {
     "message": "Jóváhagyod a tervet?"

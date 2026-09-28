@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "답을 받아야 계속할 수 있어 기다리는 중입니다"
   },
+  "angerBadgeTitle": {
+    "message": "이 세션에서 직전에 보낸 메시지가 AI에 대한 폭언으로 판정되었습니다"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API 키"
   },
   "typeSafeApiKeyDescription": {
     "message": "선택 사항입니다. TypeSafe는 에이전트가 답장을 기다리며 멈춰 있는지 판정하는 외부 AI 서비스입니다. 키를 저장하면 멈춘 세션의 마지막 응답을 TypeSafe로 보내고, 답장을 기다린다고 판정된 새에 “?”를 붙입니다. 키가 없으면 질문 도구에서 멈춘 새에만 “?”가 붙습니다."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "에이전트에게 보낸 내 메시지도 TypeSafe로 전송됩니다. 직전 메시지가 AI에 대한 폭언으로 판정되면 다음 메시지를 보낼 때까지 그 새에 분노 표시가 붙습니다."
   },
   "bubblePlanApproval": {
     "message": "계획을 승인할까요?"

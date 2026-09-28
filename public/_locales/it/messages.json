@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Aspetta la tua risposta per poter continuare"
   },
+  "angerBadgeTitle": {
+    "message": "Il tuo ultimo messaggio in questa sessione è stato giudicato offensivo verso l’IA"
+  },
   "typeSafeApiKeyHeading": {
     "message": "Chiave API TypeSafe"
   },
   "typeSafeApiKeyDescription": {
     "message": "Facoltativo. TypeSafe è un servizio di IA esterno che valuta se un agente si è fermato ad aspettare la tua risposta. Con una chiave salvata, l’ultima risposta di una sessione ferma viene inviata a TypeSafe e gli uccelli in attesa di risposta mostrano un “?”. Senza chiave, il “?” compare solo sugli uccelli fermi su uno strumento di domanda."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Anche i tuoi messaggi all’agente vengono inviati a TypeSafe. Se il tuo ultimo messaggio è giudicato offensivo verso l’IA, quell’uccello mostra un segno di rabbia fino al tuo messaggio successivo."
   },
   "bubblePlanApproval": {
     "message": "Approvi il piano?"

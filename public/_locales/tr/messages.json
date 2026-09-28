@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Devam edebilmek için yanıtını bekliyor"
   },
+  "angerBadgeTitle": {
+    "message": "Bu oturumdaki son mesajın yapay zekâya karşı hakaret olarak değerlendirildi"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API anahtarı"
   },
   "typeSafeApiKeyDescription": {
     "message": "İsteğe bağlı. TypeSafe, bir ajanın yanıtını beklemek için durup durmadığını değerlendiren harici bir yapay zekâ hizmetidir. Anahtar kaydedildiğinde duran oturumun son yanıtı TypeSafe’e gönderilir ve yanıt beklediği değerlendirilen kuşlara “?” eklenir. Anahtar yoksa yalnızca soru aracında duran kuşlara “?” eklenir."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Ajana gönderdiğin kendi mesajların da TypeSafe’e gönderilir. Son mesajın yapay zekâya karşı hakaret olarak değerlendirilirse, bir sonraki mesajına kadar o kuşa öfke işareti eklenir."
   },
   "bubblePlanApproval": {
     "message": "Plan onaylansın mı?"

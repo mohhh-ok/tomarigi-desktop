@@ -22,7 +22,7 @@ import nestImg from "@/assets/birds/nest.webp";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
-import { hasQuestion, needsAnswer } from "@/lib/jev";
+import { hasQuestion, isAngry, needsAnswer } from "@/lib/jev";
 import { createPortal } from "react-dom";
 import { MdLink } from "react-icons/md";
 import { bubbleText, SpeechBubble } from "./bubble";
@@ -54,9 +54,9 @@ function visibleWidth(node: HTMLElement | null): number {
     const el = node.querySelector<HTMLElement>(selector);
     if (el) width = Math.max(width, el.offsetWidth);
   }
-  // The "?" sticks out to the right of the bird, so add its width
-  const badge = node.querySelector<HTMLElement>(".bird-ask-badge");
-  return badge ? width + badge.offsetWidth : width;
+  // The "?" sticks out to the right of the bird and the anger mark to the left, so add their widths
+  for (const badge of node.querySelectorAll<HTMLElement>(".garden-glyph .bird-badge")) width += badge.offsetWidth;
+  return width;
 }
 
 /** Clamp to min..max. When the garden is smaller than the bird, use min (align to the left/top) */
@@ -863,6 +863,7 @@ function NestBox({
                   size={14}
                   set={resolveIconSet(iconSetAssignments, s.slug)}
                   asking={hasQuestion(s)}
+                  angry={isAngry(s)}
                 />
               </span>
               <span className="garden-nest-row-name">{s.project}</span>
@@ -1248,6 +1249,7 @@ function GardenNode({
             flip={flip}
             set={iconSet}
             asking={question}
+            angry={isAngry(session)}
           />
         </span>
         {/* Speech bubble slot. The bubble itself is rendered in the bubble layer (to stack above other birds); this is

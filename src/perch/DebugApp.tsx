@@ -176,6 +176,14 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                     {e.ask.errorKind && ` (${e.ask.errorKind})`}
                   </span>
                 )}
+                {/* Jev's abuse verdict for the user message of a started event. The probability is that of yes (abusive) */}
+                {e.anger && (
+                  <span className="debug-log-ask">
+                    anger {e.anger.status}
+                    {e.anger.probability !== undefined && ` ${e.anger.probability.toFixed(2)}`}
+                    {e.anger.errorKind && ` (${e.anger.errorKind})`}
+                  </span>
+                )}
                 <span className="debug-log-project">{e.project}</span>
                 {e.snippet && <span className="debug-log-snippet">“{e.snippet}”</span>}
                 <span className="debug-log-key">{e.key}</span>

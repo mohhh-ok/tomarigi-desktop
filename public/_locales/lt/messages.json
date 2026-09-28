@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Laukia jūsų atsakymo, kad galėtų tęsti"
   },
+  "angerBadgeTitle": {
+    "message": "Paskutinė jūsų žinutė šiame seanse įvertinta kaip įžeidžianti DI"
+  },
   "typeSafeApiKeyHeading": {
     "message": "„TypeSafe“ API raktas"
   },
   "typeSafeApiKeyDescription": {
     "message": "Neprivaloma. „TypeSafe“ – išorinė DI paslauga, kuri įvertina, ar agentas sustojo laukdamas jūsų atsakymo. Išsaugojus raktą, sustojusio seanso paskutinis atsakymas siunčiamas „TypeSafe“, o paukščiai, kurie, įvertinus, laukia atsakymo, gauna „?“. Be rakto „?“ gauna tik paukščiai, sustoję ties klausimo įrankiu."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "„TypeSafe“ siunčiamos ir jūsų pačių žinutės agentui. Jei paskutinė žinutė įvertinama kaip įžeidžianti DI, tas paukštis gauna pykčio ženklą iki kitos jūsų žinutės."
   },
   "bubblePlanApproval": {
     "message": "Patvirtinti planą?"

@@ -78,6 +78,9 @@ export interface TailEvent {
   //   ASSISTANT_TEXT_LIMIT). It is the input for the done readout summary (lib/summarize.ts) and the
   //   last-sentence fallback readout (lib/voice.ts), so the tail end, where the conclusion is written, is kept
   text?: string;
+  // kind === "user" only: the line says it didn't come from a person (origin.kind other than "human", such as
+  // task-notification). Such lines still move the state, but are not judged as the user's message (anger mark)
+  machine?: boolean;
 }
 
 interface TranscriptEntry {
@@ -134,7 +137,7 @@ const CLOSING_SLASH_COMMANDS = ["/clear"];
 
 const LOCAL_COMMAND_STDOUT_TAG = "<local-command-stdout>";
 
-const TAIL_BYTES = 64 * 1024;
+export const TAIL_BYTES = 64 * 1024;
 
 // When a huge single line (base64 image etc.) sits near the end of the file, the TAIL_BYTES (64KB)
 // window can fall inside that one line, leaving zero parseable lines (lines with a timestamp) in the
@@ -170,6 +173,30 @@ export async function readTail(
     result = await readWindow(file, windowBytes, includeSidechain);
   }
   return result;
+}
+
+/**
+ * Classifies the lines in bytes [start, end) of the file (main transcript only). Used for bytes that were
+ * appended between two polls but already fell out of the tail window, so the user message in them isn't
+ * missed (anger mark input). A line cut at either edge fails to parse and is skipped
+ */
+export async function readEventsInRange(file: NativeFile, start: number, end: number): Promise<TailEvent[]> {
+  const text = await file.slice(start, end).text();
+  const events: TailEvent[] = [];
+  for (const line of text.split("\n")) {
+    if (!line.trim()) continue;
+    let entry: TranscriptEntry;
+    try {
+      entry = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const at = parseTimestamp(entry.timestamp);
+    const next = classify(entry, false);
+    if (!next || at === null) continue;
+    events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine });
+  }
+  return events;
 }
 
 /**
@@ -238,7 +265,9 @@ async function readWindow(
     if (!next) continue;
     kind = next.kind;
     toolName = next.toolName;
-    if (at !== null) events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text });
+    if (at !== null) {
+      events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine });
+    }
   }
   return {
     kind,
@@ -343,6 +372,7 @@ interface Classified {
   kind: TailKind;
   toolName?: string;
   text?: string;
+  machine?: boolean;
 }
 
 function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified | null {
@@ -373,7 +403,10 @@ function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified
     const commandName = extractCommandName(blocks);
     if (commandName && CLOSING_SLASH_COMMANDS.includes(commandName)) return { kind: "closed" };
     // Trim to the first 500 chars, enough for the snippet display (also serves as a memory cap)
-    return { kind: "user", text: extractUserText(blocks) };
+    // Older versions have no origin, so only an explicit non-human origin is marked
+    const originKind = entry.origin?.kind;
+    const machine = typeof originKind === "string" && originKind !== "human";
+    return { kind: "user", text: extractUserText(blocks), ...(machine && { machine }) };
   }
   return null; // summary / file-history-snapshot etc. are ignored
 }

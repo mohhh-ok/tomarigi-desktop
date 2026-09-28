@@ -51,8 +51,20 @@ import {
 import { focusSession, focusTargetOf } from "@/lib/ghostty";
 import { testJudgeConnection, type JudgeErrorKind } from "@/lib/judge";
 import { testOpenAiConnection } from "@/lib/openai-judge";
-import { judgeAsking, testTypeSafeConnection, type AskJudgement } from "@/lib/jev";
-import { recordAskJudgement, type SessionEvent, type SessionView } from "@/lib/sessions";
+import {
+  judgeAbuse,
+  judgeAsking,
+  isAngry,
+  testTypeSafeConnection,
+  type AngerJudgement,
+  type AskJudgement,
+} from "@/lib/jev";
+import {
+  recordAngerJudgement,
+  recordAskJudgement,
+  type SessionEvent,
+  type SessionView,
+} from "@/lib/sessions";
 import { cancelSpeech, setVoiceVolume, speakDoneEvent, speakEvent } from "@/lib/voice";
 import DebugApp from "./DebugApp";
 import { Garden } from "./garden";
@@ -176,6 +188,13 @@ export default function App({
   const [askJudgements, setAskJudgements] = useState<Record<string, AskJudgement>>({});
   const askRequestedRef = useRef(new Set<string>());
   const typeSafeKeySetRef = useRef(false);
+  // Jev abuse verdict for the anger mark (docs/design.md "Anger mark for abuse toward the AI"). Keyed by session id,
+  // holding the verdict of the latest judged user message, so the mark stays until the next message is judged.
+  // angerRequestedRef remembers the time of the message last sent per session
+  const [angerJudgements, setAngerJudgements] = useState<
+    Record<string, { at: number; anger: AngerJudgement }>
+  >({});
+  const angerRequestedRef = useRef(new Map<string, number>());
   useEffect(() => {
     typeSafeKeySetRef.current = aiKeySet.typesafe;
   }, [aiKeySet.typesafe]);
@@ -362,6 +381,40 @@ export default function App({
     });
   }, []);
 
+  // Send each new user message to Jev right when it appears (separately from the "?" verdict, which waits for the
+  // turn to stop). The previous verdict stays shown until the new one comes back
+  const requestAngerJudgements = useCallback((views: SessionView[]) => {
+    const live = new Set<string>();
+    for (const view of views) {
+      live.add(view.id);
+      // Views that already have anger (mock) aren't sent to Jev
+      if (!view.userMessage || view.anger) continue;
+      const { id, project, userMessage } = view;
+      if (!typeSafeKeySetRef.current || angerRequestedRef.current.get(id) === userMessage.at) continue;
+      angerRequestedRef.current.set(id, userMessage.at);
+      void (async () => {
+        const anger = await judgeAbuse(userMessage.text);
+        setAngerJudgements((current) =>
+          (current[id]?.at ?? -1) > userMessage.at ? current : { ...current, [id]: { at: userMessage.at, anger } },
+        );
+        recordAngerJudgement(id, userMessage.at, anger);
+        void invoke("log", {
+          line: `[jev] anger ${anger.status} p=${anger.probability?.toFixed(2) ?? "-"}${anger.errorKind ? ` error=${anger.errorKind}` : ""} ${project}`,
+        });
+      })();
+    }
+    for (const id of angerRequestedRef.current.keys()) {
+      if (!live.has(id)) angerRequestedRef.current.delete(id);
+    }
+    setAngerJudgements((current) => {
+      const stale = Object.keys(current).filter((id) => !live.has(id));
+      if (stale.length === 0) return current;
+      const next = { ...current };
+      for (const id of stale) delete next[id];
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     if (phase !== "ready") return;
     const granted = roots.filter((r) => perms[r.id] === "granted");
@@ -428,6 +481,7 @@ export default function App({
         seenEventKeysRef.current = new Set(nextEvents.map((e) => e.key));
         firstScanRef.current = false;
         requestAskJudgements(views);
+        requestAngerJudgements(views);
         requestTurnLines(views);
         setSessions(views);
         setBrokenIds(broken);
@@ -670,6 +724,9 @@ export default function App({
     // last response goes in the speech bubble (docs/design.md "Speech bubbles"; no AI used)
     const hasSummaryKey = aiKeySet.anthropic || aiKeySet.openai;
     return sessions.map((s) => {
+      // The anger mark only works while a TypeSafe key is saved, so deleting the key clears it
+      const anger = s.anger ?? (aiKeySet.typesafe ? angerJudgements[s.id]?.anger : undefined);
+      if (anger && !s.anger) s = { ...s, anger };
       if (!s.reply) return s;
       const key = turnKey(s.id, s.reply.at);
       const ask = s.ask ?? askJudgements[key];
@@ -680,7 +737,7 @@ export default function App({
         replyTail: !hasSummaryKey && ask?.status === "asking" ? lastSentence(s.reply.text) : undefined,
       };
     });
-  }, [sessions, askJudgements, turnLines, aiKeySet.anthropic, aiKeySet.openai]);
+  }, [sessions, askJudgements, angerJudgements, turnLines, aiKeySet.anthropic, aiKeySet.openai, aiKeySet.typesafe]);
 
   // So that Recent activity and the garden markers also show a done as needs reply when the Jev verdict for that
   // turn is needs reply, attach the verdict to the done event of the same turn (sessionId + time of the last response)
@@ -690,7 +747,9 @@ export default function App({
     const askByTurn = new Map<string, AskJudgement>();
     const lineByDoneTurn = new Map<string, string>();
     const lineByWaitingSession = new Map<string, string>();
+    const angrySessions = new Set<string>();
     for (const s of displaySessions) {
+      if (isAngry(s)) angrySessions.add(s.id);
       const line = bubbleText(s);
       if (s.reply) {
         const key = turnKey(s.id, s.reply.at);
@@ -700,7 +759,12 @@ export default function App({
         lineByWaitingSession.set(s.id, line);
       }
     }
-    if (askByTurn.size === 0 && lineByDoneTurn.size === 0 && lineByWaitingSession.size === 0) {
+    if (
+      askByTurn.size === 0 &&
+      lineByDoneTurn.size === 0 &&
+      lineByWaitingSession.size === 0 &&
+      angrySessions.size === 0
+    ) {
       return events;
     }
     return events.map((e) => {
@@ -712,7 +776,9 @@ export default function App({
           : e.type === "waiting"
             ? lineByWaitingSession.get(e.sessionId)
             : undefined;
-      return ask || line ? { ...e, ...(ask && { ask }), ...(line && { line }) } : e;
+      const angry = angrySessions.has(e.sessionId);
+      if (!ask && !line && !angry) return e;
+      return { ...e, ...(ask && { ask }), ...(line && { line }), ...(angry && { angry }) };
     });
   }, [events, displaySessions]);
 
@@ -1325,7 +1391,7 @@ function ApiKeyProviderSettings({
       <h3>{heading}</h3>
       {provider === "typesafe" && (
         <p className="judge-description">
-          {t("typeSafeApiKeyDescription")}{" "}
+          {t("typeSafeApiKeyDescription")} {t("typeSafeUserMessageNote")}{" "}
           {/* Link to the official site so users can see how to get a key. Opens in the external browser, not inside the WebView */}
           <a
             href={TYPESAFE_SITE_URL}

@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Čaka na vaš odgovor, da lahko nadaljuje"
   },
+  "angerBadgeTitle": {
+    "message": "Vaše zadnje sporočilo v tej seji je bilo ocenjeno kot žaljivo do umetne inteligence"
+  },
   "typeSafeApiKeyHeading": {
     "message": "API ključ TypeSafe"
   },
   "typeSafeApiKeyDescription": {
     "message": "Neobvezno. TypeSafe je zunanja storitev umetne inteligence, ki oceni, ali se je agent ustavil, da bi počakal na vaš odgovor. S shranjenim ključem se zadnji odgovor ustavljene seje pošlje storitvi TypeSafe, ptice, za katere oceni, da čakajo na odgovor, pa dobijo »?«. Brez ključa »?« dobijo le ptice, ustavljene pri orodju za vprašanja."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Storitvi TypeSafe se pošiljajo tudi vaša lastna sporočila agentu. Če je vaše zadnje sporočilo ocenjeno kot žaljivo do umetne inteligence, dobi ptica znak jeze do vašega naslednjega sporočila."
   },
   "bubblePlanApproval": {
     "message": "Odobriš načrt?"

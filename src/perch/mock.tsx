@@ -247,6 +247,79 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
+    // The anger mark (docs/design.md "Anger mark for abuse toward the AI"). Anger only, anger with the "?" (both show:
+    // "?" top right, anger top left), and calm / pending birds that get no mark. The dozing one goes into the nest
+    id: "anger",
+    label: "Anger mark",
+    build: () => ({
+      sessions: [
+        {
+          id: "mock/anger/working",
+          project: "tomarigi",
+          slug: "tomarigi",
+          state: "working",
+          sinceMs: 4_000,
+          toolName: "Edit",
+          snippet: "Fix it already",
+          anger: { status: "angry", probability: 0.96 },
+        },
+        {
+          id: "mock/anger/asking",
+          project: "blog",
+          slug: "blog",
+          state: "done",
+          sinceMs: 50_000,
+          snippet: "Suggest some headlines",
+          reply: { at: BASE - 50_000, text: "I came up with 3 headline ideas. Which one do you want?" },
+          ask: { status: "asking", probability: 0.94 },
+          anger: { status: "angry", probability: 0.93 },
+          summary: "Which headline?",
+        },
+        {
+          id: "mock/anger/waiting",
+          project: "review-bot",
+          slug: "review-bot",
+          state: "waiting",
+          sinceMs: 30_000,
+          toolName: "AskUserQuestion",
+          question: "Push to main or open a PR?",
+          anger: { status: "angry", probability: 0.9 },
+        },
+        {
+          id: "mock/anger/calm",
+          project: "moh-tech-net",
+          slug: "moh-tech-net",
+          state: "done",
+          sinceMs: 2 * 60_000,
+          snippet: "This is wrong again",
+          anger: { status: "calm", probability: 0.12 },
+        },
+        {
+          id: "mock/anger/pending",
+          project: "figma-adapter",
+          slug: "figma-adapter",
+          state: "working",
+          sinceMs: 2_000,
+          toolName: "Read",
+          anger: { status: "pending" },
+        },
+        {
+          id: "mock/anger/dozing",
+          project: "cloudflare-lab",
+          slug: "cloudflare-lab",
+          state: "dozing",
+          sinceMs: 11 * 60_000,
+          anger: { status: "angry", probability: 0.97 },
+        },
+      ],
+      events: [
+        { key: "angev1", sessionId: "mock/anger/asking", project: "blog", type: "done", at: BASE - 50_000 },
+        { key: "angev2", sessionId: "mock/anger/waiting", project: "review-bot", type: "waiting", at: BASE - 30_000 },
+        { key: "angev3", sessionId: "mock/anger/calm", project: "moh-tech-net", type: "done", at: BASE - 2 * 60_000 },
+      ],
+    }),
+  },
+  {
     // Birds' speech bubbles (perch/bubble.tsx). Question text from a question tool, plan approval, and BYOK summaries (summary is
     // given as data, so it shows without a key). Not shown while working. Long text is cut with "…"
     id: "bubble",
@@ -467,6 +540,25 @@ export const PRESETS: Preset[] = [
           sinceMs: 60_000,
           reply: { at: BASE - 60_000, text: "I fixed the button color and confirmed that the type check and build pass. Done." },
         },
+        {
+          // The anger mark ([jev] anger in the log). The first is abusive, the second only frustrated
+          id: "mock/jev/abusive",
+          project: "jev-abusive",
+          slug: "jev-abusive",
+          state: "working",
+          sinceMs: 5_000,
+          toolName: "Edit",
+          userMessage: { at: BASE - 5_000, text: "You are a useless idiot. Fix it." },
+        },
+        {
+          id: "mock/jev/frustrated",
+          project: "jev-frustrated",
+          slug: "jev-frustrated",
+          state: "working",
+          sinceMs: 8_000,
+          toolName: "Read",
+          userMessage: { at: BASE - 8_000, text: "This is wrong again. Stop guessing and read the file." },
+        },
       ],
       events: [],
     }),
@@ -596,6 +688,7 @@ export function MockPanel({ source }: { source: MockSource }) {
   const hint =
     "sessions[].state: working | waiting | done | dozing\n" +
     "sessions[].ask: { status: pending | asking | not_asking | error, probability? }\n" +
+    "sessions[].anger: { status: pending | angry | calm | error, probability? }\n" +
     "sessions[].question / summary: speech bubble text\n" +
     "sessions[].peers / watching: linked sessions and how many are working\n" +
     "events[].type: started | done | waiting | closed";

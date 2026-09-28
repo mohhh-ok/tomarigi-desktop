@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Venter på dit svar for at kunne fortsætte"
   },
+  "angerBadgeTitle": {
+    "message": "Din seneste besked i denne session blev vurderet som krænkende over for AI’en"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API-nøgle"
   },
   "typeSafeApiKeyDescription": {
     "message": "Valgfrit. TypeSafe er en ekstern AI-tjeneste, der vurderer, om en agent er stoppet for at vente på dit svar. Med en gemt nøgle sendes det sidste svar fra en stoppet session til TypeSafe, og fugle, der vurderes at vente på svar, får et »?«. Uden nøgle får kun fugle, der er stoppet ved et spørgeværktøj, »?«."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Dine egne beskeder til agenten sendes også til TypeSafe. Hvis din seneste besked vurderes som krænkende over for AI’en, får den fugl et vredesmærke indtil din næste besked."
   },
   "bubblePlanApproval": {
     "message": "Godkend planen?"

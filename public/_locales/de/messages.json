@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Wartet auf deine Antwort, um weiterzumachen"
   },
+  "angerBadgeTitle": {
+    "message": "Deine letzte Nachricht in dieser Sitzung wurde als beleidigend gegenüber der KI eingestuft"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe-API-Schlüssel"
   },
   "typeSafeApiKeyDescription": {
     "message": "Optional. TypeSafe ist ein externer KI-Dienst, der beurteilt, ob ein Agent angehalten hat, um auf deine Antwort zu warten. Mit gespeichertem Schlüssel wird die letzte Antwort einer angehaltenen Sitzung an TypeSafe gesendet, und Vögel, die auf eine Antwort warten, bekommen ein „?“. Ohne Schlüssel bekommen nur Vögel, die bei einem Frage-Tool stehen, das „?“."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Deine eigenen Nachrichten an den Agenten werden ebenfalls an TypeSafe gesendet. Wird deine letzte Nachricht als beleidigend gegenüber der KI eingestuft, bekommt dieser Vogel bis zu deiner nächsten Nachricht ein Wutzeichen."
   },
   "bubblePlanApproval": {
     "message": "Plan freigeben?"

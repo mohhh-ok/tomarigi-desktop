@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Espera tu respuesta para poder continuar"
   },
+  "angerBadgeTitle": {
+    "message": "Tu último mensaje en esta sesión se consideró ofensivo hacia la IA"
+  },
   "typeSafeApiKeyHeading": {
     "message": "Clave de API de TypeSafe"
   },
   "typeSafeApiKeyDescription": {
     "message": "Opcional. TypeSafe es un servicio externo de IA que determina si un agente se detuvo a esperar tu respuesta. Con una clave guardada, la última respuesta de una sesión detenida se envía a TypeSafe y los pájaros que esperan respuesta muestran un «?». Sin clave, solo los pájaros detenidos en una herramienta de pregunta muestran el «?»."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Tus propios mensajes al agente también se envían a TypeSafe. Si tu último mensaje se considera ofensivo hacia la IA, ese pájaro muestra una marca de enojo hasta tu siguiente mensaje."
   },
   "bubblePlanApproval": {
     "message": "¿Apruebas el plan?"

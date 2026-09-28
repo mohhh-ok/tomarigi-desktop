@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Naghihintay ng sagot mo bago magpatuloy"
   },
+  "angerBadgeTitle": {
+    "message": "Natukoy na mapang-abuso sa AI ang huling mensahe mo sa session na ito"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API key"
   },
   "typeSafeApiKeyDescription": {
     "message": "Opsyonal. Ang TypeSafe ay isang panlabas na AI service na tumutukoy kung huminto ang isang agent para hintayin ang sagot mo. Kapag may naka-save na key, ipinapadala sa TypeSafe ang huling sagot ng huminto na session, at lalagyan ng “?” ang mga ibong natukoy na naghihintay ng sagot. Kung walang key, ang mga ibong huminto sa tool na nagtatanong lang ang may “?”."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Ipinapadala rin sa TypeSafe ang sarili mong mga mensahe sa agent. Kapag natukoy na mapang-abuso sa AI ang huli mong mensahe, lalagyan ng marka ng galit ang ibong iyon hanggang sa susunod mong mensahe."
   },
   "bubblePlanApproval": {
     "message": "Aprubahan ang plano?"

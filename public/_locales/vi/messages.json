@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Đang chờ bạn trả lời để tiếp tục"
   },
+  "angerBadgeTitle": {
+    "message": "Tin nhắn gần nhất của bạn trong phiên này bị đánh giá là xúc phạm AI"
+  },
   "typeSafeApiKeyHeading": {
     "message": "Khóa API TypeSafe"
   },
   "typeSafeApiKeyDescription": {
     "message": "Không bắt buộc. TypeSafe là một dịch vụ AI bên ngoài, đánh giá xem một tác tử có đang dừng lại để chờ bạn trả lời không. Khi đã lưu khóa, câu trả lời cuối của phiên đã dừng được gửi tới TypeSafe, và những chú chim được đánh giá là đang chờ trả lời sẽ có dấu “?”. Không có khóa thì chỉ những chú chim dừng ở công cụ đặt câu hỏi mới có “?”."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Tin nhắn bạn gửi cho tác tử cũng được gửi tới TypeSafe. Nếu tin nhắn gần nhất bị đánh giá là xúc phạm AI, chú chim đó sẽ có dấu tức giận cho đến tin nhắn tiếp theo của bạn."
   },
   "bubblePlanApproval": {
     "message": "Duyệt kế hoạch này?"

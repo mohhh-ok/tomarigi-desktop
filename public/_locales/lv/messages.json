@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Gaida jūsu atbildi, lai varētu turpināt"
   },
+  "angerBadgeTitle": {
+    "message": "Jūsu pēdējā ziņa šajā sesijā novērtēta kā aizskaroša pret MI"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API atslēga"
   },
   "typeSafeApiKeyDescription": {
     "message": "Neobligāti. TypeSafe ir ārējs MI pakalpojums, kas novērtē, vai aģents ir apstājies, lai gaidītu jūsu atbildi. Ja atslēga ir saglabāta, apstājušās sesijas pēdējā atbilde tiek nosūtīta uz TypeSafe, un putni, kas novērtēti kā atbildi gaidoši, saņem “?”. Bez atslēgas “?” saņem tikai putni, kas apstājušies pie jautājuma rīka."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Uz TypeSafe tiek sūtītas arī jūsu pašu ziņas aģentam. Ja jūsu pēdējā ziņa tiek novērtēta kā aizskaroša pret MI, putns saņem dusmu zīmi līdz jūsu nākamajai ziņai."
   },
   "bubblePlanApproval": {
     "message": "Apstiprināt plānu?"

@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "あなたの返事を待って止まっています"
   },
+  "angerBadgeTitle": {
+    "message": "このセッションでの直前の発言が、AI への暴言と判定されました"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe APIキー"
   },
   "typeSafeApiKeyDescription": {
     "message": "任意設定です。TypeSafe は、エージェントがあなたの返事を待って止まっているかを判定する外部の AI サービスです。キーを保存すると、止まったセッションの最後の応答文を TypeSafe に送り、返事待ちと判定された鳥に「?」を付けます。キーが無くても、質問ツールで止まっている鳥には「?」が付きます。"
+  },
+  "typeSafeUserMessageNote": {
+    "message": "あなたがエージェントに送った発言も TypeSafe に送信されます。直前の発言が AI への暴言と判定されると、次に発言するまでその鳥に怒りマークが付きます。"
   },
   "bubblePlanApproval": {
     "message": "計画を承認しますか？"

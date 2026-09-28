@@ -68,6 +68,23 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 - The TypeSafe API key is the third BYOK provider (save, delete, connection test). Without a key, Jev is not used and the "?" comes only from the machine state waiting
 - The "?" is a badge shared by all icon sets, drawn over the bird. The asking threshold is probability 0.5 (a single constant). Chirps and readout on done don't wait for Jev. Verdicts are logged in the debug dialog. Reply text is treated as untrusted input, and Jev's output is used only as a probability
 
+## Anger mark for abuse toward the AI
+
+- When the user sends a message, that message is sent to Jev right away (a separate request from the "?" verdict, which waits for the turn to stop), with one Noul question: is this message abusive toward the AI
+- If the probability of yes is over the threshold (a single constant), an anger mark is put on that session's bird
+- The mark stays until the user's next message in that session. That message is judged again, and the mark disappears if it isn't abusive
+- The anger mark is another kind of the same badge component as the "?", shared by all icon sets
+- Only used when a TypeSafe key is saved. User message text is treated as untrusted input, and only Jev's probability is used
+- When the "?" is shown at the same time, both are shown: the "?" stays at the top right, the anger mark goes at the top left
+- Recent activity has no bird, so the row of a session whose bird has the anger mark shows the same mark next to the state icon (✓ / ?) on the left. While any row has it, every row keeps room for it so the text lines up
+- The mark is the 💢 shape itself (four red brackets bending toward the center, with a dark outline), drawn in SVG rather than with an emoji font, without a round background
+- No separate on/off setting. Saving a TypeSafe key enables it. The TypeSafe key description on the settings screen says that the user's own messages are also sent (all 43 locales)
+- The threshold is probability 0.6 (`ABUSE_THRESHOLD` in `src/lib/jev.ts`). On 35 sample messages, abusive ones scored 0.89–0.98 and frustrated-but-not-abusive or ordinary ones 0.01–0.33
+- What counts as the user's message: the latest `user` entry in the transcript that is a person's text. Excluded: tool_result, isMeta lines, lines whose `origin.kind` is not `human` (task notifications etc.), and machine text starting with `<` (slash command echoes, bash-input) or `[Request interrupted`. The first 500 characters are sent. Codex uses the user messages its adapter already keeps
+- The latest message seen is remembered per session, so it survives the 64KB tail window filling up with tool output. Bytes appended between two polls that already fell outside the window (a large tool result right after the message) are scanned separately so the message isn't missed (Claude Code transcripts only)
+- At launch, the latest message of each session on screen is judged once. While a new message is being judged, the previous verdict stays shown
+- Verdicts are logged as `[jev] anger <status> p=<probability>` in the app log and shown on the started event of that message in the debug dialog
+
 ## Window mode
 
 - Switch between floating and standard windows, from the settings screen or the menu bar menu

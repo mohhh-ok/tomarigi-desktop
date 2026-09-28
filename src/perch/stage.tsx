@@ -12,7 +12,7 @@ import {
   MdVolumeOff,
 } from "react-icons/md";
 import { t } from "@/lib/i18n";
-import { hasQuestion, needsAnswer } from "@/lib/jev";
+import { hasQuestion, isAngry, needsAnswer } from "@/lib/jev";
 import { bubbleText, SpeechBubble } from "./bubble";
 import type { BirdState, SessionEvent, SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
@@ -63,19 +63,22 @@ export function birdLabel(state: BirdState, asking: boolean, watching = false): 
  * split half and half based on the id).
  * set is the icon set assigned to the project (DEFAULT_ICON_SET = birds when unspecified).
  * asking means waiting on the user's reply (needsAnswer in lib/jev.ts). Overlays the "?" badge, shared by
- * all icon sets, at the top right. The Garden, the Perch, and the nest list all render through this component */
+ * all icon sets, at the top right. angry overlays the anger mark (isAngry in lib/jev.ts) at the top left; both can
+ * show at once. The Garden, the Perch, and the nest list all render through this component */
 export function BirdGlyph({
   state,
   size,
   flip = false,
   set = DEFAULT_ICON_SET,
   asking = false,
+  angry = false,
 }: {
   state: BirdState;
   size: number;
   flip?: boolean;
   set?: IconSetId;
   asking?: boolean;
+  angry?: boolean;
 }) {
   // Only working gets the "charging aura" effect class (.bird-working-fx in perch.css).
   // flip used to mirror directly with style.transform: scaleX(-1), but while working the CSS animation
@@ -87,7 +90,10 @@ export function BirdGlyph({
   // and the string form makes it explicit that the question of units doesn't apply to it
   const style = flip ? ({ "--glyph-flip": "-1" } as CSSProperties) : undefined;
   return (
-    <span className="bird-glyph" style={{ "--glyph-size": `${size}px` } as CSSProperties}>
+    <span
+      className={state === "dozing" ? "bird-glyph bird-glyph-dozing" : "bird-glyph"}
+      style={{ "--glyph-size": `${size}px` } as CSSProperties}
+    >
       <img
         className={state === "working" ? "bird-glyph-img bird-working-fx" : "bird-glyph-img"}
         src={ICON_SETS[set][state]}
@@ -97,10 +103,34 @@ export function BirdGlyph({
         draggable={false}
         style={style}
       />
-      {asking && (
-        <span className="bird-ask-badge" title={t("askingBadgeTitle")} aria-label={t("askingBadgeTitle")}>
-          ?
-        </span>
+      {asking && <BirdBadge kind="ask" />}
+      {angry && <BirdBadge kind="anger" />}
+    </span>
+  );
+}
+
+const ANGER_VEIN =
+  "M8.5 2.5v2q0 4-4 4h-2M15.5 2.5v2q0 4 4 4h2M8.5 21.5v-2q0-4-4-4h-2M15.5 21.5v-2q0-4 4-4h2";
+
+/** A mark drawn over the bird. "?" (needs reply) sits at the top right, the anger mark at the top left */
+function BirdBadge({ kind, inline = false }: { kind: "ask" | "anger"; inline?: boolean }) {
+  const title = t(kind === "ask" ? "askingBadgeTitle" : "angerBadgeTitle");
+  // inline: placed in the flow next to another mark (Recent activity rows) instead of over a bird
+  return (
+    <span
+      className={`bird-badge bird-badge-${kind}${inline ? " bird-badge-inline" : ""}`}
+      title={title}
+      aria-label={title}
+    >
+      {kind === "ask" ? (
+        "?"
+      ) : (
+        // The manga anger vein (💢) drawn as is, not an emoji font: four red corner brackets bending toward the
+        // center. The same path is drawn twice, a thicker dark one underneath as the outline
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path className="bird-badge-anger-outline" d={ANGER_VEIN} />
+          <path className="bird-badge-anger-vein" d={ANGER_VEIN} />
+        </svg>
       )}
     </span>
   );
@@ -344,7 +374,7 @@ export function Perch({
             >
               {/* First line (bird, name, status). The speech bubble goes separately on a second line; the first line doesn't wrap */}
               <div className="bird-row-main">
-              <BirdGlyph state={s.state} size={18} set={set} asking={hasQuestion(s)} />
+              <BirdGlyph state={s.state} size={18} set={set} asking={hasQuestion(s)} angry={isAngry(s)} />
               {/* When width runs short, the shrink order is request excerpt → name → status (.bird-row-* in perch.css).
                   The state word and elapsed time always stay; the tool name is hidden entirely if it doesn't fit */}
               {/* Indented peer rows are named by the path relative to the parent's working folder (the folder name if not under it) */}
@@ -425,8 +455,10 @@ export function EventFeed({
   showHeading?: boolean;
 }) {
   const latest = pickLatestPerSession(events).slice(0, EVENT_FEED_CARD_LIMIT);
+  // While any row has the anger mark, every row keeps room for it so the text lines up
+  const anyAngry = latest.some((e) => e.angry);
   return (
-    <div className="event-feed">
+    <div className={anyAngry ? "event-feed event-feed-anger" : "event-feed"}>
       {showHeading && (
         <h2 className="event-feed-heading">{t("eventFeedHeading")}</h2>
       )}
@@ -453,7 +485,11 @@ export function EventFeed({
                 // dimmed so it can be told apart from a done that chirped (no flashy badge)
                 className={`event-card event-${kind}${e.muted ? " event-muted" : ""} ${focus.className ?? ""}`}
               >
-                <Icon className={`event-icon tone-${EVENT[kind].tone}`} size={16} />
+                <span className="event-marks">
+                  <Icon className={`event-icon tone-${EVENT[kind].tone}`} size={16} />
+                  {/* The same anger mark as on the bird (docs/design.md "Anger mark for abuse toward the AI") */}
+                  {e.angry && <BirdBadge kind="anger" inline />}
+                </span>
                 <div className="event-card-body">
                   <div className="event-card-head">
                     <span className="event-card-project">{e.project}</span>

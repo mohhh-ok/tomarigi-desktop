@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Așteaptă răspunsul tău ca să poată continua"
   },
+  "angerBadgeTitle": {
+    "message": "Ultimul tău mesaj din această sesiune a fost considerat jignitor la adresa AI"
+  },
   "typeSafeApiKeyHeading": {
     "message": "Cheie API TypeSafe"
   },
   "typeSafeApiKeyDescription": {
     "message": "Opțional. TypeSafe este un serviciu AI extern care apreciază dacă un agent s-a oprit ca să aștepte răspunsul tău. Cu o cheie salvată, ultimul răspuns al unei sesiuni oprite este trimis la TypeSafe, iar păsările considerate în așteptarea unui răspuns primesc un „?”. Fără cheie, doar păsările oprite la un instrument de întrebare primesc „?”."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Și propriile tale mesaje către agent sunt trimise la TypeSafe. Dacă ultimul tău mesaj este considerat jignitor la adresa AI, pasărea primește un semn de furie până la următorul tău mesaj."
   },
   "bubblePlanApproval": {
     "message": "Aprobi planul?"

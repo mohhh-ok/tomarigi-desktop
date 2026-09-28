@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Menunggu jawabanmu agar bisa lanjut"
   },
+  "angerBadgeTitle": {
+    "message": "Pesan terakhirmu di sesi ini dinilai kasar terhadap AI"
+  },
   "typeSafeApiKeyHeading": {
     "message": "Kunci API TypeSafe"
   },
   "typeSafeApiKeyDescription": {
     "message": "Opsional. TypeSafe adalah layanan AI eksternal yang menilai apakah agen berhenti untuk menunggu balasanmu. Dengan kunci tersimpan, balasan terakhir sesi yang berhenti dikirim ke TypeSafe, dan burung yang dinilai menunggu balasan diberi “?”. Tanpa kunci, hanya burung yang berhenti di alat pertanyaan yang diberi “?”."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "Pesanmu sendiri ke agen juga dikirim ke TypeSafe. Jika pesan terakhirmu dinilai kasar terhadap AI, burung itu diberi tanda marah sampai pesanmu berikutnya."
   },
   "bubblePlanApproval": {
     "message": "Setujui rencananya?"

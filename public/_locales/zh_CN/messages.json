@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "正在等你回答，回答后才能继续"
   },
+  "angerBadgeTitle": {
+    "message": "你在此会话中的上一条发言被判定为对 AI 的辱骂"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API 密钥"
   },
   "typeSafeApiKeyDescription": {
     "message": "可选。TypeSafe 是一项外部 AI 服务，用于判断代理是否停下来等你回复。保存密钥后，会把已停下会话的最后一条回复发送给 TypeSafe，被判定为在等回复的鸟会带上“?”。没有密钥时，只有停在提问工具上的鸟会带上“?”。"
+  },
+  "typeSafeUserMessageNote": {
+    "message": "你发给代理的发言也会发送给 TypeSafe。如果最近一条发言被判定为对 AI 的辱骂，那只鸟会带上怒气标记，直到你下一次发言。"
   },
   "bubblePlanApproval": {
     "message": "要批准这个计划吗？"

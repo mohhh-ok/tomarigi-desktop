@@ -243,11 +243,17 @@
   "askingBadgeTitle": {
     "message": "Ootab jätkamiseks sinu vastust"
   },
+  "angerBadgeTitle": {
+    "message": "Sinu viimane sõnum selles seansis hinnati tehisintellekti suhtes solvavaks"
+  },
   "typeSafeApiKeyHeading": {
     "message": "TypeSafe API võti"
   },
   "typeSafeApiKeyDescription": {
     "message": "Valikuline. TypeSafe on väline tehisintellekti teenus, mis hindab, kas agent on peatunud sinu vastust ootama. Salvestatud võtmega saadetakse peatunud seansi viimane vastus TypeSafe’ile ja vastust ootavaks hinnatud linnud saavad „?“. Ilma võtmeta saavad „?“ ainult küsimustööriista juures peatunud linnud."
+  },
+  "typeSafeUserMessageNote": {
+    "message": "TypeSafe’ile saadetakse ka sinu enda sõnumid agendile. Kui sinu viimane sõnum hinnatakse tehisintellekti suhtes solvavaks, saab see lind vihamärgi kuni sinu järgmise sõnumini."
   },
   "bubblePlanApproval": {
     "message": "Kas kinnitad plaani?"

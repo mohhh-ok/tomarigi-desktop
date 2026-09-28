@@ -2,8 +2,16 @@ import type { NativeDirectoryHandle, NativeFile, NativeFileHandle } from "./nati
 import { loadEventLog, saveEventLog, type RootEntry } from "./fsa";
 import { isPeerActive, watchingCount } from "./watching";
 import { readCodexTail, type CodexTailInfo } from "./codex-transcript";
-import { basename, projectLabels, readTail, type TailInfo } from "./transcript";
-import type { AskJudgement } from "./jev";
+import {
+  basename,
+  projectLabels,
+  readEventsInRange,
+  readTail,
+  TAIL_BYTES,
+  type TailEvent,
+  type TailInfo,
+} from "./transcript";
+import type { AngerJudgement, AskJudgement } from "./jev";
 import { invoke } from "@tauri-apps/api/core";
 
 // Transition events reconstructed from the transcript with timestamps (experimental).
@@ -33,6 +41,11 @@ export interface SessionEvent {
   assistantText?: string;
   // Whether Jev judged the done turn as needs reply (recordAskJudgement). Shown in the debug dialog
   ask?: AskJudgement;
+  // Jev's abuse verdict for the user message of a started event (recordAngerJudgement). Shown in the debug dialog
+  anger?: AngerJudgement;
+  // Whether this session's bird has the anger mark now. App sets it only for display; it is not written to the
+  // persistent log
+  angry?: boolean;
   // The same sentence as that turn's speech bubble, attached to the Recent activity row. App sets it only
   // for display; it is not written to the persistent log
   line?: string;
@@ -60,6 +73,11 @@ export interface SessionView {
   reply?: { at: number; text: string };
   // Jev verdict for the reply's turn. Set by App (mock writes it directly)
   ask?: AskJudgement;
+  // The latest message a person typed in this session (lastUserMessage). Input for the abuse verdict
+  // (docs/design.md "Anger mark for abuse toward the AI"). Untrusted input; never shown
+  userMessage?: { at: number; text: string };
+  // Jev's abuse verdict for the latest judged user message. Set by App (mock writes it directly)
+  anger?: AngerJudgement;
   // The question text while stopped on a question tool (AskUserQuestion / request_user_input). Taken as-is
   // from the tool input (no AI). Shown in the speech bubble (perch/bubble.tsx)
   question?: string;
@@ -198,8 +216,20 @@ async function readTailCached(
     return cached.tail;
   }
   const tail = await readTail(file, opts);
+  // Bytes appended since the last read that are already outside the tail window may hold a user message
+  // (anger mark input). Scan only that gap. Main transcripts only (chicks have no user messages)
+  if (cached && !opts?.includeSidechain && file.size - cached.size > TAIL_BYTES) {
+    // Read on to the end of the file (overlapping the window) so a line cut at the window's start isn't lost
+    const end = file.size - TAIL_BYTES;
+    const events = await readEventsInRange(file, Math.max(cached.size, end - MAX_GAP_BYTES), file.size);
+    rememberUserMessage(id, lastUserMessage(events));
+  }
   tailCache.set(id, { size: file.size, lastModified: file.lastModified, tail });
   return tail;
+}
+
+function rememberUserMessage(id: string, message: { at: number; text: string } | undefined): void {
+  if (message && message.at >= (userMessageCache.get(id)?.at ?? -1)) userMessageCache.set(id, message);
 }
 
 async function readCodexTailCached(id: string, file: NativeFile): Promise<CodexTailInfo> {
@@ -218,6 +248,12 @@ const chickMetaCache = new Map<string, ChickMeta>();
 // alone and contain no user message at all (this happened in practice).
 // Remember the last seen snippet and keep showing it after it scrolls out of the window
 const snippetCache = new Map<string, string>();
+// key: session id. The latest message a person typed (anger mark input). For the same reason as snippetCache,
+// and because a message can even be appended and pushed out of the window between two polls (a large tool
+// result right after it), keep the last one seen so the mark can still be judged and cleared
+const userMessageCache = new Map<string, { at: number; text: string }>();
+// Upper limit of the bytes appended between two polls that are scanned outside the tail window for user messages
+const MAX_GAP_BYTES = 2 * 1024 * 1024;
 // key: parent session id. Ledger of background tasks (run_in_background) (key: task-id).
 // Start lines (TailInfo.backgroundTaskStarts) scroll out of the tail window within tens of seconds (measured:
 // already outside the window at the turn end 50 seconds after start), so remember them while visible.
@@ -439,6 +475,21 @@ function pickSnippet(tail: TailInfo): string | undefined {
     if (event.kind !== "user" || !event.text) continue;
     const snippet = formatSnippet(event.text);
     if (snippet) return snippet;
+  }
+  return undefined;
+}
+
+/**
+ * The latest message a person typed (anger mark input). Skips lines marked as not from a person
+ * (task-notification etc.) and machine text that formatSnippet rejects (slash command echoes, bash-input,
+ * [Request interrupted, ...). The at is the same as that message's started event
+ */
+function lastUserMessage(events: TailEvent[]): { at: number; text: string } | undefined {
+  for (let i = events.length - 1; i >= 0; i--) {
+    const event = events[i];
+    if (event.kind !== "user" || event.machine || !event.text) continue;
+    if (!formatSnippet(event.text)) continue;
+    return { at: event.at, text: event.text };
   }
   return undefined;
 }
@@ -889,6 +940,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
         : undefined;
     const question =
       displayState === "waiting" && last?.kind === "tool_use" ? extractQuestion(last.text) : undefined;
+    rememberUserMessage(id, lastUserMessage(tail.events));
+    const userMessage = userMessageCache.get(id);
     views.push({
       id,
       project,
@@ -900,6 +953,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
       snippet,
       reply,
       question,
+      userMessage,
       peers: peers.length > 0 ? peers : undefined,
       watching,
       cwd: tail.cwd,
@@ -964,6 +1018,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   }
   for (const key of chickMetaCache.keys()) if (!liveIds.has(key)) chickMetaCache.delete(key);
   for (const key of snippetCache.keys()) if (!liveIds.has(key)) snippetCache.delete(key);
+  for (const key of userMessageCache.keys()) if (!liveIds.has(key)) userMessageCache.delete(key);
   for (const key of backgroundTaskCache.keys()) if (!liveIds.has(key)) backgroundTaskCache.delete(key);
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
@@ -1036,6 +1091,14 @@ export function recordAskJudgement(sessionId: string, at: number, ask: AskJudgem
   const logged = eventLog.find((e) => e.key === key);
   if (!logged) return;
   logged.ask = ask;
+  eventLogDirty = true;
+}
+
+/** Writes the abuse verdict to the persistent log entry of that message's started event (key = sessionId:at:started) */
+export function recordAngerJudgement(sessionId: string, at: number, anger: AngerJudgement): void {
+  const logged = eventLog.find((e) => e.key === `${sessionId}:${at}:started`);
+  if (!logged) return;
+  logged.anger = anger;
   eventLogDirty = true;
 }
 
