@@ -32,6 +32,13 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 - Mock mode: launching with `TOMARIGI_MOCK=1` opens `index.html?mock=1`
 - File reading: `src/lib/native-fs.ts` exposes the subset of FileSystemDirectoryHandle / File methods the app uses, in the same shape, and calls Rust's `fs_list` / `fs_stat` / `fs_read`. `@/` points to `src`
 
+## Garden layout
+
+- Birds without a saved (dragged) position are placed automatically on a grid sized from the garden and one bird's size (name, icon, bubble room, status lines, marks). Cell centers are used as is (not pulled in from the edges), so neighbours keep a full cell apart
+- The bottom band of the garden (the nest in the bottom-right corner) is kept free of automatically placed birds
+- When the birds don't fit (e.g. many birds in the 340px floating window), the garden grows taller and the window scrolls instead of overlapping birds. Watch blocks count by their own height
+- Status lines: line 1 is the state and elapsed time, line 2 the tool name. Inside watch blocks, line 1 is the state and line 2 the elapsed time and tool name
+
 ## Jumping to the Ghostty pane
 
 - Clicking a bird (Garden) or a row (Perch, Recent activity, the nest list) jumps to the Ghostty pane where that claude is running. A chick's row jumps to its parent's pane

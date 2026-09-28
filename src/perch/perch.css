@@ -210,13 +210,20 @@ button:hover {
   font-size: 14px;
 }
 
+/* 狭い窓では名前を … で縮め、状態・ツール名・経過時間(と作業中の点)は窓の端で切らない */
 .chick .name {
-  min-width: 6em;
+  flex: 0 1 auto;
+  min-width: 3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 500;
   font-size: 12px;
 }
 
 .chick .status {
+  flex: none;
+  white-space: nowrap;
   font-size: 11px;
 }
 
@@ -940,7 +947,8 @@ button.remove {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  /* にわが鳥の数に合わせて縦に伸びたら(garden.tsx の gardenMinHeight)、一緒に伸びてページをスクロールさせる */
+  min-height: auto;
 }
 
 /* display: flex を当てると hidden 属性(UA の display: none)が負けるので明示的に戻す */
@@ -952,7 +960,8 @@ button.remove {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  /* にわが鳥の数に合わせて縦に伸びたら(garden.tsx の gardenMinHeight)、一緒に伸びてページをスクロールさせる */
+  min-height: auto;
 }
 
 .garden {

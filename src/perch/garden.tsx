@@ -72,6 +72,10 @@ const NODE_TEXT_PX = 32;
 const AUTO_GAP_PX = 12;
 // 吹き出しの最大幅の見積もり(perch.css の .speech-bubble-below の max-width 15em × 11px + 左右の padding)
 const BUBBLE_MAX_PX = 180;
+// にわの右下の巣箱(perch.css の .garden-nest)の高さ。この下端の帯には自動配置で鳥を置かない
+const NEST_ROOM_PX = 28;
+// perch.css の .garden の min-height(style で上書きするので、それより小さくはしない)
+const GARDEN_MIN_HEIGHT_PX = 220;
 // 吹き出しをにわの枠からこれだけ内側に置く
 const BUBBLE_EDGE_PX = 4;
 
@@ -583,19 +587,16 @@ export function Garden({
   // 格子は、にわの大きさと鳥 1 羽の大きさ(名前・アイコン・吹き出しの空き・状態の行・印・足元の数)から決める。
   // 固定の格子だと、名前を上に出し吹き出しの空きを取って背の高くなった鳥が、広いにわでも隣の段に重なった
   const anyBubble = awake.some((s) => bubbleText(s) !== undefined);
-  const grid = gardenGrid(
-    containerSize.w,
-    containerSize.h,
-    (anyBubble ? BUBBLE_MAX_PX : NODE_WIDTH_PX) + AUTO_GAP_PX,
+  const nodeW = (anyBubble ? BUBBLE_MAX_PX : NODE_WIDTH_PX) + AUTO_GAP_PX;
+  const nodeH =
     glyphSize +
-      NODE_TEXT_PX +
-      14 +
-      (awake.some((s) => s.toolName !== undefined) ? STATUS_SUB_PX : 0) +
-      (anyBubble ? BUBBLE_ROOM_PX : 0) +
-      (awake.some((s) => s.watching !== undefined) ? WATCH_COUNT_PX : 0) +
-      AUTO_GAP_PX,
-    awake.length,
-  );
+    NODE_TEXT_PX +
+    14 +
+    (awake.some((s) => s.toolName !== undefined) ? STATUS_SUB_PX : 0) +
+    (anyBubble ? BUBBLE_ROOM_PX : 0) +
+    (awake.some((s) => s.watching !== undefined) ? WATCH_COUNT_PX : 0) +
+    AUTO_GAP_PX;
+  const grid = gardenGrid(containerSize.w, containerSize.h, nodeW, nodeH, awake.length, NEST_ROOM_PX);
   const present = new Set(awake.map((s) => s.id));
   const sticky = autoPosRef.current;
   // 格子の列・行が変わった(にわの大きさや吹き出しの有無が変わった)ら、自動で置いた位置は置き直す
@@ -695,8 +696,17 @@ export function Garden({
       return w > 0 ? { w, h: node.offsetHeight } : undefined;
     },
   );
+  // 狭いにわに鳥が入りきらないときは、にわを縦に伸ばす(窓はスクロールする)。重ねて読めなくするより良い。
+  // 見守り中のブロックの中の鳥は数えず、ブロックの高さを足す
+  const fitCols = Math.max(1, Math.floor(containerSize.w / nodeW));
+  const looseCount = awake.filter((s) => !watchGroups.groupOf.has(s.id)).length;
+  const blocksH = watchGroups.blocks.reduce((sum, b) => sum + b.height + AUTO_GAP_PX, 0);
+  const gardenMinHeight =
+    containerSize.w > 0
+      ? Math.max(GARDEN_MIN_HEIGHT_PX, Math.ceil(looseCount / fitCols) * nodeH + blocksH + NEST_ROOM_PX)
+      : undefined;
   return (
-    <div className="garden" ref={containerRef}>
+    <div className="garden" ref={containerRef} style={{ minHeight: gardenMinHeight }}>
       {/* 吹き出しの層。鳥・名前の層より上に置き、どの鳥の名前にも吹き出しの文(と「…」)を隠させない。
           吹き出しどうしは新しいターンほど上(bubbleOrder) */}
       <div className="garden-bubble-layer" ref={setBubbleLayer} />

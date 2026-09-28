@@ -35,10 +35,12 @@ export interface GardenGrid {
   rows: number;
   jitterX: number;
   jitterY: number;
+  // 格子を置く高さの、にわの高さに対する割合(下端に巣箱の分の空きを取るため 1 未満になる)
+  yScale: number;
 }
 
 // にわの大きさがまだ分からないときの格子(以前の固定の 4×3)
-const FALLBACK_GRID: GardenGrid = { cols: 4, rows: 3, jitterX: 0.6, jitterY: 0.6 };
+const FALLBACK_GRID: GardenGrid = { cols: 4, rows: 3, jitterX: 0.6, jitterY: 0.6, yScale: 1 };
 // セルの中でずらす幅の上限(綺麗すぎる整列を崩す程度)
 const MAX_JITTER = 0.6;
 
@@ -46,8 +48,17 @@ const MAX_JITTER = 0.6;
  * にわ(w×h px)に、鳥(nodeW×nodeH px)が重ならずに入る列と行。count 羽が入らなければ、鳥 1 羽に対して
  * 余裕の大きい向き(横か縦)から列・行を足す(狭いにわでは重なる。以前と同じく「できるだけ」)
  */
-export function gardenGrid(w: number, h: number, nodeW: number, nodeH: number, count: number): GardenGrid {
-  if (w <= 0 || h <= 0) return FALLBACK_GRID;
+export function gardenGrid(
+  w: number,
+  fullH: number,
+  nodeW: number,
+  nodeH: number,
+  count: number,
+  bottomReserve = 0,
+): GardenGrid {
+  if (w <= 0 || fullH <= 0) return FALLBACK_GRID;
+  // 下端の bottomReserve px(巣箱)には鳥を置かない
+  const h = Math.max(nodeH, fullH - bottomReserve);
   let cols = Math.max(1, Math.floor(w / nodeW));
   let rows = Math.max(1, Math.floor(h / nodeH));
   while (cols * rows < count) {
@@ -55,7 +66,13 @@ export function gardenGrid(w: number, h: number, nodeW: number, nodeH: number, c
     else rows++;
   }
   const jitter = (cell: number, node: number) => Math.min(MAX_JITTER, Math.max(0, (cell - node) / cell));
-  return { cols, rows, jitterX: jitter(w / cols, nodeW), jitterY: jitter(h / rows, nodeH) };
+  return {
+    cols,
+    rows,
+    jitterX: jitter(w / cols, nodeW),
+    jitterY: jitter(h / rows, nodeH),
+    yScale: Math.min(1, h / fullH),
+  };
 }
 
 function db(): Promise<IDBPDatabase> {
@@ -100,7 +117,7 @@ export function hashId(id: string): number {
 /** 位置が格子のどのセルに属するか(0 〜 cols*rows-1)。空きセル探索用 */
 export function gardenCellOf(pos: GardenPosition, grid: GardenGrid): number {
   const col = Math.min(grid.cols - 1, Math.max(0, Math.floor(pos.x / (100 / grid.cols))));
-  const row = Math.min(grid.rows - 1, Math.max(0, Math.floor(pos.y / (100 / grid.rows))));
+  const row = Math.min(grid.rows - 1, Math.max(0, Math.floor(pos.y / grid.yScale / (100 / grid.rows))));
   return row * grid.cols + col;
 }
 
@@ -129,5 +146,7 @@ export function autoGardenPosition(id: string, taken: ReadonlySet<number>, grid:
   const cellH = 100 / grid.rows;
   const jitterX = ((hash % 100) / 100 - 0.5) * cellW * grid.jitterX;
   const jitterY = (((hash >> 8) % 100) / 100 - 0.5) * cellH * grid.jitterY;
-  return clampGardenPosition(col * cellW + cellW / 2 + jitterX, row * cellH + cellH / 2 + jitterY);
+  // clampGardenPosition は通さない。セルの中心とジッターはもともとセルの内側に収まり、端のセルを 8〜92% に寄せると
+  // 隣のセルの鳥との間が詰まって状態の行どうしが重なった
+  return { x: col * cellW + cellW / 2 + jitterX, y: (row * cellH + cellH / 2 + jitterY) * grid.yScale };
 }
