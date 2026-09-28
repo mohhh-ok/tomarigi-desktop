@@ -2,9 +2,9 @@ import { useCallback, useRef, useState } from "react";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import type { PerchSource } from "./source";
 
-// mock 用の固定基準時刻。formatEventTime は Date にかけるため、
-// 実時刻を使うとスクリーンショットのたびに秒表示がぶれる。決め打ちで安定させる。
-export const BASE = new Date("2026-07-30T14:00:00").getTime();
+// mock 用の基準時刻。経過時間(「15秒前」など)は今の時刻との差で出るので、固定の日付にすると何百時間にもなる。
+// 読み込んだ時刻を分単位に丸めて使う(スクリーンショットのたびに秒表示がぶれないように)。
+export const BASE = Math.floor(Date.now() / 60_000) * 60_000;
 
 export interface Preset {
   id: string;
@@ -20,7 +20,7 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "mix",
-    label: "3状態ミックス",
+    label: "Mixed states",
     build: () => ({
       sessions: [
         {
@@ -59,7 +59,7 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "chicks",
-    label: "ひな入り",
+    label: "With chicks",
     build: () => ({
       sessions: [
         {
@@ -93,7 +93,7 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "events",
-    label: "イベントフィード",
+    label: "Event feed",
     build: () => {
       const sessions: SessionView[] = [
         {
@@ -103,7 +103,7 @@ export const PRESETS: Preset[] = [
           state: "working",
           sinceMs: 20_000,
           toolName: "Edit",
-          snippet: "UI mock 追加",
+          snippet: "Add UI mock",
         },
         {
           id: "mock/events/tomarigi-b",
@@ -112,7 +112,7 @@ export const PRESETS: Preset[] = [
           state: "working",
           sinceMs: 5_000,
           toolName: "Bash",
-          snippet: "pnpm build 確認",
+          snippet: "Check pnpm build",
         },
         {
           id: "mock/events/blog",
@@ -126,14 +126,14 @@ export const PRESETS: Preset[] = [
       // events は「新しい順」で来る前提(lib/sessions.ts の deriveSessionEvents)
       const events: SessionEvent[] = [
         // tomarigi-a: waiting ← started (2件)
-        { key: "ev1", sessionId: "s1", project: "tomarigi", snippet: "UI mock 追加", type: "waiting", at: BASE - 15_000 },
-        { key: "ev2", sessionId: "s1", project: "tomarigi", snippet: "UI mock 追加", type: "started", at: BASE - 90_000 },
+        { key: "ev1", sessionId: "s1", project: "tomarigi", snippet: "Add UI mock", type: "waiting", at: BASE - 15_000 },
+        { key: "ev2", sessionId: "s1", project: "tomarigi", snippet: "Add UI mock", type: "started", at: BASE - 90_000 },
         // tomarigi-b: started(1件のみ)
-        { key: "ev5", sessionId: "s2", project: "tomarigi", snippet: "pnpm build 確認", type: "started", at: BASE - 45_000 },
+        { key: "ev5", sessionId: "s2", project: "tomarigi", snippet: "Check pnpm build", type: "started", at: BASE - 45_000 },
         // blog: done ← waiting ← started (3件)
         { key: "ev6", sessionId: "s3", project: "blog", type: "done", at: BASE - 2 * 60_000 },
         { key: "ev7", sessionId: "s3", project: "blog", type: "waiting", at: BASE - 4 * 60_000 },
-        { key: "ev8", sessionId: "s3", project: "blog", snippet: "記事の校正", type: "started", at: BASE - 6 * 60_000 },
+        { key: "ev8", sessionId: "s3", project: "blog", snippet: "Proofread the article", type: "started", at: BASE - 6 * 60_000 },
         // figma-adapter: waiting(1件のみ)
         { key: "ev10", sessionId: "s5", project: "figma-adapter", type: "waiting", at: BASE - 7 * 60_000 },
         // old-project: closed(古め、カード数上限に落ちるか確認できる)
@@ -144,7 +144,7 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "crowd",
-    label: "満員",
+    label: "Full house",
     build: () => ({
       sessions: [
         { id: "mock/crowd/1", project: "tomarigi", slug: "tomarigi", state: "working", sinceMs: 2_000, toolName: "Edit" },
@@ -165,7 +165,7 @@ export const PRESETS: Preset[] = [
     // 返事待ちの「?」(lib/jev.ts の needsAnswer)。機械判定の waiting と、done / dozing を
     // Jev が asking と判定したもの。not_asking・pending の鳥には付かないことも並べて見せる
     id: "asking",
-    label: "返事待ち(?)",
+    label: "Waiting for reply (?)",
     build: () => ({
       sessions: [
         {
@@ -175,7 +175,7 @@ export const PRESETS: Preset[] = [
           state: "waiting",
           sinceMs: 40_000,
           toolName: "AskUserQuestion",
-          snippet: "設定画面の配置",
+          snippet: "Settings screen layout",
         },
         {
           id: "mock/asking/text",
@@ -183,9 +183,9 @@ export const PRESETS: Preset[] = [
           slug: "blog",
           state: "done",
           sinceMs: 90_000,
-          snippet: "見出しの案を出して",
+          snippet: "Suggest some headlines",
           // 最近の動きで同じターンの done(aev2)に判定を結び付けるため、at を aev2 と揃える
-          reply: { at: BASE - 90_000, text: "見出しの案を 3 つ出しました。どれにしますか。" },
+          reply: { at: BASE - 90_000, text: "I came up with 3 headline ideas. Which one do you want?" },
           ask: { status: "asking", probability: 0.95 },
         },
         {
@@ -196,10 +196,10 @@ export const PRESETS: Preset[] = [
           slug: "review-bot",
           state: "done",
           sinceMs: 45_000,
-          snippet: "差分のレビュー",
+          snippet: "Review the diff",
           reply: {
             at: BASE - 45_000,
-            text: "次の 3 つを直しました。\n- 型の誤り\n- 余白\n- 文言\n\n```ts\nconst a = 1;\n```\n\n**push してよいですか？**",
+            text: "I fixed these 3 things.\n- Type error\n- Spacing\n- Wording\n\n```ts\nconst a = 1;\n```\n\n**OK to push?**",
           },
           ask: { status: "asking", probability: 0.91 },
         },
@@ -209,7 +209,7 @@ export const PRESETS: Preset[] = [
           slug: "moh-tech-net",
           state: "done",
           sinceMs: 2 * 60_000,
-          snippet: "README の誤字",
+          snippet: "Typo in README",
           ask: { status: "not_asking", probability: 0.06 },
         },
         {
@@ -250,7 +250,7 @@ export const PRESETS: Preset[] = [
     // 鳥のセリフの吹き出し(perch/bubble.tsx)。質問ツールの質問文・計画の承認・BYOK の要約(summary を
     // データで持たせるのでキー無しでも出る)。working には出ない。長い文は「…」で切れる
     id: "bubble",
-    label: "吹き出し",
+    label: "Speech bubbles",
     build: () => ({
       sessions: [
         {
@@ -260,8 +260,8 @@ export const PRESETS: Preset[] = [
           state: "waiting",
           sinceMs: 30_000,
           toolName: "AskUserQuestion",
-          snippet: "設定画面の配置",
-          question: "設定画面の配置は右上にまとめるか下部にタブで分けるか、どちらにしますか？",
+          snippet: "Settings screen layout",
+          question: "Should the settings be grouped in the top right, or split into tabs at the bottom?",
         },
         {
           id: "mock/bubble/plan",
@@ -277,9 +277,9 @@ export const PRESETS: Preset[] = [
           slug: "figma-adapter",
           state: "done",
           sinceMs: 20_000,
-          reply: { at: BASE - 20_000, text: "見出しの案を 2 つ出しました。A と B のどちらにしますか。" },
+          reply: { at: BASE - 20_000, text: "I came up with 2 headline ideas. Do you want A or B?" },
           ask: { status: "asking", probability: 0.93 },
-          summary: "見出しは A と B のどちら？",
+          summary: "Headline A or B?",
         },
         {
           id: "mock/bubble/done",
@@ -287,9 +287,9 @@ export const PRESETS: Preset[] = [
           slug: "moh-tech-net",
           state: "done",
           sinceMs: 2 * 60_000,
-          reply: { at: BASE - 2 * 60_000, text: "README の誤字を直しました。" },
+          reply: { at: BASE - 2 * 60_000, text: "Fixed the typo in the README." },
           ask: { status: "not_asking", probability: 0.06 },
-          summary: "README の誤字を直した",
+          summary: "Fixed the README typo",
         },
         {
           id: "mock/bubble/working",
@@ -307,7 +307,7 @@ export const PRESETS: Preset[] = [
           sinceMs: 9 * 60_000,
           reply: { at: BASE - 9 * 60_000, text: "..." },
           ask: { status: "not_asking", probability: 0.1 },
-          summary: "Workers のビルド設定を更新した",
+          summary: "Updated the Workers build config",
         },
       ],
       events: [
@@ -323,7 +323,7 @@ export const PRESETS: Preset[] = [
     // packages/api は作業中、apps/web は質問ツールで返事待ち(親にも「?」が伝わる)、other-docs は完了
     // (配下でないのでフォルダ名で呼ぶ)。blog はつながりの無い鳥
     id: "watching",
-    label: "見守り中",
+    label: "Watching",
     build: () => {
       const parent = "mock/watch/parent";
       const api = "mock/watch/api";
@@ -365,7 +365,7 @@ export const PRESETS: Preset[] = [
             state: "waiting",
             sinceMs: 50_000,
             toolName: "AskUserQuestion",
-            question: "ボタンの色は緑と青のどちらにしますか？",
+            question: "Should the button be green or blue?",
             cwd: `${root}/apps/web`,
             startedAt: BASE - 25 * 60_000,
             peers: [{ sessionId: "parent", viewId: parent, name: "tomarigi-ed", cwd: root, active: false }],
@@ -393,7 +393,7 @@ export const PRESETS: Preset[] = [
     // 見守り中で、親と同じフォルダの鳥がいる(docs/design.md「ブロックで囲んだときは名前を 1 つにする」)。
     // 同じフォルダの鳥は名前を出さない。apps/frontend/web は深い配下(相対パスの長さを見る用)
     id: "watching-same",
-    label: "見守り(同じフォルダ)",
+    label: "Watching (same folder)",
     build: () => {
       const parent = "mock/watch-same/parent";
       const same = "mock/watch-same/same";
@@ -433,7 +433,7 @@ export const PRESETS: Preset[] = [
             slug: "web",
             state: "done",
             sinceMs: 40_000,
-            summary: "ヘッダーの余白を直しました",
+            summary: "Fixed the header spacing",
             cwd: `${root}/apps/frontend/web`,
             startedAt: BASE - 20 * 60_000,
             peers: back,
@@ -448,7 +448,7 @@ export const PRESETS: Preset[] = [
     // Jev に実際に聞く(ask をデータで持たない)。保存した TypeSafe のキーで判定が動くかを確かめる用。
     // 判定結果はログ(/tmp/tomarigi-desktop/app-log.txt の [jev])と鳥の「?」に出る
     id: "jev-live",
-    label: "Jev 実判定",
+    label: "Real Jev verdict",
     build: () => ({
       sessions: [
         {
@@ -457,7 +457,7 @@ export const PRESETS: Preset[] = [
           slug: "jev-asking",
           state: "done",
           sinceMs: 30_000,
-          reply: { at: BASE - 30_000, text: "設定画面の配置案を 2 つ用意しました。A: 右上にまとめる B: 下部にタブで分ける。どれにしますか。" },
+          reply: { at: BASE - 30_000, text: "I prepared 2 layouts for the settings screen. A: group them in the top right. B: split into tabs at the bottom. Which one do you want?" },
         },
         {
           id: "mock/jev/finished",
@@ -465,7 +465,7 @@ export const PRESETS: Preset[] = [
           slug: "jev-finished",
           state: "done",
           sinceMs: 60_000,
-          reply: { at: BASE - 60_000, text: "ボタンの色を修正し、型チェックとビルドが通ることを確認しました。完了しました。" },
+          reply: { at: BASE - 60_000, text: "I fixed the button color and confirmed that the type check and build pass. Done." },
         },
       ],
       events: [],
@@ -544,7 +544,7 @@ export function MockPanel({ source }: { source: MockSource }) {
     try {
       const parsed = JSON.parse(draft);
       if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.sessions) || !Array.isArray(parsed.events)) {
-        setParseError("sessions と events(配列)を含む JSON にしてください");
+        setParseError("Enter JSON that contains sessions and events (arrays)");
         return;
       }
       source.setData({ sessions: parsed.sessions, events: parsed.events });
@@ -596,26 +596,26 @@ export function MockPanel({ source }: { source: MockSource }) {
   const hint =
     "sessions[].state: working | waiting | done | dozing\n" +
     "sessions[].ask: { status: pending | asking | not_asking | error, probability? }\n" +
-    "sessions[].question / summary: 吹き出しの文\n" +
-    "sessions[].peers / watching: 見守り中のつながりと動いている相手の数\n" +
+    "sessions[].question / summary: speech bubble text\n" +
+    "sessions[].peers / watching: linked sessions and how many are working\n" +
     "events[].type: started | done | waiting | closed";
 
   return (
     <section className="mock-panel">
-      <h2>mock コントロール</h2>
+      <h2>mock controls</h2>
       {/* にわのアニメーション確認: 出入りイベントを手で起こす */}
       <div className="mock-preset-row">
         <button className="small" onClick={addBird}>
-          + 鳥を追加(上空から)
+          + Add a bird (from the sky)
         </button>
         <button className="small" onClick={sleepBird}>
-          1羽寝かす(巣箱へ)
+          Put one to sleep (into the nest)
         </button>
         <button className="small" onClick={wakeBird}>
-          1羽起こす(巣箱から)
+          Wake one up (from the nest)
         </button>
         <button className="small" onClick={closeBird}>
-          1羽閉じる(フェード)
+          Close one (fade out)
         </button>
       </div>
       <div className="mock-preset-row">
@@ -639,7 +639,7 @@ export function MockPanel({ source }: { source: MockSource }) {
       />
       <div className="mock-editor-actions">
         <button className="small" onClick={applyDraft}>
-          JSON を反映
+          Apply JSON
         </button>
         {parseError && <span className="mock-error">{parseError}</span>}
       </div>

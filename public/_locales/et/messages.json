@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "TypeSafe’i veebisait"
+  },
+  "quotedSnippet": {
+    "message": "„$SNIPPET$“",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

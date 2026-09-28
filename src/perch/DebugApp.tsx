@@ -60,8 +60,8 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
         setError(null);
       } catch (e) {
         if (cancelled) return;
-        console.warn("[tomarigi] イベントログの読み込みに失敗", e);
-        setError("イベントログの読み込みに失敗しました");
+        console.warn("[tomarigi] failed to load the event log", e);
+        setError("Couldn't load the event log");
       }
     };
     void load();
@@ -104,7 +104,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
         content: JSON.stringify(targetEvents, null, 2),
       });
     } catch (e) {
-      console.warn("[tomarigi] イベントログの保存に失敗", e);
+      console.warn("[tomarigi] failed to save the event log", e);
       return;
     }
     setSaveStatus((prev) => ({ ...prev, [project]: "saved" }));
@@ -120,18 +120,18 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
     <div className="debug-overlay" ref={overlayRef}>
       <div className="page debug-page">
         <div className="page-header">
-          <h1 className="brand">tomarigi イベントログ(debug)</h1>
+          <h1 className="brand">tomarigi event log (debug)</h1>
           <button className="small" onClick={onClose} aria-label="Close" title="Close">
             <MdClose size={16} />
           </button>
         </div>
         <p className="note">
-          lib/sessions.ts が発火したイベント判定の永続履歴です(最大500件、TTLなし)。
+          Persistent history of events fired by lib/sessions.ts (up to 500 entries, no TTL).
         </p>
         {error && <p className="note debug-log-error">{error}</p>}
-        {!error && events === null && <p className="note">読み込み中…</p>}
+        {!error && events === null && <p className="note">Loading…</p>}
         {!error && events !== null && sorted.length === 0 && (
-          <p className="empty">まだイベントは記録されていません</p>
+          <p className="empty">No events recorded yet</p>
         )}
         {!error && projects.length > 0 && (
           <div className="debug-save-list">
@@ -144,7 +144,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                   className="debug-save-btn"
                   onClick={() => void saveProject(project)}
                 >
-                  {status === "saved" ? "保存しました" : `${project} を保存`}
+                  {status === "saved" ? "Saved" : `Save ${project}`}
                 </button>
               );
             })}
@@ -160,14 +160,14 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                       まま不変なので、実際に鳴った(鳴らなかった)時刻はここで別に見せる */}
                   {e.firedAt !== undefined && (
                     <span className="debug-log-fired-at">
-                      (実発火 {new Date(e.firedAt).toLocaleString()})
+                      (fired at {new Date(e.firedAt).toLocaleString()})
                     </span>
                   )}
                 </span>
                 <span className={`debug-log-type debug-log-type-${e.type}`}>{e.type}</span>
                 {/* muted: ひな待ちで抑止されていた done が親の再起動でキャンセルされたもの。
                     ログには残るが鳴らない(lib/sessions.ts の deriveDoneEvent 参照) */}
-                {e.muted && <span className="debug-log-muted-badge">ミュート</span>}
+                {e.muted && <span className="debug-log-muted-badge">muted</span>}
                 {/* Jev の判断待ち判定(lib/jev.ts)。確率は yes(返事待ち)の確率 */}
                 {e.ask && (
                   <span className="debug-log-ask">
@@ -177,7 +177,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                   </span>
                 )}
                 <span className="debug-log-project">{e.project}</span>
-                {e.snippet && <span className="debug-log-snippet">「{e.snippet}」</span>}
+                {e.snippet && <span className="debug-log-snippet">“{e.snippet}”</span>}
                 <span className="debug-log-key">{e.key}</span>
               </li>
             ))}

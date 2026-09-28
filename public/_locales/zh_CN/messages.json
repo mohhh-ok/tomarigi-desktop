@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "TypeSafe 官网"
+  },
+  "quotedSnippet": {
+    "message": "“$SNIPPET$”",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

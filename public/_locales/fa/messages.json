@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "وب‌سایت TypeSafe"
+  },
+  "quotedSnippet": {
+    "message": "«$SNIPPET$»",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

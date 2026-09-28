@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "Сайтът на TypeSafe"
+  },
+  "quotedSnippet": {
+    "message": "„$SNIPPET$“",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

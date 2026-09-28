@@ -126,6 +126,7 @@ export const KEYS = [
   "byokReplaceButton",
   "byokSaveFailedMessage",
   "typeSafeSiteLink",
+  "quotedSnippet",
 ];
 
 // KEYS とグループファイルの整合性チェック(片方に無いキーがあれば即エラー)。
@@ -147,6 +148,7 @@ export const PLACEHOLDERS = {
   sinceHoursMinutes: { hours: "$1", minutes: "$2" },
   byokTestResultFailure: { reason: "$1" },
   eventWaitingVoice: { project: "$1" },
+  quotedSnippet: { snippet: "$1" },
 };
 
 // default_locale。英語が未対応言語ユーザーへのフォールバック。

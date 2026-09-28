@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "TypeSafe-এর ওয়েবসাইট"
+  },
+  "quotedSnippet": {
+    "message": "“$SNIPPET$”",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

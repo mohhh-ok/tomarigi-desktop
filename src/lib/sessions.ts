@@ -356,7 +356,7 @@ function hydrateEventLog(): void {
       // 既存履歴を上書きするリスクを避けるため "done" にはしない(保存は永久に止まる)。
       // pending も永続化されない前提になったので破棄する(このセッション中はメモリ上にも
       // 保持しない。cacheEvent 側も "failed" では以後 pending に積まない)
-      console.warn("[tomarigi] イベントログの復元に失敗", e);
+      console.warn("[tomarigi] failed to restore the event log", e);
       eventLogHydration = "failed";
       pendingLogEvents.length = 0;
     }
@@ -599,7 +599,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
         }
       }
     } catch (e) {
-      console.warn("[tomarigi] ルート走査に失敗", root.id, e);
+      console.warn("[tomarigi] failed to scan root", root.id, e);
       brokenIds.push(root.id);
     }
   }
@@ -848,7 +848,11 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     // フォールバックした SDK セッション、isSdk===true)には deriveSdkChickState を使う —
     // 構造化出力ツール終端(tool_result)で working に固着する問題は deriveState では
     // 未修正のまま(deriveSdkChickState のコメント参照。pushレビュー指摘2)
-    const state = isSdk ? deriveSdkChickState(tail, sinceMs) : deriveState(tail, sinceMs, false);
+    const tailState = isSdk ? deriveSdkChickState(tail, sinceMs) : deriveState(tail, sinceMs, false);
+    // Claude Code は選択肢(AskUserQuestion)や権限の確認を出している間、その tool_use を transcript にまだ書かない
+    // (答えた後に書く)。代わりに <config>/sessions/<pid>.json の status が "waiting" になるので、それを返事待ちとみなす
+    const state: BirdState =
+      !isSdk && liveBySessionId.get(sessionIdOfViewId(id))?.status === "waiting" ? "waiting" : tailState;
     // 表示用の状態は、ひなが走行中(done/dozing 以外)ならその緊急度にエスカレーションする
     const displayState = escalateWithChicks(state, chickViews);
     // 直近のユーザー発言スニペットを常に付ける(「何をやらせてるセッションか」が主情報)。
@@ -957,7 +961,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   if (eventLogDirty && eventLogHydration === "done") {
     eventLogDirty = false;
     void saveEventLog(eventLog).catch((e) => {
-      console.warn("[tomarigi] イベントログの保存に失敗", e);
+      console.warn("[tomarigi] failed to save the event log", e);
     });
   }
 
@@ -1292,7 +1296,7 @@ async function scanChicks(
   } catch (e) {
     // ディレクトリが無い(NotFoundError)のはひな無しの正常系。それ以外は異常なので痕跡を残す
     if (!(e instanceof DOMException && e.name === "NotFoundError")) {
-      console.warn("[tomarigi] subagents 走査に失敗", parentId, e);
+      console.warn("[tomarigi] failed to scan subagents", parentId, e);
     }
     return [];
   }

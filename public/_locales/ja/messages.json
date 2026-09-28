@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "TypeSafe の公式サイト"
+  },
+  "quotedSnippet": {
+    "message": "「$SNIPPET$」",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

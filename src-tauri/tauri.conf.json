@@ -46,6 +46,12 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "files": {
+        "Resources/en.lproj/InfoPlist.strings": "locales/en.lproj/InfoPlist.strings",
+        "Resources/ja.lproj/InfoPlist.strings": "locales/ja.lproj/InfoPlist.strings"
+      }
+    }
   }
 }

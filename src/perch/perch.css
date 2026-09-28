@@ -36,14 +36,14 @@ body {
   overflow-y: auto;
   /* 半透明にして、窓の後ろのすりガラス(src-tauri の set_backdrop)越しに後ろをぼかして見せる。圧迫感を減らすためで、
      後ろを読ませるためではない(docs/design.md のウィンドウモードの項)。濃さは固定 */
-  background: rgba(22, 22, 28, 0.25);
+  background: rgba(22, 22, 28, 0.75);
   border: 1px solid #2e2c25;
   border-radius: 12px;
 }
 
 /* 検証用ビルド(boot.tsx で data-build="verify")。普段使いの版と見分けるための色 */
 :root[data-build="verify"] .page {
-  background: rgba(10, 48, 44, 0.3);
+  background: rgba(10, 48, 44, 0.8);
   border-color: #1f6b60;
 }
 
@@ -1073,11 +1073,40 @@ button.remove {
   white-space: nowrap;
 }
 
-/* 見守り中のブロックの中は 1 マス(garden.tsx の WATCH_CELL_W 96px)ごとに並ぶので、状態の行はマスの幅までにする。
-   超える分はツール名を丸ごと隠す(.bird-row-tool)。隣の鳥の状態の行とつながって 1 行に見え、アイコンの真下から
-   ずれて見えた */
+/* 見守り中のブロックの中は 1 マス(garden.tsx の WATCH_CELL_W 96px)ごとに並ぶので、状態の行はマスの幅までにする
+   (はみ出すと隣の鳥の状態の行とつながって 1 行に見える) */
 .garden-node.in-watch-block .garden-status {
   max-width: 88px;
+}
+
+/* にわの状態の行は 2 段。1 段目が状態の語と経過時間、2 段目がツール名(見守り中のブロックの狭いマスでは、1 段目が状態の語、
+   2 段目が経過時間とツール名。stage.tsx の StatusParts の stacked)。
+   2 段目が無い鳥も 1 段目の高さは同じなので、横に並ぶ鳥どうしで 1 段目の位置がそろう */
+.garden-status {
+  flex-direction: column;
+  align-items: center;
+}
+
+.garden-status-main {
+  display: inline-flex;
+  align-items: baseline;
+  max-width: inherit; /* .garden-status と同じ上限(% だと中身の幅が基準になって効かない) */
+  white-space: nowrap;
+}
+
+/* 1 段目がマスに入りきらないときは、経過時間を残して状態の語を … で切る(隣の鳥の行とつながって見えないように) */
+.garden-status-main > .bird-row-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.garden-status-sub {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .garden-status > .status {
@@ -1372,13 +1401,15 @@ button.remove {
 .debug-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 3000; /* にわの吹き出しの層(2000)・巣箱(2100)より上 */
   overflow-y: auto;
   background: #16161c;
 }
 
 .debug-page {
+  width: 100%;
   max-width: 720px;
+  margin-inline: auto;
 }
 
 .debug-log-error {
@@ -1657,8 +1688,9 @@ button.remove {
   visibility: hidden;
 }
 
+/* 依頼の抜き出しはツール名より先に幅をもらう(何をやらせているセッションかの方が大事。ツール名は余りで出す) */
 .bird-row-snippet {
-  flex: 1 1 0;
+  flex: 100 1 0;
   min-width: 0;
   max-width: max-content;
   margin-left: -6px; /* 名前との間は行の gap(10px)より詰める(以前の名前の中の並びと同じ見え方) */
@@ -1674,13 +1706,22 @@ button.remove {
   overflow: visible;
 }
 
+/* 止まり木の行では、名前が入りきらないときだけ状態の語を最後に縮めて … で切る(名前を優先する) */
+.bird-row-main > .bird-row-label {
+  flex: 0 1000 auto;
+  min-width: 2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bird-row-main > .bird-row-label {
   margin-left: auto;
 }
 
 /* 止まり木の行のツール名(上の .bird-row-name のコメント)。にわの状態の行(.garden-status)は今までどおり */
 .bird-row-main > .bird-row-tool {
-  flex: 100 1 0;
+  flex: 1 1 0;
   max-width: max-content;
 }
 

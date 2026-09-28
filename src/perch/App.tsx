@@ -239,7 +239,7 @@ export default function App({
       try {
         await initApiKeys();
       } catch (e) {
-        console.warn("[tomarigi] API キーの初期化に失敗", e);
+        console.warn("[tomarigi] failed to initialize API keys", e);
       }
       const [keyStatus, preferredProvider] = await Promise.all([loadApiKeyStatus(), loadAiProvider()]);
       // 保存済みかどうか(真偽だけ)をログに出す。キーの値は受け取らない・出さない
@@ -455,7 +455,7 @@ export default function App({
     try {
       await saveRoots(next);
     } catch (e) {
-      console.warn("[tomarigi] 保存に失敗", e);
+      console.warn("[tomarigi] failed to save", e);
       setAddMessage(t("saveFailedMessage"));
     }
   }, []);
@@ -1072,7 +1072,7 @@ function RootAddDialog({
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       copyTimerRef.current = setTimeout(() => setCopiedKind(null), 1_500);
     } catch (error) {
-      console.warn("[tomarigi] パスをクリップボードへコピーできませんでした", error);
+      console.warn("[tomarigi] failed to copy the path to the clipboard", error);
     }
   };
 

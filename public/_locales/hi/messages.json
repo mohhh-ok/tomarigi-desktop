@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "TypeSafe की वेबसाइट"
+  },
+  "quotedSnippet": {
+    "message": "“$SNIPPET$”",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

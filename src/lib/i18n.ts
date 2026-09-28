@@ -50,11 +50,13 @@ export async function initI18n(): Promise<void> {
     const dict = await tryFetchDict(candidate);
     if (dict) {
       fallbackDict = dict;
+      document.documentElement.lang = candidate.replaceAll("_", "-");
       return;
     }
   }
   const en = await tryFetchDict("en");
   if (en) fallbackDict = en;
+  document.documentElement.lang = "en";
 }
 
 // "ja-JP" → ["ja_JP", "ja", "en"] のように、詳細ロケール→言語→英語の順で候補を作る。

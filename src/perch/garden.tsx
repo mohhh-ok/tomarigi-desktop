@@ -114,6 +114,8 @@ const WATCH_COUNT_PX = 18;
 const GARDEN_NAME_PX = 16;
 // ブロックの上辺に出す親の名前の行の高さ(perch.css の .garden-watch-block-name)
 const WATCH_TITLE_PX = 16;
+// 状態の行の 2 段目(ツール名。ブロックの中では経過時間とツール名)の高さ(perch.css の .garden-status-sub)
+const STATUS_SUB_PX = 15;
 
 /** まとまりの中での鳥の位置。CSS の left(鳥の中心)/top(鳥の上辺。段の上端に名前をそろえる)(にわの大きさが変わっても
     追従する式)と、今の大きさでの px */
@@ -222,7 +224,14 @@ function layoutWatchGroups(
       // 吹き出しの空きは、吹き出しの出る鳥がいる段だけに取る(隣の鳥の吹き出しが掛かるのは同じ段だけ。
       // 吹き出しの無い段まで空けると、アイコンと状態の行の間が間延びする)
       const rowBubble = members.slice(r * cols, (r + 1) * cols).some((m) => bubbleText(m) !== undefined);
-      y += glyphSize + NODE_TEXT_PX - (named ? 0 : GARDEN_NAME_PX) + 14 + countRoom + (rowBubble ? BUBBLE_ROOM_PX : 0);
+      y +=
+        glyphSize +
+        NODE_TEXT_PX -
+        (named ? 0 : GARDEN_NAME_PX) +
+        14 +
+        STATUS_SUB_PX +
+        countRoom +
+        (rowBubble ? BUBBLE_ROOM_PX : 0);
     }
     rowTops.push(y);
     // 吹き出しの出る鳥がいれば、吹き出しがブロックの内側に収まる幅を下限にする
@@ -581,6 +590,7 @@ export function Garden({
     glyphSize +
       NODE_TEXT_PX +
       14 +
+      (awake.some((s) => s.toolName !== undefined) ? STATUS_SUB_PX : 0) +
       (anyBubble ? BUBBLE_ROOM_PX : 0) +
       (awake.some((s) => s.watching !== undefined) ? WATCH_COUNT_PX : 0) +
       AUTO_GAP_PX,
@@ -1210,9 +1220,9 @@ function GardenNode({
         </span>
         {/* 吹き出しの置き場。吹き出しそのものは吹き出しの層に出し(ほかの鳥より上に重ねるため)、ここは状態の行を下げる空きだけ */}
         {bubbleRoom && <span className="garden-bubble-room" aria-hidden />}
-        {/* 止まり木の行と同じ部品。状態の語と経過時間は常に残し、ツール名は収まらなければ丸ごと隠す */}
+        {/* 止まり木の行と同じ部品。1 行目に状態の語と経過時間、ツール名はその下の行に出す */}
         <span className="garden-status">
-          <StatusParts session={session} asking={asking} />
+          <StatusParts session={session} asking={asking} toolOnOwnLine stacked={inBlock} />
         </span>
         {/* 見守り中: 足元に動いている相手の数 */}
         {/* 数は今動いている相手だけ。猶予の間(0)は出さない */}

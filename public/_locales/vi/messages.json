@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "Trang web TypeSafe"
+  },
+  "quotedSnippet": {
+    "message": "“$SNIPPET$”",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

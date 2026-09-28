@@ -2,7 +2,7 @@
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {
   birdWaitingLabel: {
-    en: "waiting for your reply",
+    en: "needs reply",
     ja: "返事待ち",
     zh_CN: "等你回复",
     zh_TW: "等你回覆",

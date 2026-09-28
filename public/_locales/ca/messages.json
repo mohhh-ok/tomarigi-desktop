@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "Lloc web de TypeSafe"
+  },
+  "quotedSnippet": {
+    "message": "«$SNIPPET$»",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

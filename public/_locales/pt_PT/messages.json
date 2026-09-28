@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "Site da TypeSafe"
+  },
+  "quotedSnippet": {
+    "message": "«$SNIPPET$»",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

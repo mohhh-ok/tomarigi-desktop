@@ -238,7 +238,7 @@
     "message": "Standard window (can be maximized or go full screen)"
   },
   "birdWaitingLabel": {
-    "message": "waiting for your reply"
+    "message": "needs reply"
   },
   "askingBadgeTitle": {
     "message": "Waiting for your answer before it can continue"
@@ -266,5 +266,13 @@
   },
   "typeSafeSiteLink": {
     "message": "TypeSafe website"
+  },
+  "quotedSnippet": {
+    "message": "“$SNIPPET$”",
+    "placeholders": {
+      "snippet": {
+        "content": "$1"
+      }
+    }
   }
 }

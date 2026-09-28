@@ -208,11 +208,43 @@ export function StatusParts({
   session,
   asking,
   liveDots = false,
+  toolOnOwnLine = false,
+  stacked = false,
 }: {
   session: SessionView;
   asking: boolean;
   liveDots?: boolean;
+  /** にわ用。ツール名を隠さず、状態の行の下に 1 行で出す */
+  toolOnOwnLine?: boolean;
+  /** 見守り中のブロックの狭いマス用(toolOnOwnLine と一緒に使う)。1 段目は状態の語だけにし、経過時間はツール名と 2 段目に出す */
+  stacked?: boolean;
 }) {
+  const tool = session.toolName && !asking ? session.toolName : undefined;
+  if (toolOnOwnLine) {
+    const label = (
+      <span className="status bird-row-label">
+        {birdLabel(session.state, asking, session.watching !== undefined)}
+      </span>
+    );
+    const since = formatSince(session.sinceMs);
+    if (stacked) {
+      return (
+        <>
+          <span className="garden-status-main">{label}</span>
+          <span className="status garden-status-sub">{tool ? `${since} · ${tool}` : since}</span>
+        </>
+      );
+    }
+    return (
+      <>
+        <span className="garden-status-main">
+          {label}
+          <span className="status bird-row-since">&nbsp;· {since}</span>
+        </span>
+        {tool && <span className="status garden-status-sub">{tool}</span>}
+      </>
+    );
+  }
   return (
     <>
       <span className="status bird-row-label">
@@ -224,9 +256,9 @@ export function StatusParts({
         &nbsp;· {formatSince(session.sinceMs)}
         {liveDots && session.state === "working" && <LiveDots />}
       </span>
-      {session.toolName && !asking && (
+      {tool && (
         <span className="status bird-row-tool">
-          <span>&nbsp;· {session.toolName}</span>
+          <span>&nbsp;· {tool}</span>
         </span>
       )}
     </>
@@ -254,7 +286,7 @@ function RowSnippet({ text }: { text: string }) {
   }, []);
   return (
     <span ref={ref} className="snippet bird-row-snippet">
-      「{text}」
+      {t("quotedSnippet", text)}
     </span>
   );
 }
@@ -420,7 +452,7 @@ export function EventFeed({
                 <div className="event-card-body">
                   <div className="event-card-head">
                     <span className="event-card-project">{e.project}</span>
-                    {e.snippet && <span className="event-snippet">「{e.snippet}」</span>}
+                    {e.snippet && <span className="event-snippet">{t("quotedSnippet", e.snippet)}</span>}
                   </div>
                   <div className="event-card-meta">
                     <span className="event-label">{EVENT[kind].label}</span>

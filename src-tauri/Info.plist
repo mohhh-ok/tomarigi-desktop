@@ -3,7 +3,14 @@
 <plist version="1.0">
 <dict>
   <key>NSAppleEventsUsageDescription</key>
-  <string>鳥をクリックしたとき、その Claude Code が動いている Ghostty のペインへ移るために Ghostty を操作します。</string>
+  <string>tomarigi controls Ghostty so that clicking a bird takes you to the Ghostty pane where that Claude Code session is running.</string>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+  <key>CFBundleLocalizations</key>
+  <array>
+    <string>en</string>
+    <string>ja</string>
+  </array>
   <key>LSUIElement</key>
   <true/>
 </dict>

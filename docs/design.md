@@ -52,7 +52,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 - A "?" is put on birds that stopped to wait for the user's decision. This includes turns that ended by asking in plain text (like "Which one should I go with?") without using a tool
 - State is kept in two fields
-  - Machine state `BirdState`: `working | waiting | done | dozing`. `waiting` means stopped on AskUserQuestion / ExitPlanMode / request_user_input. Recomputed from the transcript on every poll
+  - Machine state `BirdState`: `working | waiting | done | dozing`. `waiting` means stopped on AskUserQuestion / ExitPlanMode / request_user_input, or Claude Code's `<config>/sessions/<pid>.json` has `status: "waiting"` (while it shows options or a permission prompt, Claude Code doesn't write that tool_use to the transcript until it's answered). Recomputed on every poll
   - Jev verdict: `pending | asking | not_asking | error` plus the probability of yes. Only for turns whose machine state became done, the last reply text (`assistantText`, last 2000 characters) is sent to TypeSafe's Jev (`POST https://api.typesafe.ai/v1/systemone`, `jev-latest`, one Noul question). The result is tied to the turn (sessionId + time of the last reply) and is not requested again on every poll
 - The "?" is shown when the machine state is waiting, or when the machine state is done / dozing and the Jev verdict is asking. Not shown for pending / error. It disappears when the session goes back to working
 - A bird with a "?" stays in the Garden even when it dozes, instead of going into the nest
@@ -76,14 +76,15 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 - Garden: the bird's name is above the icon. Right below the icon is a bubble of about 15 full-width characters, with an upward tail pointing at the bird. Even when the bubble is shifted left or right, the tail stays right under the icon. The status line, count at the bird's feet, and marks follow below the bubble. Overflow is cut with "…" and the full text shows on hover. Bubbles may overlap each other and birds; bubbles from later turns are drawn on top
 - Perch: the same summary on one line within the row
 - Recent activity: each row gets the same summary for that turn on one line. No extra summary calls. Summaries aren't stored, so events from before a restart have none
-- For birds waiting on a reply, the bubble shows what is being asked, and the status line is just "waiting for your reply · elapsed time"
+- For birds waiting on a reply, the bubble shows what is being asked, and the status line is just "needs reply · elapsed time" (ja: 返事待ち)
   - When stopped on a question tool (AskUserQuestion etc.), the question text from the tool input is shortened and shown as is (works without a key)
+  - While Claude Code is still showing the options (the tool_use isn't in the transcript yet; waiting comes from `sessions/<pid>.json`), there is no question text, so only the "?" is shown and no bubble. No "waiting" event (chirp) fires in that case either
   - When Jev says asking and there is no summary key, the last sentence of the last reply is shown without AI
 
 ## State names
 
 - The finished-turn state is called "done" everywhere: bird state, Recent activity, sound settings buttons, and bird descriptions (43 locales)
-- The waiting state is called "waiting for your reply" everywhere: bird state, Recent activity events, and sound settings buttons (43 locales)
+- The waiting state is called "needs reply" (ja: 返事待ち) everywhere: bird state, Recent activity events, and sound settings buttons (43 locales)
 
 ## Watching
 
@@ -121,4 +122,5 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 ## Distribution
 
 - Put the .app from `bun run tauri build` at `/Applications/tomarigi-desktop.app`
-- Info.plist includes `NSAppleEventsUsageDescription` (the text of the Ghostty automation permission dialog)
+- Info.plist includes `NSAppleEventsUsageDescription` (the text of the Ghostty automation permission dialog). The base text is English (`CFBundleDevelopmentRegion` en); the Japanese text is in `src-tauri/locales/ja.lproj/InfoPlist.strings`, copied into the bundle via `bundle.macOS.files` in `tauri.conf.json`
+- The app is English-based. UI text comes from the locale files (English fallback); the menu bar menu is Japanese only when the system language is Japanese; the debug log screen and mock mode are English only
