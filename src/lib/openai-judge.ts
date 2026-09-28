@@ -1,7 +1,7 @@
-// BYOK の OpenAI API キーで Responses API を呼ぶ構造化出力層。キーは Rust だけが持ち、
-// ここは本文を組んで Rust の openai_responses コマンドに送ってもらう(docs/design.md「BYOK の API キー…」)。
-// Anthropic 版(lib/judge.ts)と同じ JudgeTaskDefinition / JudgeResult を共有し、
-// 設定画面と要約処理から見たエラー意味論を揃える。
+// Structured output layer that calls the Responses API with the BYOK OpenAI API key. Only Rust holds the key;
+// this builds the body and has Rust's openai_responses command send it (docs/design.md "BYOK API keys").
+// Shares JudgeTaskDefinition / JudgeResult with the Anthropic version (lib/judge.ts),
+// so error semantics look the same from the settings screen and the summary code.
 
 import {
   httpFailure,
@@ -12,7 +12,7 @@ import {
 } from "./judge";
 
 
-/** 短い完了要約向け。Responses API と Structured Outputs をサポートする現行 mini モデル。 */
+/** For short completion summaries. The current mini model that supports the Responses API and Structured Outputs. */
 export const OPENAI_JUDGE_MODEL = "gpt-5.4-mini";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 512;
@@ -27,7 +27,7 @@ function fieldToJsonSchema(field: JudgeOutputField): Record<string, unknown> {
 }
 
 
-/** Responses API を Structured Outputs で1回実行する。失敗は例外にせず JudgeResult で返す。 */
+/** Runs the Responses API once with Structured Outputs. Failures are returned as a JudgeResult, not thrown. */
 export async function runOpenAiJudge<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   payload: unknown,
@@ -65,7 +65,7 @@ export async function runOpenAiJudge<V = Record<string, unknown>>(
     try {
       message = (JSON.parse(text) as { error?: { message?: string } }).error?.message;
     } catch {
-      // JSON でないエラーボディには追加情報が無いので status だけを使う。
+      // A non-JSON error body has no extra information, so only status is used.
     }
     return httpFailure(status, message);
   }

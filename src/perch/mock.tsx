@@ -2,8 +2,8 @@ import { useCallback, useRef, useState } from "react";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import type { PerchSource } from "./source";
 
-// mock 用の基準時刻。経過時間(「15秒前」など)は今の時刻との差で出るので、固定の日付にすると何百時間にもなる。
-// 読み込んだ時刻を分単位に丸めて使う(スクリーンショットのたびに秒表示がぶれないように)。
+// Base time for mock. Elapsed time ("15s ago" etc.) is the difference from now, so a fixed date would give hundreds of hours.
+// Uses the load time rounded to the minute (so the seconds don't jitter between screenshots).
 export const BASE = Math.floor(Date.now() / 60_000) * 60_000;
 
 export interface Preset {
@@ -71,7 +71,7 @@ export const PRESETS: Preset[] = [
           toolName: "Edit",
           chicks: [
             { id: "mock/chicks/parent-a/c1", name: "Explore", state: "working", sinceMs: 4_000, toolName: "Grep" },
-            // 長時間 Bash でも working のまま止まる例(許可待ち疑いの推測は廃止済み)
+            // Example that stays working even during a long Bash (the guess that it might be waiting for permission has been removed)
             { id: "mock/chicks/parent-a/c2", name: "code-reviewer", state: "working", sinceMs: 5 * 60_000, toolName: "Bash" },
             { id: "mock/chicks/parent-a/c3", name: "Plan", state: "done", sinceMs: 60_000 },
           ],
@@ -122,21 +122,21 @@ export const PRESETS: Preset[] = [
           sinceMs: 4 * 60_000,
         },
       ];
-      // カード化検証用: 同じ sessionId で複数イベントが並ぶ状況を再現する。
-      // events は「新しい順」で来る前提(lib/sessions.ts の deriveSessionEvents)
+      // For checking cards: reproduces several events lined up for the same sessionId.
+      // Assumes events arrive "newest first" (deriveSessionEvents in lib/sessions.ts)
       const events: SessionEvent[] = [
-        // tomarigi-a: waiting ← started (2件)
+        // tomarigi-a: waiting ← started (2 entries)
         { key: "ev1", sessionId: "s1", project: "tomarigi", snippet: "Add UI mock", type: "waiting", at: BASE - 15_000 },
         { key: "ev2", sessionId: "s1", project: "tomarigi", snippet: "Add UI mock", type: "started", at: BASE - 90_000 },
-        // tomarigi-b: started(1件のみ)
+        // tomarigi-b: started (1 entry only)
         { key: "ev5", sessionId: "s2", project: "tomarigi", snippet: "Check pnpm build", type: "started", at: BASE - 45_000 },
-        // blog: done ← waiting ← started (3件)
+        // blog: done ← waiting ← started (3 entries)
         { key: "ev6", sessionId: "s3", project: "blog", type: "done", at: BASE - 2 * 60_000 },
         { key: "ev7", sessionId: "s3", project: "blog", type: "waiting", at: BASE - 4 * 60_000 },
         { key: "ev8", sessionId: "s3", project: "blog", snippet: "Proofread the article", type: "started", at: BASE - 6 * 60_000 },
-        // figma-adapter: waiting(1件のみ)
+        // figma-adapter: waiting (1 entry only)
         { key: "ev10", sessionId: "s5", project: "figma-adapter", type: "waiting", at: BASE - 7 * 60_000 },
-        // old-project: closed(古め、カード数上限に落ちるか確認できる)
+        // old-project: closed (older; lets you check whether it falls off the card limit)
         { key: "ev11", sessionId: "s7", project: "old-project", type: "closed", at: BASE - 20 * 60_000 },
       ];
       return { sessions, events };
@@ -162,8 +162,8 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // 返事待ちの「?」(lib/jev.ts の needsAnswer)。機械判定の waiting と、done / dozing を
-    // Jev が asking と判定したもの。not_asking・pending の鳥には付かないことも並べて見せる
+    // The needs-reply "?" (needsAnswer in lib/jev.ts). Machine state waiting, and done / dozing
+    // that Jev judged as asking. Also shows side by side that not_asking and pending birds don't get one
     id: "asking",
     label: "Waiting for reply (?)",
     build: () => ({
@@ -184,13 +184,13 @@ export const PRESETS: Preset[] = [
           state: "done",
           sinceMs: 90_000,
           snippet: "Suggest some headlines",
-          // 最近の動きで同じターンの done(aev2)に判定を結び付けるため、at を aev2 と揃える
+          // at matches aev2 so Recent activity ties the verdict to the done of the same turn (aev2)
           reply: { at: BASE - 90_000, text: "I came up with 3 headline ideas. Which one do you want?" },
           ask: { status: "asking", probability: 0.95 },
         },
         {
-          // 要約用のキーが無い状態で Jev が返事待ちと判定した鳥(summary を持たない)。吹き出しには最後の応答文の
-          // 最後の 1 文が出る(箇条書きとコードブロックの後の質問)
+          // A bird Jev judged as needing a reply with no summary key (no summary). Its bubble shows the last sentence
+          // of the last reply (a question after a bullet list and a code block)
           id: "mock/asking/review",
           project: "review-bot",
           slug: "review-bot",
@@ -241,14 +241,14 @@ export const PRESETS: Preset[] = [
         { key: "aev1", sessionId: "mock/asking/tool", project: "tomarigi", type: "waiting", at: BASE - 40_000 },
         { key: "aev2", sessionId: "mock/asking/text", project: "blog", type: "done", at: BASE - 90_000 },
         { key: "aev4", sessionId: "mock/asking/review", project: "review-bot", type: "done", at: BASE - 45_000 },
-        // 「?」の付かない鳥の下には今までどおり印が出る(比較用)
+        // Birds without a "?" still show marks underneath as before (for comparison)
         { key: "aev3", sessionId: "mock/asking/finished", project: "moh-tech-net", type: "done", at: BASE - 2 * 60_000 },
       ],
     }),
   },
   {
-    // 鳥のセリフの吹き出し(perch/bubble.tsx)。質問ツールの質問文・計画の承認・BYOK の要約(summary を
-    // データで持たせるのでキー無しでも出る)。working には出ない。長い文は「…」で切れる
+    // Birds' speech bubbles (perch/bubble.tsx). Question text from a question tool, plan approval, and BYOK summaries (summary is
+    // given as data, so it shows without a key). Not shown while working. Long text is cut with "…"
     id: "bubble",
     label: "Speech bubbles",
     build: () => ({
@@ -319,9 +319,9 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // 見守り中(docs/design.md)。親 tomarigi が 3 つのセッションに作業を任せて待っている。
-    // packages/api は作業中、apps/web は質問ツールで返事待ち(親にも「?」が伝わる)、other-docs は完了
-    // (配下でないのでフォルダ名で呼ぶ)。blog はつながりの無い鳥
+    // Watching (docs/design.md "Watching"). The parent tomarigi handed work to 3 sessions and is waiting.
+    // packages/api is working, apps/web needs a reply via a question tool (the "?" reaches the parent too), other-docs is done
+    // (not under the parent, so it's called by its folder name). blog is a bird with no links
     id: "watching",
     label: "Watching",
     build: () => {
@@ -390,8 +390,8 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // 見守り中で、親と同じフォルダの鳥がいる(docs/design.md「ブロックで囲んだときは名前を 1 つにする」)。
-    // 同じフォルダの鳥は名前を出さない。apps/frontend/web は深い配下(相対パスの長さを見る用)
+    // Watching, with a bird in the same folder as the parent (docs/design.md "Watching").
+    // Birds in the same folder show no name. apps/frontend/web is deep below (to check long relative paths)
     id: "watching-same",
     label: "Watching (same folder)",
     build: () => {
@@ -445,8 +445,8 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // Jev に実際に聞く(ask をデータで持たない)。保存した TypeSafe のキーで判定が動くかを確かめる用。
-    // 判定結果はログ(/tmp/tomarigi-desktop/app-log.txt の [jev])と鳥の「?」に出る
+    // Actually asks Jev (ask isn't given as data). For checking that verdicts work with the saved TypeSafe key.
+    // Results appear in the log ([jev] in /tmp/tomarigi-desktop/app-log.txt) and as the bird's "?"
     id: "jev-live",
     label: "Real Jev verdict",
     build: () => ({
@@ -475,7 +475,7 @@ export const PRESETS: Preset[] = [
 
 export const DEFAULT_PRESET = PRESETS[1];
 
-// 起動時のプリセット。?preset=<id>(TOMARIGI_QUERY="preset=asking" 等)で選べる。スクショ確認用
+// Presets at launch. Choose with ?preset=<id> (TOMARIGI_QUERY="preset=asking" etc.). For checking screenshots
 const INITIAL_PRESET =
   PRESETS.find((p) => p.id === new URLSearchParams(location.search).get("preset")) ?? DEFAULT_PRESET;
 
@@ -489,15 +489,15 @@ export interface MockSource extends PerchSource {
   setData(next: MockData): void;
 }
 
-// scan() は毎ポーリング(3秒ごと)呼ばれる。brokenIds は mock に「壊れたルート」概念が
-// 無いため常に空配列で足りるが、毎回 [] を新規生成すると App.tsx 側の setBrokenIds が
-// 参照の変わった配列を受け取り続け、値が同じでも再レンダーが毎ポーリング起き続けてしまう
-// (Garden の motion/AnimatePresence ツリーに波及する)。モジュール定数として1つに固定する。
+// scan() is called on every poll (every 3 seconds). mock has no concept of "broken roots", so brokenIds can
+// always be an empty array, but creating a new [] each time makes setBrokenIds in App.tsx keep
+// receiving an array with a new reference, so re-renders keep happening on every poll even when the value is the same
+// (spreading into the Garden's motion/AnimatePresence tree). Pinned to a single module constant.
 const NO_BROKEN: string[] = [];
 
-/** PerchSource 実装 + MockPanel が使う操作 API を1つに束ねたインスタンスを作る。
- * main.tsx がこれを1つ生成して App と MockPanel の両方に渡すことで、
- * パネルでの編集が(App.tsx 側の subscribe 経由で)即座に反映される */
+/** Creates one instance bundling the PerchSource implementation and the operation API MockPanel uses.
+ * main.tsx creates one of these and passes it to both App and MockPanel, so
+ * edits in the panel are reflected immediately (through subscribe in App.tsx) */
 export function createMockSource(): MockSource {
   let data: MockData = INITIAL_PRESET.build();
   const listeners = new Set<() => void>();
@@ -505,8 +505,8 @@ export function createMockSource(): MockSource {
   return {
     usesRoots: false,
     async scan() {
-      // 現在の sessions/events をそのまま返す(コピーしない)。setData 以外でこの参照が
-      // 変わることは無いため、App.tsx 側は値が変わらない限り同じ配列参照を受け取り続ける
+      // Return the current sessions/events as is (no copy). This reference never changes except through
+      // setData, so App.tsx keeps receiving the same array reference as long as the value doesn't change
       return { views: data.sessions, brokenIds: NO_BROKEN, events: data.events };
     },
     subscribe(cb) {
@@ -554,8 +554,8 @@ export function MockPanel({ source }: { source: MockSource }) {
     }
   }, [draft, source]);
 
-  // にわのアニメーション確認用: 鳥の出入りを手で起こす。
-  // 追加=上空から入場 / 寝かす=巣箱へ / 起こす=巣箱から / 閉じる=フェード
+  // For checking Garden animations: trigger birds entering/leaving by hand.
+  // Add = enter from above / Sleep = into the nest / Wake = out of the nest / Close = fade
   const mockBirdSeq = useRef(0);
   const addBird = useCallback(() => {
     const n = ++mockBirdSeq.current;
@@ -603,7 +603,7 @@ export function MockPanel({ source }: { source: MockSource }) {
   return (
     <section className="mock-panel">
       <h2>mock controls</h2>
-      {/* にわのアニメーション確認: 出入りイベントを手で起こす */}
+      {/* Checking Garden animations: trigger enter/leave events by hand */}
       <div className="mock-preset-row">
         <button className="small" onClick={addBird}>
           + Add a bird (from the sky)

@@ -6,12 +6,12 @@ import "./perch.css";
 import { realSource } from "./source";
 import { getIdentifier } from "@tauri-apps/api/app";
 
-// 検証用ビルド(bun run build:verify)は背景色を変え、普段使いの版とひと目で見分ける
+// The verification build (bun run build:verify) changes the background color so it can be told apart from the everyday build at a glance
 getIdentifier()
   .then((id) => {
     if (id.endsWith(".verify")) document.documentElement.dataset.build = "verify";
   })
-  .catch(() => {}); // ?mock=1 の静的配信など Tauri の外では何もしない
+  .catch(() => {}); // do nothing outside Tauri, e.g. static serving with ?mock=1
 
 const params = new URLSearchParams(location.search);
 const isMock = params.has("mock");
@@ -19,9 +19,9 @@ const isMock = params.has("mock");
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 
 if (isMock) {
-  // mock ソースを1インスタンスだけ作り、App とパネルの両方に渡す。App.tsx が
-  // source.subscribe 経由でパネルの編集を即時反映するため、双方が同じインスタンスを
-  // 参照している必要がある(App と MockPanel それぞれで作ると別データになってしまう)
+  // Create just one mock source instance and pass it to both App and the panel. App.tsx
+  // reflects panel edits immediately through source.subscribe, so both must refer to the same
+  // instance (creating one each in App and MockPanel would give them separate data)
   const source = createMockSource();
   root.render(
     <React.StrictMode>

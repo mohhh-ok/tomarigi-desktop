@@ -1,7 +1,8 @@
 import type { NativeFile } from "./native-fs";
-// Claude Code transcript (~/.claude/projects/<slug>/<sessionId>.jsonl) の読み取り。
-// 形式は Claude Code の内部仕様で予告なく変わりうるため、パースはこのファイルに
-// 閉じ込める。Codex は lib/codex-transcript.ts の別アダプタで同じ TailInfo に変換する。
+// Reads Claude Code transcripts (~/.claude/projects/<slug>/<sessionId>.jsonl).
+// The format is a Claude Code internal detail and can change without notice, so parsing is
+// confined to this file. Codex is converted to the same TailInfo by a separate adapter in
+// lib/codex-transcript.ts.
 
 export type TailKind =
   | "user"
@@ -15,65 +16,67 @@ export interface TailInfo {
   kind: TailKind;
   toolName?: string;
   events: TailEvent[];
-  cwd?: string; // tail ウィンドウ内で最後に見つかった cwd(表示名の主方式。無ければ projectLabels にフォールバック)
-  // tail 窓内で timestamp が parse できた行(classify() の分類結果とは無関係、last-prompt や
-  // queue-operation 等 state 判定に使わない行種別も含む)の最大 epoch ms。1行も無ければ
-  // undefined。timestamp を持たない行(last-prompt 等)や、ファイルの mtime だけが更新される
-  // 事後追記(ハーネスが死んだ transcript へ数時間後に touch する既知挙動)ではこの値は動かない。
-  // 状態判定(sinceMs)の時間基準は常にこちらを使う(mtime は使わない) — mtime を基準にすると
-  // 事後追記のたびに終了済みセッションが「働く鳥」として再出現する実害があったための対策
+  cwd?: string; // Last cwd found in the tail window (primary source for the display name; falls back to projectLabels if absent)
+  // Max epoch ms over lines in the tail window whose timestamp parses (independent of classify()'s result;
+  // includes line types not used for state, such as last-prompt and queue-operation). undefined if there
+  // are none. It does not move for lines without a timestamp (last-prompt etc.) or for after-the-fact
+  // appends that only bump the file mtime (a known behavior where the harness touches a dead transcript
+  // hours later). State decisions (sinceMs) always use this as the time basis, never mtime — with mtime,
+  // ended sessions actually reappeared as "working birds" after every such append, and this prevents that
   lastEventAt?: number;
-  // SDK(Claude Agent SDK)経由で起動されたセッションかどうかの判定材料。tail 窓内の
-  // user/assistant/attachment/system 行に付く internal フィールドから拾い、最後に見つかった値で
-  // 更新する(cwd と同じ方式)。以前は user 行だけから拾っていたが、`claude -p` は user 行が
-  // 先頭の1本だけで、150KB 前後の transcript では 64KB の tail 窓に入らず取れなかった
-  // (2026-09-25。1ファイル内で値が混ざる例は直近300ファイルに無し)。
-  // 実データで確認した値: 対話(cli)起動は "cli"、Claude Agent SDK 経由(Python)起動は
-  // "sdk-py"、`claude -p` は "sdk-cli"。TS 版 SDK は "sdk-ts" 等になると推定される
-  // ため、呼び出し側(lib/sessions.ts)は完全一致ではなく /^sdk/ で判定する("sdk-cli" だけは
-  // 表示対象から除外する)。
-  // entrypoint フィールドは internal 仕様でバージョン依存(docs/last-prompt-ghost.md 参照、
-  // last-prompt レコードで前提が崩れた前例あり)。tail 窓に entrypoint 付きの行が1本も無ければ undefined
-  // のまま = 呼び出し側は cli(大人)扱いに倒す(安全側フォールバック)
+  // Evidence for whether the session was started via the SDK (Claude Agent SDK). Picked up from the
+  // internal field on user/assistant/attachment/system lines in the tail window, updated with the last
+  // value found (same approach as cwd). It used to be read from user lines only, but `claude -p` has
+  // just one user line at the top, so in transcripts around 150KB it fell outside the 64KB tail window
+  // and could not be read (2026-09-25. No example of mixed values within one file in the latest 300 files).
+  // Values confirmed on real data: interactive (cli) start is "cli", start via the Claude Agent SDK
+  // (Python) is "sdk-py", `claude -p` is "sdk-cli". The TS SDK is presumed to be "sdk-ts" or similar,
+  // so the caller (lib/sessions.ts) matches /^sdk/ rather than an exact value (only "sdk-cli" is
+  // excluded from display).
+  // The entrypoint field is internal and version-dependent (see docs/last-prompt-ghost.md; there is a
+  // precedent where an assumption broke with the last-prompt record). If no line in the tail window has
+  // entrypoint, it stays undefined = the caller treats it as cli (adult) (safe-side fallback)
   entrypoint?: string;
-  // 親 transcript 内で見つかった、ひな(サブエージェント)が「停止した」ことを示す確定信号。
-  // key はひなの識別子(task-notification の task-id、または起動 tool_use の id=meta.json の
-  // toolUseId)、value はその信号が観測された最新のタイムスタンプ(epoch ms)。
-  // 同じ task-id のひなは親が resume でき、その場合は同じ jsonl に書き込みが再開されつつ
-  // 同じ task-id で複数回この信号が現れうるため、常に最新の値で上書きする(lib/sessions.ts の
-  // scanChicks 側で「信号後にひなの最終会話時刻(lastEventAt)が進んでいないか」を見て resume を
-  // 検知し、進んでいれば信号を無効化する)。
-  // ひな自身の transcript を読むとき(includeSidechain:true)にも同じロジックで計算されるが、
-  // 実際に参照するのは親 tail に対してだけ(lib/sessions.ts の deriveState/scanChicks 参照)。
+  // Definitive signals found in the parent transcript that a chick (subagent) has "stopped".
+  // key is the chick's identifier (the task-id of a task-notification, or the id of the launching
+  // tool_use = toolUseId in meta.json), value is the latest timestamp (epoch ms) the signal was seen.
+  // The parent can resume a chick with the same task-id; then writes resume in the same jsonl and this
+  // signal can appear multiple times with the same task-id, so it is always overwritten with the latest
+  // value (scanChicks in lib/sessions.ts detects a resume by checking whether the chick's last
+  // conversation time (lastEventAt) has advanced after the signal, and invalidates the signal if so).
+  // It is computed with the same logic when reading a chick's own transcript (includeSidechain:true),
+  // but it is only actually used for the parent tail (see deriveState/scanChicks in lib/sessions.ts).
   chickSignals: Map<string, number>;
-  // 親が run_in_background で起動したバックグラウンドタスク(Bash 等。中身が `claude -p` でも
-  // 親から見れば同じ)の起動記録。key は task-id(toolUseResult.backgroundTaskId)、value は
-  // 起動確認の tool_result の時刻。完了は同じ task-id の <task-notification> として
-  // chickSignals に入る。起動行は数十秒で tail 窓から外れるため、台帳はスキャンをまたいで
-  // lib/sessions.ts(backgroundTaskCache)が持つ
+  // Launch records of background tasks the parent started with run_in_background (Bash etc.; the same
+  // from the parent's view even if the content is `claude -p`). key is the task-id
+  // (toolUseResult.backgroundTaskId), value is the time of the tool_result confirming the launch.
+  // Completion arrives in chickSignals as a <task-notification> with the same task-id. Launch lines leave
+  // the tail window within tens of seconds, so the ledger is kept across scans by lib/sessions.ts
+  // (backgroundTaskCache)
   backgroundTaskStarts: Map<string, number>;
-  // セッション間メッセージ(Claude Code の cross-session messaging)でやり取りした相手の名前。
-  // 送った側は SendMessage のツール呼び出しの宛先(input.to)、受けた側は isMeta の user 行の
-  // origin.name(無ければ本文の <cross-session-message from-name="…">)。値はその跡の最新時刻。
-  // tail 窓から外れても消えないよう、lib/sessions.ts(peerNameCache)がスキャンをまたいで持つ。
-  // 見守り中(docs/design.md)のつながりの判定に使う
+  // Names of the peers exchanged with via cross-session messages (Claude Code's cross-session messaging).
+  // On the sending side it is the recipient of the SendMessage tool call (input.to); on the receiving side
+  // it is origin.name on the isMeta user line (or <cross-session-message from-name="…"> in the body if
+  // absent). The value is the latest time of that trace. So it doesn't vanish when it leaves the tail
+  // window, lib/sessions.ts (peerNameCache) keeps it across scans.
+  // Used to decide the link for watching (docs/design.md "Watching")
   peerNames: Map<string, number>;
 }
 
-// 分類できた行を時刻付きで並べたもの。遷移イベント再構成(実験機能)専用
+// Classified lines, in time order. Only for reconstructing transition events (experimental feature)
 export interface TailEvent {
   at: number; // epoch ms
   kind: TailKind;
   toolName?: string;
-  // text の中身は kind によって用途が異なる:
-  // - kind === "user": ユーザー発話テキスト(先頭500文字、TEXT_FIELD_LIMIT)。イベントフィードの
-  //   スニペット(lib/sessions.ts の pickSnippet/formatSnippet)の入力
-  // - kind === "tool_use": tool_use の input 概要(JSON.stringify、先頭500文字)。現在は
-  //   直接の消費者なし(旧: 許可待ち判定の入力だったが、LLM 判定機能の削除に伴い撤去。
-  //   表示・将来のデバッグ用途のために引き続き取得しておく)
-  // - kind === "assistant_text": アシスタントの text ブロックを連結したもの(末尾2000文字、
-  //   ASSISTANT_TEXT_LIMIT)。done 読み上げ要約(lib/summarize.ts)と最後の1文フォールバック
-  //   読み上げ(lib/voice.ts)の入力なので、結論が書かれる末尾側を残す
+  // What text holds depends on kind:
+  // - kind === "user": the user's utterance text (first 500 chars, TEXT_FIELD_LIMIT). Input for the
+  //   event feed snippet (pickSnippet/formatSnippet in lib/sessions.ts)
+  // - kind === "tool_use": a summary of the tool_use input (JSON.stringify, first 500 chars). Currently
+  //   has no direct consumer (formerly the input for the permission-wait check, removed along with the
+  //   LLM judgment feature. Still collected for display and future debugging)
+  // - kind === "assistant_text": the assistant's text blocks concatenated (last 2000 chars,
+  //   ASSISTANT_TEXT_LIMIT). It is the input for the done readout summary (lib/summarize.ts) and the
+  //   last-sentence fallback readout (lib/voice.ts), so the tail end, where the conclusion is written, is kept
   text?: string;
 }
 
@@ -85,18 +88,19 @@ interface TranscriptEntry {
   timestamp?: string;
   message?: { role?: string; content?: unknown };
   cwd?: unknown;
-  entrypoint?: unknown; // user/assistant/attachment/system 行に付く internal フィールド。TailInfo.entrypoint のコメント参照
-  content?: unknown; // queue-operation 行の本文(task-notification の生テキスト、文字列)。他の type では未使用
-  // tool_result 系エントリに付く実行メタ情報。ひな完了信号の判定(collectChickSignals)に
-  // だけ使う。isAsync:true は「Agent tool の非同期起動確認」を示し、これは起動直後に
-  // 起動 tool_use と同じ tool_use_id で返ってくる(実データで確認済み)。完了ではないため
-  // 除外する必要がある(除外しないとバックグラウンドひなが起動数秒後に「完了」と誤判定される)
-  // backgroundTaskId は run_in_background で起動したコマンドの起動確認に付く task-id
-  // (TailInfo.backgroundTaskStarts 参照)
+  entrypoint?: unknown; // Internal field on user/assistant/attachment/system lines. See the TailInfo.entrypoint comment
+  content?: unknown; // Body of a queue-operation line (raw task-notification text, a string). Unused for other types
+  // Execution metadata on tool_result entries. Used only for the chick completion signal
+  // (collectChickSignals). isAsync:true means "async launch confirmation of the Agent tool", which comes
+  // back right after launch with the same tool_use_id as the launching tool_use (confirmed on real data).
+  // It is not a completion and must be excluded (otherwise a background chick is misjudged as "done" a few
+  // seconds after launch)
+  // backgroundTaskId is the task-id on the launch confirmation of a command started with run_in_background
+  // (see TailInfo.backgroundTaskStarts)
   toolUseResult?: { isAsync?: boolean; backgroundTaskId?: string };
-  // セッション間メッセージを受けた isMeta の user 行に付く送り主(kind: "peer" と name)
+  // Sender on the isMeta user line that received a cross-session message (kind: "peer" and name)
   origin?: { kind?: unknown; name?: unknown };
-  // 作業中に届いたセッション間メッセージは attachment(queued_command)に同じ origin で記録される
+  // Cross-session messages that arrive mid-work are recorded in an attachment (queued_command) with the same origin
   attachment?: { origin?: { kind?: unknown; name?: unknown } };
 }
 
@@ -104,53 +108,54 @@ interface Block {
   type?: string;
   name?: string;
   text?: string;
-  input?: unknown; // tool_use ブロックの入力(summarizeToolInput の入力概要生成に使う)
-  tool_use_id?: string; // tool_result ブロックが対応する tool_use の id。ひな完了信号の照合に使う
+  input?: unknown; // Input of a tool_use block (used by summarizeToolInput to build the input summary)
+  tool_use_id?: string; // id of the tool_use a tool_result block answers. Used to match chick completion signals
 }
 
-// /clear・Ctrl+C・シャットダウンでセッションが閉じたときに残る user メッセージ。
-// これを見落とすと「入力に無応答 = 立ち往生」と誤判定する
+// user message left behind when a session closes via /clear, Ctrl+C, or shutdown.
+// Missing it leads to misjudging "no response to input = stuck"
 const INTERRUPTED_PREFIX = "[Request interrupted by user";
 
-// ローカルで完結するスラッシュコマンド(/clear, /effort, /model 等)実行時、transcript に
-// isMeta なしの user エントリとしてコマンドエコーが書かれる。assistant の応答は永遠に来ないため、
-// 通常の user 発話として扱うと started のまま「応答待ち」に見え続ける(実測17分「応答なし」表示)。
-// 実データで確認した構造(lib/transcript.ts の変更履歴参照):
-// - コマンド実行結果(stdout)を持つコマンドは、その stdout が isMeta なしの user エントリの
-//   テキストに `<local-command-stdout>` タグとして書かれる(例: /effort, /model)。これは
-//   classify() 側で LOCAL_COMMAND_STDOUT_TAG を含むかで汎用的に検知して closed にする
-// - /clear は例外: stdout が空のため、stdout は user エントリではなく type:"system" の
-//   別エントリ(subtype: "local_command")に書かれ、classify() の user 分岐では届かない。
-//   このケースだけは従来どおり command-name(コマンドエコー自体)を個別リストで判定する
-// スキル/カスタムコマンド起動(例 /event-log)のエコーは本物のプロンプト(started の発火元)で、
-// 後続の user エントリはスキル本文であり `<local-command-stdout>` を含まないため、上記どちらの
-// 判定にも引っかからず通常の user 発話のまま扱われる(実データで確認済み)
+// When a slash command that completes locally (/clear, /effort, /model, etc.) runs, a command echo is
+// written to the transcript as a user entry without isMeta. The assistant's response never comes, so
+// treating it as a normal user utterance keeps it looking like "waiting for a response" in started
+// (measured: shown as "no response" for 17 minutes).
+// Structure confirmed on real data (see the change history of lib/transcript.ts):
+// - For commands with output (stdout), that stdout is written as a `<local-command-stdout>` tag in the
+//   text of a user entry without isMeta (e.g. /effort, /model). classify() detects this generically by
+//   checking for LOCAL_COMMAND_STDOUT_TAG and makes it closed
+// - /clear is the exception: its stdout is empty, so stdout is written not to a user entry but to a
+//   separate type:"system" entry (subtype: "local_command"), which the user branch of classify() never
+//   reaches. Only this case is still judged by the command-name (the command echo itself) via a list
+// The echo of a skill/custom command launch (e.g. /event-log) is a real prompt (what fires started), and
+// the following user entry is the skill body without `<local-command-stdout>`, so it matches neither
+// check above and is treated as a normal user utterance (confirmed on real data)
 const CLOSING_SLASH_COMMANDS = ["/clear"];
 
 const LOCAL_COMMAND_STDOUT_TAG = "<local-command-stdout>";
 
 const TAIL_BYTES = 64 * 1024;
 
-// 巨大な1行(base64 画像等)がファイル末尾付近にあると、TAIL_BYTES(64KB)の窓がその1行の
-// 内部に落ち、窓内にパースできる行(timestamp 付き行)が0本になることがある。実データで
-// 観測した最大行長は 453KB(サブエージェントの Playwright スクショが tool_result に base64
-// で埋まるケース)。この場合 readWindow の lastEventAt が undefined のまま返り、呼び出し側
-// (lib/sessions.ts)が「最終更新が遠い過去」と誤認して done/dozing に倒してしまう実害が
-// あった。対策として、窓内に timestamp 付き行が1本も取れなかったときだけ窓を倍々
-// (64KB→128KB→256KB→…)に広げて読み直す。上限 MAX_TAIL_BYTES は観測した最大行長
-// 453KB の約4.5倍の余裕を見て 2MB とする(実運用で観測される行より確実に大きい窓を
-// 確保しつつ、上限を無くして巨大ファイル全体を読みにいく事態は避ける)。
-// 通常ケース(窓内に timestamp 行がある大多数のファイル)は従来どおり TAIL_BYTES 一発で
-// 済むため、性能は変わらない。
+// When a huge single line (base64 image etc.) sits near the end of the file, the TAIL_BYTES (64KB)
+// window can fall inside that one line, leaving zero parseable lines (lines with a timestamp) in the
+// window. The longest line observed on real data is 453KB (a subagent's Playwright screenshot embedded
+// as base64 in a tool_result). In that case readWindow returned lastEventAt as undefined, and the caller
+// (lib/sessions.ts) actually mistook it for "last updated long ago" and fell to done/dozing.
+// As a fix, only when the window yields no line with a timestamp, the window is doubled
+// (64KB→128KB→256KB→…) and read again. The cap MAX_TAIL_BYTES is 2MB, about 4.5x the observed max
+// line length of 453KB (ensuring a window clearly larger than any line seen in practice, while avoiding
+// reading an entire huge file with no cap).
+// The normal case (the vast majority of files, with timestamp lines in the window) still finishes in one
+// TAIL_BYTES read as before, so performance is unchanged.
 const MAX_TAIL_BYTES = 2 * 1024 * 1024;
 
 /**
- * ファイル末尾だけ読んで「最後に起きたこと」を分類する。
- * includeSidechain: サブエージェント transcript(全行 isSidechain: true)を
- * 読むときに true にする。既定は false(本線 transcript の従来挙動)。
- * 窓内に timestamp 付き行が1本も無かった場合(MAX_TAIL_BYTES 定数のコメント参照)は
- * 窓を倍々に広げて読み直す。ファイルサイズが小さく窓が既にファイル全体をカバーしている
- * 場合はそれ以上広げようがないため1回で確定する。
+ * Reads only the end of the file and classifies "the last thing that happened".
+ * includeSidechain: set to true when reading a subagent transcript (every line isSidechain: true).
+ * Defaults to false (the existing behavior for the main transcript).
+ * If the window has no line with a timestamp (see the comment on the MAX_TAIL_BYTES constant),
+ * the window is doubled and read again. If the file is small and the window already covers the
+ * whole file, it cannot grow further, so the result is settled in one read.
  */
 export async function readTail(
   file: NativeFile,
@@ -168,8 +173,8 @@ export async function readTail(
 }
 
 /**
- * readTail の1窓ぶんの読み取り・分類本体。windowBytes は呼び出し元(readTail)が
- * リトライのたびに広げる、ファイル末尾からの読み取りバイト数。
+ * The body of readTail that reads and classifies one window. windowBytes is the number of bytes read
+ * from the end of the file, which the caller (readTail) grows on each retry.
  */
 async function readWindow(
   file: NativeFile,
@@ -179,7 +184,7 @@ async function readWindow(
   const truncated = file.size > windowBytes;
   const text = await file.slice(Math.max(0, file.size - windowBytes)).text();
   const lines = text.split("\n");
-  if (truncated) lines.shift(); // 先頭行は途中から読んでいる可能性がある
+  if (truncated) lines.shift(); // The first line may have been read from the middle
 
   let kind: TailKind = "unknown";
   let toolName: string | undefined;
@@ -198,23 +203,24 @@ async function readWindow(
     } catch {
       continue;
     }
-    // summary 等 cwd を持たない行も混ざるため、分類の成否に関わらず最後に見つかった値で更新する
+    // Lines without cwd (summary etc.) are mixed in, so update with the last value found regardless of
+    // whether classification succeeds
     if (typeof entry.cwd === "string" && entry.cwd.startsWith("/")) cwd = entry.cwd;
-    // entrypoint は user 行だけでなく assistant/attachment/system 行にも付く(TailInfo.entrypoint
-    // のコメント参照)。cwd と同じく最後に見つかった値で更新する
+    // entrypoint appears not only on user lines but also on assistant/attachment/system lines (see the
+    // TailInfo.entrypoint comment). Like cwd, update with the last value found
     if (typeof entry.entrypoint === "string") entrypoint = entry.entrypoint;
     const at = parseTimestamp(entry.timestamp);
-    // classify() の分類結果(next が null かどうか)とは無関係に、timestamp が parse できた
-    // 全行を対象に最大値を追う(TailInfo.lastEventAt のコメント参照)。state 判定に使わない
-    // 行種別(last-prompt・queue-operation 等)であっても、timestamp を持っている以上は
-    // 「実際に会話があった時刻」の情報源として有効なため取りこぼさない
+    // Track the max over every line whose timestamp parses, regardless of classify()'s result (whether
+    // next is null) (see the TailInfo.lastEventAt comment). Even line types not used for state
+    // (last-prompt, queue-operation, etc.) are a valid source for "when conversation actually happened"
+    // as long as they carry a timestamp, so don't miss them
     if (at !== null) lastEventAt = lastEventAt === undefined ? at : Math.max(lastEventAt, at);
-    // ひな完了信号は classify() の分類(state 判定用の kind/events)とは独立に集める。
-    // queue-operation は classify() が state 判定用には無視する行種別だが、ひな完了信号としては
-    // 唯一の情報源なのでここで別枠に拾う(kind/events を汚さない)
+    // Chick completion signals are collected independently of classify() (the kind/events used for state).
+    // queue-operation is a line type classify() ignores for state, but it is the only source of chick
+    // completion signals, so pick it up separately here (without polluting kind/events)
     if (at !== null) collectChickSignals(entry, at, chickSignals);
-    // run_in_background の起動確認(TailInfo.backgroundTaskStarts のコメント参照)。
-    // サブエージェントの行は classify() と同じ基準で親の台帳に入れない
+    // Launch confirmation of run_in_background (see the TailInfo.backgroundTaskStarts comment).
+    // Subagent lines are kept out of the parent's ledger by the same rule as classify()
     const backgroundTaskId =
       entry.type === "user" && !(entry.isSidechain && !includeSidechain)
         ? entry.toolUseResult?.backgroundTaskId
@@ -222,7 +228,7 @@ async function readWindow(
     if (at !== null && typeof backgroundTaskId === "string" && backgroundTaskId) {
       backgroundTaskStarts.set(backgroundTaskId, at);
     }
-    // セッション間メッセージの跡は classify()(isMeta を読み飛ばす)とは別枠に拾う
+    // Traces of cross-session messages are picked up separately from classify() (which skips isMeta)
     if (at !== null && !(entry.isSidechain && !includeSidechain)) {
       for (const name of collectPeerNames(entry)) {
         peerNames.set(name, Math.max(peerNames.get(name) ?? 0, at));
@@ -249,19 +255,19 @@ async function readWindow(
 
 const CROSS_SESSION_FROM_NAME = /<cross-session-message\b[^>]*\bfrom-name="([^"]+)"/g;
 
-/** SendMessage の宛先の名前から、表示用の " [ref]" を落とす(ListAgents の書式。docs の SendMessage) */
+/** Drops the display " [ref]" from a SendMessage recipient name (the ListAgents format; SendMessage in the docs) */
 function peerNameOf(to: string): string | undefined {
   const name = to.replace(/\s*\[[^\]]*\]\s*$/, "").trim();
-  // "main"(親の会話)とエージェント id(a...-...)はセッション間のつながりではない
+  // "main" (the parent conversation) and agent ids (a...-...) are not cross-session links
   if (!name || name === "main") return undefined;
   return name;
 }
 
 /**
- * 1 行から、セッション間メッセージでやり取りした相手の名前を取る(TailInfo.peerNames)。
- * 送った: assistant の SendMessage の tool_use の input.to。受けた: isMeta の user 行の origin.name
- * (kind が "peer" のとき)、無ければ本文の <cross-session-message from-name="…">。作業中に届いた分は
- * attachment(queued_command)の origin.name。src-tauri の scan_peer_names と同じ規則
+ * Gets, from one line, the names of peers exchanged with via cross-session messages (TailInfo.peerNames).
+ * Sent: input.to of the assistant's SendMessage tool_use. Received: origin.name on the isMeta user line
+ * (when kind is "peer"), otherwise <cross-session-message from-name="…"> in the body. Messages that arrived
+ * mid-work: origin.name of the attachment (queued_command). Same rules as scan_peer_names in src-tauri
  */
 function collectPeerNames(entry: TranscriptEntry): string[] {
   const names: string[] = [];
@@ -291,21 +297,21 @@ const TASK_NOTIFICATION_TAG = "<task-notification>";
 const TASK_ID_PATTERN = /<task-id>([^<]+)<\/task-id>/;
 
 /**
- * queue-operation 行・user(tool_result) 行から、ひな(サブエージェント)が停止したことを
- * 示す確定信号を拾って out に積む(key=ひなの識別子、value=そのタイムスタンプ)。
- * 呼び出し元(readTail)が計算した at(=entry.timestamp)をそのまま使う。
+ * Picks up definitive signals that a chick (subagent) has stopped from queue-operation lines and
+ * user (tool_result) lines, and adds them to out (key = chick identifier, value = its timestamp).
+ * Uses the at (= entry.timestamp) computed by the caller (readTail) as is.
  */
 function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string, number>): void {
   if (entry.type === "queue-operation") {
-    // バックグラウンドひな完了の signal。<task-notification> はエージェントが停止する
-    // たびに発火する仕様(resume すれば同じ task-id で複数回発火しうる)なので、常に最新の
-    // at で上書きする。status の値は見ない(completed 以外でも「そのひなが停止した」信号
-    // として扱う。詳細は TailInfo.chickSignals のコメント参照)。
-    // enqueue/remove/dequeue いずれの operation でも content が入りうる(dequeue は空のことが
-    // 多いが、無ければ何もしないだけで害はない)。
-    // なお Bash 等のバックグラウンドコマンド完了通知(task-notification 自体は Task/Agent 専用
-    // ではない)もここを通る。scanChicks 側ではひなのファイルが無いので無視され、
-    // バックグラウンドタスクの完了として lib/sessions.ts の backgroundTaskCache が使う
+    // Signal that a background chick finished. <task-notification> fires every time an agent stops
+    // (after a resume it can fire multiple times with the same task-id), so always overwrite with the
+    // latest at. The status value is not checked (anything other than completed is also treated as a
+    // "that chick stopped" signal. See the TailInfo.chickSignals comment for details).
+    // content can be present on any of the enqueue/remove/dequeue operations (dequeue is often empty,
+    // but if absent nothing happens, so no harm).
+    // Completion notices of background commands such as Bash (task-notification itself is not specific
+    // to Task/Agent) also pass through here. scanChicks ignores them because there is no chick file, and
+    // backgroundTaskCache in lib/sessions.ts uses them as background task completion
     const content = entry.content;
     if (typeof content === "string" && content.includes(TASK_NOTIFICATION_TAG)) {
       const taskId = content.match(TASK_ID_PATTERN)?.[1];
@@ -314,10 +320,11 @@ function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string
     return;
   }
   if (entry.type === "user") {
-    // 同期呼び出し(Task/Agent のブロッキング呼び出し)完了の signal。tool_use_id がひなの
-    // meta.json の toolUseId と一致する tool_result が来た時刻がそのまま完了時刻になる。
-    // ただし Agent tool の非同期起動確認(toolUseResult.isAsync===true)は同じ tool_use_id で
-    // 起動直後に返るが完了ではないため除外する(TranscriptEntry.toolUseResult のコメント参照)
+    // Signal that a synchronous call (a blocking Task/Agent call) finished. The time a tool_result arrives
+    // whose tool_use_id matches toolUseId in the chick's meta.json is the completion time as is.
+    // However, the Agent tool's async launch confirmation (toolUseResult.isAsync===true) returns right
+    // after launch with the same tool_use_id but is not a completion, so it is excluded (see the
+    // TranscriptEntry.toolUseResult comment)
     if (entry.toolUseResult?.isAsync) return;
     const blocks = asBlocks(entry.message?.content);
     for (const b of blocks) {
@@ -339,19 +346,19 @@ interface Classified {
 }
 
 function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified | null {
-  if (entry.isSidechain && !includeSidechain) return null; // サブエージェントの行は本線の状態に使わない
+  if (entry.isSidechain && !includeSidechain) return null; // Subagent lines are not used for the main line's state
   if (entry.type === "assistant") {
     const blocks = asBlocks(entry.message?.content);
     const toolUse = blocks.findLast((b) => b.type === "tool_use");
     if (toolUse) {
-      // input をそのまま送ると大きくなりうるので先頭500文字に絞る(ユーザー発話用の
-      // text フィールドを流用しているだけで、中身は別物)
+      // Sending input as is can get large, so trim to the first 500 chars (this just reuses the text
+      // field meant for user utterances; the content is something else)
       return { kind: "tool_use", toolName: toolUse.name, text: summarizeToolInput(toolUse.input) };
     }
     if (blocks.some((b) => b.type === "text")) {
       return { kind: "assistant_text", text: extractAssistantText(blocks) };
     }
-    return null; // thinking のみ等は状態を動かさない
+    return null; // thinking only etc. does not change the state
   }
   if (entry.type === "user") {
     if (entry.interruptedByShutdown || isInterruptedMessage(entry.message?.content)) {
@@ -365,13 +372,13 @@ function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified
     }
     const commandName = extractCommandName(blocks);
     if (commandName && CLOSING_SLASH_COMMANDS.includes(commandName)) return { kind: "closed" };
-    // スニペット表示に十分な範囲として先頭500文字に絞る(メモリ上限を兼ねる)
+    // Trim to the first 500 chars, enough for the snippet display (also serves as a memory cap)
     return { kind: "user", text: extractUserText(blocks) };
   }
-  return null; // summary / file-history-snapshot 等は無視
+  return null; // summary / file-history-snapshot etc. are ignored
 }
 
-// TailEvent.text 全体で共有する上限(ユーザー発話・tool_use 入力概要の両方に使う)
+// Limit shared across TailEvent.text (used for both user utterances and tool_use input summaries)
 const TEXT_FIELD_LIMIT = 500;
 
 function extractUserText(blocks: Block[]): string | undefined {
@@ -380,23 +387,24 @@ function extractUserText(blocks: Block[]): string | undefined {
   return parts.join("\n").slice(0, TEXT_FIELD_LIMIT);
 }
 
-// done 読み上げ要約(lib/summarize.ts)の材料として、ユーザー発話より緩めの上限で確保する。
-// ユーザー発話用の500文字は「発言の主旨」には十分だが、要約に足るアシスタント応答の
-// 分量としては短すぎるため別枠にする
+// Material for the done readout summary (lib/summarize.ts), kept with a looser limit than user utterances.
+// The 500 chars for user utterances are enough for "the gist of what was said", but too short as an
+// amount of assistant response to summarize, so it gets its own limit
 const ASSISTANT_TEXT_LIMIT = 2000;
 
-// extractUserText と構造は同じだが、打ち切りは先頭ではなく末尾N文字。用途が「何が完了したか」
-// (要約入力・最後の1文のフォールバック読み上げ)なので、長い応答では結論が書かれる末尾側を
-// 残さないと意味がない(先頭切りだと 2000 文字超の応答で締めの文が丸ごと落ちる)
+// Same structure as extractUserText, but it keeps the last N chars instead of the first. The purpose is
+// "what was finished" (summary input, last-sentence fallback readout), so for long responses the tail end
+// where the conclusion is written must be kept (cutting from the start drops the closing sentence
+// entirely in responses over 2000 chars)
 function extractAssistantText(blocks: Block[]): string | undefined {
   const parts = blocks.filter((b) => b.type === "text" && b.text).map((b) => b.text as string);
   if (parts.length === 0) return undefined;
   return parts.join("\n").slice(-ASSISTANT_TEXT_LIMIT);
 }
 
-// スラッシュコマンド実行時のエコーから `<command-name>` の中身を取り出す。
-// `<command-name>` と `<command-message>` の出現順はコマンドにより異なる(/clear は command-name が
-// 先、/event-log は command-message が先)ため、先頭一致ではなく全文検索で拾う
+// Extracts the content of `<command-name>` from the echo of a slash command.
+// The order of `<command-name>` and `<command-message>` differs by command (/clear has command-name
+// first, /event-log has command-message first), so it searches the whole text instead of matching the start
 const COMMAND_NAME_PATTERN = /<command-name>([^<]*)<\/command-name>/;
 
 function extractCommandName(blocks: Block[]): string | undefined {
@@ -408,8 +416,8 @@ function extractCommandName(blocks: Block[]): string | undefined {
   return undefined;
 }
 
-// tool_use の input を概要文字列化する。JSON.stringify が失敗しうる入力
-// (循環参照等、実データでは想定しないが)は握りつぶす
+// Turns a tool_use input into a summary string. Inputs where JSON.stringify can fail
+// (circular references etc., not expected in real data) are swallowed
 function summarizeToolInput(input: unknown): string | undefined {
   if (input === undefined) return undefined;
   try {
@@ -428,27 +436,27 @@ function isInterruptedMessage(content: unknown): boolean {
 }
 
 function asBlocks(content: unknown): Block[] {
-  // 文字列そのまま来るケース(単純なユーザー発言)は text も詰める。以前は type だけ
-  // 詰めて text を捨てていたため、ユーザー発話の入力(extractUserText)が
-  // このケースで常に空になってしまっていた
+  // When content comes as a plain string (a simple user utterance), fill in text too. Previously only type
+  // was set and text was dropped, so the user utterance input (extractUserText) was always empty in
+  // this case
   if (typeof content === "string") return content ? [{ type: "text", text: content }] : [];
   if (Array.isArray(content)) return content as Block[];
   return [];
 }
 
 /**
- * スラッグ(パスの `/`→`-` 変換)から表示名を得る。tail から cwd が取れた
- * セッションでは使わない(主方式は basename(cwd))。cwd が取れない場合の
- * フォールバックとして、全スラッグ共通の接頭辞を剥がす方式で表示名を作る
- * (例: -Users-x-Dev-gyokan と -Users-x-Dev-ai-tools → gyokan / ai-tools)。
- * 区切りと語中のハイフンが区別できない点・ルート内にアクティブなスラッグが
- * 1つだけだと剥がされない点は既知の限界。
+ * Gets display names from slugs (the path with `/`→`-`). Not used for sessions whose cwd was read from
+ * the tail (the primary approach is basename(cwd)). As a fallback when cwd is unavailable, it builds the
+ * display name by stripping the prefix common to all slugs
+ * (e.g. -Users-x-Dev-gyokan and -Users-x-Dev-ai-tools → gyokan / ai-tools).
+ * Known limits: separators cannot be told apart from hyphens inside words, and nothing is stripped when
+ * only one slug is active under the root.
  */
 export function projectLabels(slugs: string[]): Map<string, string> {
   const map = new Map<string, string>();
   if (slugs.length === 0) return map;
   let prefix = slugs.length === 1 ? "" : commonPrefix(slugs);
-  prefix = prefix.slice(0, prefix.lastIndexOf("-") + 1); // セグメント境界まで戻す
+  prefix = prefix.slice(0, prefix.lastIndexOf("-") + 1); // Back up to a segment boundary
   for (const slug of slugs) {
     const label = slug.slice(prefix.length).replace(/^-+/, "");
     map.set(slug, label || slug);
@@ -457,8 +465,8 @@ export function projectLabels(slugs: string[]): Map<string, string> {
 }
 
 /**
- * パスの最終セグメントを返す(`/` 区切り、末尾スラッシュは無視)。
- * セグメントが空になる入力(例: "/")はそのまま返す。
+ * Returns the last segment of a path (`/`-separated, trailing slashes ignored).
+ * Inputs whose segment would be empty (e.g. "/") are returned as is.
  */
 export function basename(path: string): string {
   const trimmed = path.replace(/\/+$/, "");

@@ -1,14 +1,14 @@
-// 鳥のセリフの吹き出し(docs/design.md「鳥に直近のメッセージを短く要約したセリフを吹き出しで出す」)。
-// にわ(アイコンの下)と止まり木(行の中の 1 行)の両方でこの 1 部品を使う。
+// The bird's speech bubble (docs/design.md "Speech bubbles").
+// This one component is used both in the Garden (under the icon) and in Perch (one line within the row).
 import type { CSSProperties } from "react";
 import { t } from "@/lib/i18n";
 import type { SessionView } from "@/lib/sessions";
 
 /**
- * 吹き出しに出す文。作業中(working)は出さない。
- * - 返事待ち(質問ツール): ツールの入力にある質問文。ExitPlanMode は質問文を持たないので固定の文
- * - 止まったターン(done / dozing): BYOK で要約したセリフ。返事待ちなら何を聞いているか。要約用のキーが無く、
- *   Jev が返事待ちと判定したときは、最後の応答文の最後の 1 文(replyTail。AI を使わない)
+ * Text shown in the bubble. Not shown while working.
+ * - Needs reply (question tool): the question text from the tool input. ExitPlanMode has no question text, so a fixed sentence
+ * - Stopped turn (done / dozing): the line summarized with BYOK. If it needs a reply, what is being asked. When there's no summary key
+ *   and Jev judged it as needing a reply, the last sentence of the last reply (replyTail; no AI)
  */
 export function bubbleText(s: SessionView): string | undefined {
   if (s.state === "waiting") {
@@ -18,7 +18,7 @@ export function bubbleText(s: SessionView): string | undefined {
   return undefined;
 }
 
-/** placement: below はにわのアイコンの下、row は止まり木・最近の動きの行の中 */
+/** placement: below is under the icon in the Garden, row is within a row in Perch / Recent activity */
 export function SpeechBubble({
   text,
   placement,
@@ -26,19 +26,19 @@ export function SpeechBubble({
 }: {
   text: string;
   placement: "below" | "row";
-  // にわの端で枠の内側へ寄せるときの位置(garden.tsx の bubbleShift)
+  // Position when pulled inward at the edge of the garden (bubbleShift in garden.tsx)
   style?: CSSProperties;
 }) {
-  // 長い文は CSS で「…」に切る。マウスを載せると全文(title)
+  // Long text is cut with "…" by CSS. Hovering shows the full text (title)
   if (placement === "below") {
-    // にわ: 「…」で切る本体(overflow: hidden)の外に、しっぽと位置を持つ外枠を置く(perch.css の .speech-bubble-below)
+    // Garden: an outer box holding the tail and position sits outside the body that is cut with "…" (overflow: hidden) (.speech-bubble-below in perch.css)
     return (
       <span className="speech-bubble-below" title={text} style={style}>
         <span className="speech-bubble">{text}</span>
       </span>
     );
   }
-  // 止まり木の行では 2 段目を丸ごと取る外枠に入れ、吹き出し自体は文の長さに合わせる
+  // In Perch rows, put it in an outer box that takes the whole second line, and size the bubble itself to the text
   return (
     <span className="speech-bubble-line">
       <span className="speech-bubble speech-bubble-row" title={text} style={style}>

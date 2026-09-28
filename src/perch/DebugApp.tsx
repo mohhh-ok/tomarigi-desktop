@@ -5,51 +5,51 @@ import { loadPersistedEvents, type SessionEvent } from "@/lib/sessions";
 
 type SaveStatus = "idle" | "saved";
 
-// 保存フィードバック表示を自動的に idle へ戻すまでの時間
+// Time until the save feedback automatically goes back to idle
 const SAVE_FEEDBACK_MS = 2000;
 
-// App.tsx の POLL_MS(スキャンループ間隔)と同じ値。イベントログのポーリング再読込にも
-// 同じ間隔を使う(App.tsx から export を増やさず、ここにローカル定数として複製する)
+// Same value as POLL_MS (scan loop interval) in App.tsx. The event log's polling reload uses
+// the same interval (duplicated here as a local constant instead of adding another export to App.tsx)
 const DEBUG_POLL_MS = 3_000;
 
-// lib/sessions.ts がひな(サブエージェント)由来イベントの project に付ける区切り
-// (`${project} · ${chick.view.name}` 形式)。sessions.ts 側に定数が無いため、生成側の
-// フォーマットとここで手動で合わせている(sessions.ts は別作業中のため触らない)
+// Separator lib/sessions.ts puts in the project of events from chicks (subagents)
+// (`${project} · ${chick.view.name}` format). sessions.ts has no constant for it, so it is kept in sync by hand
+// with the format on the producing side (sessions.ts was left untouched because it was being changed in separate work)
 const CHICK_PROJECT_SEPARATOR = " · ";
 
-// ひな由来の project 値("親 · ひな名")を親プロジェクト名だけに正規化する。
-// 区切りが無ければそのまま返す(親プロジェクト自身のイベント)
+// Normalizes a chick's project value ("parent · chick name") to just the parent project name.
+// Returns it unchanged if there's no separator (events of the parent project itself)
 function parentProject(project: string): string {
   const idx = project.indexOf(CHICK_PROJECT_SEPARATOR);
   return idx === -1 ? project : project.slice(0, idx);
 }
 
-// ファイル名に使えない文字(スペース・/・() 等)を "-" に潰す。
-// 連続した不可視/記号は1つの "-" にまとめ、前後の "-" は削る(例: "base (root)" → "base-root")。
-// サニタイズ後の衝突は許容する(要件)。
+// Collapses characters that can't be used in file names (spaces, /, (), etc.) into "-".
+// Runs of invisible characters/symbols become a single "-", and leading/trailing "-" are removed (e.g. "base (root)" → "base-root").
+// Collisions after sanitizing are accepted (requirement).
 function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
-// App.tsx のヘッダーからページ内ダイアログとして開く(?debug=1 直開き時は showDebug の
-// 初期値が true になるだけで、以降は URL を一切いじらない)。lib/sessions.ts が永続化する
-// イベント判定の発火履歴(lib/fsa.ts の eventLog)をそのまま一覧表示する。実データ・root 設定・
-// BYOK 等は一切触らない。デバッグ画面なので i18n はせず日本語ハードコードで良い
-// (public/_locales は生成物のため触らない)。
+// Opened as an in-page dialog from App.tsx's header (opening directly with ?debug=1 only makes showDebug's
+// initial value true; after that the URL is never touched). Lists as is the persistent history of fired
+// event decisions that lib/sessions.ts stores (eventLog in lib/fsa.ts). Never touches real data, root settings,
+// BYOK, etc. It's a debug screen, so there's no i18n and hardcoded English is fine
+// (public/_locales is generated, so it isn't touched).
 //
-// 開閉自体(showDebug state)は App のスキャンループには一切影響しない。
+// Opening/closing (showDebug state) has no effect at all on App's scan loop.
 export default function DebugApp({ onClose }: { onClose: () => void }) {
   const [events, setEvents] = useState<SessionEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // プロジェクト名ごとの保存結果(ボタンの一時フィードバック用)
+  // Save result per project name (for the button's temporary feedback)
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
   const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  // Escape リスナーを張る document を実体から取るための ref(下の keydown effect 参照)
+  // ref for taking the document to attach the Escape listener to from the real element (see the keydown effect below)
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // 開いている間 DEBUG_POLL_MS ごとに再読込して一覧を自動更新する。key(SessionEvent.key)は
-  // sessionId/at/type 由来で安定しているため、setState での置き換えは React が差分適用し、
-  // 既存行の DOM は保たれる(スクロール位置が飛ばない)
+  // While open, reload every DEBUG_POLL_MS to keep the list up to date. The key (SessionEvent.key) comes from
+  // sessionId/at/type and is stable, so when setState replaces the list React applies the diff and
+  // existing rows keep their DOM (the scroll position doesn't jump)
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -73,7 +73,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
     };
   }, []);
 
-  // Escape で閉じる(ダイアログ的な UI のため)
+  // Close on Escape (because it's a dialog-like UI)
   useEffect(() => {
     const doc = overlayRef.current?.ownerDocument ?? document;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -83,21 +83,21 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
     return () => doc.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  // 新しい順(末尾が最新で永続化されているため、表示用に反転する)
+  // Newest first (persisted with the newest at the end, so reverse it for display)
   const sorted = events ? [...events].sort((a, b) => b.at - a.at) : [];
 
-  // 重複を除いた親プロジェクト名一覧(ひな由来の project は親名に正規化してグルーピングする。
-  // sorted が新しい順のため、直近にイベントがあった順になる)
+  // Deduplicated list of parent project names (chick projects are normalized to the parent name for grouping.
+  // sorted is newest first, so this is in order of most recent event)
   const projects = Array.from(new Set(sorted.map((e) => parentProject(e.project))));
 
-  // 指定した親プロジェクトのイベント(ひな由来イベントも含む)を新しい順で JSON ダウンロード
-  // (~/Downloads/tomarigi-eventlog-<project>.json に落ちる。既存の同名ファイルがあるときは
-  // Chrome と同じく " (1)" 等を付けるため、読み手は該当パターンの mtime 最新を読む。
-  // クリップボードは揮発性・占有の問題があったため使わない)
+  // Downloads the events of the given parent project (including chick events) as JSON, newest first
+  // (lands at ~/Downloads/tomarigi-eventlog-<project>.json. If a file with the same name exists,
+  // " (1)" etc. is appended like Chrome does, so readers should read the newest mtime matching the pattern.
+  // The clipboard isn't used because it is volatile and has ownership problems)
   const saveProject = async (project: string) => {
     const targetEvents = sorted.filter((e) => parentProject(e.project) === project);
-    // WKWebView には <a download> のダウンロードが無いので、Rust 側で ~/Downloads に書く
-    // (tomarigi で Chrome がダウンロードしていた場所と同じ)
+    // WKWebView has no <a download> downloads, so Rust writes to ~/Downloads
+    // (the same place Chrome downloaded to in tomarigi)
     try {
       await invoke("save_download", {
         name: `tomarigi-eventlog-${sanitizeFilename(project)}.json`,
@@ -115,8 +115,8 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    // fixed + z-index で App の上に全画面重ねる。App 側の DOM ツリーはそのまま裏に
-    // 残り続けるので、ここでのマウント/アンマウントは App(スキャンループ)に影響しない
+    // fixed + z-index overlays the whole screen above App. App's DOM tree stays
+    // behind it as is, so mounting/unmounting here doesn't affect App (the scan loop)
     <div className="debug-overlay" ref={overlayRef}>
       <div className="page debug-page">
         <div className="page-header">
@@ -156,8 +156,8 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
               <li key={e.key} className="debug-log-row">
                 <span className="debug-log-time">
                   {new Date(e.at).toLocaleString()}
-                  {/* firedAt: 抑止明け timeout 発火の実発火時刻。at は key 基準(親のターン終了時刻)の
-                      まま不変なので、実際に鳴った(鳴らなかった)時刻はここで別に見せる */}
+                  {/* firedAt: the actual time the timeout fired after the hold was lifted. at stays fixed as the key basis (the parent's
+                      turn end time), so the time it actually sounded (or didn't) is shown separately here */}
                   {e.firedAt !== undefined && (
                     <span className="debug-log-fired-at">
                       (fired at {new Date(e.firedAt).toLocaleString()})
@@ -165,10 +165,10 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                   )}
                 </span>
                 <span className={`debug-log-type debug-log-type-${e.type}`}>{e.type}</span>
-                {/* muted: ひな待ちで抑止されていた done が親の再起動でキャンセルされたもの。
-                    ログには残るが鳴らない(lib/sessions.ts の deriveDoneEvent 参照) */}
+                {/* muted: a done held back while waiting for chicks that was canceled by the parent restarting.
+                    Stays in the log but doesn't sound (see deriveDoneEvent in lib/sessions.ts) */}
                 {e.muted && <span className="debug-log-muted-badge">muted</span>}
-                {/* Jev の判断待ち判定(lib/jev.ts)。確率は yes(返事待ち)の確率 */}
+                {/* Jev's needs-reply verdict (lib/jev.ts). The probability is that of yes (needs reply) */}
                 {e.ask && (
                   <span className="debug-log-ask">
                     jev {e.ask.status}

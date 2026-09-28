@@ -1,9 +1,9 @@
-// public/_locales/**/messages.json の構造検証。
-// 1. 全ロケールが JSON.parse を通ること
-// 2. 全ロケールのキー集合が en(アンカー)と完全一致すること
-// 3. $NAME$ 形式の placeholder トークン数が en と一致すること
+// Structural check of public/_locales/**/messages.json.
+// 1. Every locale passes JSON.parse
+// 2. Every locale's key set matches en (the anchor) exactly
+// 3. The number of $NAME$ placeholder tokens matches en
 //
-// 使い方: node scripts/verify-locales.mjs
+// Usage: node scripts/verify-locales.mjs
 
 import fs from "node:fs";
 import path from "node:path";
@@ -14,8 +14,8 @@ const LOCALES_DIR = path.join(__dirname, "..", "public", "_locales");
 const ANCHOR = "en";
 
 function placeholderTokens(message) {
-  // "$1" 形式ではなく "$NAME$" 形式(Chrome i18n の正式な named placeholder)を数える。
-  // $$ はエスケープされた $ なので除外。
+  // Count "$NAME$" form (Chrome i18n's proper named placeholders), not "$1" form.
+  // $$ is an escaped $, so it's excluded.
   const matches = message.match(/\$[A-Z][A-Z0-9_]*\$/g) ?? [];
   return new Set(matches);
 }
@@ -39,14 +39,14 @@ function main() {
   for (const locale of locales) {
     const file = path.join(LOCALES_DIR, locale, "messages.json");
     if (!fs.existsSync(file)) {
-      errors.push(`${locale}: messages.json が存在しない`);
+      errors.push(`${locale}: messages.json does not exist`);
       continue;
     }
     const raw = fs.readFileSync(file, "utf8");
     try {
       parsed[locale] = JSON.parse(raw);
     } catch (e) {
-      errors.push(`${locale}: JSON.parse 失敗 — ${e.message}`);
+      errors.push(`${locale}: JSON.parse failed — ${e.message}`);
     }
   }
 
@@ -56,41 +56,41 @@ function main() {
 
   for (const locale of locales) {
     const messages = parsed[locale];
-    if (!messages) continue; // 上でJSON.parse失敗を記録済み
+    if (!messages) continue; // JSON.parse failure was already recorded above
 
     const keys = new Set(Object.keys(messages));
     const missing = [...anchorKeys].filter((k) => !keys.has(k));
     const extra = [...keys].filter((k) => !anchorKeys.has(k));
-    if (missing.length > 0) errors.push(`${locale}: キー不足 — ${missing.join(", ")}`);
-    if (extra.length > 0) errors.push(`${locale}: 余分なキー — ${extra.join(", ")}`);
+    if (missing.length > 0) errors.push(`${locale}: missing keys — ${missing.join(", ")}`);
+    if (extra.length > 0) errors.push(`${locale}: extra keys — ${extra.join(", ")}`);
 
     for (const key of anchorKeys) {
-      if (!(key in messages)) continue; // 既にmissingとして記録済み
+      if (!(key in messages)) continue; // already recorded as missing
       const anchorTokens = placeholderTokens(anchor[key].message);
       const tokens = placeholderTokens(messages[key].message);
       if (anchorTokens.size !== tokens.size) {
         errors.push(
-          `${locale}.${key}: placeholder数不一致 (en=${anchorTokens.size} [${[...anchorTokens].join(",")}], ${locale}=${tokens.size} [${[...tokens].join(",")}])`,
+          `${locale}.${key}: placeholder count mismatch (en=${anchorTokens.size} [${[...anchorTokens].join(",")}], ${locale}=${tokens.size} [${[...tokens].join(",")}])`,
         );
       } else {
-        // トークン集合(名前)まで一致しているか。$COUNT$ / $HOURS$ / $MINUTES$ は
-        // 全言語で同じ名前を使う設計なので、名前が違えば実装ミスの可能性が高い。
+        // Whether the token sets (names) match too. $COUNT$ / $HOURS$ / $MINUTES$ are designed
+        // to use the same names in every language, so a different name is most likely an implementation mistake.
         const missingNames = [...anchorTokens].filter((t) => !tokens.has(t));
         if (missingNames.length > 0) {
-          errors.push(`${locale}.${key}: placeholder名不一致 — 期待 ${missingNames.join(", ")}`);
+          errors.push(`${locale}.${key}: placeholder name mismatch — expected ${missingNames.join(", ")}`);
         }
       }
-      // "placeholders" フィールド自体の整合性(content: "$1"等)も確認
+      // Also check the consistency of the "placeholders" field itself (content: "$1" etc.)
       const anchorHasPlaceholders = !!anchor[key].placeholders;
       const hasPlaceholders = !!messages[key].placeholders;
       if (anchorHasPlaceholders !== hasPlaceholders) {
-        errors.push(`${locale}.${key}: placeholders フィールドの有無が en と不一致`);
+        errors.push(`${locale}.${key}: presence of the placeholders field differs from en`);
       } else if (anchorHasPlaceholders) {
         const anchorNames = Object.keys(anchor[key].placeholders).sort();
         const names = Object.keys(messages[key].placeholders).sort();
         if (JSON.stringify(anchorNames) !== JSON.stringify(names)) {
           errors.push(
-            `${locale}.${key}: placeholders キー不一致 (en=${anchorNames.join(",")}, ${locale}=${names.join(",")})`,
+            `${locale}.${key}: placeholders keys mismatch (en=${anchorNames.join(",")}, ${locale}=${names.join(",")})`,
           );
         }
       }

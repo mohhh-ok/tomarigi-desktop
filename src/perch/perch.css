@@ -6,7 +6,8 @@
   box-sizing: border-box;
 }
 
-/* 窓は透明・枠なし(src-tauri の NSPanel)。html/body は透かし、.page が角丸の板として窓いっぱいに広がる */
+/* The window is transparent and frameless (NSPanel in src-tauri). html/body are see-through; .page fills the window
+   as a rounded panel */
 html,
 body {
   height: 100%;
@@ -18,7 +19,7 @@ body {
 body {
   color: #e9e6de;
   font-family: -apple-system, "Hiragino Sans", sans-serif;
-  /* 背景を掴んで窓を動かす(App.tsx の NO_WINDOW_DRAG)ため、背景の文字は選択させない */
+  /* Dragging the background moves the window (NO_WINDOW_DRAG in App.tsx), so background text isn't selectable */
   user-select: none;
   -webkit-user-select: none;
 }
@@ -30,30 +31,32 @@ body {
 .page {
   height: 100%;
   padding: 6px 10px 8px;
-  /* にわタブが残りの縦空間を埋められるよう、ページ全体を縦 flex にする */
+  /* Make the whole page a vertical flex so the Garden tab can fill the remaining vertical space */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  /* 半透明にして、窓の後ろのすりガラス(src-tauri の set_backdrop)越しに後ろをぼかして見せる。圧迫感を減らすためで、
-     後ろを読ませるためではない(docs/design.md のウィンドウモードの項)。濃さは固定 */
+  /* Semi-transparent, so what's behind shows blurred through the frosted glass behind the window (set_backdrop in
+     src-tauri). This is to feel less heavy, not to make the background readable (docs/design.md "Window mode").
+     The opacity is fixed */
   background: rgba(22, 22, 28, 0.75);
   border: 1px solid #2e2c25;
   border-radius: 12px;
 }
 
-/* 検証用ビルド(boot.tsx で data-build="verify")。普段使いの版と見分けるための色 */
+/* Verification build (data-build="verify" in boot.tsx). A color to tell it apart from the everyday build */
 :root[data-build="verify"] .page {
   background: rgba(10, 48, 44, 0.8);
   border-color: #1f6b60;
 }
 
-/* 通常の窓(window-mode.ts)は窓そのものに枠と角があるので、板の枠と角丸を外して窓いっぱいに塗る */
+/* A standard window (window-mode.ts) has its own frame and corners, so drop the panel's border and rounded corners
+   and fill the whole window */
 html[data-window-mode="normal"] .page {
   border: none;
   border-radius: 0;
 }
 
-/* 押すと Ghostty のペインへ移る要素(止まり木の行・イベントカード・にわの鳥・巣箱の一覧) */
+/* Elements that jump to the Ghostty pane when pressed (Perch rows, event cards, garden birds, the nest list) */
 .focusable {
   cursor: pointer;
 }
@@ -65,7 +68,7 @@ html[data-window-mode="normal"] .page {
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* ヘッダー行。ミュート・設定・隠すはどのタブでも見える必要があるため、タブの外(ページ最上部)に置く */
+/* Header row. Mute, settings, and hide must be visible on every tab, so they sit outside the tabs (top of the page) */
 .page-header {
   display: flex;
   align-items: center;
@@ -81,7 +84,7 @@ html[data-window-mode="normal"] .page {
 }
 
 .brand {
-  /* ヘッダーにボタン類を同居させる分、コンパクトにする */
+  /* Compact, since the header also holds the buttons */
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -116,8 +119,8 @@ button:hover {
   padding: 0;
 }
 
-/* 各行の下線が枝。鳥はその上にとまる */
-/* 止まり木の親行。1 段目(.bird-row-main)と吹き出し(.speech-bubble-line)を縦に積む */
+/* Each row's underline is a branch. The bird perches on it */
+/* Perch parent row. Stacks the first line (.bird-row-main) and the speech bubble (.speech-bubble-line) vertically */
 .bird {
   display: block;
   padding: 10px 8px;
@@ -135,10 +138,10 @@ button:hover {
   font-size: 22px;
 }
 
-/* 絵文字前提の .bird-glyph-img は行のベースラインに合わせて縦位置を微調整する。
-   にわの左右反転はカスタムプロパティ(--glyph-flip)経由にしてある(BirdGlyph 参照)。
-   working 演出の各 keyframes も同じ var(--glyph-flip, 1) を都度掛け合わせるため、
-   アニメ中でも静止中でも反転が保たれる */
+/* .bird-glyph-img, which assumes emoji-like glyphs, has its vertical position fine-tuned to the row baseline.
+   The garden's horizontal mirroring goes through a custom property (--glyph-flip) (see BirdGlyph).
+   Each keyframes of the working effect multiplies by the same var(--glyph-flip, 1) every time,
+   so the mirroring is kept both while animating and at rest */
 .bird-glyph-img {
   display: inline-block;
   vertical-align: middle;
@@ -150,14 +153,14 @@ button:hover {
   animation: peck 1.1s ease-in-out infinite;
 }
 
-/* working だけの特殊効果(気を溜めているオーラ)。BirdGlyph と止まり木ひな行の raw img が
-   working 時だけ付ける .bird-working-fx が実体で、この基本ルールはひな行・にわノードに
-   効く(にわノードは peck を外側の .garden-glyph span に持たせているため img 自体には
-   競合する transform アニメが無い)。
-   止まり木の親行(.bird.working .bird-glyph-img)だけは既存の peck(ペック弾み)が
-   同じ img の transform を握っており、CSS Animations は同一 property を複数
-   animation-name で指定しても「後勝ち」で上書きされ加算されない(2本併走できない)ため、
-   下の専用ルールで peck と微振動を 1本の keyframes(bird-peck-shake)に統合している */
+/* A special effect only for working (an aura of gathering energy). The actual hook is .bird-working-fx, which
+   BirdGlyph and the raw img of Perch chick rows add only while working; this base rule applies to chick rows
+   and garden nodes (garden nodes put the peck on the outer .garden-glyph span, so the img itself has no
+   competing transform animation).
+   Only in the Perch parent row (.bird.working .bird-glyph-img) does the existing peck (pecking bounce) own
+   the same img's transform, and CSS Animations don't add up multiple animation-names on the same property:
+   the last one wins and overrides (two can't run side by side). So the dedicated rule below merges the peck
+   and the slight shake into a single keyframes (bird-peck-shake) */
 .bird-working-fx {
   animation: bird-aura-shake 0.6s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
 }
@@ -166,16 +169,16 @@ button:hover {
   animation: bird-peck-shake 1.1s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
 }
 
-/* にわノード(26〜52px)は止まり木(18px)より大きいため、同じ blur だと薄く見える。
-   shake は共通のまま、glow だけ大きめの blur/拡散にした専用 keyframes に差し替える */
+/* Garden nodes (26-52px) are larger than Perch (18px), so the same blur looks faint.
+   shake stays shared; only glow is swapped for dedicated keyframes with a larger blur/spread */
 .garden-node .bird-glyph-img.bird-working-fx {
   animation: bird-aura-shake 0.6s ease-in-out infinite,
     bird-aura-glow-lg 0.9s ease-in-out infinite;
 }
 
-/* prefers-reduced-motion: ちらつき(glow)と微振動(shake)を止め、静的な光だけ残す。
-   止まり木の親行は元々の peck(ペック弾み)自体はこのタスクの対象外の既存挙動なので、
-   ここで新規に殺さず維持したまま揺らぎ/シェイクだけ止める */
+/* prefers-reduced-motion: stop the flicker (glow) and slight shake (shake), leaving only a static glow.
+   For the Perch parent row, the original peck (pecking bounce) is existing behavior outside the scope of this
+   change, so it isn't newly disabled here; only the flicker/shake stops */
 @media (prefers-reduced-motion: reduce) {
   .bird-working-fx {
     animation: none;
@@ -196,7 +199,7 @@ button:hover {
   opacity: 0.55;
 }
 
-/* サブエージェントの行。親の下に控えめにぶら下げる */
+/* Subagent rows. Hang quietly under the parent */
 .chick {
   display: flex;
   align-items: baseline;
@@ -210,7 +213,8 @@ button:hover {
   font-size: 14px;
 }
 
-/* 狭い窓では名前を … で縮め、状態・ツール名・経過時間(と作業中の点)は窓の端で切らない */
+/* In a narrow window, shorten the name with …; the state, tool name, and elapsed time (and the working dot) are not
+   cut off at the window edge */
 .chick .name {
   flex: 0 1 auto;
   min-width: 3em;
@@ -234,13 +238,13 @@ button:hover {
 .name {
   min-width: 8em;
   font-weight: 600;
-  /* スニペット併記で長くなりうるため、PiP 幅(300px)で自動省略する */
+  /* Can get long with the snippet alongside, so truncate automatically at the PiP width (300px) */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* project の後ろに常時付く直近のユーザー発言スニペット。控えめなスタイルにする */
+/* Snippet of the latest user message, always shown after project. Styled subtly */
 .snippet {
   margin-left: 4px;
   font-size: 11px;
@@ -251,13 +255,14 @@ button:hover {
 .status {
   color: #a49f92;
   font-size: 12px;
-  /* 状態ラベル+ツール名+経過時間が幅不足で折り返すと枝(行)の高さが乱れるため1行固定 */
+  /* If state label + tool name + elapsed time wraps for lack of width, the branch (row) height becomes uneven, so keep
+     it to one line */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* working 行だけの脈動ドット。「動いている行 = 生きている」を一目で示す */
+/* Pulsing dot only on working rows. Shows at a glance that "a moving row = alive" */
 .live-dots {
   display: inline-flex;
   gap: 3px;
@@ -288,7 +293,7 @@ button:hover {
   color: #8d887c;
 }
 
-/* 遷移イベントの時系列フィード(実験機能)。PiP 窓は 300x380 と狭いので控えめなサイズにする */
+/* Chronological feed of transition events (experimental). The PiP window is a narrow 300x380, so keep sizes modest */
 .event-feed {
   margin-top: 6px;
   padding-top: 8px;
@@ -312,8 +317,9 @@ button:hover {
   overflow-y: auto;
 }
 
-/* tomarigi の PiP 窓向けだった縦の流し込みを常に当てる(デスクトップ版は窓そのものが小窓)。
-   #tabpanel-* → stage → event-feed → event-feed-list までを flex column で連ね、リストが余った縦を全部食う */
+/* Always apply the vertical flow that was for the PiP window in the tomarigi Chrome extension (in the desktop app the
+   window itself is small). #tabpanel-* → stage → event-feed → event-feed-list are chained as flex columns, and the
+   list takes all the remaining vertical space */
 .perch {
   flex: 1;
   min-height: 0;
@@ -326,9 +332,9 @@ button:hover {
   flex-direction: column;
   min-height: 0;
 }
-/* display: flex を当てると hidden 属性(UA の display: none)が負ける(author 由来の
-   宣言は origin の優先順位で UA を上書きするため、specificity 同点でも勝つ)ので、
-   #tabpanel-garden と同じ理屈で明示的に戻す */
+/* Applying display: flex makes the hidden attribute (the UA's display: none) lose (author declarations
+   override the UA by origin precedence, so they win even at equal specificity), so restore it
+   explicitly, for the same reason as #tabpanel-garden */
 #tabpanel-events[hidden],
 #tabpanel-perch[hidden] {
   display: none;
@@ -352,8 +358,8 @@ button:hover {
 }
 
 
-/* 1セッション = 1カード。同一セッションの過去遷移は出さず、最新イベントだけ見せる。
-   アイコン(左)+ 本文(右)の2カラム。本文は上下 2行(プロジェクト/種別・時刻) */
+/* 1 session = 1 card. Past transitions of the same session aren't shown; only the latest event.
+   Two columns: icon (left) + body (right). The body has 2 lines (project / kind and time) */
 .event-card {
   list-style: none;
   display: flex;
@@ -404,9 +410,9 @@ button:hover {
   margin-top: 1px;
 }
 
-/* 種別を示すアイコン。形状+色(tone-*)+ラベルの三重で意味を運ぶ。SVG は currentColor
-   で塗るため、色は tone-* 側の color 指定で決まる。vertical-align は試聴ボタン内
-   (inline 文脈)で縦中央に来るようにするため */
+/* Icon showing the kind. Meaning is carried three ways: shape + color (tone-*) + label. The SVG is filled with
+   currentColor, so the color comes from the color set by tone-*. vertical-align is so it sits vertically centered
+   inside the preview button (inline context) */
 .event-icon {
   flex-shrink: 0;
   vertical-align: middle;
@@ -430,14 +436,14 @@ button:hover {
 
 .event-label {
   flex: 1;
-  /* PiP 幅(300px)では長いラベルが折り返して行高が開く。種別はアイコン+色が
-     担っているので、ラベルは1行固定ではみ出しを省略してよい */
+  /* At the PiP width (300px), long labels wrap and the row grows taller. The icon + color already convey the kind,
+     so the label can be kept to one line with overflow truncated */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* イベントフィードでのスニペット。止まり木行の .snippet と同じ控えめなトーン */
+/* Snippet in the event feed. Same subtle tone as .snippet in Perch rows */
 .event-snippet {
   margin-left: 3px;
   color: #8d887c;
@@ -446,8 +452,8 @@ button:hover {
 .event-time {
   color: #8d887c;
   font-variant-numeric: tabular-nums;
-  /* 相対時間(「1時間5分」等)が幅不足で折り返すと行高が乱れる。時刻は削らず、
-     縮む側は ellipsis を持つ project / label に任せる */
+  /* If the relative time (e.g. "1h 5m") wraps for lack of width, the row height becomes uneven. Don't shrink the time;
+     leave shrinking to project / label, which have ellipsis */
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -456,8 +462,8 @@ button:hover {
   opacity: 0.6;
 }
 
-/* muted: 抑止 done が親の再起動でキャンセルされ、鳴らなかったもの。.event-closed と
-   同じ淡色化で「通常の done とは違う」を示す。派手なバッジは付けない */
+/* muted: a suppressed done that was canceled by the parent restarting, so it didn't sound. Same dimming as
+   .event-closed, to show it differs from a normal done. No flashy badge */
 .event-muted {
   opacity: 0.6;
 }
@@ -471,7 +477,7 @@ button:hover {
   color: #8d887c;
 }
 
-/* タブ切替。控えめに下線で現在地を示す(背景の淡い切替ではなく下線を採用) */
+/* Tab switcher. Shows the current tab subtly with an underline (an underline rather than a faint background change) */
 .tabs {
   display: flex;
   gap: 4px;
@@ -500,17 +506,18 @@ button:hover {
   border-bottom-color: #d9b06a;
 }
 
-/* 設定タブの末尾。通知系トグル2種(「音で知らせる」「声で読み上げる」)を親、
-   その直下のサブ行(試聴ボタン・音量スライダー)を子として並べる。.roots/.judge と
-   同じトーンの区切り */
+/* End of the settings tab. The two notification toggles ("notify with sound", "read aloud") are parents, and the
+   sub-rows right under them (preview buttons, volume sliders) are children. A separator in the same tone as
+   .roots/.judge */
 .voice-controls {
   margin-top: 28px;
   padding-top: 16px;
   border-top: 1px solid #2a2922;
 }
 
-/* チェックボックス・ラジオの行。説明が 2 行に折り返しても、丸・四角を 1 行目の文字の中心にそろえる
-   (中央ぞろえだと 2 行の真ん中に浮くため)。行の高さを決め打ちし、印の高さとの差の半分だけ下げる */
+/* Checkbox/radio rows. Even when the description wraps to 2 lines, align the circle/square with the center of the
+   first line's text (center alignment would float it between the 2 lines). Fix the line height and push the mark
+   down by half the difference from the mark's height */
 .voice-enable-row,
 .ai-provider-choice {
   --choice-line: 18px;
@@ -534,24 +541,24 @@ button:hover {
   cursor: pointer;
 }
 
-/* 親チェックボックスの行間。直前がもう1つの親行の場合(サブ行を持たない親の直後)と、
-   直前がサブ行の場合(試聴ボタン行の直後に「声で読み上げる」が続く場合)の両方をカバーする。
-   後者を書き漏らすと隣接セレクタが不一致になり、次の親行が前のサブ行に間隔0でくっついて
-   「前グループの子」に見えてしまう(実際に一度この不一致を作り込んだ) */
+/* Spacing between parent checkboxes. Covers both the case where the previous sibling is another parent row (right
+   after a parent with no sub-rows) and the case where it is a sub-row ("read aloud" following the preview button row).
+   Missing the latter makes the adjacent selector not match, so the next parent row sticks to the previous sub-row
+   with zero gap and looks like "a child of the previous group" (this mismatch was actually introduced once) */
 .voice-enable-row + .voice-enable-row,
 .settings-subrow + .voice-enable-row {
   margin-top: 14px;
 }
 
-/* 親チェックボックスの直下にぶら下がるサブ行の共通インデント。試聴ボタン行・音量スライダー行の
-   両方で使い、左インデント量を揃えることで「チェックボックスの子」だと一目で分かるようにする
-   (旧: 試聴ボタンだけ独立した見出しグループに離れていて対応が伝わらなかった) */
+/* Shared indent for sub-rows hanging right under a parent checkbox. Used by both the preview button row and the
+   volume slider row; matching the left indent makes it clear at a glance that they are "children of the checkbox"
+   (previously, only the preview buttons were in a separate heading group and the relationship didn't come across) */
 .settings-subrow {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 8px;
-  padding-left: 24px; /* 親行のチェックボックス幅 + gap に合わせた字下げ */
+  padding-left: 24px; /* Indent matching the parent row's checkbox width + gap */
 }
 
 .sound-preview-row {
@@ -564,15 +571,15 @@ button:hover {
   gap: 4px;
 }
 
-/* 個々のボタン先頭にも小さくスピーカーを添え、単体でも「音が鳴るボタン」だと分かるようにする */
+/* Add a small speaker at the start of each button too, so each one reads as "a button that plays sound" on its own */
 .preview-mic {
   color: #8d887c;
 }
 
-/* 音量スライダー行の共通スタイル。読み上げ(voice)・鳴き声(chirp)の両方で使う
-   (旧: voice-volume-row として読み上げ専用だったが、chirp 側の音量設定追加に合わせて
-   汎用名に整理した。値自体は「読み上げ」「鳴き声」で別のモジュール変数/保存キーに
-   分かれているので、CSS を共有しても設定が混ざることはない) */
+/* Shared style for volume slider rows. Used by both readout (voice) and chirp
+   (previously readout-only as voice-volume-row; renamed to a generic name when the chirp volume setting was
+   added. The values themselves are in separate module variables / storage keys for readout and chirp,
+   so sharing the CSS doesn't mix the settings) */
 .volume-row {
   font-size: 13px;
   color: #d8d3c6;
@@ -585,7 +592,7 @@ button:hover {
 .volume-slider {
   flex: 1;
   min-width: 0;
-  /* .tab-btn.active と同じ琥珀系(#d9b06a)でトーンを揃える */
+  /* Match the tone with the same amber (#d9b06a) as .tab-btn.active */
   accent-color: #d9b06a;
 }
 
@@ -733,13 +740,13 @@ button:hover {
   white-space: nowrap;
 }
 
-/* 既定の監視フォルダ。注意・エラーではないので彩度を持たせない */
+/* The default watched folder. Not a warning or error, so no saturated color */
 .badge-default {
   background: rgba(255, 255, 255, 0.1);
   color: #d4cfc2;
 }
 
-/* 既定の行の × の場所取り(App.tsx の RootManager)。button.small と同じ箱で見えなくする */
+/* Placeholder for the × in the default row (RootManager in App.tsx). Same box as button.small, but invisible */
 .root-remove-placeholder {
   visibility: hidden;
 }
@@ -760,7 +767,7 @@ button.small {
   border-radius: 6px;
 }
 
-/* 設定ビュー中は ⚙ ボタンを active 表示にして「今どこにいるか」を示す。tab の active と同じ琥珀系で統一 */
+/* While in the settings view, show the ⚙ button as active to indicate where you are. Same amber as the active tab */
 button.small.active {
   border-color: #6b6350;
   background: rgba(217, 176, 106, 0.14);
@@ -778,10 +785,10 @@ button.remove {
   font-size: 12px;
 }
 
-/* OpenAI / Anthropic API キー(done 読み上げ要約 + 接続テスト)。共通説明は1回だけ出し、
-   プロバイダー別の操作をその下に並べる。key-row や status 等の記述クラス(.judge-key-row,
-   .judge-status 等)は旧 LLM 判定トグル(JudgeSettings、廃止済み)と共有していた名残の
-   クラス名だが、フラットなクラス名でネスト依存が無いためこのまま流用する */
+/* OpenAI / Anthropic API keys (done readout summary + connection test). The shared description is shown once,
+   with per-provider controls listed below it. Descriptive classes like key-row and status (.judge-key-row,
+   .judge-status, etc.) are leftover class names from sharing with the old LLM verdict toggle (JudgeSettings,
+   removed), but they are flat class names with no nesting dependency, so they are reused as is */
 .ai-keys {
   margin-top: 28px;
   padding-top: 16px;
@@ -856,7 +863,7 @@ button.remove {
   cursor: pointer;
 }
 
-/* 設定のチェックボックス・ラジオの選択色は、.tab-btn.active・音量スライダーと同じ琥珀系にそろえる */
+/* The selected color of settings checkboxes/radios matches the amber of .tab-btn.active and the volume sliders */
 .voice-enable-row input,
 .ai-provider-choice input {
   accent-color: #d9b06a;
@@ -875,7 +882,7 @@ button.remove {
   color: #d97e6a;
 }
 
-/* アイコンセットのプロジェクト個別割り当て(issue #14)。.roots/.ai-keys と同じ区切りトーン */
+/* Per-project icon set assignments (issue #14). Same separator tone as .roots/.ai-keys */
 .icon-sets,
 .window-mode {
   margin-top: 28px;
@@ -906,8 +913,8 @@ button.remove {
   border-bottom: 1px solid #232219;
 }
 
-/* 走っていない(保存済み割り当てのみの)行。.root-row 系と同じ並びだが淡色化して
-   現在走っている行と見分けを付ける(title 属性で slug をホバー確認できる) */
+/* Rows not currently running (saved assignment only). Same layout as the .root-row family, but dimmed to tell them
+   apart from currently running rows (the slug can be checked on hover via the title attribute) */
 .icon-set-row-idle {
   opacity: 0.55;
 }
@@ -935,23 +942,24 @@ button.remove {
   color: #8d887c;
 }
 
-/* にわ(Garden)タブ: セッションを「庭に居る鳥」として自由配置できるビュー(issue #12)。
-   ノードは % 座標で絶対配置するため基準コンテナに確定した高さが要るが、固定 px にすると
-   窓リサイズ(特に PiP はユーザーが自由に伸ばせる)で下に死に領域が出る。そこで
-   .page(main ページ)/ body(PiP)から flex で高さを流し込み、庭は常に「その時の窓の残り全部」
-   を埋める。この rule は unconditional(PiP 限定の media query の外)だが、App.tsx の
-   portalHost(および main ページ側の装着先)が display: contents で透過なので、
-   #tabpanel-garden は main ページでは .page の、PiP では body の直接の flex 子として
-   同じルールで効く(2箇所に書き分ける必要が無い) */
+/* Garden tab: a view where sessions can be freely placed as "birds in the garden" (issue #12).
+   Nodes are absolutely positioned with % coordinates, so the reference container needs a definite height, but a
+   fixed px height leaves dead space at the bottom when the window is resized (PiP in particular can be stretched
+   freely by the user). So the height flows via flex from .page (main page) / body (PiP), and the garden always
+   fills "all of the window that's left at the moment". This rule is unconditional (outside the PiP-only media
+   query), but App.tsx's portalHost (and the mount point on the main page) is transparent with display: contents,
+   so #tabpanel-garden works under the same rule as a direct flex child of .page on the main page and of body in
+   PiP (no need to write it in two places) */
 #tabpanel-garden {
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* にわが鳥の数に合わせて縦に伸びたら(garden.tsx の gardenMinHeight)、一緒に伸びてページをスクロールさせる */
+  /* When the garden grows vertically to fit the number of birds (gardenMinHeight in garden.tsx), grow with it and
+     let the page scroll */
   min-height: auto;
 }
 
-/* display: flex を当てると hidden 属性(UA の display: none)が負けるので明示的に戻す */
+/* Applying display: flex makes the hidden attribute (the UA's display: none) lose, so restore it explicitly */
 #tabpanel-garden[hidden] {
   display: none;
 }
@@ -960,7 +968,8 @@ button.remove {
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* にわが鳥の数に合わせて縦に伸びたら(garden.tsx の gardenMinHeight)、一緒に伸びてページをスクロールさせる */
+  /* When the garden grows vertically to fit the number of birds (gardenMinHeight in garden.tsx), grow with it and
+     let the page scroll */
   min-height: auto;
 }
 
@@ -971,45 +980,45 @@ button.remove {
   margin-top: 4px;
   border: 1px solid #2a2922;
   border-radius: 10px;
-  /* 地面の気配としてごく淡い緑を下端に重ねる。ダッシュボードのパネルに見えないよう
-     やりすぎない (issue #12b: 「にわ」であって「パネル」ではないというフィードバック) */
+  /* Overlay a very faint green at the bottom as a hint of ground. Don't overdo it, so it doesn't look like a
+     dashboard panel (issue #12b: feedback that it's a garden, not a panel) */
   background: radial-gradient(circle at 30% 15%, rgba(255, 255, 255, 0.035), transparent 60%),
     linear-gradient(to top, rgba(80, 100, 50, 0.12), transparent 30%), rgba(26, 25, 18, 0.2);
   overflow: hidden;
 }
 
-/* 1セッション = 1羽の鳥。カードの箱(border/background/padding)は持たず、グリフを
-   主役に縦積みする。ドラッグ可能と分かるよう cursor: grab/grabbing を明示する。
-   left/top は % (transform の translate で中心基準にする) */
+/* 1 session = 1 bird. No card box (border/background/padding); stack vertically with the glyph
+   as the main element. Set cursor: grab/grabbing explicitly so it's clear it can be dragged.
+   left/top are % (centered via the transform's translate) */
 .garden-node {
   position: absolute;
   width: 120px;
   transform: translate(-50%, -50%);
   cursor: grab;
   user-select: none;
-  /* ネイティブ pointer イベントでドラッグするため、ブラウザ標準のスクロール/ズーム
-     ジェスチャに奪われないようにする */
+  /* Dragging uses native pointer events, so don't let the browser's default scroll/zoom
+     gestures take them over */
   touch-action: none;
   transition: transform 0.15s ease;
 }
 
-/* WAAPI(element.animate)がグリフ〜履歴アイコンの入退場アニメーション(飛来/巣箱行き/
-   フェード)だけを担当する内側レイヤー。位置決め/ドラッグ/hover の transform は外側の
-   .garden-node が持つため、ここでは以前 .garden-node が持っていた縦積みレイアウトの
-   みを引き継ぐ */
+/* Inner layer where WAAPI (element.animate) handles only the enter/leave animations of the glyph through the history
+   icon (fly in / go to the nest / fade). The outer .garden-node owns the positioning/drag/hover transforms, so this
+   only takes over the vertical stack layout that .garden-node used to have */
 .garden-node-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* hover はパネルの枠線ではなく、鳥がわずかに浮く動きで示す。
-   位置決めの translate(-50%, -50%) と合成する */
+/* Hover is shown by the bird lifting slightly, not by a panel border.
+   Combined with the positioning translate(-50%, -50%) */
 .garden-node:hover {
   transform: translate(-50%, calc(-50% - 2px));
 }
 
-/* 見守り中のブロックの鳥は、top が鳥の上辺(段の上端。garden.tsx の layoutWatchGroups)。横だけ中央ぞろえ */
+/* For birds in a watching block, top is the bird's top edge (the top of the row; layoutWatchGroups in garden.tsx).
+   Only horizontally centered */
 .garden-node.in-watch-block,
 .garden-bubble-anchor.in-watch-block {
   transform: translateX(-50%);
@@ -1019,8 +1028,8 @@ button.remove {
   transform: translate(-50%, -2px);
 }
 
-/* ドラッグ中は追従優先で transition を切り、わずかに拡大して持ち上げた気配を出す。
-   box-shadow によるパネル的な浮遊表現は使わない */
+/* While dragging, turn off transition so it follows the pointer, and scale up slightly to suggest being lifted.
+   No panel-like floating effect with box-shadow */
 .garden-node.dragging {
   cursor: grabbing;
   z-index: 5;
@@ -1032,13 +1041,13 @@ button.remove {
   opacity: 0.55;
 }
 
-/* 返事待ちでにわに残したうたた寝の鳥は薄くしない(「?」を見落とさせない) */
+/* A dozing bird kept in the garden because it needs a reply isn't dimmed (so the "?" isn't missed) */
 .garden-node.dozing.asking {
   opacity: 1;
 }
 
-/* 退場アニメーション中(leaving)のノードはセル計算・自動配置の対象外で、掴まれると
-   WAAPI アニメーションと位置状態が競合するためドラッグ/クリックを一切受け付けない */
+/* Nodes in their leaving animation are excluded from cell computation and auto placement, and if grabbed the
+   WAAPI animation and position state would conflict, so they accept no drag/click at all */
 .garden-node.leaving {
   pointer-events: none;
 }
@@ -1048,8 +1057,8 @@ button.remove {
   line-height: 1;
 }
 
-/* 羽数・コンテナ実寸に応じたグリフの自動リサイズをなめらかにする(にわ内のみに
-   スコープ。止まり木リスト .bird-glyph-img には影響させない) */
+/* Smooth the automatic glyph resizing based on the number of birds and the container's actual size (scoped to the
+   garden only; doesn't affect .bird-glyph-img in the Perch list) */
 .garden-node .bird-glyph-img {
   transition: width 0.3s ease, height 0.3s ease;
 }
@@ -1068,9 +1077,9 @@ button.remove {
   white-space: nowrap;
 }
 
-/* 状態の行(stage.tsx の StatusParts)。止まり木と同じ部品を、にわの小さい字で中央に並べる */
+/* Status row (StatusParts in stage.tsx). The same component as Perch, centered in the garden's small text */
 .garden-status {
-  /* 中身の幅にする(にわの端で寄せる量を、見えている幅で測るため。garden.tsx の visibleWidth) */
+  /* Size to content (so the shift at the garden edge is measured by the visible width; visibleWidth in garden.tsx) */
   display: inline-flex;
   justify-content: center;
   align-items: baseline;
@@ -1082,15 +1091,16 @@ button.remove {
   white-space: nowrap;
 }
 
-/* 見守り中のブロックの中は 1 マス(garden.tsx の WATCH_CELL_W 96px)ごとに並ぶので、状態の行はマスの幅までにする
-   (はみ出すと隣の鳥の状態の行とつながって 1 行に見える) */
+/* Inside a watching block, birds are laid out per cell (WATCH_CELL_W 96px in garden.tsx), so limit the status row to
+   the cell width (if it overflows, it runs into the neighbor's status row and looks like one line) */
 .garden-node.in-watch-block .garden-status {
   max-width: 88px;
 }
 
-/* にわの状態の行は 2 段。1 段目が状態の語と経過時間、2 段目がツール名(見守り中のブロックの狭いマスでは、1 段目が状態の語、
-   2 段目が経過時間とツール名。stage.tsx の StatusParts の stacked)。
-   2 段目が無い鳥も 1 段目の高さは同じなので、横に並ぶ鳥どうしで 1 段目の位置がそろう */
+/* The garden status row has 2 lines. Line 1 is the state word and elapsed time, line 2 the tool name (in the narrow
+   cells of a watching block, line 1 is the state word and line 2 the elapsed time and tool name; stacked in
+   StatusParts in stage.tsx). Birds without a line 2 have the same line 1 height, so line 1 lines up across birds
+   side by side */
 .garden-status {
   flex-direction: column;
   align-items: center;
@@ -1099,11 +1109,12 @@ button.remove {
 .garden-status-main {
   display: inline-flex;
   align-items: baseline;
-  max-width: inherit; /* .garden-status と同じ上限(% だと中身の幅が基準になって効かない) */
+  max-width: inherit; /* Same limit as .garden-status (% would be relative to the content width and have no effect) */
   white-space: nowrap;
 }
 
-/* 1 段目がマスに入りきらないときは、経過時間を残して状態の語を … で切る(隣の鳥の行とつながって見えないように) */
+/* When line 1 doesn't fit in the cell, keep the elapsed time and cut the state word with … (so it doesn't look joined
+   to the neighbor's row) */
 .garden-status-main > .bird-row-label {
   flex: 0 1 auto;
   min-width: 0;
@@ -1123,8 +1134,8 @@ button.remove {
   font-size: inherit;
 }
 
-/* 足元に並べる直近イベントはアイコンのみ(ラベル・時刻はテキストで出さず title で見せる)。
-   events は新しい順で来るので先頭から HISTORY_LIMIT 件そのまま表示する */
+/* Recent events under the bird are icons only (label and time aren't shown as text; they're in title).
+   events arrive newest first, so the first HISTORY_LIMIT are shown as is */
 .garden-icons {
   display: flex;
   align-items: center;
@@ -1136,12 +1147,13 @@ button.remove {
   display: flex;
 }
 
-/* dozing (長時間 idle) は個別ノードにせず、庭の隅の巣箱 1 個に集約する(issue #12d)。
-   このビューは「箱を持たない」方針(issue #12b)のため、ここも枠・背景は付けず
-   garden-node と同じくグリフを主役にする。opacity を落として主役の座を空ける */
-/* 巣箱は常に押せるよう、鳥(.garden-node。ドラッグ中 1000)と吹き出しの層(.garden-bubble-layer 2000)より手前に出す。
-   鳥が巣箱の場所に来ることはある(ドラッグ・端への寄せ)ので、鳥を避けさせる代わりに巣箱を上に重ねる。
-   重なった鳥・吹き出しの文字が巣箱の後ろに透けないよう、にわに近い色の小さな下地を敷く */
+/* dozing (idle for a long time) sessions aren't individual nodes; they are gathered into a single nest in the corner
+   of the garden (issue #12d). This view follows a "no boxes" policy (issue #12b), so no border/background here
+   either; like garden-node, the glyph is the main element. opacity is lowered to leave the spotlight to others */
+/* The nest sits in front of the birds (.garden-node; 1000 while dragging) and the speech bubble layer
+   (.garden-bubble-layer 2000) so it can always be pressed. Birds can end up where the nest is (dragging, shifting
+   to the edge), so instead of making birds avoid it, the nest is stacked on top. A small backing in a color close
+   to the garden keeps overlapped bird and bubble text from showing through behind the nest */
 .garden-nest {
   position: absolute;
   right: 6px;
@@ -1152,7 +1164,7 @@ button.remove {
   background: rgba(28, 27, 21, 0.88);
 }
 
-/* 巣箱本体はボタン。素のボタン見た目を消し、沈ませておいて hover/展開中は起こす */
+/* The nest itself is a button. Remove the default button look; keep it subdued and bring it up on hover/while open */
 .garden-nest-btn {
   display: flex;
   align-items: baseline;
@@ -1180,8 +1192,8 @@ button.remove {
   font-size: 11px;
 }
 
-/* クリックで開く「巣箱の中」一覧。恒常パネルではなく一時的なポップオーバーなので、
-   ここだけは読めるように背景を持たせる */
+/* The "inside the nest" list opened by clicking. It's a temporary popover, not a permanent panel, so only this
+   gets a background to be readable */
 .garden-nest-list {
   position: absolute;
   right: 0;
@@ -1196,7 +1208,7 @@ button.remove {
   border: 1px solid #3a382f;
   border-radius: 8px;
   background: #211f18;
-  z-index: 6; /* ドラッグ中ノード(z-index: 5)より上 */
+  z-index: 6; /* Above the node being dragged (z-index: 5) */
 }
 
 .garden-nest-row {
@@ -1254,13 +1266,14 @@ button.remove {
   }
 }
 
-/* working 演出: 気を溜めているオーラ。drop-shadow は透過 WebP のアルファ輪郭に追従する
-   (box-shadow・背景 radial-gradient は矩形/背景基準になり輪郭を追わないため不可)。
-   金(gold)と白(white-hot)の 2 層を、不揃いな % 刻み(0/30/55/80/100)で別々のタイミングに
-   ピークさせて「同じ filter アニメ 1本」でも 2 層が別周期でちらついて見えるようにしてある
-   (2本の animation-name で同じ filter を同時に握らせても後勝ちで加算されないため、
-   1本の keyframes に両層をまとめるのが必須。live-dots の脈動(#e8a13d)とは色相が近いが、
-   スプライトの輪郭を光らせる drop-shadow と行末の小さいドットなので位置と形状で見分けは付く) */
+/* working effect: an aura of gathering energy. drop-shadow follows the alpha outline of the transparent WebP
+   (box-shadow and a background radial-gradient are rectangle/background based and don't follow the outline, so
+   they can't be used). The two layers, gold and white (white-hot), peak at different times on uneven % steps
+   (0/30/55/80/100), so even with "one filter animation" the two layers appear to flicker on different cycles
+   (two animation-names holding the same filter at once don't add up; the last one wins, so putting both
+   layers in one keyframes is required. The hue is close to the live-dots pulse (#e8a13d), but one is a
+   drop-shadow lighting the sprite's outline and the other a small dot at the end of the row, so position and
+   shape tell them apart) */
 @keyframes bird-aura-glow {
   0%,
   100% {
@@ -1277,7 +1290,7 @@ button.remove {
   }
 }
 
-/* にわノード(26〜52px)用。base の bird-aura-glow と同じリズムで blur/拡散だけ大きくした版 */
+/* For garden nodes (26-52px). Same rhythm as the base bird-aura-glow, with only the blur/spread enlarged */
 @keyframes bird-aura-glow-lg {
   0%,
   100% {
@@ -1294,9 +1307,9 @@ button.remove {
   }
 }
 
-/* working 演出: 微振動(ゴゴゴ)。±0.5〜1px の小刻みな translate。glow(0.9s)・peck(1.1s)と
-   周期をずらして単調な同期に見えないようにしている。scaleX(var(--glyph-flip, 1)) を
-   毎ステップ掛け直すことで、にわの左右反転をアニメ中も維持する */
+/* working effect: a slight rumbling shake. Small translates of ±0.5-1px. The period is offset from glow (0.9s) and
+   peck (1.1s) so they don't look monotonously in sync. Re-applying scaleX(var(--glyph-flip, 1)) on
+   every step keeps the garden's horizontal mirroring during the animation */
 @keyframes bird-aura-shake {
   0%,
   100% {
@@ -1316,10 +1329,9 @@ button.remove {
   }
 }
 
-/* working 演出: 止まり木の親行専用。既存の peck(ペック弾み。50% で translateY(2px)
-   rotate(8deg) がピーク)はそのまま残しつつ、bird-aura-shake と同じ振幅の微振動を
-   全ステップに織り込んで 1本の keyframes に統合したもの(理由は上の .bird-working-fx
-   コメント参照) */
+/* working effect: only for the Perch parent row. Keeps the existing peck (pecking bounce; peaks at 50% with
+   translateY(2px) rotate(8deg)) as is, and weaves a slight shake with the same amplitude as bird-aura-shake into
+   every step, merged into a single keyframes (see the .bird-working-fx comment above for why) */
 @keyframes bird-peck-shake {
   0%,
   100% {
@@ -1342,7 +1354,7 @@ button.remove {
   }
 }
 
-/* mock mode (?mock=1)。MockPanel(entrypoints/perch/mock.tsx)専用 */
+/* mock mode (?mock=1). Only for MockPanel (entrypoints/perch/mock.tsx) */
 .mock-panel {
   margin-top: 16px;
   padding: 12px;
@@ -1403,14 +1415,14 @@ button.remove {
   font-size: 11px;
 }
 
-/* debug mode (?debug=1 直開き、または App ヘッダーのデバッグボタン)。
-   DebugApp は App の上に重ねるページ内ダイアログ(全画面オーバーレイ)として描画するだけで、
-   App 自体のスキャンループ・PiP には触れない。
-   凝った見た目は不要、既存のトーン(暗背景・淡色ノート)に合わせるだけ */
+/* debug mode (opened directly with ?debug=1, or via the debug button in the App header).
+   DebugApp is only drawn as an in-page dialog (full-screen overlay) on top of App,
+   and doesn't touch App's own scan loop or PiP.
+   No elaborate look needed; just match the existing tone (dark background, faint notes) */
 .debug-overlay {
   position: fixed;
   inset: 0;
-  z-index: 3000; /* にわの吹き出しの層(2000)・巣箱(2100)より上 */
+  z-index: 3000; /* Above the garden's speech bubble layer (2000) and nest (2100) */
   overflow-y: auto;
   background: #16161c;
 }
@@ -1482,14 +1494,14 @@ button.remove {
   word-break: break-all;
 }
 
-/* firedAt: timeout 発火の実発火時刻。at(親のターン終了時刻)の補足情報なので控えめに */
+/* firedAt: the actual time the timeout fired. Supplementary to at (the parent's turn end time), so kept subtle */
 .debug-log-fired-at {
   margin-left: 4px;
   opacity: 0.6;
   font-size: 11px;
 }
 
-/* Jev の判断待ち判定(lib/jev.ts)。status と yes の確率 */
+/* Jev verdict on needs reply (lib/jev.ts). status and the probability of yes */
 .debug-log-ask {
   padding: 1px 6px;
   border-radius: 4px;
@@ -1498,8 +1510,8 @@ button.remove {
   font-size: 10px;
 }
 
-/* muted: 鳴らなかった done の印。error/warn 系のバッジ(.badge-warn 等)と混ざらないよう
-   彩度を持たせず、グレーの控えめなピルにする */
+/* muted: marker for a done that didn't sound. To avoid confusion with error/warn badges (.badge-warn etc.),
+   no saturated color; a subtle gray pill */
 .debug-log-muted-badge {
   padding: 1px 6px;
   border-radius: 4px;
@@ -1508,7 +1520,7 @@ button.remove {
   font-size: 10px;
 }
 
-/* プロジェクト別ファイル保存(~/Downloads/tomarigi-eventlog-*.json) */
+/* Per-project file save (~/Downloads/tomarigi-eventlog-*.json) */
 .debug-save-list {
   display: flex;
   flex-wrap: wrap;
@@ -1522,29 +1534,31 @@ button.remove {
   border-radius: 6px;
 }
 
-/* mock モード(TOMARIGI_MOCK=1)は窓の下に mock パネルが続く。面を窓の残りへ流し込むと
-   パネルと取り合って潰れるので、面は固定の高さにして窓全体をスクロールさせる */
+/* In mock mode (TOMARIGI_MOCK=1), the mock panel follows below in the window. Flowing the surface into the rest of
+   the window makes it fight the panel for space and get squashed, so give the surface a fixed height and scroll the
+   whole window */
 .page:has(.mock-panel) > * {
   flex-shrink: 0;
 }
 
-/* 最低 300px。窓が高ければ(通常の窓で最大化したとき)mock パネルの上の残りを使う */
+/* At least 300px. If the window is tall (maximized as a standard window), use the space left above the mock panel */
 .page:has(.mock-panel) #tabpanel-garden,
 .page:has(.mock-panel) #tabpanel-perch,
 .page:has(.mock-panel) #tabpanel-events {
   flex: 1 0 300px;
 }
 
-/* 無効(読み上げオフ)の音量スライダーと値を薄くする。macOS は窓が前面でないとき有効/無効を同じ灰色で描くので、
-   窓の状態に関係なく無効だと分かるようにする */
+/* Dim the disabled (readout off) volume slider and its value. macOS draws enabled and disabled in the same gray when
+   the window isn't in front, so make it clear it's disabled regardless of the window state */
 .volume-slider:disabled,
 .volume-row:has(.volume-slider:disabled) .volume-value {
   opacity: 0.4;
 }
 
-/* 止まり木と最近の動きの中身。窓を広げたときに行が横に間延びしないよう、吹き出しの 2 段目が読める幅(720px)で
-   止めて中央に置く。にわは幅いっぱいのまま。タブ(ヘッダー)は、にわと共通なので窓幅のまま(タブを切り替えるたびに
-   タブの位置が動かないように。設定画面と同じ扱い)。浮遊窓(340px)はこの幅より狭いので見た目は変わらない */
+/* Content of Perch and Recent activity. So rows don't stretch out horizontally when the window is widened, cap at a
+   width where the speech bubble's second line is readable (720px) and center it. Garden stays full width. The tabs
+   (header) are shared with Garden, so they stay at window width (so the tabs don't move each time you switch tabs;
+   same as the settings screen). The floating window (340px) is narrower than this, so it looks the same */
 .stage-perch,
 .stage-events {
   width: 100%;
@@ -1552,15 +1566,16 @@ button.remove {
   margin-inline: auto;
 }
 
-/* 設定画面の中身。通常の窓で最大化しても入力欄やスライダーが横に間延びしないよう幅を抑え、
-   窓の中央に置く(ヘッダーは窓幅のまま)。浮遊窓はこの幅より狭いので見た目は変わらない */
+/* Content of the settings screen. Width is capped so inputs and sliders don't stretch out even when maximized as a
+   standard window, and centered in the window (the header stays at window width). The floating window is narrower
+   than this, so it looks the same */
 .settings-panel {
   width: 100%;
   max-width: 560px;
   margin-inline: auto;
 }
 
-/* BirdGlyph の外枠。「?」バッジ(.bird-ask-badge)を鳥の右上に重ねるための基準 */
+/* Outer frame of BirdGlyph. The reference for overlaying the "?" badge (.bird-ask-badge) at the bird's top right */
 .bird-glyph {
   position: relative;
   display: inline-block;
@@ -1568,15 +1583,16 @@ button.remove {
   line-height: 0;
 }
 
-/* 返事待ちの鳥(lib/jev.ts の needsAnswer)。全アイコンセット共通。鳥の大きさに合わせて
-   直径を決め(--glyph-size は BirdGlyph が渡す)、小さい止まり木でも読める下限を持たせる */
+/* Birds that need a reply (needsAnswer in lib/jev.ts). Shared by all icon sets. The diameter follows the bird size
+   (--glyph-size is passed by BirdGlyph), with a minimum that stays readable in the small Perch rows */
 .bird-ask-badge {
   --ask-size: max(10px, calc(var(--glyph-size, 18px) * 0.42));
-  /* 鳥の絵に重ねる幅。小さい鳥(止まり木の 18px)ではほぼ重ねず顔を隠さない。大きい鳥(にわ)では
-     少し重ねて鳥に付いた印に見せる */
+  /* How much it overlaps the bird image. On small birds (18px in Perch) it barely overlaps so it doesn't hide the face.
+     On large birds (garden) it overlaps a little so it reads as a mark attached to the bird */
   --ask-overlap: clamp(1px, calc((var(--glyph-size, 18px) - 20px) * 0.3), calc(var(--ask-size) * 0.35));
   position: absolute;
-  /* 上には出さない(にわの上端に置かれた鳥でバッジが切れるため)。代わりに右へはみ出させる */
+  /* Don't stick out upward (the badge gets cut off for birds at the top edge of the garden). Stick out to the right
+     instead */
   top: 0;
   right: calc(var(--ask-overlap) - var(--ask-size));
   width: var(--ask-size);
@@ -1591,14 +1607,14 @@ button.remove {
   text-align: center;
 }
 
-/* 止まり木の行は「?」が鳥の右へはみ出す分だけ名前との間を空ける。「?」の無い行も同じだけ空け、
-   名前の頭を揃える */
+/* Perch rows leave space before the name equal to how far the "?" sticks out to the right of the bird. Rows without
+   a "?" leave the same space, so the names start at the same position */
 .bird-row-main > .bird-glyph {
   margin-right: 4px;
 }
 
-/* 鳥のセリフの吹き出し(perch/bubble.tsx)。にわではアイコンの下、止まり木では行の中の 1 行。
-   長い文は「…」で切り、マウスを載せると全文(title) */
+/* The bird's speech bubble (perch/bubble.tsx). Below the icon in the garden; one line within the row in Perch.
+   Long text is cut with "…", and hovering shows the full text (title) */
 .speech-bubble {
   display: block;
   overflow: hidden;
@@ -1613,10 +1629,11 @@ button.remove {
   line-height: 1.35;
 }
 
-/* にわ: 全角 15 字ほどで切る。吹き出しの足場(.garden-bubble-anchor = 鳥と同じ位置・大きさ)の中で、
-   アイコンの下辺(--bubble-top。garden.tsx が測って渡す)のすぐ下、状態の行との間の空き(.garden-bubble-room)に出す。
-   文を「…」で切る .speech-bubble は overflow: hidden でしっぽまで切ってしまうので、外枠(これ)にしっぽと影を持たせる。
-   影は filter の drop-shadow にして、本体としっぽを 1 つの形として落とす(つなぎ目に影の線を出さない) */
+/* Garden: cut at about 15 full-width characters. Inside the bubble anchor (.garden-bubble-anchor = same position and
+   size as the bird), shown right below the icon's bottom edge (--bubble-top, measured and passed by garden.tsx), in the
+   space before the status row (.garden-bubble-room). .speech-bubble, which cuts text with "…", would also clip the
+   tail with overflow: hidden, so the outer frame (this) carries the tail and shadow. The shadow is a filter
+   drop-shadow, cast by the body and tail as a single shape (no shadow line at the seam) */
 .speech-bubble-below {
   position: absolute;
   top: calc(var(--bubble-top, 0px) + 7px);
@@ -1628,8 +1645,9 @@ button.remove {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
 }
 
-/* しっぽは上辺から上向きにとがらせ、先端がアイコンを指す。枠の内側に寄せたとき(garden.tsx の bubbleShift)も
-   --tail-left / --tail-right でアイコンの真下に残す。本体と 1px 重ねてつなぎ目の隙間を消す */
+/* The tail points upward from the top edge, with its tip pointing at the icon. Even when shifted inside the frame
+   (bubbleShift in garden.tsx), --tail-left / --tail-right keep it directly below the icon. It overlaps the body by 1px
+   to remove the gap at the seam */
 .speech-bubble-below::after {
   content: "";
   position: absolute;
@@ -1642,14 +1660,16 @@ button.remove {
   border-bottom: 7px solid #ece6d6;
 }
 
-/* 吹き出しのある鳥の、アイコンと名前の間の空き。吹き出しの高さ + アイコンとの間(garden.tsx の BUBBLE_ROOM_PX と同じ) */
+/* For birds with a speech bubble, the space between the icon and the name. Bubble height + gap to the icon (same as
+   BUBBLE_ROOM_PX in garden.tsx) */
 .garden-bubble-room {
   flex: none;
   height: 26px;
 }
 
-/* にわの吹き出しの層。鳥・名前(.garden-node)より上に重ね、吹き出しの文と「…」をほかの鳥の名前に隠させない。
-   鳥のドラッグ・クリックを妨げないよう層そのものは押せない。吹き出しだけマウスを載せて全文(title)を見られる */
+/* The garden's speech bubble layer. Stacked above the birds and names (.garden-node), so other birds' names don't hide
+   bubble text or the "…". The layer itself can't be pressed, so it doesn't block dragging/clicking birds. Only the
+   bubbles can be hovered to see the full text (title) */
 .garden-bubble-layer {
   position: absolute;
   inset: 0;
@@ -1657,7 +1677,8 @@ button.remove {
   pointer-events: none;
 }
 
-/* 吹き出しの足場。鳥のノード(.garden-node)と同じ中心・幅・高さ(garden.tsx が left/top/height を渡す) */
+/* Speech bubble anchor. Same center, width, and height as the bird node (.garden-node) (garden.tsx passes
+   left/top/height) */
 .garden-bubble-anchor {
   position: absolute;
   width: 120px;
@@ -1668,7 +1689,8 @@ button.remove {
   pointer-events: auto;
 }
 
-/* 止まり木: 名前の頭(鳥 18px + 右の空き 4px + 行の gap 10px)にそろえた 2 段目に 1 行で出す */
+/* Perch: shown as one line on a second line aligned with the start of the name (bird 18px + right space 4px + row gap
+   10px) */
 .speech-bubble-line {
   display: block;
   min-width: 0;
@@ -1682,12 +1704,14 @@ button.remove {
   vertical-align: top;
 }
 
-/* 止まり木の親行の 1 段目。幅が足りないときは依頼の抜き出し → ツール名 → 名前の順に削る。
-   抜き出しとツール名は基準幅 0 で伸びる側に置き、名前・状態の語・経過時間が元の幅に収まった残りだけをもらう
-   (上限は文の長さ)。残りはツール名が先に取る(伸びる重みが大きい)。ツール名は入りきらなければ丸ごと隠れる。
-   名前は残りが無くなってから縮む。ツール名を名前と同じ基準幅(文の長さ)で並べると、隠れたツール名が幅を取ったまま
-   名前と一緒に縮み、状態の側に余白があるのに名前が「packa…」まで切れた。
-   状態の語と経過時間は縮めない。flex-shrink の重みの差では WKWebView で名前も同時に縮んだため使わない */
+/* First line of the Perch parent row. When width runs short, trim in this order: request excerpt → tool name → name.
+   The excerpt and tool name have a basis of 0 and grow, getting only what's left after the name, state word, and
+   elapsed time fit at their natural widths (capped at the text length). The tool name takes the remainder first (larger
+   grow weight). If the tool name doesn't fit, it is hidden entirely. The name shrinks only once nothing is left.
+   When the tool name had the same basis as the name (the text length), the hidden tool name kept taking width and
+   shrank together with the name, cutting the name down to "packa…" even though there was space on the state side.
+   The state word and elapsed time don't shrink. Differences in flex-shrink weight aren't used because in WKWebView
+   the name shrank at the same time */
 .bird-row-name {
   flex: 0 1 auto;
   min-width: 3em;
@@ -1697,25 +1721,27 @@ button.remove {
   visibility: hidden;
 }
 
-/* 依頼の抜き出しはツール名より先に幅をもらう(何をやらせているセッションかの方が大事。ツール名は余りで出す) */
+/* The request excerpt gets width before the tool name (what the session was asked to do matters more; the tool name
+   uses what's left) */
 .bird-row-snippet {
   flex: 100 1 0;
   min-width: 0;
   max-width: max-content;
-  margin-left: -6px; /* 名前との間は行の gap(10px)より詰める(以前の名前の中の並びと同じ見え方) */
+  margin-left: -6px; /* Tighter than the row gap (10px) next to the name (looks the same as when it used to sit inside the name) */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 状態の語と経過時間は縮めない。状態の語で行の右側へ寄せる */
+/* The state word and elapsed time don't shrink. The state word pushes them to the right side of the row */
 .bird-row-label,
 .bird-row-since {
   flex: none;
   overflow: visible;
 }
 
-/* 止まり木の行では、名前が入りきらないときだけ状態の語を最後に縮めて … で切る(名前を優先する) */
+/* In Perch rows, only when the name doesn't fit, shrink the state word last and cut it with … (the name takes
+   priority) */
 .bird-row-main > .bird-row-label {
   flex: 0 1000 auto;
   min-width: 2em;
@@ -1728,20 +1754,20 @@ button.remove {
   margin-left: auto;
 }
 
-/* 止まり木の行のツール名(上の .bird-row-name のコメント)。にわの状態の行(.garden-status)は今までどおり */
+/* Tool name in Perch rows (see the .bird-row-name comment above). The garden status row (.garden-status) is unchanged */
 .bird-row-main > .bird-row-tool {
   flex: 1 1 0;
   max-width: max-content;
 }
 
-/* 行の gap を詰め、状態の語・ツール名・経過時間を 1 続きに見せる */
+/* Tighten the row gap so the state word, tool name, and elapsed time read as one run */
 .bird-row-main > .bird-row-tool,
 .bird-row-main > .bird-row-since {
   margin-left: -10px;
 }
 
-/* ツール名は単語の途中で切らず、全部が収まらなければ丸ごと隠す。幅 0 の先頭要素の横に入らなければ
-   2 行目へ折り返し、1 行ぶんの高さで切られて見えなくなる */
+/* The tool name isn't cut mid-word; if it doesn't fit entirely, it is hidden entirely. If it doesn't fit next to the
+   zero-width leading element, it wraps to a second line and is clipped at one line's height, so it isn't visible */
 .bird-row-tool {
   display: flex;
   flex-wrap: wrap;
@@ -1758,23 +1784,26 @@ button.remove {
   height: 1lh;
 }
 
-/* 最近の動きの行の 2 段目。カードの本文がすでに字下げされているので、止まり木の字下げは付けない */
+/* Second line of Recent activity rows. The card body is already indented, so the Perch indent isn't applied */
 .event-card-body .speech-bubble-line {
   padding-left: 0;
 }
 
-/* 見守り中でつながっている相手の行。先に起動した方(親)の下に字下げして並べる(stage.tsx の orderByWatchLinks)。
-   ひなの行(.chick)と同じ字下げで「親にぶら下がる」ことを見せる。区切り線は下の .linked-continues */
+/* Rows of peers connected by watching. Indented under the one started first (the parent) (orderByWatchLinks in
+   stage.tsx). The same indent as chick rows (.chick) shows they "hang from the parent". Separators are in
+   .linked-continues below */
 .bird.linked-child {
   padding-left: 26px;
 }
 
-/* 見守り中の組の中(親と相手の間・相手どうし)の区切りは破線、組の外との境目は実線(.bird の既定) */
+/* Separators within a watching group (between parent and peer, and between peers) are dashed; the boundary with
+   rows outside the group is solid (the .bird default) */
 .bird.linked-continues {
   border-bottom-style: dashed;
 }
 
-/* 見守り中のまとまりを囲む角丸のブロック(garden.tsx の layoutWatchGroups)。鳥の下に敷く薄い面と枠 */
+/* Rounded block enclosing a watching group (layoutWatchGroups in garden.tsx). A faint surface and border laid under
+   the birds */
 .garden-watch-block {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -1784,8 +1813,9 @@ button.remove {
   pointer-events: none;
 }
 
-/* ブロックの上辺に出す親(見守り中の鳥)の名前(garden.tsx の WATCH_TITLE_PX が行の高さ)。中央に置くと真下の鳥の名前に
-   見えるので左上に寄せ、枠と同じ琥珀色にしてブロックの名前として読ませる */
+/* Name of the parent (the watching bird) shown on the block's top edge (WATCH_TITLE_PX in garden.tsx is the row
+   height). Centered, it would look like the name of the bird right below, so it's placed at the top left in the same
+   amber as the border, to read as the block's name */
 .garden-watch-block-name {
   display: block;
   box-sizing: border-box;
@@ -1802,7 +1832,7 @@ button.remove {
   white-space: nowrap;
 }
 
-/* 見守り中の鳥の足元の、動いている相手の数 */
+/* Number of active peers shown under a watching bird */
 .garden-watch-count {
   display: inline-flex;
   align-items: center;
@@ -1813,7 +1843,8 @@ button.remove {
   line-height: 1;
 }
 
-/* 説明文の中の外部サイトへのリンク(外部ブラウザで開く)。本文より少し明るい琥珀色で押せることを見せる */
+/* Links to external sites within descriptions (open in the external browser). A slightly brighter amber than the
+   body text shows they can be pressed */
 .external-link {
   color: #d9b06a;
   text-decoration: underline;

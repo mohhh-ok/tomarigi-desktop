@@ -1,22 +1,22 @@
-// 見守り中の判定(docs/design.md の見守り中)。別のセッションに作業を任せて待っている鳥を、相手のターンの合間に
-// 巣箱へしまわないための猶予を持つ。画面の部品や Tauri に依存しない(時刻を渡して確かめられる)
+// Watching detection (docs/design.md "Watching"). Keeps a grace period so a bird that handed work to another session and is waiting
+// isn't put into the nest between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
 import type { BirdState } from "./sessions";
 
-/** 相手が最後に動いてから、この間は見守り中のまま(巣箱にしまわない)。ユーザーが選んだ案(A) */
+/** For this long after the linked session last moved, it stays watching (not put into the nest) */
 export const WATCH_GRACE_MS = 5 * 60_000;
 
 /**
- * 相手が動いているか。sessions/<pid>.json の status が idle 以外(busy・shell など)、または相手の画面の
- * 機械判定が working / waiting。status "shell" なども動いているに数える(ユーザーが選んだ案(C))
+ * Whether the linked session is moving. status in sessions/<pid>.json is anything but idle (busy, shell, etc.), or the linked session's
+ * machine state is working / waiting. status "shell" and the like also count as moving
  */
 export function isPeerActive(status: string | undefined, lastState: BirdState | undefined): boolean {
   return (status !== undefined && status !== "idle") || lastState === "working" || lastState === "waiting";
 }
 
 /**
- * 見守り中なら、今動いている相手の数(0 以上)。見守り中でなければ undefined。
- * 自分の機械判定が done / dozing で、相手のうち今動いているものがいるか、最後に動いてから WATCH_GRACE_MS 以内の
- * ものがいれば見守り中。0 は「猶予の間で、今動いている相手はいない」
+ * If watching, the number of linked sessions moving now (0 or more). undefined if not watching.
+ * Watching when its own machine state is done / dozing and some linked session is moving now, or one moved within WATCH_GRACE_MS
+ * of now. 0 means "within the grace period, with no linked session moving now"
  */
 export function watchingCount(
   ownState: BirdState,

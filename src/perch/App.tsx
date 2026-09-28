@@ -70,25 +70,25 @@ import { currentWindowMode, useWindowMode } from "./window-mode";
 
 const POLL_MS = 3_000;
 
-// 鳴き声は ScanResult.events から発火する(issue #6)。イベント種別ごとにどの鳴き声を
-// 対応させるか(started/closed は鳴かない)
+// Chirps fire from ScanResult.events (issue #6). Which chirp maps to each event type
+// (started/closed don't chirp)
 const EVENT_CHIRP: Partial<Record<SessionEvent["type"], () => void>> = {
   done: chirpDone,
   waiting: chirpWaiting,
 };
 
-// イベントの at からこれ以内なら「新しい」とみなして鳴らす。起動直後のスキャンで、過去に発生済みのイベントを再構成しても
-// 鳴らさないための鮮度ガード(下の tick 内コメント参照)
+// Within this long of an event's at, it counts as "new" and chirps. A freshness guard so that events that already happened
+// in the past, reconstructed by the scan right after launch, don't chirp (see the comment inside tick below)
 const EVENT_FRESHNESS_MS = 30_000;
 
 type Phase = "loading" | "ready";
 
-// 見る面(止まり木・イベント・にわ)をタブで切り替える。永続化不要のため useState のみ。
-// 設定は別階層(⚙ ボタン → 設定ビュー)なので Tab には含めない
+// Tabs switch the view (Perch, events, Garden). No persistence needed, so useState only.
+// Settings are a separate level (⚙ button → settings view), so they aren't a Tab
 type Tab = "perch" | "events" | "garden";
 
-// 窓の背景を掴んだら窓ごと動かす(tomarigi の PiP は上部バーでしか動かせなかった)。
-// 押して操作する要素・文字入力・鳥(にわのドラッグ)・スクロールする一覧は除く
+// Grabbing the window background moves the whole window (the PiP of the tomarigi Chrome extension could only be
+// moved by its top bar). Excludes clickable controls, text inputs, birds (garden drag), and scrolling lists
 const NO_WINDOW_DRAG =
   "button, input, select, textarea, a, label, kbd, code, .garden-node, .garden-nest, .bird, .chick, .event-card, .debug-overlay, .mock-panel, .root-add-overlay";
 
@@ -97,24 +97,24 @@ interface Editing {
   draft: string;
 }
 
-// IconSetSettings に出す1行(issue #14)。running=false は「今は走っていないが割り当てが
-// 保存されている」行(淡色表示。IconSetSettings 参照)
+// One row shown in IconSetSettings (issue #14). running=false is a row "not running now but with a saved
+// assignment" (shown dimmed; see IconSetSettings)
 interface IconSetRow {
   slug: string;
   label: string;
   running: boolean;
 }
 
-// 接続テストボタンの表示状態。reason は byokTestResultFailure の $REASON$ に
-// そのまま埋め込む技術的な識別子(kind)で、ローカライズはしない(HTTP ステータス相当の扱い)。
-// キーは判定専用ではないため型名も Judge に限定しない(JudgeErrorKind 自体は
-// lib/judge.ts が持つ既存の名前をそのまま流用しているだけ)
-/** Jev 判定のターンの識別。done イベントの key と同じ基準(sessionId + 最終応答の時刻) */
+// Display state of the connection test button. reason is a technical identifier (kind) embedded as is into
+// $REASON$ of byokTestResultFailure, and is not localized (treated like an HTTP status).
+// The key isn't only for judging, so the type name isn't limited to Judge either (JudgeErrorKind itself
+// just reuses the existing name in lib/judge.ts)
+/** Identifies a turn for the Jev verdict. Same basis as the done event key (sessionId + time of the last response) */
 function turnKey(sessionId: string, at: number): string {
   return `${sessionId}:${at}`;
 }
 
-// TypeSafe の公式サイト(設定の説明文からのリンク先)
+// TypeSafe's official site (linked from the settings description)
 const TYPESAFE_SITE_URL = "https://typesafe.ai";
 
 type ApiKeyTestState =
@@ -137,8 +137,8 @@ export default function App({
   const [brokenIds, setBrokenIds] = useState<string[]>([]);
   const [sessions, setSessions] = useState<SessionView[]>([]);
   const [events, setEvents] = useState<SessionEvent[]>([]);
-  // にわが一番見ていて楽しい = 製品の顔なのでデフォルトタブにする
-  // ?tab=perch|events / ?settings=1 は起動時の画面の指定(スクショ確認用。README の TOMARIGI_QUERY)
+  // The Garden is the most fun to watch = the face of the product, so it is the default tab
+  // ?tab=perch|events / ?settings=1 choose the screen at launch (for checking screenshots; TOMARIGI_QUERY in the README)
   const [tab, setTab] = useState<Tab>(() => {
     const q = new URLSearchParams(location.search).get("tab");
     return q === "perch" || q === "events" ? q : "garden";
@@ -146,8 +146,8 @@ export default function App({
   const [settingsOpen, setSettingsOpen] = useState(
     () => new URLSearchParams(location.search).has("settings"),
   );
-  // ?scrollTo=<クラス名> は起動時にその要素まで窓をスクロールする(スクショ確認用。README の TOMARIGI_QUERY)。
-  // 浮遊窓の高さでは設定の下の方が見えないため
+  // ?scrollTo=<class name> scrolls the window to that element at launch (for checking screenshots; TOMARIGI_QUERY in the README).
+  // At the floating window's height the lower part of the settings isn't visible
   useEffect(() => {
     const target = new URLSearchParams(location.search).get("scrollTo");
     if (phase !== "ready" || !target || !/^[\w-]+$/.test(target)) return;
@@ -160,7 +160,7 @@ export default function App({
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [voiceVolume, setVoiceVolumeState] = useState(1);
   const [windowMode, setWindowMode] = useWindowMode();
-  // API キーは done 読み上げ要約(speakDoneEvent)と接続テストの共用設定なので judge に限定しない名前
+  // API keys are a setting shared by the done readout summary (speakDoneEvent) and the connection test, so the name isn't limited to judge
   const [aiKeySet, setAiKeySet] = useState<Record<ApiKeyProvider, boolean>>({
     anthropic: false,
     openai: false,
@@ -171,8 +171,8 @@ export default function App({
     openai: { phase: "idle" },
     typesafe: { phase: "idle" },
   });
-  // Jev の判断待ち判定(lib/jev.ts)。キーはターン(turnKey)。判定を始めたターンは
-  // askRequestedRef に入れ、ポーリングのたびに呼び直さない。画面から消えたターンは捨てる
+  // Jev verdict for needs reply (lib/jev.ts). Keyed by turn (turnKey). Turns whose check has started go into
+  // askRequestedRef and aren't re-requested on every poll. Turns that leave the screen are dropped
   const [askJudgements, setAskJudgements] = useState<Record<string, AskJudgement>>({});
   const askRequestedRef = useRef(new Set<string>());
   const typeSafeKeySetRef = useRef(false);
@@ -180,12 +180,12 @@ export default function App({
     typeSafeKeySetRef.current = aiKeySet.typesafe;
   }, [aiKeySet.typesafe]);
   const [aiProvider, setAiProvider] = useState<AiProvider | null>(null);
-  // アイコンセットのプロジェクト個別割り当て(issue #14)。slug → {set, label} の辞書。
-  // Perch/Garden/IconSetSettings は resolveIconSet(lib/icon-set-store.ts)経由でこの辞書を
-  // lookup し、割り当てが無ければ DEFAULT_ICON_SET へフォールバックする
+  // Per-project icon set assignments (issue #14). A slug → {set, label} map.
+  // Perch/Garden/IconSetSettings look up this map via resolveIconSet (lib/icon-set-store.ts)
+  // and fall back to DEFAULT_ICON_SET when there is no assignment
   const [iconSetAssignments, setIconSetAssignments] = useState<IconSetAssignments>({});
-  // ?debug=1 直開き時はデバッグログを最初から開いた状態にする。以降は URL を一切いじらず
-  // このステートだけで開閉するページ内ダイアログとして扱う
+  // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
+  // it is treated as an in-page dialog opened and closed by this state alone
   const [showDebug, setShowDebug] = useState(
     () => new URLSearchParams(location.search).has("debug"),
   );
@@ -193,15 +193,15 @@ export default function App({
   const closeDebug = useCallback(() => setShowDebug(false), []);
   const mutedRef = useRef(muted);
   const voiceEnabledRef = useRef(voiceEnabled);
-  const scanBusyRef = useRef(false); // スキャンが POLL_MS を超えたときの多重実行防止(鳴き声の二重発火を防ぐ)
-  // issue #6: 鳴き声はすべて ScanResult.events から発火する(旧来の状態エッジ検出は廃止)。
-  // 観測済みイベント key の集合。前回までに鳴らした(または鳴らす判定をした)イベントを覚えておき、
-  // 同じイベントで二度鳴かないようにする。sessionEventCache 側と同じ「直近だけ保持」の性質に
-  // 合わせて、毎スキャンで最新の events に含まれる key だけへ入れ替える(無限に増えない)
+  const scanBusyRef = useRef(false); // Prevents overlapping runs when a scan exceeds POLL_MS (prevents double chirps)
+  // issue #6: every chirp fires from ScanResult.events (the old state-edge detection was removed).
+  // Set of observed event keys. Remembers events that already chirped (or were judged for chirping) so the
+  // same event doesn't chirp twice. Matching the "keep only recent ones" nature of sessionEventCache, it is
+  // replaced on each scan with just the keys in the latest events (so it doesn't grow forever)
   const seenEventKeysRef = useRef<Set<string>>(new Set());
-  // 初回スキャンでは一切鳴らさない。起動直後は
-  // 過去に発生済みのイベントがそのまま events に載って返ってくるため、それを新規発火と
-  // 誤認して一斉に鳴くのを防ぐ
+  // Never chirp on the first scan. Right after launch,
+  // events that already happened in the past come back in events as is, so this prevents mistaking them
+  // for new firings and chirping all at once
   const firstScanRef = useRef(true);
   const scanSignatureRef = useRef("");
 
@@ -215,9 +215,9 @@ export default function App({
 
   useEffect(() => {
     void (async () => {
-      // mock ソース(source.usesRoots === false)では roots/perms サブシステムを一切使わない。
-      // roots=[]・perms={} のまま(useState の初期値)にして、セットアップ画面・監視フォルダ
-      // 設定・権限チェックを丸ごとスキップする
+      // The mock source (source.usesRoots === false) doesn't use the roots/perms subsystem at all.
+      // It leaves roots=[] and perms={} (the useState initial values) and skips the setup screen, watched
+      // folder settings, and permission checks entirely
       if (source.usesRoots) {
         const loaded = await loadRoots();
         setRoots(loaded);
@@ -234,22 +234,22 @@ export default function App({
       const volume = await loadVoiceVolume();
       setVoiceVolumeState(volume);
       setVoiceVolume(volume);
-      // キーは Rust が持つ(docs/design.md「BYOK の API キー…」)。以前の版が IndexedDB に残したキーの移行
-      // (キーチェーンの版)・dev の IndexedDB からの受け渡しを済ませてから、保存済みかどうかだけを聞く
+      // Rust holds the keys (docs/design.md "BYOK API keys"). After migrating keys an earlier version left in IndexedDB
+      // (the keychain version) and handing over from dev's IndexedDB, it only asks whether each key is saved
       try {
         await initApiKeys();
       } catch (e) {
         console.warn("[tomarigi] failed to initialize API keys", e);
       }
       const [keyStatus, preferredProvider] = await Promise.all([loadApiKeyStatus(), loadAiProvider()]);
-      // 保存済みかどうか(真偽だけ)をログに出す。キーの値は受け取らない・出さない
+      // Log whether each key is saved (a boolean only). Key values are never received or printed
       void invoke("log", {
         line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} typesafe=${keyStatus.typesafe}`,
       });
       const resolvedProvider = resolveAiProvider(preferredProvider, keyStatus.anthropic, keyStatus.openai);
       setAiKeySet(keyStatus);
       setAiProvider(resolvedProvider ?? null);
-      // 旧データや使用中キー削除後の不整合は、利用可能な側へ一度だけ正規化する。
+      // Inconsistencies from old data or from deleting the key in use are normalized once to the available side.
       if (resolvedProvider && resolvedProvider !== preferredProvider) {
         await saveAiProvider(resolvedProvider);
       }
@@ -258,8 +258,8 @@ export default function App({
     })();
   }, []);
 
-  // AudioContext の解錠。WKWebView は操作なしでも running になる(docs/design.md「前提になった実測」)が、
-  // 念のため起動時と最初のポインタ操作の両方で呼ぶ
+  // Unlock the AudioContext. WKWebView becomes running even without user interaction (docs/design.md "Findings from spikes"),
+  // but call it both at launch and on the first pointer action just in case
   useEffect(() => {
     primeAudio();
     const unlock = () => primeAudio();
@@ -267,12 +267,12 @@ export default function App({
     return () => document.removeEventListener("pointerdown", unlock);
   }, []);
 
-  // 窓の背景を掴んで窓を動かす(NO_WINDOW_DRAG 参照)。左ボタンだけ
+  // Grab the window background to move the window (see NO_WINDOW_DRAG). Left button only
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
       if (e.target instanceof Element && e.target.closest(NO_WINDOW_DRAG)) return;
-      // 通常の窓はタイトルバーで動かす(最大化・フルスクリーン中に背景を掴んで窓が外れないように)
+      // A standard window moves by its title bar (so grabbing the background while maximized or fullscreen doesn't pull the window out)
       if (currentWindowMode() === "normal") return;
       void getCurrentWindow().startDragging();
     };
@@ -280,9 +280,9 @@ export default function App({
     return () => document.removeEventListener("pointerdown", onDown);
   }, []);
 
-  // 止まったターンの最後の応答を、BYOK(OpenAI / Anthropic)で吹き出しのセリフに 1 回だけ要約する
-  // (docs/design.md「鳥に直近のメッセージを短く要約したセリフを吹き出しで出す」)。キーが無ければ出さない。
-  // 結果は turnLines に入り、描画時に SessionView.summary として付く。working になれば reply が無くなり消える
+  // Summarize the last response of a stopped turn into speech bubble text once, with BYOK (OpenAI / Anthropic)
+  // (docs/design.md "Speech bubbles"). Nothing is shown without a key.
+  // The result goes into turnLines and is attached as SessionView.summary at render. Once working, reply is gone and it disappears
   const [turnLines, setTurnLines] = useState<Record<string, string>>({});
   const turnLineRequestedRef = useRef(new Set<string>());
   const summaryKeySetRef = useRef(false);
@@ -292,7 +292,7 @@ export default function App({
   const requestTurnLines = useCallback((views: SessionView[]) => {
     const live = new Set<string>();
     for (const view of views) {
-      // summary を最初から持つ view(mock)は要約しない
+      // Views that already have a summary (mock) aren't summarized
       if (!view.reply || view.summary) continue;
       const key = turnKey(view.id, view.reply.at);
       live.add(key);
@@ -328,12 +328,12 @@ export default function App({
     });
   }, []);
 
-  // 止まったターン(reply のある done / dozing)を1回だけ Jev に聞く。done の鳴き声・読み上げは
-  // これを待たない。結果は askJudgements に入り、描画時に SessionView.ask として付く
+  // Ask Jev once about a stopped turn (done / dozing with a reply). The done chirp and readout don't wait
+  // for it. The result goes into askJudgements and is attached as SessionView.ask at render
   const requestAskJudgements = useCallback((views: SessionView[]) => {
     const live = new Set<string>();
     for (const view of views) {
-      // ask を最初から持つ view(mock)は Jev に聞かない
+      // Views that already have ask (mock) aren't sent to Jev
       if (!view.reply || view.ask) continue;
       const key = turnKey(view.id, view.reply.at);
       live.add(key);
@@ -365,15 +365,15 @@ export default function App({
   useEffect(() => {
     if (phase !== "ready") return;
     const granted = roots.filter((r) => perms[r.id] === "granted");
-    // mock ソース(source.usesRoots === false)は roots/perms を使わないため granted は常に
-    // 空のままだが、それは「アクセスを失った」状態ではないのでこの早期 return はスキップし
-    // そのままスキャンへ進む(mock の scan() は granted を無視して mock データを返す)
+    // The mock source (source.usesRoots === false) doesn't use roots/perms, so granted is always empty,
+    // but that isn't the "lost access" state, so this early return is skipped and it goes on to scan
+    // (the mock's scan() ignores granted and returns mock data)
     if (source.usesRoots && granted.length === 0) {
       setSessions([]);
       setBrokenIds([]);
       setEvents([]);
-      // アクセスを失った状態からの再開は「初回スキャン」として扱う。ここでリセットしないと、
-      // 再許可直後に古い key が「未観測」のまま大量に届き、一斉に鳴いてしまう
+      // Resuming from the lost-access state is treated as a "first scan". Without resetting here, right after
+      // re-granting, many old keys arrive as "unobserved" and chirp all at once
       seenEventKeysRef.current = new Set();
       firstScanRef.current = true;
       return;
@@ -390,20 +390,20 @@ export default function App({
         if (!firstScanRef.current) {
           for (const event of nextEvents) {
             if (seen.has(event.key)) continue;
-            // ミュート付き done(ひな待ちの抑止明けが、親の再起動でキャンセルされたもの。
-            // lib/sessions.ts の deriveDoneEvent 参照)はログ・フィードには残すが鳴らさない
+            // A muted done (where the release after holding back for chicks was canceled by the parent's restart;
+            // see deriveDoneEvent in lib/sessions.ts) stays in the log and feed but doesn't chirp
             if (event.muted) continue;
-            // 鮮度ガード: 未観測でも at が古い(スキャンの間隔を超えて前から起きていた)
-            // イベントは、再構成であって新規発生ではないとみなして鳴らさない。
-            // firedAt があれば(抑止明けの timeout 発火 done)そちらを実発火時刻として使う
+            // Freshness guard: even if unobserved, an event whose at is old (it happened earlier than the scan
+            // interval) is treated as a reconstruction, not a new occurrence, and doesn't chirp.
+            // If firedAt is present (a done fired by timeout after the hold), it is used as the actual firing time
             if (now - (event.firedAt ?? event.at) > EVENT_FRESHNESS_MS) continue;
             if (!mutedRef.current) EVENT_CHIRP[event.type]?.();
             void invoke("log", {
               line: `[event] ${event.type} ${event.project} chirp=${!mutedRef.current && Boolean(EVENT_CHIRP[event.type])} voice=${voiceEnabledRef.current}`,
             });
-            // 読み上げはミュート(鳴き声)とは独立のオプトイン設定。制約は lib/voice.ts 参照。
-            // done だけは要約読み上げ(API キー設定時)の対象。speakDoneEvent 内部でキーの有無・
-            // フォールバック込みの分岐をしているため、ここでは type で振り分けるだけでよい
+            // Readout is an opt-in setting independent of mute (chirps). See lib/voice.ts for constraints.
+            // Only done is eligible for the summary readout (when an API key is set). speakDoneEvent branches
+            // internally on whether a key exists, including fallback, so here it only needs to route by type
             if (voiceEnabledRef.current) {
               if (event.type === "done") {
                 void speakDoneEvent(event, () => voiceEnabledRef.current);
@@ -413,10 +413,10 @@ export default function App({
             }
           }
         }
-        // 観測済みの入れ替えはミュート中でも行う(ミュート解除後に取りこぼし分が
-        // まとめて鳴るのを防ぐ)。sessionEventCache 同様、直近の events だけを覚えれば足りる
-        // 鳥の顔ぶれ・状態が変わったときだけ Rust のログ(/tmp/tomarigi-desktop/app-log.txt)へ出す。
-        // 画面を見ずに transcript の実態と突き合わせるため
+        // The observed set is replaced even while muted (so missed events don't all chirp at once after
+        // unmuting). As with sessionEventCache, remembering only the recent events is enough
+        // Write to the Rust log (/tmp/tomarigi-desktop/app-log.txt) only when the set of birds or their states change.
+        // This is for checking against the actual transcripts without looking at the screen
         const signature = views.map((v) => `${v.id}:${v.state}`).join(",");
         if (signature !== scanSignatureRef.current) {
           scanSignatureRef.current = signature;
@@ -440,8 +440,8 @@ export default function App({
     };
     void tick();
     const timer = setInterval(tick, POLL_MS);
-    // mock ソースは POLL_MS を待たずデータ変更を即座に反映したい(MockPanel での編集が
-    // 見た目にすぐ効くようにするため)。real は subscribe を持たないため何もしない
+    // The mock source should reflect data changes immediately without waiting for POLL_MS (so edits in
+    // MockPanel show up right away). real has no subscribe, so this does nothing
     const unsub = source.subscribe?.(() => void tick());
     return () => {
       alive = false;
@@ -450,7 +450,7 @@ export default function App({
     };
   }, [phase, roots, perms, source]);
 
-  /** 失敗しても state と永続化が無言で乖離しないよう、warn + 画面表示に寄せる */
+  /** So that state and persistence don't silently diverge on failure, it warns and shows a message on screen */
   const persistRoots = useCallback(async (next: RootEntry[]) => {
     try {
       await saveRoots(next);
@@ -501,7 +501,7 @@ export default function App({
     const { id, draft } = editing;
     setEditing(null);
     const trimmed = draft.trim();
-    if (!trimmed) return; // 空なら元の値のまま
+    if (!trimmed) return; // If empty, keep the original value
     const next = roots.map((r) => (r.id === id ? { ...r, label: trimmed } : r));
     setRoots(next);
     await persistRoots(next);
@@ -517,30 +517,30 @@ export default function App({
     const next = !voiceEnabled;
     setVoiceEnabled(next);
     void saveVoiceEnabled(next);
-    // OFF は「静かにしたい」操作なので、再生中・キュー済みの発話も即座に止める
+    // OFF is an "I want quiet" action, so speech that is playing or queued stops immediately too
     if (!next) cancelSpeech();
   }, [voiceEnabled]);
 
-  // スライダー(入力値は 0〜100 表示、内部値は 0〜1)。lib/voice.ts のモジュール変数は
-  // 発話「時点」の最新値を読みに行く方式なので、ここでは state 更新と同時に即
-  // setVoiceVolume で反映すればよい(次に鳴る発話から音量が変わる)
+  // Slider (input shown as 0–100, internal value 0–1). The module variable in lib/voice.ts is read at the
+  // "moment" of speaking, so here it is enough to apply it with setVoiceVolume right along with the state
+  // update (the volume changes from the next utterance)
   const changeVoiceVolume = useCallback((next: number) => {
     setVoiceVolumeState(next);
     setVoiceVolume(next);
     void saveVoiceVolume(next);
   }, []);
 
-  // 鳴き声(chirp)側の音量。lib/chirp.ts の masterGain と同じくモジュール変数方式なので、
-  // 変更は即 setChirpVolume で反映する(試聴ボタンも同じ経路を通るため、スライダーを
-  // 動かした直後の試聴に即座に反映される)
+  // Volume for chirps. Like masterGain in lib/chirp.ts it uses a module variable, so changes are applied
+  // immediately with setChirpVolume (the preview buttons go through the same path, so a preview right after
+  // moving the slider reflects it immediately)
   const changeChirpVolume = useCallback((next: number) => {
     setChirpVolumeState(next);
     setChirpVolume(next);
     void saveChirpVolume(next);
   }, []);
 
-  /** 保存後は draft をどこにも保持しない(state 上に平文キーを残さない) */
-  // 保存できたら true。失敗(キーチェーンに書けない等)は false を返し、設定画面の行に失敗を出させる
+  /** After saving, the draft isn't kept anywhere (no plaintext key left in state) */
+  // true if saved. On failure (can't write to the keychain, etc.) it returns false so the settings row shows the failure
   const saveAiKey = useCallback(async (provider: ApiKeyProvider, draft: string): Promise<boolean> => {
     const trimmed = draft.trim();
     if (!trimmed) return false;
@@ -552,8 +552,8 @@ export default function App({
     }
     setAiKeySet((current) => ({ ...current, [provider]: true }));
     setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "idle" } }));
-    // 要約の提供元は最初の1本を自動選択する。すでに選択済みなら、2本目を保存しても勝手に切り替えない。
-    // TypeSafe は要約に使わないので対象外
+    // The summary provider auto-selects the first key saved. If one is already selected, saving a second doesn't switch it.
+    // TypeSafe isn't used for summaries, so it is excluded
     if (provider !== "typesafe" && !aiProvider) {
       await saveAiProvider(provider);
       setAiProvider(provider);
@@ -600,16 +600,16 @@ export default function App({
     }));
   }, []);
 
-  // 3種の鳴きを個別に試聴する(連続再生ではどの音がどの状態か対応が取れないため)
+  // Preview the three chirps individually (played in a row, you can't tell which sound is which state)
   const previewChirp = useCallback((chirp: () => void) => {
     primeAudio();
     chirp();
   }, []);
 
-  /** 1プロジェクト分の割り当てを変更する。set が DEFAULT_ICON_SET(鳥)ならエントリ自体を
-   * 削除する(「鳥を選択 = 割り当て無し」の意味論。lib/icon-set-store.ts 参照)。それ以外は
-   * {set, label} で upsert する(label は選択時点の表示名スナップショット)。
-   * 変更は即 save + state 反映(他の設定項目と同じ方式) */
+  /** Changes the assignment for one project. If set is DEFAULT_ICON_SET (birds), the entry itself is
+   * deleted (the semantics "choosing birds = no assignment"; see lib/icon-set-store.ts). Otherwise it
+   * upserts {set, label} (label is a snapshot of the display name at the time of selection).
+   * Changes are saved and applied to state immediately (same as other settings) */
   const assignIconSet = useCallback(
     (slug: string, label: string, set: IconSetId) => {
       const next = { ...iconSetAssignments };
@@ -624,7 +624,7 @@ export default function App({
     [iconSetAssignments],
   );
 
-  // 鳥・行のクリックで Ghostty のペインへ移る。mock は roots を使わないので対応が取れず何もしない
+  // Clicking a bird or row jumps to its Ghostty pane. mock doesn't use roots, so it can't be matched and does nothing
   const onFocusSession = useCallback(
     (id: string) => {
       void focusSession(id, roots).catch((e) => console.warn("[tomarigi] focus failed", e));
@@ -634,19 +634,19 @@ export default function App({
   const canFocus = useCallback((id: string) => focusTargetOf(id, roots) !== null, [roots]);
 
   const grantedCount = roots.filter((r) => perms[r.id] === "granted").length;
-  // mock ソースは roots/perms を使わないため grantedCount は常に 0 のままだが、それは
-  // 「アクセスが無い」状態ではないので Perch/Garden の空表示分岐には使わない
+  // The mock source doesn't use roots/perms, so grantedCount is always 0, but that isn't the
+  // "no access" state, so it isn't used for the empty-state branch of Perch/Garden
   const hasGranted = !source.usesRoots || grantedCount > 0;
 
   const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
 
-  // アイコンセット設定に出す行 = 「現在のセッションに出ているプロジェクト(slug で重複除去)」
-  // ∪「保存済み割り当てだけが残っているプロジェクト」。走っているものを先頭群にして
-  // そのときの利用実態を優先しつつ、各群の中はラベル昇順で固定する。sessions は
-  // sinceMs(直近書き込みからの経過)でソートされており、書き込みのたびに 0 へ戻るため
-  // 出現順のままだと行の <select> がポーリング(3秒)ごとに並び替わってしまう
-  // (開いている <select> の DOM ノードが再配置され、Chrome では開いたままのドロップダウンが
-  // 閉じる実害がある)。ラベル昇順なら sessions の並びに依存せず安定する
+  // Rows shown in the icon set settings = "projects in the current sessions (deduplicated by slug)"
+  // ∪ "projects with only a saved assignment left". Running ones form the first group to prioritize
+  // current usage, and within each group the order is fixed by label ascending. sessions is sorted by
+  // sinceMs (time since the latest write), which goes back to 0 on every write, so keeping the order of
+  // appearance would reorder the rows' <select> on every poll (3 seconds)
+  // (the DOM node of an open <select> gets moved, and in Chrome an open dropdown actually closes).
+  // Label ascending order is stable regardless of the order of sessions
   const iconSetRows = useMemo<IconSetRow[]>(() => {
     const seen = new Set<string>();
     const running: IconSetRow[] = [];
@@ -663,11 +663,11 @@ export default function App({
     return [...running, ...savedOnly];
   }, [sessions, iconSetAssignments]);
 
-  // Jev の判定を、同じターンの鳥にだけ付ける(ターンが変われば turnKey が変わり付かない)。
-  // mock は ask を直接持つので上書きしない
+  // Attach the Jev verdict only to the bird of the same turn (if the turn changes, turnKey changes and it isn't attached).
+  // mock holds ask directly, so it isn't overwritten
   const displaySessions = useMemo(() => {
-    // 要約用のキー(OpenAI / Anthropic)が無ければ、Jev が返事待ちと判定したターンは最後の応答文の最後の 1 文を
-    // 吹き出しに出す(docs/design.md。AI を使わない)
+    // Without a summary key (OpenAI / Anthropic), for a turn where the Jev verdict is needs reply, the last sentence of the
+    // last response goes in the speech bubble (docs/design.md "Speech bubbles"; no AI used)
     const hasSummaryKey = aiKeySet.anthropic || aiKeySet.openai;
     return sessions.map((s) => {
       if (!s.reply) return s;
@@ -682,10 +682,10 @@ export default function App({
     });
   }, [sessions, askJudgements, turnLines, aiKeySet.anthropic, aiKeySet.openai]);
 
-  // 最近の動き・にわの印でも、Jev が返事待ちと判定したターンの done を応答待ちとして見せるため、
-  // 同じターン(sessionId + 最終応答の時刻)の done イベントに判定を付ける
-  // 最近の動きの行には、そのターンの吹き出しと同じ文(bubbleText)を添える。追加の要約は呼ばず、
-  // 画面にいる鳥の今のターンのものだけを使う(永続のイベントログには入れない)
+  // So that Recent activity and the garden markers also show a done as needs reply when the Jev verdict for that
+  // turn is needs reply, attach the verdict to the done event of the same turn (sessionId + time of the last response)
+  // Recent activity rows get the same text as that turn's speech bubble (bubbleText). No extra summary is requested;
+  // only the current turn of birds on screen is used (it isn't put into the persistent event log)
   const displayEvents = useMemo(() => {
     const askByTurn = new Map<string, AskJudgement>();
     const lineByDoneTurn = new Map<string, string>();
@@ -720,8 +720,8 @@ export default function App({
     <main className="page">
       <div className="page-header">
         <h1 className="brand">tomarigi</h1>
-        {/* ミュート・デバッグ・設定・隠すはどのタブでも常に見える必要があるため、タブの外(ヘッダー)に置く。
-            tomarigi の PIP ボタンは無い(アプリの窓そのものが常に最前面の浮遊窓) */}
+        {/* Mute, debug, settings, and hide must always be visible on every tab, so they sit outside the tabs (in the header).
+            There is no PiP button like the tomarigi Chrome extension has (the app window itself is an always-on-top floating window) */}
         <div className="header-controls">
           {showTabs && (
             <>
@@ -732,7 +732,7 @@ export default function App({
             >
               {muted ? "🔕" : "🔔"}
             </button>
-            {/* デバッグ専用ボタンなので i18n はせず英語ハードコード(DebugApp.tsx の方針と同じ) */}
+            {/* A debug-only button, so no i18n; English is hardcoded (same policy as DebugApp.tsx) */}
             <button
               className={showDebug ? "small active" : "small"}
               onClick={() => setShowDebug((v) => !v)}
@@ -752,7 +752,7 @@ export default function App({
             </button>
             </>
           )}
-          {/* 窓を隠す。メニューバーのアイコンから戻せる */}
+          {/* Hides the window. It can be brought back from the menu bar icon */}
           <button
             className="small"
             onClick={() => void invoke("hide_window")}
@@ -771,12 +771,12 @@ export default function App({
           {addMessage && <p className="add-message">{addMessage}</p>}
         </section>
       )}
-      {/* tomarigi は PiP へ移すために createPortal でまとめていたが、デスクトップ版は窓が1つなのでそのまま描画する */}
+      {/* The tomarigi Chrome extension grouped this with createPortal to move it into PiP; the desktop app has one window, so it renders directly */}
       <>
           {showTabs && (
             <>
-              {/* 設定中はタブバーを隠し、⚙ 側で戻る。タブは「見る面(止まり木/イベント)」のみで、
-                  設定は別階層なのでここには並べない */}
+              {/* While in settings, the tab bar is hidden and you go back via ⚙. Tabs are only the "views (Perch/events)";
+                  settings are a separate level, so they aren't listed here */}
               {!settingsOpen && (
                 <div className="tabs" role="tablist">
                   <button
@@ -814,8 +814,8 @@ export default function App({
                   </button>
                 </div>
               )}
-              {/* 各タブパネルは常にマウントしたまま hidden 属性で隠す(タブ切替のたびに
-                  作り直すと Garden 等の内部 state が失われる)。設定中も同じく hidden */}
+              {/* Each tab panel stays mounted and is hidden with the hidden attribute (recreating it on every tab
+                  switch would lose internal state such as Garden's). Same hidden while in settings */}
               <section
                 role="tabpanel"
                 id="tabpanel-events"
@@ -865,9 +865,9 @@ export default function App({
                 </div>
               </section>
               <section className="settings-panel" hidden={!settingsOpen}>
-                {/* 監視フォルダ管理は roots/perms サブシステムそのものなので mock では丸ごと
-                    非表示にする(代替表示は無し)。BYOK・音量・読み上げ設定は mock でも
-                    実物のまま動く(下の ApiKeySettings・voice-controls 参照) */}
+                {/* Watched folder management is the roots/perms subsystem itself, so it is hidden entirely
+                    in mock (no substitute). BYOK, volume, and readout settings work as the real thing
+                    even in mock (see ApiKeySettings and voice-controls below) */}
                 {source.usesRoots && (
                   <RootManager
                     roots={roots}
@@ -897,25 +897,25 @@ export default function App({
                   assignments={iconSetAssignments}
                   onChange={assignIconSet}
                 />
-                {/* 通知系トグル2種を「親チェックボックス + 直下のサブ行」の文法で統一する。
-                    「音で知らせる」は既存の muted state の逆(checked = !muted)。ヘッダーの
-                    🔔/🔕 ボタン(toggleMuted)と同じ state を共有するので自動的に同期する。
-                    直下にまず鳴き声(chirp)専用の音量スライダー、続けて試聴ボタン2つを置く。
-                    読み上げ(speechSynthesis)の音量とは別軸の独立設定(ゲームの SE/BGM 音量
-                    分離と同じ発想。lib/chirp.ts の setChirpVolume 参照)。
-                    「声で読み上げる」はイベント読み上げ(speechSynthesis)。デフォルト OFF の
-                    オプトイン設定で、直下に読み上げ側の音量スライダーを置く */}
+                {/* The two notification toggles share one pattern: "parent checkbox + sub-rows directly below".
+                    "Notify with sound" is the inverse of the existing muted state (checked = !muted). It shares
+                    the same state as the header's 🔔/🔕 button (toggleMuted), so they stay in sync automatically.
+                    Directly below come a volume slider only for chirps, then two preview buttons.
+                    It is a setting independent of the readout (speechSynthesis) volume (the same idea as separate
+                    SE/BGM volumes in games; see setChirpVolume in lib/chirp.ts).
+                    "Read aloud" is the event readout (speechSynthesis). It is an opt-in setting, OFF by default,
+                    with the readout volume slider directly below */}
                 <div className="voice-controls">
                   <label className="voice-enable-row">
                     <input type="checkbox" checked={!muted} onChange={toggleMuted} />
                     {t("soundEnableLabel")}
                   </label>
-                  {/* 鳴き声側スライダーは muted(音で知らせる OFF)でも disabled にしない。
-                      理由: 直下の試聴ボタンが muted でも押せるのと同じで、「試聴しながら
-                      音量を決めて ON にする」流れを成立させるため。読み上げ側(試聴ボタンが
-                      無い)は voiceEnabled で disabled にする方針のまま維持する(用途が違う:
-                      読み上げ側は「発話するかどうか」のトグルに音量の意味が従属するが、
-                      鳴き声側は試聴という確認手段があるので disabled にする理由が無い) */}
+                  {/* The chirp slider isn't disabled even when muted ("Notify with sound" OFF).
+                      Reason: just as the preview buttons below can be pressed while muted, this supports the flow
+                      "set the volume while previewing, then turn it ON". The readout slider (which has no preview
+                      button) keeps the policy of being disabled by voiceEnabled (the uses differ: for readout the
+                      meaning of the volume depends on the "speak or not" toggle, while chirps have previewing as a
+                      way to check, so there is no reason to disable it) */}
                   <label className="settings-subrow volume-row">
                     {t("voiceVolumeLabel")}
                     <input
@@ -928,13 +928,13 @@ export default function App({
                     />
                     <span className="volume-value">{Math.round(chirpVolume * 100)}%</span>
                   </label>
-                  {/* 試聴は「ON にするか決めるために聞く」操作なので、muted(音で知らせる OFF)でも
-                      disabled にしない。ここを殺すと「鳴らしてみてから ON にする」という
-                      自然な使い方ができなくなり本末転倒(音量スライダーは対象の設定自体を
-                      変更する操作なので voiceEnabled で disabled にする方針のまま維持する) */}
+                  {/* Previewing is "listening to decide whether to turn it ON", so it isn't disabled even when
+                      muted ("Notify with sound" OFF). Disabling it would defeat the purpose by blocking the natural
+                      use of "try the sound, then turn it ON" (volume sliders change the setting itself, so they
+                      keep the policy of being disabled by voiceEnabled) */}
                   <div className="settings-subrow sound-preview-row">
-                    {/* 音はイベント発火なのでラベルもイベント側を使う(状態ラベルだと対応がずれる)。
-                        ボタンのアイコンはフィードと同じ意味を教える */}
+                    {/* Sounds fire on events, so the labels come from the event side too (state labels wouldn't match).
+                        The button icons teach the same meaning as in the feed */}
                     <button className="small" onClick={() => previewChirp(chirpDone)}>
                       <MdVolumeUp size={14} className="preview-mic" />
                       <MdCheckCircle className="event-icon tone-done" size={18} /> {EVENT.done.label}
@@ -948,9 +948,9 @@ export default function App({
                     <input type="checkbox" checked={voiceEnabled} onChange={toggleVoiceEnabled} />
                     {t("voiceEnableLabel")}
                   </label>
-                  {/* 音量は voiceEnabled OFF でも値自体は保持する(トグルは発話するかどうかの
-                      スイッチであり、音量とは独立の設定のため)。OFF 中は無意味な調整を防ぐため
-                      disabled にするだけで値は変えない */}
+                  {/* The volume value is kept even when voiceEnabled is OFF (the toggle is a switch for whether to
+                      speak and is independent of volume). While OFF it is only disabled to prevent meaningless
+                      adjustments; the value doesn't change */}
                   <label className="settings-subrow volume-row">
                     {t("voiceVolumeLabel")}
                     <input
@@ -965,7 +965,7 @@ export default function App({
                     <span className="volume-value">{Math.round(voiceVolume * 100)}%</span>
                   </label>
                 </div>
-                {/* 浮遊窓 / 通常の窓(メニューバーのメニューからも変えられる。window-mode.ts) */}
+                {/* Floating window / standard window (can also be changed from the menu bar menu; window-mode.ts) */}
                 <section className="window-mode">
                   <h2>{t("windowModeHeading")}</h2>
                   <label className="voice-enable-row">
@@ -990,7 +990,7 @@ export default function App({
               </section>
             </>
           )}
-          {/* App のスキャンループには一切影響しない、独立したページ内ダイアログ */}
+          {/* An independent in-page dialog that doesn't affect App's scan loop at all */}
           {showDebug && <DebugApp onClose={closeDebug} />}
           {rootDialogOpen && (
             <RootAddDialog
@@ -1002,7 +1002,7 @@ export default function App({
             />
           )}
       </>
-      {/* mock ソース専用のコントロールパネル(main.tsx が渡す MockPanel) */}
+      {/* Control panel only for the mock source (MockPanel passed by main.tsx) */}
       {extraPanel}
     </main>
   );
@@ -1158,8 +1158,8 @@ function RootManager({
   onCommitEdit: () => void;
   onCancelEdit: () => void;
 }) {
-  // Escape でキャンセルした直後に発火する blur が onCommitEdit を呼んで
-  // 上書きコミットしてしまわないよう抑止する(編集行は常に高々1つなので共有で足りる)
+  // Suppresses the blur that fires right after canceling with Escape from calling onCommitEdit and
+  // committing over it (there is always at most one row being edited, so one shared flag is enough)
   const suppressBlurRef = useRef(false);
 
   return (
@@ -1179,8 +1179,8 @@ function RootManager({
                   value={editing.draft}
                   placeholder={t("rootLabelPlaceholder")}
                   onChange={(e) => onEditChange(e.target.value)}
-                  // Escape 後に blur が来ないブラウザでフラグが残ると次回の blur 確定を
-                  // 誤って握りつぶすため、編集開始のフォーカスで必ずリセットする
+                  // In browsers where no blur follows Escape, a leftover flag would wrongly swallow the next
+                  // blur commit, so always reset it on the focus that starts editing
                   onFocus={() => {
                     suppressBlurRef.current = false;
                   }}
@@ -1202,13 +1202,13 @@ function RootManager({
               ) : (
                 <span className="root-label" title={root.path}>
                   {root.label}
-                  {/* ラベルだけでは実体(どの設定ディレクトリか)が分からないので、パスを添える */}
+                  {/* The label alone doesn't tell what it actually is (which config directory), so the path is added */}
                   <span className="root-path">{root.path.replace(/^\/Users\/[^/]+/, "~")}</span>
                 </span>
               )}
-              {/* 既定で常に監視するフォルダ(~/.claude/projects 等)。削除できない */}
+              {/* Folders always watched by default (~/.claude/projects etc.). Can't be removed */}
               {root.builtin && <span className="badge badge-default">{t("rootDefaultBadge")}</span>}
-              {/* デスクトップ版は読み取り許可の概念が無い。フォルダが無い・読めないときだけ出す */}
+              {/* The desktop app has no concept of read permission. Shown only when the folder is missing or unreadable */}
               {(broken || perm !== "granted") && (
                 <span className="badge badge-error">{t("badgeUnreadable")}</span>
               )}
@@ -1218,7 +1218,7 @@ function RootManager({
                 </button>
               )}
               {root.builtin ? (
-                // 既定は消せない。× の場所だけ取って、追加した行とラベル編集ボタンの位置を揃える
+                // Defaults can't be removed. Reserve only the × slot so the label edit button lines up with added rows
                 <button
                   className="small remove root-remove-placeholder"
                   aria-hidden="true"
@@ -1246,7 +1246,7 @@ function RootManager({
   );
 }
 
-/** APIキー設定全体。共通説明はここで1度だけ出し、プロバイダーごとの差は行に閉じ込める。 */
+/** All API key settings. The shared description is shown once here; per-provider differences stay inside each row. */
 function AiKeySettings({
   keySet,
   selectedProvider,
@@ -1304,14 +1304,14 @@ function ApiKeyProviderSettings({
   onSaveKey: (draft: string) => Promise<boolean>;
   onDeleteKey: () => void;
   onTest: () => void;
-  // 要約の提供元に選べる行だけ渡す(TypeSafe は判断待ちの判定専用で、要約には使わない)
+  // Passed only for rows that can be chosen as the summary provider (TypeSafe is only for the needs-reply check, not summaries)
   onSelect?: () => void;
 }) {
-  // 保存前のキー入力欄のみが持つ一時state。保存後はここを空にして破棄する(平文を残さない)
+  // Temporary state held only by the key input before saving. Cleared and discarded after saving (no plaintext left behind)
   const [draft, setDraft] = useState("");
-  // 保存済みのキーを差し替える入力欄を開いているか。キーの値は出さず、新しい値を入れて保存するだけ
+  // Whether the input for replacing a saved key is open. The key value isn't shown; you just enter a new one and save
   const [replacing, setReplacing] = useState(false);
-  // 直前の保存が失敗したか。失敗したら入力を残したまま、この行に失敗を出す
+  // Whether the last save failed. On failure the input is kept and the failure is shown on this row
   const [saveFailed, setSaveFailed] = useState(false);
   const heading =
     provider === "typesafe"
@@ -1326,7 +1326,7 @@ function ApiKeyProviderSettings({
       {provider === "typesafe" && (
         <p className="judge-description">
           {t("typeSafeApiKeyDescription")}{" "}
-          {/* キーの取り方が分かるよう公式サイトへ。WebView の中ではなく外部ブラウザで開く */}
+          {/* Link to the official site so users can see how to get a key. Opens in the external browser, not inside the WebView */}
           <a
             href={TYPESAFE_SITE_URL}
             className="external-link"
@@ -1393,7 +1393,7 @@ function ApiKeyProviderSettings({
           {t("byokUseForSummaryLabel")}
         </label>
       )}
-      {/* キー未設定時は無効化する。押しても no-key 結果になるだけの操作を防ぐ */}
+      {/* Disabled when no key is set, to prevent an action that would only produce a no-key result */}
       <button className="small" onClick={onTest} disabled={!keySet}>
         {t("byokTestButton")}
       </button>
@@ -1420,14 +1420,13 @@ function ApiKeyProviderSettings({
 }
 
 /**
- * アイコンセットのプロジェクト個別割り当て(issue #14)。行 = プロジェクト(slug 単位で
- * 重複除去)で、右端のトグルボタンを押すたびに ICON_SET_IDS の並び順で次のセットへ
- * 順送りする(frog の次は birds に一周)。対象は「現在のセッションに出ているプロジェクト」
- * ∪「保存済み割り当てだけが残っているプロジェクト」の和集合(iconSetRows。App.tsx 側で
- * 計算)。走っていない行は淡色にして区別する(icon-set-row-idle)。「鳥」に戻すと割り当て
- * エントリ自体を削除する(エントリ無し = 鳥、という意味論。lib/icon-set-store.ts の
- * resolveIconSet 参照)。変更は即 save + state 反映(RootManager 等と同じく、専用の
- * 保存ボタンは置かない方式)。
+ * Per-project icon set assignments (issue #14). Row = project (deduplicated by slug); each press of the
+ * toggle button at the right end advances to the next set in ICON_SET_IDS order (after frog it wraps
+ * around to birds). The rows are the union of "projects in the current sessions" ∪ "projects with only a
+ * saved assignment left" (iconSetRows, computed in App.tsx). Rows not running are dimmed to tell them apart
+ * (icon-set-row-idle). Switching back to "birds" deletes the assignment entry itself (the semantics
+ * no entry = birds; see resolveIconSet in lib/icon-set-store.ts). Changes are saved and applied to state
+ * immediately (like RootManager etc., there is no dedicated save button).
  */
 function IconSetSettings({
   rows,

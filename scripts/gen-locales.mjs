@@ -1,12 +1,12 @@
-// public/_locales/<locale>/messages.json を生成するスクリプト。
-// 43言語ぶんのJSONを手書きするとキー集合や placeholder がロケール間でずれる事故が
-// 起きやすいため、翻訳文言は scripts/locales/*.mjs に機能グループ別で集約し、
-// このファイルでは各グループを読み込んで一つのテーブルへマージするだけにしている。
+// Script that generates public/_locales/<locale>/messages.json.
+// Writing JSON for 43 languages by hand easily leads to accidents where key sets or placeholders drift
+// between locales, so translated strings are gathered by feature group in scripts/locales/*.mjs,
+// and this file only loads each group and merges them into one table.
 //
-// 使い方: node scripts/gen-locales.mjs
-// 新しい文言キーを追加するときは、対応するグループファイル (scripts/locales/*.mjs) に
-// 43ロケール分の訳を書き、必要ならこのファイルの KEYS に追記する(順序は messages.json の
-// フィールド順を左右するので、既存の順序を崩さない)。verify-locales.mjs が漏れを検出する。
+// Usage: node scripts/gen-locales.mjs
+// When adding a new string key, write translations for all 43 locales in the matching group file (scripts/locales/*.mjs),
+// and if needed append it to KEYS in this file (the order determines the field order of messages.json,
+// so don't break the existing order). verify-locales.mjs detects omissions.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -30,7 +30,7 @@ import ask from "./locales/ask.mjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "..", "public", "_locales");
 
-// グループを1つのテーブルにマージ。同じキーが2つのグループに現れたら事故なので落とす。
+// Merge the groups into one table. The same key appearing in two groups is an accident, so fail.
 const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask };
 
 const MERGED = {};
@@ -43,8 +43,8 @@ for (const [groupName, table] of Object.entries(GROUPS)) {
   }
 }
 
-// KEYS: messages.json のフィールド順を決める。既存の messages.json との差分を出さないため、
-// リファクタ前の順序を厳密に保存している。新規キーは末尾に追記していく。
+// KEYS: decides the field order of messages.json. To avoid diffs against the existing messages.json,
+// the order from before the refactor is preserved exactly. New keys are appended at the end.
 export const KEYS = [
   "extDescription",
   "birdWorkingLabel",
@@ -129,7 +129,7 @@ export const KEYS = [
   "quotedSnippet",
 ];
 
-// KEYS とグループファイルの整合性チェック(片方に無いキーがあれば即エラー)。
+// Consistency check between KEYS and the group files (error immediately if a key is missing on either side).
 {
   const inKeys = new Set(KEYS);
   const inGroups = new Set(Object.keys(MERGED));
@@ -141,7 +141,7 @@ export const KEYS = [
   }
 }
 
-// キー名 → placeholder名 → 位置引数。全ロケール共通(文言の言語に依存しない)。
+// key name → placeholder name → positional argument. Shared by all locales (doesn't depend on the language of the text).
 export const PLACEHOLDERS = {
   sinceSeconds: { count: "$1" },
   sinceMinutes: { count: "$1" },
@@ -151,14 +151,14 @@ export const PLACEHOLDERS = {
   quotedSnippet: { snippet: "$1" },
 };
 
-// default_locale。英語が未対応言語ユーザーへのフォールバック。
+// default_locale. English is the fallback for users of unsupported languages.
 export const DEFAULT_LOCALE = "en";
 
-// ロケール一覧は meta グループの extDescription が全ロケール揃っている前提で導出する
-// (グループファイル間で不整合があれば buildMessagesJson が個別ロケールで例外を投げる)。
+// The locale list is derived assuming meta's extDescription exists for every locale
+// (if the group files are inconsistent, buildMessagesJson throws for the individual locale).
 const LOCALES = Object.keys(MERGED[KEYS[0]]);
 
-// TRANSLATIONS: locale → key → text。ロケール逆引きのビューを既存API互換で公開する。
+// TRANSLATIONS: locale → key → text. Exposes a per-locale view, compatible with the existing API.
 export const TRANSLATIONS = Object.fromEntries(
   LOCALES.map((locale) => [
     locale,
@@ -186,8 +186,8 @@ function buildMessagesJson(locale) {
   return out;
 }
 
-// 文言のソースオブトゥルースは scripts/locales/*.mjs のみ。public/_locales/ 配下の
-// messages.json は全ロケール生成物なので直接編集しない(編集はグループファイルに入れて gen:locales)。
+// The only source of truth for strings is scripts/locales/*.mjs. messages.json under public/_locales/
+// is generated for every locale, so don't edit it directly (put edits in the group files and run gen:locales).
 function main() {
   const locales = Object.keys(TRANSLATIONS);
   for (const locale of locales) {
@@ -199,8 +199,8 @@ function main() {
   console.log(`Generated ${locales.length} locales: ${locales.join(", ")}`);
 }
 
-// ESM: このファイルが直接実行されたときだけ生成する(gen-locales.test.mjs等からの
-// import では実行しない)。
+// ESM: generate only when this file is run directly (not when imported from
+// gen-locales.test.mjs etc.).
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main();
 }

@@ -2,8 +2,8 @@ import { Fragment, useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { IconType } from "react-icons/lib";
-// Material filled 系を使う。lucide 等の細線アウトラインは 12px・暗背景では沈むため、
-// ステータス表示用に設計された塗りつぶし形状(check_circle / warning 等)で目立たせる
+// Use the Material filled set. Thin-line outlines like lucide get lost at 12px on a dark background,
+// so filled shapes designed for status display (check_circle / warning etc.) make them stand out
 import {
   MdCheckCircle,
   MdHelp,
@@ -18,10 +18,10 @@ import type { BirdState, SessionEvent, SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { DEFAULT_ICON_SET, ICON_SETS, resolveIconSet } from "./icon-sets";
 
-// glyph は AX テキスト読み上げの代替・将来の画像読み込み失敗時フォールバック用に残す。
-// 実表示は img(gpt-image-2 生成の WebP スプライト)を使う。img は ICON_SETS.birds を
-// source にする(アイコンセット導入により画像の正本は icon-sets.ts 側に一本化した。
-// birds はデフォルトセットなのでここでの参照は今までどおり成立する)
+// glyph is kept as an alternative for AX text readout and as a fallback if image loading ever fails.
+// The actual display uses img (WebP sprites generated with gpt-image-2). img takes ICON_SETS.birds as its
+// source (with the introduction of icon sets, the source of truth for the images was consolidated in
+// icon-sets.ts. birds is the default set, so referencing it here still works as before)
 export const BIRD: Record<BirdState, { glyph: string; label: string; img: string }> = {
   working: {
     glyph: "🐦",
@@ -35,7 +35,7 @@ export const BIRD: Record<BirdState, { glyph: string; label: string; img: string
   },
   done: {
     glyph: "🕊️",
-    // ターンを終えた状態の呼び名は、鳥の状態・イベント・音の設定のボタンで同じ語にそろえる(docs/design.md)
+    // The name for the state after a turn ends is the same word across the bird state, events, and the sound setting buttons (docs/design.md "State names")
     label: t("eventDoneLabel"),
     img: ICON_SETS.birds.done,
   },
@@ -47,8 +47,9 @@ export const BIRD: Record<BirdState, { glyph: string; label: string; img: string
 };
 
 /**
- * 状態ラベル。自分が返事待ち(asking)なら完了・うたた寝でも返事待ちの語(バッジと語を揃える)。
- * 見守り中(相手が動いている)なら見守り中の語。相手が聞いていても、見守り中の鳥は見守り中のまま
+ * State label. If this session needs a reply (asking), use the needs-reply word even when done or dozing
+ * (the word matches the badge). If watching (the peer is working), use the watching word. Even if the peer
+ * is asking, a watching bird stays watching
  */
 export function birdLabel(state: BirdState, asking: boolean, watching = false): string {
   if (asking) return BIRD.waiting.label;
@@ -56,12 +57,13 @@ export function birdLabel(state: BirdState, asking: boolean, watching = false): 
   return BIRD[state].label;
 }
 
-/** BirdState を絵文字ではなく WebP スプライトで表示する共通コンポーネント。
- * alt は空 — 呼び出し側で必ず隣に状態ラベルのテキストが並ぶため装飾扱いにできる。
- * flip はにわ用の左右反転(全員同じ向きだと剥製っぽいので、id 由来で半々に散らす)。
- * set はプロジェクトに割り当てられたアイコンセット(未指定は DEFAULT_ICON_SET = birds)。
- * asking はユーザーの返事待ち(lib/jev.ts の needsAnswer)。全アイコンセット共通の「?」バッジを
- * 右上に重ねる。にわ・止まり木・巣箱の一覧すべてこの部品で出す */
+/** Shared component that shows a BirdState as a WebP sprite instead of an emoji.
+ * alt is empty — callers always put the state label text next to it, so it can be treated as decorative.
+ * flip is the horizontal mirror for the garden (if everyone faces the same way it looks stuffed, so it is
+ * split half and half based on the id).
+ * set is the icon set assigned to the project (DEFAULT_ICON_SET = birds when unspecified).
+ * asking means waiting on the user's reply (needsAnswer in lib/jev.ts). Overlays the "?" badge, shared by
+ * all icon sets, at the top right. The Garden, the Perch, and the nest list all render through this component */
 export function BirdGlyph({
   state,
   size,
@@ -75,15 +77,14 @@ export function BirdGlyph({
   set?: IconSetId;
   asking?: boolean;
 }) {
-  // working だけ「気を溜めているオーラ」演出クラスを付ける(perch.css の .bird-working-fx)。
-  // flip は以前 style.transform: scaleX(-1) で直接反転していたが、working 時は同じ
-  // transform プロパティを CSS アニメ(揺らぎ/ペック)側が握るため、カスタムプロパティ
-  // (--glyph-flip)経由に変える。perch.css の .bird-glyph-img(静止時)と working の
-  // 各 keyframes(アニメ中)が両方とも var(--glyph-flip, 1) を掛け合わせるので、
-  // working/非 working どちらでも反転が保たれる
-  // 値は文字列で渡す。React はカスタムプロパティ(--*)には px 付与をせず値をそのまま
-  // 文字列化して通すため数値でも動くが、これは長さではなく scaleX の因子なので、
-  // 単位付与の議論自体が当てはまらない値であることを文字列表記で明示しておく
+  // Only working gets the "charging aura" effect class (.bird-working-fx in perch.css).
+  // flip used to mirror directly with style.transform: scaleX(-1), but while working the CSS animation
+  // (sway/peck) owns the same transform property, so it goes through a custom property (--glyph-flip)
+  // instead. Both .bird-glyph-img in perch.css (at rest) and each working keyframes (during animation)
+  // multiply by var(--glyph-flip, 1), so the mirror is kept whether working or not
+  // The value is passed as a string. React doesn't append px to custom properties (--*) and passes the
+  // value through stringified, so a number would also work, but this is a scaleX factor, not a length,
+  // and the string form makes it explicit that the question of units doesn't apply to it
   const style = flip ? ({ "--glyph-flip": "-1" } as CSSProperties) : undefined;
   return (
     <span className="bird-glyph" style={{ "--glyph-size": `${size}px` } as CSSProperties}>
@@ -105,22 +106,23 @@ export function BirdGlyph({
   );
 }
 
-// イベント種別の色分類。個別の色を種別ごとにバラバラに割り当てず、意味の系統に束ねる
+// Color classes for event types. Rather than giving each type its own separate color, types are grouped
+// by meaning
 export type EventTone = "done" | "turn" | "alert" | "log";
 
-// transcript から再構成した遷移イベント(実験機能)の見た目。アイコン(形状)+色(tone)+
-// ラベルの三重で意味を運ぶ。チェックマーク等の記号として設計されたアイコンは
-// 小サイズでも判読できるため、色ドット単独よりアイコンを採用する
+// Look of the transition events reconstructed from the transcript (experimental feature). Meaning is carried
+// three ways: icon (shape) + color (tone) + label. Icons designed as symbols, such as a check mark, stay
+// legible at small sizes, so icons are used rather than a color dot alone
 export const EVENT: Record<SessionEvent["type"], { label: string; tone: EventTone; icon: IconType }> = {
   started: { label: t("eventStartedLabel"), tone: "log", icon: MdPlayArrow },
   done: { label: t("eventDoneLabel"), tone: "done", icon: MdCheckCircle },
-  // 返事を待っている状態の呼び名は、鳥の状態・イベント・音の設定のボタンで同じ語にそろえる(docs/design.md)
+  // The name for the state waiting on a reply is the same word across the bird state, events, and the sound setting buttons (docs/design.md "State names")
   waiting: { label: t("birdWaitingLabel"), tone: "turn", icon: MdHelp },
   closed: { label: t("eventClosedLabel"), tone: "log", icon: MdStopCircle },
 };
 
-/** クリックで Ghostty のペインへ移れる要素に付ける属性(止まり木の行・イベントカード・にわの鳥)。
- * 対応が取れないもの(Codex・mock)は何も付けない = 押しても何も起きず、見た目も変えない */
+/** Attributes for elements that jump to the Ghostty pane on click (Perch rows, event cards, garden birds).
+ * Nothing is added for ones that can't be matched (Codex, mock) = clicking does nothing and the look doesn't change */
 export function focusProps(id: string, onFocus?: (id: string) => void, canFocus?: (id: string) => boolean) {
   if (!onFocus || !canFocus?.(id)) return {};
   return {
@@ -129,8 +131,8 @@ export function focusProps(id: string, onFocus?: (id: string) => void, canFocus?
   };
 }
 
-/** working 中だけ表示する脈動ドット。「動いている行」を一目で分かるようにする。
- * garden.tsx からも同じ見た目を使うため export する */
+/** Pulsing dots shown only while working. Makes "rows that are moving" recognizable at a glance.
+ * Exported because garden.tsx uses the same look */
 export function LiveDots() {
   return (
     <span className="live-dots">
@@ -142,8 +144,9 @@ export function LiveDots() {
 }
 
 /**
- * 止まり木の並び。見守り中でつながっている鳥のうち、先に起動した方(startedAt が小さい方。無ければ
- * 並びの先)を親にし、それ以外を親の直後に並べる。親は 1 段だけ(相手の相手は同じ親の下に並べる)
+ * Perch ordering. Among birds linked by watching, the one started first (smaller startedAt; if absent,
+ * the earlier in the list) becomes the parent, and the others are placed right after it. Only one level of
+ * parent (a peer's peer goes under the same parent)
  */
 function orderByWatchLinks(sessions: SessionView[]): {
   ordered: SessionView[];
@@ -153,7 +156,7 @@ function orderByWatchLinks(sessions: SessionView[]): {
   const rank = new Map(sessions.map((s, i) => [s.id, i]));
   const earlier = (a: SessionView, b: SessionView) =>
     (a.startedAt ?? Infinity) - (b.startedAt ?? Infinity) || (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0);
-  // つながりの成分ごとに、いちばん先に起動した鳥を親にする
+  // For each connected component, the bird started first becomes the parent
   const rootOf = new Map<string, SessionView>();
   for (const start of sessions) {
     if (rootOf.has(start.id) || !start.peers?.some((p) => p.viewId && byId.has(p.viewId))) continue;
@@ -186,8 +189,9 @@ function orderByWatchLinks(sessions: SessionView[]): {
 }
 
 /**
- * 見守り中の親の下に並べる相手の名前。親と同じフォルダなら出さない(undefined。
- * にわのブロックでも同じ)。親の配下なら親の作業フォルダからの相対パス、配下でなければフォルダ名(表示名)
+ * Name of a peer listed under a watching parent. Not shown if it is in the same folder as the parent
+ * (undefined; the same in garden blocks). If under the parent, the path relative to the parent's working
+ * folder; otherwise the folder name (display name)
  */
 export function relativeLabel(parent: SessionView, child: SessionView): string | undefined {
   const base = parent.cwd?.replace(/\/+$/, "");
@@ -198,11 +202,12 @@ export function relativeLabel(parent: SessionView, child: SessionView): string |
 }
 
 /**
- * 鳥の状態の行(状態の語 · 経過時間 · ツール名)。止まり木の行とにわの鳥の両方で使う。
- * 並べる先(止まり木の .bird-row-main、にわの .garden-status)は flex で、状態の語と経過時間は縮めず、
- * ツール名は全部が収まらなければ丸ごと隠す(perch.css の .bird-row-tool)。ツール名は最後に置き、
- * 隠れたときの空きが語と時間の間に出ないようにする。返事待ちは「返事待ち · 経過時間」だけ
- * (何を聞かれているかは吹き出しに出す)
+ * A bird's status line (state word · elapsed time · tool name). Used by both Perch rows and garden birds.
+ * The container (.bird-row-main on the Perch, .garden-status in the garden) is flex; the state word and
+ * elapsed time don't shrink, and the tool name is hidden entirely if it doesn't fit (.bird-row-tool in
+ * perch.css). The tool name goes last so that the gap left when it is hidden doesn't appear between the
+ * word and the time. Needs reply shows only "needs reply · elapsed time"
+ * (what is being asked goes in the speech bubble)
  */
 export function StatusParts({
   session,
@@ -214,9 +219,9 @@ export function StatusParts({
   session: SessionView;
   asking: boolean;
   liveDots?: boolean;
-  /** にわ用。ツール名を隠さず、状態の行の下に 1 行で出す */
+  /** For the garden. Don't hide the tool name; show it on one line below the status line */
   toolOnOwnLine?: boolean;
-  /** 見守り中のブロックの狭いマス用(toolOnOwnLine と一緒に使う)。1 段目は状態の語だけにし、経過時間はツール名と 2 段目に出す */
+  /** For the narrow cells of a watching block (used with toolOnOwnLine). The first line has only the state word; elapsed time goes on the second line with the tool name */
   stacked?: boolean;
 }) {
   const tool = session.toolName && !asking ? session.toolName : undefined;
@@ -248,8 +253,8 @@ export function StatusParts({
   return (
     <>
       <span className="status bird-row-label">
-        {/* 猶予の間(相手が止まって 5 分以内。watching が 0)も「見守り中」と出す。巣箱にしまわずにわに残している理由と
-            同じ判定にそろえる(lib/watching.ts) */}
+        {/* During the grace period (within 5 minutes after the peer stopped; watching is 0) it still shows "watching". Uses the
+            same check as the reason it is kept in the garden instead of the nest (lib/watching.ts) */}
         {birdLabel(session.state, asking, session.watching !== undefined)}
       </span>
       <span className="status bird-row-since">
@@ -265,11 +270,11 @@ export function StatusParts({
   );
 }
 
-// 止まり木の行の依頼の抜き出しは、これより狭くなったら丸ごと隠す(「「.」のような切れ端を出さない)
+// The request excerpt on a Perch row is hidden entirely when narrower than this (so fragments like "「." aren't shown)
 const SNIPPET_MIN_VISIBLE_EM = 2.5;
 
-/** 止まり木の行の依頼の抜き出し。幅は perch.css の .bird-row-snippet が決め、ここでは狭すぎるときに隠すだけ
- * (visibility なので幅は変わらず、測り直しでちらつかない) */
+/** The request excerpt on a Perch row. Its width is set by .bird-row-snippet in perch.css; this only hides it
+ * when too narrow (it uses visibility, so the width doesn't change and remeasuring doesn't flicker) */
 function RowSnippet({ text }: { text: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -302,8 +307,8 @@ export function Perch({
   hasGranted: boolean;
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
-  // slug → 割り当ての辞書。未指定/割り当ての無い slug は resolveIconSet が
-  // DEFAULT_ICON_SET へフォールバックする
+  // slug → assignment map. For unspecified or unassigned slugs, resolveIconSet
+  // falls back to DEFAULT_ICON_SET
   iconSetAssignments?: IconSetAssignments;
 }) {
   if (sessions.length === 0) {
@@ -313,9 +318,9 @@ export function Perch({
       </div>
     );
   }
-  // 見守り中のつながりは、先に起動した方を親にして相手の行をその下に字下げして並べる(docs/design.md)
+  // For watching links, the one started first becomes the parent and the peers' rows are indented below it (docs/design.md "Watching")
   const { ordered, parentOf } = orderByWatchLinks(sessions);
-  // 見守り中の組: 親の id(親自身は自分の id)。組の中の区切り線は破線、組の外との境目は実線にする
+  // Watching group: the parent's id (the parent itself uses its own id). Dividers inside a group are dashed; the border with the outside is solid
   const groupOf = (s: SessionView): string | undefined =>
     parentOf.get(s.id)?.id ?? (ordered.some((o) => parentOf.get(o.id)?.id === s.id) ? s.id : undefined);
   const continuesGroup = (s: SessionView, i: number): boolean => {
@@ -337,26 +342,26 @@ export function Perch({
               {...focus}
               className={`bird ${s.state}${parent ? " linked-child" : ""}${continuesGroup(s, i) ? " linked-continues" : ""} ${focus.className ?? ""}`}
             >
-              {/* 1 段目(鳥・名前・状態)。吹き出しは 2 段目に別に置き、1 段目は折り返さない */}
+              {/* First line (bird, name, status). The speech bubble goes separately on a second line; the first line doesn't wrap */}
               <div className="bird-row-main">
               <BirdGlyph state={s.state} size={18} set={set} asking={hasQuestion(s)} />
-              {/* 幅が足りないときに縮める順は、依頼の抜き出し → 名前 → 状態(perch.css の .bird-row-*)。
-                  状態の語と経過時間は常に残し、ツール名は収まらなければ丸ごと隠す */}
-              {/* 字下げした相手の行は、親の作業フォルダからの相対パスで呼ぶ(配下でなければフォルダ名) */}
-              {/* 親と同じフォルダの相手の行は名前を出さない(relativeLabel が undefined) */}
+              {/* When width runs short, the shrink order is request excerpt → name → status (.bird-row-* in perch.css).
+                  The state word and elapsed time always stay; the tool name is hidden entirely if it doesn't fit */}
+              {/* Indented peer rows are named by the path relative to the parent's working folder (the folder name if not under it) */}
+              {/* Peer rows in the same folder as the parent show no name (relativeLabel is undefined) */}
               {(() => {
                 const name = parent ? relativeLabel(parent, s) : s.project;
                 return name !== undefined && <span className="name bird-row-name">{name}</span>;
               })()}
-              {/* 直近のユーザー発言(lib/sessions.ts が常時付与。窓内に発言が無いセッションのみ無し) */}
+              {/* The latest user message (always set by lib/sessions.ts; absent only for sessions with no message in the window) */}
               {s.snippet && <RowSnippet text={s.snippet} />}
               <StatusParts session={s} asking={asking} liveDots />
               </div>
               {bubble && <SpeechBubble text={bubble} placement="row" />}
             </li>
-            {/* ひなは親と同じプロジェクト所属なので、親と同じセットのひな画像(chick)を使う */}
+            {/* Chicks belong to the same project as the parent, so use the chick image from the parent's set */}
             {s.chicks?.map((c) => (
-              // ひなは親のペインへ移る(lib/ghostty.ts の focusTargetOf)
+              // Chicks jump to the parent's pane (focusTargetOf in lib/ghostty.ts)
               <li
                 key={c.id}
                 {...focus}
@@ -387,12 +392,12 @@ export function Perch({
   );
 }
 
-// 実験機能なので件数は控えめに絞る。
-// カード = 1セッション。同一セッションの過去イベントは出さず、最新1件だけ表示する
+// It's an experimental feature, so keep the count modest.
+// One card = one session. Past events of the same session aren't shown; only the latest one is
 const EVENT_FEED_CARD_LIMIT = 6;
 
-// events は新しい順で来る(lib/sessions.ts)。sessionId ごとに最初に見た e が最新なので、
-// Map の挿入順がそのまま「最新イベントを持つセッション順」= カード表示順になる
+// events arrive newest first (lib/sessions.ts). The first e seen per sessionId is the latest, so
+// the Map's insertion order is directly "sessions ordered by latest event" = the card display order
 function pickLatestPerSession(events: SessionEvent[]): SessionEvent[] {
   const map = new Map<string, SessionEvent>();
   for (const e of events) {
@@ -401,8 +406,8 @@ function pickLatestPerSession(events: SessionEvent[]): SessionEvent[] {
   return [...map.values()];
 }
 
-/** 表示上のイベント種別。Jev が返事待ちと判定したターンの done は、にわ・止まり木の「?」と
- * 揃えて応答待ちとして見せる(docs/design.md「判断待ちの鳥に「?」を付ける」) */
+/** The event type as displayed. A done for a turn where the Jev verdict is needs reply is shown as needs reply,
+ * matching the "?" in the Garden and on the Perch (docs/design.md "The "?" for sessions waiting on you") */
 export function eventKind(e: SessionEvent): SessionEvent["type"] {
   return e.type === "done" && e.ask?.status === "asking" ? "waiting" : e.type;
 }
@@ -416,7 +421,7 @@ export function EventFeed({
   events: SessionEvent[];
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
-  // タブビューでは上のタブラベルが見出しを兼ねるため h2 を出さない(App.tsx は常に false を渡す)
+  // In the tab view the tab label above doubles as the heading, so no h2 is rendered (App.tsx always passes false)
   showHeading?: boolean;
 }) {
   const latest = pickLatestPerSession(events).slice(0, EVENT_FEED_CARD_LIMIT);
@@ -443,9 +448,9 @@ export function EventFeed({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
-                // muted: ひな待ちで抑止されていた done が親の再起動でキャンセルされ、鳴らなかった
-                // もの(lib/sessions.ts の deriveDoneEvent 参照)。カード全体を淡色化して、
-                // 鳴った done と見分けが付くようにする(派手なバッジは付けない)
+                // muted: a done that was held back while waiting on chicks, then canceled when the parent
+                // restarted, so it never chirped (see deriveDoneEvent in lib/sessions.ts). The whole card is
+                // dimmed so it can be told apart from a done that chirped (no flashy badge)
                 className={`event-card event-${kind}${e.muted ? " event-muted" : ""} ${focus.className ?? ""}`}
               >
                 <Icon className={`event-icon tone-${EVENT[kind].tone}`} size={16} />
@@ -466,7 +471,7 @@ export function EventFeed({
                     )}
                     <span className="event-time">{formatEventTime(e.at)}</span>
                   </div>
-                  {/* そのターンの吹き出しと同じ文(App.tsx の displayEvents が付ける) */}
+                  {/* The same text as that turn's speech bubble (set by displayEvents in App.tsx) */}
                   {e.line && <SpeechBubble text={e.line} placement="row" />}
                 </div>
               </motion.li>
@@ -489,9 +494,9 @@ export function formatSince(ms: number): string {
   ]);
 }
 
-// 絶対時刻(HH:MM)ではなく相対時間で出す。止まり木行の formatSince と同じ表記に
-// 揃えることで、追加の i18n キーなしに43ロケール対応を維持する。
-// 再描画はポーリング(3秒)ごとの setEvents で起きるため、表示も自然に追従する
+// Shown as relative time rather than absolute time (HH:MM). Using the same notation as formatSince on
+// Perch rows keeps support for 43 locales without extra i18n keys.
+// Re-renders happen via setEvents on every poll (3 seconds), so the display naturally keeps up
 export function formatEventTime(at: number): string {
   return formatSince(Math.max(0, Date.now() - at));
 }

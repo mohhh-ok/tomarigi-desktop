@@ -181,8 +181,8 @@ export default {
     sl: "zaprto",
     ca: "tancada",
   },
-  // イベントフィードの done カードに付くミュートアイコンの title(アクセシブルネーム)。
-  // muted=true(ひな待ち抑止 done が親の再起動でキャンセルされ鳴らなかった)を示す
+  // title (accessible name) of the mute icon on done cards in the event feed.
+  // Indicates muted=true (a done held back while waiting for chicks was canceled by the parent restarting, so it didn't sound)
   eventMutedTitle: {
     en: "Muted (no sound)",
     ja: "ミュート(鳴りません)",

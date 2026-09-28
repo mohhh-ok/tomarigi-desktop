@@ -1,9 +1,9 @@
-// done 読み上げ用の要約タスク(BYOK 専用)。runJudge(lib/judge.ts)の消費者。
+// Summary task for done readout (BYOK only). A consumer of runJudge (lib/judge.ts).
 //
-// 同じ入力に対して繰り返しポーリングされることがない: 呼び出し元(lib/voice.ts の
-// speakDoneEvent)は「新規 done イベントを検知した瞬間に1回だけ」呼ぶ(App.tsx の
-// seenEventKeysRef が同一イベントの再処理自体を防いでいる)。そのためモジュールレベルの
-// verdict キャッシュ・pending 管理は持たず、runJudge を薄くラップするだけにしている。
+// It is never polled repeatedly for the same input: the caller (speakDoneEvent in lib/voice.ts)
+// calls it "exactly once, the moment a new done event is detected" (seenEventKeysRef in App.tsx
+// prevents reprocessing the same event in the first place). So there is no module-level
+// verdict cache or pending tracking; this is just a thin wrapper around runJudge.
 
 import { runJudge, type JudgeResult, type JudgeTaskDefinition } from "./judge";
 import { runOpenAiJudge } from "./openai-judge";
@@ -19,8 +19,8 @@ export interface SummarizePayload {
   assistant_text: string;
 }
 
-// prompt(ユーザー発言)・assistant_text(アシスタント最終応答)は untrusted input。
-// 出力は読み上げにそのまま乗せる短い1文に固定する
+// prompt (what the user said) and assistant_text (the assistant's last reply) are untrusted input.
+// The output is fixed to one short sentence that goes straight into the readout
 const SUMMARIZE_DONE_TASK: JudgeTaskDefinition = {
   name: "summarize_done",
   systemPrompt:
@@ -42,7 +42,7 @@ const SUMMARIZE_DONE_TASK: JudgeTaskDefinition = {
   maxTokens: 256,
 };
 
-/** done イベントの要約を1回だけ取得する。エラーは runJudge と同じく例外にせず JudgeResult で返す */
+/** Fetches the summary of a done event exactly once. Errors are returned as a JudgeResult, not thrown, like runJudge */
 export async function summarizeDoneEvent(
   provider: AiProvider,
   payload: SummarizePayload,
@@ -51,9 +51,9 @@ export async function summarizeDoneEvent(
   return run<SummarizeVerdict>(SUMMARIZE_DONE_TASK, payload);
 }
 
-// ---- 鳥の吹き出し(セリフ)用の要約(docs/design.md「鳥に直近のメッセージを短く要約したセリフを吹き出しで出す」) ----
-// ターンが終わったときの最後の応答を 1 回だけ要約する。呼び出し元(App.tsx)がターン(turnKey)ごとに
-// 重複を防ぐので、ここでもキャッシュは持たない
+// ---- Summaries for birds' speech bubbles (docs/design.md "Speech bubbles") ----
+// Summarizes the last reply exactly once when a turn ends. The caller (App.tsx) prevents duplicates per turn (turnKey),
+// so there's no cache here either
 
 export interface TurnLineVerdict {
   line: string;
@@ -86,7 +86,7 @@ const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
   maxTokens: 256,
 };
 
-/** 吹き出しの 1 行を取得する。エラーは例外にせず JudgeResult で返す */
+/** Fetches the one line for the speech bubble. Errors are returned as a JudgeResult, not thrown */
 export async function summarizeTurnLine(
   provider: AiProvider,
   payload: TurnLinePayload,

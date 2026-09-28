@@ -6,8 +6,8 @@ const DB_NAME = "tomarigi";
 const STORE = "kv";
 const KEY_ROOTS = "roots";
 const KEY_MUTED = "muted";
-// IndexedDB での API キーの保存名。dev の保存先と、以前の版が残したキーの移行(initApiKeys)に使う。
-// Anthropic は旧称 "judgeApiKey" のまま(以前の版のキーを読めるように)
+// Names the API keys are saved under in IndexedDB. Used for the dev store and for migrating keys left by older versions (initApiKeys).
+// Anthropic keeps its old name "judgeApiKey" (so keys from older versions can be read)
 const KEY_AI_API_KEY = "judgeApiKey";
 const KEY_OPENAI_API_KEY = "openAiApiKey";
 const KEY_TYPESAFE_API_KEY = "typeSafeApiKey";
@@ -18,21 +18,21 @@ const KEY_CHIRP_VOLUME = "chirpVolume";
 
 export type RootKind = "claude" | "codex";
 export type AiProvider = "anthropic" | "openai";
-// 設定画面の BYOK に並ぶ提供元。typesafe は要約には使わず、判断待ちの判定(lib/jev.ts)専用
+// Providers listed under BYOK on the settings screen. typesafe is not used for summaries; it is only for the needs-reply verdict (lib/jev.ts)
 export type ApiKeyProvider = AiProvider | "typesafe";
 
 export interface RootEntry {
   id: string;
   kind: RootKind;
-  label: string; // ユーザーが付ける表示名(フォルダ名だけでは区別に使えない)
-  path: string; // 監視フォルダの絶対パス
-  // 既定で常に監視するフォルダ(~/.claude/projects 等)。削除できず、保存した登録リストには入れない
+  label: string; // display name the user gives it (the folder name alone isn't enough to tell them apart)
+  path: string; // absolute path of the watched folder
+  // A folder always watched by default (~/.claude/projects etc.). Can't be removed and isn't put into the saved list
   builtin: boolean;
-  // path から作る読み取り handle。永続化しない(saveRoots で落とし loadRoots で作り直す)
+  // read handle built from path. Not persisted (saveRoots drops it and loadRoots rebuilds it)
   handle: NativeDirectoryHandle;
 }
 
-// 保存するのはユーザーが追加したものだけ
+// Only what the user added is saved
 type StoredRoot = Omit<RootEntry, "handle" | "builtin">;
 
 interface DefaultRoot {
@@ -42,12 +42,12 @@ interface DefaultRoot {
   exists: boolean;
 }
 
-// 既定フォルダの表示名。key は Rust の default_roots と対応する
+// Display names of the default folders. Keys correspond to default_roots in Rust
 const DEFAULT_LABEL: Record<string, string> = {
   claude: "Claude Code",
   codex: "Codex",
 };
-// 既定フォルダのラベル編集の保存先(既定は登録リストに入れないので別に持つ)。key → label
+// Where edited labels of default folders are saved (defaults aren't in the saved list, so they're kept separately). key → label
 const KEY_DEFAULT_ROOT_LABELS = "defaultRootLabels";
 
 function db(): Promise<IDBPDatabase> {
@@ -63,9 +63,9 @@ function withHandle(root: Omit<RootEntry, "handle">): RootEntry {
 }
 
 /**
- * 監視フォルダ一覧 = 既定フォルダ(実在するもの)+ ユーザーが追加したもの。
- * 既定は起動のたびに Rust から受け取る(保存しない)。以前の版が「初回に自動登録」で保存した
- * 既定と同じパスの登録は捨てて保存し直す(二重に監視しない)。docs/design.md の監視フォルダ参照
+ * Watched folders = default folders (those that exist) + folders the user added.
+ * Defaults are received from Rust on every launch (not saved). Entries that older versions saved with "auto-register on first
+ * launch" and that match a default path are dropped and the list is saved again (no double watching). See docs/design.md "How the desktop app works"
  */
 export async function loadRoots(): Promise<RootEntry[]> {
   const database = await db();
@@ -92,7 +92,7 @@ export async function loadRoots(): Promise<RootEntry[]> {
   return [...builtins, ...added.map((root) => withHandle({ ...root, builtin: false }))];
 }
 
-/** 追加したものは登録リストへ、既定はラベルだけを保存する */
+/** Added folders go into the saved list; for defaults only the label is saved */
 export async function saveRoots(roots: RootEntry[]): Promise<void> {
   const database = await db();
   const stored: StoredRoot[] = roots
@@ -107,9 +107,9 @@ export async function saveRoots(roots: RootEntry[]): Promise<void> {
 }
 
 /**
- * ネイティブのフォルダ選択を開き、選んだフォルダを新しいルートとして返す。
- * キャンセルは "cancelled"、登録済み(既定を含む)と同じフォルダは "duplicate"。
- * 保存はしない。呼び出し側が saveRoots すること。
+ * Opens the native folder picker and returns the chosen folder as a new root.
+ * Returns "cancelled" on cancel, and "duplicate" for a folder that is already registered (including defaults).
+ * Doesn't save. The caller must call saveRoots.
  */
 export async function pickNewRoot(
   existing: RootEntry[],
@@ -140,12 +140,12 @@ function nextAutomaticLabel(existing: StoredRoot[], kind: RootKind): string {
   }
 }
 
-/** フォルダが今読めるか。読めれば "granted"(tomarigi の queryPermission と同じ値で返す) */
+/** Whether the folder can be read now. Returns "granted" if readable (the same value as tomarigi's queryPermission) */
 export async function queryRead(root: RootEntry): Promise<PermissionState> {
   return (await isReadableDir(root.path)) ? "granted" : "denied";
 }
 
-/** 鳴き声のミュート設定。デフォルトは音あり */
+/** Mute setting for chirps. Sound is on by default */
 export async function loadMuted(): Promise<boolean> {
   return (await (await db()).get(STORE, KEY_MUTED)) === true;
 }
@@ -154,10 +154,10 @@ export async function saveMuted(muted: boolean): Promise<void> {
   await (await db()).put(STORE, muted, KEY_MUTED);
 }
 
-// ---- BYOK の API キー(docs/design.md「BYOK の API キー…」) ----
-// キーの保存先は Rust が起動時に identifier で決める(src-tauri の KeyStore)。普段使い・verify はキーチェーン、
-// dev は IndexedDB。キーを使う API 呼び出しは Rust から出すので、JS はキーの値を読まない。
-// JS がするのは、保存・削除・保存済みかどうかを Rust に頼むことと、dev のときの IndexedDB への保存だけ
+// ---- BYOK API keys (docs/design.md "BYOK API keys") ----
+// Where keys are stored is decided by Rust at launch from the identifier (KeyStore in src-tauri). Everyday and verify builds use the Keychain,
+// dev uses IndexedDB. API calls that use keys are made from Rust, so JS never reads key values.
+// All JS does is ask Rust to save, delete, or check whether a key is saved, plus saving to IndexedDB in dev
 
 const API_KEY_IDB_KEYS: Record<ApiKeyProvider, string> = {
   anthropic: KEY_AI_API_KEY,
@@ -173,8 +173,8 @@ async function apiKeyBackend(): Promise<ApiKeyBackend> {
 }
 
 /**
- * 起動時に 1 回呼ぶ。dev(webview)は IndexedDB のキーを Rust に渡す(Rust はメモリにだけ持つ)。
- * キーチェーンの版は、以前の版が IndexedDB に残したキーをキーチェーンへ移し、IndexedDB から消す
+ * Called once at launch. dev (webview) passes the keys in IndexedDB to Rust (Rust keeps them only in memory).
+ * Keychain builds move keys that older versions left in IndexedDB to the Keychain and delete them from IndexedDB
  */
 export async function initApiKeys(): Promise<void> {
   const backend = await apiKeyBackend();
@@ -190,7 +190,7 @@ export async function initApiKeys(): Promise<void> {
     }
   }
   if (backend === "webview") {
-    // 検証用の取り込み(src-tauri の import_key_from_stdin)。dev と同じく IndexedDB に入れる
+    // Import for verification (import_key_from_stdin in src-tauri). Goes into IndexedDB, same as dev
     const { listen } = await import("@tauri-apps/api/event");
     await listen<[ApiKeyProvider, string]>("key-imported", ({ payload: [provider, value] }) => {
       void store.put(STORE, value, API_KEY_IDB_KEYS[provider]);
@@ -198,9 +198,9 @@ export async function initApiKeys(): Promise<void> {
   }
 }
 
-/** 提供元ごとに保存済みかどうか(値は受け取らない) */
+/** Whether a key is saved for each provider (values are not received) */
 export async function loadApiKeyStatus(): Promise<Record<ApiKeyProvider, boolean>> {
-  // Rust に聞けない(Tauri の外で dist を開いた確認用の画面など)ときは保存なしとして進む
+  // When Rust can't be asked (e.g. a check screen that opens dist outside Tauri), proceed as if nothing is saved
   const status = await invoke<Partial<Record<ApiKeyProvider, boolean>>>("key_status").catch(
     () => ({}) as Partial<Record<ApiKeyProvider, boolean>>,
   );
@@ -211,7 +211,7 @@ export async function loadApiKeyStatus(): Promise<Record<ApiKeyProvider, boolean
   };
 }
 
-/** キーを保存する(差し替えも同じ)。dev は IndexedDB にも書く */
+/** Saves a key (replacing works the same way). dev also writes to IndexedDB */
 export async function saveApiKey(provider: ApiKeyProvider, value: string): Promise<void> {
   await invoke("key_set", { provider, value });
   if ((await apiKeyBackend()) === "webview") {
@@ -221,11 +221,11 @@ export async function saveApiKey(provider: ApiKeyProvider, value: string): Promi
 
 export async function deleteApiKey(provider: ApiKeyProvider): Promise<void> {
   await invoke("key_delete", { provider });
-  // IndexedDB に残っていれば(dev、または移行前のもの)消す
+  // If it's still in IndexedDB (dev, or left from before migration), delete it
   await (await db()).delete(STORE, API_KEY_IDB_KEYS[provider]);
 }
 
-/** 両方のキーがある場合に要約へ使うプロバイダー。キーそのものとは独立して保存する。 */
+/** Provider used for summaries when both keys exist. Saved independently of the keys themselves. */
 export async function loadAiProvider(): Promise<AiProvider | undefined> {
   const saved = await (await db()).get(STORE, KEY_AI_PROVIDER);
   return saved === "anthropic" || saved === "openai" ? saved : undefined;
@@ -239,7 +239,7 @@ export async function deleteAiProvider(): Promise<void> {
   await (await db()).delete(STORE, KEY_AI_PROVIDER);
 }
 
-/** 保存済みの選択が利用可能なら尊重し、片方だけならそのプロバイダーを自動選択する。 */
+/** Respect the saved choice if it's available; if only one key exists, pick that provider automatically. */
 export function resolveAiProvider(
   preferred: AiProvider | undefined,
   hasAnthropic: boolean,
@@ -252,13 +252,13 @@ export function resolveAiProvider(
   return undefined;
 }
 
-/** 要約に使う提供元(保存済みのキーと選択から決める)。キーの値は Rust だけが持つ */
+/** Provider used for summaries (decided from saved keys and the choice). Only Rust holds key values */
 export async function loadActiveAiProvider(): Promise<AiProvider | undefined> {
   const [preferred, status] = await Promise.all([loadAiProvider(), loadApiKeyStatus()]);
   return resolveAiProvider(preferred, status.anthropic, status.openai);
 }
 
-/** イベント読み上げ(speechSynthesis)のオプトイン設定。デフォルトは完全オフ(loadMuted と同じ既定オフのパターン) */
+/** Opt-in setting for event readout (speechSynthesis). Fully off by default (same off-by-default pattern as loadMuted) */
 export async function loadVoiceEnabled(): Promise<boolean> {
   return (await (await db()).get(STORE, KEY_VOICE_ENABLED)) === true;
 }
@@ -268,10 +268,10 @@ export async function saveVoiceEnabled(enabled: boolean): Promise<void> {
 }
 
 /**
- * イベント読み上げの音量(SpeechSynthesisUtterance.volume 相当)。範囲は 0〜1、デフォルトは
- * 最大音量の 1(既存ユーザーは「未設定」を今までどおりの音量として体験させたいため、
- * loadMuted/loadVoiceEnabled と違って既定オフではなく既定フルにする)。保存値が
- * number でない・NaN・範囲外(0未満または1超)の場合は壊れた値として 1 にフォールバックする。
+ * Volume of event readout (equivalent to SpeechSynthesisUtterance.volume). Range 0–1, default is
+ * 1, full volume (so that for existing users "not set" keeps sounding as loud as before,
+ * unlike loadMuted/loadVoiceEnabled this defaults to full instead of off). A saved value that is
+ * not a number, is NaN, or is out of range (below 0 or above 1) is treated as broken and falls back to 1.
  */
 export async function loadVoiceVolume(): Promise<number> {
   const saved = await (await db()).get(STORE, KEY_VOICE_VOLUME);
@@ -284,9 +284,9 @@ export async function saveVoiceVolume(volume: number): Promise<void> {
 }
 
 /**
- * 鳴き声(chirp、lib/chirp.ts の WebAudio 合成)の音量。読み上げ(voiceVolume)とは別軸の
- * 独立設定(ゲームの SE/BGM 音量分離と同じ発想)。範囲・デフォルト・不正値フォールバックは
- * loadVoiceVolume と同じ(0〜1、デフォルト1=既存ユーザーは今までどおりの音量のまま)。
+ * Volume of chirps (WebAudio synthesis in lib/chirp.ts). A separate, independent setting from readout
+ * (voiceVolume), the same idea as separate SE/BGM volumes in games. Range, default, and fallback for invalid values are
+ * the same as loadVoiceVolume (0–1, default 1 = existing users keep the same volume as before).
  */
 export async function loadChirpVolume(): Promise<number> {
   const saved = await (await db()).get(STORE, KEY_CHIRP_VOLUME);
@@ -298,11 +298,11 @@ export async function saveChirpVolume(volume: number): Promise<void> {
   await (await db()).put(STORE, volume, KEY_CHIRP_VOLUME);
 }
 
-// イベント判定の発火履歴(デバッグ用)。デバッグダイアログ で閲覧する永続ログ。
-// インメモリの sessionEventCache は30分 TTL・最大30件でリロードすると消えるため、
-// 「この時刻に done が出たか」を後から確認できるよう別途永続化する。TTL では消さず、
-// 末尾500件のみ保持する(件数の上限は呼び出し側=lib/sessions.ts が管理する)。
-// 値の型は lib/sessions.ts が所有する(ここは入れ物のみ)
+// History of fired event decisions (for debugging). A persistent log viewed in the debug dialog.
+// The in-memory sessionEventCache has a 30-minute TTL and at most 30 entries and is lost on reload, so
+// this is persisted separately so you can check later "did a done fire at this time". Not removed by TTL;
+// only the last 500 entries are kept (the count limit is managed by the caller, lib/sessions.ts).
+// The value type is owned by lib/sessions.ts (this is only the container)
 const KEY_EVENT_LOG = "eventLog";
 
 export async function loadEventLog<T>(): Promise<T[] | undefined> {

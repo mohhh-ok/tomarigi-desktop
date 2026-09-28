@@ -1,19 +1,19 @@
-// 鳥・行のクリックで、その Claude Code が動いている Ghostty のペインへ移る(tomarigi に無く、
-// デスクトップ版で足した機能。docs/design.md「tomarigi に無く、足すもの」)。
-// 対応づけは Rust 側(focus_session): <config>/sessions/<pid>.json の sessionId → pid → ps の tty
-// → Ghostty の `tty of terminal`。対応が取れないもの(Codex・終了済み・mock)は何もしない。
+// Clicking a bird or row moves to the Ghostty pane where that Claude Code is running (not in the tomarigi Chrome extension;
+// a feature added in the desktop version. docs/design.md "Jumping to the Ghostty pane").
+// The mapping is done on the Rust side (focus_session): sessionId in <config>/sessions/<pid>.json → pid → tty from ps
+// → Ghostty's `tty of terminal`. Anything that can't be mapped (Codex, ended sessions, mock) does nothing.
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./fsa";
 
 export interface FocusTarget {
-  configDir: string; // ~/.claude など(監視フォルダ <config>/projects の親)
+  configDir: string; // ~/.claude etc. (parent of the watched folder <config>/projects)
   sessionId: string;
 }
 
 /**
- * SessionView.id / SessionEvent.sessionId / ChickView.id から対応先を作る。
- * id は lib/sessions.ts の `<rootId>/<slug>/<sessionId>.jsonl`(ひなはその後ろに `/<ファイル名>`)。
- * ひなは親のセッションへ移る。
+ * Builds the target from SessionView.id / SessionEvent.sessionId / ChickView.id.
+ * id is `<rootId>/<slug>/<sessionId>.jsonl` from lib/sessions.ts (chicks have `/<file name>` after it).
+ * Chicks move to their parent's session.
  */
 export function focusTargetOf(id: string, roots: RootEntry[]): FocusTarget | null {
   const [rootId, , file] = id.split("/");

@@ -1,10 +1,12 @@
-// tomarigi-desktop の Rust 側。設計は docs/design.md。
-// - 監視フォルダの読み取り(tomarigi の File System Access API の代わり): fs_list / fs_stat / fs_read
-// - 監視フォルダの初期登録・追加: default_roots / pick_folder
-// - 窓: 浮遊窓(NSPanel。透明・枠なし・最前面・全画面スペースの上にも出る)と通常の窓(タイトルバー付き。最大化・
-//   フルスクリーンできる)をその場で切り替える。モードと、モードごとの位置と大きさを保存して復元する
-// - メニューバーのアイコン(表示/非表示・窓のモード・終了)。Dock・Cmd+Tab には通常の窓のときだけ出す
-// - Ghostty のペインへ focus: focus_session(sessionId → pid → tty → Ghostty)
+// Rust side of tomarigi-desktop. Design is in docs/design.md.
+// - Reading watched folders (instead of the File System Access API used by the tomarigi Chrome extension):
+//   fs_list / fs_stat / fs_read
+// - Initial registration and adding of watched folders: default_roots / pick_folder
+// - Window: switches on the fly between the floating window (NSPanel; transparent, borderless, always on top,
+//   also shown above full-screen spaces) and the standard window (with title bar; can maximize and go full
+//   screen). Saves and restores the mode, and the position and size per mode
+// - Menu bar icon (show/hide, window mode, quit). Shown in the Dock and Cmd+Tab only in standard window mode
+// - Focus a Ghostty pane: focus_session (sessionId → pid → tty → Ghostty)
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
@@ -38,7 +40,7 @@ fn home() -> PathBuf {
     PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/".into()))
 }
 
-/// "~/" 始まりをホームに展開する
+/// Expands a leading "~/" to the home directory
 fn expand(path: &str) -> PathBuf {
     match path.strip_prefix("~/") {
         Some(rest) => home().join(rest),
@@ -46,7 +48,7 @@ fn expand(path: &str) -> PathBuf {
     }
 }
 
-// ---- ファイル読み取り ----
+// ---- File reading ----
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -72,7 +74,7 @@ fn entry_of(name: String, meta: &std::fs::Metadata) -> Entry {
     }
 }
 
-/// JS 側(src/lib/native-fs.ts)は "NotFound" 始まりのエラーを DOMException NotFoundError に変換する
+/// The JS side (src/lib/native-fs.ts) converts errors starting with "NotFound" into DOMException NotFoundError
 fn io_err(path: &Path, e: std::io::Error) -> String {
     if e.kind() == std::io::ErrorKind::NotFound {
         format!("NotFound: {}", path.display())
@@ -87,7 +89,7 @@ fn fs_list(path: &str) -> Result<Vec<Entry>, String> {
     let mut out = Vec::new();
     for item in std::fs::read_dir(&dir).map_err(|e| io_err(&dir, e))? {
         let Ok(item) = item else { continue };
-        // シンボリックリンクは辿った先で判定する(設定ディレクトリが symlink のことがある)
+        // Judge symlinks by their target (the config directory is sometimes a symlink)
         let Ok(meta) = std::fs::metadata(item.path()) else { continue };
         out.push(entry_of(item.file_name().to_string_lossy().into_owned(), &meta));
     }
@@ -102,8 +104,8 @@ fn fs_stat(path: &str) -> Result<Entry, String> {
     Ok(entry_of(name, &meta))
 }
 
-/// [start, end) のバイト範囲を UTF-8 として読む。範囲の端で切れた文字は置換文字になる
-/// (Blob.slice().text() と同じ振る舞い)
+/// Reads the byte range [start, end) as UTF-8. Characters cut at the edges of the range become replacement
+/// characters (same behavior as Blob.slice().text())
 #[tauri::command]
 fn fs_read(path: &str, start: u64, end: u64) -> Result<String, String> {
     let p = expand(path);
@@ -114,13 +116,13 @@ fn fs_read(path: &str, start: u64, end: u64) -> Result<String, String> {
     Ok(String::from_utf8_lossy(&buf).into_owned())
 }
 
-/// デバッグダイアログのイベントログ保存。~/Downloads/<name> に書いてパスを返す
+/// Saves the event log from the debug dialog. Writes to ~/Downloads/<name> and returns the path
 #[tauri::command]
 fn save_download(name: &str, content: &str) -> Result<String, String> {
     if name.is_empty() || name.contains('/') || name.starts_with('.') {
         return Err(format!("invalid name {name}"));
     }
-    // 同名があれば Chrome のダウンロードと同じく " (1)" " (2)" … を付けて上書きしない
+    // If the name exists, append " (1)" " (2)" … like Chrome downloads, instead of overwriting
     let dir = home().join("Downloads");
     let (stem, ext) = match name.rsplit_once('.') {
         Some((s, e)) => (s.to_string(), format!(".{e}")),
@@ -137,7 +139,7 @@ fn save_download(name: &str, content: &str) -> Result<String, String> {
     Ok(path.to_string_lossy().into_owned())
 }
 
-// ---- 監視フォルダ ----
+// ---- Watched folders ----
 
 #[derive(Serialize)]
 struct DefaultRoot {
@@ -147,8 +149,9 @@ struct DefaultRoot {
     exists: bool,
 }
 
-/// 既定で常に監視するフォルダ(docs/design.md)。実在しないものも exists=false で返す
-/// (以前の版が保存した同じパスの登録を捨てる判定に使う)
+/// Folders always watched by default (docs/design.md "How the desktop app works"). Ones that don't exist are
+/// also returned, with exists=false (used to decide whether to drop registrations of the same path saved by
+/// earlier versions)
 #[tauri::command]
 fn default_roots() -> Vec<DefaultRoot> {
     [
@@ -163,7 +166,7 @@ fn default_roots() -> Vec<DefaultRoot> {
     .collect()
 }
 
-/// ネイティブのフォルダ選択。キャンセルなら None
+/// Native folder picker. None if cancelled
 #[tauri::command]
 async fn pick_folder(default_path: String) -> Option<String> {
     let start = expand(&default_path);
@@ -175,31 +178,32 @@ async fn pick_folder(default_path: String) -> Option<String> {
     Some(picked.path().to_string_lossy().into_owned())
 }
 
-// ---- BYOK の API キーとキーを使う API 呼び出し ----
-// docs/design.md「BYOK の API キー…」。キーの値は Rust の中だけで扱い、WebView の JS には返さない。
-// 保存先は起動時に identifier で 1 回だけ決める: 普段使い・verify は macOS のキーチェーン(項目は identifier
-// ごと)、dev(identifier が .dev で終わる)は WebView の IndexedDB。dev は署名がビルドのたびに変わり、
-// キーチェーンの許可を毎回聞かれるため。dev では JS が IndexedDB に持ち、起動時と保存時に Rust へ渡す
-// (Rust はメモリにだけ持つ)。キーを使う API 呼び出しはどちらの保存先でも Rust から出す
+// ---- BYOK API keys and the API calls that use them ----
+// docs/design.md "BYOK API keys". Key values are handled only inside Rust and never returned to the WebView JS.
+// The store is decided once at startup from the identifier: everyday use and verify use the macOS Keychain
+// (items per identifier); dev (identifier ending in .dev) uses the WebView's IndexedDB. This is because the dev
+// signature changes on every build, and Keychain permission would be asked every time. In dev, JS keeps the keys
+// in IndexedDB and passes them to Rust at startup and on save (Rust keeps them only in memory). API calls that
+// use keys are made from Rust with either store
 
 const KEY_PROVIDERS: [&str; 3] = ["anthropic", "openai", "typesafe"];
 
 enum KeyStore {
-    /// キーチェーンの generic password。service は `<identifier>.byok`、account は提供元の名前
+    /// Keychain generic password. service is `<identifier>.byok`, account is the provider name
     Keychain { service: String },
-    /// dev: IndexedDB が正で、Rust はメモリに写しを持つだけ
+    /// dev: IndexedDB is the source of truth; Rust only keeps a copy in memory
     WebView,
 }
 
 static KEY_STORE: std::sync::OnceLock<KeyStore> = std::sync::OnceLock::new();
-/// 読んだ・保存したキーの写し(キーチェーンを何度も読みにいかない)
+/// Copy of keys that were read or saved (so the Keychain isn't read over and over)
 static KEY_CACHE: Mutex<Option<std::collections::HashMap<String, String>>> = Mutex::new(None);
 
 fn key_store() -> &'static KeyStore {
     KEY_STORE.get_or_init(|| KeyStore::WebView)
 }
 
-/// 起動時に 1 回だけ呼ぶ。TOMARIGI_KEY_BACKEND=webview は、IndexedDB からの移行を確かめるための上書き
+/// Called once at startup. TOMARIGI_KEY_BACKEND=webview is an override for verifying migration from IndexedDB
 fn init_key_store(identifier: &str) {
     let store = if identifier.ends_with(".dev")
         || std::env::var("TOMARIGI_KEY_BACKEND").is_ok_and(|v| v == "webview")
@@ -241,7 +245,7 @@ fn cache_set(provider: &str, value: Option<String>) {
     }
 }
 
-/// キーの値。Rust の中でだけ使う(コマンドで JS に返さない)
+/// The key value. Used only inside Rust (never returned to JS by a command)
 fn key_of(provider: &str) -> Option<String> {
     if let Some(v) = cache_get(provider) {
         return Some(v);
@@ -271,7 +275,7 @@ fn store_key(provider: &str, value: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// 保存先。JS はこれを見て、dev(webview)のときだけ IndexedDB に保存する
+/// The store. JS checks this and saves to IndexedDB only for dev (webview)
 #[tauri::command]
 fn key_backend() -> &'static str {
     match key_store() {
@@ -280,13 +284,13 @@ fn key_backend() -> &'static str {
     }
 }
 
-/// 提供元ごとに保存済みかどうか。値は返さない
+/// Whether a key is saved, per provider. Values are not returned
 #[tauri::command]
 fn key_status() -> std::collections::HashMap<String, bool> {
     KEY_PROVIDERS.iter().map(|p| (p.to_string(), key_of(p).is_some())).collect()
 }
 
-/// キーを保存する(差し替えも同じ)。値は JS から受け取るだけで、返さない
+/// Saves a key (replacing works the same way). The value is only received from JS, never returned
 #[tauri::command]
 fn key_set(provider: String, value: String) -> Result<(), String> {
     store_key(&provider, &value)?;
@@ -298,7 +302,7 @@ fn key_set(provider: String, value: String) -> Result<(), String> {
 fn key_delete(provider: String) -> Result<(), String> {
     check_provider(&provider)?;
     if let KeyStore::Keychain { service } = key_store() {
-        // 無いものの削除は成功扱い
+        // Deleting something that doesn't exist counts as success
         let _ = security_framework::passwords::delete_generic_password(service, &provider);
     }
     cache_set(&provider, None);
@@ -312,7 +316,7 @@ struct HttpReply {
     body: String,
 }
 
-/// キーの無い呼び出しは、401 と同じ扱い(JS は auth の失敗として出す)
+/// A call without a key is treated the same as a 401 (JS shows it as an auth failure)
 const NO_KEY: &str = "no-key";
 
 async fn post_json(
@@ -334,9 +338,10 @@ async fn post_json(
     Ok(HttpReply { status, body })
 }
 
-/// TypeSafe の評価 API(docs/design.md「判断待ちの鳥に「?」を付ける」)。api.typesafe.ai は
-/// WKWebView の origin(tauri://localhost)を CORS で拒否するうえ、キーを JS に渡さないためここで叩く。
-/// body は JS 側が組んだ JSON をそのまま送り、応答も status と本文をそのまま返す(解釈は lib/jev.ts)
+/// TypeSafe evaluation API (docs/design.md "The "?" for sessions waiting on you"). api.typesafe.ai rejects the
+/// WKWebView origin (tauri://localhost) via CORS, and keys are not passed to JS, so it is called here.
+/// body is the JSON built by the JS side, sent as is; the reply's status and body are also returned as is
+/// (interpreted in lib/jev.ts)
 #[tauri::command]
 async fn typesafe_systemone(body: String) -> Result<HttpReply, String> {
     let key = key_of("typesafe").ok_or_else(|| {
@@ -353,7 +358,8 @@ async fn typesafe_systemone(body: String) -> Result<HttpReply, String> {
     reply
 }
 
-/// 認証の失敗を調べるための、秘匿しない診断(長さ・先頭 4 文字・前後の空白や引用符の有無)
+/// Non-secret diagnostics for investigating auth failures (length, first 4 characters, presence of surrounding
+/// whitespace or quotes)
 fn key_diag(key: &str) -> String {
     let prefix: String = key.chars().take(4).collect();
     let quoted = key.starts_with('"') || key.starts_with('\'') || key.ends_with('"') || key.ends_with('\'');
@@ -361,7 +367,7 @@ fn key_diag(key: &str) -> String {
     format!("len={} prefix={prefix} quoted={quoted} ascii_graphic={ascii}", key.len())
 }
 
-/// Anthropic Messages API(要約・接続テスト。lib/judge.ts)
+/// Anthropic Messages API (summary and connection test; lib/judge.ts)
 #[tauri::command]
 async fn anthropic_messages(body: String) -> Result<HttpReply, String> {
     let key = key_of("anthropic").ok_or(NO_KEY)?;
@@ -373,16 +379,17 @@ async fn anthropic_messages(body: String) -> Result<HttpReply, String> {
     .await
 }
 
-/// OpenAI Responses API(要約・接続テスト。lib/openai-judge.ts)
+/// OpenAI Responses API (summary and connection test; lib/openai-judge.ts)
 #[tauri::command]
 async fn openai_responses(body: String) -> Result<HttpReply, String> {
     let key = key_of("openai").ok_or(NO_KEY)?;
     post_json("https://api.openai.com/v1/responses", vec![("authorization", format!("Bearer {key}"))], body).await
 }
 
-/// 検証用: TOMARIGI_IMPORT_KEY=<提供元> で起動すると、標準入力の 1 行目をその提供元のキーとして保存する
-/// (設定画面を手で操作できない環境で、保存・再起動・移行を確かめるため。値はログに出さず長さだけ出す)。
-/// 保存先が webview のときは IndexedDB に入れるよう JS に "key-imported" で渡す(dev と同じ経路)
+/// For verification: when launched with TOMARIGI_IMPORT_KEY=<provider>, saves the first line of stdin as that
+/// provider's key (to verify saving, restarting, and migration in environments where settings can't be operated
+/// by hand. The value is not logged, only its length).
+/// When the store is webview, passes it to JS via "key-imported" so it goes into IndexedDB (same path as dev)
 fn import_key_from_stdin(app: &AppHandle) {
     let Ok(provider) = std::env::var("TOMARIGI_IMPORT_KEY") else { return };
     let mut line = String::new();
@@ -396,7 +403,7 @@ fn import_key_from_stdin(app: &AppHandle) {
             if matches!(key_store(), KeyStore::WebView) {
                 let handle = app.clone();
                 std::thread::spawn(move || {
-                    // WebView の読み込みを待ってから渡す
+                    // Wait for the WebView to load before passing it
                     std::thread::sleep(std::time::Duration::from_millis(3000));
                     handle.emit("key-imported", (provider, value)).ok();
                 });
@@ -423,9 +430,9 @@ fn osascript(script: &str) -> String {
     }
 }
 
-/// tty が一致する Ghostty の terminal を focus し、focus 後の前面ペインの tty を返す
+/// Focuses the Ghostty terminal whose tty matches, and returns the tty of the front pane after focusing
 fn ghostty_focus(tty: &str) -> String {
-    // tty は AppleScript 文字列に埋め込むので /dev/ttysNNN の形だけ受け付ける
+    // tty is embedded in an AppleScript string, so only the /dev/ttysNNN form is accepted
     if !tty.starts_with("/dev/ttys") || tty.len() <= 9 || !tty[9..].chars().all(|c| c.is_ascii_digit()) {
         return format!("ERROR invalid tty {tty}");
     }
@@ -454,7 +461,7 @@ struct ClaudeSessionFile {
     session_id: String,
 }
 
-/// `<config_dir>/sessions/<pid>.json`(Claude Code の内部ファイル)から session_id の pid を探す
+/// Finds the pid for session_id from `<config_dir>/sessions/<pid>.json` (an internal Claude Code file)
 fn pid_of_session(config_dir: &Path, session_id: &str) -> Option<u32> {
     let dir = config_dir.join("sessions");
     for item in std::fs::read_dir(dir).ok()?.flatten() {
@@ -471,8 +478,8 @@ fn pid_of_session(config_dir: &Path, session_id: &str) -> Option<u32> {
     None
 }
 
-/// 見守り中(docs/design.md「別のセッションに作業を任せて待っているセッションを「見守り中」で表す」)の
-/// つながりの名前引きに使う、動いている Claude Code のセッション。`<config>/sessions/<pid>.json` の一部
+/// A running Claude Code session, used to look up names for watching links (docs/design.md "Watching").
+/// Part of `<config>/sessions/<pid>.json`
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct LiveSession {
@@ -488,22 +495,23 @@ struct LiveSession {
     started_at: Option<f64>,
 }
 
-/// live_sessions の結果。present は `<config_dir>/sessions` があるか(無い古い版では、プロセスの生死で
-/// 鳥を消さず 30 分で消す。docs/design.md「プロセスが終わったセッションの鳥はすぐ消す」)。
-/// reliable は、この回の結果で「生きていない」と言ってよいか。ps が動かなかった回と、sessions/*.json の
-/// 読み取り・解析に失敗したファイルがあった回は false(Claude Code は状態が変わるたびにこのファイルを
-/// 書き直すので、書きかけを読むことがある)。false の回は鳥を消さない
+/// Result of live_sessions. present is whether `<config_dir>/sessions` exists (on older versions without it,
+/// birds are not removed based on whether the process is alive, but after 30 minutes. docs/design.md "Removing
+/// birds of ended sessions").
+/// reliable is whether this run's result can be used to say "not alive". It is false on runs where ps didn't
+/// work and on runs where reading or parsing some sessions/*.json file failed (Claude Code rewrites this file on
+/// every state change, so a half-written file may be read). Birds are not removed on runs where it is false
 #[derive(Serialize)]
 struct LiveScan {
     present: bool,
     sessions: Vec<LiveSession>,
     reliable: bool,
-    /// 読み取り・解析に失敗したファイルの数(記録用)
+    /// Number of files that failed to read or parse (for logging)
     unreadable: usize,
 }
 
-/// `<config_dir>/sessions/*.json` のうち、プロセスが生きているもの。落ちたプロセスのファイルが残っても
-/// 見守り中の相手に数えず、鳥も消せるよう、ps を 1 回だけ呼んで生きている pid に絞る
+/// The `<config_dir>/sessions/*.json` entries whose process is alive. Calls ps once and narrows to live pids, so
+/// that files left behind by crashed processes are not counted as watching peers and their birds can be removed
 #[tauri::command]
 fn live_sessions(config_dir: String) -> LiveScan {
     let dir = expand(&config_dir).join("sessions");
@@ -525,7 +533,8 @@ fn live_sessions(config_dir: String) -> LiveScan {
         return LiveScan { present: true, sessions, reliable: unreadable == 0, unreadable };
     }
     let pids = sessions.iter().map(|s| s.pid.to_string()).collect::<Vec<_>>().join(",");
-    // ps -p は、渡した pid の一部が無いと終了コード 1 を返す(出力は正しい)。起動できなかったときだけ失敗とみなす
+    // ps -p returns exit code 1 when some of the given pids don't exist (the output is correct). Only failing to
+    // launch counts as failure
     let Ok(out) = Command::new("ps").args(["-o", "pid=", "-p", &pids]).output() else {
         return LiveScan { present: true, sessions: Vec::new(), reliable: false, unreadable };
     };
@@ -536,7 +545,8 @@ fn live_sessions(config_dir: String) -> LiveScan {
     LiveScan { present: true, sessions, reliable: ps_ok && unreadable == 0, unreadable }
 }
 
-/// 読み込みごとの記録(fix18 の調査用)を app-log に出すか。環境変数 TOMARIGI_SCAN_LOG があるときだけ
+/// Whether to write a per-scan record (for the fix18 investigation) to app-log. Only when the TOMARIGI_SCAN_LOG
+/// environment variable is set
 #[tauri::command]
 fn scan_log_enabled() -> bool {
     std::env::var_os("TOMARIGI_SCAN_LOG").is_some()
@@ -544,13 +554,14 @@ fn scan_log_enabled() -> bool {
 
 #[derive(Serialize)]
 struct PeerScan {
-    /// (相手の名前, その跡の timestamp 文字列)
+    /// (peer name, timestamp string of that trace)
     names: Vec<(String, String)>,
-    /// 読み終えた位置(次回はここから読む)。途中で切れた最後の行は含めない
+    /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
 }
 
-/// SendMessage の宛先から、表示用の " [ref]" を落とす。"main"(親の会話)はセッション間のつながりではない
+/// Drops the display " [ref]" from a SendMessage recipient. "main" (the parent conversation) is not a link between
+/// sessions
 fn peer_name_of(to: &str) -> Option<String> {
     let name = match to.rfind(" [") {
         Some(i) if to.ends_with(']') => &to[..i],
@@ -560,9 +571,10 @@ fn peer_name_of(to: &str) -> Option<String> {
     (!name.is_empty() && name != "main").then(|| name.to_string())
 }
 
-/// transcript の [start, 末尾) から、セッション間メッセージでやり取りした相手の名前を拾う
-/// (見守り中のつながり。lib/transcript.ts の collectPeerNames と同じ規則)。tail 窓の外にある跡も拾うため、
-/// 呼び出し側が end を覚えて増えた分だけを読む。本文は読まず、名前と時刻だけを返す
+/// Picks up, from [start, end of file) of the transcript, the names of peers exchanged with via cross-session
+/// messages (watching links; same rules as collectPeerNames in lib/transcript.ts). To also catch traces outside
+/// the tail window, the caller remembers end and reads only what was added. Does not read message bodies; returns
+/// only names and times
 #[tauri::command]
 fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String> {
     let p = expand(path);
@@ -600,7 +612,7 @@ fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String> {
                     }
                 }
             }
-            // 作業中に届いたメッセージは attachment(queued_command)に同じ origin で記録される
+            // Messages that arrive while working are recorded in an attachment (queued_command) with the same origin
             Some("attachment") => {
                 if entry.pointer("/attachment/origin/kind").and_then(|k| k.as_str()) == Some("peer") {
                     if let Some(name) = entry.pointer("/attachment/origin/name").and_then(|n| n.as_str()).filter(|n| !n.is_empty()) {
@@ -638,7 +650,7 @@ fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String> {
     Ok(PeerScan { names, end: start + complete as u64 })
 }
 
-/// 生きている pid の制御端末(/dev/ttysNNN)。終了済み・端末なしは None
+/// The controlling terminal (/dev/ttysNNN) of a live pid. None if it has exited or has no terminal
 fn tty_of_pid(pid: u32) -> Option<String> {
     let out = Command::new("ps").args(["-o", "tty=", "-p", &pid.to_string()]).output().ok()?;
     let tty = String::from_utf8_lossy(&out.stdout).trim().to_string();
@@ -648,7 +660,7 @@ fn tty_of_pid(pid: u32) -> Option<String> {
     Some(format!("/dev/{tty}"))
 }
 
-/// Claude Code のセッションが動いている Ghostty のペインへ移る。対応が取れなければ何もしない
+/// Moves to the Ghostty pane where the Claude Code session is running. Does nothing if no match is found
 #[tauri::command]
 async fn focus_session(config_dir: String, session_id: String) -> String {
     let result = match pid_of_session(&expand(&config_dir), &session_id) {
@@ -666,7 +678,7 @@ async fn tokio_sleep(ms: u64) {
     let _ = tauri::async_runtime::spawn_blocking(move || std::thread::sleep(std::time::Duration::from_millis(ms))).await;
 }
 
-// ---- 窓 ----
+// ---- Window ----
 
 #[cfg(target_os = "macos")]
 tauri_nspanel::tauri_panel! {
@@ -686,22 +698,23 @@ struct WindowState {
     height: u32,
 }
 
-/// 窓のモード(docs/design.md「ウィンドウモードを「浮遊窓 / 通常の窓」で切り替えられるようにする」)
+/// Window mode (docs/design.md "Window mode")
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
 #[serde(rename_all = "lowercase")]
 enum WindowMode {
-    /// NSPanel。透明・枠なし・常に最前面・全画面スペースの上にも出る
+    /// NSPanel. Transparent, borderless, always on top, also shown above full-screen spaces
     Floating,
-    /// タイトルバー付きの普通の窓。最大化・フルスクリーンできる。最前面には固定しない
+    /// Ordinary window with a title bar. Can maximize and go full screen. Not pinned on top
     Normal,
 }
 
-/// 今のモード。起動時に保存した値で上書きする
+/// The current mode. Overwritten with the saved value at startup
 static WINDOW_MODE: Mutex<WindowMode> = Mutex::new(WindowMode::Floating);
-/// モードの切り替え中は、窓の枠の付け外しで出る Moved / Resized を保存しない(別モードの位置で上書きしないため)
+/// While switching modes, don't save the Moved / Resized caused by adding/removing the window frame (so the other
+/// mode's position doesn't overwrite it)
 static SUPPRESS_SAVE: AtomicBool = AtomicBool::new(false);
-/// Moved / Resized の通し番号。最後の変化から SAVE_SETTLE_MS 動かなかったときだけ保存する
-/// (フルスクリーンへ入るアニメーションの途中の枠が保存されていた。実測)
+/// Sequence number of Moved / Resized. Save only when nothing changed for SAVE_SETTLE_MS after the last change
+/// (the frame midway through the enter-full-screen animation was being saved; observed)
 static SAVE_GENERATION: AtomicU64 = AtomicU64::new(0);
 const SAVE_SETTLE_MS: u64 = 600;
 
@@ -748,7 +761,8 @@ fn write_json<T: Serialize>(path: PathBuf, value: &T) {
     }
 }
 
-/// 位置と大きさはモードごとに別に持つ(最大化した大きさを浮遊窓に持ち込まないため)。浮遊窓は以前からの window.json
+/// Position and size are kept separately per mode (so a maximized size isn't carried into the floating window).
+/// The floating window uses the existing window.json
 fn state_path(app: &AppHandle, mode: WindowMode) -> Option<PathBuf> {
     let name = match mode {
         WindowMode::Floating => "window.json",
@@ -761,8 +775,8 @@ fn save_window_state(win: &WebviewWindow) {
     if SUPPRESS_SAVE.load(Ordering::SeqCst) {
         return;
     }
-    // 最大化・フルスクリーン中の大きさは保存しない(戻したときに元の大きさへ戻るように)
-    // フルスクリーンへ入る途中の枠も保存しない(tao の is_fullscreen はまだ false のことがある。実測)
+    // Don't save the size while maximized or full screen (so restoring goes back to the original size)
+    // Also don't save the frame while entering full screen (tao's is_fullscreen can still be false; observed)
     if win.is_maximized().unwrap_or(false) || win.is_fullscreen().unwrap_or(false) || in_fullscreen_transition(win) {
         return;
     }
@@ -777,7 +791,8 @@ fn save_window_state(win: &WebviewWindow) {
     }
 }
 
-/// 初回(保存した状態が無い)は、メインディスプレイの右上に置く(画面の中ほどでターミナルを隠さないように)
+/// On first launch (no saved state), place it at the top right of the main display (so it doesn't hide the
+/// terminal in the middle of the screen)
 fn place_top_right(win: &WebviewWindow) {
     let (Ok(Some(monitor)), Ok(size)) = (win.primary_monitor(), win.outer_size()) else { return };
     let (p, s, scale) = (monitor.position(), monitor.size(), monitor.scale_factor());
@@ -787,7 +802,8 @@ fn place_top_right(win: &WebviewWindow) {
     win.set_position(tauri::PhysicalPosition::new(x, p.y + menu_bar)).ok();
 }
 
-/// 保存した位置と大きさを戻す。位置がどのディスプレイにも載らない(外したディスプレイ等)ときは右上に置く
+/// Restores the saved position and size. If the position isn't on any display (e.g. a disconnected display),
+/// places it at the top right
 fn restore_window_state(win: &WebviewWindow, mode: WindowMode) {
     let saved = state_path(win.app_handle(), mode)
         .and_then(|path| std::fs::read_to_string(path).ok())
@@ -820,7 +836,7 @@ fn make_panel(win: &WebviewWindow) {
     use objc2_app_kit::NSWindowStyleMask;
     use tauri_nspanel::{CollectionBehavior, WebviewWindowExt};
     let panel = win.to_panel::<TomarigiPanel>().expect("to_panel");
-    // 非アクティブ化パネル: クリックしても Ghostty からフォーカスを奪わない。Resizable で縁から大きさを変えられる
+    // Non-activating panel: clicking doesn't steal focus from Ghostty. Resizable lets you resize from the edges
     panel
         .set_style_mask(
             NSWindowStyleMask::Borderless
@@ -835,13 +851,14 @@ fn make_panel(win: &WebviewWindow) {
             .stationary()
             .into(),
     );
-    // NSStatusWindowLevel(25)。floating(3) より上
+    // NSStatusWindowLevel (25). Above floating (3)
     panel.set_level(25);
     panel.set_floating_panel(true);
     panel.set_hides_on_deactivate(false);
-    // 影で「ターミナルの上に浮いている」ことが分かるようにする。透明な窓の影は macOS が中身の形(角丸の板)から作る
+    // The shadow shows that it is floating above the terminal. For a transparent window, macOS builds the shadow
+    // from the shape of the content (the rounded panel)
     panel.set_has_shadow(true);
-    // すりガラスの角を .page の角丸(perch.css の border-radius 12px)に合わせる
+    // Match the frosted glass corners to the rounded corners of .page (border-radius 12px in perch.css)
     set_backdrop(win, 12.0);
 }
 
@@ -851,8 +868,8 @@ fn ns_window(win: &WebviewWindow) -> Option<&objc2_app_kit::NSWindow> {
     unsafe { ptr.as_ref() }
 }
 
-/// 窓そのものは透かす。色は中身の .page が半透明で塗り、その後ろを set_backdrop のすりガラスがぼかす
-/// (浮遊窓・通常の窓とも。docs/design.md のウィンドウモードの項)
+/// Make the window itself transparent. The content's .page paints a translucent color, and set_backdrop's frosted
+/// glass blurs what is behind it (for both floating and standard windows; docs/design.md "Window mode")
 #[cfg(target_os = "macos")]
 fn set_window_clear(win: &WebviewWindow) {
     use objc2::runtime::AnyObject;
@@ -865,15 +882,17 @@ fn set_window_clear(win: &WebviewWindow) {
     }
 }
 
-/// すりガラスの view の目印(contentView の子から探す)
+/// Marker for the frosted glass view (looked up among contentView's children)
 #[cfg(target_os = "macos")]
 const BACKDROP_ID: &str = "tomarigi.backdrop";
 
-/// 窓の後ろをぼかすすりガラス。contentView の一番下(WKWebView の後ろ)に NSVisualEffectView を 1 枚敷き、
-/// 中身の .page の半透明の色越しに見せる。目的は圧迫感を減らすことで、後ろを読ませることではない。
-/// Tauri の set_effects(window-vibrancy 0.6)は呼ぶたびに view を足し、macOS では外す手段も無いので、
-/// モードを切り替えるたびに呼ぶここでは 1 枚を持ち回して角丸だけ変える。NSPanel への差し替え(tauri-nspanel)は
-/// 窓のクラスを替えるだけで contentView はそのままなので、差し替えの前後で同じ view が残る
+/// Frosted glass that blurs what is behind the window. Lays one NSVisualEffectView at the bottom of contentView
+/// (behind the WKWebView) and shows it through the translucent color of the content's .page. The goal is to make
+/// the window feel less heavy, not to let you read what is behind it.
+/// Tauri's set_effects (window-vibrancy 0.6) adds a view on every call and has no way to remove it on macOS, so
+/// here, which is called on every mode switch, a single view is reused and only its corner radius changes. Switching
+/// to NSPanel (tauri-nspanel) only changes the window's class and keeps contentView, so the same view remains
+/// before and after the switch
 #[cfg(target_os = "macos")]
 fn set_backdrop(win: &WebviewWindow, radius: f64) {
     use objc2::rc::{Allocated, Retained};
@@ -902,25 +921,28 @@ fn set_backdrop(win: &WebviewWindow, radius: f64) {
                 let alloc: Allocated<AnyObject> = msg_send![class!(NSVisualEffectView), alloc];
                 let created: Retained<AnyObject> = msg_send![alloc, initWithFrame: bounds];
                 let _: () = msg_send![&*created, setIdentifier: &*NSString::from_str(BACKDROP_ID)];
-                // NSVisualEffectMaterialHUDWindow(13): 暗いすりガラス。BlendingMode BehindWindow(0): 窓の後ろをぼかす。
-                // State Active(1): 浮遊窓はキーにならない(NonactivatingPanel)ので、窓の状態に合わせるとぼかしが消える
+                // NSVisualEffectMaterialHUDWindow (13): dark frosted glass. BlendingMode BehindWindow (0): blur what is
+                // behind the window. State Active (1): the floating window never becomes key (NonactivatingPanel), so
+                // following the window's state would make the blur disappear
                 let _: () = msg_send![&*created, setMaterial: 13isize];
                 let _: () = msg_send![&*created, setBlendingMode: 0isize];
                 let _: () = msg_send![&*created, setState: 1isize];
-                // 窓の外観(浮遊窓は theme を付けない)に関係なく暗いガラスにする
+                // Use dark glass regardless of the window's appearance (the floating window has no theme set)
                 let dark: *mut AnyObject =
                     msg_send![class!(NSAppearance), appearanceNamed: &*NSString::from_str("NSAppearanceNameDarkAqua")];
                 let _: () = msg_send![&*created, setAppearance: dark];
-                // NSViewWidthSizable(2) | NSViewHeightSizable(16)。窓の大きさ・タイトルバーの付け外しに追従する
+                // NSViewWidthSizable (2) | NSViewHeightSizable (16). Follows the window size and the title bar being
+                // added or removed
                 let _: () = msg_send![&*created, setAutoresizingMask: 18usize];
-                // NSWindowBelow(-1)。中身(WKWebView)より後ろ
+                // NSWindowBelow (-1). Behind the content (WKWebView)
                 let _: () = msg_send![content, addSubview: &*created, positioned: -1isize, relativeTo: std::ptr::null::<AnyObject>()];
-                // 親の view が保持するので、ここでの参照は捨ててよい
+                // The parent view retains it, so the reference here can be dropped
                 let ptr: *const AnyObject = &*created;
                 &*ptr
             }
         };
-        // 角丸は window-vibrancy と同じ setCornerRadius:(NSVisualEffectView の非公開のメソッド)。無い OS では角丸なしのまま
+        // Corner radius uses setCornerRadius:, same as window-vibrancy (a private NSVisualEffectView method). On OS
+        // versions without it, corners stay square
         let responds: bool = msg_send![view, respondsToSelector: sel!(setCornerRadius:)];
         if responds {
             let _: () = msg_send![view, setCornerRadius: radius];
@@ -929,7 +951,8 @@ fn set_backdrop(win: &WebviewWindow, radius: f64) {
     }
 }
 
-/// 浮遊窓(NSPanel)を普通の窓に戻す。タイトルバーと信号ボタンを付け、最前面の固定と全スペース表示を外す
+/// Turns the floating window (NSPanel) back into an ordinary window. Adds the title bar and traffic-light buttons,
+/// and removes always-on-top and showing on all spaces
 #[cfg(target_os = "macos")]
 fn make_normal(win: &WebviewWindow) {
     use objc2_app_kit::NSWindowCollectionBehavior;
@@ -939,8 +962,9 @@ fn make_normal(win: &WebviewWindow) {
     }
     win.set_always_on_top(false).ok();
     win.set_visible_on_all_workspaces(false).ok();
-    // tao の set_decorations は main queue に後回しで効くので、位置を戻す前にタイトルバーを同期で付けておく
-    // (後から付くと窓が上に伸び、メニューバーの下へ押し戻されて位置がずれる。実測)
+    // tao's set_decorations takes effect later on the main queue, so add the title bar synchronously before
+    // restoring the position (if it is added afterwards, the window grows upward, gets pushed back below the menu
+    // bar, and the position shifts; observed)
     if let Some(ns) = ns_window(win) {
         use objc2_app_kit::NSWindowStyleMask;
         ns.setStyleMask(
@@ -953,13 +977,13 @@ fn make_normal(win: &WebviewWindow) {
     win.set_decorations(true).ok();
     win.set_resizable(true).ok();
     win.set_maximizable(true).ok();
-    // 中身が暗い色なので、タイトルバーも暗くする
+    // The content is dark, so make the title bar dark too
     win.set_theme(Some(tauri::Theme::Dark)).ok();
     set_window_clear(win);
-    // 通常の窓は窓そのものに角があるので、すりガラスは角丸なしで窓いっぱい
+    // The standard window has its own corners, so the frosted glass fills the window with no corner radius
     set_backdrop(win, 0.0);
     if let Some(ns) = ns_window(win) {
-        // NSNormalWindowLevel(0)。FullScreenPrimary で緑の信号ボタンがフルスクリーンになる
+        // NSNormalWindowLevel (0). With FullScreenPrimary, the green traffic-light button goes full screen
         ns.setLevel(0);
         ns.setCollectionBehavior(NSWindowCollectionBehavior::Managed | NSWindowCollectionBehavior::FullScreenPrimary);
         ns.setHasShadow(true);
@@ -967,15 +991,17 @@ fn make_normal(win: &WebviewWindow) {
 }
 
 #[cfg(target_os = "macos")]
-/// タイトルバーは先に外しておく(switch_mode_step の has_titlebar)。付いたまま NSPanel に差し替えると、
-/// タイトルバーの view が元のクラスに付けた KVO を外せず NSRangeException で落ちる(実測)
+/// The title bar must be removed first (has_titlebar in switch_mode_step). Switching to NSPanel with it still
+/// attached crashes with NSRangeException because the title bar view can't remove the KVO it added to the original
+/// class (observed)
 fn make_floating(win: &WebviewWindow) {
     win.set_theme(None).ok();
     set_window_clear(win);
     make_panel(win);
 }
 
-/// AppKit 上でタイトルバーが付いているか。tao の set_decorations は main queue に後回しで効くので、実際の styleMask を見る
+/// Whether the title bar is attached in AppKit. tao's set_decorations takes effect later on the main queue, so look
+/// at the actual styleMask
 fn has_titlebar(win: &WebviewWindow) -> bool {
     #[cfg(target_os = "macos")]
     if let Some(ns) = ns_window(win) {
@@ -986,13 +1012,13 @@ fn has_titlebar(win: &WebviewWindow) -> bool {
     false
 }
 
-/// メニューバーのメニューの「浮遊窓 / 通常の窓」。モードが変わるたびにチェックを付け直す
+/// The "floating window / standard window" items in the menu bar menu. The check marks are reset on every mode change
 struct ModeMenu {
     floating: CheckMenuItem<tauri::Wry>,
     normal: CheckMenuItem<tauri::Wry>,
 }
 
-/// メニューのチェックと設定画面(App.tsx の "window-mode" イベント)を今のモードに合わせる
+/// Syncs the menu check marks and settings (the "window-mode" event in App.tsx) to the current mode
 fn sync_mode_ui(app: &AppHandle, mode: WindowMode) {
     if let Some(menu) = app.try_state::<ModeMenu>() {
         menu.floating.set_checked(mode == WindowMode::Floating).ok();
@@ -1001,13 +1027,14 @@ fn sync_mode_ui(app: &AppHandle, mode: WindowMode) {
     app.emit("window-mode", mode).ok();
 }
 
-/// その場でモードを切り替える。AppKit の窓操作なのでメインスレッドで呼ぶ
+/// Switches the mode on the fly. Call on the main thread, since it operates on AppKit windows
 fn switch_mode(app: &AppHandle, mode: WindowMode) {
     switch_mode_step(app, mode, SwitchProgress::default());
 }
 
-/// フルスクリーンとタイトルバーを外し終えてから切り替えるための途中経過。最大化は解かない
-/// (解除は main queue に後回しで効き、待っても解けないことがあった。実測。位置と大きさは restore_window_state で直接戻す)
+/// Progress state for switching only after full screen and the title bar have been removed. Maximize is not undone
+/// (undoing it takes effect later on the main queue, and sometimes it didn't undo even after waiting; observed.
+/// Position and size are restored directly by restore_window_state)
 #[derive(Default, Clone, Copy)]
 struct SwitchProgress {
     attempt: u32,
@@ -1016,9 +1043,9 @@ struct SwitchProgress {
     settled: bool,
 }
 
-/// AppKit がフルスクリーンの出入りの途中か。途中で NSPanel に差し替えると、中身の view が外れた状態で
-/// tao の windowDidResize が走り、contentView の unwrap で落ちる(実測)。tao の is_fullscreen は解除を頼んだ時点で
-/// false になるので、AppKit の styleMask を見る
+/// Whether AppKit is midway through entering or leaving full screen. Switching to NSPanel midway runs tao's
+/// windowDidResize with the content view detached, and it crashes on the contentView unwrap (observed). tao's
+/// is_fullscreen becomes false as soon as the exit is requested, so look at AppKit's styleMask
 fn in_fullscreen_transition(win: &WebviewWindow) -> bool {
     #[cfg(target_os = "macos")]
     if let Some(ns) = ns_window(win) {
@@ -1038,8 +1065,9 @@ fn retry_switch(app: &AppHandle, mode: WindowMode, progress: SwitchProgress) {
     });
 }
 
-/// 通常の窓のときだけ Dock・Cmd+Tab・アプリ名のメニューバーに出す(他の窓の下に埋もれても戻せるように)。
-/// 浮遊窓は今までどおり出さない。Info.plist の LSUIElement は起動直後に Dock に一瞬出るのを防ぐために残す
+/// Show in the Dock, Cmd+Tab, and the app-name menu bar only for the standard window (so it can be brought back when
+/// buried under other windows). The floating window stays hidden from them as before. LSUIElement in Info.plist is
+/// kept to prevent a brief Dock appearance right after launch
 fn set_dock_policy(app: &AppHandle, mode: WindowMode) {
     #[cfg(target_os = "macos")]
     {
@@ -1053,8 +1081,9 @@ fn set_dock_policy(app: &AppHandle, mode: WindowMode) {
     let _ = (app, mode);
 }
 
-/// 通常の窓に切り替えたら、アプリを前面に出して窓とアプリ名のメニューバーを出す。浮遊窓は押しても前面にならない
-/// (NonactivatingPanel)ので、設定画面から切り替えると前のアプリが前面のまま残る。Regular にした直後は効かないので少し置く
+/// After switching to the standard window, bring the app to the front and show the window and the app-name menu bar.
+/// Clicking the floating window doesn't activate the app (NonactivatingPanel), so switching from settings would
+/// leave the previous app in front. It doesn't work right after setting Regular, so wait a moment
 fn activate_later(app: &AppHandle) {
     let handle = app.clone();
     std::thread::spawn(move || {
@@ -1080,17 +1109,18 @@ fn activate_later(app: &AppHandle) {
 fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
     let Some(win) = app.get_webview_window("main") else { return };
     if current_mode() == mode {
-        // 付いているチェックを押すとチェックが外れるので付け直す
+        // Clicking an already-checked item unchecks it, so check it again
         sync_mode_ui(app, mode);
         return;
     }
     if p.attempt == 0 {
         save_window_state(&win);
-        // フルスクリーン・最大化を解くときの Moved / Resized を今のモードの位置として保存しない
+        // Don't save the Moved / Resized from leaving full screen or maximize as the current mode's position
         SUPPRESS_SAVE.store(true, Ordering::SeqCst);
     }
     p.attempt += 1;
-    // 最大 5 秒(200ms × 25)待つ。フルスクリーン → タイトルバーの順に外し、外れてから 1 回分置いて切り替える
+    // Wait up to 5 seconds (200ms × 25). Remove full screen, then the title bar, and switch one interval after
+    // they are gone
     if p.attempt <= 25 {
         if win.is_fullscreen().unwrap_or(false) || in_fullscreen_transition(&win) {
             if !p.exited_fullscreen {
@@ -1111,7 +1141,7 @@ fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
             return retry_switch(app, mode, p);
         }
     } else {
-        // 解けないまま差し替えると落ちるので、切り替えずに今のモードへ表示を戻す
+        // Switching while they are still on would crash, so don't switch; restore the UI to the current mode
         append_log("[window] switch: gave up waiting for fullscreen / titlebar to end");
         SUPPRESS_SAVE.store(false, Ordering::SeqCst);
         sync_mode_ui(app, current_mode());
@@ -1137,8 +1167,9 @@ fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
     }
     sync_mode_ui(app, mode);
     append_log(&format!("[window] mode={mode:?}"));
-    // 枠の付け外しで遅れて届く Moved / Resized をやり過ごしてから保存を戻し、切り替え後の位置と大きさを保存する
-    // (動かさずに終了しても、次回は同じ位置と大きさで出すため)
+    // Let the late Moved / Resized from adding/removing the frame pass, then re-enable saving and save the position
+    // and size after the switch (so that even if the app quits without moving, it opens at the same position and
+    // size next time)
     let handle = app.clone();
     std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(800));
@@ -1172,7 +1203,7 @@ fn show_window(app: &AppHandle) {
     {
         use tauri_nspanel::ManagerExt;
         if let Ok(panel) = app.get_webview_panel("main") {
-            // show で alwaysOnTop の floating(3)に戻されるので、出した後に NSStatusWindowLevel(25)を掛け直す
+            // show resets the level to alwaysOnTop's floating (3), so reapply NSStatusWindowLevel (25) after showing
             panel.set_level(25);
             panel.order_front_regardless();
             let ns = panel.as_panel();
@@ -1183,7 +1214,7 @@ fn show_window(app: &AppHandle) {
                 ns.isOnActiveSpace()
             ));
         } else {
-            // 通常の窓: 他の窓の下に埋もれているので前に出す
+            // Standard window: it is buried under other windows, so bring it to the front
             win.set_focus().ok();
             append_log("[window] shown mode=Normal");
         }
@@ -1206,8 +1237,8 @@ fn hide_window(app: AppHandle) {
     }
 }
 
-/// メニューの文言。システムの言語が日本語なら日本語、それ以外は英語
-/// (表示/非表示, 浮遊窓, 通常の窓, 終了)
+/// Menu labels. Japanese if the system language is Japanese, English otherwise
+/// (show/hide, floating window, standard window, quit)
 fn menu_labels() -> (&'static str, &'static str, &'static str, &'static str) {
     let locale = Command::new("defaults")
         .args(["read", "-g", "AppleLocale"])
@@ -1255,7 +1286,7 @@ fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()> {
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
-            // 左クリックで表示/非表示、右クリックでメニュー
+            // Left click toggles show/hide, right click opens the menu
             if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
                 toggle_window(tray.app_handle());
             }
@@ -1267,21 +1298,23 @@ fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        // 多重起動しない。2 つ目の起動は既存の窓を出して終わる(メニューバーのアイコンが 2 本並ぶのを防ぐ)
+        // Single instance. A second launch shows the existing window and exits (prevents two menu bar icons side by side)
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            // このコールバックはメインスレッド外で呼ばれる。AppKit の窓操作はメインスレッドでしかできない(外で呼ぶと落ちる)
+            // This callback is called off the main thread. AppKit window operations only work on the main thread
+            // (calling them elsewhere crashes)
             let handle = app.clone();
             app.run_on_main_thread(move || show_window(&handle)).ok();
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_nspanel::init())
         .setup(|app| {
-            // BYOK のキーの保存先を identifier で決める(docs/design.md「BYOK の API キー…」)
+            // Decide the BYOK key store from the identifier (docs/design.md "BYOK API keys")
             init_key_store(&app.config().identifier);
             import_key_from_stdin(app.handle());
             let win = app.get_webview_window("main").expect("main window");
-            // TOMARIGI_MOCK=1 で mock モード(tomarigi の ?mock=1 と同じ)。TOMARIGI_QUERY="tab=perch&settings=1" 等で
-            // 起動時の画面を指定する(スクショ確認用。App.tsx の初期 state 参照)
+            // TOMARIGI_MOCK=1 enables mock mode (same as ?mock=1 in the tomarigi Chrome extension).
+            // TOMARIGI_QUERY="tab=perch&settings=1" etc. sets the screen at launch (for screenshot checks; see the
+            // initial state in App.tsx)
             let mut query: Vec<String> = Vec::new();
             if std::env::var("TOMARIGI_MOCK").is_ok_and(|v| v == "1") {
                 query.push("mock=1".into());
@@ -1297,7 +1330,7 @@ pub fn run() {
             let mode = load_mode(app.handle());
             *WINDOW_MODE.lock().unwrap() = mode;
             set_dock_policy(app.handle(), mode);
-            // 通常の窓はタイトルバーを付けてから位置を戻す(switch_mode_step と同じ順)
+            // For the standard window, add the title bar before restoring the position (same order as switch_mode_step)
             #[cfg(target_os = "macos")]
             match mode {
                 WindowMode::Floating => {
@@ -1312,21 +1345,24 @@ pub fn run() {
             #[cfg(not(target_os = "macos"))]
             restore_window_state(&win, mode);
             setup_tray(app, mode)?;
-            // 窓は visible:false で作り、パネル化してから出す(先に出すと元のスペースに固定される)
+            // The window is created with visible:false and shown after it becomes a panel (showing it first pins it
+            // to the original space)
             show_window(app.handle());
             append_log(&format!("[window] startup mode={mode:?}"));
             let w = win.clone();
             win.on_window_event(move |event| match event {
                 WindowEvent::Moved(_) | WindowEvent::Resized(_) => schedule_save(w.app_handle()),
-                // 通常の窓の赤い信号ボタンは、窓を壊さずに隠す(ヘッダーの × と同じ。メニューバーのアイコンから戻す)
+                // The standard window's red traffic-light button hides the window without destroying it (same as the ×
+                // in the header; bring it back from the menu bar icon)
                 WindowEvent::CloseRequested { api, .. } => {
                     api.prevent_close();
                     w.hide().ok();
                 }
                 _ => {}
             });
-            // 自己テスト: TOMARIGI_FOCUS_TEST="<config_dir>|<session_id>|<戻り先 tty>" で、起動 3 秒後に
-            // そのセッションのペインへ移り、1.5 秒後に戻り先へ移り直す(合成クリックが使えない環境での確認用)
+            // Self-test: with TOMARIGI_FOCUS_TEST="<config_dir>|<session_id>|<return tty>", moves to that session's
+            // pane 3 seconds after launch, then moves back to the return tty 1.5 seconds later (for checking in
+            // environments where synthetic clicks can't be used)
             if let Ok(spec) = std::env::var("TOMARIGI_FOCUS_TEST") {
                 let parts: Vec<String> = spec.split('|').map(str::to_string).collect();
                 if let [config_dir, session_id, back] = parts.as_slice() {
@@ -1340,10 +1376,12 @@ pub fn run() {
                     });
                 }
             }
-            // 自己テスト: TOMARIGI_MODE_TEST=1 で、起動後に 通常の窓 → 浮遊窓 → 通常の窓 → 最大化 → フルスクリーン → 浮遊窓
-            // を 5 秒おきに行い、
-            // 各段の状態をログに出す(合成クリックが使えない環境での確認用。信号ボタンの代わりに同じ窓操作を呼ぶ)。
-            // TOMARIGI_MODE_TEST=normal は通常の窓に切り替えるだけ(再起動してモードが保たれるかの確認用)
+            // Self-test: with TOMARIGI_MODE_TEST=1, after launch goes standard window → floating window → standard
+            // window → maximize → full screen → floating window, one step every 5 seconds,
+            // and logs the state at each step (for checking in environments where synthetic clicks can't be used;
+            // calls the same window operations instead of the traffic-light buttons).
+            // TOMARIGI_MODE_TEST=normal only switches to the standard window (to check that the mode is kept after
+            // a restart)
             let mode_test = std::env::var("TOMARIGI_MODE_TEST").unwrap_or_default();
             if mode_test == "1" || mode_test == "normal" {
                 let only_normal = mode_test == "normal";

@@ -1,7 +1,7 @@
-// File System Access API の代わりに Rust 側(src-tauri/src/lib.rs の fs_list / fs_stat / fs_read)で
-// ファイルを読む。lib/sessions.ts・transcript.ts・codex-transcript.ts は tomarigi(Chrome 拡張)の
-// FileSystemDirectoryHandle / File を前提に書かれているので、使っているメソッドだけを同じ形で
-// 持つ handle を用意して差し替える(走査・状態判定のロジックは tomarigi のまま動かす)。
+// Reads files on the Rust side (fs_list / fs_stat / fs_read in src-tauri/src/lib.rs) instead of the File System Access API.
+// lib/sessions.ts, transcript.ts, and codex-transcript.ts were written for the tomarigi Chrome extension's
+// FileSystemDirectoryHandle / File, so this provides handles with just the methods they use, in the same
+// shape, and swaps them in (the scanning and state logic runs as in tomarigi).
 import { invoke } from "@tauri-apps/api/core";
 
 interface RawEntry {
@@ -12,7 +12,7 @@ interface RawEntry {
 }
 
 function notFound(path: string): DOMException {
-  // sessions.ts は DOMException の NotFoundError を「無いので飛ばす」として扱う
+  // sessions.ts treats a DOMException NotFoundError as "doesn't exist, skip it"
   return new DOMException(`not found: ${path}`, "NotFoundError");
 }
 
@@ -29,7 +29,7 @@ function basename(path: string): string {
   return trimmed.slice(trimmed.lastIndexOf("/") + 1);
 }
 
-/** File の代わり。size / lastModified は getFile() 時点のスナップショット */
+/** Replacement for File. size / lastModified are a snapshot taken at getFile() */
 export class NativeFile {
   constructor(
     readonly path: string,
@@ -38,7 +38,7 @@ export class NativeFile {
     readonly lastModified: number,
   ) {}
 
-  /** Blob.slice と同じく負の値は末尾からの位置として扱う */
+  /** Like Blob.slice, negative values are positions from the end */
   slice(start = 0, end = this.size): { text(): Promise<string> } {
     const norm = (v: number) => Math.min(this.size, Math.max(0, v < 0 ? this.size + v : v));
     const from = norm(start);
@@ -117,7 +117,7 @@ async function stat(path: string): Promise<RawEntry> {
   }
 }
 
-/** フォルダが今読めるか(tomarigi の queryPermission の代わり) */
+/** Whether the folder can be read now (replacement for tomarigi's queryPermission) */
 export async function isReadableDir(path: string): Promise<boolean> {
   try {
     return (await stat(path)).kind === "directory";

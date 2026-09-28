@@ -1,4 +1,4 @@
-// tomarigi-desktop で足した文言(tomarigi に無い機能)。
+// Strings added in tomarigi-desktop (features the tomarigi Chrome extension doesn't have).
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {
   rootDefaultBadge: {

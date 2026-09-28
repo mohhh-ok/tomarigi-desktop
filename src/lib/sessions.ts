@@ -6,96 +6,99 @@ import { basename, projectLabels, readTail, type TailInfo } from "./transcript";
 import type { AskJudgement } from "./jev";
 import { invoke } from "@tauri-apps/api/core";
 
-// transcript の遷移イベントを時刻付きで再構成したもの(実験機能)。
-// key は同一イベントの重複排除用(毎ポーリングで同じ末尾 64KB を再パースするため)
+// Transition events reconstructed from the transcript with timestamps (experimental).
+// key is for deduplicating the same event (every poll re-parses the same trailing 64KB)
 export interface SessionEvent {
   key: string;
   sessionId: string;
   project: string;
-  // プロンプトのスニペット。started はそのイベント自身のユーザー発言、他は直近の発言
-  // (pickSnippet)。project 文字列に直接埋め込まず別フィールドにするのは、SessionView.snippet
-  // と同じ表示スタイル(小さめ・淡色)を EventFeed 側でも独立して適用できるようにするため
+  // Prompt snippet. For started it is the event's own user message; for others, the latest message
+  // (pickSnippet). It is a separate field rather than embedded in the project string so that EventFeed can
+  // independently apply the same display style as SessionView.snippet (smaller, faded)
   snippet?: string;
   type: "started" | "done" | "waiting" | "closed";
   at: number;
-  // ひな(サブエージェント)待ちで抑止していた done が抑止明けにキャンセルされたとき true。
-  // ログ・フィードには残すが、鳴き声・読み上げは出さない(deriveDoneEvent 参照)
+  // true when a done that was suppressed while waiting on chicks (subagents) is cancelled once the
+  // suppression lifts. Kept in the log and feed, but no chirp or readout (see deriveDoneEvent)
   muted?: boolean;
-  // 抑止明けの done が timeout 発火したときの実発火時刻(epoch ms)。at は key の基準
-  // (t=親のターン終了時刻)のまま不変に保つため、鮮度ガード判定にはこちらを使う
+  // Actual fire time (epoch ms) when a done released from suppression fires by timeout. at stays fixed
+  // as the key basis (t = the parent's turn end), so the freshness guard uses this instead
   // (App.tsx: event.firedAt ?? event.at)
   firedAt?: number;
-  // done 読み上げ要約(lib/summarize.ts)用のアシスタント最終応答テキスト(最大2000文字、
-  // lib/transcript.ts の assistant_text.text 由来)。発話専用の一時フィールドで、
-  // done 以外のイベントには付かない。数KBになりうる生テキストを IndexedDB の永続イベント
-  // ログに残したくないため、appendToEventLog が保存直前に取り除く(in-memory の
-  // sessionEventCache/events には残るので、App.tsx が新規 done を検知した瞬間の読み上げには使える)
+  // The assistant's final reply text for the done readout summary (lib/summarize.ts) (max 2000 chars,
+  // from assistant_text.text in lib/transcript.ts). A temporary field used only for speech; events other
+  // than done don't carry it. We don't want raw text that can be several KB in the persistent event log in
+  // IndexedDB, so appendToEventLog strips it right before saving (it stays in the in-memory
+  // sessionEventCache/events, so it can still be used for the readout at the moment App.tsx detects a new done)
   assistantText?: string;
-  // done のターンを Jev が判断待ちと判定したか(recordAskJudgement)。デバッグダイアログに出す
+  // Whether Jev judged the done turn as needs reply (recordAskJudgement). Shown in the debug dialog
   ask?: AskJudgement;
-  // 最近の動きの行に添える、そのターンの吹き出しと同じ文。App が表示のときだけ付け、永続ログには入れない
+  // The same sentence as that turn's speech bubble, attached to the Recent activity row. App sets it only
+  // for display; it is not written to the persistent log
   line?: string;
 }
 
-// 機械判定(transcript だけから毎ポーリング再計算する)。waiting は AskUserQuestion /
-// ExitPlanMode / request_user_input でユーザーの応答を待っているとき
+// Machine state (recomputed from the transcript alone on every poll). waiting means waiting for the user's
+// answer to AskUserQuestion / ExitPlanMode / request_user_input
 export type BirdState = "working" | "waiting" | "done" | "dozing";
 
 export interface SessionView {
-  id: string; // <rootId>/<slug>/<ファイル名>
-  project: string; // 表示名
-  // データソース内のプロジェクト識別子。Claude Code は projects/ 配下の slug、Codex は
-  // `codex:<cwd>`。アイコンセット個別割り当て(issue #14)のキー。rootId を含まない
-  // ため、同じプロジェクトパスを複数 root から見ていても割り当てが共有される
+  id: string; // <rootId>/<slug>/<file name>
+  project: string; // display name
+  // Project identifier within the data source. For Claude Code, the slug under projects/; for Codex,
+  // `codex:<cwd>`. Key for per-project icon set assignment (issue #14). It doesn't include rootId,
+  // so the assignment is shared even when the same project path is seen from multiple roots
   slug: string;
   state: BirdState;
-  sinceMs: number; // 最終書き込みからの経過
-  toolName?: string; // tool_use 静止中のツール名
-  chicks?: ChickView[]; // サブエージェント(親の子としてのみ存在)
-  // 直近のユーザー発言スニペット(pickSnippet)。「何をやらせてるセッションか」を常に示す
+  sinceMs: number; // time since the last write
+  toolName?: string; // tool name while idle on a tool_use
+  chicks?: ChickView[]; // subagents (exist only as children of a parent)
+  // Snippet of the latest user message (pickSnippet). Always shows "what this session was asked to do"
   snippet?: string;
-  // 止まっている(done / dozing)ターンの最後の応答。Jev 判定の入力とターンの識別
-  // (sessionId + at)に使う。at は同じターンの done イベントの at と同じ値
+  // Last reply of a stopped (done / dozing) turn. Used as the Jev verdict input and to identify the turn
+  // (sessionId + at). at is the same value as the at of the same turn's done event
   reply?: { at: number; text: string };
-  // reply のターンに対する Jev 判定。App が付ける(mock は直接書く)
+  // Jev verdict for the reply's turn. Set by App (mock writes it directly)
   ask?: AskJudgement;
-  // 質問ツール(AskUserQuestion / request_user_input)で止まっているときの質問文。ツールの入力から
-  // そのまま取る(AI を使わない)。吹き出しに出す(perch/bubble.tsx)
+  // The question text while stopped on a question tool (AskUserQuestion / request_user_input). Taken as-is
+  // from the tool input (no AI). Shown in the speech bubble (perch/bubble.tsx)
   question?: string;
-  // reply のターンを BYOK で要約したセリフ。App が付ける(mock は直接書く)
+  // Speech bubble text summarizing the reply's turn with BYOK. Set by App (mock writes it directly)
   summary?: string;
-  // Jev が返事待ちと判定したが要約用のキーが無いとき、reply の最後の 1 文(lib/last-sentence.ts。AI を使わない)。
-  // App が付ける。吹き出しは summary が無ければこちらを出す
+  // When Jev judged needs reply but there is no key for summarizing, the last sentence of reply
+  // (lib/last-sentence.ts; no AI). Set by App. The speech bubble shows this when there is no summary
   replyTail?: string;
-  // セッション間メッセージでつながっている相手(docs/design.md の見守り中)。Claude Code だけ
+  // Peers connected by inter-session messages (Watching in docs/design.md). Claude Code only
   peers?: PeerLink[];
-  // 見守り中: 自分の機械判定が done / dozing で、今動いている相手の数。相手が止まってから猶予(lib/watching.ts の
-  // WATCH_GRACE_MS)の間は 0 で見守り中のまま(巣箱にしまわない)。見守り中でなければ無い
+  // Watching: the number of peers currently active while this session's own machine state is done / dozing.
+  // For a grace period after the peers stop (WATCH_GRACE_MS in lib/watching.ts) it is 0 and stays watching
+  // (not put into the nest). Absent when not watching
   watching?: number;
-  // 作業フォルダと起動時刻。止まり木の見守り中の字下げ(親は先に起動した方、ラベルは親からの相対パス)に使う
+  // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
+  // first; the label is the path relative to the parent)
   cwd?: string;
   startedAt?: number;
 }
 
-/** 見守り中のつながりの相手。viewId は相手が画面にいる(同じスキャンの SessionView)ときだけ */
+/** A watching peer. viewId is set only when the peer is on screen (a SessionView from the same scan) */
 export interface PeerLink {
   sessionId: string;
   viewId?: string;
   name: string;
   cwd?: string;
-  // 起動時刻(epoch ms)。止まり木で字下げの親(先に起動した方)を決める
+  // Start time (epoch ms). Decides the indent parent (the one started first) on the Perch
   startedAt?: number;
-  // 動いている(lib/watching.ts の isPeerActive。sessions/<pid>.json の status が idle 以外、または画面の機械判定が
-  // working / waiting)
+  // Active (isPeerActive in lib/watching.ts: the status in sessions/<pid>.json is not idle, or the on-screen
+  // machine state is working / waiting)
   active: boolean;
-  // 最後に動いていた時刻(epoch ms)。このアプリが動いているのを見た最後の時刻と、相手の transcript の最後の書き込みの
-  // 新しい方。見守り中の猶予に使う
+  // Last time it was active (epoch ms). The newer of the last time this app saw it active and the peer's last
+  // transcript write. Used for the watching grace period
   lastActiveAt?: number;
 }
 
 export interface ChickView {
-  id: string; // <親の id>/<ファイル名>
-  name: string; // meta.json の name→description→ファイル名の順で解決(resolveChickMeta)
+  id: string; // <parent id>/<file name>
+  name: string; // resolved from meta.json in order name → description → file name (resolveChickMeta)
   state: BirdState;
   sinceMs: number;
   toolName?: string;
@@ -103,59 +106,63 @@ export interface ChickView {
 
 export interface ScanResult {
   views: SessionView[];
-  brokenIds: string[]; // 走査に失敗したルートの id
-  events: SessionEvent[]; // 新しい順、最大30件(実験機能)
+  brokenIds: string[]; // ids of roots that failed to scan
+  events: SessionEvent[]; // newest first, at most 30 (experimental)
 }
 
-// scanChicks の内部走査結果。ChickView は表示専用の公開型なので汚さず、走査内部専用の
-// フィールドを足せるよう型を分けている(現状は view のみだが、liveIds の間引きや
-// sinceMs でのソート等、走査側だけで使う処理の置き場として残す)。
-// 旧: tail(TailInfo)も保持していたが、ひな向け deriveStaleEvent 呼び出し(常に isChick=true で
-// working 固定のため null しか返らない死コード)の削除に伴い、tail の利用箇所が無くなったため外した
+// Internal scan result of scanChicks. ChickView is a public display-only type, so instead of polluting it,
+// this separate type lets us add fields used only inside the scan (currently only view, but kept as the place
+// for scan-side-only processing such as liveIds pruning or sorting by sinceMs).
+// Previously it also held tail (TailInfo), but it was removed once tail had no remaining uses after deleting
+// the deriveStaleEvent call for chicks (dead code that only ever returned null, since isChick was always true
+// and the state was fixed to working)
 interface ChickScan {
   view: ChickView;
 }
 
-const ACTIVE_WINDOW_MS = 30 * 60_000; // これより古いセッションは止まり木に出さない
-const WRITING_MS = 6_000; // 直近書き込みあり=作業中
-const CHICK_ABANDONED_MS = 10 * 60_000; // これ以上書き込みが無い working 固着のひなは放置ひなとみなし done 抑止に使わない(放置ひな判定のしきい値)
-// ひな待ちで抑止していた done が抑止明けした後、親の再起動(キャンセル)を待つ猶予。
-// バックグラウンドひな完了時のハーネス自動再起動は実測で完了の約3秒後なので、
-// 30秒あれば通常ケースは十分カバーできる。既知のハーネス側通知遅延バグで再起動が
-// 30秒を超えて遅れた場合は timeout 側が先に発火し、その後の再起動ターンでの
-// done と二重に鳴り得るが、無音のまま鳴かない(実害の再発)よりましな劣化として許容する
+const ACTIVE_WINDOW_MS = 30 * 60_000; // sessions older than this are not shown on the Perch
+const WRITING_MS = 6_000; // recent write = working
+const CHICK_ABANDONED_MS = 10 * 60_000; // a chick stuck in working with no writes for longer than this is treated as abandoned and not used to suppress done (threshold for abandoned chicks)
+// Grace period, after a done suppressed while waiting on chicks is released, to wait for the parent to
+// restart (cancel). The harness auto-restart after a background chick finishes was measured at about 3
+// seconds after completion, so 30 seconds covers the normal case. If a known harness notification-delay bug
+// delays the restart past 30 seconds, the timeout fires first and may chirp twice together with the done of
+// the later restarted turn, but we accept that as a better degradation than staying silent (a recurrence of
+// the actual problem)
 const DONE_GRACE_MS = 30_000;
-// 完了通知が来ないまま、これ以上経ったバックグラウンドタスクは done 抑止に使わない。
-// 3秒ポーリングの合間に 64KB 超が書かれる・非表示タブでタイマーが間引かれる等で通知行を
-// 見逃すと、抑止が解けなくなるための逃げ道。解けた後の done は at=T が古いため App.tsx の
-// 鮮度ガードで鳴らない(=この値は誤発火の方向には効かない)
+// Background tasks older than this with no completion notification are not used to suppress done.
+// An escape hatch for when the notification line is missed (more than 64KB written between 3-second polls,
+// timers throttled in a hidden tab, etc.) and suppression would never lift. A done released this way has an
+// old at=T, so App.tsx's freshness guard keeps it silent (i.e. this value doesn't cause false fires)
 const BACKGROUND_TASK_STALE_MS = 30 * 60_000;
-const DOZE_MS = 5 * 60_000; // 完了からこれ以上経ったら居眠り
-// ひなの assistant_text tail を、親台帳(chickSignals)に信号が無いときのフォールバックとして
-// done とみなすまでの静止時間。実データで観測された「作業中に一瞬テキストだけ書いた」無害な
-// 休止は36秒、長い thinking を挟むケースでも60秒超あり得たため、それより十分長い2分を採用する
-// (信号がある場合はこの値を経由せず即座に done 化できる。deriveState 参照)。
-// これでも false のまま(通知が来ない・ひなの無言死)なら、最終的には既存の
-// CHICK_ABANDONED_MS(10分、deriveDoneEvent の抑止解除)が別途効いて放置ひな扱いになる
+const DOZE_MS = 5 * 60_000; // dozing once this long has passed since done
+// Idle time before a chick's assistant_text tail is treated as done, as a fallback when the parent ledger
+// (chickSignals) has no signal. The harmless pauses observed in real data ("wrote only text for a moment
+// while working") were 36 seconds, and could exceed 60 seconds with long thinking, so we use 2 minutes, well
+// above that (with a signal, done is set immediately without going through this value; see deriveState).
+// If it still stays false (no notification, the chick died silently), eventually the existing
+// CHICK_ABANDONED_MS (10 minutes, releases suppression in deriveDoneEvent) applies separately and treats it
+// as an abandoned chick
 const CHICK_TEXT_DONE_MS = 2 * 60_000;
-// ひなの完了信号(chickSignals)と、ひなの最終会話時刻(tail.lastEventAt ?? file.lastModified)を
-// 突き合わせる際の許容誤差。正常系では「ひなの最終書き込み→数秒後に親へ通知が書かれる」の
-// 順になるため 最終会話時刻 <= signal は常に成立する。resume されたひなは signal より明確に
-// 後の時刻まで最終会話時刻が進むため、数秒のマージンを超えて最終会話時刻が signal を
-// 上回れば resume とみなし信号を無効化する(scanChicks 参照)
+// Tolerance when comparing a chick's completion signal (chickSignals) with the chick's last conversation time
+// (tail.lastEventAt ?? file.lastModified). Normally the order is "chick's last write → notification written
+// to the parent a few seconds later", so last conversation time <= signal always holds. A resumed chick's
+// last conversation time moves clearly past the signal, so if it exceeds the signal by more than a few
+// seconds' margin we treat it as resumed and invalidate the signal (see scanChicks)
 const CHICK_SIGNAL_EPSILON_MS = 5_000;
 
-// BirdState の緊急度順(小さいほど緊急)。views のソート(scanSessions 末尾)と
-// escalateWithChicks(親のエスカレーション判定)の両方が同じ順序を使うため、
-// ここに一度だけ定義してモジュール内で共有する
+// Urgency order of BirdState (smaller = more urgent). Both the views sort (end of scanSessions) and
+// escalateWithChicks (parent escalation) use the same order, so it is defined once here and shared
+// within the module
 const STATE_URGENCY: Record<BirdState, number> = { waiting: 0, working: 1, done: 2, dozing: 3 };
 
 /**
- * 親の表示状態を、親自身の状態とひなの状態のうち最も緊急度の高いものにエスカレーション
- * する。ひなが走行中の親は寝かせない(=にわで巣箱に入ってしまうのを防ぐ)し、ひなが
- * 仕事を終えた直後の親は done まで起こす(実害: ひな done・10秒の横で親がうたた寝表示)。
- * dozing のひなだけは対象外 — ひな自身も放置で done → dozing に落ちるので、
- * 「完了直後だけ親が起きて、放置すればまた寝る」という自然な減衰になる。
+ * Escalates the parent's display state to the most urgent of the parent's own state and its chicks' states.
+ * A parent with a running chick is not put to sleep (prevents it from going into the nest in the garden), and
+ * a parent whose chick just finished is woken up to done (actual problem: parent shown dozing next to a chick
+ * done 10 seconds ago). Only dozing chicks are excluded — chicks themselves also fall from done → dozing when
+ * left alone, so this gives a natural decay: "the parent wakes up only right after completion, and goes back
+ * to sleep if left alone".
  */
 function escalateWithChicks(state: BirdState, chicks: ChickView[]): BirdState {
   let escalated = state;
@@ -175,11 +182,11 @@ interface CacheEntry {
 const tailCache = new Map<string, CacheEntry>();
 
 /**
- * サイズ・mtime が前回と同じならキャッシュを再利用する tail 読み取り。scanSessions(親)・
- * scanChicks(ひな)の両方から使う共有ロジック(元は2箇所に同じパターンが重複していたのを
- * 統合した)。親側は scanChicks より先にこれを呼ぶ必要がある — ひなの完了判定
- * (deriveState の isChick 分岐)が親 tail の chickSignals を必要とするため
- * (詳細は scanSessions 内のコメント参照)。
+ * Tail read that reuses the cache when size and mtime are unchanged. Shared logic used by both
+ * scanSessions (parents) and scanChicks (chicks) (the same pattern used to be duplicated in two places and
+ * was merged). The parent side must call this before scanChicks — the chick completion check (the isChick
+ * branch of deriveState) needs chickSignals from the parent tail
+ * (see the comment in scanSessions for details).
  */
 async function readTailCached(
   id: string,
@@ -205,31 +212,32 @@ async function readCodexTailCached(id: string, file: NativeFile): Promise<CodexT
   return tail;
 }
 
-// key: chickId。表示対象から外れたら間引く(再登場時は meta.json を読み直す)
+// key: chickId. Pruned when no longer displayed (meta.json is re-read if it reappears)
 const chickMetaCache = new Map<string, ChickMeta>();
-// key: セッション id。tool 出力が巨大なセッションでは末尾 64KB 窓がツール結果だけで埋まり、
-// 窓内にユーザー発言が1つも残らないことがある(実害: 本セッションで発生)。
-// 最後に見えたスニペットを覚えておき、窓から流れた後も表示を維持する
+// key: session id. In sessions with huge tool output, the trailing 64KB window can fill up with tool results
+// alone and contain no user message at all (this happened in practice).
+// Remember the last seen snippet and keep showing it after it scrolls out of the window
 const snippetCache = new Map<string, string>();
-// key: 親セッション id。バックグラウンドタスク(run_in_background)の台帳(key: task-id)。
-// 起動行(TailInfo.backgroundTaskStarts)は数十秒で tail 窓から流れる(実測: 起動から50秒後の
-// ターン終了時点で既に窓外)ため、見えたうちに覚えておく。完了は親 tail の chickSignals
-// (<task-notification> の task-id → 時刻)から埋める。deriveDoneEvent の抑止判定に使う
+// key: parent session id. Ledger of background tasks (run_in_background) (key: task-id).
+// Start lines (TailInfo.backgroundTaskStarts) scroll out of the tail window within tens of seconds (measured:
+// already outside the window at the turn end 50 seconds after start), so remember them while visible.
+// Completion is filled from the parent tail's chickSignals (task-id → time from <task-notification>).
+// Used for the suppression check in deriveDoneEvent
 type BackgroundTask = { startedAt: number; endedAt?: number };
 const backgroundTaskCache = new Map<string, Map<string, BackgroundTask>>();
 
-// 見守り中(docs/design.md): セッション(view id)ごとの、セッション間メッセージでやり取りした相手の名前と
-// その最新時刻。tail 窓から外れた跡も残すため、スキャンをまたいで持つ
+// Watching (docs/design.md "Watching"): per session (view id), the names of peers it exchanged inter-session
+// messages with and the latest time for each. Kept across scans so that traces that left the tail window remain
 const peerNameCache = new Map<string, Map<string, number>>();
-// transcript のどこまで、やり取りの跡を読んだか(Rust の scan_peer_names の end)。tail 窓の外の跡も
-// 拾うため、初回はファイル全体、以後は増えた分だけを読む
+// How far into the transcript the exchange traces have been read (end of scan_peer_names in Rust). To pick up
+// traces outside the tail window too, the first read covers the whole file and later reads only the new part
 const peerScanOffset = new Map<string, number>();
-// 前のスキャンでの各セッション(sessionId)の機械判定と最終書き込み時刻。相手が動いているかの判定と、
-// 見守り中の done 抑止(相手をひなと同じ扱いで渡す)に使う
+// Machine state and last write time of each session (sessionId) in the previous scan. Used to decide whether
+// a peer is active, and for the watching done suppression (peers are passed in the same way as chicks)
 const lastPeerStates = new Map<string, { state: BirdState; lastWriteAt: number }>();
-// 相手が最後に動いていた時刻(sessionId → epoch ms)。見守り中の猶予(lib/watching.ts)に使う
+// Last time a peer was active (sessionId → epoch ms). Used for the watching grace period (lib/watching.ts)
 const peerLastActiveAt = new Map<string, number>();
-// つながりの名前引きの結果が変わったときだけログに出す
+// Log only when the result of resolving link names changes
 let lastWatchSignature = "";
 
 interface LiveSession {
@@ -241,15 +249,15 @@ interface LiveSession {
   startedAt?: number;
 }
 
-/** Claude Code の監視フォルダ(<config>/projects)の <config> */
+/** The <config> of a Claude Code watched folder (<config>/projects) */
 function configDirOf(root: RootEntry): string {
   const path = root.path.replace(/\/+$/, "");
   return path.slice(0, path.lastIndexOf("/"));
 }
 
 /**
- * 監視フォルダ(<config>/projects)ごとに <config>/sessions/*.json を読む(Rust の live_sessions)。
- * sessions は動いているプロセスのもの。presentConfigDirs は <config>/sessions がある <config>
+ * Reads <config>/sessions/*.json for each watched folder (<config>/projects) (live_sessions in Rust).
+ * sessions are those of running processes. presentConfigDirs are the <config>s that have <config>/sessions
  */
 async function loadLiveSessions(roots: RootEntry[]): Promise<{
   sessions: LiveSession[];
@@ -270,62 +278,67 @@ async function loadLiveSessions(roots: RootEntry[]): Promise<{
   return {
     sessions: scans.flatMap((s) => s.sessions),
     presentConfigDirs: new Set(scans.filter((s) => s.present).map((s) => s.configDir)),
-    // ps が動かなかった・sessions/*.json に読めないファイルがあった回。この回の結果では鳥を消さない
+    // Reads where ps failed or sessions/*.json had an unreadable file. Birds are not removed based on this read
     unreliableConfigDirs: new Set(scans.filter((s) => !s.reliable).map((s) => s.configDir)),
     unreadable: scans.reduce((n, s) => n + s.unreadable, 0),
   };
 }
 
-// プロセスが終わったセッションの鳥はすぐ消す(docs/design.md)。判定は端末の種類に依存しない。
-// Claude Code は起動するとすぐ <config>/sessions/<pid>.json を書き、終わると消す(実測: 残っているファイルは
-// 全部 pid が生きていた)。transcript は最初の発言まで作られないので、「transcript はあるのに生きている
-// sessions のファイルが無い」は、ふつうプロセスが終わったことを表す。
-// - このアプリが動いている間に一度でも生きているのを見たセッションは、見えなくなった次の読み込みで消す(数秒以内)
-// - 一度も見ていないもの(アプリを起動する前に終わったセッションなど)は、transcript に NEVER_SEEN_GRACE_MS
-//   書き込みが無ければ消す。起動直後にファイルの書き込みが transcript より遅れた場合に消さないための猶予
-// - <config>/sessions が無い監視フォルダ(古い版)・Codex・SDK 起動のセッションは対象外(今どおり 30 分)
-// - ps が動かなかった回・sessions/*.json に読めないファイルがあった回は何も消さない(Claude Code は状態が変わるたびに
-//   このファイルを書き直すので、書きかけを読むことがある)。消すのは続けて MISSES_TO_END 回の読み込みで見えなかったとき
+// Birds of sessions whose process has ended are removed right away (docs/design.md "Removing birds of ended
+// sessions"). The check doesn't depend on the terminal type.
+// Claude Code writes <config>/sessions/<pid>.json right after it starts and deletes it when it ends (measured:
+// every remaining file had a live pid). The transcript isn't created until the first message, so "there is a
+// transcript but no live sessions file" normally means the process has ended.
+// - A session this app has seen alive at least once while running is removed on the next read after it
+//   disappears (within a few seconds)
+// - One never seen (e.g. a session that ended before the app started) is removed if the transcript has had no
+//   write for NEVER_SEEN_GRACE_MS. The grace keeps it from being removed when, right after startup, the file
+//   write lags behind the transcript
+// - Watched folders without <config>/sessions (older versions), Codex, and SDK-started sessions are excluded
+//   (30 minutes as before)
+// - Nothing is removed on a read where ps failed or sessions/*.json had an unreadable file (Claude Code rewrites
+//   this file every time its state changes, so a half-written file may be read). A session is removed only when
+//   it was not seen in MISSES_TO_END consecutive reads
 const NEVER_SEEN_GRACE_MS = 15_000;
 const MISSES_TO_END = 2;
-// 続けて見えなかった回数(view の id)。見えたら消す
+// Number of consecutive reads where it was not seen (view id). Cleared when seen
 const missCounts = new Map<string, number>();
-// 読み込みごとの記録(fix18 の調査用。環境変数 TOMARIGI_SCAN_LOG があるときだけ app-log に出す)
+// Per-read record (for investigating fix18. Written to app-log only when the TOMARIGI_SCAN_LOG env var is set)
 let scanLogEnabled: boolean | undefined;
-// 生きているのを見たセッション(view の id)。消した後も持ち続け(外すと猶予の間だけ鳥が戻る)、
-// 30 分の窓から外れたら間引く
+// Sessions seen alive (view id). Kept even after removal (dropping it would bring the bird back during the
+// grace period), and pruned once it leaves the 30-minute window
 const seenAliveIds = new Set<string>();
 
 function sessionIdOfViewId(id: string): string {
   const file = id.split("/")[2] ?? "";
   return file.endsWith(".jsonl") ? file.slice(0, -".jsonl".length) : file;
 }
-const sessionEventCache = new Map<string, SessionEvent>(); // key: SessionEvent.key。同一イベントの重複排除
+const sessionEventCache = new Map<string, SessionEvent>(); // key: SessionEvent.key. Deduplicates the same event
 const MAX_EVENTS = 30;
 
-// デバッグ用の永続イベントログ(デバッグダイアログ)。sessionEventCache と違い30分 TTL では
-// 消さず、末尾 MAX_EVENT_LOG 件だけ保持する。knownLogKeys は「これまでに一度でもログへ
-// 書いたか」の全期間マーカーで、sessionEventCache が30分 TTL で間引かれた後に同じイベントが
-// tail から再導出されても(cacheEvent 視点では「新規挿入」に見えてしまう)、ログ側では
-// 二重追記しない防波堤になる。
+// Persistent event log for debugging (the debug dialog). Unlike sessionEventCache it is not cleared by the
+// 30-minute TTL; only the last MAX_EVENT_LOG entries are kept. knownLogKeys is an all-time marker of "has this
+// ever been written to the log", and acts as a barrier against double appends to the log even when the same
+// event is re-derived from the tail after sessionEventCache pruned it by the 30-minute TTL (which looks like
+// a "new insert" from cacheEvent's point of view).
 const MAX_EVENT_LOG = 500;
-let eventLog: SessionEvent[] = []; // 追記順(末尾が最新)。永続化される実体
+let eventLog: SessionEvent[] = []; // in append order (last is newest). The persisted data itself
 const knownLogKeys = new Set<string>();
-let eventLogDirty = false; // このスキャンで永続ログに新規追記があったか。scanSessions 末尾でまとめて1回だけ保存する
-// 起動直後は永続ログの復元(非同期)が終わっていない。復元前に「新規挿入」が来ても、
-// 復元済みの key と区別が付かず二重追記してしまうため、復元完了までは一旦 pending に貯めて
-// おき、完了後にまとめてマージする。
-// "failed" は「復元に失敗しても空のまま進めてよい」状態には倒さない —
-// このログは再導出できない唯一の実体なので、復元前の状態のまま saveEventLog を呼んで
-// 空(または今スキャン分だけ)で上書きしてしまうと既存の履歴が消える。
-// 失敗時は "failed" のまま固定し、scanSessions 末尾の保存ゲート(=== "done")を素通りさせない。
+let eventLogDirty = false; // whether this scan appended anything new to the persistent log. Saved once at the end of scanSessions
+// Right after startup, restoring the persistent log (async) hasn't finished. A "new insert" that arrives
+// before restoring can't be told apart from restored keys and would be appended twice, so it is held in
+// pending until restoring completes, then merged all at once.
+// "failed" is not turned into a "restore failed, so it's fine to continue empty" state —
+// this log is the only copy and can't be re-derived, so calling saveEventLog in the pre-restore state and
+// overwriting it with nothing (or only this scan's events) would erase the existing history.
+// On failure it stays fixed at "failed" and never passes the save gate (=== "done") at the end of scanSessions.
 let eventLogHydration: "none" | "loading" | "done" | "failed" = "none";
 const pendingLogEvents: SessionEvent[] = [];
 
-// 現行の SessionEvent["type"] 値の集合。廃止された種別(旧 "harsh": LLM 判定機能の削除に
-// 伴い撤去。lib/harassment.ts が生成していた)が永続ログに残っていても、読み出し側
-// (このセットで照合する箇所)で安全に無視する。IndexedDB 上の既存レコードはマイグレーション
-// せずそのまま残すが、以後の表示・再保存の対象からは外れる
+// The set of current SessionEvent["type"] values. Even if a retired type (formerly "harsh": removed along with
+// the LLM judgement feature; generated by lib/harassment.ts) remains in the persistent log, the reading side
+// (places that check against this set) safely ignores it. Existing records in IndexedDB are left as-is without
+// migration, but are excluded from display and re-saving from then on
 const KNOWN_EVENT_TYPES = new Set<SessionEvent["type"]>([
   "started",
   "done",
@@ -344,18 +357,18 @@ function hydrateEventLog(): void {
     try {
       const saved = await loadEventLog<SessionEvent>();
       if (saved) {
-        // 廃止済み種別(旧 "harsh" 等)は以後の再保存・表示対象から除く(上記 KNOWN_EVENT_TYPES 参照)
+        // Retired types (formerly "harsh" etc.) are excluded from re-saving and display (see KNOWN_EVENT_TYPES above)
         eventLog = saved.filter((e) => isKnownEventType(e.type));
         for (const e of eventLog) knownLogKeys.add(e.key);
       }
       eventLogHydration = "done";
-      // 復元完了前に取りこぼした分をここでマージする。既知 key は appendToEventLog が弾く
+      // Merge what was missed before restoring finished. appendToEventLog rejects known keys
       for (const event of pendingLogEvents) appendToEventLog(event);
       pendingLogEvents.length = 0;
     } catch (e) {
-      // 既存履歴を上書きするリスクを避けるため "done" にはしない(保存は永久に止まる)。
-      // pending も永続化されない前提になったので破棄する(このセッション中はメモリ上にも
-      // 保持しない。cacheEvent 側も "failed" では以後 pending に積まない)
+      // Not set to "done", to avoid the risk of overwriting existing history (saving stops for good).
+      // pending will never be persisted now, so discard it (not kept in memory for the rest of this
+      // session either; cacheEvent also stops adding to pending once "failed")
       console.warn("[tomarigi] failed to restore the event log", e);
       eventLogHydration = "failed";
       pendingLogEvents.length = 0;
@@ -364,10 +377,11 @@ function hydrateEventLog(): void {
 }
 
 /**
- * 永続ログへの実追記。knownLogKeys で全期間の重複を防ぎ、末尾 MAX_EVENT_LOG 件だけ残す。
- * assistantText(読み上げ要約用の一時フィールド、最大2000文字)は書かない — 発話にしか
- * 使わないフィールドを数KB単位で IndexedDB に溜める理由が無いため、永続化直前に剥がす
- * (in-memory の sessionEventCache 側はそのまま保持する。cacheEvent 参照)。
+ * The actual append to the persistent log. knownLogKeys prevents duplicates across all time, and only the
+ * last MAX_EVENT_LOG entries are kept. assistantText (temporary field for the readout summary, max 2000
+ * chars) is not written — there is no reason to pile up several KB per entry in IndexedDB for a field used
+ * only for speech, so it is stripped right before persisting
+ * (the in-memory sessionEventCache keeps it as-is; see cacheEvent).
  */
 function appendToEventLog(event: SessionEvent): void {
   if (knownLogKeys.has(event.key)) return;
@@ -382,41 +396,42 @@ function appendToEventLog(event: SessionEvent): void {
 }
 
 /**
- * sessionEventCache への挿入は first-write-wins にする(同じ key を後から来た値で上書きしない)。
- * イベント種は at が transcript 由来で不変なので、first-write-wins にしても挙動は変わらない。
- * 「実際に Map へ新規挿入されたイベント」だけを永続ログにも回す(cacheEvent が毎スキャン
- * 呼ばれても、同じイベントで二重にログへ積まないため)。
+ * Inserts into sessionEventCache are first-write-wins (a later value never overwrites the same key).
+ * For event types, at comes from the transcript and never changes, so first-write-wins doesn't change behavior.
+ * Only events "actually newly inserted into the Map" are also sent to the persistent log (so that even though
+ * cacheEvent is called every scan, the same event isn't added to the log twice).
  */
 function cacheEvent(event: SessionEvent): void {
   if (sessionEventCache.has(event.key)) return;
   sessionEventCache.set(event.key, event);
-  hydrateEventLog(); // 初回呼び出しで復元を開始する(以降は no-op)
+  hydrateEventLog(); // the first call starts restoring (no-op afterwards)
   if (eventLogHydration === "done") {
     appendToEventLog(event);
   } else if (eventLogHydration !== "failed") {
-    // "failed" では復元自体を諦めているため、以後は pending に積み続けない
-    // (無期限に貯まり続けるのを防ぐ。このセッション中の永続ログ追記は諦める)
+    // With "failed" restoring has been given up, so stop adding to pending from then on
+    // (prevents unbounded growth; appending to the persistent log is given up for this session)
     pendingLogEvents.push(event);
   }
 }
 
-const SNIPPET_MAX_WIDTH = 24; // 表示幅の上限(半角換算)。超過分は「…」
+const SNIPPET_MAX_WIDTH = 24; // max display width (in half-width units). Overflow becomes "…"
 
-// 全角(CJK・かな等)は半角の約2倍幅なので、コードポイント数で数えると日本語と英語で
-// 表示幅がずれる。半角換算幅(全角=2, 半角=1)で数える。判定は「ASCII と半角カナ以外は
-// 全角」の近似で足りる(スニペットは厳密なレイアウト計算を要しない)
+// Full-width characters (CJK, kana, etc.) are about twice as wide as half-width ones, so counting code points
+// makes the display width differ between Japanese and English. Count in half-width units (full-width = 2,
+// half-width = 1). The approximation "everything except ASCII and half-width kana is full-width" is enough
+// (snippets don't need exact layout calculation)
 function charWidth(ch: string): number {
   const code = ch.codePointAt(0) ?? 0;
-  if (code <= 0xff) return 1; // ASCII・Latin-1
-  if (code >= 0xff61 && code <= 0xffdc) return 1; // 半角カナ
+  if (code <= 0xff) return 1; // ASCII, Latin-1
+  if (code >= 0xff61 && code <= 0xffdc) return 1; // half-width kana
   return 2;
 }
 
 /**
- * セッションの「いま何をやらせているか」を示すスニペットを選ぶ。tail.events の user イベント
- * (text 付き)を新しい順に走査し、最初に「使える」テキストを採用する。短い指示(「push」等)
- * もプロンプトとしては情報なので弾かない。見つからなければ undefined(機械的テキストしか
- * 無いセッション等)
+ * Picks the snippet that shows "what this session is being asked to do right now". Walks the user events
+ * (with text) in tail.events from newest, and takes the first "usable" text. Short instructions ("push" etc.)
+ * are still information as prompts, so they aren't rejected. undefined if none is found (e.g. a session with
+ * only machine text)
  */
 function pickSnippet(tail: TailInfo): string | undefined {
   for (let i = tail.events.length - 1; i >= 0; i--) {
@@ -428,10 +443,11 @@ function pickSnippet(tail: TailInfo): string | undefined {
   return undefined;
 }
 
-// スニペットとして使えないテキストを弾いて整形する: 機械的テキスト(スラッシュコマンドの
-// <command- タグ、[SYSTEM 通知、[Request interrupted 等)は undefined。
-// 「[Image #N]」は画像添付の印で本文が続くので、剥がして本文を使う。
-// 改行・連続空白はスペース1つに正規化し、表示幅(全角=2, 半角=1)の上限で切る
+// Rejects text unusable as a snippet and formats the rest: machine text (slash command <command- tags,
+// [SYSTEM notices, [Request interrupted, etc.) gives undefined.
+// "[Image #N]" marks an image attachment followed by the body, so strip it and use the body.
+// Newlines and runs of whitespace are normalized to a single space, then cut at the display width limit
+// (full-width = 2, half-width = 1)
 function formatSnippet(rawText: string): string | undefined {
   let normalized = rawText.trim().replace(/\s+/g, " ");
   normalized = normalized.replace(/^(\[Image #\d+\]\s*)+/, "");
@@ -441,7 +457,7 @@ function formatSnippet(rawText: string): string | undefined {
     return undefined;
   }
   let width = 0;
-  let cut = normalized.length; // 上限に達した位置(文字列 index)。達しなければ末尾
+  let cut = normalized.length; // position (string index) where the limit was reached. The end if never reached
   for (let i = 0; i < normalized.length; ) {
     const ch = String.fromCodePoint(normalized.codePointAt(i) ?? 0);
     width += charWidth(ch);
@@ -455,17 +471,17 @@ function formatSnippet(rawText: string): string | undefined {
   return `${normalized.slice(0, cut)}…`;
 }
 
-// scanSessions 内部の走査結果1件分。found・withTail・SDK ひな分配のいずれでも同じ形を使う
+// One scan result inside scanSessions. The same shape is used for found, withTail, and SDK chick distribution
 interface FoundEntry {
   agent: "claude" | "codex";
   rootId: string;
   rootLabel: string;
-  slug: string; // プロジェクトディレクトリ名(~/.claude*/projects/ 配下)。SDK ひなの親候補を
-  // 「同じプロジェクトディレクトリ」で絞り込む際のグルーピングキーの一部にも使う
+  slug: string; // project directory name (under ~/.claude*/projects/). Also part of the grouping key when
+  // narrowing SDK chicks' parent candidates to "the same project directory"
   file: NativeFile;
   id: string;
   tail: TailInfo;
-  chicks: ChickScan[]; // scanChicks で見つけたサブエージェントひな(SDK ひなはここに含まない)
+  chicks: ChickScan[]; // subagent chicks found by scanChicks (SDK chicks are not included here)
 }
 
 interface CodexRollout {
@@ -522,8 +538,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   const now = Date.now();
   const found: FoundEntry[] = [];
   const brokenIds: string[] = [];
-  // tail を読んだが表示対象外として除外したセッション(sdk-cli・Codex の内部 rollout)の id。
-  // found に入らないが、tailCache から間引くと3秒ごとに読み直しになるため残す
+  // ids of sessions whose tail was read but which were excluded from display (sdk-cli, Codex internal rollouts).
+  // They aren't in found, but pruning them from tailCache would re-read them every 3 seconds, so keep them
   const skippedIds = new Set<string>();
 
   for (const root of roots) {
@@ -535,22 +551,23 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
           for await (const child of projectDir.values()) {
             if (child.kind !== "file" || !child.name.endsWith(".jsonl")) continue;
             const file = await (child as NativeFileHandle).getFile();
-            // ここは tail を読む前の粗い足切り(高速化目的)なので mtime のままでよい: mtime は
-            // 実際の最終会話時刻(tail.lastEventAt)以上に進むことはあっても遅れることは無いため、
-            // この判定を通ったセッションが本当は ACTIVE_WINDOW_MS を過ぎているケースは起きない
-            // (安全側の粗いフィルタ。厳密な時間基準は下の sinceMs 計算で tail.lastEventAt を使う)
+            // This is a rough cutoff before reading the tail (for speed), so mtime is fine here: mtime can
+            // run ahead of the actual last conversation time (tail.lastEventAt) but never behind it, so a
+            // session passing this check can never actually be past ACTIVE_WINDOW_MS
+            // (a rough filter on the safe side. The exact time basis is tail.lastEventAt in the sinceMs calculation below)
             if (now - file.lastModified > ACTIVE_WINDOW_MS) continue;
             const id = `${root.id}/${projectDir.name}/${child.name}`;
-            // ひな(サブエージェント)の完了判定は親台帳(親 tail の chickSignals)を正とするため、
-            // scanChicks より先に親の tail を読んでおく(deriveState の isChick コメント参照)。
-            // ここで読んだ tail は下の withTail 構築でも再利用する(cwd/base 名の計算用)ため、
-            // 二重に読み直さない
+            // The completion check for chicks (subagents) treats the parent ledger (chickSignals in the parent
+            // tail) as the source of truth, so read the parent's tail before scanChicks (see the isChick comment
+            // in deriveState). The tail read here is reused when building withTail below (to compute cwd/base
+            // name), so it isn't read twice
             const tail = await readTailCached(id, file);
-            // `claude -p`(entrypoint "sdk-cli")は tomarigi の対象外(鳥もイベントも出さない)。
-            // 多くは Claude Code がコマンドとして裏で起動したもので、子にも親にも互いの id が
-            // 残らず親に確定的に結べない(cwd も起動先ディレクトリになり同ディレクトリの親も
-            // いない)。起動元の親の done はバックグラウンドタスクの抑止(deriveDoneEvent)で扱う。
-            // 手で打った `claude -p` も結果はそのターミナルに出るため見張る必要が薄い
+            // `claude -p` (entrypoint "sdk-cli") is out of scope for tomarigi (no birds, no events).
+            // Most are started in the background by Claude Code as a command; neither child nor parent keeps the
+            // other's id, so they can't be tied to a parent reliably (cwd is the launch directory too, with no
+            // parent in the same directory). The launching parent's done is handled by background task
+            // suppression (deriveDoneEvent). A `claude -p` typed by hand prints its result in that terminal,
+            // so there is little need to watch it
             if (tail.entrypoint === "sdk-cli") {
               skippedIds.add(id);
               continue;
@@ -604,8 +621,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     }
   }
 
-  // プロセスが終わったセッション(ひなごと)を表示対象から外す(NEVER_SEEN_GRACE_MS のコメント)。
-  // tail は読み済みなので skippedIds に入れて tailCache に残す
+  // Remove sessions whose process has ended (together with their chicks) from display (see the
+  // NEVER_SEEN_GRACE_MS comment). Their tail has been read, so add them to skippedIds to keep them in tailCache
   const { sessions: liveSessions, presentConfigDirs, unreliableConfigDirs, unreadable } = await loadLiveSessions(roots);
   const liveSessionIds = new Set(liveSessions.map((l) => l.sessionId));
   const configDirByRoot = new Map(roots.filter((r) => r.kind === "claude").map((r) => [r.id, configDirOf(r)]));
@@ -622,7 +639,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
       missCounts.delete(f.id);
       continue;
     }
-    // この回の結果が当てにならなければ、消さず数えもしない
+    // If this read's result is unreliable, neither remove nor count
     if (unreliableConfigDirs.has(configDir)) continue;
     const seen = seenAliveIds.has(f.id);
     if (!seen && now - f.file.lastModified <= NEVER_SEEN_GRACE_MS) continue;
@@ -630,7 +647,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     missCounts.set(f.id, misses);
     if (misses < MISSES_TO_END) continue;
     endedIds.add(f.id);
-    // 消した回のたびに出す(点いたり消えたりしたら追えるように)。消えたままの間は毎回の読み込みで出さない
+    // Log each time it is removed (so flickering on and off can be traced). Not logged on every read while it stays removed
     if (misses === MISSES_TO_END) {
       const line = `[live] ended ${f.id} seenAlive=${seen} misses=${misses} idleMs=${now - f.file.lastModified}`;
       void invoke("log", { line }).catch(() => {});
@@ -639,28 +656,28 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   if (endedIds.size > 0) {
     for (const f of found) if (endedIds.has(f.id)) skippedIds.add(f.id);
     found.splice(0, found.length, ...found.filter((f) => !endedIds.has(f.id)));
-    // 最近の動き(セッションごとの最新のカード)からも消す
+    // Also remove from Recent activity (the latest card per session)
     for (const [key, event] of sessionEventCache) if (endedIds.has(event.sessionId)) sessionEventCache.delete(key);
   }
 
-  // SDK(Claude Agent SDK)経由で起動されたセッションのひな化。entrypoint フィールドは
-  // internal 仕様で、cli/sdk-py を実データで確認した(2026-08-08。TailInfo.entrypoint の
-  // コメント参照)。tail 窓に entrypoint 付きの行が無く取れないセッションは undefined のまま
-  // = SDK 起動と断定する根拠が無いので、安全側に倒して cli(大人)扱いのまま進める。
+  // Turning sessions started via the SDK (Claude Agent SDK) into chicks. The entrypoint field is an
+  // internal spec; cli/sdk-py were confirmed in real data (2026-08-08; see the comment on TailInfo.entrypoint).
+  // Sessions where it can't be read because the tail window has no line with entrypoint stay undefined
+  // = there is no basis to conclude they were SDK-started, so err on the safe side and keep treating them as cli (adults).
   const SDK_ENTRYPOINT_RE = /^sdk/;
   const isSdkSession = (f: FoundEntry) =>
     f.agent === "claude" && SDK_ENTRYPOINT_RE.test(f.tail.entrypoint ?? "");
-  // 状態判定と同じ時間基準(tail.lastEventAt、無ければ file.lastModified。TailInfo.lastEventAt
-  // のコメント参照)を親候補選定にも使う
+  // Use the same time basis as the state check (tail.lastEventAt, else file.lastModified; see the comment on
+  // TailInfo.lastEventAt) for choosing parent candidates too
   const effectiveLastEventAt = (f: FoundEntry) => f.tail.lastEventAt ?? f.file.lastModified;
 
   const sdkEntries = found.filter(isSdkSession);
   const nonSdkEntries = found.filter((f) => !isSdkSession(f));
 
-  // 親候補: 「同じプロジェクトディレクトリ」= 同じ root かつ同じ slug 内で、最終会話時刻が
-  // 最も新しい非 SDK セッション。found はまだ ACTIVE_WINDOW_MS で足切り済みの全件であり、
-  // 非 SDK セッションはこの後 withTail 経由で必ず表示対象になるため「表示対象のもの」の
-  // 条件も自動的に満たす
+  // Parent candidate: within "the same project directory" = same root and same slug, the non-SDK session with
+  // the newest last conversation time. found is still every entry already cut off by ACTIVE_WINDOW_MS, and
+  // non-SDK sessions always become displayed via withTail after this, so the "is displayed" condition is also
+  // satisfied automatically
   const parentCandidateByGroup = new Map<string, FoundEntry>(); // key: `${rootId}/${slug}`
   for (const f of nonSdkEntries) {
     const key = `${f.rootId}/${f.slug}`;
@@ -670,11 +687,11 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     }
   }
 
-  // SDK セッションはひな(ChickScan)として親候補の id をキーに集める。親候補が無い
-  // (=同じプロジェクトディレクトリに他の非 SDK セッションが無い)孤児は、消してしまわず
-  // 従来どおり大人の鳥として表示するフォールバックに回す(orphanSdkEntries)。
-  // 親候補はスキャンのたびに再計算するだけ(永続化しない)なので、より新しい非 SDK
-  // セッションが現れれば SDK ひなは自然に付け替わる(前回の親には二度と紐付かない)
+  // SDK sessions are collected as chicks (ChickScan) keyed by the parent candidate's id. Orphans with no parent
+  // candidate (= no other non-SDK session in the same project directory) are not dropped but fall back to being
+  // shown as adult birds as before (orphanSdkEntries).
+  // Parent candidates are only recomputed on each scan (not persisted), so when a newer non-SDK session appears
+  // the SDK chick naturally moves to it (never tied to the previous parent again)
   const sdkChicksByParentId = new Map<string, ChickScan[]>();
   const orphanSdkEntries: FoundEntry[] = [];
   for (const f of sdkEntries) {
@@ -684,18 +701,18 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
       continue;
     }
     const sinceMs = now - effectiveLastEventAt(f);
-    // ひなの id はファイル名ベースで固定する(親が付け替わっても安定させる。ファイル名は
-    // プロジェクトディレクトリ内で一意なので slug と組み合わせれば root を跨いでも衝突しない)。
-    // 既存のサブエージェントひな id(`${親id}/${ファイル名}`)や SessionEvent.key
-    // (`${sessionId}:${at}:${type}`、常に親 id 由来)とは名前空間が "sdk:" で分離されており、
-    // chickMetaCache・イベント重複排除のいずれとも衝突しない
+    // The chick id is fixed based on the file name (stable even when the parent changes. File names are unique
+    // within a project directory, so combined with slug they don't collide across roots).
+    // It is in a separate "sdk:" namespace from existing subagent chick ids (`${parent id}/${file name}`) and
+    // SessionEvent.key (`${sessionId}:${at}:${type}`, always derived from the parent id), so it collides with
+    // neither chickMetaCache nor event deduplication
     const chickId = `sdk:${f.slug}/${f.file.name}`;
     const view: ChickView = {
       id: chickId,
-      name: "SDK", // meta.json が存在しない(SDK 起動には無い)ため resolveChickMeta は使わず固定名
-      // 親台帳(chickSignals)には SDK ひなの完了信号が無い(親 transcript 側の仕組みなので
-      // SDK セッション自身の tail には現れない)。deriveState ではなく専用の
-      // deriveSdkChickState を使う(理由はその定義のコメント参照)
+      name: "SDK", // no meta.json exists (SDK starts don't have one), so a fixed name instead of resolveChickMeta
+      // The parent ledger (chickSignals) has no completion signal for SDK chicks (it is a mechanism on the
+      // parent transcript side, so it doesn't appear in the SDK session's own tail). Use the dedicated
+      // deriveSdkChickState instead of deriveState (see the comment on its definition for why)
       state: deriveSdkChickState(f.tail, sinceMs),
       sinceMs,
       toolName: f.tail.kind === "tool_use" ? f.tail.toolName : undefined,
@@ -705,25 +722,25 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     sdkChicksByParentId.set(parent.id, list);
   }
 
-  // 表示対象(SessionView になりうるもの)= 非 SDK セッション + 親候補の無い SDK 孤児
+  // Displayed entries (those that can become a SessionView) = non-SDK sessions + SDK orphans with no parent candidate
   const displayEntries = [...nonSdkEntries, ...orphanSdkEntries];
 
-  // ルートごとに表示名テーブルを計算(cwd が取れないセッションのフォールバック用。
-  // スラッグの共通接頭辞剥がしはルート内でしか意味を持たない)。found(SDK 含む全件)から
-  // 計算しても displayEntries と結果は変わらない(SDK セッションの slug は必ずどこかの
-  // 表示対象セッションと共有される)が、素直に走査済みの全件を使う
+  // Compute the display name table per root (fallback for sessions without a cwd. Stripping the common prefix
+  // of slugs only makes sense within a root). Computing from found (all entries including SDK) gives the same
+  // result as displayEntries (an SDK session's slug is always shared with some displayed session), but we
+  // simply use every scanned entry
   const labelsByRoot = new Map<string, Map<string, string>>();
   for (const root of roots) {
     const slugs = [...new Set(found.filter((f) => f.rootId === root.id).map((f) => f.slug))];
     labelsByRoot.set(root.id, projectLabels(slugs));
   }
 
-  // base 名は cwd があればそれを優先する(ルートを跨いでも一致するので、下の重複検出が
-  // 同一プロジェクトを検出できる)。tail は上のループで読み済み。
-  // isSdk は状態判定の分岐(下記ループの deriveState/deriveSdkChickState 切り替え)に使う。
-  // orphanSdkEntries(親候補が無い SDK セッションの大人表示フォールバック)にも
-  // deriveSdkChickState の「構造化出力ツール終端で working 固着」修正を効かせる必要があるため、
-  // isSdkSession の判定結果をここで持ち回る(pushレビュー指摘2)
+  // The base name prefers cwd when available (it matches across roots, so the duplicate detection below can
+  // detect the same project). The tail was already read in the loop above.
+  // isSdk is used for the state branch (switching between deriveState/deriveSdkChickState in the loop below).
+  // The deriveSdkChickState fix for "stuck in working when ending on a structured output tool" also needs to
+  // apply to orphanSdkEntries (the adult-display fallback for SDK sessions with no parent candidate), so the
+  // isSdkSession result is carried along here
   const withTail: (FoundEntry & { base: string; isSdk: boolean })[] = [];
   for (const f of displayEntries) {
     const base = f.tail.cwd
@@ -732,8 +749,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     withTail.push({ ...f, base, isSdk: isSdkSession(f) });
   }
 
-  // 表示名(ルートラベル抜き)がどのルートに出現したかを集計し、
-  // 異なるルート間で重複したものだけルートラベルを後置して区別する
+  // Tally which roots each display name (without the root label) appears in, and append the root label only
+  // to names duplicated across different roots to tell them apart
   const baseNameRoots = new Map<string, Set<string>>();
   for (const f of withTail) {
     if (!baseNameRoots.has(f.base)) baseNameRoots.set(f.base, new Set());
@@ -741,8 +758,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   }
 
 
-  // 見守り中のつながり(docs/design.md)。やり取りした相手の名前を、動いているセッションの名前と
-  // 突き合わせて sessionId にし、両向きにつなぐ(どちらか一方の跡があればつながっているとみなす)
+  // Watching links (docs/design.md "Watching"). Match the names of peers exchanged with against the names of
+  // running sessions to get sessionIds, and link both ways (a trace on either side counts as linked)
   const liveByName = new Map<string, LiveSession>();
   const liveBySessionId = new Map<string, LiveSession>();
   for (const live of liveSessions) {
@@ -775,7 +792,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
           if (Number.isFinite(at)) names.set(name, Math.max(names.get(name) ?? 0, at));
         }
       } catch {
-        // 読めなければ tail 窓の中の跡(tail.peerNames)だけで判定する
+        // If it can't be read, decide only from the traces within the tail window (tail.peerNames)
       }
     }),
   );
@@ -815,7 +832,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     .join("\n");
   if (watchSignature !== lastWatchSignature) {
     lastWatchSignature = watchSignature;
-    // 名前の対応だけを出す(メッセージの本文は読まない・出さない)
+    // Log only the name mapping (message bodies are neither read nor logged)
     void invoke("log", { line: `[watch] links\n${watchSignature || "(none)"}` }).catch(() => {});
   }
 
@@ -823,40 +840,42 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
 
   for (const { rootLabel, file, id, chicks, tail, base, slug, isSdk } of withTail) {
     const ambiguous = (baseNameRoots.get(base)?.size ?? 0) > 1;
-    // 状態判定の時間基準は tail.lastEventAt(timestamp 付き行の最終時刻)。timestamp を持たない
-    // 事後追記(last-prompt 等、死んだ transcript への数時間後の touch)では file.lastModified
-    // だけが進むため、mtime を基準にすると終了済みセッションが再出現する(TailInfo.lastEventAt
-    // のコメント参照)。tail 窓内に timestamp 付き行が1つも無いレアケースだけ mtime にフォールバック
+    // The time basis for the state check is tail.lastEventAt (the last time of a line with a timestamp).
+    // Later appends without a timestamp (last-prompt etc., a touch on a dead transcript hours later) only
+    // advance file.lastModified, so using mtime as the basis makes ended sessions reappear (see the comment on
+    // TailInfo.lastEventAt). Falls back to mtime only in the rare case where the tail window has no line with a timestamp
     const sinceMs = now - (tail.lastEventAt ?? file.lastModified);
     const project = ambiguous ? `${base} (${rootLabel})` : base;
-    // サブエージェントひな(scanChicks 由来)と SDK ひな(このセッションが親候補に選ばれた分)は
-    // 別々のリストのまま持ち回り、渡し先で使い分ける(pushレビュー指摘1)。
-    // - subagentChickViews(SDK を含まない): deriveSessionEvents(done 抑止判定)にだけ渡す。
-    //   SDK ひなは親が起動した子ではなく無関係な並走プロセスなので、SDK ひなが走行中なだけで
-    //   親の done 抑止(deriveDoneEvent のコメント参照。抑止の前提「親が起動した子」が
-    //   SDK ひなには成り立たない)を発動させてはいけない。
-    // - chickViews(SDK 込みでマージ): escalateWithChicks(表示エスカレーション)と
-    //   SessionView.chicks(表示)には従来どおり SDK ひなを含めたまま渡す。エスカレーションから
-    //   外すと、親が dozing になった瞬間に走行中の SDK ひなごと巣箱に消えて見えなくなり、
-    //   ひな化前(大人の鳥として見えていた)より視認性が退行するため、表示側にはあえて残す。
+    // Subagent chicks (from scanChicks) and SDK chicks (those for which this session was chosen as parent
+    // candidate) are carried as separate lists and used differently depending on the destination.
+    // - subagentChickViews (without SDK): passed only to deriveSessionEvents (done suppression check).
+    //   SDK chicks are not children the parent started but unrelated processes running alongside, so an SDK
+    //   chick merely running must not trigger the parent's done suppression (see the deriveDoneEvent comment;
+    //   the suppression premise "a child the parent started" doesn't hold for SDK chicks).
+    // - chickViews (merged with SDK): passed with SDK chicks included, as before, to escalateWithChicks
+    //   (display escalation) and SessionView.chicks (display). Excluding them from escalation would make a
+    //   running SDK chick vanish into the nest with the parent the moment the parent turns dozing, a visibility
+    //   regression compared to before they became chicks (when they were visible as adult birds), so they are
+    //   deliberately kept on the display side.
     const subagentChickViews = chicks.map((c) => c.view);
     const sdkChickViews = (sdkChicksByParentId.get(id) ?? []).map((c) => c.view);
     const chickViews = [...subagentChickViews, ...sdkChickViews].sort(
       (a, b) => a.sinceMs - b.sinceMs,
     );
-    // deriveState が「見た目(鳥)」の唯一の判定源。ただし SDK 孤児(親候補が無く大人表示に
-    // フォールバックした SDK セッション、isSdk===true)には deriveSdkChickState を使う —
-    // 構造化出力ツール終端(tool_result)で working に固着する問題は deriveState では
-    // 未修正のまま(deriveSdkChickState のコメント参照。pushレビュー指摘2)
+    // deriveState is the only source for the "appearance (bird)". However, SDK orphans (SDK sessions with no
+    // parent candidate that fell back to adult display, isSdk===true) use deriveSdkChickState —
+    // the problem of getting stuck in working when ending on a structured output tool (tool_result) is still
+    // unfixed in deriveState (see the deriveSdkChickState comment)
     const tailState = isSdk ? deriveSdkChickState(tail, sinceMs) : deriveState(tail, sinceMs, false);
-    // Claude Code は選択肢(AskUserQuestion)や権限の確認を出している間、その tool_use を transcript にまだ書かない
-    // (答えた後に書く)。代わりに <config>/sessions/<pid>.json の status が "waiting" になるので、それを返事待ちとみなす
+    // While Claude Code shows choices (AskUserQuestion) or a permission prompt, it doesn't write that tool_use
+    // to the transcript yet (it writes it after the answer). Instead the status in <config>/sessions/<pid>.json
+    // becomes "waiting", so treat that as needs reply
     const state: BirdState =
       !isSdk && liveBySessionId.get(sessionIdOfViewId(id))?.status === "waiting" ? "waiting" : tailState;
-    // 表示用の状態は、ひなが走行中(done/dozing 以外)ならその緊急度にエスカレーションする
+    // The display state is escalated to a chick's urgency while the chick is running (anything but done/dozing)
     const displayState = escalateWithChicks(state, chickViews);
-    // 直近のユーザー発言スニペットを常に付ける(「何をやらせてるセッションか」が主情報)。
-    // 窓内に発言が無ければ記憶している最後のスニペットで代用する
+    // Always attach the latest user message snippet ("what this session was asked to do" is the main info).
+    // If there is no message in the window, use the last remembered snippet instead
     const snippet = pickSnippet(tail) ?? snippetCache.get(id);
     if (snippet) snippetCache.set(id, snippet);
     const peers = peerLinksOf(sessionIdOfViewId(id));
@@ -886,11 +905,12 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
       cwd: tail.cwd,
       startedAt: liveBySessionId.get(sessionIdOfViewId(id))?.startedAt,
     });
-    // done だけはひな(サブエージェント)の状況も見る。ひなが走行中のうちは
-    // 「戻ってきて」信号としてまだ早いため。SDK ひなはここに含めない(上記コメント参照)
+    // Only done also looks at the chicks' (subagents') status: while a chick is running it is still too early
+    // as a "come back" signal. SDK chicks are not included here (see the comment above)
     const backgroundTasks = updateBackgroundTasks(id, tail);
-    // 見守り中の done は、つながっている相手が全部止まるまで出さない。相手をひなと同じ扱いで
-    // deriveDoneEvent の抑止に渡す(動いている相手は走行中のひな、止まった相手は最終書き込み時刻つき)
+    // A watching session's done is not emitted until all linked peers have stopped. Peers are passed to the
+    // deriveDoneEvent suppression the same way as chicks (active peers as running chicks, stopped peers with
+    // their last write time)
     const peerChicks: ChickView[] = peers.flatMap((p) => {
       const lastState = lastPeerStates.get(p.sessionId);
       if (p.active) return [{ id: `peer:${p.sessionId}`, name: p.name, state: "working" as const, sinceMs: 0 }];
@@ -913,8 +933,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   for (const view of views) {
     lastPeerStates.set(sessionIdOfViewId(view.id), { state: view.state, lastWriteAt: now - view.sinceMs });
   }
-  // 見守り中の猶予に使う、相手が最後に動いていた時刻。今動いていれば今、そうでなければ transcript の最後の書き込み
-  // (アプリを起動し直した直後でも、相手が少し前まで動いていたことが分かる)
+  // The last time each peer was active, used for the watching grace period. Now if it is active now, otherwise
+  // the last transcript write (so that even right after the app restarts, we know the peer was active a moment ago)
   for (const [sessionId, last] of lastPeerStates) {
     const active = isPeerActive(liveBySessionId.get(sessionId)?.status, last.state);
     const seen = active ? now : last.lastWriteAt;
@@ -932,8 +952,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   }
   if (scanLogEnabled) logScan(views, liveSessions, unreliableConfigDirs, unreadable, endedIds);
 
-  // 30分ウィンドウから外れた分のキャッシュを間引く。開きっぱなし運用(PiP 常駐)で
-  // セッションが日々増えても、キャッシュは表示対象分しか持たない
+  // Prune caches for entries that left the 30-minute window. Even if sessions pile up day after day with the
+  // app left open (PiP always on), the caches only hold what is displayed
   const liveIds = new Set<string>();
   for (const f of found) {
     liveIds.add(f.id);
@@ -948,16 +968,16 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
 
-  // ACTIVE_WINDOW_MS より古いイベントは捨てる(毎ポーリングで末尾を再パースするため、
-  // 重複排除された上で溜まっていく分をここで頭打ちにする)
+  // Drop events older than ACTIVE_WINDOW_MS (every poll re-parses the tail, so this caps what accumulates
+  // even after deduplication)
   for (const [key, event] of sessionEventCache) {
     if (now - event.at > ACTIVE_WINDOW_MS) sessionEventCache.delete(key);
   }
   const events = [...sessionEventCache.values()].sort((a, b) => b.at - a.at).slice(0, MAX_EVENTS);
 
-  // 永続イベントログは毎 cacheEvent ごとではなく、この1回のスキャンの終わりにまとめて1回だけ
-  // 書く(新規イベントが無いスキャンでは書き込まない)。dirty フラグは cacheEvent 経由の
-  // appendToEventLog だけでなく、hydrateEventLog の pending マージでも立ちうる
+  // The persistent event log is written once at the end of this scan rather than on every cacheEvent (scans
+  // with no new events don't write). The dirty flag can be set not only by appendToEventLog via cacheEvent but
+  // also by the pending merge in hydrateEventLog
   if (eventLogDirty && eventLogHydration === "done") {
     eventLogDirty = false;
     void saveEventLog(eventLog).catch((e) => {
@@ -968,13 +988,14 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   return { views, brokenIds, events };
 }
 
-// 前の読み込みで views にいた id(読み込みごとの記録で、消えた・戻った鳥を出す)
+// ids that were in views on the previous read (the per-read record uses this to log birds that disappeared or came back)
 let lastScanViewIds = new Set<string>();
 
 /**
- * 読み込みごとの記録(fix18 の調査用)。1 回の読み込みで 1 行。見守りのつながりがある鳥と、前の回から
- * 消えた・戻った鳥を出す。巣箱に入るか(にわから消えるか)は garden.tsx の isNested と同じ条件の目安
- * (dozing で見守り中でない。「?」の有無はここでは見ない)
+ * Per-read record (for investigating fix18). One line per read. Logs birds with watching links, and birds that
+ * disappeared or came back since the previous read. Whether a bird goes into the nest (disappears from the
+ * garden) is an approximation of the same condition as isNested in garden.tsx
+ * (dozing and not watching; the "?" isn't considered here)
  */
 function logScan(
   views: SessionView[],
@@ -1007,8 +1028,8 @@ function logScan(
 }
 
 /**
- * Jev の判定結果を、同じターンの done イベント(key = sessionId:at:done)の永続ログに書く。
- * デバッグダイアログで確率を見るため。done が抑止などでまだログに無いときは書かない
+ * Writes the Jev verdict to the persistent log entry of the same turn's done event (key = sessionId:at:done),
+ * to see the probability in the debug dialog. Not written when the done isn't in the log yet (e.g. suppressed)
  */
 export function recordAskJudgement(sessionId: string, at: number, ask: AskJudgement): void {
   const key = `${sessionId}:${at}:done`;
@@ -1018,21 +1039,21 @@ export function recordAskJudgement(sessionId: string, at: number, ask: AskJudgem
   eventLogDirty = true;
 }
 
-/** デバッグダイアログ の DebugApp から永続イベントログを読むための入口。
- * 値の型はここ(lib/sessions.ts)が所有するため、fsa 側の loadEventLog<T> をラップして返す。
- * 廃止済み種別(旧 "harsh" 等)は KNOWN_EVENT_TYPES で無視する(hydrateEventLog と同じ方針) */
+/** Entry point for DebugApp in the debug dialog to read the persistent event log.
+ * The value type is owned here (lib/sessions.ts), so this wraps loadEventLog<T> from fsa.
+ * Retired types (formerly "harsh" etc.) are ignored via KNOWN_EVENT_TYPES (same policy as hydrateEventLog) */
 export async function loadPersistedEvents(): Promise<SessionEvent[]> {
   const saved = (await loadEventLog<SessionEvent>()) ?? [];
   return saved.filter((e) => isKnownEventType(e.type));
 }
 
 /**
- * tail のイベント列からセッションの遷移イベント(開始・応答待ち・完了・終了)を導出する。
- * done はターン途中の経過テキストを誤検知しないよう、次の分類イベントが
- * tool_use/tool_result でないものだけを完了とみなす。加えて、ひな(サブエージェント)が
- * まだ走行中なら「戻ってきて」信号としては早すぎるので抑止する(deriveDoneEvent)。
- * waiting は AskUserQuestion/ExitPlanMode の呼び出しを確定的なユーザー応答待ちとみなし、
- * 既に回答済みのものも履歴としてそのまま出す(タイムアウト推定はしない)。
+ * Derives a session's transition events (started, waiting for reply, done, closed) from the tail's event list.
+ * To avoid false detection of progress text in the middle of a turn, done counts only when the next classified
+ * event is not tool_use/tool_result. In addition, if a chick (subagent) is still running it is too early as a
+ * "come back" signal, so it is suppressed (deriveDoneEvent).
+ * waiting treats a call to AskUserQuestion/ExitPlanMode as a definite wait for the user's answer, and ones
+ * already answered are also emitted as history as-is (no timeout estimation).
  */
 function deriveSessionEvents(
   tail: TailInfo,
@@ -1045,16 +1066,16 @@ function deriveSessionEvents(
 ): SessionEvent[] {
   const result: SessionEvent[] = [];
   const events = tail.events;
-  // イベント列を歩きながら「直前のユーザー発言」を追跡し、各イベントに自分のターンの
-  // プロンプトを付ける。セッションの最新発言(snippet)を一律に付けると、first-write-wins
-  // キャッシュ経由で過去イベントに無関係な発言が固定される(レビュー指摘)。
-  // snippet は窓内に発言が無いときの代用にだけ使う
+  // Walk the event list tracking "the previous user message", and attach each event's own turn prompt.
+  // Attaching the session's latest message (snippet) to everything would pin unrelated messages to past
+  // events via the first-write-wins cache.
+  // snippet is only used as a substitute when there is no message in the window
   let lastPrompt: string | undefined;
   for (let i = 0; i < events.length; i++) {
     const event = events[i];
     if (event.kind === "user") {
-      // 開始イベントは「そのプロンプト自体」を載せる。何を頼んだかがこのイベントの
-      // 主情報なので、短い指示や単一セッションでも省略しない
+      // A started event carries "the prompt itself". What was asked is the main info of this event, so it
+      // isn't omitted even for short instructions or a single session
       const prompt = event.text ? formatSnippet(event.text) : undefined;
       if (prompt) lastPrompt = prompt;
       result.push(mkSessionEvent(sessionId, project, "started", event.at, prompt ?? snippet));
@@ -1063,8 +1084,8 @@ function deriveSessionEvents(
     } else if (event.kind === "assistant_text") {
       const next = events[i + 1];
       if (!next || (next.kind !== "tool_use" && next.kind !== "tool_result")) {
-        // next が存在する(=T より後に何らかのイベントがある)ことは、親が既に再起動・
-        // 続行していることの決定的な signal になる(deriveDoneEvent のキャンセル判定に使う)
+        // The existence of next (= some event after T) is a definitive signal that the parent has already
+        // restarted/continued (used for the cancel check in deriveDoneEvent)
         const parentAdvanced = next !== undefined;
         const done = deriveDoneEvent(
           sessionId,
@@ -1086,7 +1107,7 @@ function deriveSessionEvents(
   return result;
 }
 
-/** 親 tail から見えた起動・完了を backgroundTaskCache に足し込み、そのセッションの台帳を返す */
+/** Adds the starts and completions seen in the parent tail to backgroundTaskCache and returns that session's ledger */
 function updateBackgroundTasks(sessionId: string, tail: TailInfo): Map<string, BackgroundTask> {
   let tasks = backgroundTaskCache.get(sessionId);
   if (!tasks) {
@@ -1104,20 +1125,21 @@ function updateBackgroundTasks(sessionId: string, tail: TailInfo): Map<string, B
 }
 
 /**
- * 質問ツールの入力(JSON の先頭 500 字。lib/transcript.ts の summarizeToolInput、Codex は arguments)
- * から最初の質問文を取り出す。AskUserQuestion と request_user_input はどちらも questions[].question を持つ。
- * 500 字で切れて閉じの " が無いときは、切れたところまでを使う。ExitPlanMode は質問文を持たない(undefined)
+ * Extracts the first question text from a question tool's input (first 500 chars of the JSON;
+ * summarizeToolInput in lib/transcript.ts, arguments for Codex). AskUserQuestion and request_user_input both
+ * have questions[].question. When cut at 500 chars with no closing ", use what is there up to the cut.
+ * ExitPlanMode has no question text (undefined)
  */
 function extractQuestion(input: string | undefined): string | undefined {
   if (!input) return undefined;
   const m = /"question"\s*:\s*"((?:[^"\\]|\\.)*)("?)/.exec(input);
   if (!m) return undefined;
   let text = m[1];
-  if (m[2] === "") text = text.replace(/\\$/, ""); // 途中で切れた末尾のエスケープを落とす
+  if (m[2] === "") text = text.replace(/\\$/, ""); // drop a trailing escape cut off midway
   try {
     text = JSON.parse(`"${text}"`) as string;
   } catch {
-    // エスケープが崩れていれば生のまま使う
+    // If the escapes are broken, use it raw
   }
   const trimmed = text.replace(/\s+/g, " ").trim();
   return trimmed || undefined;
@@ -1132,66 +1154,70 @@ function isWaitingTool(toolName: string | undefined): boolean {
 }
 
 /**
- * メインが T で停止しても、T より後まで生きていたひな(サブエージェント)が1羽でもいれば、
- * その T の done はいったん抑止する(全員 done/dozing、または放置扱いになったスキャンで
- * 抑止明けになる)。ひなが本当に走行中か止まっているかは T との前後関係だけでは判定できない
- * (ひなは Bash 実行中など数十秒書き込みが空くのが普通で、T の瞬間にたまたま書き込みが
- * 無いだけの走行中のひなを「止まったひな」と誤判定してしまうため)。代わりに書き込みからの
- * 経過時間(sinceMs)そのものの鮮度で判定する: sinceMs が CHICK_ABANDONED_MS 未満なら
- * まだ生きている(working 固着でも抑止対象)、それ以上なら放置ひなとみなし無視する。
- * T は tail 上で不変な過去のイベントなので、抑止中は毎スキャンでこの関数が再評価され続け、
- * ひなが揃った時点で自然に抑止明けになる。
+ * Even if the main session stops at T, if even one chick (subagent) was alive past T, that T's done is
+ * suppressed for now (the suppression lifts on the scan where all are done/dozing or treated as abandoned).
+ * Whether a chick is really running or stopped can't be decided from its ordering relative to T alone
+ * (chicks commonly go tens of seconds without writing, e.g. while running Bash, so a running chick that just
+ * happens to have no write at the moment of T would be misjudged as "stopped"). Instead, decide by the
+ * freshness of the time since its last write (sinceMs) itself: if sinceMs is under CHICK_ABANDONED_MS it is
+ * still alive (suppressed even when stuck in working); otherwise it is treated as abandoned and ignored.
+ * T is an immutable past event in the tail, so while suppressed this function keeps being re-evaluated every
+ * scan, and the suppression lifts naturally once the chicks are all finished.
  *
- * 判定順序は「走行中ひなの抑止」を必ず先に行う。走行中のひなは今スキャン時点(now > T)で
- * 生きているのだから「T より後まで生きている」ことは書き込み時刻を見るまでもなく確定して
- * おり、まずここで抑止するかどうかを決める。この順序を守らないと、親ターン終了 T 直後の
- * 最初のスキャンでは走行中ひなでも最終書き込みがまだ T より前の瞬間があり、その瞬間だけ
- * wasAnyChickAliveAfterT が false になって即時発火の通常経路へ誤って抜けてしまう
- * (実害: T=16:58:17 に対し直前の書き込みが 16:58:1x で、done が抑止されず即時発火して鳴った)。
- * ループを抜けて走行中のひなが1羽もいないと確定してから初めて、T の時点でひなが全員
- * 終わっていた(chick なし、または全ひなの最終書き込みが T より前)かどうかを判定する。
- * 止まったひなの最終書き込み時刻はもう動かないため、この時点での比較は信頼できる。
- * 終わっていたケースはそもそも抑止が要らない即時発火の通常経路で、以下のキャンセル/猶予/
- * timeout の対象外(挙動は旧実装から変更なし)。「T より後まで生きていたひながいた」場合
- * だけが抑止 → 抑止明け → キャンセル/猶予/timeout の対象になる。
+ * The check order always does "suppression by running chicks" first. A running chick is alive at the current
+ * scan (now > T), so "alive past T" is certain without even looking at its write time, and whether to suppress
+ * is decided here first. Without this order, on the first scan right after the parent's turn end T, there is a
+ * moment where even a running chick's last write is still before T, and just at that moment
+ * wasAnyChickAliveAfterT becomes false and it wrongly falls through to the normal immediate-fire path
+ * (actual problem: with T=16:58:17 and the previous write at 16:58:1x, done was not suppressed, fired
+ * immediately, and chirped).
+ * Only after leaving the loop with no running chick confirmed do we check whether all chicks had finished at
+ * time T (no chicks, or every chick's last write before T). A stopped chick's last write time no longer moves,
+ * so the comparison at this point is reliable.
+ * The finished case is the normal immediate-fire path that needs no suppression at all, and is outside the
+ * cancel/grace/timeout below (behavior unchanged from the old implementation). Only the case "some chick was
+ * alive past T" goes through suppression → release → cancel/grace/timeout.
  *
- * 抑止明け後の発火は鮮度頼みではなく決定的な timeout+キャンセルにする(旧実装は at=T
- * 固定のまま App.tsx の鮮度ガード(EVENT_FRESHNESS_MS=30秒)頼みで、抑止明けが鮮度内に
- * 収まるかは実質運任せだった。実害: 親ターン終了17秒後にひなが完了 → 抑止明けの発火が
- * 鮮度30秒以内に収まって鳴り、その3秒後にハーネスが親を自動再起動して続行 → 最終ターンの
- * done がもう一度鳴り、二重鳴きになった)。
- * - **キャンセル**: 抑止明け時点で親の tail に T より後のイベント(kind 問わず)が既に
- *   存在する = 親は既に再起動・続行済み。この場合の done は当のイベントとして無意味なので、
- *   muted 付きで返す(ログ・EventFeed には残すが鳴らさない)。
- * - **猶予**: まだキャンセルもされておらず、ひなの最終書き込みから DONE_GRACE_MS も
- *   経っていなければ、親の再起動をもう少し待つ。null を返して次スキャンで再評価する。
- * - **timeout 発火**: DONE_GRACE_MS 経っても親が再起動していなければ、そのまま鳴らして良い
- *   done として発火する。at は key の基準である t のまま変えないため(理由は下記)、
- *   代わりに firedAt=now を付けて App.tsx の鮮度ガードがこれを見て判定できるようにする。
+ * Firing after release is a deterministic timeout+cancel rather than relying on freshness (the old
+ * implementation kept at=T fixed and relied on App.tsx's freshness guard (EVENT_FRESHNESS_MS=30 seconds), so
+ * whether the release fell within freshness was effectively luck. Actual problem: the chick finished 17 seconds
+ * after the parent's turn end → the release fired within the 30-second freshness and chirped, then 3 seconds
+ * later the harness auto-restarted the parent and it continued → the final turn's done chirped again, a double
+ * chirp).
+ * - **Cancel**: at release, the parent's tail already has an event (of any kind) after T = the parent has
+ *   already restarted/continued. The done is then meaningless as that event, so it is returned with muted
+ *   (kept in the log and EventFeed but no chirp).
+ * - **Grace**: if not cancelled yet and DONE_GRACE_MS hasn't passed since the chick's last write, wait a bit
+ *   longer for the parent to restart. Return null and re-evaluate on the next scan.
+ * - **Timeout fire**: if the parent hasn't restarted after DONE_GRACE_MS, fire it as a done that may chirp.
+ *   at stays t, the key basis (reason below), so firedAt=now is attached instead for App.tsx's freshness guard
+ *   to check.
  *
- * at を t(=T、親自身のターン終了時刻)に固定したままにする理由:
- * - バックグラウンドエージェント完了時、ひな側の書き込み時刻 W で done を鳴らすと、
- *   直後にハーネスが親を自動再起動して完了報告を書き、そのターン終了(T2)でまた done が
- *   出て2回連続で鳴っていた(実害)。W 起点の1回目は常に冗長 — 親は必ず再起動され T2 の
- *   done を出すため。
- * - key(`sessionId:t:done`)が t 由来で不変になるため、抑止中・猶予中に何度再評価されても
- *   同じ key になり、sessionEventCache の first-write-wins(cacheEvent)・重複排除の両方と
- *   素直に整合する(at を可変にしていた旧実装のような「発火のたびに key が変わる」揺れが無い)。
+ * Why at stays fixed to t (= T, the parent's own turn end):
+ * - When a background agent finished, chirping done at the chick's write time W made the harness auto-restart
+ *   the parent right after, write a completion report, and emit done again at that turn's end (T2), chirping
+ *   twice in a row (actual problem). The first one at W is always redundant — the parent is always restarted
+ *   and emits the T2 done.
+ * - The key (`sessionId:t:done`) comes from t and never changes, so no matter how many times it is
+ *   re-evaluated during suppression or grace it is the same key, fitting cleanly with both sessionEventCache's
+ *   first-write-wins (cacheEvent) and deduplication (no "key changes on every fire" wobble like the old
+ *   implementation with a variable at).
  *
- * DONE_GRACE_MS(30秒)の根拠は定数定義のコメントを参照。
+ * For the basis of DONE_GRACE_MS (30 seconds), see the comment on the constant.
  *
- * バックグラウンドタスク(run_in_background の Bash 等。backgroundTaskCache)も、ひなと
- * 同じ理由で抑止する: 親が「裏で回しています」と書いて T で止まっても、タスク完了の
- * <task-notification> で親は必ず再開し、報告のターン終了 T2 で done を出す。T の done は
- * 冗長で、鳴らすと1回の依頼で2回しゃべる(実害: `claude -p` を裏で5本回す間の待機
- * 宣言が読み上げられた)。ひなと違い専用 transcript が無く生死は見えないため、判定は
- * 起動・完了通知の時刻だけで行う:
- * - T 以前に起動し、完了通知が未着のタスクがある → 抑止(null)
- * - T 以前に起動し、T より後に完了通知が来た → ひなの抑止明けと同じ扱い(親が再開済みなら
- *   muted、未再開なら DONE_GRACE_MS 猶予の後 timeout 発火)
- * 完了通知は completed/failed どちらでも来る(実データで確認)。通知行を見逃した場合の
- * 逃げ道は BACKGROUND_TASK_STALE_MS。
- * ひなと同じく、タスク走行中にユーザーと会話して終えたターンの done も抑止される。
+ * Background tasks (run_in_background Bash etc.; backgroundTaskCache) are suppressed for the same reason as
+ * chicks: even if the parent writes "running it in the background" and stops at T, the task's
+ * <task-notification> always resumes the parent, which emits done at the report turn's end T2. The T done is
+ * redundant, and chirping it makes one request speak twice (actual problem: the waiting announcement while
+ * running five `claude -p` in the background was read out). Unlike chicks there is no dedicated transcript and
+ * liveness can't be seen, so the check uses only the start and completion notification times:
+ * - A task started at or before T with no completion notification yet → suppress (null)
+ * - Started at or before T, with a completion notification after T → same as chick release (muted if the
+ *   parent has resumed; otherwise timeout fire after the DONE_GRACE_MS grace)
+ * Completion notifications come for both completed and failed (confirmed in real data). The escape hatch for
+ * a missed notification line is BACKGROUND_TASK_STALE_MS.
+ * As with chicks, the done of a turn that ended after talking with the user while a task was running is also
+ * suppressed.
  */
 function deriveDoneEvent(
   sessionId: string,
@@ -1202,35 +1228,35 @@ function deriveDoneEvent(
   snippet: string | undefined,
   now: number,
   parentAdvanced: boolean,
-  // このターンのアシスタント最終応答テキスト(assistant_text.text)。done 読み上げ要約
-  // (lib/summarize.ts)の入力にするだけの一時値なので、生成した SessionEvent にそのまま
-  // 載せて返す(永続化からの除外は appendToEventLog 側の責務)
+  // This turn's final assistant reply text (assistant_text.text). A temporary value only used as input to the
+  // done readout summary (lib/summarize.ts), so it is put as-is on the generated SessionEvent
+  // (excluding it from persistence is appendToEventLog's responsibility)
   assistantText: string | undefined,
 ): SessionEvent | null {
-  // バックグラウンドタスク: T 以前に起動したものだけが T の done に関係する
+  // Background tasks: only those started at or before T matter for T's done
   let lastTaskEndAfterT: number | undefined;
   for (const task of backgroundTasks.values()) {
     if (task.startedAt > t) continue;
     if (task.endedAt === undefined) {
-      if (now - task.startedAt < BACKGROUND_TASK_STALE_MS) return null; // 走行中 → 抑止
-      continue; // 通知を見逃した可能性(BACKGROUND_TASK_STALE_MS 参照)
+      if (now - task.startedAt < BACKGROUND_TASK_STALE_MS) return null; // running → suppress
+      continue; // the notification may have been missed (see BACKGROUND_TASK_STALE_MS)
     }
     if (task.endedAt > t) lastTaskEndAfterT = Math.max(lastTaskEndAfterT ?? 0, task.endedAt);
   }
 
-  // 走行中ひなの抑止を最初に判定する。走行中のひなは今スキャン時点(now > T)で生きている
-  // のだから、「T より後まで生きている」ことは書き込み時刻を見るまでもなく確定している。
-  // ここを wasAnyChickAliveAfterT の判定より後回しにすると、親ターン終了直後の最初の
-  // スキャンでは走行中ひなでも最終書き込みがまだ T より前の瞬間があり、その瞬間だけ
-  // wasAnyChickAliveAfterT が false と誤判定されて即時発火の通常経路へ抜けてしまう
+  // Check suppression by running chicks first. A running chick is alive at the current scan (now > T), so
+  // "alive past T" is certain without even looking at its write time.
+  // If this came after the wasAnyChickAliveAfterT check, on the first scan right after the parent's turn end
+  // there is a moment where even a running chick's last write is still before T, and just at that moment
+  // wasAnyChickAliveAfterT would be misjudged as false and fall through to the normal immediate-fire path
   for (const chick of chicks) {
-    if (chick.state === "done" || chick.state === "dozing") continue; // 終わったひなは無関係
-    if (chick.sinceMs < CHICK_ABANDONED_MS) return null; // 走行中に見えるひなが1羽でもいれば抑止
-    // sinceMs >= CHICK_ABANDONED_MS: 長時間書き込みが無い working 固着 = 放置ひなとみなし無視
+    if (chick.state === "done" || chick.state === "dozing") continue; // finished chicks don't matter
+    if (chick.sinceMs < CHICK_ABANDONED_MS) return null; // suppress if even one chick looks like it is running
+    // sinceMs >= CHICK_ABANDONED_MS: stuck in working with no writes for a long time = treated as abandoned and ignored
   }
 
-  // T より後にバックグラウンドタスクが終わった。ひなの抑止明けと同じく、親が再開済みなら
-  // muted、再開待ちは DONE_GRACE_MS まで猶予、それでも再開しなければ timeout 発火
+  // A background task finished after T. As with chick release: muted if the parent has resumed; while waiting
+  // for it to resume, grace up to DONE_GRACE_MS; if it still hasn't resumed, timeout fire
   if (lastTaskEndAfterT !== undefined) {
     if (parentAdvanced) {
       return { ...mkSessionEvent(sessionId, project, "done", t, snippet, assistantText), muted: true };
@@ -1239,25 +1265,25 @@ function deriveDoneEvent(
     return { ...mkSessionEvent(sessionId, project, "done", t, snippet, assistantText), firedAt: now };
   }
 
-  // ここまで来たら走行中のひなはいない。止まったひなの最終書き込み時刻はもう動かないので、
-  // この時点での比較(T より後まで生きていたひながいたか)は信頼できる
+  // Reaching here means no chick is running. A stopped chick's last write time no longer moves, so the
+  // comparison at this point (was any chick alive past T) is reliable
   const wasAnyChickAliveAfterT = chicks.some((chick) => now - chick.sinceMs > t);
   if (!wasAnyChickAliveAfterT) {
-    // T の時点でひなは全員終わっていた(chick なしも含む) = 抑止不要、即時発火の通常経路
+    // All chicks had finished at time T (including no chicks) = no suppression needed, normal immediate-fire path
     return mkSessionEvent(sessionId, project, "done", t, snippet, assistantText);
   }
 
-  // 抑止明け: 親が既に T より後のイベントを持っている(再起動・続行済み)なら、この done は
-  // もう意味が無いのでミュートして返す(ログ・フィードには残す)
+  // Release: if the parent already has an event after T (restarted/continued), this done no longer means
+  // anything, so return it muted (kept in the log and feed)
   if (parentAdvanced) {
     return { ...mkSessionEvent(sessionId, project, "done", t, snippet, assistantText), muted: true };
   }
 
-  // 猶予中: ひなの最終書き込みから GRACE 未経過。親の再起動をもう少し待つ
+  // Grace: GRACE hasn't passed since the chick's last write. Wait a bit longer for the parent to restart
   const lastChickWriteAt = Math.max(...chicks.map((chick) => now - chick.sinceMs));
   if (now - lastChickWriteAt < DONE_GRACE_MS) return null;
 
-  // timeout 発火: GRACE 経っても親は再起動していない。鳴らして良い done として返す
+  // Timeout fire: the parent hasn't restarted after GRACE. Return it as a done that may chirp
   return { ...mkSessionEvent(sessionId, project, "done", t, snippet, assistantText), firedAt: now };
 }
 
@@ -1273,13 +1299,13 @@ function mkSessionEvent(
 }
 
 /**
- * 表示対象になった親セッションについてだけ subagents/ を覗く
- * (<projectDir>/<sessionId>/subagents/agent-*.jsonl)。
- * ディレクトリが無い(NotFoundError)のはひな無しの正常系なので握りつぶす。
+ * Looks into subagents/ only for parent sessions that are displayed
+ * (<projectDir>/<sessionId>/subagents/agent-*.jsonl).
+ * A missing directory (NotFoundError) is the normal no-chick case, so it is swallowed.
  *
- * parentChickSignals: 親 tail(readTailCached 済み)から取れた chickSignals。ひなの完了判定は
- * これを正とする(deriveState の isChick コメント参照)。呼び出し元(scanSessions)が
- * scanChicks より先に親 tail を読んでおく必要がある。
+ * parentChickSignals: chickSignals taken from the parent tail (already read by readTailCached). The chick
+ * completion check treats this as the source of truth (see the isChick comment in deriveState). The caller
+ * (scanSessions) must read the parent tail before scanChicks.
  */
 async function scanChicks(
   projectDir: NativeDirectoryHandle,
@@ -1294,7 +1320,7 @@ async function scanChicks(
     const sessionDir = await projectDir.getDirectoryHandle(sessionId);
     subagentsDir = await sessionDir.getDirectoryHandle("subagents");
   } catch (e) {
-    // ディレクトリが無い(NotFoundError)のはひな無しの正常系。それ以外は異常なので痕跡を残す
+    // A missing directory (NotFoundError) is the normal no-chick case. Anything else is abnormal, so leave a trace
     if (!(e instanceof DOMException && e.name === "NotFoundError")) {
       console.warn("[tomarigi] failed to scan subagents", parentId, e);
     }
@@ -1305,25 +1331,26 @@ async function scanChicks(
   for await (const entry of subagentsDir.values()) {
     if (entry.kind !== "file" || !entry.name.endsWith(".jsonl")) continue;
     const file = await (entry as NativeFileHandle).getFile();
-    // 親スキャンの同種フィルタ(scanSessions 内コメント参照)と同じ理由で mtime のままでよい:
-    // tail を読む前の粗い足切りであり、mtime は実際の最終会話時刻以上にしか進まない
+    // mtime is fine here for the same reason as the equivalent filter in the parent scan (see the comment in
+    // scanSessions): it is a rough cutoff before reading the tail, and mtime only runs ahead of the actual last
+    // conversation time
     if (now - file.lastModified > ACTIVE_WINDOW_MS) continue;
 
     const chickId = `${parentId}/${entry.name}`;
     const tail = await readTailCached(chickId, file, { includeSidechain: true });
-    // 親スキャンの sinceMs と同じ理由で tail.lastEventAt を基準にする(コメントは
-    // scanSessions 内の同種箇所を参照)。sinceMs は表示用途なので mtime フォールバックを許容する
+    // Use tail.lastEventAt as the basis for the same reason as the parent scan's sinceMs (see the equivalent
+    // place in scanSessions). sinceMs is for display, so the mtime fallback is acceptable
     const chickSinceBasis = tail.lastEventAt ?? file.lastModified;
     const sinceMs = now - chickSinceBasis;
     const meta = await resolveChickMeta(subagentsDir, entry.name, chickId);
-    // ファイル名 agent-<task-id>.jsonl から task-id を復元する。task-notification の
-    // <task-id> と一致する(実データで確認済み)。「agent-」接頭辞が無い命名でも
-    // (将来的な変更があっても)そのままキーとして使うだけで、単に信号が引けず後続の
-    // フォールバック判定に落ちるだけなので安全側に倒れる
+    // Recover the task-id from the file name agent-<task-id>.jsonl. It matches <task-id> in
+    // task-notification (confirmed in real data). Even with naming lacking the "agent-" prefix
+    // (should it change in the future), it is just used as the key as-is; the signal simply won't be found
+    // and it falls to the later fallback check, so it errs on the safe side
     const taskId = entry.name.replace(/^agent-/, "").replace(/\.jsonl$/, "");
-    // resume 判定(resolveChickDoneSignalAt)には mtime フォールバック前の tail.lastEventAt を
-    // そのまま渡す。mtime を信用できないというのがこの関数の存在理由そのものであり、
-    // sinceMs 用の chickSinceBasis で代用すると同じ問題(事後 touch を resume と誤認)を呼び戻す
+    // Pass tail.lastEventAt as-is, before the mtime fallback, to the resume check (resolveChickDoneSignalAt).
+    // Not trusting mtime is the very reason that function exists, and substituting chickSinceBasis (meant for
+    // sinceMs) would bring back the same problem (mistaking a later touch for a resume)
     const chickDoneSignalAt = resolveChickDoneSignalAt(
       parentChickSignals,
       taskId,
@@ -1345,32 +1372,30 @@ async function scanChicks(
 }
 
 /**
- * 親台帳(parentChickSignals)から、このひなの完了信号を解決する。ひなの識別子は2種類
- * ありうる(非同期起動=task-id、同期呼び出し=meta.json の toolUseId)ため両方引き、
- * 万一両方に信号が付いていれば新しい方を採用する(resume を繰り返すと両方が別々に
- * 更新されうるため)。
+ * Resolves this chick's completion signal from the parent ledger (parentChickSignals). A chick can have two
+ * kinds of identifier (async start = task-id, sync call = toolUseId in meta.json), so look up both, and if by
+ * any chance both have a signal, take the newer one (repeated resumes can update both separately).
  *
- * 通常は片方しか値を持たない: task-id(task-notification)はエージェントが停止する
- * たびに毎回発火する仕様なので resume のたびに更新されうるが、toolUseId(tool_result)は
- * ブロッキング呼び出しの結果が一度返れば tool_use_id は API 上そこで解決済みになり
- * 再利用されない(以後の resume は SendMessage 等の別経路になり、新しい tool_use_id を
- * 持つ)ため1回しか値が付かない。両方に値が付くのは「同じひなが一度同期呼び出しで
- * 起動され、後で非同期扱いの通知系にも乗った」ような想定外のケースのみで、実データでは
- * 未確認。Math.max はその想定外ケースへの保険。
+ * Normally only one has a value: task-id (task-notification) fires every time the agent stops, so it can be
+ * updated on each resume, whereas toolUseId (tool_result) gets a value only once, because once a blocking
+ * call's result has returned the tool_use_id is resolved at the API level and never reused (later resumes go
+ * through another path such as SendMessage and have a new tool_use_id). Both having a value would only happen
+ * in an unexpected case like "the same chick was once started by a sync call and later also went through the
+ * async notification path", not confirmed in real data. Math.max is insurance against that unexpected case.
  *
- * 信号があっても、ひなの最終会話時刻(chickLastEventAt、tail.lastEventAt。mtime にはフォール
- * バックしない。理由は後述)がその信号より明確に後(CHICK_SIGNAL_EPSILON_MS を超えて後)なら、信号後にひなが resume されて
- * 書き込みを再開したとみなし無効化する(undefined を返す = 「信号なし」として扱わせる。同じ
- * task-id のひなは親が resume でき、同じ jsonl に書き込みが再開されるため、信号を過去のものと
- * して固定してしまうと resume 後もずっと done のままになってしまう)。
- * mtime ではなく最終会話時刻を使うのは、timestamp を持たない事後追記(mtime だけの touch)を
- * 誤って resume とみなさないため — mtime 基準だとゴースト touch のたびに有効な完了信号が
- * 無効化され、完了したはずのひなが働いているように見えてしまう。
+ * Even with a signal, if the chick's last conversation time (chickLastEventAt, tail.lastEventAt; no fallback
+ * to mtime, reason below) is clearly after the signal (by more than CHICK_SIGNAL_EPSILON_MS), treat the chick
+ * as resumed after the signal and writing again, and invalidate it (return undefined = treat as "no signal".
+ * The parent can resume a chick with the same task-id and writes resume in the same jsonl, so pinning the
+ * signal as a past one would leave it done forever even after the resume).
+ * The last conversation time is used instead of mtime so that later appends without a timestamp (a touch that
+ * only changes mtime) aren't mistaken for a resume — with an mtime basis every ghost touch would invalidate a
+ * valid completion signal, and a chick that should be finished would look like it is working.
  *
- * chickLastEventAt が undefined(tail 窓に timestamp 付き行が1つも無く最終会話時刻が不明)の
- * 場合は resume 判定自体をスキップし、信号をそのまま有効とみなす。mtime にはフォールバック
- * しない — 上記のとおり mtime を信用できないことがこの関数の存在理由そのものであり、代用すると
- * 同じ「事後 touch で完了済みひなが working に復活する」問題を呼び戻すため。
+ * If chickLastEventAt is undefined (the tail window has no line with a timestamp, so the last conversation
+ * time is unknown), the resume check itself is skipped and the signal is treated as valid as-is. No fallback
+ * to mtime — as above, not trusting mtime is the very reason this function exists, and substituting it would
+ * bring back the same "a later touch revives a finished chick into working" problem.
  */
 function resolveChickDoneSignalAt(
   parentChickSignals: Map<string, number>,
@@ -1383,20 +1408,20 @@ function resolveChickDoneSignalAt(
   const signalAt =
     byTaskId === undefined ? byToolUseId : byToolUseId === undefined ? byTaskId : Math.max(byTaskId, byToolUseId);
   if (signalAt === undefined) return undefined;
-  if (chickLastEventAt === undefined) return signalAt; // 最終会話時刻不明。resume と断定する根拠が無いので信号を有効のまま返す
-  if (chickLastEventAt > signalAt + CHICK_SIGNAL_EPSILON_MS) return undefined; // resume 済み。信号は無効
+  if (chickLastEventAt === undefined) return signalAt; // last conversation time unknown. No basis to conclude a resume, so return the signal as valid
+  if (chickLastEventAt > signalAt + CHICK_SIGNAL_EPSILON_MS) return undefined; // resumed. The signal is invalid
   return signalAt;
 }
 
 interface ChickMeta {
-  name: string; // meta.json の name→description→ファイル名の順で解決
-  toolUseId?: string; // 起動時の tool_use id(Task/Agent 呼び出し)。同期完了信号の照合に使う
+  name: string; // resolved from meta.json in order name → description → file name
+  toolUseId?: string; // tool_use id at start (Task/Agent call). Used to match the sync completion signal
 }
 
 /**
- * agent-<id>.meta.json を読む。Claude Code の実データには name が存在せず description
- * のみが入っているため、name → description → ファイル名の順でフォールバックする。
- * toolUseId は同期ひな完了信号(resolveChickDoneSignalAt)の照合キー。
+ * Reads agent-<id>.meta.json. Claude Code's real data has no name, only description, so fall back in order
+ * name → description → file name.
+ * toolUseId is the matching key for the sync chick completion signal (resolveChickDoneSignalAt).
  */
 async function resolveChickMeta(
   subagentsDir: NativeDirectoryHandle,
@@ -1421,24 +1446,24 @@ async function resolveChickMeta(
       toolUseId: typeof raw.toolUseId === "string" ? raw.toolUseId : undefined,
     };
   } catch {
-    // meta.json が無い/壊れている場合は名前をファイル名 fallback、toolUseId は無しのまま続行
-    // (toolUseId が取れなくても task-id 経由の信号照合は生きるため致命的ではない)
+    // If meta.json is missing/broken, fall back to the file name for the name and continue without toolUseId
+    // (not fatal: even without toolUseId, signal matching via task-id still works)
   }
   chickMetaCache.set(chickId, meta);
   return meta;
 }
 
 /**
- * chickDoneSignalAt: ひなの done/dozing 判定は tail の見た目(kind)ではなく親台帳
- * (親 transcript の queue-operation/tool_result から取れる chickSignals、呼び出し元
- * scanChicks の resolveChickDoneSignalAt が解決)を正とする。これは実害への対策そのもの:
- * ひなが tool_use を挟まず一時的にテキストだけ書いた瞬間、tail.kind は
- * "assistant_text" に見えるが実際は作業継続中であることがあり、親の done 抑止解除の
- * 判定材料としてこの見た目をそのまま信用すると誤って抑止が解除されてしまう。親自身はこの曖昧さを
- * deriveSessionEvents の次イベント先読みで回避しているが、ひなの tail にはその仕組みが
- * 無いため、代わりに「親が観測した確定信号」を判定源にする。signal が無い(通知未着・
- * ハーネスの通知バグ・ひなの無言死)場合だけ、下記の CHICK_TEXT_DONE_MS によるフォール
- * バックで tail の見た目から done を推定する。
+ * chickDoneSignalAt: a chick's done/dozing check treats the parent ledger (chickSignals taken from
+ * queue-operation/tool_result in the parent transcript, resolved by resolveChickDoneSignalAt in the caller
+ * scanChicks) as the source of truth, not the tail's appearance (kind). This is the fix for an actual problem:
+ * at the moment a chick briefly writes only text without a tool_use in between, tail.kind looks like
+ * "assistant_text" while the work is actually still continuing, and trusting that appearance as input for
+ * releasing the parent's done suppression would release it wrongly. The parent itself avoids this ambiguity by
+ * looking ahead at the next event in deriveSessionEvents, but a chick's tail has no such mechanism, so the
+ * "definite signal observed by the parent" is used as the source instead. Only when there is no signal
+ * (notification not yet arrived, harness notification bug, the chick died silently) is done estimated from
+ * the tail's appearance via the CHICK_TEXT_DONE_MS fallback below.
  */
 function deriveState(
   tail: TailInfo,
@@ -1446,81 +1471,81 @@ function deriveState(
   isChick: boolean,
   chickDoneSignalAt?: number,
 ): BirdState {
-  // /clear・中断・シャットダウンで閉じたセッション。直後の書き込みで「作業中」に
-  // 見せないよう、経過時間より先に判定する。ひな自身の transcript が閉じたという
-  // ローカルな事実は、親台帳の(古いかもしれない)signal より強い情報なのでこちらを優先する
+  // A session closed by /clear, interrupt, or shutdown. Checked before elapsed time so that a write right
+  // after it doesn't make it look "working". The local fact that the chick's own transcript was closed is
+  // stronger information than the parent ledger's (possibly stale) signal, so it takes priority
   if (tail.kind === "closed") return "dozing";
-  // ユーザーへの質問ツールで止まっている。直近書き込みの有無に関わらず応答待ち
+  // Stopped on a question tool for the user. Waiting for a reply regardless of recent writes
   if (!isChick && tail.kind === "tool_use" && isWaitingTool(tail.toolName)) return "waiting";
-  // ひな専用の優先判定: 親台帳に確定信号があれば、tail の見た目(kind)に関わらず
-  // done/dozing を返す(上記コメント参照)。sinceMs < WRITING_MS の早期 return より前に
-  // 判定する — 信号がある以上「直近書き込みがあるから作業中」という推測は成り立たない
+  // Chick-only priority check: if the parent ledger has a definite signal, return done/dozing regardless of
+  // the tail's appearance (kind) (see the comment above). Checked before the sinceMs < WRITING_MS early return —
+  // with a signal, the guess "there was a recent write, so it is working" no longer holds
   if (isChick && chickDoneSignalAt !== undefined) {
     return sinceMs >= DOZE_MS ? "dozing" : "done";
   }
   if (sinceMs < WRITING_MS) return "working";
   switch (tail.kind) {
     case "tool_use":
-      // ツール実行中は静止時間の長さに関わらず working(許可待ち疑いの推測は廃止済み)
+      // While a tool runs it is working regardless of how long it is idle (guessing a pending permission prompt was removed)
       return "working";
     case "assistant_text":
       if (isChick) {
-        // 親台帳に signal が無いときのフォールバック(上記コメント参照)。tail の見た目だけ
-        // では「本当に完了したか、tool_use を挟まず一時的にテキストだけ書いただけか」を
-        // 区別できないため、CHICK_TEXT_DONE_MS を超えて書き込みが無いときだけ done/dozing
-        // とし、それまでは working のまま抑止を継続する(本バグの修正点そのもの)
+        // Fallback when the parent ledger has no signal (see the comment above). The tail's appearance alone
+        // can't tell "really finished" from "briefly wrote only text without a tool_use in between", so it is
+        // done/dozing only when there has been no write for longer than CHICK_TEXT_DONE_MS, and until then it
+        // stays working and suppression continues (this is the fix for the bug itself)
         return sinceMs >= CHICK_TEXT_DONE_MS ? (sinceMs >= DOZE_MS ? "dozing" : "done") : "working";
       }
       return sinceMs >= DOZE_MS ? "dozing" : "done";
     case "user":
     case "tool_result":
-      // assistant の次の出力待ち。応答待ちの長さで「立ち往生」を判定するのは誤検知しか
-      // 出なかったため廃止済み(旧 stalled)。常に working とする
+      // Waiting for the assistant's next output. Judging "stuck" by how long it waits produced only false
+      // positives, so it was removed (formerly stalled). Always working
       return "working";
     default:
-      // TailKind の内訳のうち closed は本関数冒頭で早期 return 済み、tool_use/
-      // assistant_text/user/tool_result は上記ケースで処理済みのため、ここに来るのは
-      // "unknown" だけ(readTail の窓が MAX_TAIL_BYTES まで広げても timestamp 付き行を
-      // 1本も拾えなかったケース。lib/transcript.ts の MAX_TAIL_BYTES コメント参照)。
-      // unknown は「完了した」根拠が無い(単に読めなかっただけ)ので done を経由させない —
-      // done イベント・鳴き声の誤発火源になるため、書き込みが新しい間は working のまま倒し、
-      // DOZE_MS を超えたら dozing だけを返す。
-      // 注意: unknown のとき呼び出し元の sinceMs は mtime フォールバック由来(lastEventAt が
-      // 無いため)。10f0aa5 で排除した mtime 依存がこの分岐にだけ残るが、到達条件が
-      // 「2MB 窓でも timestamp 行ゼロ」という極端なケースに限られるため許容している。
+      // Of the TailKind variants, closed already returned early at the top of this function, and
+      // tool_use/assistant_text/user/tool_result are handled by the cases above, so only "unknown" gets here
+      // (the case where readTail's window, even widened to MAX_TAIL_BYTES, found no line with a timestamp;
+      // see the MAX_TAIL_BYTES comment in lib/transcript.ts).
+      // unknown has no basis for "finished" (it just couldn't be read), so it doesn't go through done —
+      // that would be a source of false done events and chirps, so it stays working while writes are recent,
+      // and returns only dozing once past DOZE_MS.
+      // Note: for unknown, the caller's sinceMs comes from the mtime fallback (no lastEventAt). The mtime
+      // dependency removed in 10f0aa5 remains only in this branch, but it is accepted because reaching it is
+      // limited to the extreme case of "zero timestamp lines even in a 2MB window".
       return sinceMs >= DOZE_MS ? "dozing" : "working";
   }
 }
 
 /**
- * SDK(Claude Agent SDK)経由で起動されたセッションを「ひな」として表示するときの専用状態
- * 判定。deriveState(isChick=true)をそのまま流用しない — 実データで確認した前提の違いによる:
+ * Dedicated state check for showing sessions started via the SDK (Claude Agent SDK) as "chicks".
+ * deriveState(isChick=true) is not reused as-is, because of a difference in premises confirmed in real data:
  *
- * deriveState の isChick フォールバック(CHICK_TEXT_DONE_MS)は tail.kind === "assistant_text"
- * のときしか時間基準に倒さず、tail.kind が "user"/"tool_result" のときは常に working を返す。
- * これは「Task ツールで起動される本物のサブエージェントは、Task の戻り値が assistant の
- * text である以上、停止直前は必ず assistant_text で終わる」という前提に依っている。
+ * deriveState's isChick fallback (CHICK_TEXT_DONE_MS) only switches to the time basis when
+ * tail.kind === "assistant_text", and always returns working when tail.kind is "user"/"tool_result".
+ * This relies on the premise that "a real subagent started by the Task tool always ends with assistant_text
+ * right before stopping, since Task's return value is the assistant's text".
  *
- * SDK セッションにはこの前提が成り立たない。Claude Agent SDK は構造化出力ツールで会話を
- * 終えるパターンがあり、その場合 transcript の最後の分類可能な行は tool_result のまま
- * 固着する(実データで確認済み・2026-08-08: SDK セッションの transcript の
- * tail 窓内で最後に分類される行が tool_result)。
+ * That premise doesn't hold for SDK sessions. The Claude Agent SDK has a pattern of ending the conversation
+ * with a structured output tool, in which case the last classifiable line of the transcript stays stuck at
+ * tool_result (confirmed in real data, 2026-08-08: the last classified line within the tail window of an SDK
+ * session's transcript is tool_result).
  *
- * さらに SDK ひなには親台帳(chickSignals)由来の完了信号が構造的に存在しない
- * (chickDoneSignalAt は常に undefined。親 transcript 側の queue-operation/tool_result 経由の
- * 仕組みなので SDK セッション自身の tail には現れない)。信号による上書きが無いまま
- * deriveState をそのまま使うと、tool_result で終わる SDK ひなが ACTIVE_WINDOW_MS(30分)の
- * 間ずっと working に固着し、escalateWithChicks 経由で親も working に見え続け、
- * deriveDoneEvent の抑止判定(CHICK_ABANDONED_MS=10分)にも誤って乗ってしまう。
+ * In addition, SDK chicks structurally have no completion signal from the parent ledger (chickSignals)
+ * (chickDoneSignalAt is always undefined; it is a mechanism via queue-operation/tool_result on the parent
+ * transcript side, so it doesn't appear in the SDK session's own tail). Using deriveState as-is with no signal
+ * override would keep an SDK chick ending on tool_result stuck in working for the whole ACTIVE_WINDOW_MS
+ * (30 minutes), keep the parent looking working via escalateWithChicks, and also wrongly feed into
+ * deriveDoneEvent's suppression check (CHICK_ABANDONED_MS=10 minutes).
  *
- * そのため tool_use 実行中(kind==="tool_use")以外の全ての静止状態を CHICK_TEXT_DONE_MS の
- * フォールバック対象に広げる(assistant_text/user/tool_result を同列に扱う)。tool_use・
- * closed・unknown(default)の扱いは deriveState と同じにする。
+ * So every idle state other than a running tool_use (kind==="tool_use") is brought under the
+ * CHICK_TEXT_DONE_MS fallback (assistant_text/user/tool_result treated alike). tool_use, closed, and unknown
+ * (default) are handled the same as in deriveState.
  *
- * 孤児(orphanSdkEntries、親候補が無く大人表示にフォールバックした SDK セッション)の状態判定
- * にも使う(scanSessions の withTail ループ、isSdk 分岐)。孤児は表示上「大人の鳥」だが実体は
- * SDK セッションであり、tool_result 終端で working に固着する問題は deriveState のままだと
- * 解消されないため、大人表示でもこちらを使う。
+ * Also used for the state check of orphans (orphanSdkEntries, SDK sessions with no parent candidate that fell
+ * back to adult display) (the withTail loop in scanSessions, isSdk branch). Orphans look like "adult birds" but
+ * are actually SDK sessions, and the problem of getting stuck in working when ending on tool_result isn't
+ * solved by deriveState, so this is used for adult display too.
  */
 function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState {
   if (tail.kind === "closed") return "dozing";
@@ -1533,9 +1558,9 @@ function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState {
     case "tool_result":
       return sinceMs >= CHICK_TEXT_DONE_MS ? (sinceMs >= DOZE_MS ? "dozing" : "done") : "working";
     default:
-      // deriveState の default 分岐と同じ理由(unknown = tail 窓が読めなかっただけで
-      // 「完了」の根拠が無い)で done を経由させない。lib/transcript.ts の
-      // MAX_TAIL_BYTES コメント・deriveState の default 分岐コメント参照。
+      // Doesn't go through done, for the same reason as deriveState's default branch (unknown = the tail
+      // window just couldn't be read; no basis for "finished"). See the MAX_TAIL_BYTES comment in
+      // lib/transcript.ts and the comment on deriveState's default branch.
       return sinceMs >= DOZE_MS ? "dozing" : "working";
   }
 }

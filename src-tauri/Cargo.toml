@@ -25,7 +25,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rfd = { version = "0.15", default-features = false, features = ["tokio"] }
 tauri-plugin-single-instance = "2"
-# TypeSafe の API を叩く(lib.rs の typesafe_systemone。WKWebView からは CORS で弾かれる)
+# Calls the TypeSafe API (typesafe_systemone in lib.rs; requests from WKWebView are blocked by CORS)
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 
 
@@ -40,12 +40,12 @@ strip = true
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics"] }
 objc2 = "0.6"
-# 窓の後ろのすりガラス(lib.rs の set_backdrop)で NSString・NSRect を使う
+# The frosted glass behind the window (set_backdrop in lib.rs) uses NSString and NSRect
 objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry"] }
-# BYOK の API キーを macOS のキーチェーンに保存する(lib.rs の KeyStore)
+# Stores BYOK API keys in the macOS Keychain (KeyStore in lib.rs)
 security-framework = "3"
 tauri-nspanel = "2.1"
-# npm 側 @tauri-apps/api 2.11 に合わせて Rust 側を 2.11 系に固定(tauri build がメジャー/マイナー不一致で止まるため)
+# Pin the Rust side to 2.11.x to match @tauri-apps/api 2.11 on the npm side (tauri build stops on a major/minor mismatch)
 tauri-macros = "~2.6"
 tauri-utils = "~2.9"
 tauri-runtime = "~2.11"

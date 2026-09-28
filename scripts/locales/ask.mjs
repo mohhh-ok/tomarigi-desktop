@@ -1,4 +1,4 @@
-// 判断待ちの鳥の「?」と、その判定に使う TypeSafe(Jev)のキー設定(docs/design.md「判断待ちの鳥に「?」を付ける」)。
+// The "?" on birds that need a reply, and the key settings for TypeSafe (Jev) used to decide it (docs/design.md "The "?" for sessions waiting on you").
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {
   birdWaitingLabel: {

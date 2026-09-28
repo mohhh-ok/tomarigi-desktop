@@ -1,10 +1,10 @@
 import { initI18n } from "@/lib/i18n";
 
-// App.tsx とその依存(stage.tsx / icon-sets.ts)はモジュール評価時に t() を呼んで
-// 表示文字列テーブルを組み立てる(BIRD/EVENT/ICON_SET_LABEL 参照)。拡張コンテキスト外
-// (?mock=1 の静的サーバー配信)では、その評価が起きる前にフォールバック辞書の読み込みが
-// 完了していなければならない。initI18n() の完了を待ってから ./boot を dynamic import する
-// ことで、本体一式(App/mock/source/perch.css の静的 import を含む)の評価をそれ以降に
-// 遅らせる(このファイル自体は本体を静的 import しないこと)
+// App.tsx and its dependencies (stage.tsx / icon-sets.ts) call t() at module evaluation to
+// build display string tables (see BIRD/EVENT/ICON_SET_LABEL). Outside an extension context
+// (served statically with ?mock=1), the fallback dictionary must finish loading before that evaluation
+// happens. Waiting for initI18n() to complete before dynamically importing ./boot
+// delays evaluation of the whole app (including the static imports of App/mock/source/perch.css) until after that
+// (this file itself must not statically import the app)
 await initI18n();
 await import("./boot");

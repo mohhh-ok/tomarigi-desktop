@@ -1,15 +1,15 @@
 // Auto-organized locale group. Edit strings freely; keep the shape.
 // Shape: Record<KeyName, Record<Locale, string>>.
 //
-// 読み上げ($ speechSynthesis.speak())専用のテンプレート文。イベントフィードの
-// 表示(project名・種別ラベル・snippetを別spanで並べる)とは別に、聞いて分かる
-// 一文が要るための新設グループ。$PROJECT$ は chrome.i18n の placeholder(PLACEHOLDERS
-// 参照)で置換される。
-// done イベントはテンプレ文が無い(lib/voice.ts の speakEvent 側でプロジェクト名+
-// プロンプトのみ読む個別分岐にしているため、ここに eventDoneVoice は存在しない)。
+// Template sentences only for readout ($ speechSynthesis.speak()). A group added because readout
+// needs one sentence that makes sense when heard, separate from the event feed display (project name,
+// kind label, and snippet in separate spans). $PROJECT$ is replaced as a chrome.i18n placeholder
+// (see PLACEHOLDERS).
+// done events have no template sentence (speakEvent in lib/voice.ts has a separate branch that reads
+// only the project name + prompt, so eventDoneVoice doesn't exist here).
 export default {
-  // 設定タブのチェックボックス。soundEnableLabel(鳴き声)と並ぶ、speechSynthesis での
-  // 読み上げを有効にするかどうかのトグル(App.tsx の toggleVoiceEnabled)。
+  // Checkbox on the settings tab. Sits next to soundEnableLabel (chirps) and toggles whether
+  // readout with speechSynthesis is enabled (toggleVoiceEnabled in App.tsx).
   voiceEnableLabel: {
     en: "Read aloud with voice",
     ja: "声で読み上げる",

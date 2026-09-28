@@ -1,11 +1,11 @@
-// にわ(Garden)タブのノード配置の永続化(issue #12)。
+// Persisting node positions in the Garden tab (issue #12).
 //
-// 設計メモ: issue の指示文では browser.storage.local を挙げているが、本プロジェクトは
-// 「権限ゼロ」が信用の根拠(wxt.config.ts のコメント参照)で manifest.permissions が
-// 空のまま維持されている。chrome.storage 系 API は "storage" permission が要るため、
-// ここで使うと唯一の権限追加になってしまう。IndexedDB は拡張ページから権限なしで
-// 使えるため、fsa.ts と同じ idb 経由の "tomarigi" DB / "kv" ストアに寄せて、
-// 権限ゼロを崩さずに永続化する。
+// Design note: the issue's instructions named browser.storage.local, but the tomarigi Chrome extension
+// relies on "zero permissions" for trust (see the comment in wxt.config.ts) and keeps manifest.permissions
+// empty. chrome.storage APIs need the "storage" permission, so using them here would be
+// the only permission added. IndexedDB can be used from extension pages without permissions,
+// so this goes through idb into the same "tomarigi" DB / "kv" store as fsa.ts,
+// persisting without breaking zero permissions.
 
 import { openDB, type IDBPDatabase } from "idb";
 
@@ -14,39 +14,39 @@ const STORE = "kv";
 const KEY_GARDEN_POSITIONS = "gardenPositions";
 
 export interface GardenPosition {
-  x: number; // コンテナ幅に対する %
-  y: number; // コンテナ高さに対する %
+  x: number; // % of container width
+  y: number; // % of container height
 }
 
-// ノードがコンテナの端で見切れすぎないための可動域(コンテナに対する %)。
-// ドラッグ中のクランプと自動配置の両方で同じ値を使う。
+// Range of motion (% of the container) so nodes aren't cut off too much at the container edges.
+// The same values are used for clamping while dragging and for automatic placement.
 const CLAMP_X_MIN = 8;
 const CLAMP_X_MAX = 92;
 const CLAMP_Y_MIN = 10;
 const CLAMP_Y_MAX = 90;
 
 /**
- * 自動配置の格子。にわの大きさと鳥 1 羽の大きさ(px)から列と行を決める(docs/design.md のにわ)。
- * jitterX / jitterY は、セルの中でずらしてよい幅(セルに対する割合)。鳥がセルより小さい余りの分だけずらし、
- * 隣のセルの鳥に重ならないようにする
+ * Grid for automatic placement. Columns and rows are decided from the garden size and one bird's size in px (docs/design.md "Garden layout").
+ * jitterX / jitterY are how far a bird may shift within its cell (as a fraction of the cell). It shifts only by the room left over when the bird is smaller than the cell,
+ * so it doesn't overlap birds in neighboring cells
  */
 export interface GardenGrid {
   cols: number;
   rows: number;
   jitterX: number;
   jitterY: number;
-  // 格子を置く高さの、にわの高さに対する割合(下端に巣箱の分の空きを取るため 1 未満になる)
+  // Fraction of the garden's height that the grid occupies (below 1 to leave room for the nest at the bottom)
   yScale: number;
 }
 
-// にわの大きさがまだ分からないときの格子(以前の固定の 4×3)
+// Grid used while the garden size isn't known yet (the old fixed 4×3)
 const FALLBACK_GRID: GardenGrid = { cols: 4, rows: 3, jitterX: 0.6, jitterY: 0.6, yScale: 1 };
-// セルの中でずらす幅の上限(綺麗すぎる整列を崩す程度)
+// Upper limit of the shift within a cell (just enough to break a too-neat alignment)
 const MAX_JITTER = 0.6;
 
 /**
- * にわ(w×h px)に、鳥(nodeW×nodeH px)が重ならずに入る列と行。count 羽が入らなければ、鳥 1 羽に対して
- * 余裕の大きい向き(横か縦)から列・行を足す(狭いにわでは重なる。以前と同じく「できるだけ」)
+ * Columns and rows that fit birds (nodeW×nodeH px) without overlap in a garden of w×h px. If count birds don't fit,
+ * add columns/rows starting from the direction with more room relative to one bird (birds overlap in a narrow garden; "as far as possible", as before)
  */
 export function gardenGrid(
   w: number,
@@ -57,7 +57,7 @@ export function gardenGrid(
   bottomReserve = 0,
 ): GardenGrid {
   if (w <= 0 || fullH <= 0) return FALLBACK_GRID;
-  // 下端の bottomReserve px(巣箱)には鳥を置かない
+  // No birds in the bottomReserve px at the bottom (the nest)
   const h = Math.max(nodeH, fullH - bottomReserve);
   let cols = Math.max(1, Math.floor(w / nodeW));
   let rows = Math.max(1, Math.floor(h / nodeH));
@@ -103,9 +103,9 @@ export function clampGardenPosition(x: number, y: number): GardenPosition {
   };
 }
 
-// 文字列から決定的な非負整数を作る(FNV 風の簡易ハッシュ)。ランダムは再描画のたびに
-// 位置が動いてしまうため使えず、id から毎回同じ値を再現する必要がある。
-// (配置のほか、にわの鳥の向き(左右反転)の決定にも使う)
+// Makes a deterministic non-negative integer from a string (a simple FNV-like hash). Randomness would
+// move positions on every re-render, so the same value has to be reproduced from the id every time.
+// (Also used to decide which way a bird faces in the garden (horizontal flip), besides placement)
 export function hashId(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) {
@@ -114,7 +114,7 @@ export function hashId(id: string): number {
   return Math.abs(h);
 }
 
-/** 位置が格子のどのセルに属するか(0 〜 cols*rows-1)。空きセル探索用 */
+/** Which grid cell a position belongs to (0 to cols*rows-1). For finding empty cells */
 export function gardenCellOf(pos: GardenPosition, grid: GardenGrid): number {
   const col = Math.min(grid.cols - 1, Math.max(0, Math.floor(pos.x / (100 / grid.cols))));
   const row = Math.min(grid.rows - 1, Math.max(0, Math.floor(pos.y / grid.yScale / (100 / grid.rows))));
@@ -122,11 +122,11 @@ export function gardenCellOf(pos: GardenPosition, grid: GardenGrid): number {
 }
 
 /**
- * 位置未登録セッションの初期配置。id ハッシュのセルを起点に、taken(既存の鳥が居るセル)
- * を避けて空きセルを線形に探す(全セル埋まっていたら起点セルに重ねる = 「できるだけ」被らない)。
- * セル内のジッターは id ハッシュだけで決まる決定的な微小オフセット(綺麗すぎる整列を崩す)。ずらす幅は
- * 鳥がセルより小さい余りの分まで(grid.jitterX / jitterY)。
- * ランダムや配列 index を使うと再描画・状態変化のたびに位置が飛ぶため使わない(実害あり)。
+ * Initial placement of a session with no saved position. Starting from the cell given by the id hash, search linearly
+ * for an empty cell avoiding taken (cells that already have a bird) (if all cells are full, overlap on the start cell = avoid overlaps "as far as possible").
+ * The jitter within the cell is a small deterministic offset decided only by the id hash (breaks a too-neat alignment). The shift is
+ * limited to the room left over when the bird is smaller than the cell (grid.jitterX / jitterY).
+ * Randomness or the array index would make positions jump on every re-render or state change, so they aren't used (this caused real problems).
  */
 export function autoGardenPosition(id: string, taken: ReadonlySet<number>, grid: GardenGrid): GardenPosition {
   const cells = grid.cols * grid.rows;
@@ -146,7 +146,7 @@ export function autoGardenPosition(id: string, taken: ReadonlySet<number>, grid:
   const cellH = 100 / grid.rows;
   const jitterX = ((hash % 100) / 100 - 0.5) * cellW * grid.jitterX;
   const jitterY = (((hash >> 8) % 100) / 100 - 0.5) * cellH * grid.jitterY;
-  // clampGardenPosition は通さない。セルの中心とジッターはもともとセルの内側に収まり、端のセルを 8〜92% に寄せると
-  // 隣のセルの鳥との間が詰まって状態の行どうしが重なった
+  // Doesn't go through clampGardenPosition. Cell centers and jitter already stay inside their cells, and pulling edge cells into 8–92%
+  // squeezed the space to birds in neighboring cells so their status lines overlapped
   return { x: col * cellW + cellW / 2 + jitterX, y: (row * cellH + cellH / 2 + jitterY) * grid.yScale };
 }

@@ -91,9 +91,9 @@ export default {
     sl: "Vklopi zvok",
     ca: "Activa el so",
   },
-  // 設定タブのチェックボックス。voiceEnableLabel(音声読み上げ)と並ぶ、鳴き声(chirp)を
-  // 鳴らすかどうかのトグル。ヘッダーの muteButtonAria/unmuteButtonAria とは別の入り口だが
-  // 同じ muted state を共有する(App.tsx の toggleMuted)。
+  // Checkbox on the settings tab. Sits next to voiceEnableLabel (voice readout) and toggles whether
+  // chirps play. It is a separate entry point from the header's muteButtonAria/unmuteButtonAria but
+  // shares the same muted state (toggleMuted in App.tsx).
   soundEnableLabel: {
     en: "Notify with sound",
     ja: "音で知らせる",

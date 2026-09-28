@@ -1,4 +1,4 @@
-// 設定画面の「窓の表示」(浮遊窓 / 通常の窓の切り替え。docs/design.md)。tomarigi-desktop で足した文言。
+// "Window display" on the settings screen (switching between floating and standard windows; docs/design.md "Window mode"). Strings added in tomarigi-desktop.
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {
   windowModeHeading: {

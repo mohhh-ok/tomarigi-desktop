@@ -93,7 +93,7 @@ async function readWindow(file: NativeFile, windowBytes: number): Promise<TailIn
     if (at !== null) events.push({ at, ...next });
   }
 
-  // Codex にはセッション間メッセージが無いので、見守り中のつながり(peerNames)は常に空
+  // Codex has no cross-session messaging, so watching links (peerNames) are always empty
   return {
     kind,
     toolName,
@@ -116,7 +116,7 @@ function classify(entry: CodexEntry): Omit<TailEvent, "at"> | null {
       return { kind: "user", text };
     }
     if (type === "custom_tool_call" || type === "function_call") {
-      // arguments(JSON 文字列)の先頭は request_user_input の質問文の取り出しに使う(lib/sessions.ts の extractQuestion)
+      // The start of arguments (a JSON string) is used to extract the question text of request_user_input (extractQuestion in lib/sessions.ts)
       return {
         kind: "tool_use",
         toolName: stringValue(payload.name),

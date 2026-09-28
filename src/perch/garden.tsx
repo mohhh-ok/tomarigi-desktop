@@ -38,13 +38,14 @@ import {
   relativeLabel,
 } from "./stage";
 
-// にわのノードの幅(perch.css の .garden-node)と、枠からの最小の空き
+// Width of a garden node (.garden-node in perch.css) and the minimum gap from the frame
 const NODE_WIDTH_PX = 120;
 const NODE_EDGE_PX = 4;
 
 /**
- * ノードのうち実際に見えている幅(鳥・名前・状態の行のいちばん広いもの)。ノードの箱(120px)で
- * 寄せると、狭いにわで鳥が中央の細い帯に押し込まれて重なるため、見えている中身で測る
+ * The actually visible width of a node (the widest of the bird, name, and status rows). Clamping by the
+ * node box (120px) pushes birds into a narrow strip in the middle of a narrow garden where they overlap,
+ * so measure by the visible content
  */
 function visibleWidth(node: HTMLElement | null): number {
   if (!node) return 0;
@@ -53,33 +54,35 @@ function visibleWidth(node: HTMLElement | null): number {
     const el = node.querySelector<HTMLElement>(selector);
     if (el) width = Math.max(width, el.offsetWidth);
   }
-  // 「?」は鳥の右へはみ出すので、そのぶんを足す
+  // The "?" sticks out to the right of the bird, so add its width
   const badge = node.querySelector<HTMLElement>(".bird-ask-badge");
   return badge ? width + badge.offsetWidth : width;
 }
 
-/** min..max に収める。にわが鳥より小さいときは min(左・上に寄せる) */
+/** Clamp to min..max. When the garden is smaller than the bird, use min (align to the left/top) */
 function clampInside(value: number, min: number, max: number): number {
   return max < min ? min : Math.min(Math.max(value, min), max);
 }
 
-// 吹き出しの高さ + 鳥との間。吹き出しのある鳥は、アイコンと名前の間をこれだけ空けて吹き出しを置く
-// (perch.css の .garden-bubble-room の height と同じ値)
+// Speech bubble height + gap to the bird. For a bird with a speech bubble, this much space is left between
+// the icon and the name to place the bubble (same value as the height of .garden-bubble-room in perch.css)
 const BUBBLE_ROOM_PX = 26;
-// にわのノードのうち、グリフ以外(名前・状態の行)の高さの見積もり
+// Estimated height of the non-glyph part of a garden node (name and status rows)
 const NODE_TEXT_PX = 32;
-// 自動配置で鳥どうしの間に空ける幅(px)
+// Gap left between birds by auto placement (px)
 const AUTO_GAP_PX = 12;
-// 吹き出しの最大幅の見積もり(perch.css の .speech-bubble-below の max-width 15em × 11px + 左右の padding)
+// Estimated max width of a speech bubble (max-width 15em × 11px of .speech-bubble-below in perch.css
+// + left/right padding)
 const BUBBLE_MAX_PX = 180;
-// にわの右下の巣箱(perch.css の .garden-nest)の高さ。この下端の帯には自動配置で鳥を置かない
+// Height of the nest in the bottom-right of the garden (.garden-nest in perch.css). Auto placement doesn't
+// put birds in this bottom strip
 const NEST_ROOM_PX = 28;
-// perch.css の .garden の min-height(style で上書きするので、それより小さくはしない)
+// min-height of .garden in perch.css (it is overridden via style, so never go below it)
 const GARDEN_MIN_HEIGHT_PX = 220;
-// 吹き出しをにわの枠からこれだけ内側に置く
+// Keep speech bubbles this far inside the garden frame
 const BUBBLE_EDGE_PX = 4;
 
-/** 鳥の横位置(px)と、吹き出しを収める範囲 lo..hi(px。にわの枠か見守り中のブロックの内側)から、吹き出しを枠の内側に収める位置。真下に収まるなら undefined(中央ぞろえ) */
+/** From the bird's horizontal position (px) and the range lo..hi that must contain the speech bubble (px; inside the garden frame or a watching block), the position that keeps the bubble inside. undefined if it fits directly below (centered) */
 function bubbleShift(x: number, lo: number, hi: number): CSSProperties | undefined {
   if (hi <= lo) return undefined;
   const half = BUBBLE_MAX_PX / 2;
@@ -104,43 +107,48 @@ function bubbleShift(x: number, lo: number, hi: number): CSSProperties | undefin
   return undefined;
 }
 
-// ドラッグ中のノードの重なり順。吹き出しの順(1〜羽数)より上
+// Stacking order of a node being dragged. Above the speech bubble order (1 to the number of birds)
 const BUBBLE_Z_DRAGGING = 1000;
 
-// 見守り中のまとまり(docs/design.md): つながっている鳥を小さな格子に寄せて並べ、角丸のブロックで囲む。
-// 1 マスの幅・ブロックの内側の余白・ブロックと枠の空き
+// Watching groups (docs/design.md "Watching"): connected birds are packed into a small grid and enclosed in a rounded block.
+// Cell width, padding inside the block, and gap between the block and the frame
 const WATCH_CELL_W = 96;
 const WATCH_PAD = 8;
 const WATCH_EDGE = 4;
-// 見守り中の鳥の足元の、動いている相手の数の行の高さ(perch.css の .garden-watch-count。字の高さ + 上の空き)
+// Height of the row under a watching bird showing how many peers are active (.garden-watch-count in perch.css;
+// text height + top gap)
 const WATCH_COUNT_PX = 18;
-// にわの鳥の名前の行の高さ(perch.css の .garden-name。字の高さ + 下の空き)。ブロックの中で名前を出さない段はこのぶん詰める
+// Height of a garden bird's name row (.garden-name in perch.css; text height + bottom gap). Rows in a block
+// that show no names are tightened by this much
 const GARDEN_NAME_PX = 16;
-// ブロックの上辺に出す親の名前の行の高さ(perch.css の .garden-watch-block-name)
+// Height of the parent's name row shown on the top edge of the block (.garden-watch-block-name in perch.css)
 const WATCH_TITLE_PX = 16;
-// 状態の行の 2 段目(ツール名。ブロックの中では経過時間とツール名)の高さ(perch.css の .garden-status-sub)
+// Height of the second line of the status row (tool name; inside a block, elapsed time and tool name)
+// (.garden-status-sub in perch.css)
 const STATUS_SUB_PX = 15;
 
-/** まとまりの中での鳥の位置。CSS の left(鳥の中心)/top(鳥の上辺。段の上端に名前をそろえる)(にわの大きさが変わっても
-    追従する式)と、今の大きさでの px */
+/** A bird's position within a group: CSS left (bird center) / top (bird's top edge; names are aligned to the top of the row)
+    (expressions that follow when the garden is resized), and px at the current size */
 interface WatchPlace {
   left: string;
   top: string;
-  // 段に吹き出しの出る鳥がいれば、吹き出しの無い鳥にも吹き出しの空きを取り、段の中で状態の行の高さをそろえる。
-  // 隣の鳥の吹き出し(1 マスより広い)が、自分の状態の行に掛からないようにする
+  // If any bird in the row shows a speech bubble, birds without one also reserve bubble space, so the status rows
+  // line up within the row. This keeps a neighbor's speech bubble (wider than one cell) off this bird's status row
   bubbleRoom?: boolean;
   x: number;
   y: number;
-  // 吹き出しを収める横の範囲(px)。ブロックの内側(余白の内側)。ブロックに入っていない鳥には無い。
-  // これがある鳥だけ top が鳥の上辺(ブロックの外へ出した鳥の top は中心)
+  // Horizontal range (px) that must contain the speech bubble: inside the block (inside the padding). Absent for
+  // birds not in a block. Only birds that have this use top as the bird's top edge (for birds moved out of a block,
+  // top is the center)
   bubbleRange?: { lo: number; hi: number };
-  // ブロックの中の鳥の名前(docs/design.md「ブロックで囲んだときは名前を 1 つにする」)。親と同じフォルダの鳥・親は undefined。
-  // nameRoom は段に名前のある鳥がいるか。いれば名前の無い鳥も名前の行の高さを空け、段の中でアイコンの高さをそろえる
+  // Name of a bird inside a block (docs/design.md "Watching"). undefined for the parent and for birds in the same
+  // folder as the parent. nameRoom tells whether any bird in the row has a name. If so, birds without a name also
+  // reserve the name row height, so icon heights line up within the row
   label?: string;
   nameRoom?: boolean;
 }
 
-/** まとまりの鳥がドラッグで動かすもの。rootId はまとまりの最初に起動した鳥、anchor はブロックの今の基準位置(%) */
+/** What a group's birds move when dragged. rootId is the group's first-started bird; anchor is the block's current reference position (%) */
 interface WatchGroupRef {
   rootId: string;
   anchor: GardenPosition;
@@ -148,7 +156,7 @@ interface WatchGroupRef {
 
 interface WatchBlock {
   key: string;
-  // ブロックの上辺に出す親(見守り中の鳥)の名前
+  // Name of the parent (the watching bird) shown on the top edge of the block
   title: string;
   left: string;
   top: string;
@@ -157,9 +165,10 @@ interface WatchBlock {
 }
 
 /**
- * 見守り中でつながっている鳥(にわにいるものどうし)をまとまりにし、最初に起動した鳥の位置を中心に
- * 格子状に寄せる。まとまりの幅はにわの幅に収まる列数にし、ブロックも枠の内側に収める。
- * 吹き出しが出る鳥がいれば、行ごとに吹き出しの高さぶんを空け、吹き出しがブロックの枠に掛からないようにする
+ * Groups birds connected by watching (among those in the garden) and packs them into a grid centered on the
+ * position of the first-started bird. The group uses as many columns as fit in the garden width, and the block
+ * is also kept inside the frame. If any bird shows a speech bubble, each row reserves the bubble height so
+ * bubbles don't overlap the block's border
  */
 function layoutWatchGroups(
   awake: SessionView[],
@@ -167,9 +176,9 @@ function layoutWatchGroups(
   containerW: number,
   containerH: number,
   glyphSize: number,
-  // ドラッグ中のまとまり(最初に起動した鳥の id)。ほかのブロックに押し戻さず、指に付いてこさせる
+  // The group being dragged (id of its first-started bird). It is not pushed back by other blocks and follows the pointer
   draggingRootId?: string,
-  // 鳥の見えている大きさ(px)。前回の描画の実寸。まだ描いていなければ undefined(見積もりを使う)
+  // Visible size of a bird (px), measured from the previous render. undefined if not drawn yet (use the estimate)
   sizeOf: (id: string) => { w: number; h: number } | undefined = () => undefined,
 ): { blocks: WatchBlock[]; places: Map<string, WatchPlace>; groupOf: Map<string, WatchGroupRef> } {
   const byId = new Map(awake.map((s) => [s.id, s]));
@@ -213,11 +222,12 @@ function layoutWatchGroups(
     const cols = Math.max(1, Math.min(n, fitCols));
     const rows = Math.ceil(n / cols);
     const bubbleRoom = members.some((m) => bubbleText(m) !== undefined) ? BUBBLE_ROOM_PX : 0;
-    // 1 段の高さ: 名前 + 鳥 + 吹き出しの高さ + 状態の行 + イベントの印の行 + (見守り中の鳥がいれば)足元の数の行。
-    // 吹き出しが下の段の名前・鳥に掛からないよう、吹き出しの高さを段に含める
+    // Row height: name + bird + speech bubble height + status row + event marker row + (if a watching bird is present)
+    // the count row under it. The bubble height is included in the row so bubbles don't overlap the next row's names and birds
     const countRoom = members.some((m) => m.watching !== undefined) ? WATCH_COUNT_PX : 0;
-    // 名前は親(先に起動した鳥。止まり木の字下げの親と同じ)の名前をブロックの上辺に 1 つだけ出す。中の鳥は、親と同じフォルダ
-    // なら出さず、別のフォルダなら親からの相対パス(配下でなければフォルダ名)。名前の無い段は名前の行を詰める
+    // Only one name is shown on the block's top edge: the parent's (the earlier-started bird; same as the indented parent in
+    // Perch). Birds inside show no name if in the same folder as the parent; otherwise a path relative to the parent (the
+    // folder name if not under it). Rows with no names have their name row tightened
     const parent = members[0];
     const labels = members.map((m, i) => (i === 0 ? undefined : relativeLabel(parent, m)));
     const rowTops: number[] = [];
@@ -225,8 +235,8 @@ function layoutWatchGroups(
     for (let r = 0; r < rows; r++) {
       rowTops.push(y);
       const named = labels.slice(r * cols, (r + 1) * cols).some((l) => l !== undefined);
-      // 吹き出しの空きは、吹き出しの出る鳥がいる段だけに取る(隣の鳥の吹き出しが掛かるのは同じ段だけ。
-      // 吹き出しの無い段まで空けると、アイコンと状態の行の間が間延びする)
+      // Reserve bubble space only in rows that have a bird with a speech bubble (a neighbor's bubble only overlaps
+      // within the same row; reserving it in rows without bubbles leaves a loose gap between icon and status row)
       const rowBubble = members.slice(r * cols, (r + 1) * cols).some((m) => bubbleText(m) !== undefined);
       y +=
         glyphSize +
@@ -238,18 +248,18 @@ function layoutWatchGroups(
         (rowBubble ? BUBBLE_ROOM_PX : 0);
     }
     rowTops.push(y);
-    // 吹き出しの出る鳥がいれば、吹き出しがブロックの内側に収まる幅を下限にする
+    // If any bird shows a speech bubble, use a width that fits the bubble inside the block as the minimum
     const width = Math.max(cols * WATCH_CELL_W, bubbleRoom > 0 ? BUBBLE_MAX_PX : 0) + 2 * WATCH_PAD;
     const height = y + WATCH_PAD;
     groups.push({ members, labels, cols, rowTops, bubbleRoom, width, height, anchor: positionOf(members[0].id) });
   }
-  // ドラッグ中のまとまりを最初に置き(押し戻さない)、ほかは上から順に置く
+  // Place the group being dragged first (never pushed back), then the others from top to bottom
   groups.sort(
     (a, b) =>
       Number(b.members[0].id === draggingRootId) - Number(a.members[0].id === draggingRootId) ||
       a.anchor.y - b.anchor.y,
   );
-  // 1) ブロックを置く(px)。ブロックどうしが重なったら後のものを下(入らなければ上)へずらす
+  // 1) Place blocks (px). If blocks overlap, shift the later one down (or up if it doesn't fit)
   const layoutReady = containerW > 0 && containerH > 0;
   const placedGroups: { group: (typeof groups)[number]; cx: number; cy: number }[] = [];
   const rectOf = (g: (typeof groups)[number], cx: number, cy: number) => ({
@@ -273,7 +283,7 @@ function layoutWatchGroups(
               cx - width / 2 < r.right && cx + width / 2 > r.left && y - height / 2 < r.bottom && y + height / 2 > r.top,
           );
       let hits = overlaps(cy);
-      // 下へずらす。入らなければ上の空きを探す
+      // Shift down. If it doesn't fit, look for free space above
       while (hits.length > 0 && cy + halfH <= containerH) {
         cy = Math.max(...hits.map((r) => r.bottom)) + WATCH_EDGE + height / 2;
         hits = overlaps(cy);
@@ -291,17 +301,19 @@ function layoutWatchGroups(
     placedGroups.push({ group, cx, cy });
   }
 
-  // 2) まとまりに入らない鳥がブロックに掛かっていたら、まとまりの一員に見えないようブロックの外へ出す。
-  // 保存位置(IndexedDB)から始まったときも同じ。ブロックの上下左右に鳥 1 羽ぶんの空きがどこにも無ければ、
-  // そのブロックを鳥と反対側のにわの端(上か下)へ寄せて空きを作り、もう一度探す
+  // 2) If a bird outside any group overlaps a block, move it out of the block so it doesn't look like a group member.
+  // The same applies when starting from saved positions (IndexedDB). If there's no room for one bird anywhere above,
+  // below, left, or right of the block, push the block to the garden edge (top or bottom) opposite the bird to make
+  // room, and search again
   const outside = new Map<string, { x: number; y: number }>();
   if (layoutReady && placedGroups.length > 0) {
     const members = new Set(placedGroups.flatMap((pg) => pg.group.members.map((m) => m.id)));
     const rects = () => placedGroups.map((pg) => rectOf(pg.group, pg.cx, pg.cy));
     for (const s of awake) {
       if (members.has(s.id)) continue;
-      // 鳥ごとに、実際に見えている大きさ(前回の描画の実寸。まだ無ければ見積もり)で空きを探す。
-      // ノードの箱(120px)で見積もると、狭いにわでブロックの横の空きに入らないと判定される
+      // For each bird, search for space using its actual visible size (measured from the previous render; the estimate
+      // if not yet available). Estimating with the node box (120px) judges it too wide for the space beside a block in a
+      // narrow garden
       const size = sizeOf(s.id);
       const halfW = (size?.w ?? NODE_WIDTH_PX) / 2;
       const halfH = (size?.h ?? glyphSize + NODE_TEXT_PX) / 2;
@@ -331,7 +343,7 @@ function layoutWatchGroups(
       if (hit < 0) continue;
       let best = freeSpot(x, y);
       if (!best) {
-        // ドラッグ中のブロックは動かさない(指に付いてくる位置を優先する)
+        // Don't move the block being dragged (the position following the pointer takes priority)
         const pg = placedGroups[hit];
         if (pg.group.members[0].id !== draggingRootId) {
           const halfBlockH = pg.group.height / 2 + WATCH_EDGE;
@@ -343,7 +355,8 @@ function layoutWatchGroups(
     }
   }
 
-  // 3) ブロックと鳥の位置を書き出す。位置は割合に戻して CSS の式にする(にわの大きさが変わっても追従する)
+  // 3) Output block and bird positions. Positions are converted back to ratios as CSS expressions (so they follow
+  // when the garden is resized)
   for (const { group, cx, cy } of placedGroups) {
     const { members, labels, cols, rowTops, width, height, anchor: wanted } = group;
     const rows = rowTops.length - 1;
@@ -359,10 +372,11 @@ function layoutWatchGroups(
       const row = Math.floor(i / cols);
       const inRow = row === rows - 1 ? n - row * cols : cols;
       const col = i % cols;
-      // ブロックを吹き出しの幅まで広げたときは、格子をブロックの中央に置く
+      // When the block was widened to the speech bubble width, center the grid in the block
       const spare = (width - 2 * WATCH_PAD - cols * WATCH_CELL_W) / 2;
       const dx = -width / 2 + WATCH_PAD + spare + ((cols - inRow) / 2 + col + 0.5) * WATCH_CELL_W;
-      // 鳥の上辺(名前)を段の上端にそろえる。鳥ごとに下の行(足元の数・印)の有無で背が違っても、名前とアイコンの高さがそろう
+      // Align the bird's top edge (name) to the top of the row. Even if birds differ in height because some have lower
+      // rows (the count under them, markers), names and icons line up
       const dy = -height / 2 + rowTops[row];
       places.set(m.id, {
         left: `calc(${blockLeft} + ${dx}px)`,
@@ -382,30 +396,30 @@ function layoutWatchGroups(
   return { blocks, places, groupOf };
 }
 
-/** 巣箱にしまう鳥。dozing でも「?」が付いている間はにわに残す(docs/design.md「判断待ちの鳥に「?」を付ける」) */
+/** Birds to put away in the nest. Even when dozing, a bird stays in the garden while it has a "?" (docs/design.md "The "?" for sessions waiting on you") */
 function isNested(s: SessionView): boolean {
-  // 見守り中(相手が動いている)も、にわに残す
-  // 見守り中(相手が止まってから猶予の間の 0 を含む。lib/watching.ts)は、にわに残す
+  // Watching (a peer is active) also stays in the garden
+  // Watching (including the 0 during the grace period after the peer stops; lib/watching.ts) stays in the garden
   return s.state === "dozing" && !hasQuestion(s) && s.watching === undefined;
 }
 
-// これ未満しか動かさずに離したらドラッグではなくクリック(Ghostty のペインへ移る)とみなす
+// Releasing after moving less than this counts as a click (jump to the Ghostty pane), not a drag
 const CLICK_SLOP_PX = 4;
 
-// ノードの足元に並べる直近イベントアイコンの件数(にわが混み合わないよう最新1件のみ)
+// Number of recent event icons shown under a node (only the latest one, so the garden doesn't get crowded)
 const HISTORY_LIMIT = 1;
 
-// 退場中(巣箱へ寝に行く/フェードで消える)ノードのスナップショット。leaving に入っている
-// 間だけ描画される。session/position は「まだ awake だった最後のレンダー」の値を凍結する
+// Snapshot of a node that is leaving (going to sleep in the nest / fading out). Rendered only while
+// it is in leaving. session/position freeze the values from "the last render where it was still awake"
 type LeavingEntry = {
   session: SessionView;
   position: GardenPosition;
   target: "nest" | "fade";
 };
 
-// 巣箱との行き来アニメーション用に、ノード位置(position%)から巣箱(コンテナ右下
-// 概算位置)までの px オフセットを計算する。rect が取れない/幅0(タブ非表示)の
-// ときは固定のフォールバック値を使う
+// For the animation to and from the nest, compute the px offset from the node position (position%) to the
+// nest (approximate position at the bottom-right of the container). When the rect is unavailable or has
+// zero width (tab hidden), use a fixed fallback value
 function nestOffset(
   containerRef: RefObject<HTMLDivElement | null>,
   position: GardenPosition,
@@ -430,20 +444,20 @@ export function Garden({
   sessions: SessionView[];
   events: SessionEvent[];
   hasGranted: boolean;
-  // slug → 割り当ての辞書(stage.tsx の Perch と同じ意味。App.tsx から渡される)
+  // slug → assignment map (same meaning as in Perch in stage.tsx; passed from App.tsx)
   iconSetAssignments?: IconSetAssignments;
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  // 保存済みの位置のみを持つ(index 由来の自動配置はここに含めない)。
-  // 自動配置はドラッグされるまで永続化しない = 未ドラッグのまま消えたセッションが
-  // ストレージに残らない
+  // Holds only saved positions (index-based auto placement is not included here).
+  // Auto placement isn't persisted until dragged, so sessions that disappear without
+  // being dragged don't remain in storage
   const [positions, setPositions] = useState<Record<string, GardenPosition>>({});
-  // 自動配置の sticky 割り当て(id → 位置)。render 中に読み書きするが、割り当ては
-  // 決定的かつ一度きりなので冪等。永続化はしない(ドラッグされたら positions 側に移る)
+  // Sticky auto-placement assignments (id → position). Read and written during render, but assignment is
+  // deterministic and happens once, so it is idempotent. Not persisted (moves to positions once dragged)
   const autoPosRef = useRef<Map<string, GardenPosition>>(new Map());
-  // autoPosRef を決めたときの格子(列x行)
+  // Grid (columns x rows) used when autoPosRef was decided
   const autoGridRef = useRef("");
 
   useEffect(() => {
@@ -456,13 +470,14 @@ export function Garden({
     };
   }, []);
 
-  // コンテナ(.garden)実寸。羽数に応じたグリフサイズ計算に使う。ResizeObserver で
-  // 窓のリサイズにも追従する
+  // Actual size of the container (.garden). Used to compute the glyph size from the number of birds.
+  // Follows window resizes via ResizeObserver
   const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
 
-  // にわの枠(.garden)は鳥が 1 羽もいないと描かれない(下の早期 return)。最初の描画で枠が無いと見張りが
-  // 付かないまま残り、窓の大きさを変えても並びが古い大きさのままになっていたため、枠が現れたときに付け直す。
-  // 窓のリサイズでも取り直す(ResizeObserver が別 document への移動で切れた場合の保険)
+  // The garden frame (.garden) isn't drawn when there are no birds (the early return below). If the frame was missing
+  // on the first render, the observer was never attached and the layout stayed at the old size even after resizing the
+  // window, so re-attach it when the frame appears. Also re-measure on window resize (a safeguard in case
+  // ResizeObserver breaks when moved to another document)
   const hasGardenFrame = sessions.length > 0;
   useEffect(() => {
     const el = containerRef.current;
@@ -482,10 +497,10 @@ export function Garden({
     };
   }, [hasGardenFrame]);
 
-  // 保険: 自分を含む portalHost が PiP 窓へ document.body.append で移動されるため
-  // (App.tsx 参照)、別 document への移動中に ResizeObserver が切れる可能性がある。
-  // 毎レンダー後に getBoundingClientRect でも実寸を取り直しておけば、3秒ポーリングによる
-  // 再レンダーで最大3秒以内に追従する。値が同じなら setState しない(無限ループ防止)
+  // Safeguard: the portalHost containing this is moved into the PiP window with document.body.append
+  // (see App.tsx), so ResizeObserver may break during the move to another document.
+  // Re-measuring with getBoundingClientRect after every render means the re-render from the 3-second
+  // polling catches up within 3 seconds at most. Skip setState if the value is unchanged (avoids an infinite loop)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -495,19 +510,19 @@ export function Garden({
     );
   });
 
-  // タブ初期表示時に既に居る鳥は飛来アニメーションを飛ばさず static に並べたい。
-  // 初回 render の時点では false のまま(=このレンダーで作られる全ノードは
-  // entryOrigin="none" を受け取る)、コミット後の effect で true にする。以後の
-  // ポーリングで新規マウントされるノードだけ animateEntry=true になる
+  // Birds already present when the tab is first shown should be laid out statically without the fly-in animation.
+  // It stays false during the first render (= every node created in this render
+  // receives entryOrigin="none") and is set to true in an effect after commit. After that, only nodes newly
+  // mounted by polling get animateEntry=true
   const initializedRef = useRef(false);
   const animateEntry = initializedRef.current;
   useEffect(() => {
     initializedRef.current = true;
   }, []);
 
-  // 「起きた鳥は巣箱から飛び出す」演出のため、直前のスキャンで dozing だった id を
-  // 覚えておく。sessions を直接フィルタするので早期 return(sessions.length===0)の
-  // 影響を受けず、hooks の呼び出し順が毎レンダー一定に保たれる
+  // For the "woken bird flies out of the nest" effect, remember the ids that were dozing in the previous
+  // scan. It filters sessions directly, so it isn't affected by the early return (sessions.length===0)
+  // and the hook call order stays the same on every render
   const prevDozingRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     prevDozingRef.current = new Set(
@@ -515,12 +530,12 @@ export function Garden({
     );
   });
 
-  // 退場(巣箱へ寝に行く/フェードで消える)アニメーション中のノード。AnimatePresence の
-  // 代替: awake から消えた id をここへ移し、GardenNode 側の WAAPI 退場アニメーションが
-  // 終わったら onExited 経由で削除する
+  // Nodes in their leaving animation (going to sleep in the nest / fading out). A replacement for
+  // AnimatePresence: ids that disappear from awake are moved here and removed via onExited when the
+  // WAAPI leaving animation in GardenNode finishes
   const [leaving, setLeaving] = useState<Map<string, LeavingEntry>>(new Map());
-  // 直前レンダーで awake だった id → {session, position} のスナップショット。leaving へ
-  // 追加する際、消えた瞬間の見た目(まだ awake だった頃の state)を凍結するために使う
+  // Snapshot of id → {session, position} for ids that were awake in the previous render. Used when adding to
+  // leaving, to freeze the look at the moment it disappeared (the state while it was still awake)
   const awakeSnapshotRef = useRef<Map<string, { session: SessionView; position: GardenPosition }>>(
     new Map(),
   );
@@ -534,12 +549,12 @@ export function Garden({
     });
   }, []);
 
-  // glyphSize の直前値(幅0で計算をスキップする間も直前サイズを保つため)
+  // Previous glyphSize (to keep the previous size while computation is skipped at zero width)
   const glyphSizeRef = useRef(30);
 
   const handleDragEnd = useCallback((id: string, next: GardenPosition, liveIds: string[]) => {
     setPositions((prev) => {
-      // 消えたセッションの位置は保存時にプルーニングする(現存 id だけ残す)
+      // Positions of sessions that have disappeared are pruned on save (only existing ids are kept)
       const currentIds = new Set(liveIds);
       const pruned: Record<string, GardenPosition> = {};
       for (const [pid, ppos] of Object.entries(prev)) {
@@ -551,20 +566,20 @@ export function Garden({
     });
   }, []);
 
-  // dozing (長時間 idle) は個別ノードとして庭に出さず、巣箱 1 個に集約する
-  // (issue #12d: 「dozing のセッションが庭に居座ってうざい」フィードバック)。
-  // liveIds には dozing の id も含めたままにする — 寝てる間に保存位置が
-  // プルーニングされると、起きたときに位置がリセットされてしまうため。
-  // 下の useLayoutEffect が毎レンダー呼ばれる必要がある(Hooks のルール)ため、
-  // sessions.length===0 の早期 return より前に計算する
+  // dozing (idle for a long time) sessions aren't shown as individual nodes in the garden; they are gathered
+  // into a single nest (issue #12d: dozing sessions cluttering the garden).
+  // liveIds still include dozing ids — if saved positions were pruned while asleep,
+  // the position would be reset on waking.
+  // The useLayoutEffect below must be called on every render (Rules of Hooks), so
+  // compute this before the sessions.length===0 early return
   const liveIds = sessions.map((s) => s.id);
   const awake = sessions.filter((s) => !isNested(s));
   const dozing = sessions.filter(isNested);
   const [bubbleLayer, setBubbleLayer] = useState<HTMLDivElement | null>(null);
-  // 見守り中のまとまりのドラッグ(docs/design.md: ドラッグ移動はブロックごと)。まとまりの最初に起動した鳥の
-  // id と、ブロックの基準位置(%)の今の値
+  // Dragging a watching group (docs/design.md "Watching": dragging moves the whole block). The id of the group's first-started
+  // bird and the current block reference position (%)
   const [groupDrag, setGroupDrag] = useState<WatchGroupRef | null>(null);
-  // 吹き出しどうしが重なったら、ターンの終わりが新しい(sinceMs が小さい)鳥ほど上に重ねる
+  // When speech bubbles overlap, stack birds whose turn ended more recently (smaller sinceMs) on top
   const bubbleOrder = new Map(
     awake
       .filter((s) => bubbleText(s) !== undefined)
@@ -572,8 +587,8 @@ export function Garden({
       .map((s, i) => [s.id, i + 1] as const),
   );
 
-  // 羽数とコンテナ実寸に応じてグリフサイズを決める。幅0(タブ非表示)のときは
-  // 計算をスキップして直前の値を維持する(ref に保持)
+  // Decide the glyph size from the number of birds and the container's actual size. At zero width (tab hidden),
+  // skip the computation and keep the previous value (held in a ref)
   if (containerSize.w > 0 && containerSize.h > 0) {
     const count = Math.max(awake.length, 1);
     const raw = Math.sqrt((containerSize.w * containerSize.h) / count) * 0.16;
@@ -581,11 +596,12 @@ export function Garden({
   }
   const glyphSize = glyphSizeRef.current;
 
-  // 自動配置は「新しく庭に出てくる鳥は既存の鳥と被らないセルを選ぶ」(できるだけ)。
-  // 一度決めた自動配置は表示中メモリ上で固定し(sticky)、他の鳥の出入りで動かさない。
-  // 保存位置(ドラッグ済み)が付いたら sticky は捨てる。庭から消えた鳥の分も捨てる
-  // 格子は、にわの大きさと鳥 1 羽の大きさ(名前・アイコン・吹き出しの空き・状態の行・印・足元の数)から決める。
-  // 固定の格子だと、名前を上に出し吹き出しの空きを取って背の高くなった鳥が、広いにわでも隣の段に重なった
+  // Auto placement: "a bird newly entering the garden picks a cell not taken by existing birds" (where possible).
+  // Once decided, an auto placement is fixed in memory while shown (sticky) and doesn't move as other birds come and go.
+  // The sticky entry is dropped once a saved position (dragged) exists, and also for birds that left the garden.
+  // The grid is derived from the garden size and the size of one bird (name, icon, bubble space, status row, marker,
+  // count under it). With a fixed grid, birds made taller by the name on top and the bubble space overlapped the next
+  // row even in a wide garden
   const anyBubble = awake.some((s) => bubbleText(s) !== undefined);
   const nodeW = (anyBubble ? BUBBLE_MAX_PX : NODE_WIDTH_PX) + AUTO_GAP_PX;
   const nodeH =
@@ -599,7 +615,8 @@ export function Garden({
   const grid = gardenGrid(containerSize.w, containerSize.h, nodeW, nodeH, awake.length, NEST_ROOM_PX);
   const present = new Set(awake.map((s) => s.id));
   const sticky = autoPosRef.current;
-  // 格子の列・行が変わった(にわの大きさや吹き出しの有無が変わった)ら、自動で置いた位置は置き直す
+  // When the grid's columns/rows change (the garden size or the presence of speech bubbles changed), re-place
+  // auto-placed positions
   const gridKey = `${grid.cols}x${grid.rows}`;
   if (autoGridRef.current !== gridKey) {
     autoGridRef.current = gridKey;
@@ -608,13 +625,13 @@ export function Garden({
   for (const id of [...sticky.keys()]) {
     if (!present.has(id) || positions[id]) sticky.delete(id);
   }
-  // 既に鳥が居るセル = 保存位置 + 割り当て済み sticky
+  // Cells already occupied by birds = saved positions + already-assigned sticky entries
   const taken = new Set<number>();
   for (const s of awake) {
     const p = positions[s.id] ?? sticky.get(s.id);
     if (p) taken.add(gardenCellOf(p, grid));
   }
-  // 新規の割り当ては id 順の安定した順序で行う(状態ソート順に依存させない)
+  // New assignments are made in a stable id order (not dependent on the state sort order)
   for (const s of [...awake].sort((a, b) => a.id.localeCompare(b.id))) {
     if (positions[s.id] || sticky.has(s.id)) continue;
     const pos = autoGardenPosition(s.id, taken, grid);
@@ -624,13 +641,13 @@ export function Garden({
   const resolvePosition = (id: string): GardenPosition =>
     positions[id] ?? sticky.get(id) ?? autoGardenPosition(id, taken, grid);
 
-  // useLayoutEffect: awake から消えた id を leaving へ追加する。paint 前(コミット直後)
-  // に同期実行されるため、「一瞬 DOM から消えてから leaving として復活する」フレームが
-  // 見えない(react-dom は次のコミットまで browser に paint させない)。依存配列は
-  // 敢えて空にせず、毎レンダー後に awake 集合の差分を見る。
-  // sessions.length===0(全セッション消滅)の早期 return より前に置く: Hooks は
-  // レンダーのたびに同じ順序で呼ばれる必要があり(Rules of Hooks)、早期 return の後ろに
-  // 置くと 0 件になった瞬間だけこの hook が呼ばれず "Rendered fewer hooks" で落ちる
+  // useLayoutEffect: add ids that disappeared from awake to leaving. It runs synchronously before paint (right
+  // after commit), so the frame where a node "vanishes from the DOM for a moment and comes back as leaving" is
+  // never visible (react-dom doesn't let the browser paint until the next commit). The dependency array is
+  // intentionally not empty; the awake set is diffed after every render.
+  // Placed before the sessions.length===0 (all sessions gone) early return: Hooks must be
+  // called in the same order on every render (Rules of Hooks), and placing it after the early return
+  // means this hook isn't called only at the moment the count hits 0, crashing with "Rendered fewer hooks"
   useLayoutEffect(() => {
     const currentIds = new Set(awake.map((s) => s.id));
     const dozingIds = new Set(dozing.map((s) => s.id));
@@ -641,16 +658,16 @@ export function Garden({
       const ensureCopy = () => {
         if (next === prev) next = new Map(prev);
       };
-      // awake に再登場した id は leaving から即削除(寝てすぐ起きた等のエッジは
-      // 「awake 優先・leaving 破棄」で単純化する)
+      // Ids that reappear in awake are removed from leaving immediately (edge cases like falling asleep and
+      // waking right away are simplified to "awake wins, leaving is discarded")
       for (const id of currentIds) {
         if (next.has(id)) {
           ensureCopy();
           next.delete(id);
         }
       }
-      // 新しく awake から消えた id を追加する。target は現在 dozing に居れば "nest"、
-      // それ以外(セッションそのものが消滅)なら "fade"
+      // Add ids that newly disappeared from awake. target is "nest" if currently in dozing,
+      // otherwise (the session itself is gone) "fade"
       for (const [id, entry] of prevSnapshot) {
         if (!currentIds.has(id) && !next.has(id)) {
           ensureCopy();
@@ -679,7 +696,7 @@ export function Garden({
     );
   }
 
-  // ドラッグ中のまとまりは、最初に起動した鳥の位置を指の移動に合わせて差し替える
+  // For the group being dragged, replace the first-started bird's position to follow the pointer movement
   const groupPositionOf = (id: string): GardenPosition =>
     groupDrag && id === groupDrag.rootId ? groupDrag.anchor : resolvePosition(id);
   const watchGroups = layoutWatchGroups(
@@ -696,8 +713,8 @@ export function Garden({
       return w > 0 ? { w, h: node.offsetHeight } : undefined;
     },
   );
-  // 狭いにわに鳥が入りきらないときは、にわを縦に伸ばす(窓はスクロールする)。重ねて読めなくするより良い。
-  // 見守り中のブロックの中の鳥は数えず、ブロックの高さを足す
+  // When birds don't fit in a narrow garden, stretch the garden vertically (the window scrolls). Better than
+  // overlapping them until unreadable. Birds inside watching blocks aren't counted; the block heights are added instead
   const fitCols = Math.max(1, Math.floor(containerSize.w / nodeW));
   const looseCount = awake.filter((s) => !watchGroups.groupOf.has(s.id)).length;
   const blocksH = watchGroups.blocks.reduce((sum, b) => sum + b.height + AUTO_GAP_PX, 0);
@@ -707,17 +724,17 @@ export function Garden({
       : undefined;
   return (
     <div className="garden" ref={containerRef} style={{ minHeight: gardenMinHeight }}>
-      {/* 吹き出しの層。鳥・名前の層より上に置き、どの鳥の名前にも吹き出しの文(と「…」)を隠させない。
-          吹き出しどうしは新しいターンほど上(bubbleOrder) */}
+      {/* Speech bubble layer. Placed above the bird/name layer so no bird's name hides bubble text (or the "…").
+          Among bubbles, newer turns are on top (bubbleOrder) */}
       <div className="garden-bubble-layer" ref={setBubbleLayer} />
-      {/* 見守り中のまとまりを囲む角丸のブロック。鳥の層の下に敷く(docs/design.md) */}
+      {/* Rounded block enclosing a watching group. Laid under the bird layer (docs/design.md "Watching") */}
       {watchGroups.blocks.map((b) => (
         <div
           key={b.key}
           className="garden-watch-block"
           style={{ left: b.left, top: b.top, width: b.width, height: b.height }}
         >
-          {/* 親の名前を 1 つだけ(中の鳥は違う所だけ名前を出す) */}
+          {/* Only the parent's name (birds inside show a name only where it differs) */}
           <span className="garden-watch-block-name">
             {b.title}
           </span>
@@ -726,10 +743,10 @@ export function Garden({
       {awake.map((s) => {
         const position = resolvePosition(s.id);
         const stackOrder = bubbleOrder.get(s.id);
-        // events は新しい順(lib/sessions.ts)で来るので、先頭から拾えばそのまま新しい順になる
+        // events arrive newest first (lib/sessions.ts), so taking from the start keeps them newest first
         const recent = events.filter((e) => e.sessionId === s.id).slice(0, HISTORY_LIMIT);
-        // 初回表示は飛ばさず static、直前 dozing だった鳥は巣箱から、それ以外
-        // (新規セッション)は上空から
+        // On first display, static without flying; birds that were dozing just before come from the nest; others
+        // (new sessions) come from the sky
         const entryOrigin: "none" | "sky" | "nest" = !animateEntry
           ? "none"
           : prevDozingRef.current.has(s.id)
@@ -788,11 +805,11 @@ export function Garden({
 }
 
 /**
- * dozing セッションを集約する巣箱。クリックで中の一覧(名前 + 経過時間)が開く。
- * 外側クリックでの自動クローズは document 全体(自分の外の任意の要素)を対象にする
- * 必要があり、React の合成イベント(portal container 単位のデリゲーション。App.tsx の
- * portalHost コメント参照)の枠には収まらないため、開閉・外側クリックの両方をネイティブ
- * addEventListener で張る(ownerDocument 経由で PiP 側の document にも同じ処理が張られる)
+ * The nest that gathers dozing sessions. Clicking opens the list inside (name + elapsed time).
+ * Auto-closing on an outside click must target the whole document (any element outside this one),
+ * which doesn't fit within React's synthetic events (delegation per portal container; see the
+ * portalHost comment in App.tsx), so both toggling and outside clicks are attached with native
+ * addEventListener (via ownerDocument, the same handlers are attached to the PiP document too)
  */
 function NestBox({
   dozing,
@@ -818,8 +835,8 @@ function NestBox({
     return () => btn.removeEventListener("click", toggle);
   }, []);
 
-  // 開いている間だけ、巣箱の外のクリックで閉じる。PiP でも自ドキュメントに張れるよう
-  // ownerDocument から取る
+  // Only while open, close on a click outside the nest. Taken from ownerDocument so it attaches to its own
+  // document in PiP too
   useEffect(() => {
     if (!open) return;
     const wrap = wrapRef.current;
@@ -909,27 +926,28 @@ function GardenNode({
   onExited?: (id: string) => void;
   focusable?: boolean;
   onClick?: () => void;
-  // 吹き出しの重なり順(大きいほど上)。吹き出しの無い鳥は undefined
+  // Stacking order of the speech bubble (higher is on top). undefined for birds without a bubble
   stackOrder?: number;
-  // 吹き出しを出す先(Garden の .garden-bubble-layer)
+  // Where the speech bubble is rendered (Garden's .garden-bubble-layer)
   bubbleLayer?: HTMLElement | null;
-  // 見守り中のまとまりの中での位置(layoutWatchGroups)。あればこちらに置く
+  // Position within a watching group (layoutWatchGroups). If present, place the bird here
   watchPlace?: WatchPlace;
-  // まとまりに入っている鳥は、ドラッグでブロックごと動かす(自分の位置ではなくブロックの基準位置を動かす)
+  // A bird in a group drags the whole block (moves the block's reference position, not its own position)
   watchGroup?: WatchGroupRef;
   onGroupMove?: (group: WatchGroupRef) => void;
   onGroupDrop?: (group: WatchGroupRef) => void;
 }) {
-  // 自分が返事待ちか(状態の語・ツール名の出し分け)と、「?」を付けるか(実際に聞いている鳥だけ)
+  // Whether this bird needs a reply (switches the state word / tool name) and whether to show the "?" (only birds
+  // actually asking)
   const asking = needsAnswer(session.state, session.ask);
   const question = hasQuestion(session);
   const bubble = bubbleText(session);
   const nodeRef = useRef<HTMLDivElement>(null);
   const glyphRef = useRef<HTMLSpanElement>(null);
-  // 見守り中のまとまりの鳥は、吹き出しが無くても吹き出しの空きを取ることがある(WatchPlace.bubbleRoom)
+  // Birds in a watching group may reserve bubble space even without a speech bubble (WatchPlace.bubbleRoom)
   const bubbleRoom = Boolean(bubble) || Boolean(watchPlace?.bubbleRoom);
-  // ノードの上辺からアイコンの下辺まで(吹き出しの上辺の位置)。アイコンはにわの大きさに合わせて
-  // なめらかに大きさを変える(perch.css の transition)ので、描画時に一度読むのではなく大きさの変化を追う
+  // From the node's top edge to the icon's bottom edge (the top of the speech bubble). The icon resizes smoothly
+  // with the garden size (transition in perch.css), so track size changes instead of reading once at render
   const [glyphBottom, setGlyphBottom] = useState<number | undefined>(undefined);
   useLayoutEffect(() => {
     const el = glyphRef.current;
@@ -940,17 +958,18 @@ function GardenNode({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  // 入退場アニメーションを WAAPI(element.animate)で直接動かす対象。CSS transform は
-  // 当てていない前提(位置決めは外側 .garden-node が担う)なので、animate の transform
-  // keyframe と衝突しない
+  // Target driven directly by WAAPI (element.animate) for the enter/leave animations. It assumes no CSS transform
+  // is applied (positioning is handled by the outer .garden-node), so it doesn't conflict with animate's transform
+  // keyframes
   const innerRef = useRef<HTMLDivElement>(null);
-  // ドラッグ中だけ有効な追従用の一時位置。null のときは position prop(保存値/自動配置)を使う
+  // Temporary position for following the pointer, valid only while dragging. When null, use the position prop
+  // (saved value / auto placement)
   const [live, setLive] = useState<GardenPosition | null>(null);
 
-  // onDragEnd は Garden が毎レンダー(3秒ポーリングの setSessions 含む)新規生成するクロージャ。
-  // これを直接 effect の依存配列に入れると、ポーリングのたびに下の effect がクリーンアップ
-  // →再セットアップされ、ドラッグ中なら dragging/startRect/grabOffset が無言でリセットされて
-  // ドラッグが壊れる(実害)。ref 経由の最新値参照にして、effect 自体はマウント時に1度だけ張る
+  // onDragEnd is a closure Garden creates anew on every render (including setSessions from the 3-second polling).
+  // Putting it directly in the effect's dependency array would clean up and re-set up the effect below on every
+  // poll, and during a drag dragging/startRect/grabOffset would be silently reset and the drag would break (a real
+  // bug). Read the latest value through a ref and attach the effect itself only once on mount
   const onDragEndRef = useRef(onDragEnd);
   const onClickRef = useRef(onClick);
   const groupRef = useRef({ watchGroup, onGroupMove, onGroupDrop });
@@ -960,29 +979,29 @@ function GardenNode({
     groupRef.current = { watchGroup, onGroupMove, onGroupDrop };
   });
 
-  // ドラッグは setPointerCapture によるノード外までの継続追跡(pointermove/pointerup を
-  // ノードの外に出ても取り続ける)が要るため、React の合成イベントではなく常にネイティブ
-  // addEventListener で張る。ノード単位のリスナーはドキュメントを跨いで移動しても
-  // そのまま機能する(App.tsx の portalHost コメント参照)。
+  // Dragging needs continuous tracking beyond the node via setPointerCapture (keeps receiving pointermove/pointerup
+  // even outside the node), so always attach with native addEventListener rather than React's synthetic
+  // events. Per-node listeners keep working even when moved across documents
+  // (see the portalHost comment in App.tsx).
   useEffect(() => {
     const node = nodeRef.current;
     if (!node) return;
 
     let startRect: DOMRect | null = null;
     let dragging = false;
-    // ノードは translate(-50%, -50%) の中心基準。つかんだ点と中心のずれを保持しないと、
-    // ドラッグ開始の瞬間に中心がカーソルへスナップして飛ぶ
+    // Nodes are centered via translate(-50%, -50%). Without keeping the offset between the grab point and the center,
+    // the center snaps to the cursor and jumps the moment a drag starts
     let grabOffsetX = 0;
     let grabOffsetY = 0;
-    // ドラッグ(動かした)とクリック(動かしていない)を区別するための押した位置
+    // Pointer-down position, to tell a drag (moved) from a click (not moved)
     let downX = 0;
     let downY = 0;
     let moved = false;
-    // まとまりの鳥をつかんだときの、ブロックの基準位置(%)。指の移動量だけこれを動かす
+    // Block reference position (%) when a group's bird was grabbed. It is moved by the pointer's movement
     let groupStart: WatchGroupRef | undefined;
 
     const onPointerDown = (e: PointerEvent) => {
-      // 左ボタンだけ。右・中クリックで動かさずに離したときに Ghostty へ移らないようにする
+      // Left button only, so a right/middle click released without moving doesn't jump to Ghostty
       if (e.button !== 0) return;
       const container = containerRef.current;
       if (!container) return;
@@ -1006,7 +1025,7 @@ function GardenNode({
       return clampGardenPosition(xPct, yPct);
     };
 
-    // まとまりの鳥のドラッグ: ブロックの基準位置を指の移動量(%)だけ動かす
+    // Dragging a group's bird: move the block's reference position by the pointer movement (%)
     const groupFromEvent = (e: PointerEvent): WatchGroupRef | undefined => {
       if (!groupStart || !startRect || startRect.width === 0 || startRect.height === 0) return undefined;
       const dx = ((e.clientX - downX) / startRect.width) * 100;
@@ -1036,7 +1055,7 @@ function GardenNode({
       if (node.hasPointerCapture(e.pointerId)) node.releasePointerCapture(e.pointerId);
       setLive(null);
       if (!moved) {
-        // 動かしていない = クリック。位置は保存しない
+        // Not moved = click. Don't save the position
         if (e.type === "pointerup") onClickRef.current?.();
         return;
       }
@@ -1062,21 +1081,22 @@ function GardenNode({
   }, [containerRef]);
 
   const pos = live ?? position;
-  // 鳥(グリフ・「?」・名前・状態の行)を丸ごとにわの枠の内側に収める。保存する位置(%)は
-  // そのままで、表示だけ寄せる(下の style の clamp)。ノードの大きさは前回の描画の実寸
-  // (毎ポーリングで再描画されるので ref の読みで足りる)、まだ無ければ見積もり。
-  // placed は吹き出しの向きと寄せ方を決めるための、今のにわの大きさでの位置(px)
+  // Keep the whole bird (glyph, "?", name, status row) inside the garden frame. The saved position (%) stays
+  // as is; only the display is shifted (the clamp in style below). The node size is the actual size from the
+  // previous render (re-rendered on every poll, so reading the ref is enough), or the estimate if not yet available.
+  // placed is the position (px) at the current garden size, used to decide the speech bubble's direction and shift
   const containerW = containerRef.current?.clientWidth ?? 0;
   const containerH = containerRef.current?.clientHeight ?? 0;
   const nodeW = visibleWidth(nodeRef.current) || NODE_WIDTH_PX;
-  // 吹き出しはアイコンのすぐ下に出し、ノードの中にそのぶんの空き(.garden-bubble-room)を取るので、ノードの高さに含まれる
+  // The speech bubble appears right below the icon and the node reserves that space (.garden-bubble-room), so it is
+  // included in the node height
   const nodeH = nodeRef.current?.offsetHeight || glyphSize + NODE_TEXT_PX + (bubbleRoom ? BUBBLE_ROOM_PX : 0);
   const minX = nodeW / 2 + NODE_EDGE_PX;
   const minY = nodeH / 2 + NODE_EDGE_PX;
   const maxYGap = nodeH / 2 + NODE_EDGE_PX;
-  // 見守り中のまとまりの鳥はブロックの中の決まった位置に置く(ドラッグ中は指に付いてくる)
+  // Birds in a watching group are placed at a fixed position inside the block (while dragging they follow the pointer)
   const grouped = watchPlace && !live ? watchPlace : undefined;
-  // 見守り中のブロックの中にいる鳥(ブロックの外へ出した鳥は watchPlace があっても bubbleRange が無い)
+  // Whether the bird is inside a watching block (birds moved out of the block have a watchPlace but no bubbleRange)
   const inBlock = grouped?.bubbleRange !== undefined;
   const placed = grouped
     ? { x: grouped.x, y: grouped.y }
@@ -1086,29 +1106,30 @@ function GardenNode({
           y: clampInside((pos.y / 100) * containerH, minY, containerH - maxYGap),
         }
       : undefined;
-  // 位置は割合(%)のまま、枠の内側に収める制限は CSS の clamp に任せる(窓の大きさが変わっても
-  // 再描画を待たずに追従する)。鳥と吹き出しの足場(anchor)は同じ位置を使う
+  // The position stays a ratio (%); keeping it inside the frame is left to CSS clamp (so it follows window resizes
+  // without waiting for a re-render). The bird and its speech bubble anchor use the same position
   const left = grouped?.left ?? `clamp(${minX}px, ${pos.x}%, calc(100% - ${minX}px))`;
   const top = grouped?.top ?? `clamp(${minY}px, ${pos.y}%, calc(100% - ${maxYGap}px))`;
-  // 左右の端に近い鳥は、アイコンの真下に出すと吹き出しが枠で切れるので、枠の内側に寄せる(しっぽは鳥を指したまま)
-  // 見守り中のブロックの鳥は、吹き出しをブロックの内側に収める(ブロックの枠に掛けない)
+  // For birds near the left/right edges, a speech bubble directly below the icon gets cut off by the frame, so shift
+  // it inside the frame (the tail keeps pointing at the bird).
+  // For birds in a watching block, keep the speech bubble inside the block (off the block's border)
   const bubbleStyle = placed
     ? grouped?.bubbleRange
       ? bubbleShift(placed.x, grouped.bubbleRange.lo, grouped.bubbleRange.hi)
       : bubbleShift(placed.x, BUBBLE_EDGE_PX, containerW - BUBBLE_EDGE_PX)
     : undefined;
 
-  // 巣箱entry飛翔の px オフセット。mount 時点の position・コンテナ rect から1度だけ
-  // 計算して固定する。rect が取れない/幅0(タブ非表示)ならフォールバック固定値を使う
+  // px offset for the fly-out-of-the-nest entry. Computed once from the position and container rect at mount
+  // and fixed. If the rect is unavailable or has zero width (tab hidden), use a fixed fallback value
   const [entryOffset] = useState(() => nestOffset(containerRef, position));
 
-  // 鳥の向き。id 由来で決定的に約半数を左右反転する(全員同じ向きだと剥製っぽい)。
-  // スプライトの素の向きは左向き想定 → flip = 右向き
+  // Bird facing. About half are mirrored deterministically based on the id (all facing the same way looks stuffed).
+  // Sprites are assumed to face left by default → flip = facing right
   const flip = hashId(session.id) % 2 === 1;
 
-  // 上空 entry の出発点は mount 時に1度だけ乱数で決める(state initializer なので
-  // 以後は固定 = 再描画で軌道が変わらない)。横方向は向きと連動させる:
-  // 右向き(flip)の鳥は左の空から右へ、左向きの鳥は右の空から左へ飛んでくる
+  // The starting point of the sky entry is randomized once at mount (it's a state initializer, so
+  // it stays fixed afterwards = the path doesn't change on re-render). The horizontal direction follows the facing:
+  // right-facing (flip) birds fly in from the left sky to the right, left-facing birds from the right sky to the left
   const [skyEntry] = useState(() => {
     const x = (Math.random() * 35 + 12) * (flip ? -1 : 1);
     const y = -(Math.random() * 120 + 280);
@@ -1116,8 +1137,8 @@ function GardenNode({
     return { x, y, rotate: bank };
   });
 
-  // 入場アニメーション: mount 時に1回だけ WAAPI で実行する。useLayoutEffect なので
-  // paint 前に開始される(素の位置で一瞬見えてから飛ぶフラッシュを防ぐ)
+  // Entry animation: run once with WAAPI at mount. Being a useLayoutEffect, it starts
+  // before paint (prevents a flash where the bird briefly shows at its plain position before flying)
   useLayoutEffect(() => {
     if (entryOrigin === "none") return;
     const el = innerRef.current;
@@ -1135,9 +1156,9 @@ function GardenNode({
       );
       return;
     }
-    // sky: 3 キーフレームで弧を近似する(motion の per-property easing の代替)。
-    // 着地(最終キーフレーム)以降は transform: none で止まるので、着地後に一瞬持ち上がる
-    // ような残留動作は発生しない
+    // sky: approximate an arc with 3 keyframes (a replacement for motion's per-property easing).
+    // After landing (the last keyframe) it stops at transform: none, so there is no leftover motion
+    // like briefly lifting up after landing
     const { x, y, rotate } = skyEntry;
     el.animate(
       [
@@ -1151,11 +1172,11 @@ function GardenNode({
       ],
       { duration: 550, easing: "cubic-bezier(0.22, 0.9, 0.35, 1)" },
     );
-    // entryOrigin は mount 時の値で固定(以後変化しない)なので mount 時 1 回のみでよい
+    // entryOrigin is fixed at its mount-time value (never changes afterwards), so running once at mount is enough
   }, []);
 
-  // 退場アニメーション: exitTarget が付いたら(Garden が leaving へ移した瞬間)WAAPI で
-  // 実行し、終わったら onExited を呼んで Garden 側の leaving Map から消してもらう
+  // Leave animation: once exitTarget is set (the moment Garden moves it to leaving), run it with WAAPI,
+  // and when it finishes call onExited so Garden removes it from its leaving Map
   useLayoutEffect(() => {
     if (!exitTarget) return;
     const el = innerRef.current;
@@ -1179,18 +1200,18 @@ function GardenNode({
         : [{ opacity: 1 }, { opacity: 0 }];
     const anim = el.animate(keyframes, { duration, easing: "ease", fill: "forwards" });
     anim.onfinish = finish;
-    // 保険: onfinish が来ない場合(要素が document から切り離される等)に備え、
-    // duration+200ms でも onExited を呼ぶ。Garden 側は Map.delete なので二重呼びは冪等
+    // Safeguard: in case onfinish never fires (e.g. the element is detached from the document),
+    // also call onExited after duration+200ms. Garden uses Map.delete, so a double call is idempotent
     const timeoutId = setTimeout(finish, duration + 200);
     return () => {
       clearTimeout(timeoutId);
-      // dev の StrictMode 二重実行等でこの effect が clean up されつつ要素が生き残る
-      // ケースに備え、fill:"forwards" で止まったアニメーションを明示的に破棄する。
-      // 破棄しないと次のマウントで再度 animate() したとき、既に opacity:0 で止まった
-      // ままの要素から始まってしまう(「開発時だけ鳥が見えない」の再発防止)
+      // For cases where this effect is cleaned up while the element survives (e.g. StrictMode double invocation
+      // in dev), explicitly cancel the animation stopped with fill:"forwards".
+      // Otherwise, when animate() runs again on the next mount, it starts from an element already stuck at
+      // opacity:0 (prevents a recurrence of "birds are invisible only in development")
       anim.cancel();
     };
-    // exitTarget は leaving エントリ生成時に一度だけ決まる想定
+    // exitTarget is expected to be decided only once, when the leaving entry is created
   }, [exitTarget]);
 
   return (
@@ -1201,15 +1222,16 @@ function GardenNode({
       style={{
         left,
         top,
-        // ドラッグ中は吹き出しの順より上に出す(.garden-node.dragging の z-index はインライン指定に負けるため)
+        // While dragging, show above the speech bubble order (the z-index of .garden-node.dragging loses to the inline style)
         zIndex: live ? BUBBLE_Z_DRAGGING : stackOrder,
       }}
     >
-      {/* 位置決め(left/top % + translate センタリング)・ドラッグ・hover/dragging の
-          transform は外側の素の div が担う。WAAPI は transform を丸ごと上書きするため
-          同じ要素には当てず、中身だけを包む内側の div に入退場アニメーションを持たせる */}
+      {/* Positioning (left/top % + translate centering), dragging, and the hover/dragging
+          transforms are handled by the plain outer div. WAAPI overwrites transform entirely, so it isn't
+          applied to the same element; the inner div wrapping only the content carries the enter/leave animations */}
       <div className="garden-node-inner" ref={innerRef}>
-        {/* ブロックの中の鳥は違う所(親からの相対パス)だけ出す。段に名前のある鳥がいれば、名前の無い鳥も行の高さを空ける */}
+        {/* Birds in a block show only what differs (path relative to the parent). If any bird in the row has a name,
+            birds without one also reserve the row height */}
         {!inBlock ? (
           <span className="garden-name">{session.project}</span>
         ) : grouped.label !== undefined ? (
@@ -1228,22 +1250,23 @@ function GardenNode({
             asking={question}
           />
         </span>
-        {/* 吹き出しの置き場。吹き出しそのものは吹き出しの層に出し(ほかの鳥より上に重ねるため)、ここは状態の行を下げる空きだけ */}
+        {/* Speech bubble slot. The bubble itself is rendered in the bubble layer (to stack above other birds); this is
+            only the space that pushes the status row down */}
         {bubbleRoom && <span className="garden-bubble-room" aria-hidden />}
-        {/* 止まり木の行と同じ部品。1 行目に状態の語と経過時間、ツール名はその下の行に出す */}
+        {/* Same component as the Perch rows. Line 1 has the state word and elapsed time; the tool name goes on the line below */}
         <span className="garden-status">
           <StatusParts session={session} asking={asking} toolOnOwnLine stacked={inBlock} />
         </span>
-        {/* 見守り中: 足元に動いている相手の数 */}
-        {/* 数は今動いている相手だけ。猶予の間(0)は出さない */}
+        {/* Watching: the number of active peers under the bird */}
+        {/* Counts only peers active right now. Not shown during the grace period (0) */}
         {session.watching !== undefined && session.watching > 0 && (
           <span className="garden-watch-count" title={t("watchingPeersTitle")}>
             <MdLink size={12} aria-hidden />
             {session.watching}
           </span>
         )}
-        {/* 「?」が付いている間はイベントの印を出さない。返事待ちの印は鳥の右上の「?」だけにする
-            (docs/design.md「判断待ちの鳥に「?」を付ける」) */}
+        {/* While the "?" is shown, don't show the event marker. The only needs-reply marker is the "?" at the bird's
+            top right (docs/design.md "The "?" for sessions waiting on you") */}
         {!question && recentEvents.length > 0 && (
           <span className="garden-icons">
             {recentEvents.map((e) => {
@@ -1262,8 +1285,9 @@ function GardenNode({
           </span>
         )}
       </div>
-      {/* 吹き出しは鳥と同じ位置・同じ高さの足場を吹き出しの層に置き、アイコンの下辺(--bubble-top)のすぐ下、
-          名前との間の空き(.garden-bubble-room)に出す。全羽でアイコンとの距離が同じになる */}
+      {/* The speech bubble puts an anchor at the same position and height as the bird in the bubble layer, and appears
+          right below the icon's bottom edge (--bubble-top), in the space before the name (.garden-bubble-room). The
+          distance from the icon is the same for every bird */}
       {bubble &&
         bubbleLayer &&
         !exitTarget &&

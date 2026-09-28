@@ -1,94 +1,93 @@
-// イベントを音声で読み上げる(chirp.ts の音合成とは別レイヤー: こちらは文章)。
-// chrome.tts は使わない(製品の permissions: [] 設計を崩すため) — 拡張ページ内で
-// 無権限で使える window.speechSynthesis のみを使う。
-// 複数イベント同時発生時の直列化は speechSynthesis のネイティブキューに任せ、
-// ここでは1件ずつ発話をキューへ積むだけにする。
+// Reads events aloud (a separate layer from the sound synthesis in chirp.ts: this one is text).
+// Does not use chrome.tts (it would break the product's permissions: [] design) — uses only
+// window.speechSynthesis, which works inside the extension page without permissions.
+// Serializing multiple simultaneous events is left to speechSynthesis's native queue;
+// here we only push one utterance at a time onto the queue.
 
 import { t, uiLanguage } from "./i18n";
 import { loadActiveAiProvider } from "./fsa";
 import { summarizeDoneEvent } from "./summarize";
 import type { SessionEvent } from "./sessions";
 
-// 読み上げテンプレート文の i18n キー名(scripts/locales/voice.mjs)。t()(lib/i18n.ts)の
-// キー引数はプレーンな string で足りるが、VOICE_KEY が持つ値をこのキー1つに限定する
-// ドキュメントとしてリテラル型のまま残す
+// i18n key names of the readout template sentences (scripts/locales/voice.mjs). A plain string is
+// enough for the key argument of t() (lib/i18n.ts), but this stays a literal type as documentation
+// that VOICE_KEY only holds this one key
 type VoiceMessageName = "eventWaitingVoice";
 
-// イベント種別 → 読み上げテンプレート文の i18n キー。キーが無い種別は読み上げない
-// (started はセッション開始のたびに鳴ってうるさいため対象外。done はテンプレ文を使わず
-// プロジェクト名+プロンプトのみ読む → speakEvent 内で個別分岐。closed はユーザー自身の
-// 明示的操作(/clear・ターミナル終了・中断)でしか発生せず、自分で閉じたものを読み上げても
-// 情報量が無いため対象外)
+// Event type → i18n key of the readout template sentence. Types without a key are not read aloud
+// (started is excluded because it would sound on every session start and get noisy. done does not use
+// a template and reads only the project name + prompt → handled by its own branch in speakEvent. closed
+// only happens through the user's own explicit action (/clear, closing the terminal, interrupting), and
+// reading out something you closed yourself carries no information, so it is excluded)
 const VOICE_KEY: Partial<Record<SessionEvent["type"], VoiceMessageName>> = {
   waiting: "eventWaitingVoice",
 };
 
-// snippet は長いことがあるため、聞き取りやすい長さで打ち切る(仕様: 100文字程度)
+// snippet can be long, so cut it at an easy-to-follow length (spec: about 100 characters)
 const SNIPPET_MAX_CHARS = 100;
 
-// 読み上げ音量(SpeechSynthesisUtterance.volume、0〜1)。モジュールレベルの変数として持つ
-// 理由: speakDoneEvent は要約取得の await を挟んでから発話するため、呼び出し時点で音量を
-// 引数として渡す設計だと await 中に設定画面で音量を変えても古い値のまま発話されてしまう。
-// setVoiceVolume で更新された「発話する瞬間の最新値」を enqueueUtterance が毎回読みに行く
-// ことで、待ち時間中の変更も反映される。デフォルトは 1(loadVoiceVolume と同じ既定フル)。
+// Readout volume (SpeechSynthesisUtterance.volume, 0 to 1). Why it is a module-level variable:
+// speakDoneEvent awaits the summary before speaking, so if the volume were passed as an argument at
+// call time, changing the volume in settings during the await would still speak at the old value.
+// enqueueUtterance reads the latest value set by setVoiceVolume "at the moment of speaking" every
+// time, so changes made while waiting are applied. Default is 1 (full, same default as loadVoiceVolume).
 let voiceVolume = 1;
 
-/** 設定画面(App.tsx)から呼ぶ。範囲外の値は呼び出し側(loadVoiceVolume)で弾かれている前提。 */
+/** Called from settings (App.tsx). Assumes out-of-range values were already rejected by the caller (loadVoiceVolume). */
 export function setVoiceVolume(volume: number): void {
   voiceVolume = volume;
 }
 
 /**
- * snippet を読み上げ用に整形する。表示用の整形(formatSnippet)は画面で読む前提の記号を
- * 含んでおり、音声エンジンが逐語読みして雑音になるため発話直前に落とす。表示側は一切
- * 変更しない。
+ * Formats a snippet for readout. The display formatting (formatSnippet) contains symbols meant to be
+ * read on screen, which the speech engine reads literally as noise, so they are dropped right before
+ * speaking. The display side is not changed at all.
  */
 function sanitizeSnippetForSpeech(raw: string): string {
   let text = raw.slice(0, SNIPPET_MAX_CHARS);
-  // formatSnippet が打ち切り時に付ける表示用の省略記号「…」。音声エンジンが
-  // 「てんてんてん」等と読み上げてしまうため発話には乗せない
+  // The display ellipsis "…" that formatSnippet adds when truncating. The speech engine would read
+  // it out as something like "dot dot dot", so it is not spoken
   const truncated = text.endsWith("…");
   if (truncated) text = text.slice(0, -1);
-  // markdown 記号の除去: バッククォート・強調のアスタリスク2連以上・見出しの先頭 #。
-  // 単独の "*" や文中の "#" は誤除去の懸念があるため触らない
+  // Remove markdown symbols: backquotes, runs of 2+ emphasis asterisks, and a leading heading #.
+  // A lone "*" or a "#" mid-sentence is left alone because removing it could be wrong
   text = text.replace(/`/g, "").replace(/\*{2,}/g, "").replace(/^#+\s*/, "");
-  // 打ち切りで寸断された末尾の単語断片(「the a」等)を落とす。スペースが無い(CJK)場合に
-  // 適用すると全文が消えるため対象外。truncated でない場合に適用すると、完結した末尾の
-  // 単語(「fix the bug」の「bug」等)まで誤って削ってしまうため、両条件を満たす時だけ行う。
-  // 削除対象は ASCII/ラテン語の単語断片のみに限定する(\S+ だと日英混在snippetで
-  // 「git diff を見てレビュー」のような末尾の日本語部分が丸ごと消えてしまう)。断片か
-  // どうかはこの層では区別できないため、無意味な音節になりやすい ASCII 断片だけを
-  // 対象にする。CJK は1文字でも意味を持つため触らない
+  // Drop the trailing word fragment cut off by truncation (e.g. "the a"). Not applied when there are no
+  // spaces (CJK), because it would erase the whole text. Applied when not truncated, it would wrongly
+  // remove a complete final word ("bug" in "fix the bug"), so it runs only when both conditions hold.
+  // Only ASCII/Latin word fragments are removed (with \S+, a mixed Japanese/English snippet like
+  // 「git diff を見てレビュー」 would lose its whole trailing Japanese part). This layer can't tell whether
+  // it is a fragment, so only ASCII fragments, which tend to become meaningless syllables, are
+  // targeted. CJK is left alone because even a single character carries meaning
   if (truncated && text.includes(" ")) {
     text = text.replace(/[A-Za-z0-9'’-]+$/, "");
   }
-  // 末尾に残った句読点・記号の塊(ユーザー自身が書いた末尾の「...」、断片除去後に残る
-  // 「src/」の「/」等)を落として整える
+  // Clean up by dropping a trailing run of punctuation/symbols (a trailing "..." the user wrote,
+  // the "/" of "src/" left after fragment removal, etc.)
   text = text.replace(/[\s.…,;:/\-]+$/, "").trim();
   return text;
 }
 
 /**
- * project 文字列を読み上げ用に整形する。表示用の記号を発話直前に落とす点は
- * sanitizeSnippetForSpeech と同じ設計。
+ * Formats the project string for readout. Dropping display symbols right before speaking follows
+ * the same design as sanitizeSnippetForSpeech.
  */
 function sanitizeProjectForSpeech(raw: string): string {
-  // ひなイベントの project は "親 · ひな名" と表示用の中黒(U+00B7)で連結されている
-  // (lib/sessions.ts の chickProject)。音声エンジンが中黒を逐語読みするため発話では
-  // 読点相当の ", " に置き換える
+  // A chick event's project is "parent · chick name", joined with a display middle dot (U+00B7)
+  // (chickProject in lib/sessions.ts). The speech engine reads the middle dot literally, so for
+  // speech it is replaced with ", " (a comma pause)
   let text = raw.replace(/ · /g, ", ");
-  // ひな名は agent-<id>.meta.json の description にフォールバックすることがあり
-  // (resolveChickMeta)、そこには表示用の省略記号「…」や "..." や markdown の
-  // バッククォートが入りうる。発話に乗せると「てんてんてん」等の雑音になるため
-  // 空白1つに潰す/除去する。単発・2連のドットは "app.v2" のような正当なドットのため
-  // 対象外(3個以上のみ)。
+  // The chick name can fall back to the description in agent-<id>.meta.json (resolveChickMeta),
+  // which may contain the display ellipsis "…", "...", or markdown backquotes. Spoken, they become
+  // noise like "dot dot dot", so they are collapsed to a single space / removed. Single and double
+  // dots are excluded because they are legitimate dots like "app.v2" (only 3 or more).
   text = text.replace(/…+/g, " ").replace(/\.{3,}/g, " ").replace(/`/g, "");
   return text.replace(/\s+/g, " ").trim();
 }
 
-// speakEvent と speakDoneEvent の両方が使う発話プリミティブ。utterance を分けて
-// speechSynthesis のネイティブキューに積み、発話間の間で句切る(理由は speakEvent の
-// コメント参照)
+// Speech primitive used by both speakEvent and speakDoneEvent. Pushes separate utterances onto
+// speechSynthesis's native queue and uses the gap between utterances as the separator (see the
+// comment in speakEvent for why)
 function enqueueUtterance(text: string, lang: string): void {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
@@ -97,29 +96,29 @@ function enqueueUtterance(text: string, lang: string): void {
 }
 
 /**
- * イベント1件を読み上げる。テンプレート文($PROJECT$ を chrome.i18n の substitution で
- * 埋め込み) + snippet があれば続けて読む。
+ * Reads one event aloud. The template sentence ($PROJECT$ embedded via chrome.i18n substitution),
+ * followed by the snippet if there is one.
  *
- * 制約: このページが一度もユーザー操作を受けていない間(設定ONのままタブを開き直した
- * 直後など)は、自動再生ポリシーにより speak() が not-allowed で無音に失敗しうる。
- * これは鳴き声(chirp の primeAudio が pointerdown を待つ)と同じ制約で、初回クリック
- * 以降は sticky activation により発話できる。ここでは失敗を握りつぶす(chirp と同じ挙動)。
+ * Constraint: while this page has never received a user interaction (e.g. right after reopening the
+ * tab with the setting ON), the autoplay policy can make speak() fail silently with not-allowed.
+ * This is the same constraint as the chirp (chirp's primeAudio waits for pointerdown); after the
+ * first click, sticky activation allows speech. Failures are swallowed here (same behavior as chirp).
  *
- * done イベントは、要約読み上げ(speakDoneEvent)が使えない/失敗したときの従来動作
- * (プロジェクト名+snippet)としても使う。二重発話を避けるため、done の要約読み上げが
- * 一度でも成立した経路ではこの関数を呼ばない設計にすること(speakDoneEvent 参照)。
+ * For done events this is also the legacy behavior (project name + snippet) used when the summary
+ * readout (speakDoneEvent) is unavailable or fails. To avoid speaking twice, never call this function
+ * on a path where the done summary readout has already succeeded (see speakDoneEvent).
  */
 export function speakEvent(event: SessionEvent): void {
   if (typeof speechSynthesis === "undefined") return;
   const snippet = event.snippet ? sanitizeSnippetForSpeech(event.snippet) : undefined;
   const project = sanitizeProjectForSpeech(event.project);
-  // 区切り記号は使わない — "." に限らずどの記号もエンジン依存で「ドット」等と逐語読み
-  // されうる(実害: done の読み上げでプロジェクト名直後に不審な読みが入る報告あり)。
-  // 追加の i18n キーを増やさない方針(formatEventTime と同じ)は維持する。
+  // No separator symbol is used — not just ".", any symbol may be read literally as "dot" etc.
+  // depending on the engine (actual issue: a strange word was reported right after the project name
+  // in the done readout). The policy of not adding extra i18n keys (same as formatEventTime) is kept.
   const lang = uiLanguage();
   if (event.type === "done") {
-    // done はテンプレ文("〜完了しました"等)がうるさいので読まず、プロジェクト名+
-    // プロンプトのみ読む(snippet が無ければプロジェクト名のみ)
+    // For done, the template sentence (e.g. "... has finished") is noisy, so skip it and read only
+    // the project name + prompt (just the project name if there is no snippet)
     enqueueUtterance(project, lang);
   } else {
     const key = VOICE_KEY[event.type];
@@ -130,18 +129,18 @@ export function speakEvent(event: SessionEvent): void {
 }
 
 /**
- * assistantText(そのターンの assistant 最終応答本文)の最後の1文を Intl.Segmenter
- * (granularity: "sentence")で切り出す。言語別の手書き正規表現分岐は書かない方針のため
- * Chromium 組み込みの Intl.Segmenter に委ねる。切り出した文には sanitizeSnippetForSpeech
- * と同じサニタイズ(markdown記号除去・100文字超の打ち切り・末尾記号除去)を適用し、
- * 空白のみ・空になった場合は undefined を返す(呼び出し側は snippet フォールバックに
- * 落とす)。
+ * Extracts the last sentence of assistantText (the body of the assistant's final reply for the turn)
+ * with Intl.Segmenter (granularity: "sentence"). The policy is not to hand-write per-language regex
+ * branches, so this is left to Chromium's built-in Intl.Segmenter. The extracted sentence gets the same
+ * sanitizing as sanitizeSnippetForSpeech (markdown symbol removal, cutting past 100 characters,
+ * trailing symbol removal); if it ends up whitespace-only or empty, returns undefined (the caller
+ * falls back to the snippet).
  */
 function extractLastSentence(text: string, lang: string): string | undefined {
-  // 末尾の改行(コードフェンス後の空行・段落区切りの "\n\n" 等、assistant のmarkdown出力に
-  // 頻出)を先に落とす。UAX#29 の文分割は改行だけの区間も1セグメントとして切り出すため、
-  // trim せずに渡すと最終セグメントが空白のみになり、実質毎回 snippet フォールバックに
-  // 落ちてしまう(実害を単体テストで確認済み)。
+  // Drop trailing newlines first (blank lines after code fences, "\n\n" paragraph breaks, etc., which
+  // are common in the assistant's markdown output). UAX#29 sentence segmentation also cuts out a
+  // newline-only run as its own segment, so without trim the last segment is whitespace-only and it
+  // falls back to the snippet practically every time (the actual problem was confirmed in a unit test).
   const trimmed = text.trim();
   const segmenter = new Intl.Segmenter(lang, { granularity: "sentence" });
   const segments = Array.from(segmenter.segment(trimmed), (s) => s.segment);
@@ -151,11 +150,11 @@ function extractLastSentence(text: string, lang: string): string | undefined {
 }
 
 /**
- * done のAI要約読み上げが使えない/使わないときの共通フォールバック。
- * event.assistantText の最終文が取れればプロジェクト名+最終文を読み、取れなければ
- * (assistantText が無い・最終文が空白のみ等) speakEvent(event) の従来動作(プロジェクト名+
- * snippet=ユーザープロンプト)に落とす。フォールバックは常にこの関数1回の呼び出しに一本化
- * してあり、speakEvent と併用して二重発話することはない。
+ * Shared fallback for when the AI summary readout for done can't be or isn't used.
+ * If the last sentence of event.assistantText can be extracted, reads project name + last sentence;
+ * otherwise (no assistantText, last sentence whitespace-only, etc.) falls back to the legacy behavior
+ * of speakEvent(event) (project name + snippet = user prompt). The fallback is always consolidated into a
+ * single call of this function, so it never speaks twice alongside speakEvent.
  */
 function speakDoneFallback(event: SessionEvent, lang: string): void {
   if (typeof speechSynthesis === "undefined") return;
@@ -169,18 +168,18 @@ function speakDoneFallback(event: SessionEvent, lang: string): void {
   enqueueUtterance(lastSentence, lang);
 }
 
-// 要約取得のタイムアウト。BYOK 呼び出しが詰まって done の読み上げそのものが遅延・欠落する
-// のを避けるため、超えたら諦めて従来動作にフォールバックする
+// Timeout for fetching the summary. To keep a stuck BYOK call from delaying or dropping the done
+// readout itself, give up once exceeded and fall back to the legacy behavior
 const SUMMARY_TIMEOUT_MS = 5_000;
 
-/** withTimeout の内部専用マーカー。verdict の型と衝突しない一意なシンボルにする */
+/** Internal marker for withTimeout only. A unique symbol so it can't collide with the verdict type */
 const TIMED_OUT = Symbol("summary-timeout");
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIMED_OUT> {
   return new Promise((resolve) => {
     const timer = setTimeout(() => resolve(TIMED_OUT), ms);
-    // runJudge(lib/judge.ts)は例外を投げない設計(エラーは JudgeResult.ok=false で返る)だが、
-    // 呼び出し前の loadAiApiKey 等が reject する可能性に備えて catch も付ける
+    // runJudge (lib/judge.ts) is designed not to throw (errors come back as JudgeResult.ok=false), but
+    // a catch is added in case something before the call, such as loadAiApiKey, rejects
     promise.then(
       (value) => {
         clearTimeout(timer);
@@ -195,26 +194,28 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIM
 }
 
 /**
- * done イベントを読み上げる。OpenAI または Anthropic の API キーがあり、かつこのターンの
- * アシスタント応答本文(event.assistantText)が取れているときだけAI要約(lib/summarize.ts)を
- * 「プロジェクト名 → 要約」の順で読む。それ以外(キー無し・API エラー・タイムアウト・
- * 空の verdict)は speakDoneFallback にフォールバックする — assistantText の最終文が取れれば
- * プロジェクト名+最終文、取れなければ speakEvent(event) の従来動作(プロジェクト名+snippet)を
- * 読む。フォールバック経路は常に speakDoneFallback 呼び出し1回だけに一本化してあるので、
- * 要約読み上げと従来動作が二重に鳴ることはない。
+ * Reads a done event aloud. Only when there is an OpenAI or Anthropic API key and the assistant's
+ * reply body for this turn (event.assistantText) is available does it read the AI summary
+ * (lib/summarize.ts), in the order "project name → summary". Otherwise (no key, API error, timeout,
+ * empty verdict) it falls back to speakDoneFallback — which reads project name + last sentence if the
+ * last sentence of assistantText can be extracted, and otherwise the legacy behavior of
+ * speakEvent(event) (project name + snippet). The fallback path is always consolidated into a single
+ * speakDoneFallback call, so the summary readout and the legacy behavior never both sound.
  *
- * 要約読み上げはキーの有無だけで独立にゲートする(判定機能=旧 LLM 判定は廃止済みで、
- * このキーは要約読み上げと接続テストのみで使う)。
+ * The summary readout is gated independently, only on whether a key exists (the judging feature, i.e.
+ * the old LLM judging, has been removed; this key is used only for the summary readout and the
+ * connection test).
  *
- * 呼び出し側(App.tsx)は読み上げ ON かつミュートされていない done イベントでのみこの関数を
- * 呼ぶこと(判定は voiceEnabled/muted 双方とも speakEvent と同じゲートを共有する)。
+ * The caller (App.tsx) must call this function only for done events with readout ON and not muted
+ * (both voiceEnabled and muted share the same gate as speakEvent).
  *
- * stillEnabled: 要約取得の待ち時間(最大 SUMMARY_TIMEOUT_MS)の間に読み上げトグルが OFF に
- * なった場合、素通しで待ち後に発話してしまうと toggleVoiceEnabled の cancelSpeech() が
- * 「OFF は即座に静かにする」ために立てた保証を破ってしまう(先に cancelSpeech() でキューを
- * 空にした直後、この待ちが解決してキューへ積み直す形の漏れになる)。await の後ろで発話する
- * 直前に毎回これを呼び、false ならそのターンの発話(フォールバックも要約も)を一切行わない。
- * 呼び出し側は voiceEnabledRef.current 相当の最新値を返す関数を渡すこと。
+ * stillEnabled: if the readout toggle is turned OFF while waiting for the summary (up to
+ * SUMMARY_TIMEOUT_MS), speaking after the wait regardless would break the guarantee that
+ * toggleVoiceEnabled's cancelSpeech() sets up so that "OFF goes quiet immediately" (a leak where,
+ * right after cancelSpeech() empties the queue, this wait resolves and pushes onto the queue again).
+ * Call this every time right before speaking after an await; if false, nothing is spoken for that
+ * turn (neither fallback nor summary). The caller must pass a function returning the latest value,
+ * equivalent to voiceEnabledRef.current.
  */
 export async function speakDoneEvent(
   event: SessionEvent,
@@ -225,7 +226,7 @@ export async function speakDoneEvent(
     speakDoneFallback(event, lang);
     return;
   }
-  if (typeof speechSynthesis === "undefined") return; // 要約 API を呼ぶ前に無音環境を弾く
+  if (typeof speechSynthesis === "undefined") return; // Reject environments without speech before calling the summary API
 
   const provider = await loadActiveAiProvider();
   if (!stillEnabled()) return;
@@ -260,11 +261,11 @@ export async function speakDoneEvent(
   enqueueUtterance(summary, lang);
 }
 
-// 要約読み上げ専用のサニタイズ。sanitizeSnippetForSpeech と同じ記号除去(バッククォート・
-// 強調のアスタリスク2連以上・見出しの#・末尾の句読点)を流用しつつ、snippet 特有の「表示用
-// 省略記号の除去」「打ち切り断片除去」は行わない(要約は打ち切りではなく LLM が完結させた
-// 1文である前提のため)。プロンプトで50文字以内を指示しているが、指示違反時の安全弁として
-// SNIPPET_MAX_CHARS と同じ上限で切る
+// Sanitizing only for the summary readout. Reuses the same symbol removal as sanitizeSnippetForSpeech
+// (backquotes, runs of 2+ emphasis asterisks, heading #, trailing punctuation), but skips the
+// snippet-specific "remove the display ellipsis" and "remove the truncated fragment" steps (the
+// summary is assumed to be one sentence the LLM completed, not a truncation). The prompt asks for
+// 50 characters or fewer; as a safety valve if that is ignored, cut at the same limit as SNIPPET_MAX_CHARS
 function sanitizeSummaryForSpeech(raw: string): string {
   let text = raw.slice(0, SNIPPET_MAX_CHARS);
   text = text.replace(/`/g, "").replace(/\*{2,}/g, "").replace(/^#+\s*/, "");
@@ -272,7 +273,7 @@ function sanitizeSummaryForSpeech(raw: string): string {
   return text;
 }
 
-/** 再生中・キュー済みの発話をすべて止める(読み上げトグル OFF 用) */
+/** Stops all playing and queued utterances (for turning the readout toggle OFF) */
 export function cancelSpeech(): void {
   if (typeof speechSynthesis === "undefined") return;
   speechSynthesis.cancel();

@@ -1,29 +1,29 @@
-// TypeSafe の Jev で「ユーザーの判断待ちで止まっているか」を判定する層
-// (docs/design.md「判断待ちの鳥に「?」を付ける」)。
+// Layer that uses TypeSafe's Jev to decide "is it stopped waiting for the user's decision"
+// (docs/design.md "The "?" for sessions waiting on you").
 //
-// api.typesafe.ai は WKWebView の origin を CORS で拒否するので、fetch ではなく Rust の
-// typesafe_systemone コマンド経由で叩く(src-tauri/src/lib.rs)。
-// 渡す応答文は untrusted input。Jev の出力は Noul の確率(0〜1)だけを使い、文字列は使わない。
+// api.typesafe.ai rejects the WKWebView origin via CORS, so it's called through Rust's
+// typesafe_systemone command instead of fetch (src-tauri/src/lib.rs).
+// The reply text passed in is untrusted input. Only Jev's Noul probability (0–1) is used from its output, never strings.
 
 import { httpFailure, invokeKeyedApi, type JudgeErrorKind, type JudgeResult } from "./judge";
 import type { BirdState, SessionView } from "./sessions";
 
 const MODEL = "jev-latest";
 
-/** yes の確率がこれ以上なら asking とみなす */
+/** If the probability of yes is at least this, treat it as asking */
 export const ASKING_THRESHOLD = 0.5;
 
-/** Jev に渡す応答文の上限(末尾を残す。問いかけは応答の最後に来るため) */
+/** Upper limit of the reply text passed to Jev (keeps the end, because questions come at the end of a reply) */
 const MAX_STATE_CHARS = 2000;
 
 export type AskStatus = "pending" | "asking" | "not_asking" | "error";
 
-/** Jev 判定。ターン(sessionId + 最終応答の時刻)ごとに1つ持つ */
+/** Jev verdict. One per turn (sessionId + time of the last reply) */
 export interface AskJudgement {
   status: AskStatus;
-  /** yes の確率。pending / error では無い */
+  /** Probability of yes. Absent for pending / error */
   probability?: number;
-  /** error のときの種別(デバッグ表示用) */
+  /** Kind of error (for the debug display) */
   errorKind?: JudgeErrorKind;
 }
 
@@ -45,7 +45,7 @@ const ASKING_QUESTION = {
 
 
 
-/** Noul 1 問を投げ、yes の確率を返す。キーは Rust だけが持つ。失敗は例外にせず JudgeResult で返す */
+/** Asks one Noul question and returns the probability of yes. Only Rust holds the key. Failures are returned as a JudgeResult, not thrown */
 async function askNoul(state: string): Promise<JudgeResult<number>> {
   const sent = await invokeKeyedApi("typesafe_systemone", {
     state,
@@ -62,12 +62,12 @@ async function askNoul(state: string): Promise<JudgeResult<number>> {
     const p = data.answers?.asking?.noul;
     if (typeof p === "number" && p >= 0 && p <= 1) return { ok: true, verdict: p };
   } catch {
-    // 下の malformed に落とす
+    // falls through to malformed below
   }
   return { ok: false, kind: "malformed", status: reply.status, message: "no noul in response" };
 }
 
-/** 最後の応答文が判断待ちかを判定する */
+/** Decides whether the last reply is waiting on a decision */
 export async function judgeAsking(assistantText: string): Promise<AskJudgement> {
   const result = await askNoul(assistantText.slice(-MAX_STATE_CHARS));
   if (!result.ok) return { status: "error", errorKind: result.kind };
@@ -77,20 +77,20 @@ export async function judgeAsking(assistantText: string): Promise<AskJudgement> 
   };
 }
 
-/** 設定画面の接続テスト */
+/** Connection test on the settings screen */
 export async function testTypeSafeConnection(): Promise<JudgeResult<number>> {
   return askNoul("ping");
 }
 
 /**
- * 鳥に「?」を付けるか。実際に聞いている鳥だけ(needsAnswer)。見守り中の鳥には、相手が聞いていても付けない
- * (docs/design.md「別のセッションに作業を任せて待っているセッションを「見守り中」で表す」)
+ * Whether to put a "?" on the bird. Only birds actually asking (needsAnswer). Watching birds don't get one even if the other session is asking
+ * (docs/design.md "Watching")
  */
 export function hasQuestion(s: SessionView): boolean {
   return needsAnswer(s.state, s.ask);
 }
 
-/** 「?」を付けるか。機械判定の waiting か、止まっている(done / dozing)ターンを Jev が asking と判定したとき */
+/** Whether to show the "?". When the machine state is waiting, or Jev judged a stopped (done / dozing) turn as asking */
 export function needsAnswer(state: BirdState, ask: AskJudgement | undefined): boolean {
   if (state === "waiting") return true;
   return (state === "done" || state === "dozing") && ask?.status === "asking";
