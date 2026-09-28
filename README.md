@@ -1,5 +1,7 @@
 # tomarigi-desktop
 
+<img width="1020" height="510" alt="desktop-garden CKGxXzrE_Z2my0rT" src="https://github.com/user-attachments/assets/1c105780-6db6-45a6-91ca-9784181f1bd3" />
+
 A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the Ghostty pane where that Claude Code session is running.
 
 - No hooks or config changes on the agent side. It only reads the transcripts under `~/.claude/projects` and `~/.codex/sessions`
