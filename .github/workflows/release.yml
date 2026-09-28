@@ -14,7 +14,7 @@ jobs:
   release:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check that the tag matches the app version
         run: |
@@ -56,3 +56,16 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: tomarigi-desktop ${{ github.ref_name }}
           releaseDraft: true
+
+      # tauri-action notarizes only the .app inside. Notarize the .dmg too so the downloaded file itself passes Gatekeeper
+      - name: Notarize and staple the .dmg
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dmg=$(ls src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg)
+          xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+          xcrun stapler staple "$dmg"
+          gh release upload "$GITHUB_REF_NAME" "$dmg" --clobber
