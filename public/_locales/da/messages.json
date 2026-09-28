@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Pind der holder øje med AI-agentsessioner. Fugleikoner viser status. Panel i flydende minivindue. Nul tilladelser."
+  },
+  "birdWorkingLabel": {
+    "message": "pikker"
+  },
+  "birdDozingLabel": {
+    "message": "blunder"
+  },
+  "loadingLabel": {
+    "message": "Indlæser…"
+  },
+  "setupIntro": {
+    "message": "Vælg den mappe, hvor Claude Code / Codex gemmer sine sessionslogs, så begynder fuglene at lande på pinden."
+  },
+  "setupPickPrefix": {
+    "message": "Tryk på "
+  },
+  "setupPickMiddle": {
+    "message": " i vælgeren, og skriv derefter "
+  },
+  "setupPickSuffix": {
+    "message": " (det er en skjult mappe)."
+  },
+  "setupButton": {
+    "message": "Sæt pinden op"
+  },
+  "duplicateRootMessage": {
+    "message": "Den mappe er allerede tilføjet"
+  },
+  "saveFailedMessage": {
+    "message": "Kunne ikke gemme"
+  },
+  "reauthFailedMessage": {
+    "message": "Kunne ikke forny adgangen"
+  },
+  "emptyNoSessions": {
+    "message": "Ingen fugle på pinden lige nu (seneste 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Kræver fornyet godkendelse — genopret forbindelse nedenfor under Overvågede mapper"
+  },
+  "emptyNoEvents": {
+    "message": "Ingen aktivitet de seneste 30 min"
+  },
+  "summonButton": {
+    "message": "Åbn i minivindue (altid øverst)"
+  },
+  "pipNote": {
+    "message": "Fuglene er ude i minivinduet."
+  },
+  "rootsHeading": {
+    "message": "Overvågede mapper"
+  },
+  "badgeNeedsReauth": {
+    "message": "Kræver fornyet godkendelse"
+  },
+  "badgeUnreadable": {
+    "message": "Kan ikke læses"
+  },
+  "reauthButton": {
+    "message": "Godkend igen"
+  },
+  "editLabelButton": {
+    "message": "Rediger etiket"
+  },
+  "removeButtonAria": {
+    "message": "Fjern"
+  },
+  "addRootButton": {
+    "message": "Tilføj mappe"
+  },
+  "rootLabelPlaceholder": {
+    "message": "f.eks. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Slå lyd fra"
+  },
+  "unmuteButtonAria": {
+    "message": "Slå lyd til"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$t $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Seneste aktivitet"
+  },
+  "eventStartedLabel": {
+    "message": "startet"
+  },
+  "eventDoneLabel": {
+    "message": "færdig"
+  },
+  "eventClosedLabel": {
+    "message": "lukket"
+  },
+  "eventMutedTitle": {
+    "message": "Lydløs (ingen lyd)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API-nøgle"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Nøgle gemt"
+  },
+  "byokSaveButton": {
+    "message": "Gem"
+  },
+  "byokDeleteButton": {
+    "message": "Slet"
+  },
+  "byokTestButton": {
+    "message": "Test forbindelse"
+  },
+  "byokTestingLabel": {
+    "message": "Tester…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Forbindelse oprettet"
+  },
+  "byokTestResultFailure": {
+    "message": "Forbindelse mislykkedes ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Indtast og gem en API-nøgle først"
+  },
+  "tabPerchLabel": {
+    "message": "Pind"
+  },
+  "tabGardenLabel": {
+    "message": "Have"
+  },
+  "tabSettingsLabel": {
+    "message": "Indstillinger"
+  },
+  "voiceEnableLabel": {
+    "message": "Læs højt"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ venter på dit svar",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API-nøgle"
+  },
+  "voiceVolumeLabel": {
+    "message": "Lydstyrke"
+  },
+  "soundEnableLabel": {
+    "message": "Giv besked med lyd"
+  },
+  "iconSetHeading": {
+    "message": "Ikonsæt"
+  },
+  "iconSetBirds": {
+    "message": "Fugle"
+  },
+  "iconSetGnome": {
+    "message": "Nisse"
+  },
+  "iconSetCat": {
+    "message": "Kat"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Frø"
+  },
+  "iconSetEmpty": {
+    "message": "Ingen projekter endnu"
+  },
+  "iconSetToggleAria": {
+    "message": "Skift ikonsæt"
+  },
+  "copyPathButton": {
+    "message": "Kopiér sti"
+  },
+  "closeButtonAria": {
+    "message": "Luk"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API-nøgle"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Brug til resuméer"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API-nøgler"
+  },
+  "aiApiKeysDescription": {
+    "message": "Valgfrit. Bruges til oplæste resuméer af afsluttede hændelser og forbindelsestest. Hvis begge nøgler gemmes, kan du vælge udbyder til resuméer."
+  },
+  "rootDefaultBadge": {
+    "message": "Standard"
+  },
+  "windowModeHeading": {
+    "message": "Vindue"
+  },
+  "windowModeFloating": {
+    "message": "Svævende (altid øverst, også over apps i fuld skærm)"
+  },
+  "windowModeNormal": {
+    "message": "Almindeligt vindue (kan maksimeres eller vises i fuld skærm)"
+  },
+  "birdWaitingLabel": {
+    "message": "venter på dit svar"
+  },
+  "askingBadgeTitle": {
+    "message": "Venter på dit svar for at kunne fortsætte"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API-nøgle"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Valgfrit. TypeSafe er en ekstern AI-tjeneste, der vurderer, om en agent er stoppet for at vente på dit svar. Med en gemt nøgle sendes det sidste svar fra en stoppet session til TypeSafe, og fugle, der vurderes at vente på svar, får et »?«. Uden nøgle får kun fugle, der er stoppet ved et spørgeværktøj, »?«."
+  },
+  "bubblePlanApproval": {
+    "message": "Godkend planen?"
+  },
+  "birdWatchingLabel": {
+    "message": "holder øje"
+  },
+  "watchingPeersTitle": {
+    "message": "Sessioner, der stadig arbejder"
+  },
+  "byokReplaceButton": {
+    "message": "Erstat"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Nøglen kunne ikke gemmes. Prøv igen."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafes websted"
+  }
+}

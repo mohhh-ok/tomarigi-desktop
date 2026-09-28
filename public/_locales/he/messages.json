@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "מוט לניטור סוכני AI. סמלי הציפורים מראים את המצב במבט אחד. חלונית כחלון מוקטן צף. אפס הרשאות."
+  },
+  "birdWorkingLabel": {
+    "message": "מנקרת"
+  },
+  "birdDozingLabel": {
+    "message": "מנמנמת"
+  },
+  "loadingLabel": {
+    "message": "טוען…"
+  },
+  "setupIntro": {
+    "message": "בחר את התיקייה שבה Claude Code / Codex שומר את יומני ההפעלה, והציפורים יתחילו לנחות על המוט."
+  },
+  "setupPickPrefix": {
+    "message": "בחלון הבחירה, לחץ "
+  },
+  "setupPickMiddle": {
+    "message": ", ואז הקלד "
+  },
+  "setupPickSuffix": {
+    "message": " (זו תיקייה מוסתרת)."
+  },
+  "setupButton": {
+    "message": "התקנת המוט"
+  },
+  "duplicateRootMessage": {
+    "message": "התיקייה הזו כבר נוספה"
+  },
+  "saveFailedMessage": {
+    "message": "השמירה נכשלה"
+  },
+  "reauthFailedMessage": {
+    "message": "חידוש ההרשאה נכשל"
+  },
+  "emptyNoSessions": {
+    "message": "אין ציפורים על המוט כרגע (30 הדקות האחרונות)"
+  },
+  "emptyNeedsReauth": {
+    "message": "נדרש אישור מחדש — התחבר שוב דרך התיקיות המנוטרות למטה"
+  },
+  "emptyNoEvents": {
+    "message": "אין פעילות ב-30 הדקות האחרונות"
+  },
+  "summonButton": {
+    "message": "פתח בחלון מוקטן (תמיד עליון)"
+  },
+  "pipNote": {
+    "message": "הציפורים נמצאות כעת בחלון המוקטן."
+  },
+  "rootsHeading": {
+    "message": "תיקיות מנוטרות"
+  },
+  "badgeNeedsReauth": {
+    "message": "נדרש אישור מחדש"
+  },
+  "badgeUnreadable": {
+    "message": "לא ניתן לקרוא"
+  },
+  "reauthButton": {
+    "message": "אשר מחדש"
+  },
+  "editLabelButton": {
+    "message": "ערוך תווית"
+  },
+  "removeButtonAria": {
+    "message": "הסר"
+  },
+  "addRootButton": {
+    "message": "הוסף תיקייה"
+  },
+  "rootLabelPlaceholder": {
+    "message": "לדוגמה: claude2"
+  },
+  "muteButtonAria": {
+    "message": "השתק"
+  },
+  "unmuteButtonAria": {
+    "message": "בטל השתקה"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$ש׳",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$דק׳",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$שע׳ $MINUTES$דק׳",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "פעילות אחרונה"
+  },
+  "eventStartedLabel": {
+    "message": "התחילה"
+  },
+  "eventDoneLabel": {
+    "message": "הסתיימה"
+  },
+  "eventClosedLabel": {
+    "message": "נסגרה"
+  },
+  "eventMutedTitle": {
+    "message": "מושתק (ללא צליל)"
+  },
+  "byokApiKeyLabel": {
+    "message": "מפתח API של Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "המפתח נשמר"
+  },
+  "byokSaveButton": {
+    "message": "שמור"
+  },
+  "byokDeleteButton": {
+    "message": "מחק"
+  },
+  "byokTestButton": {
+    "message": "בדוק חיבור"
+  },
+  "byokTestingLabel": {
+    "message": "בודק…"
+  },
+  "byokTestResultSuccess": {
+    "message": "החיבור הצליח"
+  },
+  "byokTestResultFailure": {
+    "message": "החיבור נכשל ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "יש להזין ולשמור מפתח API תחילה"
+  },
+  "tabPerchLabel": {
+    "message": "המוט"
+  },
+  "tabGardenLabel": {
+    "message": "הגן"
+  },
+  "tabSettingsLabel": {
+    "message": "הגדרות"
+  },
+  "voiceEnableLabel": {
+    "message": "הקראה בקול"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ מחכה לתשובה שלך",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "מפתח API של Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "עוצמת קול"
+  },
+  "soundEnableLabel": {
+    "message": "התראה בצליל"
+  },
+  "iconSetHeading": {
+    "message": "ערכות סמלים"
+  },
+  "iconSetBirds": {
+    "message": "ציפורים"
+  },
+  "iconSetGnome": {
+    "message": "גמד"
+  },
+  "iconSetCat": {
+    "message": "חתול"
+  },
+  "iconSetRobot": {
+    "message": "רובוט"
+  },
+  "iconSetFrog": {
+    "message": "צפרדע"
+  },
+  "iconSetEmpty": {
+    "message": "אין עדיין פרויקטים"
+  },
+  "iconSetToggleAria": {
+    "message": "החלף ערכת סמלים"
+  },
+  "copyPathButton": {
+    "message": "העתקת נתיב"
+  },
+  "closeButtonAria": {
+    "message": "סגירה"
+  },
+  "openAiApiKeyHeading": {
+    "message": "מפתח API של OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "שימוש לסיכומים"
+  },
+  "aiApiKeysHeading": {
+    "message": "מפתחות API של בינה מלאכותית"
+  },
+  "aiApiKeysDescription": {
+    "message": "אופציונלי. משמש לסיכומים קוליים של אירועים שהושלמו ולבדיקות חיבור. אם שני המפתחות נשמרו, ניתן לבחור ספק לסיכומים."
+  },
+  "rootDefaultBadge": {
+    "message": "ברירת מחדל"
+  },
+  "windowModeHeading": {
+    "message": "חלון"
+  },
+  "windowModeFloating": {
+    "message": "צף (תמיד למעלה, גם מעל אפליקציות במסך מלא)"
+  },
+  "windowModeNormal": {
+    "message": "חלון רגיל (אפשר להגדיל או להציג במסך מלא)"
+  },
+  "birdWaitingLabel": {
+    "message": "מחכה לתשובה שלך"
+  },
+  "askingBadgeTitle": {
+    "message": "מחכה לתשובה שלך כדי להמשיך"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "מפתח API של TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "אופציונלי. TypeSafe הוא שירות בינה מלאכותית חיצוני שקובע אם סוכן עצר כדי לחכות לתשובה שלך. כשהמפתח שמור, התשובה האחרונה של סשן שנעצר נשלחת ל-TypeSafe, וציפורים שנקבע שהן מחכות לתשובה מקבלות „?”. בלי מפתח, רק ציפורים שנעצרו בכלי שאלה מקבלות „?”."
+  },
+  "bubblePlanApproval": {
+    "message": "לאשר את התוכנית?"
+  },
+  "birdWatchingLabel": {
+    "message": "משגיח"
+  },
+  "watchingPeersTitle": {
+    "message": "סשנים שעדיין עובדים"
+  },
+  "byokReplaceButton": {
+    "message": "החלפה"
+  },
+  "byokSaveFailedMessage": {
+    "message": "לא ניתן היה לשמור את המפתח. נסה שוב."
+  },
+  "typeSafeSiteLink": {
+    "message": "האתר של TypeSafe"
+  }
+}

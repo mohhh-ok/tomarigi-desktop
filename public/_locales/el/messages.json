@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Κούρνια για τις συνεδρίες AI πρακτόρων σας. Η στάση του πουλιού δείχνει την κατάσταση με μια ματιά. Μηδέν άδειες."
+  },
+  "birdWorkingLabel": {
+    "message": "τσιμπολογάει"
+  },
+  "birdDozingLabel": {
+    "message": "μισοκοιμάται"
+  },
+  "loadingLabel": {
+    "message": "Φόρτωση…"
+  },
+  "setupIntro": {
+    "message": "Επιλέξτε τον φάκελο όπου το Claude Code / Codex κρατά τα αρχεία καταγραφής συνεδριών, και τα πουλιά θα αρχίσουν να κουρνιάζουν."
+  },
+  "setupPickPrefix": {
+    "message": "Στο παράθυρο επιλογής, πατήστε "
+  },
+  "setupPickMiddle": {
+    "message": " και μετά πληκτρολογήστε "
+  },
+  "setupPickSuffix": {
+    "message": " (είναι κρυφός φάκελος)."
+  },
+  "setupButton": {
+    "message": "Εγκατάσταση κούρνιας"
+  },
+  "duplicateRootMessage": {
+    "message": "Αυτός ο φάκελος έχει ήδη προστεθεί"
+  },
+  "saveFailedMessage": {
+    "message": "Η αποθήκευση απέτυχε"
+  },
+  "reauthFailedMessage": {
+    "message": "Η ανανέωση πρόσβασης απέτυχε"
+  },
+  "emptyNoSessions": {
+    "message": "Δεν υπάρχει κανένα πουλί στην κούρνια αυτή τη στιγμή (τελευταία 30 λεπτά)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Απαιτείται νέα εξουσιοδότηση — επανασυνδεθείτε παρακάτω από τους Παρακολουθούμενους φακέλους"
+  },
+  "emptyNoEvents": {
+    "message": "Καμία δραστηριότητα τα τελευταία 30 λεπτά"
+  },
+  "summonButton": {
+    "message": "Άνοιγμα σε μικρό παράθυρο (πάντα πάνω από όλα)"
+  },
+  "pipNote": {
+    "message": "Τα πουλιά βρίσκονται τώρα στο μικρό παράθυρο."
+  },
+  "rootsHeading": {
+    "message": "Παρακολουθούμενοι φάκελοι"
+  },
+  "badgeNeedsReauth": {
+    "message": "Απαιτείται εξουσιοδότηση"
+  },
+  "badgeUnreadable": {
+    "message": "Δεν είναι αναγνώσιμος"
+  },
+  "reauthButton": {
+    "message": "Νέα εξουσιοδότηση"
+  },
+  "editLabelButton": {
+    "message": "Επεξεργασία ετικέτας"
+  },
+  "removeButtonAria": {
+    "message": "Αφαίρεση"
+  },
+  "addRootButton": {
+    "message": "Προσθήκη φακέλου"
+  },
+  "rootLabelPlaceholder": {
+    "message": "π.χ. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Σίγαση"
+  },
+  "unmuteButtonAria": {
+    "message": "Κατάργηση σίγασης"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$δ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$λ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$ώ $MINUTES$λ",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Πρόσφατη δραστηριότητα"
+  },
+  "eventStartedLabel": {
+    "message": "ξεκίνησε"
+  },
+  "eventDoneLabel": {
+    "message": "ολοκληρώθηκε"
+  },
+  "eventClosedLabel": {
+    "message": "έκλεισε"
+  },
+  "eventMutedTitle": {
+    "message": "Σίγαση (χωρίς ήχο)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Κλειδί API Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Το κλειδί αποθηκεύτηκε"
+  },
+  "byokSaveButton": {
+    "message": "Αποθήκευση"
+  },
+  "byokDeleteButton": {
+    "message": "Διαγραφή"
+  },
+  "byokTestButton": {
+    "message": "Δοκιμή σύνδεσης"
+  },
+  "byokTestingLabel": {
+    "message": "Δοκιμή…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Επιτυχής σύνδεση"
+  },
+  "byokTestResultFailure": {
+    "message": "Αποτυχία σύνδεσης ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Εισαγάγετε και αποθηκεύστε πρώτα ένα κλειδί API"
+  },
+  "tabPerchLabel": {
+    "message": "Κούρνια"
+  },
+  "tabGardenLabel": {
+    "message": "Κήπος"
+  },
+  "tabSettingsLabel": {
+    "message": "Ρυθμίσεις"
+  },
+  "voiceEnableLabel": {
+    "message": "Ανάγνωση με φωνή"
+  },
+  "eventWaitingVoice": {
+    "message": "Το $PROJECT$ περιμένει την απάντησή σου",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Κλειδί API Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Ένταση ήχου"
+  },
+  "soundEnableLabel": {
+    "message": "Ειδοποίηση με ήχο"
+  },
+  "iconSetHeading": {
+    "message": "Σύνολα εικονιδίων"
+  },
+  "iconSetBirds": {
+    "message": "Πουλιά"
+  },
+  "iconSetGnome": {
+    "message": "Νάνος"
+  },
+  "iconSetCat": {
+    "message": "Γάτα"
+  },
+  "iconSetRobot": {
+    "message": "Ρομπότ"
+  },
+  "iconSetFrog": {
+    "message": "Βάτραχος"
+  },
+  "iconSetEmpty": {
+    "message": "Δεν υπάρχουν ακόμη έργα"
+  },
+  "iconSetToggleAria": {
+    "message": "Εναλλαγή συνόλου εικονιδίων"
+  },
+  "copyPathButton": {
+    "message": "Αντιγραφή διαδρομής"
+  },
+  "closeButtonAria": {
+    "message": "Κλείσιμο"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Κλειδί API OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Χρήση για περιλήψεις"
+  },
+  "aiApiKeysHeading": {
+    "message": "Κλειδιά API τεχνητής νοημοσύνης"
+  },
+  "aiApiKeysDescription": {
+    "message": "Προαιρετικό. Χρησιμοποιείται για φωνητικές περιλήψεις ολοκληρωμένων συμβάντων και δοκιμές σύνδεσης. Αν αποθηκευτούν και τα δύο κλειδιά, μπορείτε να επιλέξετε πάροχο περιλήψεων."
+  },
+  "rootDefaultBadge": {
+    "message": "Προεπιλογή"
+  },
+  "windowModeHeading": {
+    "message": "Παράθυρο"
+  },
+  "windowModeFloating": {
+    "message": "Αιωρούμενο (πάντα στην κορυφή, ακόμη και πάνω από εφαρμογές σε πλήρη οθόνη)"
+  },
+  "windowModeNormal": {
+    "message": "Κανονικό παράθυρο (μπορεί να μεγιστοποιηθεί ή σε πλήρη οθόνη)"
+  },
+  "birdWaitingLabel": {
+    "message": "περιμένει την απάντησή σου"
+  },
+  "askingBadgeTitle": {
+    "message": "Περιμένει την απάντησή σου για να συνεχίσει"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Κλειδί API TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Προαιρετικό. Το TypeSafe είναι μια εξωτερική υπηρεσία τεχνητής νοημοσύνης που κρίνει αν ένας πράκτορας σταμάτησε για να περιμένει την απάντησή σου. Με αποθηκευμένο κλειδί, η τελευταία απάντηση μιας συνεδρίας που σταμάτησε στέλνεται στο TypeSafe και τα πουλιά που κρίνεται ότι περιμένουν απάντηση παίρνουν «?». Χωρίς κλειδί, «?» παίρνουν μόνο τα πουλιά που σταμάτησαν σε εργαλείο ερώτησης."
+  },
+  "bubblePlanApproval": {
+    "message": "Εγκρίνεις το σχέδιο;"
+  },
+  "birdWatchingLabel": {
+    "message": "παρακολουθεί"
+  },
+  "watchingPeersTitle": {
+    "message": "Συνεδρίες που ακόμα δουλεύουν"
+  },
+  "byokReplaceButton": {
+    "message": "Αντικατάσταση"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Δεν ήταν δυνατή η αποθήκευση του κλειδιού. Δοκίμασε ξανά."
+  },
+  "typeSafeSiteLink": {
+    "message": "Ιστότοπος της TypeSafe"
+  }
+}

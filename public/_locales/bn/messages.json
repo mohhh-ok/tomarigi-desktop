@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "আপনার AI এজেন্ট সেশনের জন্য বসার ডাল। পাখির আইকন এক নজরে স্থিতি দেখায়। প্যানেলকে ভাসমান মিনি উইন্ডোতে ডাকুন। শূন্য অনুমতি।"
+  },
+  "birdWorkingLabel": {
+    "message": "ঠোকরাচ্ছে"
+  },
+  "birdDozingLabel": {
+    "message": "ঝিমাচ্ছে"
+  },
+  "loadingLabel": {
+    "message": "লোড হচ্ছে…"
+  },
+  "setupIntro": {
+    "message": "যে ফোল্ডারে Claude Code / Codex তার সেশন লগ রাখে সেটি বেছে নিন, তাহলে পাখিরা বসার ডালে বসতে শুরু করবে।"
+  },
+  "setupPickPrefix": {
+    "message": "নির্বাচক উইন্ডোতে "
+  },
+  "setupPickMiddle": {
+    "message": " চাপুন, তারপর "
+  },
+  "setupPickSuffix": {
+    "message": " টাইপ করুন (এটি একটি লুকানো ফোল্ডার)।"
+  },
+  "setupButton": {
+    "message": "বসার ডাল স্থাপন করুন"
+  },
+  "duplicateRootMessage": {
+    "message": "এই ফোল্ডারটি ইতিমধ্যে যোগ করা আছে"
+  },
+  "saveFailedMessage": {
+    "message": "সংরক্ষণ করা যায়নি"
+  },
+  "reauthFailedMessage": {
+    "message": "অ্যাক্সেস নবায়ন করা যায়নি"
+  },
+  "emptyNoSessions": {
+    "message": "এখন বসার ডালে কেউ নেই (গত ৩০ মিনিট)"
+  },
+  "emptyNeedsReauth": {
+    "message": "পুনরায় অনুমোদন প্রয়োজন — নিচের নজরদারি ফোল্ডার থেকে আবার সংযুক্ত করুন"
+  },
+  "emptyNoEvents": {
+    "message": "গত ৩০ মিনিটে কোনো কার্যক্রম নেই"
+  },
+  "summonButton": {
+    "message": "মিনি উইন্ডোতে খুলুন (সবসময় সবার উপরে)"
+  },
+  "pipNote": {
+    "message": "পাখিরা এখন মিনি উইন্ডোতে আছে।"
+  },
+  "rootsHeading": {
+    "message": "নজরদারি ফোল্ডার"
+  },
+  "badgeNeedsReauth": {
+    "message": "পুনরায় অনুমোদন প্রয়োজন"
+  },
+  "badgeUnreadable": {
+    "message": "পড়া যাচ্ছে না"
+  },
+  "reauthButton": {
+    "message": "পুনরায় অনুমোদন করুন"
+  },
+  "editLabelButton": {
+    "message": "লেবেল সম্পাদনা করুন"
+  },
+  "removeButtonAria": {
+    "message": "সরান"
+  },
+  "addRootButton": {
+    "message": "ফোল্ডার যোগ করুন"
+  },
+  "rootLabelPlaceholder": {
+    "message": "যেমন: claude2"
+  },
+  "muteButtonAria": {
+    "message": "নিঃশব্দ করুন"
+  },
+  "unmuteButtonAria": {
+    "message": "নিঃশব্দ বাতিল করুন"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$সে",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$মি",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$ঘ $MINUTES$মি",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "সাম্প্রতিক কার্যকলাপ"
+  },
+  "eventStartedLabel": {
+    "message": "শুরু হয়েছে"
+  },
+  "eventDoneLabel": {
+    "message": "সম্পন্ন"
+  },
+  "eventClosedLabel": {
+    "message": "বন্ধ"
+  },
+  "eventMutedTitle": {
+    "message": "নিঃশব্দ (কোনো শব্দ নেই)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API কী"
+  },
+  "byokApiKeySetLabel": {
+    "message": "কী সংরক্ষিত হয়েছে"
+  },
+  "byokSaveButton": {
+    "message": "সংরক্ষণ করুন"
+  },
+  "byokDeleteButton": {
+    "message": "মুছুন"
+  },
+  "byokTestButton": {
+    "message": "সংযোগ পরীক্ষা করুন"
+  },
+  "byokTestingLabel": {
+    "message": "পরীক্ষা করা হচ্ছে…"
+  },
+  "byokTestResultSuccess": {
+    "message": "সংযোগ সফল হয়েছে"
+  },
+  "byokTestResultFailure": {
+    "message": "সংযোগ ব্যর্থ হয়েছে ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "প্রথমে একটি API কী লিখুন এবং সংরক্ষণ করুন"
+  },
+  "tabPerchLabel": {
+    "message": "বসার ডাল"
+  },
+  "tabGardenLabel": {
+    "message": "বাগান"
+  },
+  "tabSettingsLabel": {
+    "message": "সেটিংস"
+  },
+  "voiceEnableLabel": {
+    "message": "কণ্ঠে পড়ে শোনানো"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ আপনার উত্তরের অপেক্ষায় আছে",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API কী"
+  },
+  "voiceVolumeLabel": {
+    "message": "শব্দের মাত্রা"
+  },
+  "soundEnableLabel": {
+    "message": "শব্দে জানান"
+  },
+  "iconSetHeading": {
+    "message": "আইকন সেট"
+  },
+  "iconSetBirds": {
+    "message": "পাখি"
+  },
+  "iconSetGnome": {
+    "message": "গ্নোম"
+  },
+  "iconSetCat": {
+    "message": "বিড়াল"
+  },
+  "iconSetRobot": {
+    "message": "রোবট"
+  },
+  "iconSetFrog": {
+    "message": "ব্যাঙ"
+  },
+  "iconSetEmpty": {
+    "message": "এখনও কোনো প্রকল্প নেই"
+  },
+  "iconSetToggleAria": {
+    "message": "আইকন সেট পরিবর্তন করুন"
+  },
+  "copyPathButton": {
+    "message": "পাথ কপি করুন"
+  },
+  "closeButtonAria": {
+    "message": "বন্ধ করুন"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API কী"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "সারাংশের জন্য ব্যবহার করুন"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API কীসমূহ"
+  },
+  "aiApiKeysDescription": {
+    "message": "ঐচ্ছিক। সম্পন্ন ইভেন্টের ভয়েস সারাংশ ও সংযোগ পরীক্ষায় ব্যবহৃত হয়। উভয় কী সংরক্ষণ করলে সারাংশের প্রদানকারী বেছে নিতে পারবেন।"
+  },
+  "rootDefaultBadge": {
+    "message": "ডিফল্ট"
+  },
+  "windowModeHeading": {
+    "message": "উইন্ডো"
+  },
+  "windowModeFloating": {
+    "message": "ভাসমান (সবসময় উপরে, ফুল-স্ক্রিন অ্যাপের উপরেও)"
+  },
+  "windowModeNormal": {
+    "message": "সাধারণ উইন্ডো (বড় বা ফুল স্ক্রিন করা যায়)"
+  },
+  "birdWaitingLabel": {
+    "message": "আপনার উত্তরের অপেক্ষায়"
+  },
+  "askingBadgeTitle": {
+    "message": "এগোতে আপনার উত্তরের অপেক্ষায় আছে"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API কী"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "ঐচ্ছিক। TypeSafe একটি বাইরের AI পরিষেবা, যা যাচাই করে কোনো এজেন্ট আপনার উত্তরের অপেক্ষায় থেমে আছে কি না। কী সংরক্ষণ করলে থেমে থাকা সেশনের শেষ উত্তর TypeSafe-এ পাঠানো হয়, আর উত্তরের অপেক্ষায় আছে বলে গণ্য পাখির গায়ে “?” বসে। কী না থাকলে শুধু প্রশ্নের টুলে থেমে থাকা পাখির গায়ে “?” বসে।"
+  },
+  "bubblePlanApproval": {
+    "message": "পরিকল্পনা অনুমোদন করবেন?"
+  },
+  "birdWatchingLabel": {
+    "message": "নজর রাখছে"
+  },
+  "watchingPeersTitle": {
+    "message": "এখনও কাজ করা সেশন"
+  },
+  "byokReplaceButton": {
+    "message": "বদলান"
+  },
+  "byokSaveFailedMessage": {
+    "message": "কী সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe-এর ওয়েবসাইট"
+  }
+}

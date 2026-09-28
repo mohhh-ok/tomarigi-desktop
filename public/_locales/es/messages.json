@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Percha que vigila tus sesiones de agentes IA. Aves muestran su estado de un vistazo. Miniventana flotante. Cero permisos."
+  },
+  "birdWorkingLabel": {
+    "message": "picoteando"
+  },
+  "birdDozingLabel": {
+    "message": "dormitando"
+  },
+  "loadingLabel": {
+    "message": "Cargando…"
+  },
+  "setupIntro": {
+    "message": "Elige la carpeta donde Claude Code / Codex guarda sus registros de sesión y los pájaros empezarán a posarse en la percha."
+  },
+  "setupPickPrefix": {
+    "message": "En el selector, pulsa "
+  },
+  "setupPickMiddle": {
+    "message": ", luego escribe "
+  },
+  "setupPickSuffix": {
+    "message": " (es una carpeta oculta)."
+  },
+  "setupButton": {
+    "message": "Instalar la percha"
+  },
+  "duplicateRootMessage": {
+    "message": "Esa carpeta ya está en la percha"
+  },
+  "saveFailedMessage": {
+    "message": "No se pudo guardar"
+  },
+  "reauthFailedMessage": {
+    "message": "No se pudo renovar el acceso"
+  },
+  "emptyNoSessions": {
+    "message": "Ahora mismo no hay pájaros en la percha (últimos 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Necesita reautorización: reconecta desde Carpetas vigiladas abajo"
+  },
+  "emptyNoEvents": {
+    "message": "Sin actividad en los últimos 30 min"
+  },
+  "summonButton": {
+    "message": "Abrir en ventana flotante (siempre visible)"
+  },
+  "pipNote": {
+    "message": "Los pájaros están en la ventana flotante."
+  },
+  "rootsHeading": {
+    "message": "Carpetas vigiladas"
+  },
+  "badgeNeedsReauth": {
+    "message": "Requiere reautorización"
+  },
+  "badgeUnreadable": {
+    "message": "No se puede leer"
+  },
+  "reauthButton": {
+    "message": "Reautorizar"
+  },
+  "editLabelButton": {
+    "message": "Editar etiqueta"
+  },
+  "removeButtonAria": {
+    "message": "Eliminar"
+  },
+  "addRootButton": {
+    "message": "Añadir carpeta"
+  },
+  "rootLabelPlaceholder": {
+    "message": "p. ej. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Silenciar"
+  },
+  "unmuteButtonAria": {
+    "message": "Activar sonido"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Actividad reciente"
+  },
+  "eventStartedLabel": {
+    "message": "iniciada"
+  },
+  "eventDoneLabel": {
+    "message": "completada"
+  },
+  "eventClosedLabel": {
+    "message": "cerrada"
+  },
+  "eventMutedTitle": {
+    "message": "Silenciado (sin sonido)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Clave de API de Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Clave guardada"
+  },
+  "byokSaveButton": {
+    "message": "Guardar"
+  },
+  "byokDeleteButton": {
+    "message": "Eliminar"
+  },
+  "byokTestButton": {
+    "message": "Probar conexión"
+  },
+  "byokTestingLabel": {
+    "message": "Probando…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Conexión correcta"
+  },
+  "byokTestResultFailure": {
+    "message": "Fallo de conexión ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Primero introduce y guarda una clave de API"
+  },
+  "tabPerchLabel": {
+    "message": "Percha"
+  },
+  "tabGardenLabel": {
+    "message": "Jardín"
+  },
+  "tabSettingsLabel": {
+    "message": "Ajustes"
+  },
+  "voiceEnableLabel": {
+    "message": "Leer en voz alta"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ está esperando tu respuesta",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Clave de API de Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volumen"
+  },
+  "soundEnableLabel": {
+    "message": "Avisar con sonido"
+  },
+  "iconSetHeading": {
+    "message": "Conjuntos de iconos"
+  },
+  "iconSetBirds": {
+    "message": "Pájaros"
+  },
+  "iconSetGnome": {
+    "message": "Gnomo"
+  },
+  "iconSetCat": {
+    "message": "Gato"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Rana"
+  },
+  "iconSetEmpty": {
+    "message": "Aún no hay proyectos"
+  },
+  "iconSetToggleAria": {
+    "message": "Cambiar conjunto de iconos"
+  },
+  "copyPathButton": {
+    "message": "Copiar ruta"
+  },
+  "closeButtonAria": {
+    "message": "Cerrar"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Clave de API de OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Usar para resúmenes"
+  },
+  "aiApiKeysHeading": {
+    "message": "Claves de API de IA"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opcional. Se usa para los resúmenes de voz de eventos completados y las pruebas de conexión. Si guardas ambas claves, puedes elegir el proveedor para los resúmenes."
+  },
+  "rootDefaultBadge": {
+    "message": "Predeterminada"
+  },
+  "windowModeHeading": {
+    "message": "Ventana"
+  },
+  "windowModeFloating": {
+    "message": "Flotante (siempre visible, incluso sobre apps a pantalla completa)"
+  },
+  "windowModeNormal": {
+    "message": "Ventana normal (se puede maximizar o poner a pantalla completa)"
+  },
+  "birdWaitingLabel": {
+    "message": "esperando tu respuesta"
+  },
+  "askingBadgeTitle": {
+    "message": "Espera tu respuesta para poder continuar"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Clave de API de TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Opcional. TypeSafe es un servicio externo de IA que determina si un agente se ha detenido a esperar tu respuesta. Con una clave guardada, la última respuesta de una sesión detenida se envía a TypeSafe y los pájaros que esperan respuesta muestran un «?». Sin clave, solo los pájaros detenidos en una herramienta de pregunta muestran el «?»."
+  },
+  "bubblePlanApproval": {
+    "message": "¿Apruebas el plan?"
+  },
+  "birdWatchingLabel": {
+    "message": "vigilando"
+  },
+  "watchingPeersTitle": {
+    "message": "Sesiones que siguen trabajando"
+  },
+  "byokReplaceButton": {
+    "message": "Reemplazar"
+  },
+  "byokSaveFailedMessage": {
+    "message": "No se pudo guardar la clave. Inténtalo de nuevo."
+  },
+  "typeSafeSiteLink": {
+    "message": "Sitio web de TypeSafe"
+  }
+}

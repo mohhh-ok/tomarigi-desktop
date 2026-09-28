@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Stinghie pentru sesiunile agenților AI. Postura păsării arată starea dintr-o privire. Mini-fereastră flotantă. Zero permisiuni."
+  },
+  "birdWorkingLabel": {
+    "message": "ciugulește"
+  },
+  "birdDozingLabel": {
+    "message": "ațipește"
+  },
+  "loadingLabel": {
+    "message": "Se încarcă…"
+  },
+  "setupIntro": {
+    "message": "Alege folderul în care Claude Code / Codex păstrează jurnalele de sesiune, iar păsările vor începe să aterizeze pe stinghie."
+  },
+  "setupPickPrefix": {
+    "message": "În selector, apasă "
+  },
+  "setupPickMiddle": {
+    "message": ", apoi tastează "
+  },
+  "setupPickSuffix": {
+    "message": " (este un folder ascuns)."
+  },
+  "setupButton": {
+    "message": "Instalează stinghia"
+  },
+  "duplicateRootMessage": {
+    "message": "Acel folder este deja adăugat"
+  },
+  "saveFailedMessage": {
+    "message": "Salvarea a eșuat"
+  },
+  "reauthFailedMessage": {
+    "message": "Reînnoirea accesului a eșuat"
+  },
+  "emptyNoSessions": {
+    "message": "Nicio pasăre pe stinghie momentan (ultimele 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Necesită reautorizare — reconectează-te mai jos din Foldere monitorizate"
+  },
+  "emptyNoEvents": {
+    "message": "Nicio activitate în ultimele 30 min"
+  },
+  "summonButton": {
+    "message": "Deschide într-o fereastră mini (mereu deasupra)"
+  },
+  "pipNote": {
+    "message": "Păsările sunt acum în fereastra mini."
+  },
+  "rootsHeading": {
+    "message": "Foldere monitorizate"
+  },
+  "badgeNeedsReauth": {
+    "message": "Necesită reautorizare"
+  },
+  "badgeUnreadable": {
+    "message": "Nu poate fi citit"
+  },
+  "reauthButton": {
+    "message": "Reautorizează"
+  },
+  "editLabelButton": {
+    "message": "Editează eticheta"
+  },
+  "removeButtonAria": {
+    "message": "Elimină"
+  },
+  "addRootButton": {
+    "message": "Adaugă folder"
+  },
+  "rootLabelPlaceholder": {
+    "message": "ex. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Dezactivează sunetul"
+  },
+  "unmuteButtonAria": {
+    "message": "Activează sunetul"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Activitate recentă"
+  },
+  "eventStartedLabel": {
+    "message": "început"
+  },
+  "eventDoneLabel": {
+    "message": "finalizat"
+  },
+  "eventClosedLabel": {
+    "message": "închis"
+  },
+  "eventMutedTitle": {
+    "message": "Dezactivat sunetul (fără sunet)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Cheie API Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Cheie salvată"
+  },
+  "byokSaveButton": {
+    "message": "Salvează"
+  },
+  "byokDeleteButton": {
+    "message": "Șterge"
+  },
+  "byokTestButton": {
+    "message": "Testează conexiunea"
+  },
+  "byokTestingLabel": {
+    "message": "Se testează…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Conexiune reușită"
+  },
+  "byokTestResultFailure": {
+    "message": "Conexiune eșuată ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Introdu și salvează mai întâi o cheie API"
+  },
+  "tabPerchLabel": {
+    "message": "Stinghie"
+  },
+  "tabGardenLabel": {
+    "message": "Grădină"
+  },
+  "tabSettingsLabel": {
+    "message": "Setări"
+  },
+  "voiceEnableLabel": {
+    "message": "Citește cu voce"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ așteaptă răspunsul tău",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Cheie API Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volum"
+  },
+  "soundEnableLabel": {
+    "message": "Anunță cu sunet"
+  },
+  "iconSetHeading": {
+    "message": "Seturi de pictograme"
+  },
+  "iconSetBirds": {
+    "message": "Păsări"
+  },
+  "iconSetGnome": {
+    "message": "Pitic"
+  },
+  "iconSetCat": {
+    "message": "Pisică"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Broască"
+  },
+  "iconSetEmpty": {
+    "message": "Încă nu există proiecte"
+  },
+  "iconSetToggleAria": {
+    "message": "Schimbă setul de pictograme"
+  },
+  "copyPathButton": {
+    "message": "Copiază calea"
+  },
+  "closeButtonAria": {
+    "message": "Închide"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Cheie API OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Folosește pentru rezumate"
+  },
+  "aiApiKeysHeading": {
+    "message": "Chei API AI"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opțional. Folosit pentru rezumatele vocale ale evenimentelor finalizate și testele de conexiune. Dacă salvezi ambele chei, poți alege furnizorul pentru rezumate."
+  },
+  "rootDefaultBadge": {
+    "message": "Implicit"
+  },
+  "windowModeHeading": {
+    "message": "Fereastră"
+  },
+  "windowModeFloating": {
+    "message": "Plutitoare (mereu deasupra, chiar și peste aplicațiile pe ecran complet)"
+  },
+  "windowModeNormal": {
+    "message": "Fereastră obișnuită (se poate maximiza sau trece pe ecran complet)"
+  },
+  "birdWaitingLabel": {
+    "message": "așteaptă răspunsul tău"
+  },
+  "askingBadgeTitle": {
+    "message": "Așteaptă răspunsul tău ca să poată continua"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Cheie API TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Opțional. TypeSafe este un serviciu AI extern care apreciază dacă un agent s-a oprit ca să aștepte răspunsul tău. Cu o cheie salvată, ultimul răspuns al unei sesiuni oprite este trimis la TypeSafe, iar păsările considerate în așteptarea unui răspuns primesc un „?”. Fără cheie, doar păsările oprite la un instrument de întrebare primesc „?”."
+  },
+  "bubblePlanApproval": {
+    "message": "Aprobi planul?"
+  },
+  "birdWatchingLabel": {
+    "message": "supraveghează"
+  },
+  "watchingPeersTitle": {
+    "message": "Sesiuni care încă lucrează"
+  },
+  "byokReplaceButton": {
+    "message": "Înlocuiește"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Cheia nu a putut fi salvată. Încearcă din nou."
+  },
+  "typeSafeSiteLink": {
+    "message": "Site-ul TypeSafe"
+  }
+}

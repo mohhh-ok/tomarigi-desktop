@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Orsi tekoälyagenttiesi istunnoille. Linnun asento näyttää tilan silmäyksellä. Paneeli kelluvassa miniikkunassa. Ei lupia."
+  },
+  "birdWorkingLabel": {
+    "message": "nokkii"
+  },
+  "birdDozingLabel": {
+    "message": "torkkuu"
+  },
+  "loadingLabel": {
+    "message": "Ladataan…"
+  },
+  "setupIntro": {
+    "message": "Valitse kansio, johon Claude Code / Codex tallentaa istuntolokinsa, niin linnut alkavat laskeutua orrelle."
+  },
+  "setupPickPrefix": {
+    "message": "Paina valitsimessa "
+  },
+  "setupPickMiddle": {
+    "message": ", ja kirjoita sitten "
+  },
+  "setupPickSuffix": {
+    "message": " (se on piilotettu kansio)."
+  },
+  "setupButton": {
+    "message": "Pystytä orsi"
+  },
+  "duplicateRootMessage": {
+    "message": "Tuo kansio on jo lisätty"
+  },
+  "saveFailedMessage": {
+    "message": "Tallennus epäonnistui"
+  },
+  "reauthFailedMessage": {
+    "message": "Käyttöoikeuden uusiminen epäonnistui"
+  },
+  "emptyNoSessions": {
+    "message": "Orrella ei ole nyt yhtään lintua (viimeiset 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Vaatii uuden valtuutuksen — yhdistä uudelleen alla olevasta kohdasta Tarkkailtavat kansiot"
+  },
+  "emptyNoEvents": {
+    "message": "Ei toimintaa viimeisen 30 min aikana"
+  },
+  "summonButton": {
+    "message": "Avaa pienoisikkunassa (aina päällimmäisenä)"
+  },
+  "pipNote": {
+    "message": "Linnut ovat nyt pienoisikkunassa."
+  },
+  "rootsHeading": {
+    "message": "Tarkkailtavat kansiot"
+  },
+  "badgeNeedsReauth": {
+    "message": "Vaatii uuden valtuutuksen"
+  },
+  "badgeUnreadable": {
+    "message": "Ei voi lukea"
+  },
+  "reauthButton": {
+    "message": "Valtuuta uudelleen"
+  },
+  "editLabelButton": {
+    "message": "Muokkaa nimikettä"
+  },
+  "removeButtonAria": {
+    "message": "Poista"
+  },
+  "addRootButton": {
+    "message": "Lisää kansio"
+  },
+  "rootLabelPlaceholder": {
+    "message": "esim. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Mykistä"
+  },
+  "unmuteButtonAria": {
+    "message": "Poista mykistys"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Viimeisin toiminta"
+  },
+  "eventStartedLabel": {
+    "message": "aloitettu"
+  },
+  "eventDoneLabel": {
+    "message": "valmis"
+  },
+  "eventClosedLabel": {
+    "message": "suljettu"
+  },
+  "eventMutedTitle": {
+    "message": "Mykistetty (ei ääntä)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API -avain"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Avain tallennettu"
+  },
+  "byokSaveButton": {
+    "message": "Tallenna"
+  },
+  "byokDeleteButton": {
+    "message": "Poista"
+  },
+  "byokTestButton": {
+    "message": "Testaa yhteys"
+  },
+  "byokTestingLabel": {
+    "message": "Testataan…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Yhteys onnistui"
+  },
+  "byokTestResultFailure": {
+    "message": "Yhteys epäonnistui ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Anna ja tallenna API-avain ensin"
+  },
+  "tabPerchLabel": {
+    "message": "Orsi"
+  },
+  "tabGardenLabel": {
+    "message": "Puutarha"
+  },
+  "tabSettingsLabel": {
+    "message": "Asetukset"
+  },
+  "voiceEnableLabel": {
+    "message": "Lue ääneen"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ odottaa vastaustasi",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API -avain"
+  },
+  "voiceVolumeLabel": {
+    "message": "Äänenvoimakkuus"
+  },
+  "soundEnableLabel": {
+    "message": "Ilmoita äänellä"
+  },
+  "iconSetHeading": {
+    "message": "Kuvakesarjat"
+  },
+  "iconSetBirds": {
+    "message": "Linnut"
+  },
+  "iconSetGnome": {
+    "message": "Tonttu"
+  },
+  "iconSetCat": {
+    "message": "Kissa"
+  },
+  "iconSetRobot": {
+    "message": "Robotti"
+  },
+  "iconSetFrog": {
+    "message": "Sammakko"
+  },
+  "iconSetEmpty": {
+    "message": "Ei vielä projekteja"
+  },
+  "iconSetToggleAria": {
+    "message": "Vaihda kuvakesarja"
+  },
+  "copyPathButton": {
+    "message": "Kopioi polku"
+  },
+  "closeButtonAria": {
+    "message": "Sulje"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API -avain"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Käytä yhteenvetoihin"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API -avaimet"
+  },
+  "aiApiKeysDescription": {
+    "message": "Valinnainen. Käytetään valmistuneiden tapahtumien puhuttuihin yhteenvetoihin ja yhteystesteihin. Jos molemmat avaimet tallennetaan, voit valita yhteenvetojen palveluntarjoajan."
+  },
+  "rootDefaultBadge": {
+    "message": "Oletus"
+  },
+  "windowModeHeading": {
+    "message": "Ikkuna"
+  },
+  "windowModeFloating": {
+    "message": "Kelluva (aina päällimmäisenä, myös koko näytön apien päällä)"
+  },
+  "windowModeNormal": {
+    "message": "Tavallinen ikkuna (voi suurentaa tai avata koko näytölle)"
+  },
+  "birdWaitingLabel": {
+    "message": "odottaa vastaustasi"
+  },
+  "askingBadgeTitle": {
+    "message": "Odottaa vastaustasi voidakseen jatkaa"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API -avain"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Valinnainen. TypeSafe on ulkoinen tekoälypalvelu, joka arvioi, onko agentti pysähtynyt odottamaan vastaustasi. Kun avain on tallennettu, pysähtyneen istunnon viimeinen vastaus lähetetään TypeSafelle, ja vastausta odottaviksi arvioidut linnut saavat ”?”-merkin. Ilman avainta ”?” näkyy vain linnuilla, jotka ovat pysähtyneet kysymystyökaluun."
+  },
+  "bubblePlanApproval": {
+    "message": "Hyväksytäänkö suunnitelma?"
+  },
+  "birdWatchingLabel": {
+    "message": "seuraa"
+  },
+  "watchingPeersTitle": {
+    "message": "Yhä työskentelevät istunnot"
+  },
+  "byokReplaceButton": {
+    "message": "Korvaa"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Avainta ei voitu tallentaa. Yritä uudelleen."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafen verkkosivusto"
+  }
+}

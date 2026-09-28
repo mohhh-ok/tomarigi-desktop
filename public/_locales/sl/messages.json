@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Gred za seje vaših AI agentov. Drža ptice pokaže stanje na prvi pogled. Panel v plavajočem mini oknu. Nič dovoljenj."
+  },
+  "birdWorkingLabel": {
+    "message": "kljuva"
+  },
+  "birdDozingLabel": {
+    "message": "dremlje"
+  },
+  "loadingLabel": {
+    "message": "Nalaganje…"
+  },
+  "setupIntro": {
+    "message": "Izberite mapo, kamor Claude Code / Codex shranjuje dnevnike sej, in ptice bodo začele pristajati na gredi."
+  },
+  "setupPickPrefix": {
+    "message": "V izbirniku pritisnite "
+  },
+  "setupPickMiddle": {
+    "message": ", nato vnesite "
+  },
+  "setupPickSuffix": {
+    "message": " (to je skrita mapa)."
+  },
+  "setupButton": {
+    "message": "Postavi gred"
+  },
+  "duplicateRootMessage": {
+    "message": "Ta mapa je že dodana"
+  },
+  "saveFailedMessage": {
+    "message": "Shranjevanje ni uspelo"
+  },
+  "reauthFailedMessage": {
+    "message": "Obnovitev dostopa ni uspela"
+  },
+  "emptyNoSessions": {
+    "message": "Trenutno na gredi ni nobene ptice (zadnjih 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Potrebna je ponovna avtorizacija — znova se povežite spodaj pri Nadzorovanih mapah"
+  },
+  "emptyNoEvents": {
+    "message": "Ni dejavnosti v zadnjih 30 min"
+  },
+  "summonButton": {
+    "message": "Odpri v mini oknu (vedno na vrhu)"
+  },
+  "pipNote": {
+    "message": "Ptice so zdaj v mini oknu."
+  },
+  "rootsHeading": {
+    "message": "Nadzorovane mape"
+  },
+  "badgeNeedsReauth": {
+    "message": "Potrebna avtorizacija"
+  },
+  "badgeUnreadable": {
+    "message": "Ni berljivo"
+  },
+  "reauthButton": {
+    "message": "Znova avtoriziraj"
+  },
+  "editLabelButton": {
+    "message": "Uredi oznako"
+  },
+  "removeButtonAria": {
+    "message": "Odstrani"
+  },
+  "addRootButton": {
+    "message": "Dodaj mapo"
+  },
+  "rootLabelPlaceholder": {
+    "message": "npr. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Izklopi zvok"
+  },
+  "unmuteButtonAria": {
+    "message": "Vklopi zvok"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Nedavna dejavnost"
+  },
+  "eventStartedLabel": {
+    "message": "začeto"
+  },
+  "eventDoneLabel": {
+    "message": "končano"
+  },
+  "eventClosedLabel": {
+    "message": "zaprto"
+  },
+  "eventMutedTitle": {
+    "message": "Utišano (brez zvoka)"
+  },
+  "byokApiKeyLabel": {
+    "message": "API ključ Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Ključ shranjen"
+  },
+  "byokSaveButton": {
+    "message": "Shrani"
+  },
+  "byokDeleteButton": {
+    "message": "Izbriši"
+  },
+  "byokTestButton": {
+    "message": "Preizkusi povezavo"
+  },
+  "byokTestingLabel": {
+    "message": "Preizkušanje…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Povezava uspešna"
+  },
+  "byokTestResultFailure": {
+    "message": "Povezava neuspešna ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Najprej vnesite in shranite API ključ"
+  },
+  "tabPerchLabel": {
+    "message": "Gred"
+  },
+  "tabGardenLabel": {
+    "message": "Vrt"
+  },
+  "tabSettingsLabel": {
+    "message": "Nastavitve"
+  },
+  "voiceEnableLabel": {
+    "message": "Preberi z glasom"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ čaka na vaš odgovor",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "API ključ Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Glasnost"
+  },
+  "soundEnableLabel": {
+    "message": "Obvesti z zvokom"
+  },
+  "iconSetHeading": {
+    "message": "Nabori ikon"
+  },
+  "iconSetBirds": {
+    "message": "Ptice"
+  },
+  "iconSetGnome": {
+    "message": "Škrat"
+  },
+  "iconSetCat": {
+    "message": "Mačka"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Žaba"
+  },
+  "iconSetEmpty": {
+    "message": "Še ni projektov"
+  },
+  "iconSetToggleAria": {
+    "message": "Preklopi nabor ikon"
+  },
+  "copyPathButton": {
+    "message": "Kopiraj pot"
+  },
+  "closeButtonAria": {
+    "message": "Zapri"
+  },
+  "openAiApiKeyHeading": {
+    "message": "API ključ OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Uporabi za povzetke"
+  },
+  "aiApiKeysHeading": {
+    "message": "Ključi API za UI"
+  },
+  "aiApiKeysDescription": {
+    "message": "Izbirno. Uporablja se za glasovne povzetke zaključenih dogodkov in preizkuse povezave. Če shranite oba ključa, lahko izberete ponudnika povzetkov."
+  },
+  "rootDefaultBadge": {
+    "message": "Privzeto"
+  },
+  "windowModeHeading": {
+    "message": "Okno"
+  },
+  "windowModeFloating": {
+    "message": "Plavajoče (vedno na vrhu, tudi nad aplikacijami v celozaslonskem načinu)"
+  },
+  "windowModeNormal": {
+    "message": "Navadno okno (mogoče ga je povečati ali prikazati čez cel zaslon)"
+  },
+  "birdWaitingLabel": {
+    "message": "čaka na vaš odgovor"
+  },
+  "askingBadgeTitle": {
+    "message": "Čaka na vaš odgovor, da lahko nadaljuje"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "API ključ TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Neobvezno. TypeSafe je zunanja storitev umetne inteligence, ki oceni, ali se je agent ustavil, da bi počakal na vaš odgovor. S shranjenim ključem se zadnji odgovor ustavljene seje pošlje storitvi TypeSafe, ptice, za katere oceni, da čakajo na odgovor, pa dobijo »?«. Brez ključa »?« dobijo le ptice, ustavljene pri orodju za vprašanja."
+  },
+  "bubblePlanApproval": {
+    "message": "Odobriš načrt?"
+  },
+  "birdWatchingLabel": {
+    "message": "spremlja"
+  },
+  "watchingPeersTitle": {
+    "message": "Seje, ki še delajo"
+  },
+  "byokReplaceButton": {
+    "message": "Zamenjaj"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Ključa ni bilo mogoče shraniti. Poskusite znova."
+  },
+  "typeSafeSiteLink": {
+    "message": "Spletno mesto TypeSafe"
+  }
+}

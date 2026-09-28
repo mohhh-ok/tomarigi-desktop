@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Ülőrúd AI-ügynök munkamenetekhez. A madár testtartása mutatja az állapotot. Panel lebegő miniablakban. Nulla jog."
+  },
+  "birdWorkingLabel": {
+    "message": "csipeget"
+  },
+  "birdDozingLabel": {
+    "message": "szundikál"
+  },
+  "loadingLabel": {
+    "message": "Betöltés…"
+  },
+  "setupIntro": {
+    "message": "Válaszd ki azt a mappát, ahol a Claude Code / Codex tárolja a munkamenet-naplóit, és a madarak elkezdenek leszállni az ülőrúdra."
+  },
+  "setupPickPrefix": {
+    "message": "A választóban nyomd meg a "
+  },
+  "setupPickMiddle": {
+    "message": " gombot, majd írd be: "
+  },
+  "setupPickSuffix": {
+    "message": " (ez egy rejtett mappa)."
+  },
+  "setupButton": {
+    "message": "Ülőrúd felállítása"
+  },
+  "duplicateRootMessage": {
+    "message": "Ez a mappa már hozzá van adva"
+  },
+  "saveFailedMessage": {
+    "message": "A mentés sikertelen"
+  },
+  "reauthFailedMessage": {
+    "message": "A hozzáférés megújítása sikertelen"
+  },
+  "emptyNoSessions": {
+    "message": "Jelenleg nincs madár az ülőrúdon (utolsó 30 perc)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Új engedélyezés szükséges — csatlakozz újra lent, a Figyelt mappáknál"
+  },
+  "emptyNoEvents": {
+    "message": "Nincs aktivitás az elmúlt 30 percben"
+  },
+  "summonButton": {
+    "message": "Megnyitás mini ablakban (mindig legfelül)"
+  },
+  "pipNote": {
+    "message": "A madarak most a mini ablakban vannak."
+  },
+  "rootsHeading": {
+    "message": "Figyelt mappák"
+  },
+  "badgeNeedsReauth": {
+    "message": "Engedélyezés szükséges"
+  },
+  "badgeUnreadable": {
+    "message": "Nem olvasható"
+  },
+  "reauthButton": {
+    "message": "Újraengedélyezés"
+  },
+  "editLabelButton": {
+    "message": "Címke szerkesztése"
+  },
+  "removeButtonAria": {
+    "message": "Eltávolítás"
+  },
+  "addRootButton": {
+    "message": "Mappa hozzáadása"
+  },
+  "rootLabelPlaceholder": {
+    "message": "pl. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Némítás"
+  },
+  "unmuteButtonAria": {
+    "message": "Némítás feloldása"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$mp",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$p",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$ó $MINUTES$p",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Legutóbbi tevékenység"
+  },
+  "eventStartedLabel": {
+    "message": "elindult"
+  },
+  "eventDoneLabel": {
+    "message": "kész"
+  },
+  "eventClosedLabel": {
+    "message": "lezárva"
+  },
+  "eventMutedTitle": {
+    "message": "Némítva (nincs hang)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API-kulcs"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Kulcs elmentve"
+  },
+  "byokSaveButton": {
+    "message": "Mentés"
+  },
+  "byokDeleteButton": {
+    "message": "Törlés"
+  },
+  "byokTestButton": {
+    "message": "Kapcsolat tesztelése"
+  },
+  "byokTestingLabel": {
+    "message": "Tesztelés…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Sikeres kapcsolat"
+  },
+  "byokTestResultFailure": {
+    "message": "Sikertelen kapcsolat ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Először add meg és mentsd el az API-kulcsot"
+  },
+  "tabPerchLabel": {
+    "message": "Ülőrúd"
+  },
+  "tabGardenLabel": {
+    "message": "Kert"
+  },
+  "tabSettingsLabel": {
+    "message": "Beállítások"
+  },
+  "voiceEnableLabel": {
+    "message": "Felolvasás hanggal"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ a válaszodra vár",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API-kulcs"
+  },
+  "voiceVolumeLabel": {
+    "message": "Hangerő"
+  },
+  "soundEnableLabel": {
+    "message": "Értesítés hanggal"
+  },
+  "iconSetHeading": {
+    "message": "Ikonkészletek"
+  },
+  "iconSetBirds": {
+    "message": "Madarak"
+  },
+  "iconSetGnome": {
+    "message": "Manó"
+  },
+  "iconSetCat": {
+    "message": "Macska"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Béka"
+  },
+  "iconSetEmpty": {
+    "message": "Még nincs projekt"
+  },
+  "iconSetToggleAria": {
+    "message": "Ikonkészlet váltása"
+  },
+  "copyPathButton": {
+    "message": "Útvonal másolása"
+  },
+  "closeButtonAria": {
+    "message": "Bezárás"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API-kulcs"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Használat összefoglalókhoz"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API-kulcsok"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opcionális. A befejezett események hangos összefoglalóihoz és kapcsolati tesztekhez használatos. Mindkét kulcs mentésekor kiválasztható az összefoglalók szolgáltatója."
+  },
+  "rootDefaultBadge": {
+    "message": "Alapértelmezett"
+  },
+  "windowModeHeading": {
+    "message": "Ablak"
+  },
+  "windowModeFloating": {
+    "message": "Lebegő (mindig felül, a teljes képernyős appok felett is)"
+  },
+  "windowModeNormal": {
+    "message": "Normál ablak (teljes méretre nagyítható vagy teljes képernyős lehet)"
+  },
+  "birdWaitingLabel": {
+    "message": "a válaszodra vár"
+  },
+  "askingBadgeTitle": {
+    "message": "A válaszodra vár, hogy folytathassa"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API-kulcs"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Nem kötelező. A TypeSafe egy külső MI-szolgáltatás, amely megítéli, hogy egy ügynök azért állt-e meg, mert a válaszodra vár. Mentett kulccsal a megállt munkamenet utolsó válaszát elküldjük a TypeSafe-nek, és a válaszra várónak ítélt madarak „?” jelet kapnak. Kulcs nélkül csak a kérdezőeszköznél megállt madarak kapnak „?” jelet."
+  },
+  "bubblePlanApproval": {
+    "message": "Jóváhagyod a tervet?"
+  },
+  "birdWatchingLabel": {
+    "message": "figyel"
+  },
+  "watchingPeersTitle": {
+    "message": "Még dolgozó munkamenetek"
+  },
+  "byokReplaceButton": {
+    "message": "Csere"
+  },
+  "byokSaveFailedMessage": {
+    "message": "A kulcsot nem sikerült menteni. Próbáld újra."
+  },
+  "typeSafeSiteLink": {
+    "message": "A TypeSafe webhelye"
+  }
+}

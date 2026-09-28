@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Perxa per a les sessions dels teus agents d'IA. Els ocells mostren l'estat d'una ullada. Mini finestra flotant. Zero permisos."
+  },
+  "birdWorkingLabel": {
+    "message": "picotejant"
+  },
+  "birdDozingLabel": {
+    "message": "fent una becaina"
+  },
+  "loadingLabel": {
+    "message": "Carregant…"
+  },
+  "setupIntro": {
+    "message": "Tria la carpeta on Claude Code / Codex desa els registres de sessió, i els ocells començaran a posar-se a la perxa."
+  },
+  "setupPickPrefix": {
+    "message": "Al selector, prem "
+  },
+  "setupPickMiddle": {
+    "message": ", després escriu "
+  },
+  "setupPickSuffix": {
+    "message": " (és una carpeta oculta)."
+  },
+  "setupButton": {
+    "message": "Instal·la la perxa"
+  },
+  "duplicateRootMessage": {
+    "message": "Aquesta carpeta ja hi és"
+  },
+  "saveFailedMessage": {
+    "message": "No s'ha pogut desar"
+  },
+  "reauthFailedMessage": {
+    "message": "No s'ha pogut renovar l'accés"
+  },
+  "emptyNoSessions": {
+    "message": "Ara mateix no hi ha cap ocell a la perxa (últims 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Cal tornar a autoritzar — reconnecta't a sota, a Carpetes vigilades"
+  },
+  "emptyNoEvents": {
+    "message": "Sense activitat en els últims 30 min"
+  },
+  "summonButton": {
+    "message": "Obre en una minifinestra (sempre visible)"
+  },
+  "pipNote": {
+    "message": "Els ocells són ara a la minifinestra."
+  },
+  "rootsHeading": {
+    "message": "Carpetes vigilades"
+  },
+  "badgeNeedsReauth": {
+    "message": "Cal autorització"
+  },
+  "badgeUnreadable": {
+    "message": "No es pot llegir"
+  },
+  "reauthButton": {
+    "message": "Torna a autoritzar"
+  },
+  "editLabelButton": {
+    "message": "Edita l'etiqueta"
+  },
+  "removeButtonAria": {
+    "message": "Elimina"
+  },
+  "addRootButton": {
+    "message": "Afegeix carpeta"
+  },
+  "rootLabelPlaceholder": {
+    "message": "p. ex. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Silencia"
+  },
+  "unmuteButtonAria": {
+    "message": "Activa el so"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Activitat recent"
+  },
+  "eventStartedLabel": {
+    "message": "iniciada"
+  },
+  "eventDoneLabel": {
+    "message": "completada"
+  },
+  "eventClosedLabel": {
+    "message": "tancada"
+  },
+  "eventMutedTitle": {
+    "message": "Silenciat (sense so)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Clau API d'Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Clau desada"
+  },
+  "byokSaveButton": {
+    "message": "Desa"
+  },
+  "byokDeleteButton": {
+    "message": "Elimina"
+  },
+  "byokTestButton": {
+    "message": "Prova la connexió"
+  },
+  "byokTestingLabel": {
+    "message": "Provant…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Connexió correcta"
+  },
+  "byokTestResultFailure": {
+    "message": "Connexió fallida ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Introdueix i desa primer una clau API"
+  },
+  "tabPerchLabel": {
+    "message": "Perxa"
+  },
+  "tabGardenLabel": {
+    "message": "Jardí"
+  },
+  "tabSettingsLabel": {
+    "message": "Configuració"
+  },
+  "voiceEnableLabel": {
+    "message": "Llegeix amb veu"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ espera la teva resposta",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Clau API d'Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volum"
+  },
+  "soundEnableLabel": {
+    "message": "Avisa amb so"
+  },
+  "iconSetHeading": {
+    "message": "Conjunts d'icones"
+  },
+  "iconSetBirds": {
+    "message": "Ocells"
+  },
+  "iconSetGnome": {
+    "message": "Gnom"
+  },
+  "iconSetCat": {
+    "message": "Gat"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Granota"
+  },
+  "iconSetEmpty": {
+    "message": "Encara no hi ha projectes"
+  },
+  "iconSetToggleAria": {
+    "message": "Canvia el conjunt d'icones"
+  },
+  "copyPathButton": {
+    "message": "Copia el camí"
+  },
+  "closeButtonAria": {
+    "message": "Tanca"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Clau API d'OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Utilitza per als resums"
+  },
+  "aiApiKeysHeading": {
+    "message": "Claus API d’IA"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opcional. S'utilitza per als resums de veu dels esdeveniments completats i les proves de connexió. Si deses les dues claus, pots triar el proveïdor dels resums."
+  },
+  "rootDefaultBadge": {
+    "message": "Per defecte"
+  },
+  "windowModeHeading": {
+    "message": "Finestra"
+  },
+  "windowModeFloating": {
+    "message": "Flotant (sempre al davant, fins i tot sobre apps a pantalla completa)"
+  },
+  "windowModeNormal": {
+    "message": "Finestra normal (es pot maximitzar o posar a pantalla completa)"
+  },
+  "birdWaitingLabel": {
+    "message": "esperant la teva resposta"
+  },
+  "askingBadgeTitle": {
+    "message": "Espera la teva resposta per poder continuar"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Clau API de TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Opcional. TypeSafe és un servei extern d’IA que valora si un agent s’ha aturat per esperar la teva resposta. Amb una clau desada, la darrera resposta d’una sessió aturada s’envia a TypeSafe, i els ocells que es considera que esperen resposta mostren un «?». Sense clau, només els ocells aturats en una eina de pregunta mostren el «?»."
+  },
+  "bubblePlanApproval": {
+    "message": "Aproves el pla?"
+  },
+  "birdWatchingLabel": {
+    "message": "vigilant"
+  },
+  "watchingPeersTitle": {
+    "message": "Sessions que encara treballen"
+  },
+  "byokReplaceButton": {
+    "message": "Substitueix"
+  },
+  "byokSaveFailedMessage": {
+    "message": "No s’ha pogut desar la clau. Torna-ho a provar."
+  },
+  "typeSafeSiteLink": {
+    "message": "Lloc web de TypeSafe"
+  }
+}

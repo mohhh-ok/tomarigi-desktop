@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Bidýlko pro relace vašich AI agentů. Postoj ptáčků ukáže stav na první pohled. Panel v plovoucím mini okně. Nulová oprávnění."
+  },
+  "birdWorkingLabel": {
+    "message": "klove"
+  },
+  "birdDozingLabel": {
+    "message": "podřimuje"
+  },
+  "loadingLabel": {
+    "message": "Načítání…"
+  },
+  "setupIntro": {
+    "message": "Vyberte složku, kam Claude Code / Codex ukládá záznamy relací, a ptáci začnou usedat na bidýlko."
+  },
+  "setupPickPrefix": {
+    "message": "Ve výběru stiskněte "
+  },
+  "setupPickMiddle": {
+    "message": " a poté napište "
+  },
+  "setupPickSuffix": {
+    "message": " (jde o skrytou složku)."
+  },
+  "setupButton": {
+    "message": "Postavit bidýlko"
+  },
+  "duplicateRootMessage": {
+    "message": "Tato složka už je přidaná"
+  },
+  "saveFailedMessage": {
+    "message": "Uložení se nezdařilo"
+  },
+  "reauthFailedMessage": {
+    "message": "Obnovení přístupu se nezdařilo"
+  },
+  "emptyNoSessions": {
+    "message": "Na bidýlku teď nikdo není (posledních 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Vyžaduje nové oprávnění — znovu se připojte níže ve Sledovaných složkách"
+  },
+  "emptyNoEvents": {
+    "message": "Za posledních 30 min žádná aktivita"
+  },
+  "summonButton": {
+    "message": "Otevřít v mini okně (vždy navrchu)"
+  },
+  "pipNote": {
+    "message": "Ptáci jsou teď v mini okně."
+  },
+  "rootsHeading": {
+    "message": "Sledované složky"
+  },
+  "badgeNeedsReauth": {
+    "message": "Vyžaduje oprávnění"
+  },
+  "badgeUnreadable": {
+    "message": "Nelze číst"
+  },
+  "reauthButton": {
+    "message": "Znovu autorizovat"
+  },
+  "editLabelButton": {
+    "message": "Upravit popisek"
+  },
+  "removeButtonAria": {
+    "message": "Odebrat"
+  },
+  "addRootButton": {
+    "message": "Přidat složku"
+  },
+  "rootLabelPlaceholder": {
+    "message": "např. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Ztlumit"
+  },
+  "unmuteButtonAria": {
+    "message": "Zrušit ztlumení"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Nedávná aktivita"
+  },
+  "eventStartedLabel": {
+    "message": "zahájeno"
+  },
+  "eventDoneLabel": {
+    "message": "dokončeno"
+  },
+  "eventClosedLabel": {
+    "message": "uzavřeno"
+  },
+  "eventMutedTitle": {
+    "message": "Ztlumeno (bez zvuku)"
+  },
+  "byokApiKeyLabel": {
+    "message": "API klíč Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Klíč uložen"
+  },
+  "byokSaveButton": {
+    "message": "Uložit"
+  },
+  "byokDeleteButton": {
+    "message": "Odstranit"
+  },
+  "byokTestButton": {
+    "message": "Otestovat připojení"
+  },
+  "byokTestingLabel": {
+    "message": "Testuje se…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Připojení úspěšné"
+  },
+  "byokTestResultFailure": {
+    "message": "Připojení se nezdařilo ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Nejprve zadejte a uložte API klíč"
+  },
+  "tabPerchLabel": {
+    "message": "Bidýlko"
+  },
+  "tabGardenLabel": {
+    "message": "Zahrada"
+  },
+  "tabSettingsLabel": {
+    "message": "Nastavení"
+  },
+  "voiceEnableLabel": {
+    "message": "Číst nahlas"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ čeká na vaši odpověď",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "API klíč Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Hlasitost"
+  },
+  "soundEnableLabel": {
+    "message": "Upozornit zvukem"
+  },
+  "iconSetHeading": {
+    "message": "Sady ikon"
+  },
+  "iconSetBirds": {
+    "message": "Ptáci"
+  },
+  "iconSetGnome": {
+    "message": "Skřítek"
+  },
+  "iconSetCat": {
+    "message": "Kočka"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Žába"
+  },
+  "iconSetEmpty": {
+    "message": "Zatím žádné projekty"
+  },
+  "iconSetToggleAria": {
+    "message": "Přepnout sadu ikon"
+  },
+  "copyPathButton": {
+    "message": "Kopírovat cestu"
+  },
+  "closeButtonAria": {
+    "message": "Zavřít"
+  },
+  "openAiApiKeyHeading": {
+    "message": "API klíč OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Použít pro shrnutí"
+  },
+  "aiApiKeysHeading": {
+    "message": "API klíče AI"
+  },
+  "aiApiKeysDescription": {
+    "message": "Volitelné. Používá se pro hlasová shrnutí dokončených událostí a testy připojení. Pokud uložíte oba klíče, můžete zvolit poskytovatele shrnutí."
+  },
+  "rootDefaultBadge": {
+    "message": "Výchozí"
+  },
+  "windowModeHeading": {
+    "message": "Okno"
+  },
+  "windowModeFloating": {
+    "message": "Plovoucí (vždy navrchu, i nad aplikacemi na celé obrazovce)"
+  },
+  "windowModeNormal": {
+    "message": "Běžné okno (lze maximalizovat nebo zobrazit na celou obrazovku)"
+  },
+  "birdWaitingLabel": {
+    "message": "čeká na vaši odpověď"
+  },
+  "askingBadgeTitle": {
+    "message": "Čeká na vaši odpověď, aby mohl pokračovat"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "API klíč TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Volitelné. TypeSafe je externí služba AI, která posuzuje, zda se agent zastavil a čeká na vaši odpověď. S uloženým klíčem se poslední odpověď zastavené relace odešle do TypeSafe a ptáci, u kterých se usoudí, že čekají na odpověď, dostanou „?“. Bez klíče dostanou „?“ jen ptáci zastavení u nástroje pro dotaz."
+  },
+  "bubblePlanApproval": {
+    "message": "Schválit plán?"
+  },
+  "birdWatchingLabel": {
+    "message": "dohlíží"
+  },
+  "watchingPeersTitle": {
+    "message": "Relace, které ještě pracují"
+  },
+  "byokReplaceButton": {
+    "message": "Nahradit"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Klíč se nepodařilo uložit. Zkuste to znovu."
+  },
+  "typeSafeSiteLink": {
+    "message": "Web TypeSafe"
+  }
+}

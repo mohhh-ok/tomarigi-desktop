@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "جایگاهی برای نشست‌های عامل‌های هوش مصنوعی. آیکون‌های پرنده وضعیت را در یک نگاه نشان می‌دهند. پنل در پنجرهٔ کوچک شناور. بدون مجوز."
+  },
+  "birdWorkingLabel": {
+    "message": "در حال نوک زدن"
+  },
+  "birdDozingLabel": {
+    "message": "چرت می‌زند"
+  },
+  "loadingLabel": {
+    "message": "در حال بارگذاری…"
+  },
+  "setupIntro": {
+    "message": "پوشه‌ای را انتخاب کنید که Claude Code / Codex گزارش‌های نشست را در آن نگه می‌دارد، و پرنده‌ها روی جایگاه می‌نشینند."
+  },
+  "setupPickPrefix": {
+    "message": "در پنجرهٔ انتخاب، "
+  },
+  "setupPickMiddle": {
+    "message": " را بزنید، سپس "
+  },
+  "setupPickSuffix": {
+    "message": " را تایپ کنید (این یک پوشهٔ مخفی است)."
+  },
+  "setupButton": {
+    "message": "برپاسازی جایگاه"
+  },
+  "duplicateRootMessage": {
+    "message": "این پوشه از قبل اضافه شده است"
+  },
+  "saveFailedMessage": {
+    "message": "ذخیره ناموفق بود"
+  },
+  "reauthFailedMessage": {
+    "message": "تمدید دسترسی ناموفق بود"
+  },
+  "emptyNoSessions": {
+    "message": "در حال حاضر پرنده‌ای روی جایگاه نیست (۳۰ دقیقهٔ اخیر)"
+  },
+  "emptyNeedsReauth": {
+    "message": "نیاز به تأیید مجدد دارد — از بخش پوشه‌های زیرنظر در پایین دوباره وصل شوید"
+  },
+  "emptyNoEvents": {
+    "message": "فعالیتی در ۳۰ دقیقهٔ اخیر نیست"
+  },
+  "summonButton": {
+    "message": "باز کردن در پنجرهٔ کوچک (همیشه بالا)"
+  },
+  "pipNote": {
+    "message": "پرنده‌ها اکنون در پنجرهٔ کوچک هستند."
+  },
+  "rootsHeading": {
+    "message": "پوشه‌های زیرنظر"
+  },
+  "badgeNeedsReauth": {
+    "message": "نیاز به تأیید مجدد"
+  },
+  "badgeUnreadable": {
+    "message": "قابل خواندن نیست"
+  },
+  "reauthButton": {
+    "message": "تأیید مجدد"
+  },
+  "editLabelButton": {
+    "message": "ویرایش برچسب"
+  },
+  "removeButtonAria": {
+    "message": "حذف"
+  },
+  "addRootButton": {
+    "message": "افزودن پوشه"
+  },
+  "rootLabelPlaceholder": {
+    "message": "مثلاً claude2"
+  },
+  "muteButtonAria": {
+    "message": "بی‌صدا"
+  },
+  "unmuteButtonAria": {
+    "message": "فعال کردن صدا"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$ثانیه",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$دقیقه",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$ساعت $MINUTES$دقیقه",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "فعالیت اخیر"
+  },
+  "eventStartedLabel": {
+    "message": "شروع شد"
+  },
+  "eventDoneLabel": {
+    "message": "پایان یافت"
+  },
+  "eventClosedLabel": {
+    "message": "بسته شد"
+  },
+  "eventMutedTitle": {
+    "message": "بی‌صدا شد (بدون صدا)"
+  },
+  "byokApiKeyLabel": {
+    "message": "کلید API آنتروپیک"
+  },
+  "byokApiKeySetLabel": {
+    "message": "کلید ذخیره شد"
+  },
+  "byokSaveButton": {
+    "message": "ذخیره"
+  },
+  "byokDeleteButton": {
+    "message": "حذف"
+  },
+  "byokTestButton": {
+    "message": "آزمایش اتصال"
+  },
+  "byokTestingLabel": {
+    "message": "در حال آزمایش…"
+  },
+  "byokTestResultSuccess": {
+    "message": "اتصال موفق بود"
+  },
+  "byokTestResultFailure": {
+    "message": "اتصال ناموفق بود ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "ابتدا یک کلید API وارد و ذخیره کنید"
+  },
+  "tabPerchLabel": {
+    "message": "جایگاه"
+  },
+  "tabGardenLabel": {
+    "message": "باغ"
+  },
+  "tabSettingsLabel": {
+    "message": "تنظیمات"
+  },
+  "voiceEnableLabel": {
+    "message": "خواندن با صدا"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ منتظر پاسخ شماست",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "کلید API آنتروپیک"
+  },
+  "voiceVolumeLabel": {
+    "message": "میزان صدا"
+  },
+  "soundEnableLabel": {
+    "message": "اطلاع‌رسانی با صدا"
+  },
+  "iconSetHeading": {
+    "message": "مجموعه‌های آیکون"
+  },
+  "iconSetBirds": {
+    "message": "پرنده‌ها"
+  },
+  "iconSetGnome": {
+    "message": "کوتوله"
+  },
+  "iconSetCat": {
+    "message": "گربه"
+  },
+  "iconSetRobot": {
+    "message": "ربات"
+  },
+  "iconSetFrog": {
+    "message": "قورباغه"
+  },
+  "iconSetEmpty": {
+    "message": "هنوز پروژه‌ای نیست"
+  },
+  "iconSetToggleAria": {
+    "message": "تعویض مجموعه آیکون"
+  },
+  "copyPathButton": {
+    "message": "کپی مسیر"
+  },
+  "closeButtonAria": {
+    "message": "بستن"
+  },
+  "openAiApiKeyHeading": {
+    "message": "کلید API اوپن‌ای‌آی"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "استفاده برای خلاصه‌ها"
+  },
+  "aiApiKeysHeading": {
+    "message": "کلیدهای API هوش مصنوعی"
+  },
+  "aiApiKeysDescription": {
+    "message": "اختیاری است. برای خلاصه‌های صوتی رویدادهای تکمیل‌شده و آزمایش اتصال استفاده می‌شود. با ذخیره هر دو کلید می‌توانید ارائه‌دهنده خلاصه را انتخاب کنید."
+  },
+  "rootDefaultBadge": {
+    "message": "پیش‌فرض"
+  },
+  "windowModeHeading": {
+    "message": "پنجره"
+  },
+  "windowModeFloating": {
+    "message": "شناور (همیشه رو، حتی روی برنامه‌های تمام‌صفحه)"
+  },
+  "windowModeNormal": {
+    "message": "پنجره معمولی (قابل بزرگ‌کردن یا تمام‌صفحه)"
+  },
+  "birdWaitingLabel": {
+    "message": "منتظر پاسخ شماست"
+  },
+  "askingBadgeTitle": {
+    "message": "برای ادامه منتظر پاسخ شماست"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "کلید API ‏TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "اختیاری. TypeSafe یک سرویس هوش مصنوعی بیرونی است که تشخیص می‌دهد آیا عامل برای منتظر ماندن پاسخ شما متوقف شده است یا نه. با ذخیرهٔ کلید، آخرین پاسخ نشست متوقف‌شده به TypeSafe فرستاده می‌شود و پرندگانی که منتظر پاسخ تشخیص داده شوند «?» می‌گیرند. بدون کلید، فقط پرندگانی که روی ابزار پرسش متوقف شده‌اند «?» می‌گیرند."
+  },
+  "bubblePlanApproval": {
+    "message": "برنامه را تأیید می‌کنید؟"
+  },
+  "birdWatchingLabel": {
+    "message": "در حال مراقبت"
+  },
+  "watchingPeersTitle": {
+    "message": "نشست‌هایی که هنوز کار می‌کنند"
+  },
+  "byokReplaceButton": {
+    "message": "جایگزینی"
+  },
+  "byokSaveFailedMessage": {
+    "message": "ذخیرهٔ کلید ممکن نشد. دوباره تلاش کنید."
+  },
+  "typeSafeSiteLink": {
+    "message": "وب‌سایت TypeSafe"
+  }
+}

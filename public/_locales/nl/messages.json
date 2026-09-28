@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Zitstok voor je AI-agentsessies. Vogelpictogrammen tonen de status in één oogopslag. Panel als zwevend mini-venster. Nul rechten."
+  },
+  "birdWorkingLabel": {
+    "message": "aan het pikken"
+  },
+  "birdDozingLabel": {
+    "message": "dommelt"
+  },
+  "loadingLabel": {
+    "message": "Laden…"
+  },
+  "setupIntro": {
+    "message": "Kies de map waarin Claude Code / Codex sessielogboeken bewaart, en vogels beginnen op de zitstok te landen."
+  },
+  "setupPickPrefix": {
+    "message": "Druk in de kiezer op "
+  },
+  "setupPickMiddle": {
+    "message": " en typ dan "
+  },
+  "setupPickSuffix": {
+    "message": " (het is een verborgen map)."
+  },
+  "setupButton": {
+    "message": "Zitstok plaatsen"
+  },
+  "duplicateRootMessage": {
+    "message": "Die map staat al op de zitstok"
+  },
+  "saveFailedMessage": {
+    "message": "Opslaan mislukt"
+  },
+  "reauthFailedMessage": {
+    "message": "Vernieuwen van toegang mislukt"
+  },
+  "emptyNoSessions": {
+    "message": "Er zit nu geen vogel op de zitstok (laatste 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Opnieuw autoriseren nodig — verbind hieronder opnieuw via Bewaakte mappen"
+  },
+  "emptyNoEvents": {
+    "message": "Geen activiteit in de laatste 30 min"
+  },
+  "summonButton": {
+    "message": "Openen in mini-venster (altijd op voorgrond)"
+  },
+  "pipNote": {
+    "message": "De vogels zitten in het mini-venster."
+  },
+  "rootsHeading": {
+    "message": "Bewaakte mappen"
+  },
+  "badgeNeedsReauth": {
+    "message": "Autorisatie nodig"
+  },
+  "badgeUnreadable": {
+    "message": "Niet leesbaar"
+  },
+  "reauthButton": {
+    "message": "Opnieuw autoriseren"
+  },
+  "editLabelButton": {
+    "message": "Label bewerken"
+  },
+  "removeButtonAria": {
+    "message": "Verwijderen"
+  },
+  "addRootButton": {
+    "message": "Map toevoegen"
+  },
+  "rootLabelPlaceholder": {
+    "message": "bijv. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Dempen"
+  },
+  "unmuteButtonAria": {
+    "message": "Dempen opheffen"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$u $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Recente activiteit"
+  },
+  "eventStartedLabel": {
+    "message": "gestart"
+  },
+  "eventDoneLabel": {
+    "message": "klaar"
+  },
+  "eventClosedLabel": {
+    "message": "gesloten"
+  },
+  "eventMutedTitle": {
+    "message": "Gedempt (geen geluid)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API-sleutel"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Sleutel opgeslagen"
+  },
+  "byokSaveButton": {
+    "message": "Opslaan"
+  },
+  "byokDeleteButton": {
+    "message": "Verwijderen"
+  },
+  "byokTestButton": {
+    "message": "Verbinding testen"
+  },
+  "byokTestingLabel": {
+    "message": "Bezig met testen…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Verbinding geslaagd"
+  },
+  "byokTestResultFailure": {
+    "message": "Verbinding mislukt ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Voer eerst een API-sleutel in en sla die op"
+  },
+  "tabPerchLabel": {
+    "message": "Zitstok"
+  },
+  "tabGardenLabel": {
+    "message": "Tuin"
+  },
+  "tabSettingsLabel": {
+    "message": "Instellingen"
+  },
+  "voiceEnableLabel": {
+    "message": "Voorlezen met stem"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ wacht op je antwoord",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API-sleutel"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volume"
+  },
+  "soundEnableLabel": {
+    "message": "Waarschuwen met geluid"
+  },
+  "iconSetHeading": {
+    "message": "Pictogramsets"
+  },
+  "iconSetBirds": {
+    "message": "Vogels"
+  },
+  "iconSetGnome": {
+    "message": "Kabouter"
+  },
+  "iconSetCat": {
+    "message": "Kat"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Kikker"
+  },
+  "iconSetEmpty": {
+    "message": "Nog geen projecten"
+  },
+  "iconSetToggleAria": {
+    "message": "Pictogramset wisselen"
+  },
+  "copyPathButton": {
+    "message": "Pad kopiëren"
+  },
+  "closeButtonAria": {
+    "message": "Sluiten"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API-sleutel"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Gebruiken voor samenvattingen"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API-sleutels"
+  },
+  "aiApiKeysDescription": {
+    "message": "Optioneel. Gebruikt voor gesproken samenvattingen van voltooide gebeurtenissen en verbindingstests. Als beide sleutels zijn opgeslagen, kun je de provider voor samenvattingen kiezen."
+  },
+  "rootDefaultBadge": {
+    "message": "Standaard"
+  },
+  "windowModeHeading": {
+    "message": "Venster"
+  },
+  "windowModeFloating": {
+    "message": "Zwevend (altijd bovenaan, ook boven apps op volledig scherm)"
+  },
+  "windowModeNormal": {
+    "message": "Standaardvenster (kan worden gemaximaliseerd of op volledig scherm)"
+  },
+  "birdWaitingLabel": {
+    "message": "wacht op je antwoord"
+  },
+  "askingBadgeTitle": {
+    "message": "Wacht op je antwoord om verder te kunnen"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API-sleutel"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Optioneel. TypeSafe is een externe AI-dienst die beoordeelt of een agent is gestopt om op jouw antwoord te wachten. Met een opgeslagen sleutel wordt het laatste antwoord van een gestopte sessie naar TypeSafe gestuurd, en vogels die op antwoord wachten krijgen een ‘?’. Zonder sleutel krijgen alleen vogels die bij een vraagtool stilstaan het ‘?’."
+  },
+  "bubblePlanApproval": {
+    "message": "Plan goedkeuren?"
+  },
+  "birdWatchingLabel": {
+    "message": "kijkt mee"
+  },
+  "watchingPeersTitle": {
+    "message": "Sessies die nog werken"
+  },
+  "byokReplaceButton": {
+    "message": "Vervangen"
+  },
+  "byokSaveFailedMessage": {
+    "message": "De sleutel kon niet worden opgeslagen. Probeer het opnieuw."
+  },
+  "typeSafeSiteLink": {
+    "message": "Website van TypeSafe"
+  }
+}

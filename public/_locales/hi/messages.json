@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "आपके AI एजेंट सेशन के लिए बसेरा। चिड़ियों के आइकन एक नज़र में स्थिति दिखाते हैं। पैनल तैरती मिनी विंडो में। शून्य अनुमति।"
+  },
+  "birdWorkingLabel": {
+    "message": "चुग रही है"
+  },
+  "birdDozingLabel": {
+    "message": "ऊँघ रही है"
+  },
+  "loadingLabel": {
+    "message": "लोड हो रहा है…"
+  },
+  "setupIntro": {
+    "message": "वह फ़ोल्डर चुनें जहाँ Claude Code / Codex अपने सेशन लॉग रखता है, और चिड़ियाँ बसेरे पर आना शुरू कर देंगी।"
+  },
+  "setupPickPrefix": {
+    "message": "चयनकर्ता में, "
+  },
+  "setupPickMiddle": {
+    "message": " दबाएँ, फिर "
+  },
+  "setupPickSuffix": {
+    "message": " टाइप करें (यह एक छिपा हुआ फ़ोल्डर है)।"
+  },
+  "setupButton": {
+    "message": "बसेरा लगाएँ"
+  },
+  "duplicateRootMessage": {
+    "message": "वह फ़ोल्डर पहले से जोड़ा जा चुका है"
+  },
+  "saveFailedMessage": {
+    "message": "सेव नहीं हो सका"
+  },
+  "reauthFailedMessage": {
+    "message": "एक्सेस रिफ्रेश नहीं हो सका"
+  },
+  "emptyNoSessions": {
+    "message": "अभी बसेरे पर कोई चिड़िया नहीं है (पिछले 30 मिनट)"
+  },
+  "emptyNeedsReauth": {
+    "message": "फिर से अनुमति चाहिए — नीचे मॉनिटर किए गए फ़ोल्डर से दोबारा जुड़ें"
+  },
+  "emptyNoEvents": {
+    "message": "पिछले 30 मिनट में कोई गतिविधि नहीं"
+  },
+  "summonButton": {
+    "message": "मिनी विंडो में खोलें (हमेशा सबसे ऊपर)"
+  },
+  "pipNote": {
+    "message": "चिड़ियाँ अभी मिनी विंडो में हैं।"
+  },
+  "rootsHeading": {
+    "message": "मॉनिटर किए गए फ़ोल्डर"
+  },
+  "badgeNeedsReauth": {
+    "message": "फिर से अनुमति चाहिए"
+  },
+  "badgeUnreadable": {
+    "message": "पढ़ा नहीं जा सका"
+  },
+  "reauthButton": {
+    "message": "फिर से अनुमति दें"
+  },
+  "editLabelButton": {
+    "message": "लेबल संपादित करें"
+  },
+  "removeButtonAria": {
+    "message": "हटाएँ"
+  },
+  "addRootButton": {
+    "message": "फ़ोल्डर जोड़ें"
+  },
+  "rootLabelPlaceholder": {
+    "message": "जैसे: claude2"
+  },
+  "muteButtonAria": {
+    "message": "म्यूट करें"
+  },
+  "unmuteButtonAria": {
+    "message": "अनम्यूट करें"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$से",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$मि",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$घं $MINUTES$मि",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "हाल की गतिविधि"
+  },
+  "eventStartedLabel": {
+    "message": "शुरू हुआ"
+  },
+  "eventDoneLabel": {
+    "message": "पूर्ण"
+  },
+  "eventClosedLabel": {
+    "message": "बंद"
+  },
+  "eventMutedTitle": {
+    "message": "म्यूट (कोई ध्वनि नहीं)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API कुंजी"
+  },
+  "byokApiKeySetLabel": {
+    "message": "कुंजी सहेजी गई"
+  },
+  "byokSaveButton": {
+    "message": "सहेजें"
+  },
+  "byokDeleteButton": {
+    "message": "हटाएं"
+  },
+  "byokTestButton": {
+    "message": "कनेक्शन परखें"
+  },
+  "byokTestingLabel": {
+    "message": "परख की जा रही है…"
+  },
+  "byokTestResultSuccess": {
+    "message": "कनेक्शन सफल रहा"
+  },
+  "byokTestResultFailure": {
+    "message": "कनेक्शन विफल ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "पहले एक API कुंजी दर्ज करें और सहेजें"
+  },
+  "tabPerchLabel": {
+    "message": "बसेरा"
+  },
+  "tabGardenLabel": {
+    "message": "बगीचा"
+  },
+  "tabSettingsLabel": {
+    "message": "सेटिंग्स"
+  },
+  "voiceEnableLabel": {
+    "message": "आवाज़ से पढ़ें"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ आपके जवाब का इंतज़ार कर रहा है",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API कुंजी"
+  },
+  "voiceVolumeLabel": {
+    "message": "आवाज़ की मात्रा"
+  },
+  "soundEnableLabel": {
+    "message": "ध्वनि से सूचित करें"
+  },
+  "iconSetHeading": {
+    "message": "आइकन सेट"
+  },
+  "iconSetBirds": {
+    "message": "पक्षी"
+  },
+  "iconSetGnome": {
+    "message": "नोम"
+  },
+  "iconSetCat": {
+    "message": "बिल्ली"
+  },
+  "iconSetRobot": {
+    "message": "रोबोट"
+  },
+  "iconSetFrog": {
+    "message": "मेंढक"
+  },
+  "iconSetEmpty": {
+    "message": "अभी कोई प्रोजेक्ट नहीं है"
+  },
+  "iconSetToggleAria": {
+    "message": "आइकन सेट बदलें"
+  },
+  "copyPathButton": {
+    "message": "पाथ कॉपी करें"
+  },
+  "closeButtonAria": {
+    "message": "बंद करें"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API कुंजी"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "सारांश के लिए उपयोग करें"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API कुंजियाँ"
+  },
+  "aiApiKeysDescription": {
+    "message": "वैकल्पिक। पूर्ण हुए इवेंट के वॉइस सारांश और कनेक्शन टेस्ट के लिए उपयोग होता है। दोनों कुंजियाँ सहेजने पर सारांश के लिए प्रदाता चुन सकते हैं।"
+  },
+  "rootDefaultBadge": {
+    "message": "डिफ़ॉल्ट"
+  },
+  "windowModeHeading": {
+    "message": "विंडो"
+  },
+  "windowModeFloating": {
+    "message": "फ़्लोटिंग (हमेशा सबसे ऊपर, फ़ुल-स्क्रीन ऐप्स के ऊपर भी)"
+  },
+  "windowModeNormal": {
+    "message": "सामान्य विंडो (बड़ा या फ़ुल स्क्रीन किया जा सकता है)"
+  },
+  "birdWaitingLabel": {
+    "message": "आपके जवाब का इंतज़ार"
+  },
+  "askingBadgeTitle": {
+    "message": "आगे बढ़ने के लिए आपके जवाब का इंतज़ार है"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API कुंजी"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "वैकल्पिक। TypeSafe एक बाहरी AI सेवा है जो तय करती है कि कोई एजेंट आपके जवाब के इंतज़ार में रुका है या नहीं। कुंजी सहेजने पर रुके हुए सत्र का आख़िरी जवाब TypeSafe को भेजा जाता है, और जिन पक्षियों को जवाब का इंतज़ार करता माना जाता है उन पर “?” लगता है। कुंजी न होने पर केवल प्रश्न टूल पर रुके पक्षियों पर “?” लगता है।"
+  },
+  "bubblePlanApproval": {
+    "message": "क्या योजना मंज़ूर है?"
+  },
+  "birdWatchingLabel": {
+    "message": "निगरानी में"
+  },
+  "watchingPeersTitle": {
+    "message": "अभी काम कर रहे सत्र"
+  },
+  "byokReplaceButton": {
+    "message": "बदलें"
+  },
+  "byokSaveFailedMessage": {
+    "message": "कुंजी सहेजी नहीं जा सकी। कृपया फिर से कोशिश करें।"
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe की वेबसाइट"
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "AIエージェントのセッションを見守る止まり木。鳥の姿で状態を一目に。パネルを小窓に呼び出せる。権限ゼロ、常駐サーバー無し。"
+  },
+  "birdWorkingLabel": {
+    "message": "ついばみ中"
+  },
+  "birdDozingLabel": {
+    "message": "うたた寝"
+  },
+  "loadingLabel": {
+    "message": "読み込み中…"
+  },
+  "setupIntro": {
+    "message": "Claude Code または Codex の記録フォルダを選ぶと、止まり木に鳥がとまります。"
+  },
+  "setupPickPrefix": {
+    "message": "選択画面で "
+  },
+  "setupPickMiddle": {
+    "message": " を押し、 "
+  },
+  "setupPickSuffix": {
+    "message": " と入力してください(隠しフォルダのため)。"
+  },
+  "setupButton": {
+    "message": "止まり木を設置する"
+  },
+  "duplicateRootMessage": {
+    "message": "そのフォルダはすでに登録されています"
+  },
+  "saveFailedMessage": {
+    "message": "保存に失敗しました"
+  },
+  "reauthFailedMessage": {
+    "message": "アクセス許可の更新に失敗しました"
+  },
+  "emptyNoSessions": {
+    "message": "いまは誰もとまっていません(直近30分のセッションが対象)"
+  },
+  "emptyNeedsReauth": {
+    "message": "再許可が必要です(下の監視フォルダから再許可してください)"
+  },
+  "emptyNoEvents": {
+    "message": "直近30分の動きはありません"
+  },
+  "summonButton": {
+    "message": "小窓に呼ぶ(常時最前面)"
+  },
+  "pipNote": {
+    "message": "鳥たちは小窓に出張中です。"
+  },
+  "rootsHeading": {
+    "message": "監視フォルダ"
+  },
+  "badgeNeedsReauth": {
+    "message": "要再許可"
+  },
+  "badgeUnreadable": {
+    "message": "読めません"
+  },
+  "reauthButton": {
+    "message": "再許可"
+  },
+  "editLabelButton": {
+    "message": "ラベル編集"
+  },
+  "removeButtonAria": {
+    "message": "削除"
+  },
+  "addRootButton": {
+    "message": "フォルダを追加"
+  },
+  "rootLabelPlaceholder": {
+    "message": "例: claude2"
+  },
+  "muteButtonAria": {
+    "message": "ミュート"
+  },
+  "unmuteButtonAria": {
+    "message": "ミュート解除"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$秒",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$分",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$時間$MINUTES$分",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "最近の動き"
+  },
+  "eventStartedLabel": {
+    "message": "開始"
+  },
+  "eventDoneLabel": {
+    "message": "完了"
+  },
+  "eventClosedLabel": {
+    "message": "終了"
+  },
+  "eventMutedTitle": {
+    "message": "ミュート(鳴りません)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic APIキー"
+  },
+  "byokApiKeySetLabel": {
+    "message": "保存済み"
+  },
+  "byokSaveButton": {
+    "message": "保存"
+  },
+  "byokDeleteButton": {
+    "message": "削除"
+  },
+  "byokTestButton": {
+    "message": "接続テスト"
+  },
+  "byokTestingLabel": {
+    "message": "テスト中…"
+  },
+  "byokTestResultSuccess": {
+    "message": "接続に成功しました"
+  },
+  "byokTestResultFailure": {
+    "message": "接続に失敗しました($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "先にAPIキーを入力して保存してください"
+  },
+  "tabPerchLabel": {
+    "message": "止まり木"
+  },
+  "tabGardenLabel": {
+    "message": "にわ"
+  },
+  "tabSettingsLabel": {
+    "message": "設定"
+  },
+  "voiceEnableLabel": {
+    "message": "声で読み上げる"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ が返事待ちです",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic APIキー"
+  },
+  "voiceVolumeLabel": {
+    "message": "音量"
+  },
+  "soundEnableLabel": {
+    "message": "音で知らせる"
+  },
+  "iconSetHeading": {
+    "message": "アイコンセット"
+  },
+  "iconSetBirds": {
+    "message": "鳥"
+  },
+  "iconSetGnome": {
+    "message": "小人"
+  },
+  "iconSetCat": {
+    "message": "ネコ"
+  },
+  "iconSetRobot": {
+    "message": "ロボット"
+  },
+  "iconSetFrog": {
+    "message": "カエル"
+  },
+  "iconSetEmpty": {
+    "message": "プロジェクトがまだありません"
+  },
+  "iconSetToggleAria": {
+    "message": "アイコンセットを切り替える"
+  },
+  "copyPathButton": {
+    "message": "パスをコピー"
+  },
+  "closeButtonAria": {
+    "message": "閉じる"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI APIキー"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "要約に使用"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI APIキー"
+  },
+  "aiApiKeysDescription": {
+    "message": "任意設定です。完了イベントの読み上げ要約と接続テストに使います。両方のキーを保存した場合は、要約に使うプロバイダーを選べます。"
+  },
+  "rootDefaultBadge": {
+    "message": "既定"
+  },
+  "windowModeHeading": {
+    "message": "窓の表示"
+  },
+  "windowModeFloating": {
+    "message": "浮遊窓（常に最前面・全画面のアプリの上にも出る）"
+  },
+  "windowModeNormal": {
+    "message": "通常の窓（最大化・フルスクリーンができる）"
+  },
+  "birdWaitingLabel": {
+    "message": "返事待ち"
+  },
+  "askingBadgeTitle": {
+    "message": "あなたの返事を待って止まっています"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe APIキー"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "任意設定です。TypeSafe は、エージェントがあなたの返事を待って止まっているかを判定する外部の AI サービスです。キーを保存すると、止まったセッションの最後の応答文を TypeSafe に送り、返事待ちと判定された鳥に「?」を付けます。キーが無くても、質問ツールで止まっている鳥には「?」が付きます。"
+  },
+  "bubblePlanApproval": {
+    "message": "計画を承認しますか？"
+  },
+  "birdWatchingLabel": {
+    "message": "見守り中"
+  },
+  "watchingPeersTitle": {
+    "message": "動いている相手"
+  },
+  "byokReplaceButton": {
+    "message": "差し替え"
+  },
+  "byokSaveFailedMessage": {
+    "message": "キーを保存できませんでした。もう一度お試しください。"
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe の公式サイト"
+  }
+}

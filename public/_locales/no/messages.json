@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Vagle som vokter dine AI-agentøkter. Fugleikoner viser status med ett blikk. Panel i flytende minivindu. Null tillatelser."
+  },
+  "birdWorkingLabel": {
+    "message": "hakker"
+  },
+  "birdDozingLabel": {
+    "message": "blunder"
+  },
+  "loadingLabel": {
+    "message": "Laster inn…"
+  },
+  "setupIntro": {
+    "message": "Velg mappen der Claude Code / Codex lagrer øktloggene sine, så begynner fuglene å lande på vaglen."
+  },
+  "setupPickPrefix": {
+    "message": "Trykk "
+  },
+  "setupPickMiddle": {
+    "message": " i velgeren, og skriv deretter "
+  },
+  "setupPickSuffix": {
+    "message": " (det er en skjult mappe)."
+  },
+  "setupButton": {
+    "message": "Sett opp vaglen"
+  },
+  "duplicateRootMessage": {
+    "message": "Den mappen er allerede lagt til"
+  },
+  "saveFailedMessage": {
+    "message": "Kunne ikke lagre"
+  },
+  "reauthFailedMessage": {
+    "message": "Kunne ikke fornye tilgangen"
+  },
+  "emptyNoSessions": {
+    "message": "Ingen fugler på vaglen akkurat nå (siste 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Krever ny autorisering — koble til på nytt under Overvåkede mapper nedenfor"
+  },
+  "emptyNoEvents": {
+    "message": "Ingen aktivitet siste 30 min"
+  },
+  "summonButton": {
+    "message": "Åpne i miniatyrvindu (alltid øverst)"
+  },
+  "pipNote": {
+    "message": "Fuglene er ute i miniatyrvinduet."
+  },
+  "rootsHeading": {
+    "message": "Overvåkede mapper"
+  },
+  "badgeNeedsReauth": {
+    "message": "Krever ny autorisering"
+  },
+  "badgeUnreadable": {
+    "message": "Kan ikke leses"
+  },
+  "reauthButton": {
+    "message": "Autoriser på nytt"
+  },
+  "editLabelButton": {
+    "message": "Rediger etikett"
+  },
+  "removeButtonAria": {
+    "message": "Fjern"
+  },
+  "addRootButton": {
+    "message": "Legg til mappe"
+  },
+  "rootLabelPlaceholder": {
+    "message": "f.eks. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Demp lyd"
+  },
+  "unmuteButtonAria": {
+    "message": "Slå på lyd"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$t $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Nylig aktivitet"
+  },
+  "eventStartedLabel": {
+    "message": "startet"
+  },
+  "eventDoneLabel": {
+    "message": "ferdig"
+  },
+  "eventClosedLabel": {
+    "message": "lukket"
+  },
+  "eventMutedTitle": {
+    "message": "Dempet (ingen lyd)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API-nøkkel"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Nøkkel lagret"
+  },
+  "byokSaveButton": {
+    "message": "Lagre"
+  },
+  "byokDeleteButton": {
+    "message": "Slett"
+  },
+  "byokTestButton": {
+    "message": "Test tilkobling"
+  },
+  "byokTestingLabel": {
+    "message": "Tester…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Tilkobling vellykket"
+  },
+  "byokTestResultFailure": {
+    "message": "Tilkobling mislyktes ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Skriv inn og lagre en API-nøkkel først"
+  },
+  "tabPerchLabel": {
+    "message": "Vagle"
+  },
+  "tabGardenLabel": {
+    "message": "Hage"
+  },
+  "tabSettingsLabel": {
+    "message": "Innstillinger"
+  },
+  "voiceEnableLabel": {
+    "message": "Les opp med stemme"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ venter på svaret ditt",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API-nøkkel"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volum"
+  },
+  "soundEnableLabel": {
+    "message": "Varsle med lyd"
+  },
+  "iconSetHeading": {
+    "message": "Ikonsett"
+  },
+  "iconSetBirds": {
+    "message": "Fugler"
+  },
+  "iconSetGnome": {
+    "message": "Nisse"
+  },
+  "iconSetCat": {
+    "message": "Katt"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Frosk"
+  },
+  "iconSetEmpty": {
+    "message": "Ingen prosjekter ennå"
+  },
+  "iconSetToggleAria": {
+    "message": "Bytt ikonsett"
+  },
+  "copyPathButton": {
+    "message": "Kopier bane"
+  },
+  "closeButtonAria": {
+    "message": "Lukk"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API-nøkkel"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Bruk for sammendrag"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API-nøkler"
+  },
+  "aiApiKeysDescription": {
+    "message": "Valgfritt. Brukes til oppleste sammendrag av fullførte hendelser og tilkoblingstester. Hvis begge nøklene lagres, kan du velge leverandør for sammendrag."
+  },
+  "rootDefaultBadge": {
+    "message": "Standard"
+  },
+  "windowModeHeading": {
+    "message": "Vindu"
+  },
+  "windowModeFloating": {
+    "message": "Flytende (alltid øverst, også over apper i fullskjerm)"
+  },
+  "windowModeNormal": {
+    "message": "Vanlig vindu (kan maksimeres eller vises i fullskjerm)"
+  },
+  "birdWaitingLabel": {
+    "message": "venter på svaret ditt"
+  },
+  "askingBadgeTitle": {
+    "message": "Venter på svaret ditt for å kunne fortsette"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API-nøkkel"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Valgfritt. TypeSafe er en ekstern KI-tjeneste som vurderer om en agent har stoppet for å vente på svaret ditt. Med en lagret nøkkel sendes det siste svaret fra en stoppet økt til TypeSafe, og fugler som vurderes å vente på svar får et «?». Uten nøkkel får bare fugler som har stoppet ved et spørreverktøy «?»."
+  },
+  "bubblePlanApproval": {
+    "message": "Godkjenne planen?"
+  },
+  "birdWatchingLabel": {
+    "message": "holder øye"
+  },
+  "watchingPeersTitle": {
+    "message": "Økter som fortsatt arbeider"
+  },
+  "byokReplaceButton": {
+    "message": "Erstatt"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Kunne ikke lagre nøkkelen. Prøv igjen."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafes nettsted"
+  }
+}

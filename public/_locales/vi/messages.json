@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Sào canh chừng các phiên tác nhân AI. Biểu tượng chim cho biết trạng thái ngay. Gọi bảng ra cửa sổ mini nổi. Không quyền."
+  },
+  "birdWorkingLabel": {
+    "message": "đang mổ"
+  },
+  "birdDozingLabel": {
+    "message": "đang ngủ gật"
+  },
+  "loadingLabel": {
+    "message": "Đang tải…"
+  },
+  "setupIntro": {
+    "message": "Chọn thư mục nơi Claude Code / Codex lưu nhật ký phiên, và chim sẽ bắt đầu đậu lên cây sào."
+  },
+  "setupPickPrefix": {
+    "message": "Trong hộp chọn, nhấn "
+  },
+  "setupPickMiddle": {
+    "message": ", sau đó nhập "
+  },
+  "setupPickSuffix": {
+    "message": " (đây là thư mục ẩn)."
+  },
+  "setupButton": {
+    "message": "Dựng cây sào"
+  },
+  "duplicateRootMessage": {
+    "message": "Thư mục đó đã được thêm rồi"
+  },
+  "saveFailedMessage": {
+    "message": "Không lưu được"
+  },
+  "reauthFailedMessage": {
+    "message": "Không làm mới được quyền truy cập"
+  },
+  "emptyNoSessions": {
+    "message": "Hiện chưa có chim nào trên sào (30 phút gần nhất)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Cần cấp quyền lại — kết nối lại từ Thư mục theo dõi bên dưới"
+  },
+  "emptyNoEvents": {
+    "message": "Không có hoạt động trong 30 phút qua"
+  },
+  "summonButton": {
+    "message": "Mở cửa sổ mini (luôn ở trên cùng)"
+  },
+  "pipNote": {
+    "message": "Đàn chim hiện đang ở cửa sổ mini."
+  },
+  "rootsHeading": {
+    "message": "Thư mục theo dõi"
+  },
+  "badgeNeedsReauth": {
+    "message": "Cần cấp quyền lại"
+  },
+  "badgeUnreadable": {
+    "message": "Không đọc được"
+  },
+  "reauthButton": {
+    "message": "Cấp quyền lại"
+  },
+  "editLabelButton": {
+    "message": "Sửa nhãn"
+  },
+  "removeButtonAria": {
+    "message": "Xóa"
+  },
+  "addRootButton": {
+    "message": "Thêm thư mục"
+  },
+  "rootLabelPlaceholder": {
+    "message": "vd: claude2"
+  },
+  "muteButtonAria": {
+    "message": "Tắt tiếng"
+  },
+  "unmuteButtonAria": {
+    "message": "Bật tiếng"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$p",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$g $MINUTES$p",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Hoạt động gần đây"
+  },
+  "eventStartedLabel": {
+    "message": "đã bắt đầu"
+  },
+  "eventDoneLabel": {
+    "message": "đã xong"
+  },
+  "eventClosedLabel": {
+    "message": "đã đóng"
+  },
+  "eventMutedTitle": {
+    "message": "Đã tắt tiếng (không có âm thanh)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Khóa API Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Đã lưu khóa"
+  },
+  "byokSaveButton": {
+    "message": "Lưu"
+  },
+  "byokDeleteButton": {
+    "message": "Xóa"
+  },
+  "byokTestButton": {
+    "message": "Kiểm tra kết nối"
+  },
+  "byokTestingLabel": {
+    "message": "Đang kiểm tra…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Kết nối thành công"
+  },
+  "byokTestResultFailure": {
+    "message": "Kết nối thất bại ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Vui lòng nhập và lưu khóa API trước"
+  },
+  "tabPerchLabel": {
+    "message": "Cây sào"
+  },
+  "tabGardenLabel": {
+    "message": "Khu vườn"
+  },
+  "tabSettingsLabel": {
+    "message": "Cài đặt"
+  },
+  "voiceEnableLabel": {
+    "message": "Đọc bằng giọng nói"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ đang chờ bạn trả lời",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Khóa API Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Âm lượng"
+  },
+  "soundEnableLabel": {
+    "message": "Thông báo bằng âm thanh"
+  },
+  "iconSetHeading": {
+    "message": "Bộ biểu tượng"
+  },
+  "iconSetBirds": {
+    "message": "Chim"
+  },
+  "iconSetGnome": {
+    "message": "Yêu tinh"
+  },
+  "iconSetCat": {
+    "message": "Mèo"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Ếch"
+  },
+  "iconSetEmpty": {
+    "message": "Chưa có dự án nào"
+  },
+  "iconSetToggleAria": {
+    "message": "Chuyển bộ biểu tượng"
+  },
+  "copyPathButton": {
+    "message": "Sao chép đường dẫn"
+  },
+  "closeButtonAria": {
+    "message": "Đóng"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Khóa API OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Dùng cho bản tóm tắt"
+  },
+  "aiApiKeysHeading": {
+    "message": "Khóa API AI"
+  },
+  "aiApiKeysDescription": {
+    "message": "Không bắt buộc. Dùng cho bản tóm tắt bằng giọng nói của sự kiện đã hoàn tất và kiểm tra kết nối. Nếu lưu cả hai khóa, bạn có thể chọn nhà cung cấp cho phần tóm tắt."
+  },
+  "rootDefaultBadge": {
+    "message": "Mặc định"
+  },
+  "windowModeHeading": {
+    "message": "Cửa sổ"
+  },
+  "windowModeFloating": {
+    "message": "Nổi (luôn ở trên cùng, kể cả trên ứng dụng toàn màn hình)"
+  },
+  "windowModeNormal": {
+    "message": "Cửa sổ thường (có thể phóng to hoặc toàn màn hình)"
+  },
+  "birdWaitingLabel": {
+    "message": "đang chờ bạn trả lời"
+  },
+  "askingBadgeTitle": {
+    "message": "Đang chờ bạn trả lời để tiếp tục"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Khóa API TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Không bắt buộc. TypeSafe là một dịch vụ AI bên ngoài, đánh giá xem một tác tử có đang dừng lại để chờ bạn trả lời không. Khi đã lưu khóa, câu trả lời cuối của phiên đã dừng được gửi tới TypeSafe, và những chú chim được đánh giá là đang chờ trả lời sẽ có dấu “?”. Không có khóa thì chỉ những chú chim dừng ở công cụ đặt câu hỏi mới có “?”."
+  },
+  "bubblePlanApproval": {
+    "message": "Duyệt kế hoạch này?"
+  },
+  "birdWatchingLabel": {
+    "message": "đang theo dõi"
+  },
+  "watchingPeersTitle": {
+    "message": "Phiên vẫn đang làm việc"
+  },
+  "byokReplaceButton": {
+    "message": "Thay thế"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Không lưu được khóa. Vui lòng thử lại."
+  },
+  "typeSafeSiteLink": {
+    "message": "Trang web TypeSafe"
+  }
+}

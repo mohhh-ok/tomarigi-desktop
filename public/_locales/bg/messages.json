@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Кацалка за AI сесиите ви. Позата на птицата показва състоянието с един поглед. Плаващ мини прозорец. Нула разрешения."
+  },
+  "birdWorkingLabel": {
+    "message": "кълве"
+  },
+  "birdDozingLabel": {
+    "message": "дреме"
+  },
+  "loadingLabel": {
+    "message": "Зареждане…"
+  },
+  "setupIntro": {
+    "message": "Изберете папката, в която Claude Code / Codex съхранява дневниците на сесиите, и птиците ще започнат да кацат на кацалката."
+  },
+  "setupPickPrefix": {
+    "message": "В прозореца за избор натиснете "
+  },
+  "setupPickMiddle": {
+    "message": ", после въведете "
+  },
+  "setupPickSuffix": {
+    "message": " (това е скрита папка)."
+  },
+  "setupButton": {
+    "message": "Постави кацалката"
+  },
+  "duplicateRootMessage": {
+    "message": "Тази папка вече е добавена"
+  },
+  "saveFailedMessage": {
+    "message": "Записването не бе успешно"
+  },
+  "reauthFailedMessage": {
+    "message": "Подновяването на достъпа не бе успешно"
+  },
+  "emptyNoSessions": {
+    "message": "В момента няма птици на кацалката (последните 30 мин)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Изисква се повторно упълномощаване — свържете се отново от Наблюдавани папки по-долу"
+  },
+  "emptyNoEvents": {
+    "message": "Няма активност през последните 30 мин"
+  },
+  "summonButton": {
+    "message": "Отвори в мини прозорец (винаги отгоре)"
+  },
+  "pipNote": {
+    "message": "Птиците сега са в мини прозореца."
+  },
+  "rootsHeading": {
+    "message": "Наблюдавани папки"
+  },
+  "badgeNeedsReauth": {
+    "message": "Изисква упълномощаване"
+  },
+  "badgeUnreadable": {
+    "message": "Не може да се прочете"
+  },
+  "reauthButton": {
+    "message": "Упълномощи отново"
+  },
+  "editLabelButton": {
+    "message": "Редактирай етикета"
+  },
+  "removeButtonAria": {
+    "message": "Премахни"
+  },
+  "addRootButton": {
+    "message": "Добави папка"
+  },
+  "rootLabelPlaceholder": {
+    "message": "напр. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Заглуши"
+  },
+  "unmuteButtonAria": {
+    "message": "Отмени заглушаването"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$с",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$мин",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$ч $MINUTES$мин",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Скорошна активност"
+  },
+  "eventStartedLabel": {
+    "message": "започнато"
+  },
+  "eventDoneLabel": {
+    "message": "завършено"
+  },
+  "eventClosedLabel": {
+    "message": "затворено"
+  },
+  "eventMutedTitle": {
+    "message": "Заглушено (без звук)"
+  },
+  "byokApiKeyLabel": {
+    "message": "API ключ на Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Ключът е запазен"
+  },
+  "byokSaveButton": {
+    "message": "Запази"
+  },
+  "byokDeleteButton": {
+    "message": "Изтрий"
+  },
+  "byokTestButton": {
+    "message": "Тествай връзката"
+  },
+  "byokTestingLabel": {
+    "message": "Тестване…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Връзката е успешна"
+  },
+  "byokTestResultFailure": {
+    "message": "Връзката е неуспешна ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Първо въведете и запазете API ключ"
+  },
+  "tabPerchLabel": {
+    "message": "Кацалка"
+  },
+  "tabGardenLabel": {
+    "message": "Градина"
+  },
+  "tabSettingsLabel": {
+    "message": "Настройки"
+  },
+  "voiceEnableLabel": {
+    "message": "Прочитане на глас"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ чака вашия отговор",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "API ключ на Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Сила на звука"
+  },
+  "soundEnableLabel": {
+    "message": "Известяване със звук"
+  },
+  "iconSetHeading": {
+    "message": "Набори икони"
+  },
+  "iconSetBirds": {
+    "message": "Птици"
+  },
+  "iconSetGnome": {
+    "message": "Гном"
+  },
+  "iconSetCat": {
+    "message": "Котка"
+  },
+  "iconSetRobot": {
+    "message": "Робот"
+  },
+  "iconSetFrog": {
+    "message": "Жаба"
+  },
+  "iconSetEmpty": {
+    "message": "Все още няма проекти"
+  },
+  "iconSetToggleAria": {
+    "message": "Смяна на набор икони"
+  },
+  "copyPathButton": {
+    "message": "Копирай пътя"
+  },
+  "closeButtonAria": {
+    "message": "Затваряне"
+  },
+  "openAiApiKeyHeading": {
+    "message": "API ключ на OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Използвай за обобщения"
+  },
+  "aiApiKeysHeading": {
+    "message": "API ключове за ИИ"
+  },
+  "aiApiKeysDescription": {
+    "message": "По избор. Използва се за гласови обобщения на завършени събития и тестове на връзката. Ако запазите и двата ключа, можете да изберете доставчик за обобщенията."
+  },
+  "rootDefaultBadge": {
+    "message": "По подразбиране"
+  },
+  "windowModeHeading": {
+    "message": "Прозорец"
+  },
+  "windowModeFloating": {
+    "message": "Плаващ (винаги отгоре, дори над приложения на цял екран)"
+  },
+  "windowModeNormal": {
+    "message": "Обикновен прозорец (може да се увеличи или на цял екран)"
+  },
+  "birdWaitingLabel": {
+    "message": "чака вашия отговор"
+  },
+  "askingBadgeTitle": {
+    "message": "Чака вашия отговор, за да продължи"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "API ключ на TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "По избор. TypeSafe е външна услуга с ИИ, която преценява дали агент е спрял, за да чака вашия отговор. Със запазен ключ последният отговор на спряла сесия се изпраща до TypeSafe и птиците, за които е преценено, че чакат отговор, получават „?“. Без ключ „?“ получават само птиците, спрели на инструмент за въпрос."
+  },
+  "bubblePlanApproval": {
+    "message": "Одобряваш ли плана?"
+  },
+  "birdWatchingLabel": {
+    "message": "наблюдава"
+  },
+  "watchingPeersTitle": {
+    "message": "Сесии, които още работят"
+  },
+  "byokReplaceButton": {
+    "message": "Замяна"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Ключът не можа да бъде запазен. Опитайте отново."
+  },
+  "typeSafeSiteLink": {
+    "message": "Сайтът на TypeSafe"
+  }
+}

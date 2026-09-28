@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Grzęda dla sesji Twoich agentów AI. Ikony ptaków od razu pokazują stan. Panel jako pływające mini-okno. Zero uprawnień."
+  },
+  "birdWorkingLabel": {
+    "message": "dziobie"
+  },
+  "birdDozingLabel": {
+    "message": "drzemie"
+  },
+  "loadingLabel": {
+    "message": "Wczytywanie…"
+  },
+  "setupIntro": {
+    "message": "Wybierz folder, w którym Claude Code / Codex przechowuje dzienniki sesji, a ptaki zaczną siadać na grzędzie."
+  },
+  "setupPickPrefix": {
+    "message": "W oknie wyboru naciśnij "
+  },
+  "setupPickMiddle": {
+    "message": ", a następnie wpisz "
+  },
+  "setupPickSuffix": {
+    "message": " (to ukryty folder)."
+  },
+  "setupButton": {
+    "message": "Ustaw grzędę"
+  },
+  "duplicateRootMessage": {
+    "message": "Ten folder jest już na grzędzie"
+  },
+  "saveFailedMessage": {
+    "message": "Nie udało się zapisać"
+  },
+  "reauthFailedMessage": {
+    "message": "Nie udało się odnowić dostępu"
+  },
+  "emptyNoSessions": {
+    "message": "Na grzędzie nikogo teraz nie ma (ostatnie 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Wymaga ponownej autoryzacji — połącz ponownie w sekcji Obserwowane foldery poniżej"
+  },
+  "emptyNoEvents": {
+    "message": "Brak aktywności w ostatnich 30 min"
+  },
+  "summonButton": {
+    "message": "Otwórz w mini-oknie (zawsze na wierzchu)"
+  },
+  "pipNote": {
+    "message": "Ptaki są teraz w mini-oknie."
+  },
+  "rootsHeading": {
+    "message": "Obserwowane foldery"
+  },
+  "badgeNeedsReauth": {
+    "message": "Wymaga autoryzacji"
+  },
+  "badgeUnreadable": {
+    "message": "Nie można odczytać"
+  },
+  "reauthButton": {
+    "message": "Autoryzuj ponownie"
+  },
+  "editLabelButton": {
+    "message": "Edytuj etykietę"
+  },
+  "removeButtonAria": {
+    "message": "Usuń"
+  },
+  "addRootButton": {
+    "message": "Dodaj folder"
+  },
+  "rootLabelPlaceholder": {
+    "message": "np. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Wycisz"
+  },
+  "unmuteButtonAria": {
+    "message": "Wyłącz wyciszenie"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$godz $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Ostatnia aktywność"
+  },
+  "eventStartedLabel": {
+    "message": "rozpoczęto"
+  },
+  "eventDoneLabel": {
+    "message": "zakończono"
+  },
+  "eventClosedLabel": {
+    "message": "zamknięto"
+  },
+  "eventMutedTitle": {
+    "message": "Wyciszone (bez dźwięku)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Klucz API Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Klucz zapisany"
+  },
+  "byokSaveButton": {
+    "message": "Zapisz"
+  },
+  "byokDeleteButton": {
+    "message": "Usuń"
+  },
+  "byokTestButton": {
+    "message": "Testuj połączenie"
+  },
+  "byokTestingLabel": {
+    "message": "Testowanie…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Połączenie udane"
+  },
+  "byokTestResultFailure": {
+    "message": "Połączenie nieudane ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Najpierw wprowadź i zapisz klucz API"
+  },
+  "tabPerchLabel": {
+    "message": "Grzęda"
+  },
+  "tabGardenLabel": {
+    "message": "Ogród"
+  },
+  "tabSettingsLabel": {
+    "message": "Ustawienia"
+  },
+  "voiceEnableLabel": {
+    "message": "Czytaj na głos"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ czeka na twoją odpowiedź",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Klucz API Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Głośność"
+  },
+  "soundEnableLabel": {
+    "message": "Powiadamiaj dźwiękiem"
+  },
+  "iconSetHeading": {
+    "message": "Zestawy ikon"
+  },
+  "iconSetBirds": {
+    "message": "Ptaki"
+  },
+  "iconSetGnome": {
+    "message": "Krasnal"
+  },
+  "iconSetCat": {
+    "message": "Kot"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Żaba"
+  },
+  "iconSetEmpty": {
+    "message": "Brak projektów"
+  },
+  "iconSetToggleAria": {
+    "message": "Przełącz zestaw ikon"
+  },
+  "copyPathButton": {
+    "message": "Kopiuj ścieżkę"
+  },
+  "closeButtonAria": {
+    "message": "Zamknij"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Klucz API OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Używaj do podsumowań"
+  },
+  "aiApiKeysHeading": {
+    "message": "Klucze API AI"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opcjonalne. Używane do głosowych podsumowań ukończonych zdarzeń i testów połączenia. Po zapisaniu obu kluczy możesz wybrać dostawcę podsumowań."
+  },
+  "rootDefaultBadge": {
+    "message": "Domyślny"
+  },
+  "windowModeHeading": {
+    "message": "Okno"
+  },
+  "windowModeFloating": {
+    "message": "Pływające (zawsze na wierzchu, także nad aplikacjami na pełnym ekranie)"
+  },
+  "windowModeNormal": {
+    "message": "Zwykłe okno (można maksymalizować lub przejść na pełny ekran)"
+  },
+  "birdWaitingLabel": {
+    "message": "czeka na twoją odpowiedź"
+  },
+  "askingBadgeTitle": {
+    "message": "Czeka na twoją odpowiedź, aby móc kontynuować"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Klucz API TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Opcjonalne. TypeSafe to zewnętrzna usługa AI, która ocenia, czy agent zatrzymał się, czekając na twoją odpowiedź. Po zapisaniu klucza ostatnia odpowiedź zatrzymanej sesji trafia do TypeSafe, a ptaki czekające na odpowiedź dostają „?”. Bez klucza „?” dostają tylko ptaki zatrzymane na narzędziu pytań."
+  },
+  "bubblePlanApproval": {
+    "message": "Zatwierdzić plan?"
+  },
+  "birdWatchingLabel": {
+    "message": "czuwa"
+  },
+  "watchingPeersTitle": {
+    "message": "Sesje, które wciąż pracują"
+  },
+  "byokReplaceButton": {
+    "message": "Zastąp"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Nie udało się zapisać klucza. Spróbuj ponownie."
+  },
+  "typeSafeSiteLink": {
+    "message": "Strona TypeSafe"
+  }
+}

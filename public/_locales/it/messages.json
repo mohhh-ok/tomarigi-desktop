@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Posatoio per le sessioni degli agenti IA. Uccellini mostrano lo stato a colpo d'occhio. Mini finestra fluttuante. Zero permessi."
+  },
+  "birdWorkingLabel": {
+    "message": "becca"
+  },
+  "birdDozingLabel": {
+    "message": "sonnecchia"
+  },
+  "loadingLabel": {
+    "message": "Caricamento…"
+  },
+  "setupIntro": {
+    "message": "Scegli la cartella in cui Claude Code / Codex conserva i log delle sessioni, e gli uccellini inizieranno a posarsi sul posatoio."
+  },
+  "setupPickPrefix": {
+    "message": "Nel selettore premi "
+  },
+  "setupPickMiddle": {
+    "message": ", poi digita "
+  },
+  "setupPickSuffix": {
+    "message": " (è una cartella nascosta)."
+  },
+  "setupButton": {
+    "message": "Installa il posatoio"
+  },
+  "duplicateRootMessage": {
+    "message": "Quella cartella è già sul posatoio"
+  },
+  "saveFailedMessage": {
+    "message": "Salvataggio non riuscito"
+  },
+  "reauthFailedMessage": {
+    "message": "Rinnovo dell'accesso non riuscito"
+  },
+  "emptyNoSessions": {
+    "message": "Al momento nessun uccellino sul posatoio (ultimi 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Serve una nuova autorizzazione — riconnetti da Cartelle monitorate qui sotto"
+  },
+  "emptyNoEvents": {
+    "message": "Nessuna attività negli ultimi 30 min"
+  },
+  "summonButton": {
+    "message": "Apri in una mini finestra (sempre in primo piano)"
+  },
+  "pipNote": {
+    "message": "Gli uccellini sono usciti nella mini finestra."
+  },
+  "rootsHeading": {
+    "message": "Cartelle monitorate"
+  },
+  "badgeNeedsReauth": {
+    "message": "Serve autorizzazione"
+  },
+  "badgeUnreadable": {
+    "message": "Illeggibile"
+  },
+  "reauthButton": {
+    "message": "Riautorizza"
+  },
+  "editLabelButton": {
+    "message": "Modifica etichetta"
+  },
+  "removeButtonAria": {
+    "message": "Rimuovi"
+  },
+  "addRootButton": {
+    "message": "Aggiungi cartella"
+  },
+  "rootLabelPlaceholder": {
+    "message": "es. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Disattiva audio"
+  },
+  "unmuteButtonAria": {
+    "message": "Attiva audio"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Attività recente"
+  },
+  "eventStartedLabel": {
+    "message": "avviata"
+  },
+  "eventDoneLabel": {
+    "message": "completata"
+  },
+  "eventClosedLabel": {
+    "message": "chiusa"
+  },
+  "eventMutedTitle": {
+    "message": "Silenziato (nessun suono)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Chiave API Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Chiave salvata"
+  },
+  "byokSaveButton": {
+    "message": "Salva"
+  },
+  "byokDeleteButton": {
+    "message": "Elimina"
+  },
+  "byokTestButton": {
+    "message": "Testa connessione"
+  },
+  "byokTestingLabel": {
+    "message": "Test in corso…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Connessione riuscita"
+  },
+  "byokTestResultFailure": {
+    "message": "Connessione non riuscita ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Inserisci e salva prima una chiave API"
+  },
+  "tabPerchLabel": {
+    "message": "Posatoio"
+  },
+  "tabGardenLabel": {
+    "message": "Giardino"
+  },
+  "tabSettingsLabel": {
+    "message": "Impostazioni"
+  },
+  "voiceEnableLabel": {
+    "message": "Leggi ad alta voce"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ è in attesa della tua risposta",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Chiave API Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volume"
+  },
+  "soundEnableLabel": {
+    "message": "Avvisa con un suono"
+  },
+  "iconSetHeading": {
+    "message": "Set di icone"
+  },
+  "iconSetBirds": {
+    "message": "Uccelli"
+  },
+  "iconSetGnome": {
+    "message": "Gnomo"
+  },
+  "iconSetCat": {
+    "message": "Gatto"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Rana"
+  },
+  "iconSetEmpty": {
+    "message": "Ancora nessun progetto"
+  },
+  "iconSetToggleAria": {
+    "message": "Cambia set di icone"
+  },
+  "copyPathButton": {
+    "message": "Copia percorso"
+  },
+  "closeButtonAria": {
+    "message": "Chiudi"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Chiave API OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Usa per i riepiloghi"
+  },
+  "aiApiKeysHeading": {
+    "message": "Chiavi API IA"
+  },
+  "aiApiKeysDescription": {
+    "message": "Facoltativo. Usato per i riepiloghi vocali degli eventi completati e i test di connessione. Se salvi entrambe le chiavi, puoi scegliere il fornitore per i riepiloghi."
+  },
+  "rootDefaultBadge": {
+    "message": "Predefinita"
+  },
+  "windowModeHeading": {
+    "message": "Finestra"
+  },
+  "windowModeFloating": {
+    "message": "Fluttuante (sempre in primo piano, anche sopra le app a schermo intero)"
+  },
+  "windowModeNormal": {
+    "message": "Finestra normale (si può ingrandire o mettere a schermo intero)"
+  },
+  "birdWaitingLabel": {
+    "message": "aspetta la tua risposta"
+  },
+  "askingBadgeTitle": {
+    "message": "Aspetta la tua risposta per poter continuare"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Chiave API TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Facoltativo. TypeSafe è un servizio di IA esterno che valuta se un agente si è fermato ad aspettare la tua risposta. Con una chiave salvata, l’ultima risposta di una sessione ferma viene inviata a TypeSafe e gli uccelli in attesa di risposta mostrano un “?”. Senza chiave, il “?” compare solo sugli uccelli fermi su uno strumento di domanda."
+  },
+  "bubblePlanApproval": {
+    "message": "Approvi il piano?"
+  },
+  "birdWatchingLabel": {
+    "message": "in osservazione"
+  },
+  "watchingPeersTitle": {
+    "message": "Sessioni ancora al lavoro"
+  },
+  "byokReplaceButton": {
+    "message": "Sostituisci"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Impossibile salvare la chiave. Riprova."
+  },
+  "typeSafeSiteLink": {
+    "message": "Sito di TypeSafe"
+  }
+}

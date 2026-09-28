@@ -1,0 +1,1772 @@
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* 窓は透明・枠なし(src-tauri の NSPanel)。html/body は透かし、.page が角丸の板として窓いっぱいに広がる */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  color: #e9e6de;
+  font-family: -apple-system, "Hiragino Sans", sans-serif;
+  /* 背景を掴んで窓を動かす(App.tsx の NO_WINDOW_DRAG)ため、背景の文字は選択させない */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#root {
+  height: 100%;
+}
+
+.page {
+  height: 100%;
+  padding: 6px 10px 8px;
+  /* にわタブが残りの縦空間を埋められるよう、ページ全体を縦 flex にする */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* 半透明にして、窓の後ろのすりガラス(src-tauri の set_backdrop)越しに後ろをぼかして見せる。圧迫感を減らすためで、
+     後ろを読ませるためではない(docs/design.md のウィンドウモードの項)。濃さは固定 */
+  background: rgba(22, 22, 28, 0.25);
+  border: 1px solid #2e2c25;
+  border-radius: 12px;
+}
+
+/* 検証用ビルド(boot.tsx で data-build="verify")。普段使いの版と見分けるための色 */
+:root[data-build="verify"] .page {
+  background: rgba(10, 48, 44, 0.3);
+  border-color: #1f6b60;
+}
+
+/* 通常の窓(window-mode.ts)は窓そのものに枠と角があるので、板の枠と角丸を外して窓いっぱいに塗る */
+html[data-window-mode="normal"] .page {
+  border: none;
+  border-radius: 0;
+}
+
+/* 押すと Ghostty のペインへ移る要素(止まり木の行・イベントカード・にわの鳥・巣箱の一覧) */
+.focusable {
+  cursor: pointer;
+}
+
+.bird.focusable:hover,
+.chick.focusable:hover,
+.event-card.focusable:hover,
+.garden-nest-row.focusable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ヘッダー行。ミュート・設定・隠すはどのタブでも見える必要があるため、タブの外(ページ最上部)に置く */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand {
+  /* ヘッダーにボタン類を同居させる分、コンパクトにする */
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.setup p {
+  line-height: 1.9;
+  color: #b9b5aa;
+}
+
+button {
+  padding: 10px 18px;
+  font-size: 14px;
+  border: 1px solid #4a463c;
+  border-radius: 8px;
+  background: #26251f;
+  color: #e9e6de;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #31302a;
+}
+
+.stage {
+  padding: 12px 8px 4px;
+}
+
+.perch {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 各行の下線が枝。鳥はその上にとまる */
+/* 止まり木の親行。1 段目(.bird-row-main)と吹き出し(.speech-bubble-line)を縦に積む */
+.bird {
+  display: block;
+  padding: 10px 8px;
+  border-bottom: 2px solid #6b5a3e;
+}
+
+.bird-row-main {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.glyph {
+  font-size: 22px;
+}
+
+/* 絵文字前提の .bird-glyph-img は行のベースラインに合わせて縦位置を微調整する。
+   にわの左右反転はカスタムプロパティ(--glyph-flip)経由にしてある(BirdGlyph 参照)。
+   working 演出の各 keyframes も同じ var(--glyph-flip, 1) を都度掛け合わせるため、
+   アニメ中でも静止中でも反転が保たれる */
+.bird-glyph-img {
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
+  transform: scaleX(var(--glyph-flip, 1));
+}
+
+.bird.working .glyph {
+  animation: peck 1.1s ease-in-out infinite;
+}
+
+/* working だけの特殊効果(気を溜めているオーラ)。BirdGlyph と止まり木ひな行の raw img が
+   working 時だけ付ける .bird-working-fx が実体で、この基本ルールはひな行・にわノードに
+   効く(にわノードは peck を外側の .garden-glyph span に持たせているため img 自体には
+   競合する transform アニメが無い)。
+   止まり木の親行(.bird.working .bird-glyph-img)だけは既存の peck(ペック弾み)が
+   同じ img の transform を握っており、CSS Animations は同一 property を複数
+   animation-name で指定しても「後勝ち」で上書きされ加算されない(2本併走できない)ため、
+   下の専用ルールで peck と微振動を 1本の keyframes(bird-peck-shake)に統合している */
+.bird-working-fx {
+  animation: bird-aura-shake 0.6s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
+}
+
+.bird.working .bird-glyph-img.bird-working-fx {
+  animation: bird-peck-shake 1.1s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
+}
+
+/* にわノード(26〜52px)は止まり木(18px)より大きいため、同じ blur だと薄く見える。
+   shake は共通のまま、glow だけ大きめの blur/拡散にした専用 keyframes に差し替える */
+.garden-node .bird-glyph-img.bird-working-fx {
+  animation: bird-aura-shake 0.6s ease-in-out infinite,
+    bird-aura-glow-lg 0.9s ease-in-out infinite;
+}
+
+/* prefers-reduced-motion: ちらつき(glow)と微振動(shake)を止め、静的な光だけ残す。
+   止まり木の親行は元々の peck(ペック弾み)自体はこのタスクの対象外の既存挙動なので、
+   ここで新規に殺さず維持したまま揺らぎ/シェイクだけ止める */
+@media (prefers-reduced-motion: reduce) {
+  .bird-working-fx {
+    animation: none;
+    filter: drop-shadow(0 0 2.5px rgba(255, 196, 90, 0.7)) drop-shadow(0 0 5px rgba(255, 248, 220, 0.5));
+  }
+
+  .bird.working .bird-glyph-img.bird-working-fx {
+    animation: peck 1.1s ease-in-out infinite;
+  }
+
+  .garden-node .bird-glyph-img.bird-working-fx {
+    animation: none;
+    filter: drop-shadow(0 0 4px rgba(255, 196, 90, 0.7)) drop-shadow(0 0 8px rgba(255, 248, 220, 0.5));
+  }
+}
+
+.bird.dozing {
+  opacity: 0.55;
+}
+
+/* サブエージェントの行。親の下に控えめにぶら下げる */
+.chick {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 8px 4px 26px;
+  border-bottom: 1px dashed #2c2a22;
+  opacity: 0.75;
+}
+
+.chick .glyph {
+  font-size: 14px;
+}
+
+.chick .name {
+  min-width: 6em;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.chick .status {
+  font-size: 11px;
+}
+
+.chick.dozing {
+  opacity: 0.45;
+}
+
+.name {
+  min-width: 8em;
+  font-weight: 600;
+  /* スニペット併記で長くなりうるため、PiP 幅(300px)で自動省略する */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* project の後ろに常時付く直近のユーザー発言スニペット。控えめなスタイルにする */
+.snippet {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #a49f92;
+}
+
+.status {
+  color: #a49f92;
+  font-size: 12px;
+  /* 状態ラベル+ツール名+経過時間が幅不足で折り返すと枝(行)の高さが乱れるため1行固定 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* working 行だけの脈動ドット。「動いている行 = 生きている」を一目で示す */
+.live-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.live-dots i {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #e8a13d;
+  font-style: normal;
+  animation: live-pulse 1.2s ease-in-out infinite;
+}
+
+.live-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.live-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.empty {
+  padding: 24px 8px;
+  color: #8d887c;
+}
+
+/* 遷移イベントの時系列フィード(実験機能)。PiP 窓は 300x380 と狭いので控えめなサイズにする */
+.event-feed {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed #2c2a22;
+}
+
+.event-feed-heading {
+  margin: 0 0 4px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #8d887c;
+}
+
+.event-feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+/* tomarigi の PiP 窓向けだった縦の流し込みを常に当てる(デスクトップ版は窓そのものが小窓)。
+   #tabpanel-* → stage → event-feed → event-feed-list までを flex column で連ね、リストが余った縦を全部食う */
+.perch {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+#tabpanel-events,
+#tabpanel-perch {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* display: flex を当てると hidden 属性(UA の display: none)が負ける(author 由来の
+   宣言は origin の優先順位で UA を上書きするため、specificity 同点でも勝つ)ので、
+   #tabpanel-garden と同じ理屈で明示的に戻す */
+#tabpanel-events[hidden],
+#tabpanel-perch[hidden] {
+  display: none;
+}
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.event-feed {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.event-feed-list {
+  flex: 1;
+  max-height: none;
+  min-height: 0;
+}
+
+
+/* 1セッション = 1カード。同一セッションの過去遷移は出さず、最新イベントだけ見せる。
+   アイコン(左)+ 本文(右)の2カラム。本文は上下 2行(プロジェクト/種別・時刻) */
+.event-card {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 8px 6px;
+  border-bottom: 1px solid #201f1a;
+  color: #a49f92;
+  font-size: 11px;
+}
+
+.event-card:last-child {
+  border-bottom: none;
+}
+
+.event-card > .event-icon {
+  margin-top: 2px;
+}
+
+.event-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.event-card-project {
+  font-weight: 600;
+  color: #e9e6de;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 55%;
+}
+
+.event-card-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 1px;
+}
+
+/* 種別を示すアイコン。形状+色(tone-*)+ラベルの三重で意味を運ぶ。SVG は currentColor
+   で塗るため、色は tone-* 側の color 指定で決まる。vertical-align は試聴ボタン内
+   (inline 文脈)で縦中央に来るようにするため */
+.event-icon {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.tone-done {
+  color: #8fae6e;
+}
+
+.tone-turn {
+  color: #d9b06a;
+}
+
+.tone-alert {
+  color: #c96a5f;
+}
+
+.tone-log {
+  color: #8d887c;
+}
+
+.event-label {
+  flex: 1;
+  /* PiP 幅(300px)では長いラベルが折り返して行高が開く。種別はアイコン+色が
+     担っているので、ラベルは1行固定ではみ出しを省略してよい */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* イベントフィードでのスニペット。止まり木行の .snippet と同じ控えめなトーン */
+.event-snippet {
+  margin-left: 3px;
+  color: #8d887c;
+}
+
+.event-time {
+  color: #8d887c;
+  font-variant-numeric: tabular-nums;
+  /* 相対時間(「1時間5分」等)が幅不足で折り返すと行高が乱れる。時刻は削らず、
+     縮む側は ellipsis を持つ project / label に任せる */
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.event-closed {
+  opacity: 0.6;
+}
+
+/* muted: 抑止 done が親の再起動でキャンセルされ、鳴らなかったもの。.event-closed と
+   同じ淡色化で「通常の done とは違う」を示す。派手なバッジは付けない */
+.event-muted {
+  opacity: 0.6;
+}
+
+.event-mute-icon {
+  flex-shrink: 0;
+  color: #8d887c;
+}
+
+.note {
+  color: #8d887c;
+}
+
+/* タブ切替。控えめに下線で現在地を示す(背景の淡い切替ではなく下線を採用) */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 6px 0 4px;
+  border-bottom: 1px solid #2a2922;
+}
+
+.tab-btn {
+  padding: 8px 14px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8d887c;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+
+.tab-btn:hover {
+  background: transparent;
+  color: #c9c4b8;
+}
+
+.tab-btn.active {
+  color: #e9e6de;
+  border-bottom-color: #d9b06a;
+}
+
+/* 設定タブの末尾。通知系トグル2種(「音で知らせる」「声で読み上げる」)を親、
+   その直下のサブ行(試聴ボタン・音量スライダー)を子として並べる。.roots/.judge と
+   同じトーンの区切り */
+.voice-controls {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+/* チェックボックス・ラジオの行。説明が 2 行に折り返しても、丸・四角を 1 行目の文字の中心にそろえる
+   (中央ぞろえだと 2 行の真ん中に浮くため)。行の高さを決め打ちし、印の高さとの差の半分だけ下げる */
+.voice-enable-row,
+.ai-provider-choice {
+  --choice-line: 18px;
+  --choice-mark: 14px;
+  line-height: var(--choice-line);
+}
+
+.voice-enable-row input,
+.ai-provider-choice input {
+  flex: none;
+  width: var(--choice-mark);
+  height: var(--choice-mark);
+  margin: calc((var(--choice-line) - var(--choice-mark)) / 2) 0 0;
+}
+
+.voice-enable-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* 親チェックボックスの行間。直前がもう1つの親行の場合(サブ行を持たない親の直後)と、
+   直前がサブ行の場合(試聴ボタン行の直後に「声で読み上げる」が続く場合)の両方をカバーする。
+   後者を書き漏らすと隣接セレクタが不一致になり、次の親行が前のサブ行に間隔0でくっついて
+   「前グループの子」に見えてしまう(実際に一度この不一致を作り込んだ) */
+.voice-enable-row + .voice-enable-row,
+.settings-subrow + .voice-enable-row {
+  margin-top: 14px;
+}
+
+/* 親チェックボックスの直下にぶら下がるサブ行の共通インデント。試聴ボタン行・音量スライダー行の
+   両方で使い、左インデント量を揃えることで「チェックボックスの子」だと一目で分かるようにする
+   (旧: 試聴ボタンだけ独立した見出しグループに離れていて対応が伝わらなかった) */
+.settings-subrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-left: 24px; /* 親行のチェックボックス幅 + gap に合わせた字下げ */
+}
+
+.sound-preview-row {
+  flex-wrap: wrap;
+}
+
+.sound-preview-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 個々のボタン先頭にも小さくスピーカーを添え、単体でも「音が鳴るボタン」だと分かるようにする */
+.preview-mic {
+  color: #8d887c;
+}
+
+/* 音量スライダー行の共通スタイル。読み上げ(voice)・鳴き声(chirp)の両方で使う
+   (旧: voice-volume-row として読み上げ専用だったが、chirp 側の音量設定追加に合わせて
+   汎用名に整理した。値自体は「読み上げ」「鳴き声」で別のモジュール変数/保存キーに
+   分かれているので、CSS を共有しても設定が混ざることはない) */
+.volume-row {
+  font-size: 13px;
+  color: #d8d3c6;
+}
+
+.volume-row:has(.volume-slider:disabled) {
+  color: #6b6858;
+}
+
+.volume-slider {
+  flex: 1;
+  min-width: 0;
+  /* .tab-btn.active と同じ琥珀系(#d9b06a)でトーンを揃える */
+  accent-color: #d9b06a;
+}
+
+.volume-value {
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #a49f92;
+}
+
+.roots {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+.roots h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #a49f92;
+}
+
+.root-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.root-add-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(10, 10, 12, 0.78);
+}
+
+.root-add-dialog {
+  width: min(440px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #3b382f;
+  border-radius: 12px;
+  background: #1c1b17;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.root-add-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.root-add-dialog-header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #d5d1c7;
+}
+
+.root-add-choices {
+  display: grid;
+  gap: 10px;
+}
+
+.root-add-choice {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #2f2d25;
+  border-radius: 8px;
+  background: rgba(38, 37, 31, 0.45);
+}
+
+.root-add-choice button {
+  justify-self: start;
+}
+
+.root-add-hint {
+  color: #8f8a7e;
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+.root-path-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 4px;
+  padding: 4px 8px;
+  border-color: #4a463c;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.root-path-copy code {
+  overflow-wrap: anywhere;
+  color: #d9b06a;
+}
+
+.root-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #232219;
+}
+
+.root-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.root-path {
+  display: block;
+  overflow: hidden;
+  font-size: 11px;
+  color: #8d887c;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.root-label-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid #4a463c;
+  border-radius: 6px;
+  background: #1c1b17;
+  color: #e9e6de;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* 既定の監視フォルダ。注意・エラーではないので彩度を持たせない */
+.badge-default {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d4cfc2;
+}
+
+/* 既定の行の × の場所取り(App.tsx の RootManager)。button.small と同じ箱で見えなくする */
+.root-remove-placeholder {
+  visibility: hidden;
+}
+
+.badge-warn {
+  background: rgba(255, 200, 90, 0.12);
+  color: #d9b06a;
+}
+
+.badge-error {
+  background: rgba(255, 110, 90, 0.12);
+  color: #d97e6a;
+}
+
+button.small {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* 設定ビュー中は ⚙ ボタンを active 表示にして「今どこにいるか」を示す。tab の active と同じ琥珀系で統一 */
+button.small.active {
+  border-color: #6b6350;
+  background: rgba(217, 176, 106, 0.14);
+  color: #d9b06a;
+}
+
+button.remove {
+  padding: 4px 8px;
+  color: #b98d84;
+}
+
+.add-message {
+  margin: 8px 0 0;
+  color: #d9b06a;
+  font-size: 12px;
+}
+
+/* OpenAI / Anthropic API キー(done 読み上げ要約 + 接続テスト)。共通説明は1回だけ出し、
+   プロバイダー別の操作をその下に並べる。key-row や status 等の記述クラス(.judge-key-row,
+   .judge-status 等)は旧 LLM 判定トグル(JudgeSettings、廃止済み)と共有していた名残の
+   クラス名だが、フラットなクラス名でネスト依存が無いためこのまま流用する */
+.ai-keys {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+.ai-keys > h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #a49f92;
+}
+
+.ai-key-provider-list {
+  display: grid;
+  gap: 14px;
+}
+
+.ai-key-provider {
+  padding: 12px;
+  border: 1px solid #343128;
+  border-radius: 8px;
+  background: #1b1a16;
+}
+
+.ai-key-provider h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #d1cdc3;
+}
+
+.judge-description {
+  margin: 0 0 12px;
+  color: #8d887c;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.judge-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.judge-key-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid #4a463c;
+  border-radius: 6px;
+  background: #1c1b17;
+  color: #e9e6de;
+}
+
+.judge-key-set {
+  flex: 1;
+  font-size: 13px;
+  color: #a49f92;
+}
+
+.ai-provider-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  width: fit-content;
+  margin: 0 0 10px;
+  color: #c9c4b8;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* 設定のチェックボックス・ラジオの選択色は、.tab-btn.active・音量スライダーと同じ琥珀系にそろえる */
+.voice-enable-row input,
+.ai-provider-choice input {
+  accent-color: #d9b06a;
+}
+
+.judge-status {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.judge-status-ok {
+  color: #7fae7a;
+}
+
+.judge-status-error {
+  color: #d97e6a;
+}
+
+/* アイコンセットのプロジェクト個別割り当て(issue #14)。.roots/.ai-keys と同じ区切りトーン */
+.icon-sets,
+.window-mode {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+.icon-sets h2,
+.window-mode h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #a49f92;
+}
+
+.icon-set-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.icon-set-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #232219;
+}
+
+/* 走っていない(保存済み割り当てのみの)行。.root-row 系と同じ並びだが淡色化して
+   現在走っている行と見分けを付ける(title 属性で slug をホバー確認できる) */
+.icon-set-row-idle {
+  opacity: 0.55;
+}
+
+.icon-set-glyph {
+  flex-shrink: 0;
+}
+
+.icon-set-project {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-set-toggle {
+  flex-shrink: 0;
+}
+
+.icon-set-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #8d887c;
+}
+
+/* にわ(Garden)タブ: セッションを「庭に居る鳥」として自由配置できるビュー(issue #12)。
+   ノードは % 座標で絶対配置するため基準コンテナに確定した高さが要るが、固定 px にすると
+   窓リサイズ(特に PiP はユーザーが自由に伸ばせる)で下に死に領域が出る。そこで
+   .page(main ページ)/ body(PiP)から flex で高さを流し込み、庭は常に「その時の窓の残り全部」
+   を埋める。この rule は unconditional(PiP 限定の media query の外)だが、App.tsx の
+   portalHost(および main ページ側の装着先)が display: contents で透過なので、
+   #tabpanel-garden は main ページでは .page の、PiP では body の直接の flex 子として
+   同じルールで効く(2箇所に書き分ける必要が無い) */
+#tabpanel-garden {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* display: flex を当てると hidden 属性(UA の display: none)が負けるので明示的に戻す */
+#tabpanel-garden[hidden] {
+  display: none;
+}
+
+.stage-garden {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.garden {
+  position: relative;
+  flex: 1;
+  min-height: 220px;
+  margin-top: 4px;
+  border: 1px solid #2a2922;
+  border-radius: 10px;
+  /* 地面の気配としてごく淡い緑を下端に重ねる。ダッシュボードのパネルに見えないよう
+     やりすぎない (issue #12b: 「にわ」であって「パネル」ではないというフィードバック) */
+  background: radial-gradient(circle at 30% 15%, rgba(255, 255, 255, 0.035), transparent 60%),
+    linear-gradient(to top, rgba(80, 100, 50, 0.12), transparent 30%), rgba(26, 25, 18, 0.2);
+  overflow: hidden;
+}
+
+/* 1セッション = 1羽の鳥。カードの箱(border/background/padding)は持たず、グリフを
+   主役に縦積みする。ドラッグ可能と分かるよう cursor: grab/grabbing を明示する。
+   left/top は % (transform の translate で中心基準にする) */
+.garden-node {
+  position: absolute;
+  width: 120px;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  user-select: none;
+  /* ネイティブ pointer イベントでドラッグするため、ブラウザ標準のスクロール/ズーム
+     ジェスチャに奪われないようにする */
+  touch-action: none;
+  transition: transform 0.15s ease;
+}
+
+/* WAAPI(element.animate)がグリフ〜履歴アイコンの入退場アニメーション(飛来/巣箱行き/
+   フェード)だけを担当する内側レイヤー。位置決め/ドラッグ/hover の transform は外側の
+   .garden-node が持つため、ここでは以前 .garden-node が持っていた縦積みレイアウトの
+   みを引き継ぐ */
+.garden-node-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* hover はパネルの枠線ではなく、鳥がわずかに浮く動きで示す。
+   位置決めの translate(-50%, -50%) と合成する */
+.garden-node:hover {
+  transform: translate(-50%, calc(-50% - 2px));
+}
+
+/* 見守り中のブロックの鳥は、top が鳥の上辺(段の上端。garden.tsx の layoutWatchGroups)。横だけ中央ぞろえ */
+.garden-node.in-watch-block,
+.garden-bubble-anchor.in-watch-block {
+  transform: translateX(-50%);
+}
+
+.garden-node.in-watch-block:hover {
+  transform: translate(-50%, -2px);
+}
+
+/* ドラッグ中は追従優先で transition を切り、わずかに拡大して持ち上げた気配を出す。
+   box-shadow によるパネル的な浮遊表現は使わない */
+.garden-node.dragging {
+  cursor: grabbing;
+  z-index: 5;
+  transform: translate(-50%, -50%) scale(1.06);
+  transition: none;
+}
+
+.garden-node.dozing {
+  opacity: 0.55;
+}
+
+/* 返事待ちでにわに残したうたた寝の鳥は薄くしない(「?」を見落とさせない) */
+.garden-node.dozing.asking {
+  opacity: 1;
+}
+
+/* 退場アニメーション中(leaving)のノードはセル計算・自動配置の対象外で、掴まれると
+   WAAPI アニメーションと位置状態が競合するためドラッグ/クリックを一切受け付けない */
+.garden-node.leaving {
+  pointer-events: none;
+}
+
+.garden-glyph {
+  font-size: 28px;
+  line-height: 1;
+}
+
+/* 羽数・コンテナ実寸に応じたグリフの自動リサイズをなめらかにする(にわ内のみに
+   スコープ。止まり木リスト .bird-glyph-img には影響させない) */
+.garden-node .bird-glyph-img {
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.garden-node.working .garden-glyph {
+  animation: peck 1.1s ease-in-out infinite;
+}
+
+.garden-name {
+  margin-bottom: 3px;
+  max-width: 110px;
+  color: #a49f92;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 状態の行(stage.tsx の StatusParts)。止まり木と同じ部品を、にわの小さい字で中央に並べる */
+.garden-status {
+  /* 中身の幅にする(にわの端で寄せる量を、見えている幅で測るため。garden.tsx の visibleWidth) */
+  display: inline-flex;
+  justify-content: center;
+  align-items: baseline;
+  max-width: 120px;
+  min-width: 0;
+  margin-top: 4px;
+  color: #777265;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* 見守り中のブロックの中は 1 マス(garden.tsx の WATCH_CELL_W 96px)ごとに並ぶので、状態の行はマスの幅までにする。
+   超える分はツール名を丸ごと隠す(.bird-row-tool)。隣の鳥の状態の行とつながって 1 行に見え、アイコンの真下から
+   ずれて見えた */
+.garden-node.in-watch-block .garden-status {
+  max-width: 88px;
+}
+
+.garden-status > .status {
+  color: inherit;
+  font-size: inherit;
+}
+
+/* 足元に並べる直近イベントはアイコンのみ(ラベル・時刻はテキストで出さず title で見せる)。
+   events は新しい順で来るので先頭から HISTORY_LIMIT 件そのまま表示する */
+.garden-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.garden-icon-wrap {
+  display: flex;
+}
+
+/* dozing (長時間 idle) は個別ノードにせず、庭の隅の巣箱 1 個に集約する(issue #12d)。
+   このビューは「箱を持たない」方針(issue #12b)のため、ここも枠・背景は付けず
+   garden-node と同じくグリフを主役にする。opacity を落として主役の座を空ける */
+/* 巣箱は常に押せるよう、鳥(.garden-node。ドラッグ中 1000)と吹き出しの層(.garden-bubble-layer 2000)より手前に出す。
+   鳥が巣箱の場所に来ることはある(ドラッグ・端への寄せ)ので、鳥を避けさせる代わりに巣箱を上に重ねる。
+   重なった鳥・吹き出しの文字が巣箱の後ろに透けないよう、にわに近い色の小さな下地を敷く */
+.garden-nest {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  z-index: 2100;
+  padding: 3px 5px;
+  border-radius: 8px;
+  background: rgba(28, 27, 21, 0.88);
+}
+
+/* 巣箱本体はボタン。素のボタン見た目を消し、沈ませておいて hover/展開中は起こす */
+.garden-nest-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.garden-nest-btn:hover,
+.garden-nest-btn[aria-expanded="true"] {
+  opacity: 1;
+}
+
+.garden-nest-glyph {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.garden-nest-count {
+  color: #777265;
+  font-size: 11px;
+}
+
+/* クリックで開く「巣箱の中」一覧。恒常パネルではなく一時的なポップオーバーなので、
+   ここだけは読めるように背景を持たせる */
+.garden-nest-list {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  margin: 0;
+  padding: 6px 9px;
+  list-style: none;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid #3a382f;
+  border-radius: 8px;
+  background: #211f18;
+  z-index: 6; /* ドラッグ中ノード(z-index: 5)より上 */
+}
+
+.garden-nest-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.garden-nest-row-glyph {
+  font-size: 11px;
+}
+
+.garden-nest-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+  color: #a49f92;
+}
+
+.garden-nest-row-since {
+  margin-left: auto;
+  color: #777265;
+  font-size: 10px;
+}
+
+@keyframes peck {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(2px) rotate(8deg);
+  }
+}
+
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* working 演出: 気を溜めているオーラ。drop-shadow は透過 WebP のアルファ輪郭に追従する
+   (box-shadow・背景 radial-gradient は矩形/背景基準になり輪郭を追わないため不可)。
+   金(gold)と白(white-hot)の 2 層を、不揃いな % 刻み(0/30/55/80/100)で別々のタイミングに
+   ピークさせて「同じ filter アニメ 1本」でも 2 層が別周期でちらついて見えるようにしてある
+   (2本の animation-name で同じ filter を同時に握らせても後勝ちで加算されないため、
+   1本の keyframes に両層をまとめるのが必須。live-dots の脈動(#e8a13d)とは色相が近いが、
+   スプライトの輪郭を光らせる drop-shadow と行末の小さいドットなので位置と形状で見分けは付く) */
+@keyframes bird-aura-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(255, 196, 90, 0.55)) drop-shadow(0 0 4px rgba(255, 248, 220, 0.3));
+  }
+  30% {
+    filter: drop-shadow(0 0 3.5px rgba(255, 196, 90, 0.85)) drop-shadow(0 0 3px rgba(255, 248, 220, 0.5));
+  }
+  55% {
+    filter: drop-shadow(0 0 2.5px rgba(255, 196, 90, 0.6)) drop-shadow(0 0 6px rgba(255, 248, 220, 0.8));
+  }
+  80% {
+    filter: drop-shadow(0 0 4px rgba(255, 196, 90, 0.9)) drop-shadow(0 0 3.5px rgba(255, 248, 220, 0.45));
+  }
+}
+
+/* にわノード(26〜52px)用。base の bird-aura-glow と同じリズムで blur/拡散だけ大きくした版 */
+@keyframes bird-aura-glow-lg {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px rgba(255, 196, 90, 0.55)) drop-shadow(0 0 6px rgba(255, 248, 220, 0.3));
+  }
+  30% {
+    filter: drop-shadow(0 0 5.5px rgba(255, 196, 90, 0.85)) drop-shadow(0 0 4.5px rgba(255, 248, 220, 0.5));
+  }
+  55% {
+    filter: drop-shadow(0 0 4px rgba(255, 196, 90, 0.6)) drop-shadow(0 0 9px rgba(255, 248, 220, 0.8));
+  }
+  80% {
+    filter: drop-shadow(0 0 6px rgba(255, 196, 90, 0.9)) drop-shadow(0 0 5.5px rgba(255, 248, 220, 0.45));
+  }
+}
+
+/* working 演出: 微振動(ゴゴゴ)。±0.5〜1px の小刻みな translate。glow(0.9s)・peck(1.1s)と
+   周期をずらして単調な同期に見えないようにしている。scaleX(var(--glyph-flip, 1)) を
+   毎ステップ掛け直すことで、にわの左右反転をアニメ中も維持する */
+@keyframes bird-aura-shake {
+  0%,
+  100% {
+    transform: translate(0, 0) scaleX(var(--glyph-flip, 1));
+  }
+  20% {
+    transform: translate(0.6px, -0.4px) scaleX(var(--glyph-flip, 1));
+  }
+  40% {
+    transform: translate(-0.5px, 0.5px) scaleX(var(--glyph-flip, 1));
+  }
+  60% {
+    transform: translate(0.5px, 0.6px) scaleX(var(--glyph-flip, 1));
+  }
+  80% {
+    transform: translate(-0.6px, -0.3px) scaleX(var(--glyph-flip, 1));
+  }
+}
+
+/* working 演出: 止まり木の親行専用。既存の peck(ペック弾み。50% で translateY(2px)
+   rotate(8deg) がピーク)はそのまま残しつつ、bird-aura-shake と同じ振幅の微振動を
+   全ステップに織り込んで 1本の keyframes に統合したもの(理由は上の .bird-working-fx
+   コメント参照) */
+@keyframes bird-peck-shake {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0) scaleX(var(--glyph-flip, 1));
+  }
+  12% {
+    transform: translate(0.6px, -0.3px) rotate(1deg) scaleX(var(--glyph-flip, 1));
+  }
+  25% {
+    transform: translate(-0.5px, 0.4px) rotate(-1deg) scaleX(var(--glyph-flip, 1));
+  }
+  50% {
+    transform: translate(0.5px, 2px) rotate(8deg) scaleX(var(--glyph-flip, 1));
+  }
+  62% {
+    transform: translate(-0.6px, 1.6px) rotate(6deg) scaleX(var(--glyph-flip, 1));
+  }
+  75% {
+    transform: translate(0.4px, 0.8px) rotate(2deg) scaleX(var(--glyph-flip, 1));
+  }
+}
+
+/* mock mode (?mock=1)。MockPanel(entrypoints/perch/mock.tsx)専用 */
+.mock-panel {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.mock-panel h2 {
+  font-size: 12px;
+  margin: 0 0 8px;
+  opacity: 0.7;
+  font-weight: 600;
+}
+
+.mock-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.mock-preset-active {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+.mock-hint {
+  font-size: 11px;
+  opacity: 0.5;
+  margin: 4px 0 6px;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
+.mock-editor {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  resize: vertical;
+}
+
+.mock-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.mock-error {
+  color: #f87171;
+  font-size: 11px;
+}
+
+/* debug mode (?debug=1 直開き、または App ヘッダーのデバッグボタン)。
+   DebugApp は App の上に重ねるページ内ダイアログ(全画面オーバーレイ)として描画するだけで、
+   App 自体のスキャンループ・PiP には触れない。
+   凝った見た目は不要、既存のトーン(暗背景・淡色ノート)に合わせるだけ */
+.debug-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow-y: auto;
+  background: #16161c;
+}
+
+.debug-page {
+  max-width: 720px;
+}
+
+.debug-log-error {
+  color: #f87171;
+}
+
+.debug-log-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.debug-log-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+}
+
+.debug-log-time {
+  color: #8d887c;
+  font-variant-numeric: tabular-nums;
+}
+
+.debug-log-type {
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.debug-log-type-done {
+  color: #34d399;
+}
+
+.debug-log-type-waiting {
+  color: #d9b06a;
+}
+
+.debug-log-project {
+  font-weight: 600;
+}
+
+.debug-log-snippet {
+  opacity: 0.75;
+}
+
+.debug-log-key {
+  margin-left: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  opacity: 0.4;
+  word-break: break-all;
+}
+
+/* firedAt: timeout 発火の実発火時刻。at(親のターン終了時刻)の補足情報なので控えめに */
+.debug-log-fired-at {
+  margin-left: 4px;
+  opacity: 0.6;
+  font-size: 11px;
+}
+
+/* Jev の判断待ち判定(lib/jev.ts)。status と yes の確率 */
+.debug-log-ask {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(242, 179, 61, 0.12);
+  color: #d9a441;
+  font-size: 10px;
+}
+
+/* muted: 鳴らなかった done の印。error/warn 系のバッジ(.badge-warn 等)と混ざらないよう
+   彩度を持たせず、グレーの控えめなピルにする */
+.debug-log-muted-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #8d887c;
+  font-size: 10px;
+}
+
+/* プロジェクト別ファイル保存(~/Downloads/tomarigi-eventlog-*.json) */
+.debug-save-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.debug-save-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* mock モード(TOMARIGI_MOCK=1)は窓の下に mock パネルが続く。面を窓の残りへ流し込むと
+   パネルと取り合って潰れるので、面は固定の高さにして窓全体をスクロールさせる */
+.page:has(.mock-panel) > * {
+  flex-shrink: 0;
+}
+
+/* 最低 300px。窓が高ければ(通常の窓で最大化したとき)mock パネルの上の残りを使う */
+.page:has(.mock-panel) #tabpanel-garden,
+.page:has(.mock-panel) #tabpanel-perch,
+.page:has(.mock-panel) #tabpanel-events {
+  flex: 1 0 300px;
+}
+
+/* 無効(読み上げオフ)の音量スライダーと値を薄くする。macOS は窓が前面でないとき有効/無効を同じ灰色で描くので、
+   窓の状態に関係なく無効だと分かるようにする */
+.volume-slider:disabled,
+.volume-row:has(.volume-slider:disabled) .volume-value {
+  opacity: 0.4;
+}
+
+/* 止まり木と最近の動きの中身。窓を広げたときに行が横に間延びしないよう、吹き出しの 2 段目が読める幅(720px)で
+   止めて中央に置く。にわは幅いっぱいのまま。タブ(ヘッダー)は、にわと共通なので窓幅のまま(タブを切り替えるたびに
+   タブの位置が動かないように。設定画面と同じ扱い)。浮遊窓(340px)はこの幅より狭いので見た目は変わらない */
+.stage-perch,
+.stage-events {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* 設定画面の中身。通常の窓で最大化しても入力欄やスライダーが横に間延びしないよう幅を抑え、
+   窓の中央に置く(ヘッダーは窓幅のまま)。浮遊窓はこの幅より狭いので見た目は変わらない */
+.settings-panel {
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+/* BirdGlyph の外枠。「?」バッジ(.bird-ask-badge)を鳥の右上に重ねるための基準 */
+.bird-glyph {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+/* 返事待ちの鳥(lib/jev.ts の needsAnswer)。全アイコンセット共通。鳥の大きさに合わせて
+   直径を決め(--glyph-size は BirdGlyph が渡す)、小さい止まり木でも読める下限を持たせる */
+.bird-ask-badge {
+  --ask-size: max(10px, calc(var(--glyph-size, 18px) * 0.42));
+  /* 鳥の絵に重ねる幅。小さい鳥(止まり木の 18px)ではほぼ重ねず顔を隠さない。大きい鳥(にわ)では
+     少し重ねて鳥に付いた印に見せる */
+  --ask-overlap: clamp(1px, calc((var(--glyph-size, 18px) - 20px) * 0.3), calc(var(--ask-size) * 0.35));
+  position: absolute;
+  /* 上には出さない(にわの上端に置かれた鳥でバッジが切れるため)。代わりに右へはみ出させる */
+  top: 0;
+  right: calc(var(--ask-overlap) - var(--ask-size));
+  width: var(--ask-size);
+  height: var(--ask-size);
+  border-radius: 50%;
+  background: #f2b33d;
+  color: #231d12;
+  box-shadow: 0 0 0 1.5px #16161c;
+  font-size: calc(var(--ask-size) * 0.78);
+  font-weight: 800;
+  line-height: var(--ask-size);
+  text-align: center;
+}
+
+/* 止まり木の行は「?」が鳥の右へはみ出す分だけ名前との間を空ける。「?」の無い行も同じだけ空け、
+   名前の頭を揃える */
+.bird-row-main > .bird-glyph {
+  margin-right: 4px;
+}
+
+/* 鳥のセリフの吹き出し(perch/bubble.tsx)。にわではアイコンの下、止まり木では行の中の 1 行。
+   長い文は「…」で切り、マウスを載せると全文(title) */
+.speech-bubble {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 7px;
+  border-radius: 8px;
+  background: #ece6d6;
+  color: #26221a;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* にわ: 全角 15 字ほどで切る。吹き出しの足場(.garden-bubble-anchor = 鳥と同じ位置・大きさ)の中で、
+   アイコンの下辺(--bubble-top。garden.tsx が測って渡す)のすぐ下、状態の行との間の空き(.garden-bubble-room)に出す。
+   文を「…」で切る .speech-bubble は overflow: hidden でしっぽまで切ってしまうので、外枠(これ)にしっぽと影を持たせる。
+   影は filter の drop-shadow にして、本体としっぽを 1 つの形として落とす(つなぎ目に影の線を出さない) */
+.speech-bubble-below {
+  position: absolute;
+  top: calc(var(--bubble-top, 0px) + 7px);
+  left: 50%;
+  display: block;
+  max-width: 15em;
+  font-size: 11px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+/* しっぽは上辺から上向きにとがらせ、先端がアイコンを指す。枠の内側に寄せたとき(garden.tsx の bubbleShift)も
+   --tail-left / --tail-right でアイコンの真下に残す。本体と 1px 重ねてつなぎ目の隙間を消す */
+.speech-bubble-below::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: calc(var(--tail-left, 50%) - 5px);
+  right: calc(var(--tail-right, 100%) - 5px);
+  width: 0;
+  border: 5px solid transparent;
+  border-top: 0;
+  border-bottom: 7px solid #ece6d6;
+}
+
+/* 吹き出しのある鳥の、アイコンと名前の間の空き。吹き出しの高さ + アイコンとの間(garden.tsx の BUBBLE_ROOM_PX と同じ) */
+.garden-bubble-room {
+  flex: none;
+  height: 26px;
+}
+
+/* にわの吹き出しの層。鳥・名前(.garden-node)より上に重ね、吹き出しの文と「…」をほかの鳥の名前に隠させない。
+   鳥のドラッグ・クリックを妨げないよう層そのものは押せない。吹き出しだけマウスを載せて全文(title)を見られる */
+.garden-bubble-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+/* 吹き出しの足場。鳥のノード(.garden-node)と同じ中心・幅・高さ(garden.tsx が left/top/height を渡す) */
+.garden-bubble-anchor {
+  position: absolute;
+  width: 120px;
+  transform: translate(-50%, -50%);
+}
+
+.garden-bubble-anchor .speech-bubble {
+  pointer-events: auto;
+}
+
+/* 止まり木: 名前の頭(鳥 18px + 右の空き 4px + 行の gap 10px)にそろえた 2 段目に 1 行で出す */
+.speech-bubble-line {
+  display: block;
+  min-width: 0;
+  margin-top: 4px;
+  padding-left: 32px;
+}
+
+.speech-bubble-row {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}
+
+/* 止まり木の親行の 1 段目。幅が足りないときは依頼の抜き出し → ツール名 → 名前の順に削る。
+   抜き出しとツール名は基準幅 0 で伸びる側に置き、名前・状態の語・経過時間が元の幅に収まった残りだけをもらう
+   (上限は文の長さ)。残りはツール名が先に取る(伸びる重みが大きい)。ツール名は入りきらなければ丸ごと隠れる。
+   名前は残りが無くなってから縮む。ツール名を名前と同じ基準幅(文の長さ)で並べると、隠れたツール名が幅を取ったまま
+   名前と一緒に縮み、状態の側に余白があるのに名前が「packa…」まで切れた。
+   状態の語と経過時間は縮めない。flex-shrink の重みの差では WKWebView で名前も同時に縮んだため使わない */
+.bird-row-name {
+  flex: 0 1 auto;
+  min-width: 3em;
+}
+
+.bird-row-snippet[data-tight="true"] {
+  visibility: hidden;
+}
+
+.bird-row-snippet {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: max-content;
+  margin-left: -6px; /* 名前との間は行の gap(10px)より詰める(以前の名前の中の並びと同じ見え方) */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 状態の語と経過時間は縮めない。状態の語で行の右側へ寄せる */
+.bird-row-label,
+.bird-row-since {
+  flex: none;
+  overflow: visible;
+}
+
+.bird-row-main > .bird-row-label {
+  margin-left: auto;
+}
+
+/* 止まり木の行のツール名(上の .bird-row-name のコメント)。にわの状態の行(.garden-status)は今までどおり */
+.bird-row-main > .bird-row-tool {
+  flex: 100 1 0;
+  max-width: max-content;
+}
+
+/* 行の gap を詰め、状態の語・ツール名・経過時間を 1 続きに見せる */
+.bird-row-main > .bird-row-tool,
+.bird-row-main > .bird-row-since {
+  margin-left: -10px;
+}
+
+/* ツール名は単語の途中で切らず、全部が収まらなければ丸ごと隠す。幅 0 の先頭要素の横に入らなければ
+   2 行目へ折り返し、1 行ぶんの高さで切られて見えなくなる */
+.bird-row-tool {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 1lh;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.bird-row-tool::before {
+  content: "";
+  width: 0;
+  height: 1lh;
+}
+
+/* 最近の動きの行の 2 段目。カードの本文がすでに字下げされているので、止まり木の字下げは付けない */
+.event-card-body .speech-bubble-line {
+  padding-left: 0;
+}
+
+/* 見守り中でつながっている相手の行。先に起動した方(親)の下に字下げして並べる(stage.tsx の orderByWatchLinks)。
+   ひなの行(.chick)と同じ字下げで「親にぶら下がる」ことを見せる。区切り線は下の .linked-continues */
+.bird.linked-child {
+  padding-left: 26px;
+}
+
+/* 見守り中の組の中(親と相手の間・相手どうし)の区切りは破線、組の外との境目は実線(.bird の既定) */
+.bird.linked-continues {
+  border-bottom-style: dashed;
+}
+
+/* 見守り中のまとまりを囲む角丸のブロック(garden.tsx の layoutWatchGroups)。鳥の下に敷く薄い面と枠 */
+.garden-watch-block {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(217, 176, 106, 0.28);
+  border-radius: 14px;
+  background: rgba(217, 176, 106, 0.05);
+  pointer-events: none;
+}
+
+/* ブロックの上辺に出す親(見守り中の鳥)の名前(garden.tsx の WATCH_TITLE_PX が行の高さ)。中央に置くと真下の鳥の名前に
+   見えるので左上に寄せ、枠と同じ琥珀色にしてブロックの名前として読ませる */
+.garden-watch-block-name {
+  display: block;
+  box-sizing: border-box;
+  height: 16px;
+  margin-top: 6px;
+  padding: 0 12px;
+  overflow: hidden;
+  color: rgba(217, 176, 106, 0.85);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 見守り中の鳥の足元の、動いている相手の数 */
+.garden-watch-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+  color: #a49f92;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* 説明文の中の外部サイトへのリンク(外部ブラウザで開く)。本文より少し明るい琥珀色で押せることを見せる */
+.external-link {
+  color: #d9b06a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

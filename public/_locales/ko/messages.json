@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "AI 에이전트 세션을 지켜보는 횃대. 새 아이콘으로 상태를 한눈에. 패널을 떠 있는 작은 창으로. 권한 없음, 서버 없음."
+  },
+  "birdWorkingLabel": {
+    "message": "쪼아 먹는 중"
+  },
+  "birdDozingLabel": {
+    "message": "졸고 있어요"
+  },
+  "loadingLabel": {
+    "message": "불러오는 중…"
+  },
+  "setupIntro": {
+    "message": "Claude Code / Codex가 세션 기록을 저장하는 폴더를 선택하면, 새들이 횃대에 앉기 시작합니다."
+  },
+  "setupPickPrefix": {
+    "message": "선택 화면에서 "
+  },
+  "setupPickMiddle": {
+    "message": " 를 누른 다음 "
+  },
+  "setupPickSuffix": {
+    "message": " 를 입력하세요(숨김 폴더입니다)."
+  },
+  "setupButton": {
+    "message": "횃대 설치하기"
+  },
+  "duplicateRootMessage": {
+    "message": "이미 등록된 폴더입니다"
+  },
+  "saveFailedMessage": {
+    "message": "저장하지 못했습니다"
+  },
+  "reauthFailedMessage": {
+    "message": "권한 갱신에 실패했습니다"
+  },
+  "emptyNoSessions": {
+    "message": "지금은 횃대에 아무도 없습니다(최근 30분 세션만 표시)"
+  },
+  "emptyNeedsReauth": {
+    "message": "재인증이 필요합니다 — 아래 감시 폴더에서 다시 연결하세요"
+  },
+  "emptyNoEvents": {
+    "message": "최근 30분간 활동 없음"
+  },
+  "summonButton": {
+    "message": "작은 창으로 띄우기(항상 위에 표시)"
+  },
+  "pipNote": {
+    "message": "새들이 작은 창에 나가 있습니다."
+  },
+  "rootsHeading": {
+    "message": "감시 폴더"
+  },
+  "badgeNeedsReauth": {
+    "message": "재인증 필요"
+  },
+  "badgeUnreadable": {
+    "message": "읽을 수 없음"
+  },
+  "reauthButton": {
+    "message": "재인증"
+  },
+  "editLabelButton": {
+    "message": "라벨 편집"
+  },
+  "removeButtonAria": {
+    "message": "삭제"
+  },
+  "addRootButton": {
+    "message": "폴더 추가"
+  },
+  "rootLabelPlaceholder": {
+    "message": "예: claude2"
+  },
+  "muteButtonAria": {
+    "message": "음소거"
+  },
+  "unmuteButtonAria": {
+    "message": "음소거 해제"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$초",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$분",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$시간 $MINUTES$분",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "최근 활동"
+  },
+  "eventStartedLabel": {
+    "message": "시작됨"
+  },
+  "eventDoneLabel": {
+    "message": "완료됨"
+  },
+  "eventClosedLabel": {
+    "message": "종료됨"
+  },
+  "eventMutedTitle": {
+    "message": "음소거됨(소리 안 남)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API 키"
+  },
+  "byokApiKeySetLabel": {
+    "message": "키 저장됨"
+  },
+  "byokSaveButton": {
+    "message": "저장"
+  },
+  "byokDeleteButton": {
+    "message": "삭제"
+  },
+  "byokTestButton": {
+    "message": "연결 테스트"
+  },
+  "byokTestingLabel": {
+    "message": "테스트 중…"
+  },
+  "byokTestResultSuccess": {
+    "message": "연결 성공"
+  },
+  "byokTestResultFailure": {
+    "message": "연결 실패($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "먼저 API 키를 입력하고 저장하세요"
+  },
+  "tabPerchLabel": {
+    "message": "횃대"
+  },
+  "tabGardenLabel": {
+    "message": "정원"
+  },
+  "tabSettingsLabel": {
+    "message": "설정"
+  },
+  "voiceEnableLabel": {
+    "message": "음성으로 읽어주기"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ 답장 기다리는 중입니다",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API 키"
+  },
+  "voiceVolumeLabel": {
+    "message": "음량"
+  },
+  "soundEnableLabel": {
+    "message": "소리로 알리기"
+  },
+  "iconSetHeading": {
+    "message": "아이콘 세트"
+  },
+  "iconSetBirds": {
+    "message": "새"
+  },
+  "iconSetGnome": {
+    "message": "노움"
+  },
+  "iconSetCat": {
+    "message": "고양이"
+  },
+  "iconSetRobot": {
+    "message": "로봇"
+  },
+  "iconSetFrog": {
+    "message": "개구리"
+  },
+  "iconSetEmpty": {
+    "message": "아직 프로젝트가 없습니다"
+  },
+  "iconSetToggleAria": {
+    "message": "아이콘 세트 전환"
+  },
+  "copyPathButton": {
+    "message": "경로 복사"
+  },
+  "closeButtonAria": {
+    "message": "닫기"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API 키"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "요약에 사용"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API 키"
+  },
+  "aiApiKeysDescription": {
+    "message": "선택 사항입니다. 완료 이벤트 음성 요약과 연결 테스트에 사용합니다. 두 키를 모두 저장하면 요약에 사용할 제공업체를 선택할 수 있습니다."
+  },
+  "rootDefaultBadge": {
+    "message": "기본"
+  },
+  "windowModeHeading": {
+    "message": "창"
+  },
+  "windowModeFloating": {
+    "message": "떠 있는 창(항상 맨 위, 전체 화면 앱 위에도 표시)"
+  },
+  "windowModeNormal": {
+    "message": "일반 창(최대화·전체 화면 가능)"
+  },
+  "birdWaitingLabel": {
+    "message": "답장 기다리는 중"
+  },
+  "askingBadgeTitle": {
+    "message": "답을 받아야 계속할 수 있어 기다리는 중입니다"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API 키"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "선택 사항입니다. TypeSafe는 에이전트가 답장을 기다리며 멈춰 있는지 판정하는 외부 AI 서비스입니다. 키를 저장하면 멈춘 세션의 마지막 응답을 TypeSafe로 보내고, 답장을 기다린다고 판정된 새에 “?”를 붙입니다. 키가 없으면 질문 도구에서 멈춘 새에만 “?”가 붙습니다."
+  },
+  "bubblePlanApproval": {
+    "message": "계획을 승인할까요?"
+  },
+  "birdWatchingLabel": {
+    "message": "지켜보는 중"
+  },
+  "watchingPeersTitle": {
+    "message": "아직 작업 중인 세션"
+  },
+  "byokReplaceButton": {
+    "message": "교체"
+  },
+  "byokSaveFailedMessage": {
+    "message": "키를 저장하지 못했습니다. 다시 시도해 주세요."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe 공식 사이트"
+  }
+}

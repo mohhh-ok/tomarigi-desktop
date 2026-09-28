@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Насест для сессий ваших ИИ-агентов. Иконки птиц сразу показывают состояние. Панель в плавающем мини-окне. Ноль разрешений."
+  },
+  "birdWorkingLabel": {
+    "message": "клюёт"
+  },
+  "birdDozingLabel": {
+    "message": "дремлет"
+  },
+  "loadingLabel": {
+    "message": "Загрузка…"
+  },
+  "setupIntro": {
+    "message": "Выберите папку, где Claude Code / Codex хранит журналы сессий, и птицы начнут садиться на насест."
+  },
+  "setupPickPrefix": {
+    "message": "В диалоге выбора нажмите "
+  },
+  "setupPickMiddle": {
+    "message": ", затем введите "
+  },
+  "setupPickSuffix": {
+    "message": " (это скрытая папка)."
+  },
+  "setupButton": {
+    "message": "Установить насест"
+  },
+  "duplicateRootMessage": {
+    "message": "Эта папка уже добавлена"
+  },
+  "saveFailedMessage": {
+    "message": "Не удалось сохранить"
+  },
+  "reauthFailedMessage": {
+    "message": "Не удалось обновить доступ"
+  },
+  "emptyNoSessions": {
+    "message": "Сейчас на насесте никого нет (последние 30 мин)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Требуется повторная авторизация — переподключитесь ниже, в разделе «Отслеживаемые папки»"
+  },
+  "emptyNoEvents": {
+    "message": "Нет активности за последние 30 мин"
+  },
+  "summonButton": {
+    "message": "Открыть в мини-окне (поверх всех окон)"
+  },
+  "pipNote": {
+    "message": "Птицы сейчас в мини-окне."
+  },
+  "rootsHeading": {
+    "message": "Отслеживаемые папки"
+  },
+  "badgeNeedsReauth": {
+    "message": "Нужна авторизация"
+  },
+  "badgeUnreadable": {
+    "message": "Не читается"
+  },
+  "reauthButton": {
+    "message": "Авторизовать заново"
+  },
+  "editLabelButton": {
+    "message": "Изменить метку"
+  },
+  "removeButtonAria": {
+    "message": "Удалить"
+  },
+  "addRootButton": {
+    "message": "Добавить папку"
+  },
+  "rootLabelPlaceholder": {
+    "message": "напр. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Выключить звук"
+  },
+  "unmuteButtonAria": {
+    "message": "Включить звук"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$с",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$мин",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$ч $MINUTES$мин",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Недавняя активность"
+  },
+  "eventStartedLabel": {
+    "message": "начато"
+  },
+  "eventDoneLabel": {
+    "message": "завершено"
+  },
+  "eventClosedLabel": {
+    "message": "закрыто"
+  },
+  "eventMutedTitle": {
+    "message": "Без звука (заглушено)"
+  },
+  "byokApiKeyLabel": {
+    "message": "API-ключ Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Ключ сохранён"
+  },
+  "byokSaveButton": {
+    "message": "Сохранить"
+  },
+  "byokDeleteButton": {
+    "message": "Удалить"
+  },
+  "byokTestButton": {
+    "message": "Проверить соединение"
+  },
+  "byokTestingLabel": {
+    "message": "Проверка…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Соединение установлено"
+  },
+  "byokTestResultFailure": {
+    "message": "Ошибка соединения ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Сначала введите и сохраните API-ключ"
+  },
+  "tabPerchLabel": {
+    "message": "Насест"
+  },
+  "tabGardenLabel": {
+    "message": "Сад"
+  },
+  "tabSettingsLabel": {
+    "message": "Настройки"
+  },
+  "voiceEnableLabel": {
+    "message": "Читать вслух"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ ждёт вашего ответа",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "API-ключ Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Громкость"
+  },
+  "soundEnableLabel": {
+    "message": "Оповещать звуком"
+  },
+  "iconSetHeading": {
+    "message": "Наборы значков"
+  },
+  "iconSetBirds": {
+    "message": "Птицы"
+  },
+  "iconSetGnome": {
+    "message": "Гном"
+  },
+  "iconSetCat": {
+    "message": "Кот"
+  },
+  "iconSetRobot": {
+    "message": "Робот"
+  },
+  "iconSetFrog": {
+    "message": "Лягушка"
+  },
+  "iconSetEmpty": {
+    "message": "Проектов пока нет"
+  },
+  "iconSetToggleAria": {
+    "message": "Переключить набор значков"
+  },
+  "copyPathButton": {
+    "message": "Копировать путь"
+  },
+  "closeButtonAria": {
+    "message": "Закрыть"
+  },
+  "openAiApiKeyHeading": {
+    "message": "API-ключ OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Использовать для сводок"
+  },
+  "aiApiKeysHeading": {
+    "message": "API-ключи ИИ"
+  },
+  "aiApiKeysDescription": {
+    "message": "Необязательно. Используется для голосовых сводок завершённых событий и проверки соединения. Если сохранены оба ключа, можно выбрать поставщика для сводок."
+  },
+  "rootDefaultBadge": {
+    "message": "По умолчанию"
+  },
+  "windowModeHeading": {
+    "message": "Окно"
+  },
+  "windowModeFloating": {
+    "message": "Плавающее (всегда поверх, даже над полноэкранными приложениями)"
+  },
+  "windowModeNormal": {
+    "message": "Обычное окно (можно развернуть или открыть на весь экран)"
+  },
+  "birdWaitingLabel": {
+    "message": "ждёт вашего ответа"
+  },
+  "askingBadgeTitle": {
+    "message": "Ждёт вашего ответа, чтобы продолжить"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "API-ключ TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Необязательно. TypeSafe — внешний ИИ-сервис, который определяет, остановился ли агент в ожидании вашего ответа. Если ключ сохранён, последний ответ остановившегося сеанса отправляется в TypeSafe, и у птиц, которые ждут ответа, появляется «?». Без ключа «?» появляется только у птиц, остановившихся на инструменте вопроса."
+  },
+  "bubblePlanApproval": {
+    "message": "Одобрить план?"
+  },
+  "birdWatchingLabel": {
+    "message": "присматривает"
+  },
+  "watchingPeersTitle": {
+    "message": "Сеансы, которые ещё работают"
+  },
+  "byokReplaceButton": {
+    "message": "Заменить"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Не удалось сохранить ключ. Попробуйте ещё раз."
+  },
+  "typeSafeSiteLink": {
+    "message": "Сайт TypeSafe"
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Pinne som vakar över dina AI-agentsessioner. Fågelikoner visar status direkt. Panel i svävande minifönster. Noll behörigheter."
+  },
+  "birdWorkingLabel": {
+    "message": "pickar"
+  },
+  "birdDozingLabel": {
+    "message": "slumrar"
+  },
+  "loadingLabel": {
+    "message": "Läser in…"
+  },
+  "setupIntro": {
+    "message": "Välj mappen där Claude Code / Codex sparar sina sessionsloggar, så börjar fåglarna landa på pinnen."
+  },
+  "setupPickPrefix": {
+    "message": "Tryck på "
+  },
+  "setupPickMiddle": {
+    "message": " i väljaren och skriv sedan "
+  },
+  "setupPickSuffix": {
+    "message": " (det är en dold mapp)."
+  },
+  "setupButton": {
+    "message": "Sätt upp pinnen"
+  },
+  "duplicateRootMessage": {
+    "message": "Den mappen är redan tillagd"
+  },
+  "saveFailedMessage": {
+    "message": "Det gick inte att spara"
+  },
+  "reauthFailedMessage": {
+    "message": "Det gick inte att förnya åtkomsten"
+  },
+  "emptyNoSessions": {
+    "message": "Ingen fågel på pinnen just nu (senaste 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Kräver ny auktorisering — återanslut nedan under Bevakade mappar"
+  },
+  "emptyNoEvents": {
+    "message": "Ingen aktivitet de senaste 30 min"
+  },
+  "summonButton": {
+    "message": "Öppna i miniatyrfönster (alltid överst)"
+  },
+  "pipNote": {
+    "message": "Fåglarna är ute i miniatyrfönstret."
+  },
+  "rootsHeading": {
+    "message": "Bevakade mappar"
+  },
+  "badgeNeedsReauth": {
+    "message": "Kräver ny auktorisering"
+  },
+  "badgeUnreadable": {
+    "message": "Går inte att läsa"
+  },
+  "reauthButton": {
+    "message": "Auktorisera igen"
+  },
+  "editLabelButton": {
+    "message": "Redigera etikett"
+  },
+  "removeButtonAria": {
+    "message": "Ta bort"
+  },
+  "addRootButton": {
+    "message": "Lägg till mapp"
+  },
+  "rootLabelPlaceholder": {
+    "message": "t.ex. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Stäng av ljud"
+  },
+  "unmuteButtonAria": {
+    "message": "Slå på ljud"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Senaste aktivitet"
+  },
+  "eventStartedLabel": {
+    "message": "startad"
+  },
+  "eventDoneLabel": {
+    "message": "klar"
+  },
+  "eventClosedLabel": {
+    "message": "stängd"
+  },
+  "eventMutedTitle": {
+    "message": "Tystad (inget ljud)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API-nyckel"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Nyckel sparad"
+  },
+  "byokSaveButton": {
+    "message": "Spara"
+  },
+  "byokDeleteButton": {
+    "message": "Ta bort"
+  },
+  "byokTestButton": {
+    "message": "Testa anslutning"
+  },
+  "byokTestingLabel": {
+    "message": "Testar…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Anslutningen lyckades"
+  },
+  "byokTestResultFailure": {
+    "message": "Anslutningen misslyckades ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Ange och spara en API-nyckel först"
+  },
+  "tabPerchLabel": {
+    "message": "Pinne"
+  },
+  "tabGardenLabel": {
+    "message": "Trädgård"
+  },
+  "tabSettingsLabel": {
+    "message": "Inställningar"
+  },
+  "voiceEnableLabel": {
+    "message": "Läs upp med röst"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ väntar på ditt svar",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API-nyckel"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volym"
+  },
+  "soundEnableLabel": {
+    "message": "Meddela med ljud"
+  },
+  "iconSetHeading": {
+    "message": "Ikonuppsättningar"
+  },
+  "iconSetBirds": {
+    "message": "Fåglar"
+  },
+  "iconSetGnome": {
+    "message": "Tomte"
+  },
+  "iconSetCat": {
+    "message": "Katt"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Groda"
+  },
+  "iconSetEmpty": {
+    "message": "Inga projekt än"
+  },
+  "iconSetToggleAria": {
+    "message": "Byt ikonuppsättning"
+  },
+  "copyPathButton": {
+    "message": "Kopiera sökväg"
+  },
+  "closeButtonAria": {
+    "message": "Stäng"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API-nyckel"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Använd för sammanfattningar"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API-nycklar"
+  },
+  "aiApiKeysDescription": {
+    "message": "Valfritt. Används för upplästa sammanfattningar av slutförda händelser och anslutningstester. Om båda nycklarna sparas kan du välja leverantör för sammanfattningar."
+  },
+  "rootDefaultBadge": {
+    "message": "Standard"
+  },
+  "windowModeHeading": {
+    "message": "Fönster"
+  },
+  "windowModeFloating": {
+    "message": "Flytande (alltid överst, även över appar i helskärm)"
+  },
+  "windowModeNormal": {
+    "message": "Vanligt fönster (kan maximeras eller visas i helskärm)"
+  },
+  "birdWaitingLabel": {
+    "message": "väntar på ditt svar"
+  },
+  "askingBadgeTitle": {
+    "message": "Väntar på ditt svar för att kunna fortsätta"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API-nyckel"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Valfritt. TypeSafe är en extern AI-tjänst som bedömer om en agent har stannat för att vänta på ditt svar. Med en sparad nyckel skickas det sista svaret från en stoppad session till TypeSafe, och fåglar som bedöms vänta på svar får ett ”?”. Utan nyckel får bara fåglar som stannat vid ett frågeverktyg ”?”."
+  },
+  "bubblePlanApproval": {
+    "message": "Godkänna planen?"
+  },
+  "birdWatchingLabel": {
+    "message": "håller koll"
+  },
+  "watchingPeersTitle": {
+    "message": "Sessioner som fortfarande arbetar"
+  },
+  "byokReplaceButton": {
+    "message": "Ersätt"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Det gick inte att spara nyckeln. Försök igen."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafes webbplats"
+  }
+}

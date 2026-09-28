@@ -1,0 +1,3 @@
+#!/bin/sh
+# commit 前に staged 差分への secret 混入を検査する(gitleaks 8.19+ の構文)
+exec gitleaks git --pre-commit --staged --redact --no-banner

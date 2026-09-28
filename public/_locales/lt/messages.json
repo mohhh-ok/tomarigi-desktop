@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Laktelė AI agentų sesijoms. Paukščio poza iškart parodo būseną. Skydelis plūduriuojančiame mini lange. Nulis leidimų."
+  },
+  "birdWorkingLabel": {
+    "message": "lesa"
+  },
+  "birdDozingLabel": {
+    "message": "snūduriuoja"
+  },
+  "loadingLabel": {
+    "message": "Įkeliama…"
+  },
+  "setupIntro": {
+    "message": "Pasirinkite aplanką, kuriame Claude Code / Codex saugo sesijų žurnalus, ir paukščiai pradės tūpti ant laktelės."
+  },
+  "setupPickPrefix": {
+    "message": "Pasirinkimo lange paspauskite "
+  },
+  "setupPickMiddle": {
+    "message": ", tada įveskite "
+  },
+  "setupPickSuffix": {
+    "message": " (tai paslėptas aplankas)."
+  },
+  "setupButton": {
+    "message": "Pastatyti laktelę"
+  },
+  "duplicateRootMessage": {
+    "message": "Tas aplankas jau pridėtas"
+  },
+  "saveFailedMessage": {
+    "message": "Nepavyko išsaugoti"
+  },
+  "reauthFailedMessage": {
+    "message": "Nepavyko atnaujinti prieigos"
+  },
+  "emptyNoSessions": {
+    "message": "Šiuo metu ant laktelės nėra paukščių (paskutinės 30 min.)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Reikia pakartotinio leidimo — prisijunkite iš naujo žemiau, skiltyje Stebimi aplankai"
+  },
+  "emptyNoEvents": {
+    "message": "Nėra veiklos per paskutines 30 min."
+  },
+  "summonButton": {
+    "message": "Atidaryti mini lange (visada viršuje)"
+  },
+  "pipNote": {
+    "message": "Paukščiai dabar yra mini lange."
+  },
+  "rootsHeading": {
+    "message": "Stebimi aplankai"
+  },
+  "badgeNeedsReauth": {
+    "message": "Reikia leidimo"
+  },
+  "badgeUnreadable": {
+    "message": "Neskaitomas"
+  },
+  "reauthButton": {
+    "message": "Suteikti leidimą iš naujo"
+  },
+  "editLabelButton": {
+    "message": "Redaguoti žymą"
+  },
+  "removeButtonAria": {
+    "message": "Pašalinti"
+  },
+  "addRootButton": {
+    "message": "Pridėti aplanką"
+  },
+  "rootLabelPlaceholder": {
+    "message": "pvz., claude2"
+  },
+  "muteButtonAria": {
+    "message": "Nutildyti"
+  },
+  "unmuteButtonAria": {
+    "message": "Įjungti garsą"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$val $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Naujausia veikla"
+  },
+  "eventStartedLabel": {
+    "message": "pradėta"
+  },
+  "eventDoneLabel": {
+    "message": "baigta"
+  },
+  "eventClosedLabel": {
+    "message": "uždaryta"
+  },
+  "eventMutedTitle": {
+    "message": "Nutildyta (be garso)"
+  },
+  "byokApiKeyLabel": {
+    "message": "„Anthropic“ API raktas"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Raktas išsaugotas"
+  },
+  "byokSaveButton": {
+    "message": "Išsaugoti"
+  },
+  "byokDeleteButton": {
+    "message": "Ištrinti"
+  },
+  "byokTestButton": {
+    "message": "Tikrinti ryšį"
+  },
+  "byokTestingLabel": {
+    "message": "Tikrinama…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Ryšys sėkmingas"
+  },
+  "byokTestResultFailure": {
+    "message": "Ryšys nepavyko ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Pirmiausia įveskite ir išsaugokite API raktą"
+  },
+  "tabPerchLabel": {
+    "message": "Laktelė"
+  },
+  "tabGardenLabel": {
+    "message": "Sodas"
+  },
+  "tabSettingsLabel": {
+    "message": "Nustatymai"
+  },
+  "voiceEnableLabel": {
+    "message": "Skaityti balsu"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ laukia jūsų atsakymo",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "„Anthropic“ API raktas"
+  },
+  "voiceVolumeLabel": {
+    "message": "Garsumas"
+  },
+  "soundEnableLabel": {
+    "message": "Pranešti garsu"
+  },
+  "iconSetHeading": {
+    "message": "Piktogramų rinkiniai"
+  },
+  "iconSetBirds": {
+    "message": "Paukščiai"
+  },
+  "iconSetGnome": {
+    "message": "Nykštukas"
+  },
+  "iconSetCat": {
+    "message": "Katė"
+  },
+  "iconSetRobot": {
+    "message": "Robotas"
+  },
+  "iconSetFrog": {
+    "message": "Varlė"
+  },
+  "iconSetEmpty": {
+    "message": "Kol kas nėra projektų"
+  },
+  "iconSetToggleAria": {
+    "message": "Perjungti piktogramų rinkinį"
+  },
+  "copyPathButton": {
+    "message": "Kopijuoti kelią"
+  },
+  "closeButtonAria": {
+    "message": "Uždaryti"
+  },
+  "openAiApiKeyHeading": {
+    "message": "„OpenAI“ API raktas"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Naudoti santraukoms"
+  },
+  "aiApiKeysHeading": {
+    "message": "DI API raktai"
+  },
+  "aiApiKeysDescription": {
+    "message": "Pasirenkama. Naudojama užbaigtų įvykių balso santraukoms ir ryšio testams. Išsaugoję abu raktus galite pasirinkti santraukų teikėją."
+  },
+  "rootDefaultBadge": {
+    "message": "Numatytasis"
+  },
+  "windowModeHeading": {
+    "message": "Langas"
+  },
+  "windowModeFloating": {
+    "message": "Plaukiojantis (visada viršuje, net virš viso ekrano programų)"
+  },
+  "windowModeNormal": {
+    "message": "Įprastas langas (galima išdidinti arba rodyti visame ekrane)"
+  },
+  "birdWaitingLabel": {
+    "message": "laukia jūsų atsakymo"
+  },
+  "askingBadgeTitle": {
+    "message": "Laukia jūsų atsakymo, kad galėtų tęsti"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "„TypeSafe“ API raktas"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Neprivaloma. „TypeSafe“ – išorinė DI paslauga, kuri įvertina, ar agentas sustojo laukdamas jūsų atsakymo. Išsaugojus raktą, sustojusio seanso paskutinis atsakymas siunčiamas „TypeSafe“, o paukščiai, kurie, įvertinus, laukia atsakymo, gauna „?“. Be rakto „?“ gauna tik paukščiai, sustoję ties klausimo įrankiu."
+  },
+  "bubblePlanApproval": {
+    "message": "Patvirtinti planą?"
+  },
+  "birdWatchingLabel": {
+    "message": "stebi"
+  },
+  "watchingPeersTitle": {
+    "message": "Dar dirbantys seansai"
+  },
+  "byokReplaceButton": {
+    "message": "Pakeisti"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Nepavyko išsaugoti rakto. Bandykite dar kartą."
+  },
+  "typeSafeSiteLink": {
+    "message": "„TypeSafe“ svetainė"
+  }
+}

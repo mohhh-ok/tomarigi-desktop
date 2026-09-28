@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "مِجثَم يراقب جلسات وكلاء الذكاء الاصطناعي. أيقونات الطيور تُظهر الحالة بلمحة. لوحة في نافذة مصغّرة عائمة. صفر أذونات."
+  },
+  "birdWorkingLabel": {
+    "message": "ينقر الحَبّ"
+  },
+  "birdDozingLabel": {
+    "message": "يغفو"
+  },
+  "loadingLabel": {
+    "message": "جارٍ التحميل…"
+  },
+  "setupIntro": {
+    "message": "اختر المجلد الذي يحفظ فيه Claude Code / Codex سجلات الجلسات، وستبدأ الطيور بالهبوط على المِجثَم."
+  },
+  "setupPickPrefix": {
+    "message": "في نافذة الاختيار، اضغط "
+  },
+  "setupPickMiddle": {
+    "message": "، ثم اكتب "
+  },
+  "setupPickSuffix": {
+    "message": " (إنه مجلد مخفي)."
+  },
+  "setupButton": {
+    "message": "تركيب المِجثَم"
+  },
+  "duplicateRootMessage": {
+    "message": "هذا المجلد مُضاف بالفعل"
+  },
+  "saveFailedMessage": {
+    "message": "تعذّر الحفظ"
+  },
+  "reauthFailedMessage": {
+    "message": "تعذّر تجديد الإذن"
+  },
+  "emptyNoSessions": {
+    "message": "لا طيور على المِجثَم الآن (آخر 30 دقيقة)"
+  },
+  "emptyNeedsReauth": {
+    "message": "بحاجة إلى إعادة التفويض — أعد الاتصال من المجلدات المراقَبة أدناه"
+  },
+  "emptyNoEvents": {
+    "message": "لا نشاط في آخر 30 دقيقة"
+  },
+  "summonButton": {
+    "message": "فتح في نافذة مصغّرة (تبقى في الأعلى دائمًا)"
+  },
+  "pipNote": {
+    "message": "الطيور الآن في النافذة المصغّرة."
+  },
+  "rootsHeading": {
+    "message": "المجلدات المراقَبة"
+  },
+  "badgeNeedsReauth": {
+    "message": "يحتاج إعادة تفويض"
+  },
+  "badgeUnreadable": {
+    "message": "تعذّرت القراءة"
+  },
+  "reauthButton": {
+    "message": "إعادة التفويض"
+  },
+  "editLabelButton": {
+    "message": "تعديل التسمية"
+  },
+  "removeButtonAria": {
+    "message": "إزالة"
+  },
+  "addRootButton": {
+    "message": "إضافة مجلد"
+  },
+  "rootLabelPlaceholder": {
+    "message": "مثال: claude2"
+  },
+  "muteButtonAria": {
+    "message": "كتم الصوت"
+  },
+  "unmuteButtonAria": {
+    "message": "إلغاء كتم الصوت"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$ث",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$د",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$س $MINUTES$د",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "النشاط الأخير"
+  },
+  "eventStartedLabel": {
+    "message": "بدأت"
+  },
+  "eventDoneLabel": {
+    "message": "اكتملت"
+  },
+  "eventClosedLabel": {
+    "message": "أُغلقت"
+  },
+  "eventMutedTitle": {
+    "message": "مكتوم (بدون صوت)"
+  },
+  "byokApiKeyLabel": {
+    "message": "مفتاح واجهة برمجة تطبيقات Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "تم حفظ المفتاح"
+  },
+  "byokSaveButton": {
+    "message": "حفظ"
+  },
+  "byokDeleteButton": {
+    "message": "حذف"
+  },
+  "byokTestButton": {
+    "message": "اختبار الاتصال"
+  },
+  "byokTestingLabel": {
+    "message": "جارٍ الاختبار…"
+  },
+  "byokTestResultSuccess": {
+    "message": "تم الاتصال بنجاح"
+  },
+  "byokTestResultFailure": {
+    "message": "فشل الاتصال ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "أدخل مفتاح واجهة برمجة التطبيقات واحفظه أولاً"
+  },
+  "tabPerchLabel": {
+    "message": "المجثم"
+  },
+  "tabGardenLabel": {
+    "message": "الحديقة"
+  },
+  "tabSettingsLabel": {
+    "message": "الإعدادات"
+  },
+  "voiceEnableLabel": {
+    "message": "القراءة بصوت عالٍ"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ ينتظر ردّك",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "مفتاح واجهة برمجة تطبيقات Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "مستوى الصوت"
+  },
+  "soundEnableLabel": {
+    "message": "التنبيه بالصوت"
+  },
+  "iconSetHeading": {
+    "message": "مجموعات الأيقونات"
+  },
+  "iconSetBirds": {
+    "message": "الطيور"
+  },
+  "iconSetGnome": {
+    "message": "قزم"
+  },
+  "iconSetCat": {
+    "message": "قطة"
+  },
+  "iconSetRobot": {
+    "message": "روبوت"
+  },
+  "iconSetFrog": {
+    "message": "ضفدع"
+  },
+  "iconSetEmpty": {
+    "message": "لا توجد مشاريع بعد"
+  },
+  "iconSetToggleAria": {
+    "message": "تبديل مجموعة الأيقونات"
+  },
+  "copyPathButton": {
+    "message": "نسخ المسار"
+  },
+  "closeButtonAria": {
+    "message": "إغلاق"
+  },
+  "openAiApiKeyHeading": {
+    "message": "مفتاح واجهة برمجة تطبيقات OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "استخدامه للملخصات"
+  },
+  "aiApiKeysHeading": {
+    "message": "مفاتيح API للذكاء الاصطناعي"
+  },
+  "aiApiKeysDescription": {
+    "message": "اختياري. يُستخدم للملخصات الصوتية للأحداث المكتملة واختبارات الاتصال. عند حفظ المفتاحين يمكنك اختيار مزود الملخصات."
+  },
+  "rootDefaultBadge": {
+    "message": "افتراضي"
+  },
+  "windowModeHeading": {
+    "message": "النافذة"
+  },
+  "windowModeFloating": {
+    "message": "عائمة (دائمًا في المقدمة، حتى فوق التطبيقات بملء الشاشة)"
+  },
+  "windowModeNormal": {
+    "message": "نافذة عادية (يمكن تكبيرها أو عرضها بملء الشاشة)"
+  },
+  "birdWaitingLabel": {
+    "message": "ينتظر ردّك"
+  },
+  "askingBadgeTitle": {
+    "message": "ينتظر إجابتك ليتمكن من المتابعة"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "مفتاح واجهة برمجة تطبيقات TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "اختياري. TypeSafe خدمة ذكاء اصطناعي خارجية تحكم على ما إذا كان الوكيل قد توقف في انتظار ردّك. عند حفظ المفتاح يُرسَل آخر ردّ للجلسة المتوقفة إلى TypeSafe، ويظهر «?» على الطيور التي يُحكم بأنها تنتظر ردّك. بدون مفتاح، يظهر «?» فقط على الطيور المتوقفة عند أداة سؤال."
+  },
+  "bubblePlanApproval": {
+    "message": "هل توافق على الخطة؟"
+  },
+  "birdWatchingLabel": {
+    "message": "يراقب"
+  },
+  "watchingPeersTitle": {
+    "message": "جلسات ما زالت تعمل"
+  },
+  "byokReplaceButton": {
+    "message": "استبدال"
+  },
+  "byokSaveFailedMessage": {
+    "message": "تعذّر حفظ المفتاح. حاول مرة أخرى."
+  },
+  "typeSafeSiteLink": {
+    "message": "موقع TypeSafe"
+  }
+}

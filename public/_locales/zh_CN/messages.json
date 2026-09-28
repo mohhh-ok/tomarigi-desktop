@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "守望 AI 智能体会话的栖木。鸟儿姿态一眼展示会话状态。可将面板呼出为悬浮小窗。零权限，无服务器。"
+  },
+  "birdWorkingLabel": {
+    "message": "啄食中"
+  },
+  "birdDozingLabel": {
+    "message": "打盹中"
+  },
+  "loadingLabel": {
+    "message": "加载中…"
+  },
+  "setupIntro": {
+    "message": "选择 Claude Code / Codex 保存会话记录的文件夹,鸟儿就会开始落到栖木上。"
+  },
+  "setupPickPrefix": {
+    "message": "在选择器中按 "
+  },
+  "setupPickMiddle": {
+    "message": ",然后输入 "
+  },
+  "setupPickSuffix": {
+    "message": "(这是一个隐藏文件夹)。"
+  },
+  "setupButton": {
+    "message": "搭建栖木"
+  },
+  "duplicateRootMessage": {
+    "message": "该文件夹已经在栖木上了"
+  },
+  "saveFailedMessage": {
+    "message": "保存失败"
+  },
+  "reauthFailedMessage": {
+    "message": "刷新权限失败"
+  },
+  "emptyNoSessions": {
+    "message": "栖木上暂时没有鸟(仅显示最近 30 分钟)"
+  },
+  "emptyNeedsReauth": {
+    "message": "需要重新授权——请在下方的监视文件夹中重新连接"
+  },
+  "emptyNoEvents": {
+    "message": "最近 30 分钟没有动态"
+  },
+  "summonButton": {
+    "message": "弹出小窗口(始终置顶)"
+  },
+  "pipNote": {
+    "message": "鸟儿们正在小窗口里。"
+  },
+  "rootsHeading": {
+    "message": "监视的文件夹"
+  },
+  "badgeNeedsReauth": {
+    "message": "需要重新授权"
+  },
+  "badgeUnreadable": {
+    "message": "无法读取"
+  },
+  "reauthButton": {
+    "message": "重新授权"
+  },
+  "editLabelButton": {
+    "message": "编辑标签"
+  },
+  "removeButtonAria": {
+    "message": "移除"
+  },
+  "addRootButton": {
+    "message": "添加文件夹"
+  },
+  "rootLabelPlaceholder": {
+    "message": "例如:claude2"
+  },
+  "muteButtonAria": {
+    "message": "静音"
+  },
+  "unmuteButtonAria": {
+    "message": "取消静音"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$秒",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$分钟",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$小时$MINUTES$分钟",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "最近动态"
+  },
+  "eventStartedLabel": {
+    "message": "已开始"
+  },
+  "eventDoneLabel": {
+    "message": "已完成"
+  },
+  "eventClosedLabel": {
+    "message": "已关闭"
+  },
+  "eventMutedTitle": {
+    "message": "已静音(不会响)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API 密钥"
+  },
+  "byokApiKeySetLabel": {
+    "message": "密钥已保存"
+  },
+  "byokSaveButton": {
+    "message": "保存"
+  },
+  "byokDeleteButton": {
+    "message": "删除"
+  },
+  "byokTestButton": {
+    "message": "测试连接"
+  },
+  "byokTestingLabel": {
+    "message": "测试中…"
+  },
+  "byokTestResultSuccess": {
+    "message": "连接成功"
+  },
+  "byokTestResultFailure": {
+    "message": "连接失败($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "请先输入并保存 API 密钥"
+  },
+  "tabPerchLabel": {
+    "message": "栖木"
+  },
+  "tabGardenLabel": {
+    "message": "庭院"
+  },
+  "tabSettingsLabel": {
+    "message": "设置"
+  },
+  "voiceEnableLabel": {
+    "message": "用语音朗读"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ 正在等你回复",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API 密钥"
+  },
+  "voiceVolumeLabel": {
+    "message": "音量"
+  },
+  "soundEnableLabel": {
+    "message": "声音提醒"
+  },
+  "iconSetHeading": {
+    "message": "图标集"
+  },
+  "iconSetBirds": {
+    "message": "鸟"
+  },
+  "iconSetGnome": {
+    "message": "侏儒"
+  },
+  "iconSetCat": {
+    "message": "猫"
+  },
+  "iconSetRobot": {
+    "message": "机器人"
+  },
+  "iconSetFrog": {
+    "message": "青蛙"
+  },
+  "iconSetEmpty": {
+    "message": "还没有项目"
+  },
+  "iconSetToggleAria": {
+    "message": "切换图标集"
+  },
+  "copyPathButton": {
+    "message": "复制路径"
+  },
+  "closeButtonAria": {
+    "message": "关闭"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API 密钥"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "用于摘要"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API 密钥"
+  },
+  "aiApiKeysDescription": {
+    "message": "可选。用于完成事件的语音摘要和连接测试。如果保存了两个密钥，可选择用于摘要的提供商。"
+  },
+  "rootDefaultBadge": {
+    "message": "默认"
+  },
+  "windowModeHeading": {
+    "message": "窗口"
+  },
+  "windowModeFloating": {
+    "message": "浮动窗口(始终置顶,也显示在全屏应用之上)"
+  },
+  "windowModeNormal": {
+    "message": "普通窗口(可最大化或全屏)"
+  },
+  "birdWaitingLabel": {
+    "message": "等你回复"
+  },
+  "askingBadgeTitle": {
+    "message": "正在等你回答，回答后才能继续"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API 密钥"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "可选。TypeSafe 是一项外部 AI 服务，用于判断代理是否停下来等你回复。保存密钥后，会把已停下会话的最后一条回复发送给 TypeSafe，被判定为在等回复的鸟会带上“?”。没有密钥时，只有停在提问工具上的鸟会带上“?”。"
+  },
+  "bubblePlanApproval": {
+    "message": "要批准这个计划吗？"
+  },
+  "birdWatchingLabel": {
+    "message": "守候中"
+  },
+  "watchingPeersTitle": {
+    "message": "仍在工作的会话"
+  },
+  "byokReplaceButton": {
+    "message": "替换"
+  },
+  "byokSaveFailedMessage": {
+    "message": "无法保存密钥。请重试。"
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe 官网"
+  }
+}

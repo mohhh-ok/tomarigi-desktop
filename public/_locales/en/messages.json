@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Watch your AI agent sessions with a perch of bird icons. Pop any panel into a floating mini window. Zero permissions, no server."
+  },
+  "birdWorkingLabel": {
+    "message": "pecking away"
+  },
+  "birdDozingLabel": {
+    "message": "dozing off"
+  },
+  "loadingLabel": {
+    "message": "Loading…"
+  },
+  "setupIntro": {
+    "message": "Pick a Claude Code or Codex session-log folder, and birds will start landing on the perch."
+  },
+  "setupPickPrefix": {
+    "message": "In the picker, press "
+  },
+  "setupPickMiddle": {
+    "message": ", then type "
+  },
+  "setupPickSuffix": {
+    "message": " (it's a hidden folder)."
+  },
+  "setupButton": {
+    "message": "Set up the perch"
+  },
+  "duplicateRootMessage": {
+    "message": "That folder is already on the perch"
+  },
+  "saveFailedMessage": {
+    "message": "Couldn't save that"
+  },
+  "reauthFailedMessage": {
+    "message": "Couldn't refresh access"
+  },
+  "emptyNoSessions": {
+    "message": "No birds on the perch right now (last 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Needs re-authorization — reconnect from Watched Folders below"
+  },
+  "emptyNoEvents": {
+    "message": "No activity in the last 30 min"
+  },
+  "summonButton": {
+    "message": "Pop out to a mini window (always on top)"
+  },
+  "pipNote": {
+    "message": "The birds are out in the mini window."
+  },
+  "rootsHeading": {
+    "message": "Watched Folders"
+  },
+  "badgeNeedsReauth": {
+    "message": "Needs re-auth"
+  },
+  "badgeUnreadable": {
+    "message": "Can't read"
+  },
+  "reauthButton": {
+    "message": "Re-authorize"
+  },
+  "editLabelButton": {
+    "message": "Edit label"
+  },
+  "removeButtonAria": {
+    "message": "Remove"
+  },
+  "addRootButton": {
+    "message": "Add folder"
+  },
+  "rootLabelPlaceholder": {
+    "message": "e.g. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Mute"
+  },
+  "unmuteButtonAria": {
+    "message": "Unmute"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$m",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$m",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Recent activity"
+  },
+  "eventStartedLabel": {
+    "message": "started"
+  },
+  "eventDoneLabel": {
+    "message": "done"
+  },
+  "eventClosedLabel": {
+    "message": "closed"
+  },
+  "eventMutedTitle": {
+    "message": "Muted (no sound)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API key"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Key saved"
+  },
+  "byokSaveButton": {
+    "message": "Save"
+  },
+  "byokDeleteButton": {
+    "message": "Delete"
+  },
+  "byokTestButton": {
+    "message": "Test connection"
+  },
+  "byokTestingLabel": {
+    "message": "Testing…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Connected successfully"
+  },
+  "byokTestResultFailure": {
+    "message": "Connection failed ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Enter and save an API key first"
+  },
+  "tabPerchLabel": {
+    "message": "Perch"
+  },
+  "tabGardenLabel": {
+    "message": "Garden"
+  },
+  "tabSettingsLabel": {
+    "message": "Settings"
+  },
+  "voiceEnableLabel": {
+    "message": "Read aloud with voice"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ is waiting for your reply",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API Key"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volume"
+  },
+  "soundEnableLabel": {
+    "message": "Notify with sound"
+  },
+  "iconSetHeading": {
+    "message": "Icon Sets"
+  },
+  "iconSetBirds": {
+    "message": "Birds"
+  },
+  "iconSetGnome": {
+    "message": "Gnome"
+  },
+  "iconSetCat": {
+    "message": "Cat"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Frog"
+  },
+  "iconSetEmpty": {
+    "message": "No projects yet"
+  },
+  "iconSetToggleAria": {
+    "message": "Switch icon set"
+  },
+  "copyPathButton": {
+    "message": "Copy path"
+  },
+  "closeButtonAria": {
+    "message": "Close"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API Key"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Use for summaries"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API Keys"
+  },
+  "aiApiKeysDescription": {
+    "message": "Optional. Used for done-event voice summaries and connection tests. If both keys are saved, choose which provider to use for summaries."
+  },
+  "rootDefaultBadge": {
+    "message": "Default"
+  },
+  "windowModeHeading": {
+    "message": "Window"
+  },
+  "windowModeFloating": {
+    "message": "Floating (always on top, even over full-screen apps)"
+  },
+  "windowModeNormal": {
+    "message": "Standard window (can be maximized or go full screen)"
+  },
+  "birdWaitingLabel": {
+    "message": "waiting for your reply"
+  },
+  "askingBadgeTitle": {
+    "message": "Waiting for your answer before it can continue"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API Key"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Optional. TypeSafe is an external AI service that judges whether an agent has stopped to wait for your reply. With a key saved, the last reply of a stopped session is sent to TypeSafe, and birds judged to be waiting get a “?”. Without a key, only birds stopped on a question tool get the “?”."
+  },
+  "bubblePlanApproval": {
+    "message": "Approve the plan?"
+  },
+  "birdWatchingLabel": {
+    "message": "watching"
+  },
+  "watchingPeersTitle": {
+    "message": "Sessions still working"
+  },
+  "byokReplaceButton": {
+    "message": "Replace"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Couldn't save the key. Please try again."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe website"
+  }
+}

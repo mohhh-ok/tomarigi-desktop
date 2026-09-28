@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Tuntungan para sa mga sesyon ng AI agent. Icon ng ibon ay nagpapakita ng estado. Mini window na lumulutang. Walang permiso."
+  },
+  "birdWorkingLabel": {
+    "message": "tumutuka"
+  },
+  "birdDozingLabel": {
+    "message": "inaantok"
+  },
+  "loadingLabel": {
+    "message": "Nilo-load…"
+  },
+  "setupIntro": {
+    "message": "Piliin ang folder kung saan itinatago ng Claude Code / Codex ang mga log ng sesyon, at magsisimulang dumapo ang mga ibon sa tuntungan."
+  },
+  "setupPickPrefix": {
+    "message": "Sa picker, pindutin ang "
+  },
+  "setupPickMiddle": {
+    "message": ", pagkatapos i-type ang "
+  },
+  "setupPickSuffix": {
+    "message": " (nakatagong folder ito)."
+  },
+  "setupButton": {
+    "message": "Itayo ang tuntungan"
+  },
+  "duplicateRootMessage": {
+    "message": "Naidagdag na ang folder na iyan"
+  },
+  "saveFailedMessage": {
+    "message": "Hindi na-save"
+  },
+  "reauthFailedMessage": {
+    "message": "Hindi na-refresh ang access"
+  },
+  "emptyNoSessions": {
+    "message": "Walang ibon sa tuntungan ngayon (huling 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Kailangan ng muling pahintulot — mag-reconnect mula sa Mga Binabantayang Folder sa ibaba"
+  },
+  "emptyNoEvents": {
+    "message": "Walang aktibidad sa huling 30 min"
+  },
+  "summonButton": {
+    "message": "Buksan sa maliit na window (laging nasa ibabaw)"
+  },
+  "pipNote": {
+    "message": "Nasa maliit na window ngayon ang mga ibon."
+  },
+  "rootsHeading": {
+    "message": "Mga Binabantayang Folder"
+  },
+  "badgeNeedsReauth": {
+    "message": "Kailangan ng muling pahintulot"
+  },
+  "badgeUnreadable": {
+    "message": "Hindi mabasa"
+  },
+  "reauthButton": {
+    "message": "Muling payagan"
+  },
+  "editLabelButton": {
+    "message": "I-edit ang label"
+  },
+  "removeButtonAria": {
+    "message": "Alisin"
+  },
+  "addRootButton": {
+    "message": "Magdagdag ng folder"
+  },
+  "rootLabelPlaceholder": {
+    "message": "hal. claude2"
+  },
+  "muteButtonAria": {
+    "message": "I-mute"
+  },
+  "unmuteButtonAria": {
+    "message": "I-unmute"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$oras $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Kamakailang aktibidad"
+  },
+  "eventStartedLabel": {
+    "message": "nagsimula"
+  },
+  "eventDoneLabel": {
+    "message": "tapos na"
+  },
+  "eventClosedLabel": {
+    "message": "sarado"
+  },
+  "eventMutedTitle": {
+    "message": "Naka-mute (walang tunog)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API key"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Na-save ang key"
+  },
+  "byokSaveButton": {
+    "message": "I-save"
+  },
+  "byokDeleteButton": {
+    "message": "Tanggalin"
+  },
+  "byokTestButton": {
+    "message": "Subukan ang koneksyon"
+  },
+  "byokTestingLabel": {
+    "message": "Sinusubukan…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Matagumpay ang koneksyon"
+  },
+  "byokTestResultFailure": {
+    "message": "Nabigo ang koneksyon ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Maglagay at i-save muna ng API key"
+  },
+  "tabPerchLabel": {
+    "message": "Tuntungan"
+  },
+  "tabGardenLabel": {
+    "message": "Hardin"
+  },
+  "tabSettingsLabel": {
+    "message": "Mga Setting"
+  },
+  "voiceEnableLabel": {
+    "message": "Basahin gamit ang boses"
+  },
+  "eventWaitingVoice": {
+    "message": "Naghihintay ng sagot mo ang $PROJECT$",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API key"
+  },
+  "voiceVolumeLabel": {
+    "message": "Lakas ng tunog"
+  },
+  "soundEnableLabel": {
+    "message": "Ipaalam gamit ang tunog"
+  },
+  "iconSetHeading": {
+    "message": "Mga set ng icon"
+  },
+  "iconSetBirds": {
+    "message": "Mga ibon"
+  },
+  "iconSetGnome": {
+    "message": "Gnome"
+  },
+  "iconSetCat": {
+    "message": "Pusa"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Palaka"
+  },
+  "iconSetEmpty": {
+    "message": "Wala pang proyekto"
+  },
+  "iconSetToggleAria": {
+    "message": "Palitan ang set ng icon"
+  },
+  "copyPathButton": {
+    "message": "Kopyahin ang path"
+  },
+  "closeButtonAria": {
+    "message": "Isara"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API key"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Gamitin para sa summary"
+  },
+  "aiApiKeysHeading": {
+    "message": "Mga AI API key"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opsyonal. Ginagamit para sa voice summary ng mga natapos na event at connection test. Kapag naka-save ang parehong key, mapipili mo ang provider para sa summary."
+  },
+  "rootDefaultBadge": {
+    "message": "Default"
+  },
+  "windowModeHeading": {
+    "message": "Window"
+  },
+  "windowModeFloating": {
+    "message": "Lumulutang (laging nasa ibabaw, pati sa mga full-screen na app)"
+  },
+  "windowModeNormal": {
+    "message": "Karaniwang window (puwedeng i-maximize o i-full screen)"
+  },
+  "birdWaitingLabel": {
+    "message": "naghihintay ng sagot mo"
+  },
+  "askingBadgeTitle": {
+    "message": "Naghihintay ng sagot mo bago magpatuloy"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API key"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Opsyonal. Ang TypeSafe ay isang panlabas na AI service na tumutukoy kung huminto ang isang agent para hintayin ang sagot mo. Kapag may naka-save na key, ipinapadala sa TypeSafe ang huling sagot ng huminto na session, at lalagyan ng “?” ang mga ibong natukoy na naghihintay ng sagot. Kung walang key, ang mga ibong huminto sa tool na nagtatanong lang ang may “?”."
+  },
+  "bubblePlanApproval": {
+    "message": "Aprubahan ang plano?"
+  },
+  "birdWatchingLabel": {
+    "message": "nagbabantay"
+  },
+  "watchingPeersTitle": {
+    "message": "Mga session na gumagana pa"
+  },
+  "byokReplaceButton": {
+    "message": "Palitan"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Hindi na-save ang key. Pakisubukang muli."
+  },
+  "typeSafeSiteLink": {
+    "message": "Website ng TypeSafe"
+  }
+}

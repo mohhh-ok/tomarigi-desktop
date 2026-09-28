@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Yapay zeka ajan oturumlarını izleyen tünek. Kuş simgeleri durumu bir bakışta gösterir. Panel yüzen mini pencerede. Sıfır izin."
+  },
+  "birdWorkingLabel": {
+    "message": "gagalıyor"
+  },
+  "birdDozingLabel": {
+    "message": "kestiriyor"
+  },
+  "loadingLabel": {
+    "message": "Yükleniyor…"
+  },
+  "setupIntro": {
+    "message": "Claude Code / Codex'un oturum kayıtlarını tuttuğu klasörü seçin, kuşlar tüneğe konmaya başlasın."
+  },
+  "setupPickPrefix": {
+    "message": "Seçicide "
+  },
+  "setupPickMiddle": {
+    "message": " tuşuna basın, ardından "
+  },
+  "setupPickSuffix": {
+    "message": " yazın (gizli bir klasördür)."
+  },
+  "setupButton": {
+    "message": "Tüneği kur"
+  },
+  "duplicateRootMessage": {
+    "message": "Bu klasör zaten ekli"
+  },
+  "saveFailedMessage": {
+    "message": "Kaydedilemedi"
+  },
+  "reauthFailedMessage": {
+    "message": "Erişim yenilenemedi"
+  },
+  "emptyNoSessions": {
+    "message": "Şu anda tünekte kimse yok (son 30 dk)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Yeniden yetkilendirme gerekiyor — aşağıdaki İzlenen Klasörler'den yeniden bağlanın"
+  },
+  "emptyNoEvents": {
+    "message": "Son 30 dk'da hareket yok"
+  },
+  "summonButton": {
+    "message": "Mini pencerede aç (her zaman üstte)"
+  },
+  "pipNote": {
+    "message": "Kuşlar şu anda mini pencerede."
+  },
+  "rootsHeading": {
+    "message": "İzlenen Klasörler"
+  },
+  "badgeNeedsReauth": {
+    "message": "Yeniden yetki gerekli"
+  },
+  "badgeUnreadable": {
+    "message": "Okunamıyor"
+  },
+  "reauthButton": {
+    "message": "Yeniden yetkilendir"
+  },
+  "editLabelButton": {
+    "message": "Etiketi düzenle"
+  },
+  "removeButtonAria": {
+    "message": "Kaldır"
+  },
+  "addRootButton": {
+    "message": "Klasör ekle"
+  },
+  "rootLabelPlaceholder": {
+    "message": "örn. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Sessize al"
+  },
+  "unmuteButtonAria": {
+    "message": "Sesi aç"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$sn",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$dk",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$sa $MINUTES$dk",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Son etkinlik"
+  },
+  "eventStartedLabel": {
+    "message": "başladı"
+  },
+  "eventDoneLabel": {
+    "message": "tamamlandı"
+  },
+  "eventClosedLabel": {
+    "message": "kapandı"
+  },
+  "eventMutedTitle": {
+    "message": "Sessize alındı (ses yok)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API anahtarı"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Anahtar kaydedildi"
+  },
+  "byokSaveButton": {
+    "message": "Kaydet"
+  },
+  "byokDeleteButton": {
+    "message": "Sil"
+  },
+  "byokTestButton": {
+    "message": "Bağlantıyı test et"
+  },
+  "byokTestingLabel": {
+    "message": "Test ediliyor…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Bağlantı başarılı"
+  },
+  "byokTestResultFailure": {
+    "message": "Bağlantı başarısız ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Önce bir API anahtarı girip kaydedin"
+  },
+  "tabPerchLabel": {
+    "message": "Tünek"
+  },
+  "tabGardenLabel": {
+    "message": "Bahçe"
+  },
+  "tabSettingsLabel": {
+    "message": "Ayarlar"
+  },
+  "voiceEnableLabel": {
+    "message": "Sesli oku"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ yanıtını bekliyor",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API anahtarı"
+  },
+  "voiceVolumeLabel": {
+    "message": "Ses düzeyi"
+  },
+  "soundEnableLabel": {
+    "message": "Sesle bildir"
+  },
+  "iconSetHeading": {
+    "message": "Simge kümeleri"
+  },
+  "iconSetBirds": {
+    "message": "Kuşlar"
+  },
+  "iconSetGnome": {
+    "message": "Cüce"
+  },
+  "iconSetCat": {
+    "message": "Kedi"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Kurbağa"
+  },
+  "iconSetEmpty": {
+    "message": "Henüz proje yok"
+  },
+  "iconSetToggleAria": {
+    "message": "Simge kümesini değiştir"
+  },
+  "copyPathButton": {
+    "message": "Yolu kopyala"
+  },
+  "closeButtonAria": {
+    "message": "Kapat"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API anahtarı"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Özetler için kullan"
+  },
+  "aiApiKeysHeading": {
+    "message": "Yapay zekâ API anahtarları"
+  },
+  "aiApiKeysDescription": {
+    "message": "İsteğe bağlıdır. Tamamlanan etkinliklerin sesli özetleri ve bağlantı testleri için kullanılır. İki anahtar da kayıtlıysa özet sağlayıcısını seçebilirsiniz."
+  },
+  "rootDefaultBadge": {
+    "message": "Varsayılan"
+  },
+  "windowModeHeading": {
+    "message": "Pencere"
+  },
+  "windowModeFloating": {
+    "message": "Yüzen (her zaman üstte, tam ekran uygulamaların üstünde bile)"
+  },
+  "windowModeNormal": {
+    "message": "Standart pencere (büyütülebilir veya tam ekran yapılabilir)"
+  },
+  "birdWaitingLabel": {
+    "message": "yanıtını bekliyor"
+  },
+  "askingBadgeTitle": {
+    "message": "Devam edebilmek için yanıtını bekliyor"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API anahtarı"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "İsteğe bağlı. TypeSafe, bir ajanın yanıtını beklemek için durup durmadığını değerlendiren harici bir yapay zekâ hizmetidir. Anahtar kaydedildiğinde duran oturumun son yanıtı TypeSafe’e gönderilir ve yanıt beklediği değerlendirilen kuşlara “?” eklenir. Anahtar yoksa yalnızca soru aracında duran kuşlara “?” eklenir."
+  },
+  "bubblePlanApproval": {
+    "message": "Plan onaylansın mı?"
+  },
+  "birdWatchingLabel": {
+    "message": "izliyor"
+  },
+  "watchingPeersTitle": {
+    "message": "Hâlâ çalışan oturumlar"
+  },
+  "byokReplaceButton": {
+    "message": "Değiştir"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Anahtar kaydedilemedi. Lütfen tekrar deneyin."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe web sitesi"
+  }
+}

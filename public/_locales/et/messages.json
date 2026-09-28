@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Õrs sinu AI-agentide seansside jaoks. Linnu asend näitab olekut hetkega. Paneel hõljuvas miniaknas. Null luba."
+  },
+  "birdWorkingLabel": {
+    "message": "nokib"
+  },
+  "birdDozingLabel": {
+    "message": "tukub"
+  },
+  "loadingLabel": {
+    "message": "Laadimine…"
+  },
+  "setupIntro": {
+    "message": "Vali kaust, kuhu Claude Code / Codex salvestab oma seansside logid, ja linnud hakkavad õrrele istuma."
+  },
+  "setupPickPrefix": {
+    "message": "Valimisaknas vajuta "
+  },
+  "setupPickMiddle": {
+    "message": ", seejärel sisesta "
+  },
+  "setupPickSuffix": {
+    "message": " (see on peidetud kaust)."
+  },
+  "setupButton": {
+    "message": "Sea õrs üles"
+  },
+  "duplicateRootMessage": {
+    "message": "See kaust on juba lisatud"
+  },
+  "saveFailedMessage": {
+    "message": "Salvestamine ebaõnnestus"
+  },
+  "reauthFailedMessage": {
+    "message": "Juurdepääsu uuendamine ebaõnnestus"
+  },
+  "emptyNoSessions": {
+    "message": "Õrrel pole hetkel ühtegi lindu (viimased 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Vajalik uus luba — ühenda uuesti allpool, jaotises Jälgitavad kaustad"
+  },
+  "emptyNoEvents": {
+    "message": "Viimase 30 min jooksul pole tegevust"
+  },
+  "summonButton": {
+    "message": "Ava minaaknas (alati pealmine)"
+  },
+  "pipNote": {
+    "message": "Linnud on nüüd minaaknas."
+  },
+  "rootsHeading": {
+    "message": "Jälgitavad kaustad"
+  },
+  "badgeNeedsReauth": {
+    "message": "Vajalik luba"
+  },
+  "badgeUnreadable": {
+    "message": "Ei ole loetav"
+  },
+  "reauthButton": {
+    "message": "Luba uuesti"
+  },
+  "editLabelButton": {
+    "message": "Muuda silti"
+  },
+  "removeButtonAria": {
+    "message": "Eemalda"
+  },
+  "addRootButton": {
+    "message": "Lisa kaust"
+  },
+  "rootLabelPlaceholder": {
+    "message": "nt claude2"
+  },
+  "muteButtonAria": {
+    "message": "Vaigista"
+  },
+  "unmuteButtonAria": {
+    "message": "Lülita heli sisse"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Hiljutine tegevus"
+  },
+  "eventStartedLabel": {
+    "message": "alustatud"
+  },
+  "eventDoneLabel": {
+    "message": "valmis"
+  },
+  "eventClosedLabel": {
+    "message": "suletud"
+  },
+  "eventMutedTitle": {
+    "message": "Vaigistatud (heli puudub)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API võti"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Võti salvestatud"
+  },
+  "byokSaveButton": {
+    "message": "Salvesta"
+  },
+  "byokDeleteButton": {
+    "message": "Kustuta"
+  },
+  "byokTestButton": {
+    "message": "Testi ühendust"
+  },
+  "byokTestingLabel": {
+    "message": "Testimine…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Ühendus õnnestus"
+  },
+  "byokTestResultFailure": {
+    "message": "Ühendus ebaõnnestus ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Sisestage ja salvestage kõigepealt API võti"
+  },
+  "tabPerchLabel": {
+    "message": "Õrs"
+  },
+  "tabGardenLabel": {
+    "message": "Aed"
+  },
+  "tabSettingsLabel": {
+    "message": "Seaded"
+  },
+  "voiceEnableLabel": {
+    "message": "Loe häälega ette"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ ootab sinu vastust",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API võti"
+  },
+  "voiceVolumeLabel": {
+    "message": "Helitugevus"
+  },
+  "soundEnableLabel": {
+    "message": "Teavita heliga"
+  },
+  "iconSetHeading": {
+    "message": "Ikoonikomplektid"
+  },
+  "iconSetBirds": {
+    "message": "Linnud"
+  },
+  "iconSetGnome": {
+    "message": "Päkapikk"
+  },
+  "iconSetCat": {
+    "message": "Kass"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Konn"
+  },
+  "iconSetEmpty": {
+    "message": "Projekte pole veel"
+  },
+  "iconSetToggleAria": {
+    "message": "Vaheta ikoonikomplekti"
+  },
+  "copyPathButton": {
+    "message": "Kopeeri asukoht"
+  },
+  "closeButtonAria": {
+    "message": "Sulge"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API võti"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Kasuta kokkuvõteteks"
+  },
+  "aiApiKeysHeading": {
+    "message": "AI API võtmed"
+  },
+  "aiApiKeysDescription": {
+    "message": "Valikuline. Kasutatakse lõpetatud sündmuste häälega kokkuvõteteks ja ühenduse testimiseks. Mõlema võtme salvestamisel saad valida kokkuvõtete pakkuja."
+  },
+  "rootDefaultBadge": {
+    "message": "Vaikimisi"
+  },
+  "windowModeHeading": {
+    "message": "Aken"
+  },
+  "windowModeFloating": {
+    "message": "Hõljuv (alati pealmine, ka täisekraanil rakenduste kohal)"
+  },
+  "windowModeNormal": {
+    "message": "Tavaline aken (saab maksimeerida või täisekraanile viia)"
+  },
+  "birdWaitingLabel": {
+    "message": "ootab sinu vastust"
+  },
+  "askingBadgeTitle": {
+    "message": "Ootab jätkamiseks sinu vastust"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API võti"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Valikuline. TypeSafe on väline tehisintellekti teenus, mis hindab, kas agent on peatunud sinu vastust ootama. Salvestatud võtmega saadetakse peatunud seansi viimane vastus TypeSafe’ile ja vastust ootavaks hinnatud linnud saavad „?“. Ilma võtmeta saavad „?“ ainult küsimustööriista juures peatunud linnud."
+  },
+  "bubblePlanApproval": {
+    "message": "Kas kinnitad plaani?"
+  },
+  "birdWatchingLabel": {
+    "message": "jälgib"
+  },
+  "watchingPeersTitle": {
+    "message": "Veel töötavad seansid"
+  },
+  "byokReplaceButton": {
+    "message": "Asenda"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Võtit ei õnnestunud salvestada. Proovi uuesti."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe’i veebisait"
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Bidlo pre relácie tvojich AI agentov. Postoj vtáčika ukáže stav na prvý pohľad. Panel v plávajúcom mini okne. Nula povolení."
+  },
+  "birdWorkingLabel": {
+    "message": "kluje"
+  },
+  "birdDozingLabel": {
+    "message": "podriemkava"
+  },
+  "loadingLabel": {
+    "message": "Načítava sa…"
+  },
+  "setupIntro": {
+    "message": "Vyber priečinok, kam Claude Code / Codex ukladá záznamy relácií, a vtáky začnú sadať na bidlo."
+  },
+  "setupPickPrefix": {
+    "message": "Vo výbere stlač "
+  },
+  "setupPickMiddle": {
+    "message": " a potom napíš "
+  },
+  "setupPickSuffix": {
+    "message": " (ide o skrytý priečinok)."
+  },
+  "setupButton": {
+    "message": "Postaviť bidlo"
+  },
+  "duplicateRootMessage": {
+    "message": "Tento priečinok je už pridaný"
+  },
+  "saveFailedMessage": {
+    "message": "Uloženie zlyhalo"
+  },
+  "reauthFailedMessage": {
+    "message": "Obnovenie prístupu zlyhalo"
+  },
+  "emptyNoSessions": {
+    "message": "Na bidle teraz nikto nie je (posledných 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Vyžaduje nové oprávnenie — znova sa pripoj nižšie v sekcii Sledované priečinky"
+  },
+  "emptyNoEvents": {
+    "message": "Za posledných 30 min žiadna aktivita"
+  },
+  "summonButton": {
+    "message": "Otvoriť v mini okne (vždy navrchu)"
+  },
+  "pipNote": {
+    "message": "Vtáky sú teraz v mini okne."
+  },
+  "rootsHeading": {
+    "message": "Sledované priečinky"
+  },
+  "badgeNeedsReauth": {
+    "message": "Vyžaduje oprávnenie"
+  },
+  "badgeUnreadable": {
+    "message": "Nedá sa čítať"
+  },
+  "reauthButton": {
+    "message": "Znova autorizovať"
+  },
+  "editLabelButton": {
+    "message": "Upraviť popisok"
+  },
+  "removeButtonAria": {
+    "message": "Odstrániť"
+  },
+  "addRootButton": {
+    "message": "Pridať priečinok"
+  },
+  "rootLabelPlaceholder": {
+    "message": "napr. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Stlmiť"
+  },
+  "unmuteButtonAria": {
+    "message": "Zrušiť stlmenie"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Nedávna aktivita"
+  },
+  "eventStartedLabel": {
+    "message": "spustené"
+  },
+  "eventDoneLabel": {
+    "message": "dokončené"
+  },
+  "eventClosedLabel": {
+    "message": "zatvorené"
+  },
+  "eventMutedTitle": {
+    "message": "Stlmené (bez zvuku)"
+  },
+  "byokApiKeyLabel": {
+    "message": "API kľúč Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Kľúč uložený"
+  },
+  "byokSaveButton": {
+    "message": "Uložiť"
+  },
+  "byokDeleteButton": {
+    "message": "Odstrániť"
+  },
+  "byokTestButton": {
+    "message": "Otestovať pripojenie"
+  },
+  "byokTestingLabel": {
+    "message": "Testuje sa…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Pripojenie úspešné"
+  },
+  "byokTestResultFailure": {
+    "message": "Pripojenie zlyhalo ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Najprv zadajte a uložte API kľúč"
+  },
+  "tabPerchLabel": {
+    "message": "Bidlo"
+  },
+  "tabGardenLabel": {
+    "message": "Záhrada"
+  },
+  "tabSettingsLabel": {
+    "message": "Nastavenia"
+  },
+  "voiceEnableLabel": {
+    "message": "Čítať nahlas"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ čaká na vašu odpoveď",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "API kľúč Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Hlasitosť"
+  },
+  "soundEnableLabel": {
+    "message": "Upozorniť zvukom"
+  },
+  "iconSetHeading": {
+    "message": "Sady ikon"
+  },
+  "iconSetBirds": {
+    "message": "Vtáky"
+  },
+  "iconSetGnome": {
+    "message": "Škriatok"
+  },
+  "iconSetCat": {
+    "message": "Mačka"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Žaba"
+  },
+  "iconSetEmpty": {
+    "message": "Zatiaľ žiadne projekty"
+  },
+  "iconSetToggleAria": {
+    "message": "Prepnúť sadu ikon"
+  },
+  "copyPathButton": {
+    "message": "Kopírovať cestu"
+  },
+  "closeButtonAria": {
+    "message": "Zavrieť"
+  },
+  "openAiApiKeyHeading": {
+    "message": "API kľúč OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Použiť na zhrnutia"
+  },
+  "aiApiKeysHeading": {
+    "message": "API kľúče AI"
+  },
+  "aiApiKeysDescription": {
+    "message": "Voliteľné. Používa sa na hlasové zhrnutia dokončených udalostí a testy pripojenia. Ak uložíte oba kľúče, môžete vybrať poskytovateľa zhrnutí."
+  },
+  "rootDefaultBadge": {
+    "message": "Predvolený"
+  },
+  "windowModeHeading": {
+    "message": "Okno"
+  },
+  "windowModeFloating": {
+    "message": "Plávajúce (vždy navrchu, aj nad aplikáciami na celej obrazovke)"
+  },
+  "windowModeNormal": {
+    "message": "Bežné okno (možno maximalizovať alebo zobraziť na celú obrazovku)"
+  },
+  "birdWaitingLabel": {
+    "message": "čaká na vašu odpoveď"
+  },
+  "askingBadgeTitle": {
+    "message": "Čaká na vašu odpoveď, aby mohol pokračovať"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "API kľúč TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Voliteľné. TypeSafe je externá služba AI, ktorá posudzuje, či sa agent zastavil a čaká na vašu odpoveď. S uloženým kľúčom sa posledná odpoveď zastavenej relácie odošle do TypeSafe a vtáky, pri ktorých sa usúdi, že čakajú na odpoveď, dostanú „?“. Bez kľúča dostanú „?“ len vtáky zastavené pri nástroji na otázky."
+  },
+  "bubblePlanApproval": {
+    "message": "Schváliť plán?"
+  },
+  "birdWatchingLabel": {
+    "message": "dozerá"
+  },
+  "watchingPeersTitle": {
+    "message": "Relácie, ktoré ešte pracujú"
+  },
+  "byokReplaceButton": {
+    "message": "Nahradiť"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Kľúč sa nepodarilo uložiť. Skúste to znova."
+  },
+  "typeSafeSiteLink": {
+    "message": "Web TypeSafe"
+  }
+}

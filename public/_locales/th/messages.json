@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "คอนที่คอยเฝ้าดูเซสชัน AI ของคุณ ไอคอนนกบอกสถานะได้ทันที เรียกแผงเป็นหน้าต่างจิ๋วลอย ไม่ขอสิทธิ์ใด ๆ"
+  },
+  "birdWorkingLabel": {
+    "message": "กำลังจิกกิน"
+  },
+  "birdDozingLabel": {
+    "message": "กำลังงีบ"
+  },
+  "loadingLabel": {
+    "message": "กำลังโหลด…"
+  },
+  "setupIntro": {
+    "message": "เลือกโฟลเดอร์ที่ Claude Code / Codex เก็บบันทึกเซสชัน แล้วนกจะเริ่มมาเกาะที่คอน"
+  },
+  "setupPickPrefix": {
+    "message": "ในหน้าต่างเลือกไฟล์ กด "
+  },
+  "setupPickMiddle": {
+    "message": " แล้วพิมพ์ "
+  },
+  "setupPickSuffix": {
+    "message": " (เป็นโฟลเดอร์ที่ซ่อนอยู่)"
+  },
+  "setupButton": {
+    "message": "ติดตั้งคอน"
+  },
+  "duplicateRootMessage": {
+    "message": "โฟลเดอร์นี้ถูกเพิ่มไว้แล้ว"
+  },
+  "saveFailedMessage": {
+    "message": "บันทึกไม่สำเร็จ"
+  },
+  "reauthFailedMessage": {
+    "message": "ต่ออายุสิทธิ์ไม่สำเร็จ"
+  },
+  "emptyNoSessions": {
+    "message": "ตอนนี้ไม่มีนกอยู่บนคอน (30 นาทีที่ผ่านมา)"
+  },
+  "emptyNeedsReauth": {
+    "message": "ต้องขออนุญาตใหม่ — เชื่อมต่อใหม่จากโฟลเดอร์ที่เฝ้าดูด้านล่าง"
+  },
+  "emptyNoEvents": {
+    "message": "ไม่มีความเคลื่อนไหวใน 30 นาทีที่ผ่านมา"
+  },
+  "summonButton": {
+    "message": "เปิดในหน้าต่างจิ๋ว (อยู่บนสุดตลอด)"
+  },
+  "pipNote": {
+    "message": "ตอนนี้นกอยู่ในหน้าต่างจิ๋ว"
+  },
+  "rootsHeading": {
+    "message": "โฟลเดอร์ที่เฝ้าดู"
+  },
+  "badgeNeedsReauth": {
+    "message": "ต้องขออนุญาตใหม่"
+  },
+  "badgeUnreadable": {
+    "message": "อ่านไม่ได้"
+  },
+  "reauthButton": {
+    "message": "ขออนุญาตใหม่"
+  },
+  "editLabelButton": {
+    "message": "แก้ไขป้ายชื่อ"
+  },
+  "removeButtonAria": {
+    "message": "ลบ"
+  },
+  "addRootButton": {
+    "message": "เพิ่มโฟลเดอร์"
+  },
+  "rootLabelPlaceholder": {
+    "message": "เช่น claude2"
+  },
+  "muteButtonAria": {
+    "message": "ปิดเสียง"
+  },
+  "unmuteButtonAria": {
+    "message": "เปิดเสียง"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$ว",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$น",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$ชม $MINUTES$น",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "กิจกรรมล่าสุด"
+  },
+  "eventStartedLabel": {
+    "message": "เริ่มแล้ว"
+  },
+  "eventDoneLabel": {
+    "message": "เสร็จแล้ว"
+  },
+  "eventClosedLabel": {
+    "message": "ปิดแล้ว"
+  },
+  "eventMutedTitle": {
+    "message": "ปิดเสียง (ไม่มีเสียง)"
+  },
+  "byokApiKeyLabel": {
+    "message": "คีย์ API ของ Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "บันทึกคีย์แล้ว"
+  },
+  "byokSaveButton": {
+    "message": "บันทึก"
+  },
+  "byokDeleteButton": {
+    "message": "ลบ"
+  },
+  "byokTestButton": {
+    "message": "ทดสอบการเชื่อมต่อ"
+  },
+  "byokTestingLabel": {
+    "message": "กำลังทดสอบ…"
+  },
+  "byokTestResultSuccess": {
+    "message": "เชื่อมต่อสำเร็จ"
+  },
+  "byokTestResultFailure": {
+    "message": "เชื่อมต่อล้มเหลว ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "กรุณาป้อนและบันทึกคีย์ API ก่อน"
+  },
+  "tabPerchLabel": {
+    "message": "คอน"
+  },
+  "tabGardenLabel": {
+    "message": "สวน"
+  },
+  "tabSettingsLabel": {
+    "message": "การตั้งค่า"
+  },
+  "voiceEnableLabel": {
+    "message": "อ่านออกเสียง"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ กำลังรอคำตอบจากคุณ",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "คีย์ API ของ Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "ระดับเสียง"
+  },
+  "soundEnableLabel": {
+    "message": "แจ้งเตือนด้วยเสียง"
+  },
+  "iconSetHeading": {
+    "message": "ชุดไอคอน"
+  },
+  "iconSetBirds": {
+    "message": "นก"
+  },
+  "iconSetGnome": {
+    "message": "โนม"
+  },
+  "iconSetCat": {
+    "message": "แมว"
+  },
+  "iconSetRobot": {
+    "message": "หุ่นยนต์"
+  },
+  "iconSetFrog": {
+    "message": "กบ"
+  },
+  "iconSetEmpty": {
+    "message": "ยังไม่มีโปรเจกต์"
+  },
+  "iconSetToggleAria": {
+    "message": "สลับชุดไอคอน"
+  },
+  "copyPathButton": {
+    "message": "คัดลอกเส้นทาง"
+  },
+  "closeButtonAria": {
+    "message": "ปิด"
+  },
+  "openAiApiKeyHeading": {
+    "message": "คีย์ API ของ OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "ใช้สำหรับสรุป"
+  },
+  "aiApiKeysHeading": {
+    "message": "คีย์ API ของ AI"
+  },
+  "aiApiKeysDescription": {
+    "message": "ไม่บังคับ ใช้สำหรับสรุปเสียงของเหตุการณ์ที่เสร็จสิ้นและทดสอบการเชื่อมต่อ หากบันทึกทั้งสองคีย์ คุณสามารถเลือกผู้ให้บริการสำหรับการสรุปได้"
+  },
+  "rootDefaultBadge": {
+    "message": "ค่าเริ่มต้น"
+  },
+  "windowModeHeading": {
+    "message": "หน้าต่าง"
+  },
+  "windowModeFloating": {
+    "message": "ลอยอยู่ (อยู่บนสุดเสมอ แม้เหนือแอปแบบเต็มหน้าจอ)"
+  },
+  "windowModeNormal": {
+    "message": "หน้าต่างปกติ (ขยายใหญ่สุดหรือเต็มหน้าจอได้)"
+  },
+  "birdWaitingLabel": {
+    "message": "รอคำตอบจากคุณ"
+  },
+  "askingBadgeTitle": {
+    "message": "รอคำตอบจากคุณก่อนจึงจะทำต่อได้"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "คีย์ API ของ TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "ไม่บังคับ TypeSafe คือบริการ AI ภายนอกที่ประเมินว่าเอเจนต์หยุดรอคำตอบจากคุณอยู่หรือไม่ เมื่อบันทึกคีย์แล้ว ข้อความตอบกลับล่าสุดของเซสชันที่หยุดจะถูกส่งไปยัง TypeSafe และนกที่ถูกประเมินว่ารอคำตอบจะมีเครื่องหมาย “?” หากไม่มีคีย์ จะมี “?” เฉพาะนกที่หยุดอยู่ที่เครื่องมือถามคำถาม"
+  },
+  "bubblePlanApproval": {
+    "message": "อนุมัติแผนไหม?"
+  },
+  "birdWatchingLabel": {
+    "message": "กำลังเฝ้าดู"
+  },
+  "watchingPeersTitle": {
+    "message": "เซสชันที่ยังทำงานอยู่"
+  },
+  "byokReplaceButton": {
+    "message": "แทนที่"
+  },
+  "byokSaveFailedMessage": {
+    "message": "บันทึกคีย์ไม่สำเร็จ โปรดลองอีกครั้ง"
+  },
+  "typeSafeSiteLink": {
+    "message": "เว็บไซต์ TypeSafe"
+  }
+}

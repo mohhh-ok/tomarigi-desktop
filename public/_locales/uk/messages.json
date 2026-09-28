@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Сідало для сесій ваших ШІ-агентів. Іконки птахів одразу показують стан. Панель у плаваючому міні-вікні. Нуль дозволів."
+  },
+  "birdWorkingLabel": {
+    "message": "дзьобає"
+  },
+  "birdDozingLabel": {
+    "message": "дрімає"
+  },
+  "loadingLabel": {
+    "message": "Завантаження…"
+  },
+  "setupIntro": {
+    "message": "Виберіть теку, де Claude Code / Codex зберігає журнали сесій, і птахи почнуть сідати на сідало."
+  },
+  "setupPickPrefix": {
+    "message": "У вікні вибору натисніть "
+  },
+  "setupPickMiddle": {
+    "message": ", потім введіть "
+  },
+  "setupPickSuffix": {
+    "message": " (це прихована тека)."
+  },
+  "setupButton": {
+    "message": "Встановити сідало"
+  },
+  "duplicateRootMessage": {
+    "message": "Цю теку вже додано"
+  },
+  "saveFailedMessage": {
+    "message": "Не вдалося зберегти"
+  },
+  "reauthFailedMessage": {
+    "message": "Не вдалося оновити доступ"
+  },
+  "emptyNoSessions": {
+    "message": "Зараз на сідалі нікого немає (останні 30 хв)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Потрібна повторна авторизація — перепідключіться нижче, у розділі «Відстежувані теки»"
+  },
+  "emptyNoEvents": {
+    "message": "Немає активності за останні 30 хв"
+  },
+  "summonButton": {
+    "message": "Відкрити в міні-вікні (завжди зверху)"
+  },
+  "pipNote": {
+    "message": "Птахи зараз у міні-вікні."
+  },
+  "rootsHeading": {
+    "message": "Відстежувані теки"
+  },
+  "badgeNeedsReauth": {
+    "message": "Потрібна авторизація"
+  },
+  "badgeUnreadable": {
+    "message": "Не читається"
+  },
+  "reauthButton": {
+    "message": "Авторизувати знову"
+  },
+  "editLabelButton": {
+    "message": "Змінити мітку"
+  },
+  "removeButtonAria": {
+    "message": "Видалити"
+  },
+  "addRootButton": {
+    "message": "Додати теку"
+  },
+  "rootLabelPlaceholder": {
+    "message": "напр. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Вимкнути звук"
+  },
+  "unmuteButtonAria": {
+    "message": "Увімкнути звук"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$с",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$хв",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$год $MINUTES$хв",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Остання активність"
+  },
+  "eventStartedLabel": {
+    "message": "розпочато"
+  },
+  "eventDoneLabel": {
+    "message": "завершено"
+  },
+  "eventClosedLabel": {
+    "message": "закрито"
+  },
+  "eventMutedTitle": {
+    "message": "Без звуку (заглушено)"
+  },
+  "byokApiKeyLabel": {
+    "message": "API-ключ Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Ключ збережено"
+  },
+  "byokSaveButton": {
+    "message": "Зберегти"
+  },
+  "byokDeleteButton": {
+    "message": "Видалити"
+  },
+  "byokTestButton": {
+    "message": "Перевірити з'єднання"
+  },
+  "byokTestingLabel": {
+    "message": "Перевірка…"
+  },
+  "byokTestResultSuccess": {
+    "message": "З'єднання успішне"
+  },
+  "byokTestResultFailure": {
+    "message": "Помилка з'єднання ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Спочатку введіть і збережіть API-ключ"
+  },
+  "tabPerchLabel": {
+    "message": "Сідало"
+  },
+  "tabGardenLabel": {
+    "message": "Сад"
+  },
+  "tabSettingsLabel": {
+    "message": "Налаштування"
+  },
+  "voiceEnableLabel": {
+    "message": "Читати вголос"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ чекає на вашу відповідь",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "API-ключ Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Гучність"
+  },
+  "soundEnableLabel": {
+    "message": "Сповіщати звуком"
+  },
+  "iconSetHeading": {
+    "message": "Набори значків"
+  },
+  "iconSetBirds": {
+    "message": "Птахи"
+  },
+  "iconSetGnome": {
+    "message": "Гном"
+  },
+  "iconSetCat": {
+    "message": "Кіт"
+  },
+  "iconSetRobot": {
+    "message": "Робот"
+  },
+  "iconSetFrog": {
+    "message": "Жаба"
+  },
+  "iconSetEmpty": {
+    "message": "Проєктів поки немає"
+  },
+  "iconSetToggleAria": {
+    "message": "Перемкнути набір значків"
+  },
+  "copyPathButton": {
+    "message": "Копіювати шлях"
+  },
+  "closeButtonAria": {
+    "message": "Закрити"
+  },
+  "openAiApiKeyHeading": {
+    "message": "API-ключ OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Використовувати для підсумків"
+  },
+  "aiApiKeysHeading": {
+    "message": "API-ключі ШІ"
+  },
+  "aiApiKeysDescription": {
+    "message": "Необов’язково. Використовується для голосових підсумків завершених подій і перевірки з’єднання. Якщо збережено обидва ключі, можна вибрати постачальника для підсумків."
+  },
+  "rootDefaultBadge": {
+    "message": "Типова"
+  },
+  "windowModeHeading": {
+    "message": "Вікно"
+  },
+  "windowModeFloating": {
+    "message": "Плаваюче (завжди поверх, навіть над повноекранними застосунками)"
+  },
+  "windowModeNormal": {
+    "message": "Звичайне вікно (можна розгорнути або відкрити на весь екран)"
+  },
+  "birdWaitingLabel": {
+    "message": "чекає на вашу відповідь"
+  },
+  "askingBadgeTitle": {
+    "message": "Чекає на вашу відповідь, щоб продовжити"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "API-ключ TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Необов’язково. TypeSafe — зовнішній ШІ-сервіс, який визначає, чи зупинився агент в очікуванні вашої відповіді. Якщо ключ збережено, остання відповідь зупиненого сеансу надсилається до TypeSafe, і в пташок, що чекають на відповідь, з’являється «?». Без ключа «?» з’являється лише в пташок, що зупинилися на інструменті запитання."
+  },
+  "bubblePlanApproval": {
+    "message": "Схвалити план?"
+  },
+  "birdWatchingLabel": {
+    "message": "наглядає"
+  },
+  "watchingPeersTitle": {
+    "message": "Сеанси, що ще працюють"
+  },
+  "byokReplaceButton": {
+    "message": "Замінити"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Не вдалося зберегти ключ. Спробуйте ще раз."
+  },
+  "typeSafeSiteLink": {
+    "message": "Сайт TypeSafe"
+  }
+}

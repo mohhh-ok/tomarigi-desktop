@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Sitzstange für deine KI-Agenten-Sitzungen. Vogel-Icons zeigen den Zustand auf einen Blick. Panel als Mini-Fenster. Null Rechte."
+  },
+  "birdWorkingLabel": {
+    "message": "pickt gerade"
+  },
+  "birdDozingLabel": {
+    "message": "döst"
+  },
+  "loadingLabel": {
+    "message": "Wird geladen…"
+  },
+  "setupIntro": {
+    "message": "Wähle den Ordner, in dem Claude Code / Codex seine Sitzungsprotokolle speichert, und Vögel beginnen, sich auf der Sitzstange niederzulassen."
+  },
+  "setupPickPrefix": {
+    "message": "Drücke im Auswahldialog "
+  },
+  "setupPickMiddle": {
+    "message": " und gib dann "
+  },
+  "setupPickSuffix": {
+    "message": " ein (es ist ein verstecktes Verzeichnis)."
+  },
+  "setupButton": {
+    "message": "Sitzstange aufstellen"
+  },
+  "duplicateRootMessage": {
+    "message": "Dieser Ordner ist bereits registriert"
+  },
+  "saveFailedMessage": {
+    "message": "Speichern fehlgeschlagen"
+  },
+  "reauthFailedMessage": {
+    "message": "Zugriff konnte nicht erneuert werden"
+  },
+  "emptyNoSessions": {
+    "message": "Gerade sitzt kein Vogel auf der Stange (letzte 30 Min.)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Erneute Freigabe nötig — unten bei Beobachtete Ordner neu verbinden"
+  },
+  "emptyNoEvents": {
+    "message": "Keine Aktivität in den letzten 30 Min."
+  },
+  "summonButton": {
+    "message": "In Miniaturfenster öffnen (immer im Vordergrund)"
+  },
+  "pipNote": {
+    "message": "Die Vögel sind im Miniaturfenster unterwegs."
+  },
+  "rootsHeading": {
+    "message": "Beobachtete Ordner"
+  },
+  "badgeNeedsReauth": {
+    "message": "Freigabe nötig"
+  },
+  "badgeUnreadable": {
+    "message": "Nicht lesbar"
+  },
+  "reauthButton": {
+    "message": "Erneut freigeben"
+  },
+  "editLabelButton": {
+    "message": "Label bearbeiten"
+  },
+  "removeButtonAria": {
+    "message": "Entfernen"
+  },
+  "addRootButton": {
+    "message": "Ordner hinzufügen"
+  },
+  "rootLabelPlaceholder": {
+    "message": "z. B. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Stummschalten"
+  },
+  "unmuteButtonAria": {
+    "message": "Stummschaltung aufheben"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Letzte Aktivität"
+  },
+  "eventStartedLabel": {
+    "message": "gestartet"
+  },
+  "eventDoneLabel": {
+    "message": "fertig"
+  },
+  "eventClosedLabel": {
+    "message": "beendet"
+  },
+  "eventMutedTitle": {
+    "message": "Stummgeschaltet (kein Ton)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic-API-Schlüssel"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Schlüssel gespeichert"
+  },
+  "byokSaveButton": {
+    "message": "Speichern"
+  },
+  "byokDeleteButton": {
+    "message": "Löschen"
+  },
+  "byokTestButton": {
+    "message": "Verbindung testen"
+  },
+  "byokTestingLabel": {
+    "message": "Wird getestet…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Verbindung erfolgreich"
+  },
+  "byokTestResultFailure": {
+    "message": "Verbindung fehlgeschlagen ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Zuerst einen API-Schlüssel eingeben und speichern"
+  },
+  "tabPerchLabel": {
+    "message": "Sitzstange"
+  },
+  "tabGardenLabel": {
+    "message": "Garten"
+  },
+  "tabSettingsLabel": {
+    "message": "Einstellungen"
+  },
+  "voiceEnableLabel": {
+    "message": "Mit Stimme vorlesen"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ wartet auf deine Antwort",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic-API-Schlüssel"
+  },
+  "voiceVolumeLabel": {
+    "message": "Lautstärke"
+  },
+  "soundEnableLabel": {
+    "message": "Mit Ton benachrichtigen"
+  },
+  "iconSetHeading": {
+    "message": "Symbolsätze"
+  },
+  "iconSetBirds": {
+    "message": "Vögel"
+  },
+  "iconSetGnome": {
+    "message": "Gnom"
+  },
+  "iconSetCat": {
+    "message": "Katze"
+  },
+  "iconSetRobot": {
+    "message": "Roboter"
+  },
+  "iconSetFrog": {
+    "message": "Frosch"
+  },
+  "iconSetEmpty": {
+    "message": "Noch keine Projekte"
+  },
+  "iconSetToggleAria": {
+    "message": "Symbolsatz wechseln"
+  },
+  "copyPathButton": {
+    "message": "Pfad kopieren"
+  },
+  "closeButtonAria": {
+    "message": "Schließen"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI-API-Schlüssel"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Für Zusammenfassungen verwenden"
+  },
+  "aiApiKeysHeading": {
+    "message": "KI-API-Schlüssel"
+  },
+  "aiApiKeysDescription": {
+    "message": "Optional. Wird für Sprachzusammenfassungen abgeschlossener Ereignisse und Verbindungstests verwendet. Sind beide Schlüssel gespeichert, kann der Anbieter für Zusammenfassungen gewählt werden."
+  },
+  "rootDefaultBadge": {
+    "message": "Standard"
+  },
+  "windowModeHeading": {
+    "message": "Fenster"
+  },
+  "windowModeFloating": {
+    "message": "Schwebend (immer im Vordergrund, auch über Vollbild-Apps)"
+  },
+  "windowModeNormal": {
+    "message": "Normales Fenster (maximierbar und vollbildfähig)"
+  },
+  "birdWaitingLabel": {
+    "message": "wartet auf deine Antwort"
+  },
+  "askingBadgeTitle": {
+    "message": "Wartet auf deine Antwort, um weiterzumachen"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe-API-Schlüssel"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Optional. TypeSafe ist ein externer KI-Dienst, der beurteilt, ob ein Agent angehalten hat, um auf deine Antwort zu warten. Mit gespeichertem Schlüssel wird die letzte Antwort einer angehaltenen Sitzung an TypeSafe gesendet, und Vögel, die auf eine Antwort warten, bekommen ein „?“. Ohne Schlüssel bekommen nur Vögel, die bei einem Frage-Tool stehen, das „?“."
+  },
+  "bubblePlanApproval": {
+    "message": "Plan freigeben?"
+  },
+  "birdWatchingLabel": {
+    "message": "wacht mit"
+  },
+  "watchingPeersTitle": {
+    "message": "Sitzungen, die noch arbeiten"
+  },
+  "byokReplaceButton": {
+    "message": "Ersetzen"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Der Schlüssel konnte nicht gespeichert werden. Bitte versuche es erneut."
+  },
+  "typeSafeSiteLink": {
+    "message": "Website von TypeSafe"
+  }
+}

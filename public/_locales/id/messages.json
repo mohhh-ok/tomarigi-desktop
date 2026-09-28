@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Tempat bertengger untuk sesi agen AI Anda. Ikon burung menunjukkan status sekilas. Panel di jendela mini melayang. Tanpa izin."
+  },
+  "birdWorkingLabel": {
+    "message": "sedang mematuk"
+  },
+  "birdDozingLabel": {
+    "message": "mengantuk"
+  },
+  "loadingLabel": {
+    "message": "Memuat…"
+  },
+  "setupIntro": {
+    "message": "Pilih folder tempat Claude Code / Codex menyimpan log sesinya, dan burung-burung akan mulai hinggap di tempat bertengger."
+  },
+  "setupPickPrefix": {
+    "message": "Di jendela pemilih, tekan "
+  },
+  "setupPickMiddle": {
+    "message": ", lalu ketik "
+  },
+  "setupPickSuffix": {
+    "message": " (ini folder tersembunyi)."
+  },
+  "setupButton": {
+    "message": "Pasang tempat bertengger"
+  },
+  "duplicateRootMessage": {
+    "message": "Folder itu sudah terdaftar"
+  },
+  "saveFailedMessage": {
+    "message": "Gagal menyimpan"
+  },
+  "reauthFailedMessage": {
+    "message": "Gagal memperbarui akses"
+  },
+  "emptyNoSessions": {
+    "message": "Belum ada burung di tempat bertengger (30 menit terakhir)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Perlu otorisasi ulang — sambungkan kembali dari Folder yang Diawasi di bawah"
+  },
+  "emptyNoEvents": {
+    "message": "Tidak ada aktivitas dalam 30 menit terakhir"
+  },
+  "summonButton": {
+    "message": "Buka di jendela mini (selalu di atas)"
+  },
+  "pipNote": {
+    "message": "Burung-burung sedang berada di jendela mini."
+  },
+  "rootsHeading": {
+    "message": "Folder yang Diawasi"
+  },
+  "badgeNeedsReauth": {
+    "message": "Perlu otorisasi ulang"
+  },
+  "badgeUnreadable": {
+    "message": "Tidak dapat dibaca"
+  },
+  "reauthButton": {
+    "message": "Otorisasi ulang"
+  },
+  "editLabelButton": {
+    "message": "Edit label"
+  },
+  "removeButtonAria": {
+    "message": "Hapus"
+  },
+  "addRootButton": {
+    "message": "Tambah folder"
+  },
+  "rootLabelPlaceholder": {
+    "message": "mis. claude2"
+  },
+  "muteButtonAria": {
+    "message": "Bisukan"
+  },
+  "unmuteButtonAria": {
+    "message": "Aktifkan suara"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$dtk",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$mnt",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$j $MINUTES$mnt",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Aktivitas terbaru"
+  },
+  "eventStartedLabel": {
+    "message": "dimulai"
+  },
+  "eventDoneLabel": {
+    "message": "selesai"
+  },
+  "eventClosedLabel": {
+    "message": "ditutup"
+  },
+  "eventMutedTitle": {
+    "message": "Dibisukan (tanpa suara)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Kunci API Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Kunci tersimpan"
+  },
+  "byokSaveButton": {
+    "message": "Simpan"
+  },
+  "byokDeleteButton": {
+    "message": "Hapus"
+  },
+  "byokTestButton": {
+    "message": "Uji koneksi"
+  },
+  "byokTestingLabel": {
+    "message": "Menguji…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Koneksi berhasil"
+  },
+  "byokTestResultFailure": {
+    "message": "Koneksi gagal ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Masukkan dan simpan kunci API terlebih dahulu"
+  },
+  "tabPerchLabel": {
+    "message": "Tempat Bertengger"
+  },
+  "tabGardenLabel": {
+    "message": "Taman"
+  },
+  "tabSettingsLabel": {
+    "message": "Pengaturan"
+  },
+  "voiceEnableLabel": {
+    "message": "Bacakan dengan suara"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ menunggu balasanmu",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Kunci API Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volume"
+  },
+  "soundEnableLabel": {
+    "message": "Beri tahu dengan suara"
+  },
+  "iconSetHeading": {
+    "message": "Set ikon"
+  },
+  "iconSetBirds": {
+    "message": "Burung"
+  },
+  "iconSetGnome": {
+    "message": "Gnome"
+  },
+  "iconSetCat": {
+    "message": "Kucing"
+  },
+  "iconSetRobot": {
+    "message": "Robot"
+  },
+  "iconSetFrog": {
+    "message": "Katak"
+  },
+  "iconSetEmpty": {
+    "message": "Belum ada proyek"
+  },
+  "iconSetToggleAria": {
+    "message": "Ganti set ikon"
+  },
+  "copyPathButton": {
+    "message": "Salin jalur"
+  },
+  "closeButtonAria": {
+    "message": "Tutup"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Kunci API OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Gunakan untuk ringkasan"
+  },
+  "aiApiKeysHeading": {
+    "message": "Kunci API AI"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opsional. Digunakan untuk ringkasan suara peristiwa selesai dan uji koneksi. Jika kedua kunci disimpan, Anda dapat memilih penyedia ringkasan."
+  },
+  "rootDefaultBadge": {
+    "message": "Bawaan"
+  },
+  "windowModeHeading": {
+    "message": "Jendela"
+  },
+  "windowModeFloating": {
+    "message": "Mengambang (selalu di atas, bahkan di atas aplikasi layar penuh)"
+  },
+  "windowModeNormal": {
+    "message": "Jendela biasa (bisa dimaksimalkan atau layar penuh)"
+  },
+  "birdWaitingLabel": {
+    "message": "menunggu balasanmu"
+  },
+  "askingBadgeTitle": {
+    "message": "Menunggu jawabanmu agar bisa lanjut"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Kunci API TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Opsional. TypeSafe adalah layanan AI eksternal yang menilai apakah agen berhenti untuk menunggu balasanmu. Dengan kunci tersimpan, balasan terakhir sesi yang berhenti dikirim ke TypeSafe, dan burung yang dinilai menunggu balasan diberi “?”. Tanpa kunci, hanya burung yang berhenti di alat pertanyaan yang diberi “?”."
+  },
+  "bubblePlanApproval": {
+    "message": "Setujui rencananya?"
+  },
+  "birdWatchingLabel": {
+    "message": "mengawasi"
+  },
+  "watchingPeersTitle": {
+    "message": "Sesi yang masih bekerja"
+  },
+  "byokReplaceButton": {
+    "message": "Ganti"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Kunci tidak dapat disimpan. Silakan coba lagi."
+  },
+  "typeSafeSiteLink": {
+    "message": "Situs web TypeSafe"
+  }
+}

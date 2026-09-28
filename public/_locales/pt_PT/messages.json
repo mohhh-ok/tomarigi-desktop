@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Poleiro que vigia as suas sessões de agentes IA. Pássaros mostram o estado num relance. Minijanela flutuante. Zero permissões."
+  },
+  "birdWorkingLabel": {
+    "message": "a bicar"
+  },
+  "birdDozingLabel": {
+    "message": "a dormitar"
+  },
+  "loadingLabel": {
+    "message": "A carregar…"
+  },
+  "setupIntro": {
+    "message": "Escolha a pasta onde o Claude Code / Codex guarda os registos de sessão e os pássaros começarão a pousar no poleiro."
+  },
+  "setupPickPrefix": {
+    "message": "No seletor, prima "
+  },
+  "setupPickMiddle": {
+    "message": ", depois escreva "
+  },
+  "setupPickSuffix": {
+    "message": " (é uma pasta oculta)."
+  },
+  "setupButton": {
+    "message": "Montar o poleiro"
+  },
+  "duplicateRootMessage": {
+    "message": "Essa pasta já está no poleiro"
+  },
+  "saveFailedMessage": {
+    "message": "Não foi possível guardar"
+  },
+  "reauthFailedMessage": {
+    "message": "Não foi possível renovar o acesso"
+  },
+  "emptyNoSessions": {
+    "message": "Não há pássaros no poleiro neste momento (últimos 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Precisa de reautorização — volte a ligar em Pastas vigiadas abaixo"
+  },
+  "emptyNoEvents": {
+    "message": "Sem atividade nos últimos 30 min"
+  },
+  "summonButton": {
+    "message": "Abrir em janela flutuante (sempre visível)"
+  },
+  "pipNote": {
+    "message": "Os pássaros estão na janela flutuante."
+  },
+  "rootsHeading": {
+    "message": "Pastas vigiadas"
+  },
+  "badgeNeedsReauth": {
+    "message": "Precisa de reautorização"
+  },
+  "badgeUnreadable": {
+    "message": "Não é possível ler"
+  },
+  "reauthButton": {
+    "message": "Reautorizar"
+  },
+  "editLabelButton": {
+    "message": "Editar etiqueta"
+  },
+  "removeButtonAria": {
+    "message": "Remover"
+  },
+  "addRootButton": {
+    "message": "Adicionar pasta"
+  },
+  "rootLabelPlaceholder": {
+    "message": "ex.: claude2"
+  },
+  "muteButtonAria": {
+    "message": "Silenciar"
+  },
+  "unmuteButtonAria": {
+    "message": "Ativar som"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Atividade recente"
+  },
+  "eventStartedLabel": {
+    "message": "iniciada"
+  },
+  "eventDoneLabel": {
+    "message": "concluída"
+  },
+  "eventClosedLabel": {
+    "message": "encerrada"
+  },
+  "eventMutedTitle": {
+    "message": "Silenciado (sem som)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Chave de API da Anthropic"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Chave guardada"
+  },
+  "byokSaveButton": {
+    "message": "Guardar"
+  },
+  "byokDeleteButton": {
+    "message": "Eliminar"
+  },
+  "byokTestButton": {
+    "message": "Testar ligação"
+  },
+  "byokTestingLabel": {
+    "message": "A testar…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Ligação bem-sucedida"
+  },
+  "byokTestResultFailure": {
+    "message": "Falha na ligação ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Introduza e guarde primeiro uma chave de API"
+  },
+  "tabPerchLabel": {
+    "message": "Poleiro"
+  },
+  "tabGardenLabel": {
+    "message": "Jardim"
+  },
+  "tabSettingsLabel": {
+    "message": "Definições"
+  },
+  "voiceEnableLabel": {
+    "message": "Ler em voz alta"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ está à espera da sua resposta",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Chave de API da Anthropic"
+  },
+  "voiceVolumeLabel": {
+    "message": "Volume"
+  },
+  "soundEnableLabel": {
+    "message": "Avisar com som"
+  },
+  "iconSetHeading": {
+    "message": "Conjuntos de ícones"
+  },
+  "iconSetBirds": {
+    "message": "Pássaros"
+  },
+  "iconSetGnome": {
+    "message": "Gnomo"
+  },
+  "iconSetCat": {
+    "message": "Gato"
+  },
+  "iconSetRobot": {
+    "message": "Robô"
+  },
+  "iconSetFrog": {
+    "message": "Sapo"
+  },
+  "iconSetEmpty": {
+    "message": "Ainda não há projetos"
+  },
+  "iconSetToggleAria": {
+    "message": "Alternar conjunto de ícones"
+  },
+  "copyPathButton": {
+    "message": "Copiar caminho"
+  },
+  "closeButtonAria": {
+    "message": "Fechar"
+  },
+  "openAiApiKeyHeading": {
+    "message": "Chave da API da OpenAI"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Usar para resumos"
+  },
+  "aiApiKeysHeading": {
+    "message": "Chaves de API de IA"
+  },
+  "aiApiKeysDescription": {
+    "message": "Opcional. Usado para resumos de voz de eventos concluídos e testes de ligação. Se guardar ambas as chaves, pode escolher o fornecedor dos resumos."
+  },
+  "rootDefaultBadge": {
+    "message": "Predefinida"
+  },
+  "windowModeHeading": {
+    "message": "Janela"
+  },
+  "windowModeFloating": {
+    "message": "Flutuante (sempre à frente, mesmo sobre apps em ecrã inteiro)"
+  },
+  "windowModeNormal": {
+    "message": "Janela normal (pode maximizar ou usar ecrã inteiro)"
+  },
+  "birdWaitingLabel": {
+    "message": "à espera da sua resposta"
+  },
+  "askingBadgeTitle": {
+    "message": "À espera da sua resposta para continuar"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "Chave da API da TypeSafe"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Opcional. A TypeSafe é um serviço externo de IA que avalia se um agente parou para esperar pela sua resposta. Com uma chave guardada, a última resposta de uma sessão parada é enviada à TypeSafe, e os pássaros que esperam resposta recebem um «?». Sem chave, só os pássaros parados numa ferramenta de pergunta recebem o «?»."
+  },
+  "bubblePlanApproval": {
+    "message": "Aprova o plano?"
+  },
+  "birdWatchingLabel": {
+    "message": "a acompanhar"
+  },
+  "watchingPeersTitle": {
+    "message": "Sessões ainda a trabalhar"
+  },
+  "byokReplaceButton": {
+    "message": "Substituir"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Não foi possível guardar a chave. Tente novamente."
+  },
+  "typeSafeSiteLink": {
+    "message": "Site da TypeSafe"
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "extDescription": {
+    "message": "Laktiņa AI aģentu sesijām. Putna poza uzreiz parāda stāvokli. Panelis peldošā mini logā. Nulle atļauju."
+  },
+  "birdWorkingLabel": {
+    "message": "knābā"
+  },
+  "birdDozingLabel": {
+    "message": "snauž"
+  },
+  "loadingLabel": {
+    "message": "Notiek ielāde…"
+  },
+  "setupIntro": {
+    "message": "Izvēlieties mapi, kurā Claude Code / Codex glabā sesiju žurnālus, un putni sāks nolaisties uz laktiņas."
+  },
+  "setupPickPrefix": {
+    "message": "Atlasītājā nospiediet "
+  },
+  "setupPickMiddle": {
+    "message": ", tad ierakstiet "
+  },
+  "setupPickSuffix": {
+    "message": " (tā ir slēpta mape)."
+  },
+  "setupButton": {
+    "message": "Uzstādīt laktiņu"
+  },
+  "duplicateRootMessage": {
+    "message": "Šī mape jau ir pievienota"
+  },
+  "saveFailedMessage": {
+    "message": "Neizdevās saglabāt"
+  },
+  "reauthFailedMessage": {
+    "message": "Neizdevās atjaunot piekļuvi"
+  },
+  "emptyNoSessions": {
+    "message": "Šobrīd uz laktiņas nav neviena putna (pēdējās 30 min)"
+  },
+  "emptyNeedsReauth": {
+    "message": "Nepieciešama atkārtota autorizācija — pievienojieties no jauna zemāk, sadaļā Pārraudzītās mapes"
+  },
+  "emptyNoEvents": {
+    "message": "Nav aktivitātes pēdējās 30 min"
+  },
+  "summonButton": {
+    "message": "Atvērt mini logā (vienmēr virspusē)"
+  },
+  "pipNote": {
+    "message": "Putni tagad ir mini logā."
+  },
+  "rootsHeading": {
+    "message": "Pārraudzītās mapes"
+  },
+  "badgeNeedsReauth": {
+    "message": "Nepieciešama autorizācija"
+  },
+  "badgeUnreadable": {
+    "message": "Nav lasāms"
+  },
+  "reauthButton": {
+    "message": "Autorizēt atkārtoti"
+  },
+  "editLabelButton": {
+    "message": "Rediģēt etiķeti"
+  },
+  "removeButtonAria": {
+    "message": "Noņemt"
+  },
+  "addRootButton": {
+    "message": "Pievienot mapi"
+  },
+  "rootLabelPlaceholder": {
+    "message": "piem., claude2"
+  },
+  "muteButtonAria": {
+    "message": "Izslēgt skaņu"
+  },
+  "unmuteButtonAria": {
+    "message": "Ieslēgt skaņu"
+  },
+  "sinceSeconds": {
+    "message": "$COUNT$s",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceMinutes": {
+    "message": "$COUNT$min",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sinceHoursMinutes": {
+    "message": "$HOURS$h $MINUTES$min",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "eventFeedHeading": {
+    "message": "Nesenā aktivitāte"
+  },
+  "eventStartedLabel": {
+    "message": "sākts"
+  },
+  "eventDoneLabel": {
+    "message": "pabeigts"
+  },
+  "eventClosedLabel": {
+    "message": "aizvērts"
+  },
+  "eventMutedTitle": {
+    "message": "Izslēgts skaņas signāls (bez skaņas)"
+  },
+  "byokApiKeyLabel": {
+    "message": "Anthropic API atslēga"
+  },
+  "byokApiKeySetLabel": {
+    "message": "Atslēga saglabāta"
+  },
+  "byokSaveButton": {
+    "message": "Saglabāt"
+  },
+  "byokDeleteButton": {
+    "message": "Dzēst"
+  },
+  "byokTestButton": {
+    "message": "Pārbaudīt savienojumu"
+  },
+  "byokTestingLabel": {
+    "message": "Pārbauda…"
+  },
+  "byokTestResultSuccess": {
+    "message": "Savienojums veiksmīgs"
+  },
+  "byokTestResultFailure": {
+    "message": "Savienojums neizdevās ($REASON$)",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "byokNoKeyMessage": {
+    "message": "Vispirms ievadiet un saglabājiet API atslēgu"
+  },
+  "tabPerchLabel": {
+    "message": "Laktiņa"
+  },
+  "tabGardenLabel": {
+    "message": "Dārzs"
+  },
+  "tabSettingsLabel": {
+    "message": "Iestatījumi"
+  },
+  "voiceEnableLabel": {
+    "message": "Lasīt ar balsi"
+  },
+  "eventWaitingVoice": {
+    "message": "$PROJECT$ gaida jūsu atbildi",
+    "placeholders": {
+      "project": {
+        "content": "$1"
+      }
+    }
+  },
+  "aiApiKeyHeading": {
+    "message": "Anthropic API atslēga"
+  },
+  "voiceVolumeLabel": {
+    "message": "Skaļums"
+  },
+  "soundEnableLabel": {
+    "message": "Paziņot ar skaņu"
+  },
+  "iconSetHeading": {
+    "message": "Ikonu kopas"
+  },
+  "iconSetBirds": {
+    "message": "Putni"
+  },
+  "iconSetGnome": {
+    "message": "Rūķis"
+  },
+  "iconSetCat": {
+    "message": "Kaķis"
+  },
+  "iconSetRobot": {
+    "message": "Robots"
+  },
+  "iconSetFrog": {
+    "message": "Varde"
+  },
+  "iconSetEmpty": {
+    "message": "Vēl nav projektu"
+  },
+  "iconSetToggleAria": {
+    "message": "Pārslēgt ikonu kopu"
+  },
+  "copyPathButton": {
+    "message": "Kopēt ceļu"
+  },
+  "closeButtonAria": {
+    "message": "Aizvērt"
+  },
+  "openAiApiKeyHeading": {
+    "message": "OpenAI API atslēga"
+  },
+  "byokUseForSummaryLabel": {
+    "message": "Izmantot kopsavilkumiem"
+  },
+  "aiApiKeysHeading": {
+    "message": "MI API atslēgas"
+  },
+  "aiApiKeysDescription": {
+    "message": "Neobligāti. Tiek izmantota pabeigtu notikumu balss kopsavilkumiem un savienojuma pārbaudēm. Saglabājot abas atslēgas, varat izvēlēties kopsavilkumu nodrošinātāju."
+  },
+  "rootDefaultBadge": {
+    "message": "Noklusējuma"
+  },
+  "windowModeHeading": {
+    "message": "Logs"
+  },
+  "windowModeFloating": {
+    "message": "Peldošs (vienmēr virspusē, arī virs pilnekrāna lietotnēm)"
+  },
+  "windowModeNormal": {
+    "message": "Parasts logs (var maksimizēt vai rādīt pilnekrānā)"
+  },
+  "birdWaitingLabel": {
+    "message": "gaida jūsu atbildi"
+  },
+  "askingBadgeTitle": {
+    "message": "Gaida jūsu atbildi, lai varētu turpināt"
+  },
+  "typeSafeApiKeyHeading": {
+    "message": "TypeSafe API atslēga"
+  },
+  "typeSafeApiKeyDescription": {
+    "message": "Neobligāti. TypeSafe ir ārējs MI pakalpojums, kas novērtē, vai aģents ir apstājies, lai gaidītu jūsu atbildi. Ja atslēga ir saglabāta, apstājušās sesijas pēdējā atbilde tiek nosūtīta uz TypeSafe, un putni, kas novērtēti kā atbildi gaidoši, saņem “?”. Bez atslēgas “?” saņem tikai putni, kas apstājušies pie jautājuma rīka."
+  },
+  "bubblePlanApproval": {
+    "message": "Apstiprināt plānu?"
+  },
+  "birdWatchingLabel": {
+    "message": "vēro"
+  },
+  "watchingPeersTitle": {
+    "message": "Sesijas, kas vēl strādā"
+  },
+  "byokReplaceButton": {
+    "message": "Aizstāt"
+  },
+  "byokSaveFailedMessage": {
+    "message": "Neizdevās saglabāt atslēgu. Mēģiniet vēlreiz."
+  },
+  "typeSafeSiteLink": {
+    "message": "TypeSafe vietne"
+  }
+}
