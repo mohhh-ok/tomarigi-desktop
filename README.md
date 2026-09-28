@@ -1,48 +1,46 @@
 # tomarigi-desktop
 
-AI コーディングエージェント(Claude Code / Codex)のセッションを、常に最前面に浮かぶ窓の鳥で見守る macOS アプリ。セッションごとに 1 羽の鳥が「にわ」にいて、作業中・返事待ち・完了が鳥の様子で分かる。鳥をクリックすると、その Claude Code が動いている Ghostty のペインへ移る。
+A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the Ghostty pane where that Claude Code session is running.
 
-- エージェント側に hook や設定を入れない。`~/.claude/projects`・`~/.codex/sessions` の transcript を読むだけで動く
-- 返事待ちの「?」、ターンの終わりの要約の吹き出し、読み上げは任意の BYOK(OpenAI / Anthropic / TypeSafe)で使える。キーは macOS のキーチェーンに保存する
-- 動作環境: macOS。ペインへの移動は Ghostty だけ対応
+- No hooks or config changes on the agent side. It only reads the transcripts under `~/.claude/projects` and `~/.codex/sessions`
+- The "?" for sessions waiting on you, the speech bubble that summarizes the end of each turn, and voice readout work with optional BYOK keys (OpenAI / Anthropic / TypeSafe). Keys are stored in the macOS Keychain
+- Requirements: macOS. Jumping to a pane works with Ghostty only
 
-設計の正は docs/design.md。
+The design spec lives in docs/design.md.
 
-
-## build
+## Build
 
 ```sh
-bun install   # prepare で core.hooksPath を .githooks に設定し、gitleaks の pre-commit を有効にする
-bun run dev                   # 開発版のアプリを起動(tauri dev。vite の dev サーバー bun run dev:web も一緒に立つ)
-bun run build:verify          # 検証用の .app(src-tauri/target/debug/bundle/macos/tomarigi-desktop (verify).app)。背景が緑がかった色になる。手元の Apple Development 証明書で署名する(scripts/build-verify.sh。APPLE_SIGNING_IDENTITY で上書き)
+bun install                   # prepare sets core.hooksPath to .githooks and enables the gitleaks pre-commit hook
+bun run dev                   # run the dev app (tauri dev; also starts the vite dev server, bun run dev:web)
+bun run build:verify          # verification .app (src-tauri/target/debug/bundle/macos/tomarigi-desktop (verify).app) with a greenish background. Signed with your local Apple Development certificate (scripts/build-verify.sh; override with APPLE_SIGNING_IDENTITY)
 bun run tauri build --debug   # src-tauri/target/debug/bundle/macos/tomarigi-desktop.app
-bun run tauri build           # release。できた .app を /Applications/tomarigi-desktop.app に置いて使う
-bun run gen:locales           # scripts/locales/*.mjs → public/_locales/*/messages.json(bun run build でも走る)
-bun run verify:locales        # 43ロケール × 全キー完全一致チェック
+bun run tauri build           # release build. Put the resulting .app at /Applications/tomarigi-desktop.app
+bun run gen:locales           # scripts/locales/*.mjs → public/_locales/*/messages.json (also runs in bun run build)
+bun run verify:locales        # checks that all 43 locales have exactly the same keys
 ```
 
-普段使い(/Applications)・`bun run dev`・`bun run build:verify` は identifier を分けている(`src-tauri/tauri.dev.conf.json`・`tauri.verify.conf.json` を `--config` で重ねる)。多重起動防止・設定・窓の位置はそれぞれ別で、同時に起動できる。Ghostty 操作の許可ダイアログはそれぞれ初回に出る。エージェントが検証で起動するのは verify の .app だけにする(普段使いの版や dev を止めない)。
+The everyday build (/Applications), `bun run dev`, and `bun run build:verify` use different identifiers (`src-tauri/tauri.dev.conf.json` and `tauri.verify.conf.json` are layered with `--config`). Single-instance locking, settings, and window position are separate for each, so they can run side by side. Each one asks for Ghostty automation permission on first use. Agents that launch the app for verification should only launch the verify .app (so they don't stop the everyday build or dev).
 
-i18n の `public/_locales` は生成物。直接編集せず scripts/locales/*.mjs に 43 ロケール分を書いて生成する。
+`public/_locales` is generated. Don't edit it directly; write all 43 locales in scripts/locales/*.mjs and generate.
 
-dev サーバーのポートは 4842(HMR 4843)に固定している(`vite.config.ts`・`src-tauri/tauri.conf.json`)。
+The dev server port is fixed at 4842 (HMR 4843) in `vite.config.ts` and `src-tauri/tauri.conf.json`.
 
-起動時の環境変数(バイナリ `Contents/MacOS/tomarigi-desktop` を直接起動するときに渡す):
+Environment variables at launch (pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly):
 
-- `TOMARIGI_MOCK=1`: mock モード(tomarigi の `?mock=1`)。実データの代わりにプリセット/JSON を注入する
-- `TOMARIGI_QUERY`: 起動時の画面。`tab=perch` / `tab=events` / `settings=1` / `debug=1` / `preset=<id>`(mock の初期プリセット。`preset=asking` で返事待ちの「?」)/ `scrollTo=<クラス名>`(その要素まで窓をスクロール。例 `settings=1&scrollTo=window-mode`)を `&` でつなぐ
-- `TOMARIGI_FOCUS_TEST="<config_dir>|<sessionId>|<戻り先 tty>"`: 起動 3 秒後にそのセッションの Ghostty ペインへ移り、1.5 秒後に戻り先へ移り直す(ログに `front=<tty>`)
-- `TOMARIGI_MODE_TEST`: ウィンドウモードの自己テスト。`1` で 通常→浮遊→通常→最大化→フルスクリーン→浮遊 を 5 秒おきに切り替え、`normal` で通常の窓に切り替えるだけ
+- `TOMARIGI_MOCK=1`: mock mode. Injects presets / JSON instead of real data
+- `TOMARIGI_QUERY`: initial screen. Join `tab=perch` / `tab=events` / `settings=1` / `debug=1` / `preset=<id>` (initial mock preset; `preset=asking` shows the "?") / `scrollTo=<class name>` (scrolls the window to that element, e.g. `settings=1&scrollTo=window-mode`) with `&`
+- `TOMARIGI_FOCUS_TEST="<config_dir>|<sessionId>|<return tty>"`: 3 seconds after launch, jumps to that session's Ghostty pane, then 1.5 seconds later jumps back to the return pane (logs `front=<tty>`)
+- `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window
+- `TOMARIGI_IMPORT_KEY=<anthropic|openai|typesafe>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)
+- `TOMARIGI_KEY_BACKEND=webview`: stores keys in IndexedDB instead of the Keychain (for testing the IndexedDB → Keychain migration)
 
-- `TOMARIGI_IMPORT_KEY=<anthropic|openai|typesafe>`: 標準入力の 1 行目をその提供元の API キーとして保存する(設定画面を手で操作できないときの確かめ用。ログには長さだけ出す)
-- `TOMARIGI_KEY_BACKEND=webview`: キーの保存先を IndexedDB にする(普段使い・verify のキーチェーンを使わない。IndexedDB からキーチェーンへの移行を確かめるとき用)
+Where BYOK API keys are stored depends on the identifier (KeyStore in src-tauri/src/lib.rs). The everyday and verify builds use the macOS Keychain (item `<identifier>.byok`); dev uses IndexedDB. API calls that use keys are made from Rust.
 
-BYOK の API キーの保存先は identifier で決まる(src-tauri/src/lib.rs の KeyStore)。普段使い・verify は macOS のキーチェーン(項目は `<identifier>.byok`)、dev は IndexedDB。キーを使う API 呼び出しは Rust から出す。
+Logs are appended to `/tmp/tomarigi-desktop/app-log.txt`.
 
-ログは `/tmp/tomarigi-desktop/app-log.txt` に追記する。
+The Rust tauri crates are pinned to 2.11.x to match `@tauri-apps/api` 2.11 on the npm side (`tauri build` stops on a major/minor mismatch).
 
-Rust 側の tauri 系 crate は npm 側 `@tauri-apps/api` 2.11 に合わせて 2.11 系に固定している(`tauri build` はメジャー/マイナー不一致で止まる)。
+## License
 
-## ライセンス
-
-MIT(LICENSE)。鳥などのキャラクター画像(`src/assets/`)は OpenAI の gpt-image で生成したもので、同じ MIT で配布する。
+MIT (see LICENSE). The character images (`src/assets/`) were generated with OpenAI's gpt-image and are distributed under the same MIT license.
