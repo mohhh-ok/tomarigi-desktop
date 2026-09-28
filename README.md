@@ -20,6 +20,8 @@ bun run gen:locales           # scripts/locales/*.mjs → public/_locales/*/mess
 bun run verify:locales        # checks that all 43 locales have exactly the same keys
 ```
 
+Distribution builds are made by CI when a `v*` tag is pushed (signed, notarized, attached to a draft GitHub Release). See docs/release.md.
+
 The everyday build (/Applications), `bun run dev`, and `bun run build:verify` use different identifiers (`src-tauri/tauri.dev.conf.json` and `tauri.verify.conf.json` are layered with `--config`). Single-instance locking, settings, and window position are separate for each, so they can run side by side. Each one asks for Ghostty automation permission on first use. Agents that launch the app for verification should only launch the verify .app (so they don't stop the everyday build or dev).
 
 `public/_locales` is generated. Don't edit it directly; write all 43 locales in scripts/locales/*.mjs and generate.

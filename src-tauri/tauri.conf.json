@@ -48,6 +48,7 @@
       "icons/icon.ico"
     ],
     "macOS": {
+      "entitlements": "Entitlements.plist",
       "files": {
         "Resources/en.lproj/InfoPlist.strings": "locales/en.lproj/InfoPlist.strings",
         "Resources/ja.lproj/InfoPlist.strings": "locales/ja.lproj/InfoPlist.strings"
