@@ -1,0 +1,432 @@
+/* Settings view: sound and readout, watched folders, badges, small buttons, API keys, window mode, icon sets */
+
+/* End of the settings tab. The two notification toggles ("notify with sound", "read aloud") are parents, and the
+   sub-rows right under them (preview buttons, volume sliders) are children. A separator in the same tone as
+   .roots/.judge */
+.voice-controls {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+/* Checkbox/radio rows. Even when the description wraps to 2 lines, align the circle/square with the center of the
+   first line's text (center alignment would float it between the 2 lines). Fix the line height and push the mark
+   down by half the difference from the mark's height */
+.voice-enable-row,
+.ai-provider-choice {
+  --choice-line: 18px;
+  --choice-mark: 14px;
+  line-height: var(--choice-line);
+}
+
+.voice-enable-row input,
+.ai-provider-choice input {
+  flex: none;
+  width: var(--choice-mark);
+  height: var(--choice-mark);
+  margin: calc((var(--choice-line) - var(--choice-mark)) / 2) 0 0;
+}
+
+.voice-enable-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Spacing between parent checkboxes. Covers both the case where the previous sibling is another parent row (right
+   after a parent with no sub-rows) and the case where it is a sub-row ("read aloud" following the preview button row).
+   Missing the latter makes the adjacent selector not match, so the next parent row sticks to the previous sub-row
+   with zero gap and looks like "a child of the previous group" (this mismatch was actually introduced once) */
+.voice-enable-row + .voice-enable-row,
+.settings-subrow + .voice-enable-row {
+  margin-top: 14px;
+}
+
+/* Shared indent for sub-rows hanging right under a parent checkbox. Used by both the preview button row and the
+   volume slider row; matching the left indent makes it clear at a glance that they are "children of the checkbox"
+   (previously, only the preview buttons were in a separate heading group and the relationship didn't come across) */
+.settings-subrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-left: 24px; /* Indent matching the parent row's checkbox width + gap */
+}
+
+.sound-preview-row {
+  flex-wrap: wrap;
+}
+
+.sound-preview-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Add a small speaker at the start of each button too, so each one reads as "a button that plays sound" on its own */
+.preview-mic {
+  color: #8d887c;
+}
+
+/* Shared style for volume slider rows. Used by both readout (voice) and chirp
+   (previously readout-only as voice-volume-row; renamed to a generic name when the chirp volume setting was
+   added. The values themselves are in separate module variables / storage keys for readout and chirp,
+   so sharing the CSS doesn't mix the settings) */
+.volume-row {
+  font-size: 13px;
+  color: #d8d3c6;
+}
+
+.volume-row:has(.volume-slider:disabled) {
+  color: #6b6858;
+}
+
+.volume-slider {
+  flex: 1;
+  min-width: 0;
+  /* Match the tone with the same amber (#d9b06a) as .tab-btn.active */
+  accent-color: #d9b06a;
+}
+
+.volume-value {
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #a49f92;
+}
+
+.roots {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+.roots h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #a49f92;
+}
+
+.root-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.root-add-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(10, 10, 12, 0.78);
+}
+
+.root-add-dialog {
+  width: min(440px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #3b382f;
+  border-radius: 12px;
+  background: #1c1b17;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.root-add-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.root-add-dialog-header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #d5d1c7;
+}
+
+.root-add-choices {
+  display: grid;
+  gap: 10px;
+}
+
+.root-add-choice {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #2f2d25;
+  border-radius: 8px;
+  background: rgba(38, 37, 31, 0.45);
+}
+
+.root-add-choice button {
+  justify-self: start;
+}
+
+.root-add-hint {
+  color: #8f8a7e;
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+.root-path-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 4px;
+  padding: 4px 8px;
+  border-color: #4a463c;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.root-path-copy code {
+  overflow-wrap: anywhere;
+  color: #d9b06a;
+}
+
+.root-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #232219;
+}
+
+.root-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.root-path {
+  display: block;
+  overflow: hidden;
+  font-size: 11px;
+  color: #8d887c;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.root-label-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid #4a463c;
+  border-radius: 6px;
+  background: #1c1b17;
+  color: #e9e6de;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* The default watched folder. Not a warning or error, so no saturated color */
+.badge-default {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d4cfc2;
+}
+
+/* Placeholder for the × in the default row (RootManager in settings/root-manager.tsx). Same box as button.small, but invisible */
+.root-remove-placeholder {
+  visibility: hidden;
+}
+
+.badge-error {
+  background: rgba(255, 110, 90, 0.12);
+  color: #d97e6a;
+}
+
+button.small {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* While in the settings view, show the ⚙ button as active to indicate where you are. Same amber as the active tab */
+button.small.active {
+  border-color: #6b6350;
+  background: rgba(217, 176, 106, 0.14);
+  color: #d9b06a;
+}
+
+button.remove {
+  padding: 4px 8px;
+  color: #b98d84;
+}
+
+.add-message {
+  margin: 8px 0 0;
+  color: #d9b06a;
+  font-size: 12px;
+}
+
+/* OpenAI / Anthropic API keys (done readout summary + connection test). The shared description is shown once,
+   with per-provider controls listed below it. Descriptive classes like key-row and status (.judge-key-row,
+   .judge-status, etc.) are leftover class names from sharing with the old LLM verdict toggle (JudgeSettings,
+   removed), but they are flat class names with no nesting dependency, so they are reused as is */
+.ai-keys {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+.ai-keys > h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #a49f92;
+}
+
+.ai-key-provider-list {
+  display: grid;
+  gap: 14px;
+}
+
+.ai-key-provider {
+  padding: 12px;
+  border: 1px solid #343128;
+  border-radius: 8px;
+  background: #1b1a16;
+}
+
+.ai-key-provider h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #d1cdc3;
+}
+
+.judge-description {
+  margin: 0 0 12px;
+  color: #8d887c;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.judge-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.judge-key-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid #4a463c;
+  border-radius: 6px;
+  background: #1c1b17;
+  color: #e9e6de;
+}
+
+.judge-key-set {
+  flex: 1;
+  font-size: 13px;
+  color: #a49f92;
+}
+
+.ai-provider-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  width: fit-content;
+  margin: 0 0 10px;
+  color: #c9c4b8;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* The selected color of settings checkboxes/radios matches the amber of .tab-btn.active and the volume sliders */
+.voice-enable-row input,
+.ai-provider-choice input {
+  accent-color: #d9b06a;
+}
+
+.judge-status {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.judge-status-ok {
+  color: #7fae7a;
+}
+
+.judge-status-error {
+  color: #d97e6a;
+}
+
+/* Per-project icon set assignments (issue #14). Same separator tone as .roots/.ai-keys */
+.icon-sets,
+.window-mode {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2922;
+}
+
+.icon-sets h2,
+.window-mode h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #a49f92;
+}
+
+.icon-set-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.icon-set-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #232219;
+}
+
+/* Rows not currently running (saved assignment only). Same layout as the .root-row family, but dimmed to tell them
+   apart from currently running rows (the slug can be checked on hover via the title attribute) */
+.icon-set-row-idle {
+  opacity: 0.55;
+}
+
+.icon-set-glyph {
+  flex-shrink: 0;
+}
+
+.icon-set-project {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-set-toggle {
+  flex-shrink: 0;
+}
+
+.icon-set-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #8d887c;
+}

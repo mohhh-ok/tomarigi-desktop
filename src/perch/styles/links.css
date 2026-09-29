@@ -1,0 +1,10 @@
+/* Links to external sites */
+
+/* Links to external sites within descriptions (open in the external browser). A slightly brighter amber than the
+   body text shows they can be pressed */
+.external-link {
+  color: #d9b06a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

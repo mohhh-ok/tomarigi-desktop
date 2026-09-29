@@ -1,0 +1,162 @@
+/* The frameless window, the page frame, window mode and fade, the header, shared buttons, and the tab panels */
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* The window is transparent and frameless (NSPanel in src-tauri). html/body are see-through; .page fills the window
+   as a rounded panel */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  color: #e9e6de;
+  font-family: -apple-system, "Hiragino Sans", sans-serif;
+  /* Dragging the background moves the window (NO_WINDOW_DRAG in App.tsx), so background text isn't selectable */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#root {
+  height: 100%;
+}
+
+.page {
+  height: 100%;
+  padding: 6px 10px 8px;
+  /* Make the whole page a vertical flex so the Garden tab can fill the remaining vertical space */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* Semi-transparent, so what's behind shows blurred through the frosted glass behind the window (set_backdrop in
+     src-tauri). This is to feel less heavy, not to make the background readable (docs/design.md "Window mode").
+     The opacity is fixed */
+  background: rgba(22, 22, 28, 0.75);
+  border: 1px solid #2e2c25;
+  border-radius: 12px;
+}
+
+/* Verification build (data-build="verify" in boot.tsx). A color to tell it apart from the everyday build */
+:root[data-build="verify"] .page {
+  background: rgba(10, 48, 44, 0.8);
+  border-color: #1f6b60;
+}
+
+/* A standard window (window-mode.ts) has its own frame and corners, so drop the panel's border and rounded corners
+   and fill the whole window */
+html[data-window-mode="normal"] .page {
+  border: none;
+  border-radius: 0;
+}
+
+/* Fade until hovered (docs/design.md "Window mode"; data-fade is set by garden-fade.ts). At rest only the birds, their
+   badges, and bubbles stay; everything else fades almost to invisible. The frosted glass and shadow are removed on the Rust
+   side (apply_fade in src-tauri) */
+.page {
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.page-header,
+.tabs,
+.garden-name,
+.garden-status,
+.garden-watch-count,
+.garden-icons,
+.garden-watch-block {
+  transition: opacity 0.2s;
+}
+
+:root[data-fade="rest"] .page {
+  background-color: rgba(22, 22, 28, 0.03);
+  border-color: rgba(46, 44, 37, 0.08);
+}
+
+:root[data-fade="rest"] .garden {
+  background: none;
+  border-color: rgba(42, 41, 34, 0.08);
+}
+
+:root[data-fade="rest"] :is(
+    .page-header,
+    .tabs,
+    .garden-name,
+    .garden-status,
+    .garden-watch-count,
+    .garden-icons,
+    .garden-watch-block
+  ) {
+  opacity: 0.06;
+}
+
+/* Elements that jump to the Ghostty pane when pressed (Perch rows, event cards, garden birds) */
+.focusable {
+  cursor: pointer;
+}
+
+.bird.focusable:hover,
+.chick.focusable:hover,
+.event-card.focusable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Header row. Mute, settings, and hide must be visible on every tab, so they sit outside the tabs (top of the page) */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand {
+  /* Compact, since the header also holds the buttons */
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.setup p {
+  line-height: 1.9;
+  color: #b9b5aa;
+}
+
+button {
+  padding: 10px 18px;
+  font-size: 14px;
+  border: 1px solid #4a463c;
+  border-radius: 8px;
+  background: #26251f;
+  color: #e9e6de;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #31302a;
+}
+
+.stage {
+  padding: 12px 8px 4px;
+}
+
+.perch {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

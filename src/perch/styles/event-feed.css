@@ -1,0 +1,189 @@
+/* Recent activity (event feed) and the vertical flow of the Perch / Recent activity tab panels */
+
+/* Chronological feed of transition events (experimental). The window is narrow, so keep sizes modest */
+.event-feed {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed #2c2a22;
+}
+
+.event-feed-heading {
+  margin: 0 0 4px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #8d887c;
+}
+
+.event-feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+/* The window is small, so lists take the remaining height and scroll inside. #tabpanel-* → stage → event-feed → event-feed-list are chained as flex columns, and the
+   list takes all the remaining vertical space */
+.perch {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+#tabpanel-events,
+#tabpanel-perch {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* Applying display: flex makes the hidden attribute (the UA's display: none) lose (author declarations
+   override the UA by origin precedence, so they win even at equal specificity), so restore it
+   explicitly, for the same reason as #tabpanel-garden */
+#tabpanel-events[hidden],
+#tabpanel-perch[hidden] {
+  display: none;
+}
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.event-feed {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.event-feed-list {
+  flex: 1;
+  max-height: none;
+  min-height: 0;
+}
+
+
+/* 1 session = 1 card. Past transitions of the same session aren't shown; only the latest event.
+   Two columns: icon (left) + body (right). The body has 2 lines (project / kind and time) */
+.event-card {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 8px 6px;
+  border-bottom: 1px solid #201f1a;
+  color: #a49f92;
+  font-size: 11px;
+}
+
+.event-card:last-child {
+  border-bottom: none;
+}
+
+.event-card > .event-marks {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+/* 16px state icon + 3px gap + 14px anger mark, kept on every row while any row has the mark */
+.event-feed-anger .event-marks {
+  min-width: 33px;
+}
+
+.event-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.event-card-project {
+  font-weight: 600;
+  color: #e9e6de;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 55%;
+}
+
+.event-card-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 1px;
+}
+
+/* Icon showing the kind. Meaning is carried three ways: shape + color (tone-*) + label. The SVG is filled with
+   currentColor, so the color comes from the color set by tone-*. vertical-align is so it sits vertically centered
+   inside the preview button (inline context) */
+.event-icon {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.tone-done {
+  color: #8fae6e;
+}
+
+.tone-turn {
+  color: #d9b06a;
+}
+
+.tone-log {
+  color: #8d887c;
+}
+
+.event-label {
+  flex: 1;
+  /* In a narrow window, long labels wrap and the row grows taller. The icon + color already convey the kind,
+     so the label can be kept to one line with overflow truncated */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Snippet in the event feed. Same subtle tone as .snippet in Perch rows */
+.event-snippet {
+  margin-left: 3px;
+  color: #8d887c;
+}
+
+.event-time {
+  color: #8d887c;
+  font-variant-numeric: tabular-nums;
+  /* If the relative time (e.g. "1h 5m") wraps for lack of width, the row height becomes uneven. Don't shrink the time;
+     leave shrinking to project / label, which have ellipsis */
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.event-closed {
+  opacity: 0.6;
+}
+
+/* muted: a suppressed done that was canceled by the parent restarting, so it didn't sound. Same dimming as
+   .event-closed, to show it differs from a normal done. No flashy badge */
+.event-muted {
+  opacity: 0.6;
+}
+
+.event-mute-icon {
+  flex-shrink: 0;
+  color: #8d887c;
+}
+
+.note {
+  color: #8d887c;
+}

@@ -1,0 +1,92 @@
+/* Speech bubbles (bubble.tsx) in the Garden and on the Perch */
+
+/* The bird's speech bubble (perch/bubble.tsx). Below the icon in the garden; one line within the row in Perch.
+   Long text is cut with "…", and hovering shows the full text (title) */
+.speech-bubble {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 7px;
+  border-radius: 8px;
+  background: #ece6d6;
+  color: #26221a;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* Garden: cut at about 15 full-width characters. Inside the bubble anchor (.garden-bubble-anchor = same position and
+   size as the bird), shown right below the icon's bottom edge (--bubble-top, measured and passed by garden.tsx), in the
+   space before the status row (.garden-bubble-room). .speech-bubble, which cuts text with "…", would also clip the
+   tail with overflow: hidden, so the outer frame (this) carries the tail and shadow. The shadow is a filter
+   drop-shadow, cast by the body and tail as a single shape (no shadow line at the seam) */
+.speech-bubble-below {
+  position: absolute;
+  top: calc(var(--bubble-top, 0px) + 7px);
+  left: 50%;
+  display: block;
+  max-width: 15em;
+  font-size: 11px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+/* The tail points upward from the top edge, with its tip pointing at the icon. Even when shifted inside the frame
+   (bubbleShift in garden.tsx), --tail-left / --tail-right keep it directly below the icon. It overlaps the body by 1px
+   to remove the gap at the seam */
+.speech-bubble-below::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: calc(var(--tail-left, 50%) - 5px);
+  right: calc(var(--tail-right, 100%) - 5px);
+  width: 0;
+  border: 5px solid transparent;
+  border-top: 0;
+  border-bottom: 7px solid #ece6d6;
+}
+
+/* For birds with a speech bubble, the space between the icon and the name. Bubble height + gap to the icon (same as
+   BUBBLE_ROOM_PX in garden-watch-layout.ts) */
+.garden-bubble-room {
+  flex: none;
+  height: 26px;
+}
+
+/* The garden's speech bubble layer. Stacked above the birds and names (.garden-node), so other birds' names don't hide
+   bubble text or the "…". The layer itself can't be pressed, so it doesn't block dragging/clicking birds. Only the
+   bubbles can be hovered to see the full text (title) */
+.garden-bubble-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+/* Speech bubble anchor. Same center, width, and height as the bird node (.garden-node) (garden.tsx passes
+   left/top/height) */
+.garden-bubble-anchor {
+  position: absolute;
+  width: 120px;
+  transform: translate(-50%, -50%);
+}
+
+.garden-bubble-anchor .speech-bubble {
+  pointer-events: auto;
+}
+
+/* Perch: shown as one line on a second line aligned with the start of the name (bird 18px + right space 4px + row gap
+   10px) */
+.speech-bubble-line {
+  display: block;
+  min-width: 0;
+  margin-top: 4px;
+  padding-left: 32px;
+}
+
+.speech-bubble-row {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}

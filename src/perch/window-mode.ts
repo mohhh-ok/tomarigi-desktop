@@ -1,11 +1,11 @@
 // Window mode (floating / standard window; docs/design.md "Window mode"). The Rust side (WindowMode in src-tauri/src/lib.rs) is the source of truth and saves it;
 // changes from the menu bar menu also arrive through the "window-mode" event.
-// It's copied to <html data-window-mode>, which CSS (perch.css) and window dragging (App.tsx) look at.
+// It's copied to <html data-window-mode>, which CSS (styles/base.css) and window dragging (App.tsx) look at.
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 
-export type WindowMode = "floating" | "normal";
+type WindowMode = "floating" | "normal";
 
 function apply(mode: WindowMode) {
   document.documentElement.dataset.windowMode = mode;

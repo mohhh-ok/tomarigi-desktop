@@ -1,0 +1,89 @@
+/* BirdGlyph frame and the marks drawn over the bird ("?" and the anger mark) */
+
+/* Outer frame of BirdGlyph. The reference for overlaying the badges (.bird-badge) at the bird's top corners */
+.bird-glyph {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+/* Marks drawn over the bird, shared by all icon sets: "?" for birds that need a reply (needsAnswer in lib/jev.ts) at
+   the top right, and the anger mark (isAngry in lib/jev.ts) at the top left. The diameter follows the bird size
+   (--glyph-size is passed by BirdGlyph), with a minimum that stays readable in the small Perch rows */
+.bird-badge {
+  --badge-size: max(10px, calc(var(--glyph-size, 18px) * 0.42));
+  /* How much it overlaps the bird image. On small birds (18px in Perch) it barely overlaps so it doesn't hide the face.
+     On large birds (garden) it overlaps a little so it reads as a mark attached to the bird */
+  --badge-overlap: clamp(1px, calc((var(--glyph-size, 18px) - 20px) * 0.3), calc(var(--badge-size) * 0.35));
+  position: absolute;
+  /* Don't stick out upward (the badge gets cut off for birds at the top edge of the garden). Stick out sideways
+     instead */
+  top: 0;
+  width: var(--badge-size);
+  height: var(--badge-size);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px #16161c;
+  font-size: calc(var(--badge-size) * 0.78);
+  font-weight: 800;
+  line-height: var(--badge-size);
+  text-align: center;
+}
+
+.bird-badge-ask {
+  right: calc(var(--badge-overlap) - var(--badge-size));
+  background: #f2b33d;
+  color: #231d12;
+}
+
+/* The anger mark is the 💢 shape itself, without the round background (a red disc with a white pattern read as a
+   "+" or first-aid sign when small). The dark outline keeps it visible on both the green (verify) and dark backgrounds */
+.bird-badge-anger {
+  /* Larger than the "?" because it has no disc behind it; below 14px the four brackets merge into a "+" */
+  --badge-size: max(14px, calc(var(--glyph-size, 18px) * 0.5));
+  left: calc(var(--badge-overlap) - var(--badge-size));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.bird-badge-inline {
+  position: static;
+  display: inline-block;
+}
+
+.bird-badge-anger svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* A dozing bird's sprite is drawn dark and muted, so its anger mark is muted the same way (in the Perch row and
+   the Garden alike). The "?" stays bright on purpose so a question isn't missed */
+.bird-glyph-dozing .bird-badge-anger {
+  filter: saturate(0.4) brightness(0.7);
+}
+
+.bird-badge-anger-outline {
+  stroke: #16161c;
+  stroke-width: 5.2;
+}
+
+.bird-badge-anger-vein {
+  stroke: #ff4a3a;
+  stroke-width: 3.2;
+}
+
+/* Perch rows leave space before the name equal to how far the "?" sticks out to the right of the bird. Rows without
+   a "?" leave the same space, so the names start at the same position */
+.bird-row-main > .bird-glyph {
+  margin-right: 4px;
+}
+
+/* In the Perch rows the anger mark sticks out to the left of the small bird by 13px
+   (14px mark minus 1px overlap). Every row leaves that space so the mark stays inside the row and the birds line up */
+.bird-row-main > .bird-glyph {
+  margin-left: 13px;
+}
