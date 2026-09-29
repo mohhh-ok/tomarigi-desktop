@@ -116,7 +116,7 @@ function classify(entry: CodexEntry): Omit<TailEvent, "at"> | null {
       return { kind: "user", text };
     }
     if (type === "custom_tool_call" || type === "function_call") {
-      // The start of arguments (a JSON string) is used to extract the question text of request_user_input (extractQuestion in lib/sessions.ts)
+      // The start of arguments (a JSON string) is used to extract the question text of request_user_input (extractQuestion in lib/session-snippet.ts)
       return {
         kind: "tool_use",
         toolName: stringValue(payload.name),

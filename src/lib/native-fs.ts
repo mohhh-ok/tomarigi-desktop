@@ -1,7 +1,7 @@
 // Reads files on the Rust side (fs_list / fs_stat / fs_read in src-tauri/src/lib.rs) instead of the File System Access API.
-// lib/sessions.ts, transcript.ts, and codex-transcript.ts were written for the tomarigi Chrome extension's
-// FileSystemDirectoryHandle / File, so this provides handles with just the methods they use, in the same
-// shape, and swaps them in (the scanning and state logic runs as in tomarigi).
+// The session scan (lib/sessions.ts and its session-*.ts modules, transcript.ts, codex-transcript.ts) was written
+// against FileSystemDirectoryHandle / File in the tomarigi Chrome extension, so this provides handles with just the
+// methods it uses, in the same shape.
 import { invoke } from "@tauri-apps/api/core";
 
 interface RawEntry {
@@ -12,7 +12,8 @@ interface RawEntry {
 }
 
 function notFound(path: string): DOMException {
-  // sessions.ts treats a DOMException NotFoundError as "doesn't exist, skip it"
+  // The session scan (lib/codex-rollout.ts, lib/session-chicks.ts) treats a DOMException NotFoundError as
+  // "doesn't exist, skip it"
   return new DOMException(`not found: ${path}`, "NotFoundError");
 }
 

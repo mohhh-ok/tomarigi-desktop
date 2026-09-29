@@ -9,11 +9,11 @@ import { runJudge, type JudgeResult, type JudgeTaskDefinition } from "./judge";
 import { runOpenAiJudge } from "./openai-judge";
 import type { AiProvider } from "./fsa";
 
-export interface SummarizeVerdict {
+interface SummarizeVerdict {
   summary: string;
 }
 
-export interface SummarizePayload {
+interface SummarizePayload {
   ui_language: string;
   prompt: string | undefined;
   assistant_text: string;
@@ -55,11 +55,11 @@ export async function summarizeDoneEvent(
 // Summarizes the last reply exactly once when a turn ends. The caller (App.tsx) prevents duplicates per turn (turnKey),
 // so there's no cache here either
 
-export interface TurnLineVerdict {
+interface TurnLineVerdict {
   line: string;
 }
 
-export interface TurnLinePayload {
+interface TurnLinePayload {
   ui_language: string;
   assistant_text: string;
 }

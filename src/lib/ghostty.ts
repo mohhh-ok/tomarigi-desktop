@@ -8,7 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./fsa";
 import { codexDirOf, codexThreadIdOf, configDirOf, predecessorsOf } from "./sessions";
 
-export type FocusTarget =
+type FocusTarget =
   | {
       kind: "claude";
       configDir: string; // ~/.claude etc. (parent of the watched folder <config>/projects)

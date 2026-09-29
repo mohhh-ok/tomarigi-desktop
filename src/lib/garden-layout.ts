@@ -1,11 +1,7 @@
 // Persisting node positions in the Garden tab (issue #12).
 //
-// Design note: the issue's instructions named browser.storage.local, but the tomarigi Chrome extension
-// relies on "zero permissions" for trust (see the comment in wxt.config.ts) and keeps manifest.permissions
-// empty. chrome.storage APIs need the "storage" permission, so using them here would be
-// the only permission added. IndexedDB can be used from extension pages without permissions,
-// so this goes through idb into the same "tomarigi" DB / "kv" store as fsa.ts,
-// persisting without breaking zero permissions.
+// Stored through idb in the same "tomarigi" DB / "kv" store as fsa.ts (IndexedDB was chosen in the tomarigi Chrome
+// extension to avoid the "storage" permission; the desktop app keeps the same store).
 
 import { openDB, type IDBPDatabase } from "idb";
 
@@ -30,7 +26,7 @@ const CLAMP_Y_MAX = 90;
  * jitterX / jitterY are how far a bird may shift within its cell (as a fraction of the cell). It shifts only by the room left over when the bird is smaller than the cell,
  * so it doesn't overlap birds in neighboring cells
  */
-export interface GardenGrid {
+interface GardenGrid {
   cols: number;
   rows: number;
   jitterX: number;

@@ -43,16 +43,16 @@ export function httpFailure(
 }
 
 /** Model for verdicts. Fixed by the original design (issue #3). Uses the official dated ID */
-export const JUDGE_MODEL = "claude-haiku-4-5-20251001";
+const JUDGE_MODEL = "claude-haiku-4-5-20251001";
 
 /** Output is kept small since it's for verdicts. When tool_choice is forced, if this is too small
  * stop_reason: "max_tokens" breaks the tool_use input JSON, so
  * leave headroom relative to the number of fields */
 const DEFAULT_MAX_TOKENS = 512;
 
-export type JudgeFieldType = "string" | "boolean" | "number";
+type JudgeFieldType = "string" | "boolean" | "number";
 
-export interface JudgeOutputField {
+interface JudgeOutputField {
   type: JudgeFieldType;
   description: string;
   enum?: readonly string[];
@@ -91,6 +91,19 @@ function fieldToJsonSchema(field: JudgeOutputField): Record<string, unknown> {
 }
 
 /**
+ * properties and required of the verdict object's JSON schema. Shared by the Anthropic tool input_schema (here) and
+ * the OpenAI Structured Outputs schema (lib/openai-judge.ts)
+ */
+export function verdictSchema(task: JudgeTaskDefinition): { properties: Record<string, unknown>; required: string[] } {
+  const required = task.requiredFields ?? Object.keys(task.outputFields);
+  const properties: Record<string, unknown> = {};
+  for (const [key, field] of Object.entries(task.outputFields)) {
+    properties[key] = fieldToJsonSchema(field);
+  }
+  return { properties, required };
+}
+
+/**
  * Runs a verdict task once. API errors (401/429/network, etc.) don't throw; they are
  * returned as a JudgeResult (so the caller can show them in the UI).
  *
@@ -103,12 +116,6 @@ export async function runJudge<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   payload: unknown,
 ): Promise<JudgeResult<V>> {
-  const required = task.requiredFields ?? Object.keys(task.outputFields);
-  const properties: Record<string, unknown> = {};
-  for (const [key, field] of Object.entries(task.outputFields)) {
-    properties[key] = fieldToJsonSchema(field);
-  }
-
   const body = {
     model: JUDGE_MODEL,
     max_tokens: task.maxTokens ?? DEFAULT_MAX_TOKENS,
@@ -120,8 +127,7 @@ export async function runJudge<V = Record<string, unknown>>(
         description: `Return a structured verdict for the "${task.name}" judging task.`,
         input_schema: {
           type: "object",
-          properties,
-          required,
+          ...verdictSchema(task),
         },
       },
     ],

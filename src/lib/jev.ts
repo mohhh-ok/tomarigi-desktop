@@ -11,12 +11,12 @@ import type { BirdState, SessionView } from "./sessions";
 const MODEL = "jev-latest";
 
 /** If the probability of yes is at least this, treat it as asking */
-export const ASKING_THRESHOLD = 0.5;
+const ASKING_THRESHOLD = 0.5;
 
 /** Upper limit of the reply text passed to Jev (keeps the end, because questions come at the end of a reply) */
 const MAX_STATE_CHARS = 2000;
 
-export type AskStatus = "pending" | "asking" | "not_asking" | "error";
+type AskStatus = "pending" | "asking" | "not_asking" | "error";
 
 /** Jev verdict. One per turn (sessionId + time of the last reply) */
 export interface AskJudgement {
@@ -44,7 +44,7 @@ const ASKING_QUESTION = {
 } as const;
 
 // docs/design.md "Anger mark for abuse toward the AI". Exported so the accuracy check script sends the same question
-export const ABUSE_QUESTION = {
+const ABUSE_QUESTION = {
   type: "noul",
   instructions:
     "`state` is a message a user typed to an AI coding agent. " +
@@ -61,9 +61,9 @@ export const ABUSE_QUESTION = {
 } as const;
 
 /** If the probability of yes is over this, put the anger mark (basis: /tmp/tomarigi-desktop/anger-jev-accuracy.md) */
-export const ABUSE_THRESHOLD = 0.6;
+const ABUSE_THRESHOLD = 0.6;
 
-export type AngerStatus = "pending" | "angry" | "calm" | "error";
+type AngerStatus = "pending" | "angry" | "calm" | "error";
 
 /** Jev verdict for one user message (sessionId + time of the message) */
 export interface AngerJudgement {

@@ -31,8 +31,8 @@ export interface TailInfo {
   // and could not be read (2026-09-25. No example of mixed values within one file in the latest 300 files).
   // Values confirmed on real data: interactive (cli) start is "cli", start via the Claude Agent SDK
   // (Python) is "sdk-py", `claude -p` is "sdk-cli". The TS SDK is presumed to be "sdk-ts" or similar,
-  // so the caller (lib/sessions.ts) matches /^sdk/ rather than an exact value (only "sdk-cli" is
-  // excluded from display).
+  // so the caller (isSdkSession in lib/session-chicks.ts) matches /^sdk/ rather than an exact value (only
+  // "sdk-cli" is excluded from display, in lib/sessions.ts).
   // The entrypoint field is internal and version-dependent (see docs/last-prompt-ghost.md; there is a
   // precedent where an assumption broke with the last-prompt record). If no line in the tail window has
   // entrypoint, it stays undefined = the caller treats it as cli (adult) (safe-side fallback)
@@ -42,23 +42,23 @@ export interface TailInfo {
   // tool_use = toolUseId in meta.json), value is the latest timestamp (epoch ms) the signal was seen.
   // The parent can resume a chick with the same task-id; then writes resume in the same jsonl and this
   // signal can appear multiple times with the same task-id, so it is always overwritten with the latest
-  // value (scanChicks in lib/sessions.ts detects a resume by checking whether the chick's last
+  // value (scanChicks in lib/session-chicks.ts detects a resume by checking whether the chick's last
   // conversation time (lastEventAt) has advanced after the signal, and invalidates the signal if so).
   // It is computed with the same logic when reading a chick's own transcript (includeSidechain:true),
-  // but it is only actually used for the parent tail (see deriveState/scanChicks in lib/sessions.ts).
+  // but it is only actually used for the parent tail (see deriveState in lib/bird-state.ts and scanChicks in lib/session-chicks.ts).
   chickSignals: Map<string, number>;
   // Launch records of background tasks the parent started with run_in_background (Bash etc.; the same
   // from the parent's view even if the content is `claude -p`). key is the task-id
   // (toolUseResult.backgroundTaskId), value is the time of the tool_result confirming the launch.
   // Completion arrives in chickSignals as a <task-notification> with the same task-id. Launch lines leave
-  // the tail window within tens of seconds, so the ledger is kept across scans by lib/sessions.ts
+  // the tail window within tens of seconds, so the ledger is kept across scans in lib/session-store.ts
   // (backgroundTaskCache)
   backgroundTaskStarts: Map<string, number>;
   // Names of the peers exchanged with via cross-session messages (Claude Code's cross-session messaging).
   // On the sending side it is the recipient of the SendMessage tool call (input.to); on the receiving side
   // it is origin.name on the isMeta user line (or <cross-session-message from-name="…"> in the body if
   // absent). The value is the latest time of that trace. So it doesn't vanish when it leaves the tail
-  // window, lib/sessions.ts (peerNameCache) keeps it across scans.
+  // window, lib/session-store.ts (peerNameCache) keeps it across scans.
   // Used to decide the link for watching (docs/design.md "Watching")
   peerNames: Map<string, number>;
   // The session was handed over to another session (a `continued-in` line naming continuedInSessionId, written
@@ -75,7 +75,7 @@ export interface TailEvent {
   toolName?: string;
   // What text holds depends on kind:
   // - kind === "user": the user's utterance text (first 500 chars, TEXT_FIELD_LIMIT). Input for the
-  //   event feed snippet (pickSnippet/formatSnippet in lib/sessions.ts)
+  //   event feed snippet (pickSnippet/formatSnippet in lib/session-snippet.ts)
   // - kind === "tool_use": a summary of the tool_use input (JSON.stringify, first 500 chars). Currently
   //   has no direct consumer (formerly the input for the permission-wait check, removed along with the
   //   LLM judgment feature. Still collected for display and future debugging)
@@ -211,7 +211,7 @@ const CHICK_SIGNAL_CHUNK_BYTES = 4 * 1024 * 1024;
  * Collects chick completion signals (the same collectChickSignals as TailInfo.chickSignals) from the whole
  * transcript from start, not just the tail window. A long-lived parent's completion records scroll out of the
  * tail window, and a chick is shown until its completion is recorded (docs/design.md "Removing birds of ended
- * sessions"), so lib/sessions.ts keeps the result across scans and reads only what was appended. end is the
+ * sessions"), so scanChicks (lib/session-chicks.ts) keeps the result across scans and reads only what was appended. end is the
  * position read up to; a last line cut off midway is left for the next read
  */
 export async function scanChickSignals(
@@ -402,7 +402,7 @@ function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string
     // but if absent nothing happens, so no harm).
     // Completion notices of background commands such as Bash (task-notification itself is not specific
     // to Task/Agent) also pass through here. scanChicks ignores them because there is no chick file, and
-    // backgroundTaskCache in lib/sessions.ts uses them as background task completion
+    // backgroundTaskCache in lib/session-store.ts uses them as background task completion
     const content = entry.content;
     if (typeof content === "string" && content.includes(TASK_NOTIFICATION_TAG)) {
       const taskId = content.match(TASK_ID_PATTERN)?.[1];
