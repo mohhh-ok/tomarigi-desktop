@@ -10,8 +10,6 @@ import {
   DEFAULT_ICON_SET,
   ICON_SET_IDS,
   resolveIconSet,
-  type IconSetAssignment,
-  type IconSetAssignments,
   type IconSetId,
 } from "@/lib/icon-set-store";
 
@@ -40,7 +38,6 @@ import frogDone from "@/assets/frog/done.webp";
 import frogDozing from "@/assets/frog/dozing.webp";
 import frogChick from "@/assets/frog/chick.webp";
 
-export type { IconSetId, IconSetAssignment, IconSetAssignments };
 export { DEFAULT_ICON_SET, ICON_SET_IDS, resolveIconSet };
 
 type IconSetSprites = Record<BirdState | "chick", string>;

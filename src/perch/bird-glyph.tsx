@@ -32,17 +32,6 @@ export const BIRD: Record<BirdState, { glyph: string; label: string; img: string
   },
 };
 
-/**
- * State label. If this session needs a reply (asking), use the needs-reply word even when done or dozing
- * (the word matches the badge). If watching (the peer is working), use the watching word. Even if the peer
- * is asking, a watching bird stays watching
- */
-export function birdLabel(state: BirdState, asking: boolean, watching = false): string {
-  if (asking) return BIRD.waiting.label;
-  if (watching) return t("birdWatchingLabel");
-  return BIRD[state].label;
-}
-
 /** Shared component that shows a BirdState as a WebP sprite instead of an emoji.
  * alt is empty — callers always put the state label text next to it, so it can be treated as decorative.
  * flip is the horizontal mirror for the garden (if everyone faces the same way it looks stuffed, so it is
