@@ -1,6 +1,6 @@
 // Persisting node positions in the Garden tab (issue #12).
 //
-// Stored through idb in the same "tomarigi" DB / "kv" store as fsa.ts (IndexedDB was chosen in the tomarigi Chrome
+// Stored through idb in the same "tomarigi" DB / "kv" store as lib/settings-store.ts (IndexedDB was chosen in the tomarigi Chrome
 // extension to avoid the "storage" permission; the desktop app keeps the same store).
 
 import { openDB, type IDBPDatabase } from "idb";
@@ -22,7 +22,7 @@ const CLAMP_Y_MIN = 10;
 const CLAMP_Y_MAX = 90;
 
 /**
- * Grid for automatic placement. Columns and rows are decided from the garden size and one bird's size in px (docs/design.md "Garden layout").
+ * Grid for automatic placement. Columns and rows are decided from the garden size and one bird's size in px (docs/design.md "Layout").
  * jitterX / jitterY are how far a bird may shift within its cell (as a fraction of the cell). It shifts only by the room left over when the bird is smaller than the cell,
  * so it doesn't overlap birds in neighboring cells
  */

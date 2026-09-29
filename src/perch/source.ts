@@ -1,4 +1,4 @@
-import { type RootEntry } from "@/lib/fsa";
+import { type RootEntry } from "@/lib/settings-store";
 import { scanSessions, type ScanResult } from "@/lib/sessions";
 
 /**

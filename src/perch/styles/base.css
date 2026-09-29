@@ -38,7 +38,7 @@ body {
   flex-direction: column;
   overflow-y: auto;
   /* Semi-transparent, so what's behind shows blurred through the frosted glass behind the window (set_backdrop in
-     src-tauri). This is to feel less heavy, not to make the background readable (docs/design.md "Window mode").
+     src-tauri). This is to feel less heavy, not to make the background readable (docs/design.md "Window and menu bar").
      The opacity is fixed */
   background: rgba(22, 22, 28, 0.75);
   border: 1px solid #2e2c25;
@@ -58,7 +58,7 @@ html[data-window-mode="normal"] .page {
   border-radius: 0;
 }
 
-/* Fade until hovered (docs/design.md "Window mode"; data-fade is set by garden-fade.ts). At rest only the birds, their
+/* Fade until hovered (docs/design.md "Fade until hovered"; data-fade is set by garden-fade.ts). At rest only the birds, their
    badges, and bubbles stay; everything else fades almost to invisible. The frosted glass and shadow are removed on the Rust
    side (apply_fade in src-tauri) */
 .page {

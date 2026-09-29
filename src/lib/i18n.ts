@@ -2,7 +2,7 @@
 // with the semantics of Chrome's i18n getMessage, the format those files follow (carried over from the tomarigi
 // Chrome extension, which used browser.i18n).
 //
-// Call-order constraint: ICON_SET_LABEL (src/perch/icon-sets.ts) and BIRD/EVENT (src/perch/stage.tsx)
+// Call-order constraint: ICON_SET_LABEL (src/perch/icon-sets.ts) and BIRD (src/perch/bird-glyph.tsx) and EVENT (src/perch/event-kind.tsx)
 // call t() at module evaluation to build their dictionaries. The await of initI18n() must have
 // completed before they are imported (see src/perch/main.tsx).
 

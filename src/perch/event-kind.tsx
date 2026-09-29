@@ -15,7 +15,7 @@ type EventTone = "done" | "turn" | "log";
 export const EVENT: Record<SessionEvent["type"], { label: string; tone: EventTone; icon: IconType }> = {
   started: { label: t("eventStartedLabel"), tone: "log", icon: MdPlayArrow },
   done: { label: t("eventDoneLabel"), tone: "done", icon: MdCheckCircle },
-  // The name for the state waiting on a reply is the same word across the bird state, events, and the sound setting buttons (docs/design.md "State names")
+  // The name for the state waiting on a reply is the same word across the bird state, events, and the sound setting buttons (docs/design.md "Bird states")
   waiting: { label: t("birdWaitingLabel"), tone: "turn", icon: MdHelp },
   closed: { label: t("eventClosedLabel"), tone: "log", icon: MdStopCircle },
 };

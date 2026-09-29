@@ -1,7 +1,7 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { NativeDirectoryHandle, NativeFileHandle } from "./native-fs";
-import type { RootEntry } from "./fsa";
+import type { RootEntry } from "./settings-store";
 import { watchingCount } from "./watching";
 import { basename, projectLabels } from "./transcript";
 import type {

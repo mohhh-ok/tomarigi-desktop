@@ -1,6 +1,6 @@
 // Whether each session's process is alive, and when a bird is removed
 import { invoke } from "@tauri-apps/api/core";
-import type { RootEntry } from "./fsa";
+import type { RootEntry } from "./settings-store";
 import type { LiveFoundEntry, LiveSession } from "./session-types";
 import {
   missCounts,

@@ -5,7 +5,7 @@ use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 use crate::append_log;
 use crate::window::{current_mode, find_backdrop, ns_window, WindowMode};
 
-// ---- Fade until hovered (docs/design.md "Window mode") ----
+// ---- Fade until hovered (docs/design.md "Fade until hovered") ----
 // At rest the floating window's Garden shows only the birds, and clicks go through to the window below
 // (ignoresMouseEvents). The WebView then gets no mouse events, so the cursor is watched here and the whole window
 // comes back when it is on a bird. garden-fade.ts sends the bird rectangles and whether the fade applies, and
@@ -158,7 +158,7 @@ pub(crate) fn start_fade_watch(app: &AppHandle) {
 mod tests {
     use super::*;
 
-    /// Fade until hovered (docs/design.md "Window mode"): a bird shows the window, only leaving the window fades it
+    /// Fade until hovered (docs/design.md "Fade until hovered"): a bird shows the window, only leaving the window fades it
     #[test]
     fn fade_reveals_on_a_bird_and_fades_only_after_leaving_the_window() {
         // At rest: moving inside the window but not on a bird keeps it faded

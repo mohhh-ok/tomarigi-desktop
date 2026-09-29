@@ -40,7 +40,7 @@ Environment variables at launch (pass them when running the binary `Contents/Mac
 - `TOMARIGI_IMPORT_KEY=<anthropic|openai|typesafe>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)
 - `TOMARIGI_KEY_BACKEND=webview`: stores keys in IndexedDB instead of the Keychain (for testing the IndexedDB → Keychain migration)
 
-Where BYOK API keys are stored depends on the identifier (KeyStore in src-tauri/src/lib.rs); see "BYOK API keys" in docs/design.md.
+Where BYOK API keys are stored depends on the identifier (KeyStore in src-tauri/src/keys.rs); see "BYOK API keys" in docs/design.md.
 
 Logs are appended to `/tmp/tomarigi-desktop/app-log.txt`.
 

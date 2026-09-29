@@ -12,9 +12,9 @@ const SAVE_FEEDBACK_MS = 2000;
 // the same interval (duplicated here as a local constant instead of adding another export to App.tsx)
 const DEBUG_POLL_MS = 3_000;
 
-// Separator lib/sessions.ts puts in the project of events from chicks (subagents)
-// (`${project} · ${chick.view.name}` format). sessions.ts has no constant for it, so it is kept in sync by hand
-// with the format on the producing side (sessions.ts was left untouched because it was being changed in separate work)
+// Separator between the parent project and the chick name ("parent · chick name") in the project of chick
+// (subagent) events. The desktop app doesn't produce chick events now; this only groups such entries if the
+// persistent log has them
 const CHICK_PROJECT_SEPARATOR = " · ";
 
 // Normalizes a chick's project value ("parent · chick name") to just the parent project name.
@@ -33,7 +33,7 @@ function sanitizeFilename(name: string): string {
 
 // Opened as an in-page dialog from App.tsx's header (opening directly with ?debug=1 only makes showDebug's
 // initial value true; after that the URL is never touched). Lists as is the persistent history of fired
-// event decisions that lib/sessions.ts stores (eventLog in lib/fsa.ts). Never touches real data, root settings,
+// event decisions that lib/session-event-log.ts stores (eventLog in lib/settings-store.ts). Never touches real data, root settings,
 // BYOK, etc. It's a debug screen, so there's no i18n and hardcoded English is fine
 // (public/_locales is generated, so it isn't touched).
 //
@@ -166,7 +166,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                 </span>
                 <span className={`debug-log-type debug-log-type-${e.type}`}>{e.type}</span>
                 {/* muted: a done held back while waiting for chicks that was canceled by the parent restarting.
-                    Stays in the log but doesn't sound (see deriveDoneEvent in lib/sessions.ts) */}
+                    Stays in the log but doesn't sound (see deriveDoneEvent in lib/session-events.ts) */}
                 {e.muted && <span className="debug-log-muted-badge">muted</span>}
                 {/* Jev's needs-reply verdict (lib/jev.ts). The probability is that of yes (needs reply) */}
                 {e.ask && (

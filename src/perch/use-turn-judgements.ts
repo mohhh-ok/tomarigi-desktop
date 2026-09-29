@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { uiLanguage } from "@/lib/i18n";
 import { summarizeTurnLine } from "@/lib/summarize";
 import { lastSentence } from "@/lib/last-sentence";
-import { loadActiveAiProvider, type ApiKeyProvider } from "@/lib/fsa";
+import { loadActiveAiProvider, type ApiKeyProvider } from "@/lib/api-keys";
 import { judgeAbuse, judgeAsking, type AngerJudgement, type AskJudgement } from "@/lib/jev";
 import { recordAngerJudgement, recordAskJudgement, type SessionView } from "@/lib/sessions";
 

@@ -1,5 +1,5 @@
-// Fade until hovered (docs/design.md "Window mode"). While clicks go through, the WebView gets no mouse events,
-// so the Rust side (fade_tick in src-tauri/src/lib.rs) watches the cursor. This sends it the bird rectangles and
+// Fade until hovered (docs/design.md "Fade until hovered"). While clicks go through, the WebView gets no mouse events,
+// so the Rust side (fade_tick in src-tauri/src/fade.rs) watches the cursor. This sends it the bird rectangles and
 // whether the fade applies, and copies its "garden-fade" event to <html data-fade="rest">, which styles/base.css fades
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";

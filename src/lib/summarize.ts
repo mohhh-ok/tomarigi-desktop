@@ -7,7 +7,7 @@
 
 import { runJudge, type JudgeResult, type JudgeTaskDefinition } from "./judge";
 import { runOpenAiJudge } from "./openai-judge";
-import type { AiProvider } from "./fsa";
+import type { AiProvider } from "./api-keys";
 
 interface SummarizeVerdict {
   summary: string;

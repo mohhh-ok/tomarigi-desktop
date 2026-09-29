@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MdCheckCircle, MdClose, MdContentCopy } from "react-icons/md";
 import { t } from "@/lib/i18n";
-import type { RootKind } from "@/lib/fsa";
+import type { RootKind } from "@/lib/settings-store";
 
 interface RootChoice {
   kind: RootKind;

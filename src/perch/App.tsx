@@ -11,7 +11,7 @@ import {
   saveRoots,
   type RootEntry,
   type RootKind,
-} from "@/lib/fsa";
+} from "@/lib/settings-store";
 import { focusSession, focusTargetOf } from "@/lib/ghostty";
 import { isAngry, type AskJudgement } from "@/lib/jev";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
@@ -148,7 +148,7 @@ export default function App({
     })();
   }, []);
 
-  // Unlock the AudioContext. WKWebView becomes running even without user interaction (docs/design.md "Findings from spikes"),
+  // Unlock the AudioContext. WKWebView becomes running even without user interaction (checked in a spike),
   // but call it both at launch and on the first pointer action just in case
   useEffect(() => {
     primeAudio();
@@ -199,7 +199,7 @@ export default function App({
           for (const event of nextEvents) {
             if (seen.has(event.key)) continue;
             // A muted done (where the release after holding back for chicks was canceled by the parent's restart;
-            // see deriveDoneEvent in lib/sessions.ts) stays in the log and feed but doesn't chirp
+            // see deriveDoneEvent in lib/session-events.ts) stays in the log and feed but doesn't chirp
             if (event.muted) continue;
             // Freshness guard: even if unobserved, an event whose at is old (it happened earlier than the scan
             // interval) is treated as a reconstruction, not a new occurrence, and doesn't chirp.

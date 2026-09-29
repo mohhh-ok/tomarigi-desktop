@@ -2,25 +2,27 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { setChirpVolume } from "@/lib/chirp";
 import {
+  loadChirpVolume,
+  loadMuted,
+  loadVoiceEnabled,
+  loadVoiceVolume,
+  saveChirpVolume,
+  saveMuted,
+  saveVoiceEnabled,
+  saveVoiceVolume,
+} from "@/lib/settings-store";
+import {
   deleteAiProvider,
   deleteApiKey,
   initApiKeys,
   loadAiProvider,
   loadApiKeyStatus,
-  loadChirpVolume,
-  loadMuted,
-  loadVoiceEnabled,
-  loadVoiceVolume,
   resolveAiProvider,
   saveAiProvider,
   saveApiKey,
-  saveChirpVolume,
-  saveMuted,
-  saveVoiceEnabled,
-  saveVoiceVolume,
   type AiProvider,
   type ApiKeyProvider,
-} from "@/lib/fsa";
+} from "@/lib/api-keys";
 import {
   loadIconSetAssignments,
   saveIconSetAssignments,

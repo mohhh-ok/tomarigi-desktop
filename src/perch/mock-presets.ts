@@ -123,7 +123,7 @@ export const PRESETS: Preset[] = [
         },
       ];
       // For checking cards: reproduces several events lined up for the same sessionId.
-      // Assumes events arrive "newest first" (deriveSessionEvents in lib/sessions.ts)
+      // Assumes events arrive "newest first" (deriveSessionEvents in lib/session-events.ts)
       const events: SessionEvent[] = [
         // tomarigi-a: waiting ← started (2 entries)
         { key: "ev1", sessionId: "s1", project: "tomarigi", snippet: "Add UI mock", type: "waiting", at: BASE - 15_000 },

@@ -5,7 +5,7 @@
 // thread-writer-locks/<threadId>.lock open for Codex (focus_codex). Anything that can't be mapped (ended sessions,
 // mock) does nothing.
 import { invoke } from "@tauri-apps/api/core";
-import type { RootEntry } from "./fsa";
+import type { RootEntry } from "./settings-store";
 import { codexDirOf, codexThreadIdOf, configDirOf, predecessorsOf } from "./sessions";
 
 type FocusTarget =

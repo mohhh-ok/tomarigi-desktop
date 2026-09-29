@@ -60,7 +60,7 @@ export function EventFeed({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
                 // muted: a done that was held back while waiting on chicks, then canceled when the parent
-                // restarted, so it never chirped (see deriveDoneEvent in lib/sessions.ts). The whole card is
+                // restarted, so it never chirped (see deriveDoneEvent in lib/session-events.ts). The whole card is
                 // dimmed so it can be told apart from a done that chirped (no flashy badge)
                 className={`event-card event-${kind}${e.muted ? " event-muted" : ""} ${focus.className ?? ""}`}
               >

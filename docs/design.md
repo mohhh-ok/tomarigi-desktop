@@ -22,7 +22,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 - Machine state `BirdState`: `working | waiting | done | dozing`. Recomputed on every poll
   - `waiting`: stopped on AskUserQuestion / ExitPlanMode / request_user_input, or Claude Code's `<config>/sessions/<pid>.json` has `status: "waiting"` (while it shows options or a permission prompt, Claude Code doesn't write that tool_use to the transcript until it's answered)
-  - `dozing`: a finished turn (`done`) with no new writes for 5 minutes (`DOZE_MS` in `src/lib/sessions.ts`). It only changes the sprite and the status label
+  - `dozing`: a finished turn (`done`) with no new writes for 5 minutes (`DOZE_MS` in `src/lib/bird-state.ts`). It only changes the sprite and the status label
 - The finished-turn state is called "done" everywhere: bird state, Recent activity, sound settings buttons, and bird descriptions (all locales)
 - The waiting state is called "needs reply" (ja: 返事待ち) everywhere: bird state, Recent activity events, and sound settings buttons (all locales)
 
@@ -75,7 +75,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
   - Standard: can be maximized or made full screen with the title bar buttons; not pinned on top. Shown in the Dock, Cmd+Tab, and with its own app menu bar (activation policy Regular). Switching back to floating restores Accessory
   - Info.plist includes `LSUIElement`, so the Dock icon doesn't flash at launch
 - The chosen mode is saved and used on the next launch. Position and size are saved separately per mode and restored on the next launch. On first launch (no saved position, or the saved position isn't on any display) the window goes to the top-right of the main display
-- The window background is translucent and blurs what's behind it with the macOS frosted-glass effect (to feel less imposing on screen). Text, birds, and bubbles stay at full strength. The opacity is fixed (`.page` and `.garden` in `src/perch/perch.css`), apart from "Fade until hovered"
+- The window background is translucent and blurs what's behind it with the macOS frosted-glass effect (to feel less imposing on screen). Text, birds, and bubbles stay at full strength. The opacity is fixed (`.page` in `src/perch/styles/base.css` and `.garden` in `src/perch/styles/garden.css`), apart from "Fade until hovered"
 
 ## Fade until hovered
 

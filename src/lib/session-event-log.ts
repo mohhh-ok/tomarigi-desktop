@@ -1,5 +1,5 @@
 // Recent activity (sessionEventCache) and the persistent event log for the debug dialog
-import { loadEventLog, saveEventLog } from "./fsa";
+import { loadEventLog, saveEventLog } from "./settings-store";
 import type { AngerJudgement, AskJudgement } from "./jev";
 import type { SessionEvent } from "./session-types";
 import { eventLogState, knownLogKeys, pendingLogEvents, sessionEventCache } from "./session-store";
@@ -135,7 +135,7 @@ export function recordAngerJudgement(sessionId: string, at: number, anger: Anger
 }
 
 /** Entry point for DebugApp in the debug dialog to read the persistent event log.
- * The value type is owned by lib/session-types.ts, so this wraps loadEventLog<T> from fsa.
+ * The value type is owned by lib/session-types.ts, so this wraps loadEventLog<T> from lib/settings-store.ts.
  * Retired types (formerly "harsh" etc.) are ignored via KNOWN_EVENT_TYPES (same policy as hydrateEventLog) */
 export async function loadPersistedEvents(): Promise<SessionEvent[]> {
   const saved = (await loadEventLog<SessionEvent>()) ?? [];

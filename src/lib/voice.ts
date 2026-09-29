@@ -4,7 +4,7 @@
 // here we only push one utterance at a time onto the queue.
 
 import { t, uiLanguage } from "./i18n";
-import { loadActiveAiProvider } from "./fsa";
+import { loadActiveAiProvider } from "./api-keys";
 import { summarizeDoneEvent } from "./summarize";
 import type { SessionEvent } from "./sessions";
 

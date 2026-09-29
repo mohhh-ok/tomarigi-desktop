@@ -27,7 +27,7 @@ struct WindowState {
     height: u32,
 }
 
-/// Window mode (docs/design.md "Window mode")
+/// Window mode (docs/design.md "Window and menu bar")
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub(crate) enum WindowMode {
@@ -187,7 +187,7 @@ pub(crate) fn make_panel(win: &WebviewWindow) {
     // The shadow shows that it is floating above the terminal. For a transparent window, macOS builds the shadow
     // from the shape of the content (the rounded panel)
     panel.set_has_shadow(true);
-    // Match the frosted glass corners to the rounded corners of .page (border-radius 12px in perch.css)
+    // Match the frosted glass corners to the rounded corners of .page (border-radius 12px in src/perch/styles/base.css)
     set_backdrop(win, 12.0);
 }
 
@@ -198,7 +198,7 @@ pub(crate) fn ns_window(win: &WebviewWindow) -> Option<&objc2_app_kit::NSWindow>
 }
 
 /// Make the window itself transparent. The content's .page paints a translucent color, and set_backdrop's frosted
-/// glass blurs what is behind it (for both floating and standard windows; docs/design.md "Window mode")
+/// glass blurs what is behind it (for both floating and standard windows; docs/design.md "Window and menu bar")
 #[cfg(target_os = "macos")]
 fn set_window_clear(win: &WebviewWindow) {
     use objc2::runtime::AnyObject;

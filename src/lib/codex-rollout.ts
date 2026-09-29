@@ -1,6 +1,6 @@
 // Finding the rollout files of live Codex threads under ~/.codex/sessions
 import type { NativeDirectoryHandle, NativeFile, NativeFileHandle } from "./native-fs";
-import type { RootEntry } from "./fsa";
+import type { RootEntry } from "./settings-store";
 import { codexRolloutPathCache } from "./session-store";
 import { codexDirOf } from "./session-liveness";
 

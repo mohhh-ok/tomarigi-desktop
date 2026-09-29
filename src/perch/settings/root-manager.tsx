@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { t } from "@/lib/i18n";
-import type { RootEntry } from "@/lib/fsa";
+import type { RootEntry } from "@/lib/settings-store";
 
 /** The watched folder whose label is being edited, and the text typed so far */
 export interface Editing {

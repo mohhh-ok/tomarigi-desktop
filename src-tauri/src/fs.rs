@@ -106,7 +106,7 @@ pub(crate) struct DefaultRoot {
     exists: bool,
 }
 
-/// Folders always watched by default (docs/design.md "How the desktop app works"). Ones that don't exist are
+/// Folders always watched by default (docs/design.md "Watched folders"). Ones that don't exist are
 /// also returned, with exists=false (used to decide whether to drop registrations of the same path saved by
 /// earlier versions)
 #[tauri::command]

@@ -2,7 +2,7 @@
 // (docs/design.md "The "?" for sessions waiting on you").
 //
 // api.typesafe.ai rejects the WKWebView origin via CORS, so it's called through Rust's
-// typesafe_systemone command instead of fetch (src-tauri/src/lib.rs).
+// typesafe_systemone command instead of fetch (src-tauri/src/keys.rs).
 // The reply text passed in is untrusted input. Only Jev's Noul probability (0–1) is used from its output, never strings.
 
 import { httpFailure, invokeKeyedApi, type JudgeErrorKind, type JudgeResult } from "./judge";

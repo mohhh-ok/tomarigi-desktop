@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { t } from "@/lib/i18n";
-import type { AiProvider, ApiKeyProvider } from "@/lib/fsa";
+import type { AiProvider, ApiKeyProvider } from "@/lib/api-keys";
 import type { JudgeErrorKind } from "@/lib/judge";
 
 // TypeSafe's official site (linked from the settings description)

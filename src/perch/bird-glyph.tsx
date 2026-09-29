@@ -21,7 +21,7 @@ export const BIRD: Record<BirdState, { glyph: string; label: string; img: string
   },
   done: {
     glyph: "🕊️",
-    // The name for the state after a turn ends is the same word across the bird state, events, and the sound setting buttons (docs/design.md "State names")
+    // The name for the state after a turn ends is the same word across the bird state, events, and the sound setting buttons (docs/design.md "Bird states")
     label: t("eventDoneLabel"),
     img: ICON_SETS.birds.done,
   },
