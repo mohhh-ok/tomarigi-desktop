@@ -3,40 +3,18 @@
 // Shares JudgeTaskDefinition / JudgeResult with the Anthropic version (lib/judge.ts),
 // so error semantics look the same from the settings screen and the summary code.
 
-import {
-  httpFailure,
-  invokeKeyedApi,
-  type JudgeOutputField,
-  type JudgeResult,
-  type JudgeTaskDefinition,
-} from "./judge";
-
+import { httpFailure, invokeKeyedApi, verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "./judge";
 
 /** For short completion summaries. The current mini model that supports the Responses API and Structured Outputs. */
 export const OPENAI_JUDGE_MODEL = "gpt-5.4-mini";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 512;
 
-function fieldToJsonSchema(field: JudgeOutputField): Record<string, unknown> {
-  const schema: Record<string, unknown> = {
-    type: field.type,
-    description: field.description,
-  };
-  if (field.enum) schema.enum = [...field.enum];
-  return schema;
-}
-
-
 /** Runs the Responses API once with Structured Outputs. Failures are returned as a JudgeResult, not thrown. */
 export async function runOpenAiJudge<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   payload: unknown,
 ): Promise<JudgeResult<V>> {
-  const required = task.requiredFields ?? Object.keys(task.outputFields);
-  const properties = Object.fromEntries(
-    Object.entries(task.outputFields).map(([key, field]) => [key, fieldToJsonSchema(field)]),
-  );
-
   const sent = await invokeKeyedApi("openai_responses", {
         model: OPENAI_JUDGE_MODEL,
         store: false,
@@ -51,8 +29,7 @@ export async function runOpenAiJudge<V = Record<string, unknown>>(
             strict: true,
             schema: {
               type: "object",
-              properties,
-              required,
+              ...verdictSchema(task),
               additionalProperties: false,
             },
           },
