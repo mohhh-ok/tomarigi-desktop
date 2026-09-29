@@ -1,6 +1,5 @@
 // Reads events aloud (a separate layer from the sound synthesis in chirp.ts: this one is text).
-// Does not use chrome.tts (it would break the product's permissions: [] design) — uses only
-// window.speechSynthesis, which works inside the extension page without permissions.
+// Uses window.speechSynthesis in the WebView.
 // Serializing multiple simultaneous events is left to speechSynthesis's native queue;
 // here we only push one utterance at a time onto the queue.
 
@@ -74,7 +73,8 @@ function sanitizeSnippetForSpeech(raw: string): string {
  */
 function sanitizeProjectForSpeech(raw: string): string {
   // A chick event's project is "parent · chick name", joined with a display middle dot (U+00B7)
-  // (chickProject in lib/sessions.ts). The speech engine reads the middle dot literally, so for
+  // (a format from the tomarigi Chrome extension; the desktop scan doesn't emit events for chicks, so this only
+  // guards against it). The speech engine reads the middle dot literally, so for
   // speech it is replaced with ", " (a comma pause)
   let text = raw.replace(/ · /g, ", ");
   // The chick name can fall back to the description in agent-<id>.meta.json (resolveChickMeta),
@@ -96,11 +96,11 @@ function enqueueUtterance(text: string, lang: string): void {
 }
 
 /**
- * Reads one event aloud. The template sentence ($PROJECT$ embedded via chrome.i18n substitution),
+ * Reads one event aloud. The template sentence ($PROJECT$ embedded via t() substitution in lib/i18n.ts),
  * followed by the snippet if there is one.
  *
- * Constraint: while this page has never received a user interaction (e.g. right after reopening the
- * tab with the setting ON), the autoplay policy can make speak() fail silently with not-allowed.
+ * Constraint: while this page has never received a user interaction (e.g. right after the app starts
+ * with the setting ON), the autoplay policy can make speak() fail silently with not-allowed.
  * This is the same constraint as the chirp (chirp's primeAudio waits for pointerdown); after the
  * first click, sticky activation allows speech. Failures are swallowed here (same behavior as chirp).
  *
