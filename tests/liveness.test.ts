@@ -33,6 +33,8 @@ const isAlive = (pid: number) => {
 // focus_session calls from focusSession, and what each sessionId answers (Rust's focus_session result strings)
 const focusCalls: string[] = [];
 const focusResults = new Map<string, string>();
+// live_sessions answers by configDir that bypass ps, to drive reads exactly (sessions listed as alive, reliable or not)
+const liveOverride = new Map<string, { sessions: object[]; reliable: boolean }>();
 
 mock.module("@tauri-apps/api/core", () => ({
   invoke: async (cmd: string, args: Record<string, never>) => {
@@ -52,6 +54,8 @@ mock.module("@tauri-apps/api/core", () => ({
           return buf.subarray(0, n).toString("utf8");
         });
       case "live_sessions": {
+        const override = liveOverride.get(args.configDir);
+        if (override) return { present: true, unreadable: 0, ...override };
         const dir = path.join(args.configDir, "sessions");
         if (!fs.existsSync(dir)) return { present: false, sessions: [], reliable: true, unreadable: 0 };
         const sessions = fs
@@ -238,6 +242,77 @@ describe("Claude Code", () => {
     fs.appendFileSync(fx.transcript, filler);
     const after = await scanSessions(fx.roots);
     expect(after.views[0].chicks ?? []).toEqual([]);
+  });
+});
+
+describe("Claude Code liveness reads", () => {
+  const sid = (n: number) => `88888888-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const liveRead = (config: string, sessions: object[], reliable = true) =>
+    liveOverride.set(config, { sessions, reliable });
+
+  test("a bird seen alive is removed only after MISSES_TO_END (2) reliable reads in a row without it", async () => {
+    const id = sid(1);
+    const fx = claudeFixture("miss", id, 2 * MIN);
+    const alive = { pid: 1, sessionId: id, status: "idle" };
+    liveRead(fx.config, [alive]);
+    expect((await scanSessions(fx.roots)).views.length).toBe(1);
+
+    liveRead(fx.config, []);
+    expect((await scanSessions(fx.roots)).views.length).toBe(1);
+    // Seen again: the count starts over
+    liveRead(fx.config, [alive]);
+    expect((await scanSessions(fx.roots)).views.length).toBe(1);
+    liveRead(fx.config, []);
+    expect((await scanSessions(fx.roots)).views.length).toBe(1);
+    expect((await scanSessions(fx.roots)).views).toEqual([]);
+  });
+
+  test("an unreliable read neither removes nor counts", async () => {
+    const id = sid(2);
+    const fx = claudeFixture("unreliable", id, 2 * MIN);
+    liveRead(fx.config, [{ pid: 1, sessionId: id, status: "idle" }]);
+    expect((await scanSessions(fx.roots)).views.length).toBe(1);
+
+    liveRead(fx.config, [], false);
+    for (let i = 0; i < 3; i++) expect((await scanSessions(fx.roots)).views.length).toBe(1);
+    liveRead(fx.config, []);
+    expect((await scanSessions(fx.roots)).views.length).toBe(1);
+    liveRead(fx.config, [], false);
+    expect((await scanSessions(fx.roots)).views.length).toBe(1);
+    liveRead(fx.config, []);
+    expect((await scanSessions(fx.roots)).views).toEqual([]);
+  });
+
+  test("a transcript that appears after the first listing is shown during the grace without a live session", async () => {
+    const fx = claudeFixture("grace", sid(3), 2 * MIN);
+    liveRead(fx.config, []);
+    // Already there on the first listing: no grace
+    expect((await scanTwice(fx.roots)).views).toEqual([]);
+
+    const fresh = sid(4);
+    fs.writeFileSync(
+      path.join(fx.proj, `${fresh}.jsonl`),
+      line({ type: "user", timestamp: iso(0), cwd: "/tmp/grace", entrypoint: "cli", message: { role: "user", content: "new" } }),
+    );
+    const shown = await scanTwice(fx.roots);
+    expect(shown.views.map((v) => v.id)).toEqual([`grace/-tmp-grace/${fresh}.jsonl`]);
+    expect(shown.views[0].state).toBe("working");
+  });
+
+  test("status waiting in the sessions file makes the bird waiting", async () => {
+    const id = sid(5);
+    const fx = claudeFixture("waiting", id, 2 * MIN);
+    liveRead(fx.config, [{ pid: 1, sessionId: id, status: "idle" }]);
+    expect((await scanSessions(fx.roots)).views[0].state).toBe("done");
+    liveRead(fx.config, [{ pid: 1, sessionId: id, status: "waiting" }]);
+    expect((await scanSessions(fx.roots)).views[0].state).toBe("waiting");
+  });
+
+  test("done dozes off after DOZE_MS (5 minutes) since the last write", async () => {
+    const id = sid(6);
+    const fx = claudeFixture("doze", id, 5 * MIN + 10_000);
+    liveRead(fx.config, [{ pid: 1, sessionId: id, status: "idle" }]);
+    expect((await scanSessions(fx.roots)).views[0].state).toBe("dozing");
   });
 });
 

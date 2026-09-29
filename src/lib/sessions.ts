@@ -191,7 +191,7 @@ const STATE_URGENCY: Record<BirdState, number> = { waiting: 0, working: 1, done:
  * left alone, so this gives a natural decay: "the parent wakes up only right after completion, and goes back
  * to sleep if left alone".
  */
-function escalateWithChicks(state: BirdState, chicks: ChickView[]): BirdState {
+export function escalateWithChicks(state: BirdState, chicks: ChickView[]): BirdState {
   let escalated = state;
   for (const chick of chicks) {
     if (chick.state === "dozing") continue;
@@ -576,7 +576,7 @@ function lastUserMessage(events: TailEvent[]): { at: number; text: string } | un
 // "[Image #N]" marks an image attachment followed by the body, so strip it and use the body.
 // Newlines and runs of whitespace are normalized to a single space, then cut at the display width limit
 // (full-width = 2, half-width = 1)
-function formatSnippet(rawText: string): string | undefined {
+export function formatSnippet(rawText: string): string | undefined {
   let normalized = rawText.trim().replace(/\s+/g, " ");
   normalized = normalized.replace(/^(\[Image #\d+\]\s*)+/, "");
   if (!normalized) return undefined;
@@ -1378,7 +1378,7 @@ function updateBackgroundTasks(sessionId: string, tail: TailInfo): Map<string, B
  * have questions[].question. When cut at 500 chars with no closing ", use what is there up to the cut.
  * ExitPlanMode has no question text (undefined)
  */
-function extractQuestion(input: string | undefined): string | undefined {
+export function extractQuestion(input: string | undefined): string | undefined {
   if (!input) return undefined;
   const m = /"question"\s*:\s*"((?:[^"\\]|\\.)*)("?)/.exec(input);
   if (!m) return undefined;
@@ -1467,7 +1467,7 @@ function isWaitingTool(toolName: string | undefined): boolean {
  * As with chicks, the done of a turn that ended after talking with the user while a task was running is also
  * suppressed.
  */
-function deriveDoneEvent(
+export function deriveDoneEvent(
   sessionId: string,
   project: string,
   t: number,
@@ -1657,7 +1657,7 @@ async function scanChicks(
  * to mtime — as above, not trusting mtime is the very reason this function exists, and substituting it would
  * bring back the same "a later touch revives a finished chick into working" problem.
  */
-function resolveChickDoneSignalAt(
+export function resolveChickDoneSignalAt(
   parentChickSignals: Map<string, number>,
   taskId: string,
   toolUseId: string | undefined,
@@ -1725,7 +1725,7 @@ async function resolveChickMeta(
  * (notification not yet arrived, harness notification bug, the chick died silently) is done estimated from
  * the tail's appearance via the CHICK_TEXT_DONE_MS fallback below.
  */
-function deriveState(
+export function deriveState(
   tail: TailInfo,
   sinceMs: number,
   isChick: boolean,
@@ -1807,7 +1807,7 @@ function deriveState(
  * are actually SDK sessions, and the problem of getting stuck in working when ending on tool_result isn't
  * solved by deriveState, so this is used for adult display too.
  */
-function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState {
+export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState {
   if (tail.kind === "closed") return "dozing";
   if (sinceMs < WRITING_MS) return "working";
   switch (tail.kind) {
