@@ -36,7 +36,7 @@
     "message": "Échec du renouvellement de l'accès"
   },
   "emptyNoSessions": {
-    "message": "Aucun oiseau sur le perchoir pour le moment (30 dernières min)"
+    "message": "Aucun oiseau sur le perchoir pour le moment"
   },
   "emptyNeedsReauth": {
     "message": "Réautorisation nécessaire — reconnectez-vous depuis Dossiers surveillés ci-dessous"

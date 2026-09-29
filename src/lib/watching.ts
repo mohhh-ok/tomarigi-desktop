@@ -1,8 +1,8 @@
 // Watching detection (docs/design.md "Watching"). Keeps a grace period so a bird that handed work to another session and is waiting
-// isn't put into the nest between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
+// stays watching between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
 import type { BirdState } from "./sessions";
 
-/** For this long after the linked session last moved, it stays watching (not put into the nest) */
+/** For this long after the linked session last moved, it stays watching */
 export const WATCH_GRACE_MS = 5 * 60_000;
 
 /**

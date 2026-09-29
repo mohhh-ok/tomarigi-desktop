@@ -36,7 +36,7 @@
     "message": "Rinnovo dell'accesso non riuscito"
   },
   "emptyNoSessions": {
-    "message": "Al momento nessun uccellino sul posatoio (ultimi 30 min)"
+    "message": "Al momento nessun uccellino sul posatoio"
   },
   "emptyNeedsReauth": {
     "message": "Serve una nuova autorizzazione — riconnetti da Cartelle monitorate qui sotto"

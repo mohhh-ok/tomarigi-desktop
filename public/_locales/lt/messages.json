@@ -36,7 +36,7 @@
     "message": "Nepavyko atnaujinti prieigos"
   },
   "emptyNoSessions": {
-    "message": "Šiuo metu ant laktelės nėra paukščių (paskutinės 30 min.)"
+    "message": "Šiuo metu ant laktelės nėra paukščių"
   },
   "emptyNeedsReauth": {
     "message": "Reikia pakartotinio leidimo — prisijunkite iš naujo žemiau, skiltyje Stebimi aplankai"

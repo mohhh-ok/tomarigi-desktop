@@ -248,7 +248,7 @@ export const PRESETS: Preset[] = [
   },
   {
     // The anger mark (docs/design.md "Anger mark for abuse toward the AI"). Anger only, anger with the "?" (both show:
-    // "?" top right, anger top left), and calm / pending birds that get no mark. The dozing one goes into the nest
+    // "?" top right, anger top left), and calm / pending birds that get no mark. The dozing one shows the muted mark
     id: "anger",
     label: "Anger mark",
     build: () => ({
@@ -647,7 +647,7 @@ export function MockPanel({ source }: { source: MockSource }) {
   }, [draft, source]);
 
   // For checking Garden animations: trigger birds entering/leaving by hand.
-  // Add = enter from above / Sleep = into the nest / Wake = out of the nest / Close = fade
+  // Add = enter from above / Sleep = switch to the dozing sprite / Wake = back to working / Close = fade
   const mockBirdSeq = useRef(0);
   const addBird = useCallback(() => {
     const n = ++mockBirdSeq.current;
@@ -680,7 +680,7 @@ export function MockPanel({ source }: { source: MockSource }) {
   }, [source]);
   const closeBird = useCallback(() => {
     const d = source.getData();
-    const target = [...d.sessions].reverse().find((s) => s.state !== "dozing");
+    const target = d.sessions[d.sessions.length - 1];
     if (!target) return;
     source.setData({ ...d, sessions: d.sessions.filter((s) => s.id !== target.id) });
   }, [source]);
@@ -702,10 +702,10 @@ export function MockPanel({ source }: { source: MockSource }) {
           + Add a bird (from the sky)
         </button>
         <button className="small" onClick={sleepBird}>
-          Put one to sleep (into the nest)
+          Put one to sleep (dozing)
         </button>
         <button className="small" onClick={wakeBird}>
-          Wake one up (from the nest)
+          Wake one up
         </button>
         <button className="small" onClick={closeBird}>
           Close one (fade out)

@@ -36,7 +36,7 @@
     "message": "Reînnoirea accesului a eșuat"
   },
   "emptyNoSessions": {
-    "message": "Nicio pasăre pe stinghie momentan (ultimele 30 min)"
+    "message": "Nicio pasăre pe stinghie momentan"
   },
   "emptyNeedsReauth": {
     "message": "Necesită reautorizare — reconectează-te mai jos din Foldere monitorizate"

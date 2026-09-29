@@ -495,9 +495,9 @@ struct LiveSession {
     started_at: Option<f64>,
 }
 
-/// Result of live_sessions. present is whether `<config_dir>/sessions` exists (on older versions without it,
-/// birds are not removed based on whether the process is alive, but after 30 minutes. docs/design.md "Removing
-/// birds of ended sessions").
+/// Result of live_sessions. present is whether `<config_dir>/sessions` exists (older versions without it are not
+/// supported: there is no pid to check, so their sessions get no birds. docs/design.md "Removing birds of ended
+/// sessions").
 /// reliable is whether this run's result can be used to say "not alive". It is false on runs where ps didn't
 /// work and on runs where reading or parsing some sessions/*.json file failed (Claude Code rewrites this file on
 /// every state change, so a half-written file may be read). Birds are not removed on runs where it is false
@@ -510,13 +510,68 @@ struct LiveScan {
     unreadable: usize,
 }
 
+/// How long ps / lsof may take for a liveness check (lsof on thread-writer-locks measured 0.16–0.18s). A run that
+/// takes longer is killed and treated as unreliable, so a hung command neither blocks the poll nor removes birds
+const LIVENESS_CMD_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// Runs cmd and collects its output, or None if it couldn't be launched or didn't finish within timeout (it is
+/// killed then)
+fn output_with_timeout(cmd: &mut Command, timeout: std::time::Duration) -> Option<std::process::Output> {
+    let mut child = cmd
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .ok()?;
+    // Read the pipes on their own threads so a large output can't fill the pipe and stall the child
+    let mut stdout = child.stdout.take()?;
+    let mut stderr = child.stderr.take()?;
+    let out_reader = std::thread::spawn(move || {
+        let mut buf = Vec::new();
+        let _ = stdout.read_to_end(&mut buf);
+        buf
+    });
+    let err_reader = std::thread::spawn(move || {
+        let mut buf = Vec::new();
+        let _ = stderr.read_to_end(&mut buf);
+        buf
+    });
+    let deadline = std::time::Instant::now() + timeout;
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break status,
+            Ok(None) if std::time::Instant::now() < deadline => {
+                std::thread::sleep(std::time::Duration::from_millis(10))
+            }
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return None;
+            }
+        }
+    };
+    Some(std::process::Output { status, stdout: out_reader.join().ok()?, stderr: err_reader.join().ok()? })
+}
+
 /// The `<config_dir>/sessions/*.json` entries whose process is alive. Calls ps once and narrows to live pids, so
-/// that files left behind by crashed processes are not counted as watching peers and their birds can be removed
+/// that files left behind by crashed processes are not counted as watching peers and their birds can be removed.
+/// Runs off the main thread (it is polled every few seconds)
 #[tauri::command]
-fn live_sessions(config_dir: String) -> LiveScan {
-    let dir = expand(&config_dir).join("sessions");
-    let Ok(items) = std::fs::read_dir(&dir) else {
-        return LiveScan { present: false, sessions: Vec::new(), reliable: true, unreadable: 0 };
+async fn live_sessions(config_dir: String) -> LiveScan {
+    tauri::async_runtime::spawn_blocking(move || live_sessions_blocking(&config_dir))
+        .await
+        .unwrap_or(LiveScan { present: true, sessions: Vec::new(), reliable: false, unreadable: 0 })
+}
+
+fn live_sessions_blocking(config_dir: &str) -> LiveScan {
+    let dir = expand(config_dir).join("sessions");
+    let items = match std::fs::read_dir(&dir) {
+        Ok(items) => items,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            return LiveScan { present: false, sessions: Vec::new(), reliable: true, unreadable: 0 };
+        }
+        // Exists but couldn't be read: don't conclude anything (birds stay)
+        Err(_) => return LiveScan { present: true, sessions: Vec::new(), reliable: false, unreadable: 0 },
     };
     let mut unreadable = 0;
     let mut sessions: Vec<LiveSession> = Vec::new();
@@ -533,9 +588,9 @@ fn live_sessions(config_dir: String) -> LiveScan {
         return LiveScan { present: true, sessions, reliable: unreadable == 0, unreadable };
     }
     let pids = sessions.iter().map(|s| s.pid.to_string()).collect::<Vec<_>>().join(",");
-    // ps -p returns exit code 1 when some of the given pids don't exist (the output is correct). Only failing to
-    // launch counts as failure
-    let Ok(out) = Command::new("ps").args(["-o", "pid=", "-p", &pids]).output() else {
+    // ps -p returns exit code 1 when some of the given pids don't exist (the output is correct). Failing to
+    // launch, timing out, or dying from a signal (no exit code) counts as failure
+    let Some(out) = output_with_timeout(Command::new("ps").args(["-o", "pid=", "-p", &pids]), LIVENESS_CMD_TIMEOUT) else {
         return LiveScan { present: true, sessions: Vec::new(), reliable: false, unreadable };
     };
     let alive: std::collections::HashSet<u32> =
@@ -660,18 +715,104 @@ fn tty_of_pid(pid: u32) -> Option<String> {
     Some(format!("/dev/{tty}"))
 }
 
+fn focus_pid(pid: u32) -> String {
+    match tty_of_pid(pid) {
+        None => format!("pid={pid} no tty"),
+        Some(tty) => format!("pid={pid} tty={tty} {}", ghostty_focus(&tty)),
+    }
+}
+
 /// Moves to the Ghostty pane where the Claude Code session is running. Does nothing if no match is found
 #[tauri::command]
 async fn focus_session(config_dir: String, session_id: String) -> String {
     let result = match pid_of_session(&expand(&config_dir), &session_id) {
         None => "no session file".to_string(),
-        Some(pid) => match tty_of_pid(pid) {
-            None => format!("pid={pid} no tty"),
-            Some(tty) => format!("pid={pid} tty={tty} {}", ghostty_focus(&tty)),
-        },
+        Some(pid) => focus_pid(pid),
     };
     append_log(&format!("[focus] {config_dir} {session_id} -> {result}"));
     result
+}
+
+/// Moves to the Ghostty pane where the codex that has the thread open is running. Does nothing if no process
+/// has the thread's lock open
+#[tauri::command]
+async fn focus_codex(codex_dir: String, thread_id: String) -> String {
+    let scan = live_codex_threads(codex_dir.clone()).await;
+    let result = match scan.threads.iter().find(|t| t.thread_id == thread_id) {
+        None => "no process has the thread lock open".to_string(),
+        Some(t) => focus_pid(t.pid),
+    };
+    append_log(&format!("[focus] {codex_dir} {thread_id} -> {result}"));
+    result
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CodexThread {
+    thread_id: String,
+    pid: u32,
+}
+
+/// Result of live_codex_threads. reliable is false when lsof couldn't be run or reported an error; birds are
+/// not removed on such runs (docs/design.md "Removing birds of ended sessions")
+#[derive(Serialize)]
+struct CodexLiveScan {
+    threads: Vec<CodexThread>,
+    reliable: bool,
+}
+
+/// Codex threads whose process is alive. A running codex keeps `<codex_dir>/thread-writer-locks/<threadId>.lock`
+/// open; the lock file stays after codex exits, so only files some process has open count (measured with
+/// codex-cli 0.156.1; not a public Codex spec)
+/// Runs off the main thread (it is polled every few seconds)
+#[tauri::command]
+async fn live_codex_threads(codex_dir: String) -> CodexLiveScan {
+    tauri::async_runtime::spawn_blocking(move || live_codex_threads_blocking(&codex_dir))
+        .await
+        .unwrap_or(CodexLiveScan { threads: Vec::new(), reliable: false })
+}
+
+fn live_codex_threads_blocking(codex_dir: &str) -> CodexLiveScan {
+    let dir = expand(codex_dir).join("thread-writer-locks");
+    match std::fs::metadata(&dir) {
+        Ok(_) => {}
+        // No codex has created a thread yet
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            return CodexLiveScan { threads: Vec::new(), reliable: true };
+        }
+        Err(_) => return CodexLiveScan { threads: Vec::new(), reliable: false },
+    }
+    // lsof exits with 1 both when nothing is open and when something is found (measured on macOS), so the exit
+    // code value isn't used. -w silences warnings, so anything on stderr is a failure. Failing to launch, timing
+    // out, or dying from a signal (no exit code) is a failure too
+    let Some(out) =
+        output_with_timeout(Command::new("lsof").arg("-w").args(["-F", "pn", "+d"]).arg(&dir), LIVENESS_CMD_TIMEOUT)
+    else {
+        return CodexLiveScan { threads: Vec::new(), reliable: false };
+    };
+    if !out.stderr.is_empty() || out.status.code().is_none() {
+        return CodexLiveScan { threads: Vec::new(), reliable: false };
+    }
+    let mut threads: Vec<CodexThread> = Vec::new();
+    let mut pid: Option<u32> = None;
+    for line in String::from_utf8_lossy(&out.stdout).lines() {
+        if let Some(p) = line.strip_prefix('p') {
+            pid = p.parse().ok();
+        } else if let Some(name) = line.strip_prefix('n') {
+            let file = name.rsplit('/').next().unwrap_or("");
+            // Only <threadId>.lock (not .coordination.lock etc.)
+            let Some(thread_id) = file.strip_suffix(".lock") else { continue };
+            if thread_id.is_empty() || thread_id.starts_with('.') {
+                continue;
+            }
+            if let Some(pid) = pid {
+                if !threads.iter().any(|t| t.thread_id == thread_id) {
+                    threads.push(CodexThread { thread_id: thread_id.to_string(), pid });
+                }
+            }
+        }
+    }
+    CodexLiveScan { threads, reliable: true }
 }
 
 async fn tokio_sleep(ms: u64) {
@@ -1432,6 +1573,8 @@ pub fn run() {
             default_roots,
             pick_folder,
             focus_session,
+            focus_codex,
+            live_codex_threads,
             hide_window,
             get_window_mode,
             set_window_mode,
@@ -1449,4 +1592,50 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A codex that has a thread open keeps its lock open. Once it exits the lock file stays but no longer counts
+    /// (docs/design.md "Removing birds of ended sessions")
+    #[test]
+    fn live_codex_threads_follows_the_process_holding_the_lock() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-codex-test-{}", std::process::id()));
+        let locks = dir.join("thread-writer-locks");
+        std::fs::create_dir_all(&locks).unwrap();
+        let held = "01a0ead5-4f95-7763-a6fe-2d9f9d8e7b0c";
+        let stale = "01a0ead5-5023-76e0-ad34-c3651a23004f";
+        for name in [format!("{held}.lock"), format!("{stale}.lock"), ".coordination.lock".to_string()] {
+            std::fs::write(locks.join(name), "").unwrap();
+        }
+        let mut holder = Command::new("sh")
+            .arg("-c")
+            .arg(format!("exec 3<\"{}\"; exec sleep 600", locks.join(format!("{held}.lock")).display()))
+            .spawn()
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(200));
+
+        let scan = live_codex_threads_blocking(dir.to_str().unwrap());
+        assert!(scan.reliable);
+        let found: Vec<(&str, u32)> = scan.threads.iter().map(|t| (t.thread_id.as_str(), t.pid)).collect();
+        assert_eq!(found, vec![(held, holder.id())]);
+
+        holder.kill().unwrap();
+        holder.wait().unwrap();
+        let scan = live_codex_threads_blocking(dir.to_str().unwrap());
+        assert!(scan.reliable);
+        assert!(scan.threads.is_empty());
+        assert!(locks.join(format!("{held}.lock")).exists());
+
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn live_codex_threads_without_the_lock_folder_is_reliable_and_empty() {
+        let scan = live_codex_threads_blocking("/nonexistent/tomarigi-codex");
+        assert!(scan.reliable);
+        assert!(scan.threads.is_empty());
+    }
 }

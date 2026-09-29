@@ -36,7 +36,7 @@
     "message": "Erişim yenilenemedi"
   },
   "emptyNoSessions": {
-    "message": "Şu anda tünekte kimse yok (son 30 dk)"
+    "message": "Şu anda tünekte kimse yok"
   },
   "emptyNeedsReauth": {
     "message": "Yeniden yetkilendirme gerekiyor — aşağıdaki İzlenen Klasörler'den yeniden bağlanın"

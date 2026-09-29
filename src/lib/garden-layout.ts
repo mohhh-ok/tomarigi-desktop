@@ -35,12 +35,10 @@ export interface GardenGrid {
   rows: number;
   jitterX: number;
   jitterY: number;
-  // Fraction of the garden's height that the grid occupies (below 1 to leave room for the nest at the bottom)
-  yScale: number;
 }
 
 // Grid used while the garden size isn't known yet (the old fixed 4×3)
-const FALLBACK_GRID: GardenGrid = { cols: 4, rows: 3, jitterX: 0.6, jitterY: 0.6, yScale: 1 };
+const FALLBACK_GRID: GardenGrid = { cols: 4, rows: 3, jitterX: 0.6, jitterY: 0.6 };
 // Upper limit of the shift within a cell (just enough to break a too-neat alignment)
 const MAX_JITTER = 0.6;
 
@@ -50,15 +48,12 @@ const MAX_JITTER = 0.6;
  */
 export function gardenGrid(
   w: number,
-  fullH: number,
+  h: number,
   nodeW: number,
   nodeH: number,
   count: number,
-  bottomReserve = 0,
 ): GardenGrid {
-  if (w <= 0 || fullH <= 0) return FALLBACK_GRID;
-  // No birds in the bottomReserve px at the bottom (the nest)
-  const h = Math.max(nodeH, fullH - bottomReserve);
+  if (w <= 0 || h <= 0) return FALLBACK_GRID;
   let cols = Math.max(1, Math.floor(w / nodeW));
   let rows = Math.max(1, Math.floor(h / nodeH));
   while (cols * rows < count) {
@@ -71,7 +66,6 @@ export function gardenGrid(
     rows,
     jitterX: jitter(w / cols, nodeW),
     jitterY: jitter(h / rows, nodeH),
-    yScale: Math.min(1, h / fullH),
   };
 }
 
@@ -117,7 +111,7 @@ export function hashId(id: string): number {
 /** Which grid cell a position belongs to (0 to cols*rows-1). For finding empty cells */
 export function gardenCellOf(pos: GardenPosition, grid: GardenGrid): number {
   const col = Math.min(grid.cols - 1, Math.max(0, Math.floor(pos.x / (100 / grid.cols))));
-  const row = Math.min(grid.rows - 1, Math.max(0, Math.floor(pos.y / grid.yScale / (100 / grid.rows))));
+  const row = Math.min(grid.rows - 1, Math.max(0, Math.floor(pos.y / (100 / grid.rows))));
   return row * grid.cols + col;
 }
 
@@ -148,5 +142,5 @@ export function autoGardenPosition(id: string, taken: ReadonlySet<number>, grid:
   const jitterY = (((hash >> 8) % 100) / 100 - 0.5) * cellH * grid.jitterY;
   // Doesn't go through clampGardenPosition. Cell centers and jitter already stay inside their cells, and pulling edge cells into 8–92%
   // squeezed the space to birds in neighboring cells so their status lines overlapped
-  return { x: col * cellW + cellW / 2 + jitterX, y: (row * cellH + cellH / 2 + jitterY) * grid.yScale };
+  return { x: col * cellW + cellW / 2 + jitterX, y: row * cellH + cellH / 2 + jitterY };
 }

@@ -36,7 +36,7 @@
     "message": "Hindi na-refresh ang access"
   },
   "emptyNoSessions": {
-    "message": "Walang ibon sa tuntungan ngayon (huling 30 min)"
+    "message": "Walang ibon sa tuntungan ngayon"
   },
   "emptyNeedsReauth": {
     "message": "Kailangan ng muling pahintulot — mag-reconnect mula sa Mga Binabantayang Folder sa ibaba"

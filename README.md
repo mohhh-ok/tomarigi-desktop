@@ -20,6 +20,7 @@ bun run tauri build --debug   # src-tauri/target/debug/bundle/macos/tomarigi-des
 bun run tauri build           # release build. Put the resulting .app at /Applications/tomarigi-desktop.app
 bun run gen:locales           # scripts/locales/*.mjs → public/_locales/*/messages.json (also runs in bun run build)
 bun run verify:locales        # checks that all 43 locales have exactly the same keys
+bun run test                  # tests/ (bun test) and the Rust unit tests (cargo test --lib)
 ```
 
 Distribution builds are made by CI when a `v*` tag is pushed (signed, notarized, attached to a draft GitHub Release). See docs/release.md.

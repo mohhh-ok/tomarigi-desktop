@@ -36,7 +36,7 @@
     "message": "Obnovenie prístupu zlyhalo"
   },
   "emptyNoSessions": {
-    "message": "Na bidle teraz nikto nie je (posledných 30 min)"
+    "message": "Na bidle teraz nikto nie je"
   },
   "emptyNeedsReauth": {
     "message": "Vyžaduje nové oprávnenie — znova sa pripoj nižšie v sekcii Sledované priečinky"

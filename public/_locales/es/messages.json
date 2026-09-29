@@ -36,7 +36,7 @@
     "message": "No se pudo renovar el acceso"
   },
   "emptyNoSessions": {
-    "message": "Ahora mismo no hay pájaros en la percha (últimos 30 min)"
+    "message": "Ahora mismo no hay pájaros en la percha"
   },
   "emptyNeedsReauth": {
     "message": "Necesita reautorización: reconecta desde Carpetas vigiladas abajo"

@@ -36,7 +36,7 @@
     "message": "Obnavljanje pristupa nije uspjelo"
   },
   "emptyNoSessions": {
-    "message": "Trenutno nema ptica na sjedalu (zadnjih 30 min)"
+    "message": "Trenutno nema ptica na sjedalu"
   },
   "emptyNeedsReauth": {
     "message": "Potrebna je ponovna autorizacija — ponovno se povežite u nastavku, u Nadziranim mapama"

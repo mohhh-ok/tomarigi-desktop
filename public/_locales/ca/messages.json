@@ -36,7 +36,7 @@
     "message": "No s'ha pogut renovar l'accés"
   },
   "emptyNoSessions": {
-    "message": "Ara mateix no hi ha cap ocell a la perxa (últims 30 min)"
+    "message": "Ara mateix no hi ha cap ocell a la perxa"
   },
   "emptyNeedsReauth": {
     "message": "Cal tornar a autoritzar — reconnecta't a sota, a Carpetes vigilades"

@@ -36,7 +36,7 @@
     "message": "Gagal memperbaharui akses"
   },
   "emptyNoSessions": {
-    "message": "Tiada burung di tempat bertenggek sekarang (30 minit terakhir)"
+    "message": "Tiada burung di tempat bertenggek sekarang"
   },
   "emptyNeedsReauth": {
     "message": "Perlu kebenaran semula — sambung semula dari Folder Diawasi di bawah"

@@ -36,7 +36,7 @@
     "message": "重新整理權限失敗"
   },
   "emptyNoSessions": {
-    "message": "棲木上暫時沒有鳥(僅顯示最近 30 分鐘)"
+    "message": "棲木上暫時沒有鳥"
   },
   "emptyNeedsReauth": {
     "message": "需要重新授權──請在下方的監視資料夾中重新連接"

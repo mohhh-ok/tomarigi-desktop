@@ -64,7 +64,7 @@ export function birdLabel(state: BirdState, asking: boolean, watching = false): 
  * set is the icon set assigned to the project (DEFAULT_ICON_SET = birds when unspecified).
  * asking means waiting on the user's reply (needsAnswer in lib/jev.ts). Overlays the "?" badge, shared by
  * all icon sets, at the top right. angry overlays the anger mark (isAngry in lib/jev.ts) at the top left; both can
- * show at once. The Garden, the Perch, and the nest list all render through this component */
+ * show at once. The Garden and the Perch both render through this component */
 export function BirdGlyph({
   state,
   size,
@@ -283,8 +283,8 @@ export function StatusParts({
   return (
     <>
       <span className="status bird-row-label">
-        {/* During the grace period (within 5 minutes after the peer stopped; watching is 0) it still shows "watching". Uses the
-            same check as the reason it is kept in the garden instead of the nest (lib/watching.ts) */}
+        {/* During the grace period (within 5 minutes after the peer stopped; watching is 0) it still shows "watching"
+            (lib/watching.ts) */}
         {birdLabel(session.state, asking, session.watching !== undefined)}
       </span>
       <span className="status bird-row-since">

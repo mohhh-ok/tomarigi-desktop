@@ -36,7 +36,7 @@
     "message": "Nie udało się odnowić dostępu"
   },
   "emptyNoSessions": {
-    "message": "Na grzędzie nikogo teraz nie ma (ostatnie 30 min)"
+    "message": "Na grzędzie nikogo teraz nie ma"
   },
   "emptyNeedsReauth": {
     "message": "Wymaga ponownej autoryzacji — połącz ponownie w sekcji Obserwowane foldery poniżej"

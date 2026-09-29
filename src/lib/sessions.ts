@@ -7,6 +7,7 @@ import {
   projectLabels,
   readEventsInRange,
   readTail,
+  scanChickSignals,
   TAIL_BYTES,
   type TailEvent,
   type TailInfo,
@@ -89,8 +90,8 @@ export interface SessionView {
   // Peers connected by inter-session messages (Watching in docs/design.md). Claude Code only
   peers?: PeerLink[];
   // Watching: the number of peers currently active while this session's own machine state is done / dozing.
-  // For a grace period after the peers stop (WATCH_GRACE_MS in lib/watching.ts) it is 0 and stays watching
-  // (not put into the nest). Absent when not watching
+  // For a grace period after the peers stop (WATCH_GRACE_MS in lib/watching.ts) it is 0 and stays watching.
+  // Absent when not watching
   watching?: number;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)
@@ -136,9 +137,17 @@ export interface ScanResult {
 // and the state was fixed to working)
 interface ChickScan {
   view: ChickView;
+  // The parent's transcript has recorded this chick's completion (and it hasn't resumed since). Such chicks are
+  // not listed under the parent (docs/design.md "Removing birds of ended sessions") but are still passed to the
+  // done suppression and the parent's state escalation, which need to see that they just finished
+  completed: boolean;
 }
 
-const ACTIVE_WINDOW_MS = 30 * 60_000; // sessions older than this are not shown on the Perch
+// Birds and chicks are shown while their process is alive, regardless of idle time (docs/design.md "Removing birds
+// of ended sessions"; chicks run inside the parent's claude and go away with it). This window doesn't decide
+// whether anything is shown: Recent activity lists only events from this long ago (a feed of recent transitions,
+// capped at MAX_EVENTS)
+const RECENT_EVENTS_WINDOW_MS = 30 * 60_000;
 const WRITING_MS = 6_000; // recent write = working
 const CHICK_ABANDONED_MS = 10 * 60_000; // a chick stuck in working with no writes for longer than this is treated as abandoned and not used to suppress done (threshold for abandoned chicks)
 // Grace period, after a done suppressed while waiting on chicks is released, to wait for the parent to
@@ -176,7 +185,7 @@ const STATE_URGENCY: Record<BirdState, number> = { waiting: 0, working: 1, done:
 
 /**
  * Escalates the parent's display state to the most urgent of the parent's own state and its chicks' states.
- * A parent with a running chick is not put to sleep (prevents it from going into the nest in the garden), and
+ * A parent with a running chick is not put to sleep (it keeps its awake sprite), and
  * a parent whose chick just finished is woken up to done (actual problem: parent shown dozing next to a chick
  * done 10 seconds ago). Only dozing chicks are excluded — chicks themselves also fall from done → dozing when
  * left alone, so this gives a natural decay: "the parent wakes up only right after completion, and goes back
@@ -242,6 +251,10 @@ async function readCodexTailCached(id: string, file: NativeFile): Promise<CodexT
   return tail;
 }
 
+// key: parent session id. Chick completion signals from the whole parent transcript (scanChickSignals), read
+// only for parents that have subagents. end is how far the file has been read; later reads cover only what was
+// appended. The tail window alone loses records of chicks that finished long ago in a long-lived parent
+const chickSignalLedger = new Map<string, { end: number; signals: Map<string, number> }>();
 // key: chickId. Pruned when no longer displayed (meta.json is re-read if it reappears)
 const chickMetaCache = new Map<string, ChickMeta>();
 // key: session id. In sessions with huge tool output, the trailing 64KB window can fill up with tool results
@@ -286,7 +299,7 @@ interface LiveSession {
 }
 
 /** The <config> of a Claude Code watched folder (<config>/projects) */
-function configDirOf(root: RootEntry): string {
+export function configDirOf(root: RootEntry): string {
   const path = root.path.replace(/\/+$/, "");
   return path.slice(0, path.lastIndexOf("/"));
 }
@@ -307,7 +320,8 @@ async function loadLiveSessions(roots: RootEntry[]): Promise<{
       const scan = await invoke<{ present: boolean; sessions: LiveSession[]; reliable: boolean; unreadable: number }>(
         "live_sessions",
         { configDir },
-      ).catch(() => ({ present: false, sessions: [] as LiveSession[], reliable: false, unreadable: 0 }));
+      // A failed call says nothing about the folder: treat it as present but unreliable so shown birds stay
+      ).catch(() => ({ present: true, sessions: [] as LiveSession[], reliable: false, unreadable: 0 }));
       return { configDir, ...scan };
     }),
   );
@@ -320,30 +334,81 @@ async function loadLiveSessions(roots: RootEntry[]): Promise<{
   };
 }
 
-// Birds of sessions whose process has ended are removed right away (docs/design.md "Removing birds of ended
-// sessions"). The check doesn't depend on the terminal type.
-// Claude Code writes <config>/sessions/<pid>.json right after it starts and deletes it when it ends (measured:
-// every remaining file had a live pid). The transcript isn't created until the first message, so "there is a
-// transcript but no live sessions file" normally means the process has ended.
-// - A session this app has seen alive at least once while running is removed on the next read after it
+/** The <codex dir> of a Codex watched folder (~/.codex/sessions or ~/.codex) */
+export function codexDirOf(root: RootEntry): string {
+  const path = root.path.replace(/\/+$/, "");
+  return path.endsWith("/sessions") ? path.slice(0, path.lastIndexOf("/")) : path;
+}
+
+/**
+ * Codex threads whose process is alive, per <codex dir> (live_codex_threads in Rust: which
+ * thread-writer-locks/<threadId>.lock files some process has open). unreliableCodexDirs are reads where lsof failed
+ */
+async function loadLiveCodexThreads(roots: RootEntry[]): Promise<{
+  threadIdsByCodexDir: Map<string, Set<string>>;
+  unreliableCodexDirs: Set<string>;
+}> {
+  const codexDirs = new Set(roots.filter((r) => r.kind === "codex").map(codexDirOf));
+  const scans = await Promise.all(
+    [...codexDirs].map(async (codexDir) => {
+      const scan = await invoke<{ threads: { threadId: string; pid: number }[]; reliable: boolean }>(
+        "live_codex_threads",
+        { codexDir },
+      ).catch(() => ({ threads: [], reliable: false }));
+      return { codexDir, ...scan };
+    }),
+  );
+  return {
+    threadIdsByCodexDir: new Map(scans.map((s) => [s.codexDir, new Set(s.threads.map((t) => t.threadId))])),
+    unreliableCodexDirs: new Set(scans.filter((s) => !s.reliable).map((s) => s.codexDir)),
+  };
+}
+
+// Birds are shown while their process is alive and removed right away once it ends; elapsed time plays no part
+// (docs/design.md "Removing birds of ended sessions"). The check doesn't depend on the terminal type.
+// Claude Code (including `claude -p` / SDK starts; measured with 2.1.284) writes <config>/sessions/<pid>.json right
+// after it starts and deletes it when it ends (measured: every remaining file had a live pid). The transcript isn't
+// created until the first message, so "there is a transcript but no live sessions file" normally means the process
+// has ended. Codex keeps thread-writer-locks/<threadId>.lock open while it runs.
+// - Candidates for birds are the sessions whose process is alive, birds already shown (trackedIds), and Claude
+//   Code transcripts that appeared within the last NEVER_SEEN_GRACE_MS. A transcript's age doesn't matter
+// - A session this app has seen alive at least once while running is removed on the next reads after it
 //   disappears (within a few seconds)
-// - One never seen (e.g. a session that ended before the app started) is removed if the transcript has had no
-//   write for NEVER_SEEN_GRACE_MS. The grace keeps it from being removed when, right after startup, the file
-//   write lags behind the transcript
-// - Watched folders without <config>/sessions (older versions), Codex, and SDK-started sessions are excluded
-//   (30 minutes as before)
-// - Nothing is removed on a read where ps failed or sessions/*.json had an unreadable file (Claude Code rewrites
-//   this file every time its state changes, so a half-written file may be read). A session is removed only when
-//   it was not seen in MISSES_TO_END consecutive reads
+// - One never seen is removed once NEVER_SEEN_GRACE_MS has passed since its transcript appeared. The grace keeps
+//   a new session from being removed when, right after it starts, the sessions file write lags behind the
+//   transcript. It is measured from when this app first listed the transcript, not from the file's mtime: the
+//   harness touches dead transcripts hours later (see TailInfo.lastEventAt), and that must not bring a bird back.
+//   Transcripts already there on the first listing of a folder get no grace, so sessions that ended just before
+//   the app started don't flash up
+// - Watched folders without <config>/sessions (older versions) are not supported: no pid, so no birds
+// - Nothing is removed on a read where ps / lsof failed or sessions/*.json had an unreadable file (Claude Code
+//   rewrites this file every time its state changes, so a half-written file may be read). A session is removed
+//   only when it was not seen in MISSES_TO_END consecutive reads
 const NEVER_SEEN_GRACE_MS = 15_000;
 const MISSES_TO_END = 2;
 // Number of consecutive reads where it was not seen (view id). Cleared when seen
 const missCounts = new Map<string, number>();
 // Per-read record (for investigating fix18. Written to app-log only when the TOMARIGI_SCAN_LOG env var is set)
 let scanLogEnabled: boolean | undefined;
-// Sessions seen alive (view id). Kept even after removal (dropping it would bring the bird back during the
-// grace period), and pruned once it leaves the 30-minute window
+// Sessions seen alive (view id). Pruned together with the bird (a removed session is no longer a candidate, so
+// it can't come back through the grace period)
 const seenAliveIds = new Set<string>();
+// Birds shown after the previous read (view id). They stay candidates even when this read can't see their process,
+// so that they go through the miss count instead of vanishing on a single unreliable read
+let trackedIds = new Set<string>();
+// Sessions removed within the last NEVER_SEEN_GRACE_MS (view id → removal time). A transcript written just before
+// its process ended is still inside the grace, and would otherwise come back as a never-seen candidate
+const recentlyEndedAt = new Map<string, number>();
+// Claude Code transcripts listed so far (view id), and the roots listed completely at least once. A transcript not
+// known on a later listing is new, and gets the grace from transcriptAppearedAt (pruned once the grace is over)
+const knownTranscriptIds = new Set<string>();
+const listedRootIds = new Set<string>();
+const transcriptAppearedAt = new Map<string, number>();
+
+function inNeverSeenGrace(id: string, now: number): boolean {
+  const appearedAt = transcriptAppearedAt.get(id);
+  return appearedAt !== undefined && now - appearedAt <= NEVER_SEEN_GRACE_MS && !recentlyEndedAt.has(id);
+}
 
 function sessionIdOfViewId(id: string): string {
   const file = id.split("/")[2] ?? "";
@@ -537,77 +602,140 @@ interface FoundEntry {
 
 interface CodexRollout {
   file: NativeFile;
-  path: string;
+  path: string; // YYYY/MM/DD/<file name>, relative to the sessions folder
 }
 
+/** ~/.codex/sessions for either accepted watched folder (~/.codex/sessions or ~/.codex). undefined if missing */
+async function codexSessionsDir(selectedRoot: NativeDirectoryHandle): Promise<NativeDirectoryHandle | undefined> {
+  if (selectedRoot.name === "sessions") return selectedRoot;
+  try {
+    return await selectedRoot.getDirectoryHandle("sessions");
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "NotFoundError") return undefined;
+    throw e;
+  }
+}
+
+/** The threadId at the end of a rollout file name (`rollout-<time>-<threadId>.jsonl`) */
+export function codexThreadIdOf(fileName: string): string | undefined {
+  return /-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jsonl$/i.exec(fileName)?.[1];
+}
+
+/** The file at a path relative to dir, or undefined if it doesn't exist */
+async function fileAt(dir: NativeDirectoryHandle, path: string): Promise<NativeFile | undefined> {
+  const parts = path.split("/");
+  const name = parts.pop() ?? "";
+  try {
+    let current = dir;
+    for (const part of parts) current = await current.getDirectoryHandle(part);
+    return await (await current.getFileHandle(name)).getFile();
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "NotFoundError") return undefined;
+    throw e;
+  }
+}
+
+function datePathOf(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}/${month}/${day}`;
+}
+
+// key: `<rootId>:<threadId>`. Where each live thread's rollout was found (the path never changes)
+const codexRolloutPathCache = new Map<string, string>();
+
 /**
- * Codex stores rollouts below YYYY/MM/DD. Only today and yesterday can contain a
- * session inside ACTIVE_WINDOW_MS, so avoid walking the user's entire history on
- * every three-second poll. Both ~/.codex/sessions and ~/.codex are accepted.
+ * Finds the rollout of a live thread. Codex stores rollouts below the YYYY/MM/DD (local time) of the thread's
+ * creation, and threadIds are UUIDv7 whose first 48 bits are that time in ms, so only that day and its neighbours
+ * are listed (a thread resumed days later still lives in its creation day's folder). A threadId that isn't
+ * UUIDv7 falls back to listing every day folder. undefined while codex hasn't written the rollout yet, and for
+ * internal threads that never get one
  */
-async function findRecentCodexRollouts(
-  selectedRoot: NativeDirectoryHandle,
-  now: number,
-): Promise<CodexRollout[]> {
-  let sessionsDir = selectedRoot;
-  if (selectedRoot.name !== "sessions") {
-    try {
-      sessionsDir = await selectedRoot.getDirectoryHandle("sessions");
-    } catch {
-      return [];
+async function findCodexRollout(
+  rootId: string,
+  sessionsDir: NativeDirectoryHandle,
+  threadId: string,
+): Promise<CodexRollout | undefined> {
+  const cacheKey = `${rootId}:${threadId}`;
+  const cachedPath = codexRolloutPathCache.get(cacheKey);
+  if (cachedPath) {
+    const file = await fileAt(sessionsDir, cachedPath);
+    if (file) return { file, path: cachedPath };
+    codexRolloutPathCache.delete(cacheKey);
+  }
+
+  const hex = threadId.replace(/-/g, "");
+  const dayDirs: string[] = [];
+  if (hex[12] === "7") {
+    const createdAt = parseInt(hex.slice(0, 12), 16);
+    for (const offset of [0, -1, 1]) dayDirs.push(datePathOf(new Date(createdAt + offset * 24 * 60 * 60_000)));
+  } else {
+    for await (const year of sessionsDir.values()) {
+      if (year.kind !== "directory") continue;
+      for await (const month of year.values()) {
+        if (month.kind !== "directory") continue;
+        for await (const day of month.values()) {
+          if (day.kind === "directory") dayDirs.push(`${year.name}/${month.name}/${day.name}`);
+        }
+      }
     }
   }
 
-  const dates = [new Date(now), new Date(now - 24 * 60 * 60_000)];
-  const seen = new Set<string>();
-  const rollouts: CodexRollout[] = [];
-  for (const date of dates) {
-    const year = String(date.getFullYear());
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const datePath = `${year}/${month}/${day}`;
-    if (seen.has(datePath)) continue;
-    seen.add(datePath);
-
+  const suffix = `-${threadId}.jsonl`;
+  for (const datePath of dayDirs) {
     try {
-      const yearDir = await sessionsDir.getDirectoryHandle(year);
-      const monthDir = await yearDir.getDirectoryHandle(month);
-      const dayDir = await monthDir.getDirectoryHandle(day);
-      for await (const entry of dayDir.values()) {
-        if (entry.kind !== "file" || !entry.name.endsWith(".jsonl")) continue;
-        const file = await (entry as NativeFileHandle).getFile();
-        rollouts.push({ file, path: `${datePath}/${entry.name}` });
+      let dir = sessionsDir;
+      for (const part of datePath.split("/")) dir = await dir.getDirectoryHandle(part);
+      for await (const entry of dir.values()) {
+        if (entry.kind !== "file" || !entry.name.startsWith("rollout-") || !entry.name.endsWith(suffix)) continue;
+        const path = `${datePath}/${entry.name}`;
+        codexRolloutPathCache.set(cacheKey, path);
+        return { file: await (entry as NativeFileHandle).getFile(), path };
       }
     } catch (e) {
       if (!(e instanceof DOMException && e.name === "NotFoundError")) throw e;
     }
   }
-  return rollouts;
+  return undefined;
 }
 
 export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   const now = Date.now();
-  const found: FoundEntry[] = [];
+  const found: (FoundEntry & { liveKey: string; liveDir: string })[] = [];
   const brokenIds: string[] = [];
   // ids of sessions whose tail was read but which were excluded from display (sdk-cli, Codex internal rollouts).
   // They aren't in found, but pruning them from tailCache would re-read them every 3 seconds, so keep them
   const skippedIds = new Set<string>();
 
+  // Processes alive now. Read before walking the folders: which sessions are candidates for birds is decided from
+  // them, not from how recently a transcript was written (see the NEVER_SEEN_GRACE_MS comment)
+  const { sessions: liveSessions, presentConfigDirs, unreliableConfigDirs, unreadable } = await loadLiveSessions(roots);
+  const liveSessionIds = new Set(liveSessions.map((l) => l.sessionId));
+  const { threadIdsByCodexDir, unreliableCodexDirs } = await loadLiveCodexThreads(roots);
+
   for (const root of roots) {
     try {
       if (root.kind === "claude") {
+        const configDir = configDirOf(root);
+        // Older Claude Code without <config>/sessions: there is no pid to check, so no birds
+        if (!presentConfigDirs.has(configDir)) continue;
+        const firstListing = !listedRootIds.has(root.id);
         for await (const entry of root.handle.values()) {
           if (entry.kind !== "directory") continue;
           const projectDir = entry as NativeDirectoryHandle;
           for await (const child of projectDir.values()) {
             if (child.kind !== "file" || !child.name.endsWith(".jsonl")) continue;
             const file = await (child as NativeFileHandle).getFile();
-            // This is a rough cutoff before reading the tail (for speed), so mtime is fine here: mtime can
-            // run ahead of the actual last conversation time (tail.lastEventAt) but never behind it, so a
-            // session passing this check can never actually be past ACTIVE_WINDOW_MS
-            // (a rough filter on the safe side. The exact time basis is tail.lastEventAt in the sinceMs calculation below)
-            if (now - file.lastModified > ACTIVE_WINDOW_MS) continue;
             const id = `${root.id}/${projectDir.name}/${child.name}`;
+            const sessionId = child.name.slice(0, -".jsonl".length);
+            if (!knownTranscriptIds.has(id)) {
+              knownTranscriptIds.add(id);
+              if (!firstListing) transcriptAppearedAt.set(id, now);
+            }
+            // Candidates: the process is alive, the bird is already shown (it goes through the miss count below),
+            // or the transcript appeared within NEVER_SEEN_GRACE_MS (the sessions file can lag behind it).
+            // However long ago the transcript was written doesn't matter
+            if (!liveSessionIds.has(sessionId) && !trackedIds.has(id) && !inNeverSeenGrace(id, now)) continue;
             // The completion check for chicks (subagents) treats the parent ledger (chickSignals in the parent
             // tail) as the source of truth, so read the parent's tail before scanChicks (see the isChick comment
             // in deriveState). The tail read here is reused when building withTail below (to compute cwd/base
@@ -623,7 +751,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
               skippedIds.add(id);
               continue;
             }
-            const chicks = await scanChicks(projectDir, child.name, id, now, tail.chickSignals);
+            const chicks = await scanChicks(projectDir, child.name, id, now, tail.chickSignals, file);
             found.push({
               agent: "claude",
               rootId: root.id,
@@ -633,15 +761,38 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
               id,
               tail,
               chicks,
+              liveKey: sessionId,
+              liveDir: configDir,
             });
           }
         }
+        // Only a listing that got through the whole folder counts (a failed one would make its unlisted files look
+        // new on the next listing)
+        listedRootIds.add(root.id);
       }
 
       if (root.kind === "codex") {
-        for (const { file, path } of await findRecentCodexRollouts(root.handle, now)) {
-          if (now - file.lastModified > ACTIVE_WINDOW_MS) continue;
-          const id = `${root.id}/codex/${path}`;
+        const codexDir = codexDirOf(root);
+        const sessionsDir = await codexSessionsDir(root.handle);
+        if (!sessionsDir) continue;
+        // Rollouts of live threads (however old), plus birds already shown so they go through the miss count
+        const rollouts = new Map<string, CodexRollout>(); // key: path
+        for (const threadId of threadIdsByCodexDir.get(codexDir) ?? []) {
+          const rollout = await findCodexRollout(root.id, sessionsDir, threadId);
+          if (rollout) rollouts.set(rollout.path, rollout);
+        }
+        const prefix = `${root.id}/codex/`;
+        for (const trackedId of trackedIds) {
+          if (!trackedId.startsWith(prefix)) continue;
+          const path = trackedId.slice(prefix.length);
+          if (rollouts.has(path)) continue;
+          const file = await fileAt(sessionsDir, path);
+          if (file) rollouts.set(path, { file, path });
+        }
+        for (const { file, path } of rollouts.values()) {
+          const threadId = codexThreadIdOf(file.name);
+          if (!threadId) continue;
+          const id = `${prefix}${path}`;
           const tail = await readCodexTailCached(id, file);
           // Internal rollouts (subagents, guardian reviews, and future non-user sources) can
           // complete repeatedly while the parent is still working. Treating them as independent
@@ -663,6 +814,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
             id,
             tail,
             chicks: [],
+            liveKey: threadId,
+            liveDir: codexDir,
           });
         }
       }
@@ -674,42 +827,51 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
 
   // Remove sessions whose process has ended (together with their chicks) from display (see the
   // NEVER_SEEN_GRACE_MS comment). Their tail has been read, so add them to skippedIds to keep them in tailCache
-  const { sessions: liveSessions, presentConfigDirs, unreliableConfigDirs, unreadable } = await loadLiveSessions(roots);
-  const liveSessionIds = new Set(liveSessions.map((l) => l.sessionId));
-  const configDirByRoot = new Map(roots.filter((r) => r.kind === "claude").map((r) => [r.id, configDirOf(r)]));
+  for (const [id, at] of recentlyEndedAt) if (now - at > NEVER_SEEN_GRACE_MS) recentlyEndedAt.delete(id);
+  for (const [id, at] of transcriptAppearedAt) if (now - at > NEVER_SEEN_GRACE_MS) transcriptAppearedAt.delete(id);
   const endedIds = new Set<string>();
   const foundIds = new Set(found.map((f) => f.id));
   for (const id of seenAliveIds) if (!foundIds.has(id)) seenAliveIds.delete(id);
   for (const id of missCounts.keys()) if (!foundIds.has(id)) missCounts.delete(id);
   for (const f of found) {
-    if (f.agent !== "claude" || /^sdk/.test(f.tail.entrypoint ?? "")) continue;
-    const configDir = configDirByRoot.get(f.rootId);
-    if (configDir === undefined || !presentConfigDirs.has(configDir)) continue;
-    if (liveSessionIds.has(sessionIdOfViewId(f.id))) {
+    const alive =
+      f.agent === "claude" ? liveSessionIds.has(f.liveKey) : (threadIdsByCodexDir.get(f.liveDir)?.has(f.liveKey) ?? false);
+    if (alive) {
       seenAliveIds.add(f.id);
       missCounts.delete(f.id);
       continue;
     }
     // If this read's result is unreliable, neither remove nor count
-    if (unreliableConfigDirs.has(configDir)) continue;
+    if ((f.agent === "claude" ? unreliableConfigDirs : unreliableCodexDirs).has(f.liveDir)) continue;
     const seen = seenAliveIds.has(f.id);
-    if (!seen && now - f.file.lastModified <= NEVER_SEEN_GRACE_MS) continue;
+    if (!seen && inNeverSeenGrace(f.id, now)) continue;
     const misses = (missCounts.get(f.id) ?? 0) + 1;
     missCounts.set(f.id, misses);
     if (misses < MISSES_TO_END) continue;
     endedIds.add(f.id);
-    // Log each time it is removed (so flickering on and off can be traced). Not logged on every read while it stays removed
-    if (misses === MISSES_TO_END) {
-      const line = `[live] ended ${f.id} seenAlive=${seen} misses=${misses} idleMs=${now - f.file.lastModified}`;
-      void invoke("log", { line }).catch(() => {});
-    }
+    // Log each time it is removed (so flickering on and off can be traced)
+    const line = `[live] ended ${f.id} seenAlive=${seen} misses=${misses} idleMs=${now - f.file.lastModified}`;
+    void invoke("log", { line }).catch(() => {});
   }
   if (endedIds.size > 0) {
     for (const f of found) if (endedIds.has(f.id)) skippedIds.add(f.id);
     found.splice(0, found.length, ...found.filter((f) => !endedIds.has(f.id)));
     // Also remove from Recent activity (the latest card per session)
     for (const [key, event] of sessionEventCache) if (endedIds.has(event.sessionId)) sessionEventCache.delete(key);
+    for (const id of endedIds) {
+      seenAliveIds.delete(id);
+      missCounts.delete(id);
+      recentlyEndedAt.set(id, now);
+    }
   }
+  trackedIds = new Set(found.map((f) => f.id));
+  // Forget where rollouts of ended threads are
+  const liveThreadKeys = new Set(
+    roots
+      .filter((r) => r.kind === "codex")
+      .flatMap((r) => [...(threadIdsByCodexDir.get(codexDirOf(r)) ?? [])].map((t) => `${r.id}:${t}`)),
+  );
+  for (const key of codexRolloutPathCache.keys()) if (!liveThreadKeys.has(key)) codexRolloutPathCache.delete(key);
 
   // Turning sessions started via the SDK (Claude Agent SDK) into chicks. The entrypoint field is an
   // internal spec; cli/sdk-py were confirmed in real data (2026-08-08; see the comment on TailInfo.entrypoint).
@@ -726,7 +888,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   const nonSdkEntries = found.filter((f) => !isSdkSession(f));
 
   // Parent candidate: within "the same project directory" = same root and same slug, the non-SDK session with
-  // the newest last conversation time. found is still every entry already cut off by ACTIVE_WINDOW_MS, and
+  // the newest last conversation time. found is still every entry whose process is alive, and
   // non-SDK sessions always become displayed via withTail after this, so the "is displayed" condition is also
   // satisfied automatically
   const parentCandidateByGroup = new Map<string, FoundEntry>(); // key: `${rootId}/${slug}`
@@ -769,7 +931,9 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
       toolName: f.tail.kind === "tool_use" ? f.tail.toolName : undefined,
     };
     const list = sdkChicksByParentId.get(parent.id) ?? [];
-    list.push({ view });
+    // An SDK chick is its own process: it is shown while that process is alive (the liveness check above), so it
+    // never counts as completed here
+    list.push({ view, completed: false });
     sdkChicksByParentId.set(parent.id, list);
   }
 
@@ -904,15 +1068,17 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     //   chick merely running must not trigger the parent's done suppression (see the deriveDoneEvent comment;
     //   the suppression premise "a child the parent started" doesn't hold for SDK chicks).
     // - chickViews (merged with SDK): passed with SDK chicks included, as before, to escalateWithChicks
-    //   (display escalation) and SessionView.chicks (display). Excluding them from escalation would make a
-    //   running SDK chick vanish into the nest with the parent the moment the parent turns dozing, a visibility
-    //   regression compared to before they became chicks (when they were visible as adult birds), so they are
-    //   deliberately kept on the display side.
+    //   (display escalation) and SessionView.chicks (display). Excluding them from escalation would show the
+    //   parent dozing while its SDK chick is running, a regression compared to before they became chicks (when
+    //   they were visible as adult birds), so they are deliberately kept on the display side.
     const subagentChickViews = chicks.map((c) => c.view);
     const sdkChickViews = (sdkChicksByParentId.get(id) ?? []).map((c) => c.view);
     const chickViews = [...subagentChickViews, ...sdkChickViews].sort(
       (a, b) => a.sinceMs - b.sinceMs,
     );
+    // Listed under the parent: chicks whose completion the parent hasn't recorded yet
+    const completedChickIds = new Set(chicks.filter((c) => c.completed).map((c) => c.view.id));
+    const shownChickViews = chickViews.filter((c) => !completedChickIds.has(c.id));
     // deriveState is the only source for the "appearance (bird)". However, SDK orphans (SDK sessions with no
     // parent candidate that fell back to adult display, isSdk===true) use deriveSdkChickState —
     // the problem of getting stuck in working when ending on a structured output tool (tool_result) is still
@@ -949,7 +1115,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
       state: displayState,
       sinceMs,
       toolName: tail.kind === "tool_use" ? tail.toolName : undefined,
-      chicks: chickViews.length > 0 ? chickViews : undefined,
+      chicks: shownChickViews.length > 0 ? shownChickViews : undefined,
       snippet,
       reply,
       question,
@@ -1006,8 +1172,8 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   }
   if (scanLogEnabled) logScan(views, liveSessions, unreliableConfigDirs, unreadable, endedIds);
 
-  // Prune caches for entries that left the 30-minute window. Even if sessions pile up day after day with the
-  // app left open (PiP always on), the caches only hold what is displayed
+  // Prune caches for entries no longer shown (process ended). Even if sessions pile up
+  // day after day with the app left open, the caches only hold what is displayed
   const liveIds = new Set<string>();
   for (const f of found) {
     liveIds.add(f.id);
@@ -1020,13 +1186,14 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   for (const key of snippetCache.keys()) if (!liveIds.has(key)) snippetCache.delete(key);
   for (const key of userMessageCache.keys()) if (!liveIds.has(key)) userMessageCache.delete(key);
   for (const key of backgroundTaskCache.keys()) if (!liveIds.has(key)) backgroundTaskCache.delete(key);
+  for (const key of chickSignalLedger.keys()) if (!liveIds.has(key)) chickSignalLedger.delete(key);
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
 
-  // Drop events older than ACTIVE_WINDOW_MS (every poll re-parses the tail, so this caps what accumulates
+  // Drop events older than RECENT_EVENTS_WINDOW_MS (every poll re-parses the tail, so this caps what accumulates
   // even after deduplication)
   for (const [key, event] of sessionEventCache) {
-    if (now - event.at > ACTIVE_WINDOW_MS) sessionEventCache.delete(key);
+    if (now - event.at > RECENT_EVENTS_WINDOW_MS) sessionEventCache.delete(key);
   }
   const events = [...sessionEventCache.values()].sort((a, b) => b.at - a.at).slice(0, MAX_EVENTS);
 
@@ -1048,9 +1215,7 @@ let lastScanViewIds = new Set<string>();
 
 /**
  * Per-read record (for investigating fix18). One line per read. Logs birds with watching links, and birds that
- * disappeared or came back since the previous read. Whether a bird goes into the nest (disappears from the
- * garden) is an approximation of the same condition as isNested in garden.tsx
- * (dozing and not watching; the "?" isn't considered here)
+ * disappeared or came back since the previous read
  */
 function logScan(
   views: SessionView[],
@@ -1072,8 +1237,7 @@ function logScan(
       const peers = (v.peers ?? [])
         .map((p) => `${p.sessionId.slice(0, 8)}(${liveById.get(p.sessionId)?.status ?? "not-live"}/${lastPeerStates.get(p.sessionId)?.state ?? "-"}/${p.active ? "active" : "inactive"}/${p.viewId ? "view" : "noview"}/lastActive=${p.lastActiveAt ? Math.round((Date.now() - p.lastActiveAt) / 1000) + "s" : "-"})`)
         .join(",");
-      const nest = v.state === "dozing" && v.watching === undefined;
-      return `${v.project}#${short(v.id)} ${own?.name ?? "?"} live=${own ? own.status : "no"} state=${v.state} since=${Math.round(v.sinceMs / 1000)}s watching=${v.watching ?? "-"} nest=${nest} peers=[${peers}]`;
+      return `${v.project}#${short(v.id)} ${own?.name ?? "?"} live=${own ? own.status : "no"} state=${v.state} since=${Math.round(v.sinceMs / 1000)}s watching=${v.watching ?? "-"} peers=[${peers}]`;
     });
   const line =
     `[scan] live=${live.length} unreliable=[${[...unreliableConfigDirs].join(",")}] unreadable=${unreadable} ` +
@@ -1366,16 +1530,18 @@ function mkSessionEvent(
  * (<projectDir>/<sessionId>/subagents/agent-*.jsonl).
  * A missing directory (NotFoundError) is the normal no-chick case, so it is swallowed.
  *
- * parentChickSignals: chickSignals taken from the parent tail (already read by readTailCached). The chick
- * completion check treats this as the source of truth (see the isChick comment in deriveState). The caller
- * (scanSessions) must read the parent tail before scanChicks.
+ * parentTailSignals: chickSignals taken from the parent tail (already read by readTailCached), merged with the
+ * whole-transcript ledger (chickSignalLedger). The chick completion check treats these as the source of truth
+ * (see the isChick comment in deriveState), and a chick with a completion record is not listed under the parent.
+ * The caller (scanSessions) must read the parent tail before scanChicks.
  */
 async function scanChicks(
   projectDir: NativeDirectoryHandle,
   sessionFileName: string,
   parentId: string,
   now: number,
-  parentChickSignals: Map<string, number>,
+  parentTailSignals: Map<string, number>,
+  parentFile: NativeFile,
 ): Promise<ChickScan[]> {
   const sessionId = sessionFileName.replace(/\.jsonl$/, "");
   let subagentsDir: NativeDirectoryHandle;
@@ -1390,14 +1556,23 @@ async function scanChicks(
     return [];
   }
 
+  // Completion records from the whole parent transcript, plus the tail window (it can be ahead of the ledger by
+  // lines appended between the two reads). The latest time wins, as in TailInfo.chickSignals
+  let ledger = chickSignalLedger.get(parentId);
+  if (!ledger || parentFile.size < ledger.end) ledger = { end: 0, signals: new Map() };
+  if (parentFile.size > ledger.end) {
+    const scan = await scanChickSignals(parentFile, ledger.end);
+    for (const [key, at] of scan.signals) ledger.signals.set(key, Math.max(ledger.signals.get(key) ?? 0, at));
+    ledger.end = scan.end;
+  }
+  chickSignalLedger.set(parentId, ledger);
+  const parentChickSignals = new Map(ledger.signals);
+  for (const [key, at] of parentTailSignals) parentChickSignals.set(key, Math.max(parentChickSignals.get(key) ?? 0, at));
+
   const chicks: ChickScan[] = [];
   for await (const entry of subagentsDir.values()) {
     if (entry.kind !== "file" || !entry.name.endsWith(".jsonl")) continue;
     const file = await (entry as NativeFileHandle).getFile();
-    // mtime is fine here for the same reason as the equivalent filter in the parent scan (see the comment in
-    // scanSessions): it is a rough cutoff before reading the tail, and mtime only runs ahead of the actual last
-    // conversation time
-    if (now - file.lastModified > ACTIVE_WINDOW_MS) continue;
 
     const chickId = `${parentId}/${entry.name}`;
     const tail = await readTailCached(chickId, file, { includeSidechain: true });
@@ -1428,6 +1603,7 @@ async function scanChicks(
         sinceMs,
         toolName: tail.kind === "tool_use" ? tail.toolName : undefined,
       },
+      completed: chickDoneSignalAt !== undefined,
     });
   }
   chicks.sort((a, b) => a.view.sinceMs - b.view.sinceMs);
@@ -1597,8 +1773,8 @@ function deriveState(
  * In addition, SDK chicks structurally have no completion signal from the parent ledger (chickSignals)
  * (chickDoneSignalAt is always undefined; it is a mechanism via queue-operation/tool_result on the parent
  * transcript side, so it doesn't appear in the SDK session's own tail). Using deriveState as-is with no signal
- * override would keep an SDK chick ending on tool_result stuck in working for the whole ACTIVE_WINDOW_MS
- * (30 minutes), keep the parent looking working via escalateWithChicks, and also wrongly feed into
+ * override would keep an SDK chick ending on tool_result stuck in working for as long as its process lives,
+ * keep the parent looking working via escalateWithChicks, and also wrongly feed into
  * deriveDoneEvent's suppression check (CHICK_ABANDONED_MS=10 minutes).
  *
  * So every idle state other than a running tool_use (kind==="tool_use") is brought under the

@@ -36,7 +36,7 @@
     "message": "권한 갱신에 실패했습니다"
   },
   "emptyNoSessions": {
-    "message": "지금은 횃대에 아무도 없습니다(최근 30분 세션만 표시)"
+    "message": "지금은 횃대에 아무도 없습니다"
   },
   "emptyNeedsReauth": {
     "message": "재인증이 필요합니다 — 아래 감시 폴더에서 다시 연결하세요"

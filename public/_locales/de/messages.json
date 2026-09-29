@@ -36,7 +36,7 @@
     "message": "Zugriff konnte nicht erneuert werden"
   },
   "emptyNoSessions": {
-    "message": "Gerade sitzt kein Vogel auf der Stange (letzte 30 Min.)"
+    "message": "Gerade sitzt kein Vogel auf der Stange"
   },
   "emptyNeedsReauth": {
     "message": "Erneute Freigabe nötig — unten bei Beobachtete Ordner neu verbinden"

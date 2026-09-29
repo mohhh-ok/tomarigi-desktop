@@ -36,7 +36,7 @@
     "message": "A hozzáférés megújítása sikertelen"
   },
   "emptyNoSessions": {
-    "message": "Jelenleg nincs madár az ülőrúdon (utolsó 30 perc)"
+    "message": "Jelenleg nincs madár az ülőrúdon"
   },
   "emptyNeedsReauth": {
     "message": "Új engedélyezés szükséges — csatlakozz újra lent, a Figyelt mappáknál"

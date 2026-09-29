@@ -36,7 +36,7 @@
     "message": "Vernieuwen van toegang mislukt"
   },
   "emptyNoSessions": {
-    "message": "Er zit nu geen vogel op de zitstok (laatste 30 min)"
+    "message": "Er zit nu geen vogel op de zitstok"
   },
   "emptyNeedsReauth": {
     "message": "Opnieuw autoriseren nodig — verbind hieronder opnieuw via Bewaakte mappen"

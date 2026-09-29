@@ -18,7 +18,6 @@ import {
   saveGardenPositions,
   type GardenPosition,
 } from "@/lib/garden-layout";
-import nestImg from "@/assets/birds/nest.webp";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
@@ -27,14 +26,11 @@ import { createPortal } from "react-dom";
 import { MdLink } from "react-icons/md";
 import { bubbleText, SpeechBubble } from "./bubble";
 import {
-  BIRD,
   BirdGlyph,
   EVENT,
   eventKind,
   StatusParts,
-  focusProps,
   formatEventTime,
-  formatSince,
   relativeLabel,
 } from "./stage";
 
@@ -74,9 +70,6 @@ const AUTO_GAP_PX = 12;
 // Estimated max width of a speech bubble (max-width 15em × 11px of .speech-bubble-below in perch.css
 // + left/right padding)
 const BUBBLE_MAX_PX = 180;
-// Height of the nest in the bottom-right of the garden (.garden-nest in perch.css). Auto placement doesn't
-// put birds in this bottom strip
-const NEST_ROOM_PX = 28;
 // min-height of .garden in perch.css (it is overridden via style, so never go below it)
 const GARDEN_MIN_HEIGHT_PX = 220;
 // Keep speech bubbles this far inside the garden frame
@@ -171,7 +164,7 @@ interface WatchBlock {
  * bubbles don't overlap the block's border
  */
 function layoutWatchGroups(
-  awake: SessionView[],
+  sessions: SessionView[],
   positionOf: (id: string) => GardenPosition,
   containerW: number,
   containerH: number,
@@ -181,8 +174,8 @@ function layoutWatchGroups(
   // Visible size of a bird (px), measured from the previous render. undefined if not drawn yet (use the estimate)
   sizeOf: (id: string) => { w: number; h: number } | undefined = () => undefined,
 ): { blocks: WatchBlock[]; places: Map<string, WatchPlace>; groupOf: Map<string, WatchGroupRef> } {
-  const byId = new Map(awake.map((s) => [s.id, s]));
-  const rank = new Map(awake.map((s, i) => [s.id, i]));
+  const byId = new Map(sessions.map((s) => [s.id, s]));
+  const rank = new Map(sessions.map((s, i) => [s.id, i]));
   const earlier = (a: SessionView, b: SessionView) =>
     (a.startedAt ?? Infinity) - (b.startedAt ?? Infinity) || (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0);
   const seen = new Set<string>();
@@ -199,7 +192,7 @@ function layoutWatchGroups(
     height: number;
     anchor: GardenPosition;
   }[] = [];
-  for (const start of awake) {
+  for (const start of sessions) {
     if (seen.has(start.id)) continue;
     const component: SessionView[] = [];
     const queue = [start];
@@ -309,7 +302,7 @@ function layoutWatchGroups(
   if (layoutReady && placedGroups.length > 0) {
     const members = new Set(placedGroups.flatMap((pg) => pg.group.members.map((m) => m.id)));
     const rects = () => placedGroups.map((pg) => rectOf(pg.group, pg.cx, pg.cy));
-    for (const s of awake) {
+    for (const s of sessions) {
       if (members.has(s.id)) continue;
       // For each bird, search for space using its actual visible size (measured from the previous render; the estimate
       // if not yet available). Estimating with the node box (120px) judges it too wide for the space beside a block in a
@@ -396,42 +389,18 @@ function layoutWatchGroups(
   return { blocks, places, groupOf };
 }
 
-/** Birds to put away in the nest. Even when dozing, a bird stays in the garden while it has a "?" (docs/design.md "The "?" for sessions waiting on you") */
-function isNested(s: SessionView): boolean {
-  // Watching (a peer is active) also stays in the garden
-  // Watching (including the 0 during the grace period after the peer stops; lib/watching.ts) stays in the garden
-  return s.state === "dozing" && !hasQuestion(s) && s.watching === undefined;
-}
-
 // Releasing after moving less than this counts as a click (jump to the Ghostty pane), not a drag
 const CLICK_SLOP_PX = 4;
 
 // Number of recent event icons shown under a node (only the latest one, so the garden doesn't get crowded)
 const HISTORY_LIMIT = 1;
 
-// Snapshot of a node that is leaving (going to sleep in the nest / fading out). Rendered only while
-// it is in leaving. session/position freeze the values from "the last render where it was still awake"
+// Snapshot of a node that is fading out (its process ended). Rendered only while it is in leaving.
+// session/position freeze the values from "the last render where it was still shown"
 type LeavingEntry = {
   session: SessionView;
   position: GardenPosition;
-  target: "nest" | "fade";
 };
-
-// For the animation to and from the nest, compute the px offset from the node position (position%) to the
-// nest (approximate position at the bottom-right of the container). When the rect is unavailable or has
-// zero width (tab hidden), use a fixed fallback value
-function nestOffset(
-  containerRef: RefObject<HTMLDivElement | null>,
-  position: GardenPosition,
-): { dx: number; dy: number } {
-  const rect = containerRef.current?.getBoundingClientRect();
-  if (!rect || rect.width === 0) return { dx: 120, dy: 140 };
-  const nodeX = (position.x / 100) * rect.width;
-  const nodeY = (position.y / 100) * rect.height;
-  const nestX = rect.width - 30;
-  const nestY = rect.height - 20;
-  return { dx: nestX - nodeX, dy: nestY - nodeY };
-}
 
 export function Garden({
   sessions,
@@ -520,23 +489,13 @@ export function Garden({
     initializedRef.current = true;
   }, []);
 
-  // For the "woken bird flies out of the nest" effect, remember the ids that were dozing in the previous
-  // scan. It filters sessions directly, so it isn't affected by the early return (sessions.length===0)
-  // and the hook call order stays the same on every render
-  const prevDozingRef = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    prevDozingRef.current = new Set(
-      sessions.filter(isNested).map((s) => s.id),
-    );
-  });
-
-  // Nodes in their leaving animation (going to sleep in the nest / fading out). A replacement for
-  // AnimatePresence: ids that disappear from awake are moved here and removed via onExited when the
+  // Nodes in their leaving animation (fading out). A replacement for
+  // AnimatePresence: ids that disappear from sessions are moved here and removed via onExited when the
   // WAAPI leaving animation in GardenNode finishes
   const [leaving, setLeaving] = useState<Map<string, LeavingEntry>>(new Map());
-  // Snapshot of id → {session, position} for ids that were awake in the previous render. Used when adding to
-  // leaving, to freeze the look at the moment it disappeared (the state while it was still awake)
-  const awakeSnapshotRef = useRef<Map<string, { session: SessionView; position: GardenPosition }>>(
+  // Snapshot of id → {session, position} for ids that were shown in the previous render. Used when adding to
+  // leaving, to freeze the look at the moment it disappeared (the state while it was still shown)
+  const shownSnapshotRef = useRef<Map<string, { session: SessionView; position: GardenPosition }>>(
     new Map(),
   );
 
@@ -566,22 +525,17 @@ export function Garden({
     });
   }, []);
 
-  // dozing (idle for a long time) sessions aren't shown as individual nodes in the garden; they are gathered
-  // into a single nest (issue #12d: dozing sessions cluttering the garden).
-  // liveIds still include dozing ids — if saved positions were pruned while asleep,
-  // the position would be reset on waking.
-  // The useLayoutEffect below must be called on every render (Rules of Hooks), so
+  // Every session whose process is alive is a node in the garden, dozing ones included (docs/design.md
+  // "Garden layout"). The useLayoutEffect below must be called on every render (Rules of Hooks), so
   // compute this before the sessions.length===0 early return
   const liveIds = sessions.map((s) => s.id);
-  const awake = sessions.filter((s) => !isNested(s));
-  const dozing = sessions.filter(isNested);
   const [bubbleLayer, setBubbleLayer] = useState<HTMLDivElement | null>(null);
   // Dragging a watching group (docs/design.md "Watching": dragging moves the whole block). The id of the group's first-started
   // bird and the current block reference position (%)
   const [groupDrag, setGroupDrag] = useState<WatchGroupRef | null>(null);
   // When speech bubbles overlap, stack birds whose turn ended more recently (smaller sinceMs) on top
   const bubbleOrder = new Map(
-    awake
+    sessions
       .filter((s) => bubbleText(s) !== undefined)
       .sort((a, b) => b.sinceMs - a.sinceMs)
       .map((s, i) => [s.id, i + 1] as const),
@@ -590,7 +544,7 @@ export function Garden({
   // Decide the glyph size from the number of birds and the container's actual size. At zero width (tab hidden),
   // skip the computation and keep the previous value (held in a ref)
   if (containerSize.w > 0 && containerSize.h > 0) {
-    const count = Math.max(awake.length, 1);
+    const count = Math.max(sessions.length, 1);
     const raw = Math.sqrt((containerSize.w * containerSize.h) / count) * 0.16;
     glyphSizeRef.current = Math.min(52, Math.max(26, Math.round(raw)));
   }
@@ -602,18 +556,18 @@ export function Garden({
   // The grid is derived from the garden size and the size of one bird (name, icon, bubble space, status row, marker,
   // count under it). With a fixed grid, birds made taller by the name on top and the bubble space overlapped the next
   // row even in a wide garden
-  const anyBubble = awake.some((s) => bubbleText(s) !== undefined);
+  const anyBubble = sessions.some((s) => bubbleText(s) !== undefined);
   const nodeW = (anyBubble ? BUBBLE_MAX_PX : NODE_WIDTH_PX) + AUTO_GAP_PX;
   const nodeH =
     glyphSize +
     NODE_TEXT_PX +
     14 +
-    (awake.some((s) => s.toolName !== undefined) ? STATUS_SUB_PX : 0) +
+    (sessions.some((s) => s.toolName !== undefined) ? STATUS_SUB_PX : 0) +
     (anyBubble ? BUBBLE_ROOM_PX : 0) +
-    (awake.some((s) => s.watching !== undefined) ? WATCH_COUNT_PX : 0) +
+    (sessions.some((s) => s.watching !== undefined) ? WATCH_COUNT_PX : 0) +
     AUTO_GAP_PX;
-  const grid = gardenGrid(containerSize.w, containerSize.h, nodeW, nodeH, awake.length, NEST_ROOM_PX);
-  const present = new Set(awake.map((s) => s.id));
+  const grid = gardenGrid(containerSize.w, containerSize.h, nodeW, nodeH, sessions.length);
+  const present = new Set(sessions.map((s) => s.id));
   const sticky = autoPosRef.current;
   // When the grid's columns/rows change (the garden size or the presence of speech bubbles changed), re-place
   // auto-placed positions
@@ -627,12 +581,12 @@ export function Garden({
   }
   // Cells already occupied by birds = saved positions + already-assigned sticky entries
   const taken = new Set<number>();
-  for (const s of awake) {
+  for (const s of sessions) {
     const p = positions[s.id] ?? sticky.get(s.id);
     if (p) taken.add(gardenCellOf(p, grid));
   }
   // New assignments are made in a stable id order (not dependent on the state sort order)
-  for (const s of [...awake].sort((a, b) => a.id.localeCompare(b.id))) {
+  for (const s of [...sessions].sort((a, b) => a.id.localeCompare(b.id))) {
     if (positions[s.id] || sticky.has(s.id)) continue;
     const pos = autoGardenPosition(s.id, taken, grid);
     sticky.set(s.id, pos);
@@ -641,51 +595,44 @@ export function Garden({
   const resolvePosition = (id: string): GardenPosition =>
     positions[id] ?? sticky.get(id) ?? autoGardenPosition(id, taken, grid);
 
-  // useLayoutEffect: add ids that disappeared from awake to leaving. It runs synchronously before paint (right
+  // useLayoutEffect: add ids that disappeared from sessions to leaving. It runs synchronously before paint (right
   // after commit), so the frame where a node "vanishes from the DOM for a moment and comes back as leaving" is
   // never visible (react-dom doesn't let the browser paint until the next commit). The dependency array is
-  // intentionally not empty; the awake set is diffed after every render.
+  // intentionally not empty; the session set is diffed after every render.
   // Placed before the sessions.length===0 (all sessions gone) early return: Hooks must be
   // called in the same order on every render (Rules of Hooks), and placing it after the early return
   // means this hook isn't called only at the moment the count hits 0, crashing with "Rendered fewer hooks"
   useLayoutEffect(() => {
-    const currentIds = new Set(awake.map((s) => s.id));
-    const dozingIds = new Set(dozing.map((s) => s.id));
-    const prevSnapshot = awakeSnapshotRef.current;
+    const currentIds = new Set(sessions.map((s) => s.id));
+    const prevSnapshot = shownSnapshotRef.current;
 
     setLeaving((prev) => {
       let next = prev;
       const ensureCopy = () => {
         if (next === prev) next = new Map(prev);
       };
-      // Ids that reappear in awake are removed from leaving immediately (edge cases like falling asleep and
-      // waking right away are simplified to "awake wins, leaving is discarded")
+      // Ids that reappear in sessions are removed from leaving immediately ("shown wins, leaving is discarded")
       for (const id of currentIds) {
         if (next.has(id)) {
           ensureCopy();
           next.delete(id);
         }
       }
-      // Add ids that newly disappeared from awake. target is "nest" if currently in dozing,
-      // otherwise (the session itself is gone) "fade"
+      // Add ids that newly disappeared from sessions (the session itself is gone)
       for (const [id, entry] of prevSnapshot) {
         if (!currentIds.has(id) && !next.has(id)) {
           ensureCopy();
-          next.set(id, {
-            session: entry.session,
-            position: entry.position,
-            target: dozingIds.has(id) ? "nest" : "fade",
-          });
+          next.set(id, { session: entry.session, position: entry.position });
         }
       }
       return next;
     });
 
     const newSnapshot = new Map<string, { session: SessionView; position: GardenPosition }>();
-    for (const s of awake) {
+    for (const s of sessions) {
       newSnapshot.set(s.id, { session: s, position: resolvePosition(s.id) });
     }
-    awakeSnapshotRef.current = newSnapshot;
+    shownSnapshotRef.current = newSnapshot;
   });
 
   if (sessions.length === 0) {
@@ -700,7 +647,7 @@ export function Garden({
   const groupPositionOf = (id: string): GardenPosition =>
     groupDrag && id === groupDrag.rootId ? groupDrag.anchor : resolvePosition(id);
   const watchGroups = layoutWatchGroups(
-    awake,
+    sessions,
     groupPositionOf,
     containerSize.w,
     containerSize.h,
@@ -716,11 +663,11 @@ export function Garden({
   // When birds don't fit in a narrow garden, stretch the garden vertically (the window scrolls). Better than
   // overlapping them until unreadable. Birds inside watching blocks aren't counted; the block heights are added instead
   const fitCols = Math.max(1, Math.floor(containerSize.w / nodeW));
-  const looseCount = awake.filter((s) => !watchGroups.groupOf.has(s.id)).length;
+  const looseCount = sessions.filter((s) => !watchGroups.groupOf.has(s.id)).length;
   const blocksH = watchGroups.blocks.reduce((sum, b) => sum + b.height + AUTO_GAP_PX, 0);
   const gardenMinHeight =
     containerSize.w > 0
-      ? Math.max(GARDEN_MIN_HEIGHT_PX, Math.ceil(looseCount / fitCols) * nodeH + blocksH + NEST_ROOM_PX)
+      ? Math.max(GARDEN_MIN_HEIGHT_PX, Math.ceil(looseCount / fitCols) * nodeH + blocksH)
       : undefined;
   return (
     <div className="garden" ref={containerRef} style={{ minHeight: gardenMinHeight }}>
@@ -740,18 +687,13 @@ export function Garden({
           </span>
         </div>
       ))}
-      {awake.map((s) => {
+      {sessions.map((s) => {
         const position = resolvePosition(s.id);
         const stackOrder = bubbleOrder.get(s.id);
         // events arrive newest first (lib/sessions.ts), so taking from the start keeps them newest first
         const recent = events.filter((e) => e.sessionId === s.id).slice(0, HISTORY_LIMIT);
-        // On first display, static without flying; birds that were dozing just before come from the nest; others
-        // (new sessions) come from the sky
-        const entryOrigin: "none" | "sky" | "nest" = !animateEntry
-          ? "none"
-          : prevDozingRef.current.has(s.id)
-            ? "nest"
-            : "sky";
+        // On first display, static without flying; new sessions come from the sky
+        const entryOrigin: "none" | "sky" = animateEntry ? "sky" : "none";
         return (
           <GardenNode
             key={s.id}
@@ -788,109 +730,10 @@ export function Garden({
           glyphSize={glyphSize}
           iconSet={resolveIconSet(iconSetAssignments, entry.session.slug)}
           onDragEnd={() => {}}
-          exitTarget={entry.target}
+          exiting
           onExited={handleExited}
         />
       ))}
-      {dozing.length > 0 && (
-        <NestBox
-          dozing={dozing}
-          iconSetAssignments={iconSetAssignments}
-          onFocus={onFocus}
-          canFocus={canFocus}
-        />
-      )}
-    </div>
-  );
-}
-
-/**
- * The nest that gathers dozing sessions. Clicking opens the list inside (name + elapsed time).
- * Auto-closing on an outside click must target the whole document (any element outside this one),
- * which doesn't fit within React's synthetic events (delegation per portal container; see the
- * portalHost comment in App.tsx), so both toggling and outside clicks are attached with native
- * addEventListener (via ownerDocument, the same handlers are attached to the PiP document too)
- */
-function NestBox({
-  dozing,
-  iconSetAssignments,
-  onFocus,
-  canFocus,
-}: {
-  dozing: SessionView[];
-  iconSetAssignments: IconSetAssignments;
-  onFocus?: (id: string) => void;
-  canFocus?: (id: string) => boolean;
-}) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-    const btn = wrap.querySelector(".garden-nest-btn");
-    if (!btn) return;
-    const toggle = () => setOpen((v) => !v);
-    btn.addEventListener("click", toggle);
-    return () => btn.removeEventListener("click", toggle);
-  }, []);
-
-  // Only while open, close on a click outside the nest. Taken from ownerDocument so it attaches to its own
-  // document in PiP too
-  useEffect(() => {
-    if (!open) return;
-    const wrap = wrapRef.current;
-    const doc = wrap?.ownerDocument;
-    if (!wrap || !doc) return;
-    const onDown = (e: Event) => {
-      if (e.target instanceof Node && !wrap.contains(e.target)) setOpen(false);
-    };
-    doc.addEventListener("pointerdown", onDown);
-    return () => doc.removeEventListener("pointerdown", onDown);
-  }, [open]);
-
-  return (
-    <div className="garden-nest" ref={wrapRef}>
-      {open && (
-        <ul className="garden-nest-list">
-          {dozing.map((s) => {
-            const focus = focusProps(s.id, onFocus, canFocus);
-            return (
-            <li key={s.id} {...focus} className={`garden-nest-row ${focus.className ?? ""}`}>
-              <span className="garden-nest-row-glyph">
-                <BirdGlyph
-                  state="dozing"
-                  size={14}
-                  set={resolveIconSet(iconSetAssignments, s.slug)}
-                  asking={hasQuestion(s)}
-                  angry={isAngry(s)}
-                />
-              </span>
-              <span className="garden-nest-row-name">{s.project}</span>
-              <span className="garden-nest-row-since">{formatSince(s.sinceMs)}</span>
-            </li>
-            );
-          })}
-        </ul>
-      )}
-      <button
-        type="button"
-        className="garden-nest-btn"
-        aria-label={BIRD.dozing.label}
-        aria-expanded={open}
-      >
-        <span className="garden-nest-glyph">
-          <img
-            className="bird-glyph-img"
-            src={nestImg}
-            width={24}
-            height={24}
-            alt=""
-            draggable={false}
-          />
-        </span>
-        <span className="garden-nest-count">{dozing.length}</span>
-      </button>
     </div>
   );
 }
@@ -904,7 +747,7 @@ function GardenNode({
   glyphSize,
   iconSet,
   onDragEnd,
-  exitTarget,
+  exiting,
   onExited,
   focusable = false,
   onClick,
@@ -919,11 +762,11 @@ function GardenNode({
   position: GardenPosition;
   recentEvents: SessionEvent[];
   containerRef: RefObject<HTMLDivElement | null>;
-  entryOrigin: "none" | "sky" | "nest";
+  entryOrigin: "none" | "sky";
   glyphSize: number;
   iconSet: IconSetId;
   onDragEnd: (next: GardenPosition) => void;
-  exitTarget?: "nest" | "fade";
+  exiting?: boolean;
   onExited?: (id: string) => void;
   focusable?: boolean;
   onClick?: () => void;
@@ -1120,10 +963,6 @@ function GardenNode({
       : bubbleShift(placed.x, BUBBLE_EDGE_PX, containerW - BUBBLE_EDGE_PX)
     : undefined;
 
-  // px offset for the fly-out-of-the-nest entry. Computed once from the position and container rect at mount
-  // and fixed. If the rect is unavailable or has zero width (tab hidden), use a fixed fallback value
-  const [entryOffset] = useState(() => nestOffset(containerRef, position));
-
   // Bird facing. About half are mirrored deterministically based on the id (all facing the same way looks stuffed).
   // Sprites are assumed to face left by default → flip = facing right
   const flip = hashId(session.id) % 2 === 1;
@@ -1144,19 +983,6 @@ function GardenNode({
     if (entryOrigin === "none") return;
     const el = innerRef.current;
     if (!el) return;
-    if (entryOrigin === "nest") {
-      el.animate(
-        [
-          {
-            transform: `translate(${entryOffset.dx}px, ${entryOffset.dy}px) scale(0.3)`,
-            opacity: 0,
-          },
-          { transform: "none", opacity: 1 },
-        ],
-        { duration: 550, easing: "cubic-bezier(0.22, 0.9, 0.35, 1)" },
-      );
-      return;
-    }
     // sky: approximate an arc with 3 keyframes (a replacement for motion's per-property easing).
     // After landing (the last keyframe) it stops at transform: none, so there is no leftover motion
     // like briefly lifting up after landing
@@ -1176,10 +1002,10 @@ function GardenNode({
     // entryOrigin is fixed at its mount-time value (never changes afterwards), so running once at mount is enough
   }, []);
 
-  // Leave animation: once exitTarget is set (the moment Garden moves it to leaving), run it with WAAPI,
+  // Leave animation: once exiting is set (the moment Garden moves it to leaving), run it with WAAPI,
   // and when it finishes call onExited so Garden removes it from its leaving Map
   useLayoutEffect(() => {
-    if (!exitTarget) return;
+    if (!exiting) return;
     const el = innerRef.current;
     if (!el) return;
     let finished = false;
@@ -1188,18 +1014,8 @@ function GardenNode({
       finished = true;
       onExited?.(session.id);
     };
-    const duration = exitTarget === "nest" ? 450 : 300;
-    const keyframes: Keyframe[] =
-      exitTarget === "nest"
-        ? (() => {
-            const { dx, dy } = nestOffset(containerRef, position);
-            return [
-              { transform: "none", opacity: 1 },
-              { transform: `translate(${dx}px, ${dy}px) scale(0.25)`, opacity: 0 },
-            ];
-          })()
-        : [{ opacity: 1 }, { opacity: 0 }];
-    const anim = el.animate(keyframes, { duration, easing: "ease", fill: "forwards" });
+    const duration = 300;
+    const anim = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" });
     anim.onfinish = finish;
     // Safeguard: in case onfinish never fires (e.g. the element is detached from the document),
     // also call onExited after duration+200ms. Garden uses Map.delete, so a double call is idempotent
@@ -1212,14 +1028,14 @@ function GardenNode({
       // opacity:0 (prevents a recurrence of "birds are invisible only in development")
       anim.cancel();
     };
-    // exitTarget is expected to be decided only once, when the leaving entry is created
-  }, [exitTarget]);
+    // exiting is expected to be decided only once, when the leaving entry is created
+  }, [exiting]);
 
   return (
     <div
       ref={nodeRef}
       data-session-id={session.id}
-      className={`garden-node ${session.state}${question ? " asking" : ""}${live ? " dragging" : ""}${exitTarget ? " leaving" : ""}${focusable ? " focusable" : ""}${inBlock ? " in-watch-block" : ""}`}
+      className={`garden-node ${session.state}${question ? " asking" : ""}${live ? " dragging" : ""}${exiting ? " leaving" : ""}${focusable ? " focusable" : ""}${inBlock ? " in-watch-block" : ""}`}
       style={{
         left,
         top,
@@ -1292,7 +1108,7 @@ function GardenNode({
           distance from the icon is the same for every bird */}
       {bubble &&
         bubbleLayer &&
-        !exitTarget &&
+        !exiting &&
         createPortal(
           <div
             className={`garden-bubble-anchor${inBlock ? " in-watch-block" : ""}`}

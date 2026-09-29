@@ -36,7 +36,7 @@
     "message": "Couldn't refresh access"
   },
   "emptyNoSessions": {
-    "message": "No birds on the perch right now (last 30 min)"
+    "message": "No birds on the perch right now"
   },
   "emptyNeedsReauth": {
     "message": "Needs re-authorization — reconnect from Watched Folders below"

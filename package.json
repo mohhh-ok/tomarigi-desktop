@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "typecheck": "tsc --noEmit",
+    "test": "bun test tests/ && cd src-tauri && cargo test --lib",
     "gen:locales": "node scripts/gen-locales.mjs",
     "verify:locales": "node scripts/verify-locales.mjs",
     "prepare": "git config core.hooksPath .githooks"

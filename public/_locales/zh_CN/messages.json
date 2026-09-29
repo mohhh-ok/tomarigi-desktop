@@ -36,7 +36,7 @@
     "message": "刷新权限失败"
   },
   "emptyNoSessions": {
-    "message": "栖木上暂时没有鸟(仅显示最近 30 分钟)"
+    "message": "栖木上暂时没有鸟"
   },
   "emptyNeedsReauth": {
     "message": "需要重新授权——请在下方的监视文件夹中重新连接"

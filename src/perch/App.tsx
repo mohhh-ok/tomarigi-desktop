@@ -102,7 +102,7 @@ type Tab = "perch" | "events" | "garden";
 // Grabbing the window background moves the whole window (the PiP of the tomarigi Chrome extension could only be
 // moved by its top bar). Excludes clickable controls, text inputs, birds (garden drag), and scrolling lists
 const NO_WINDOW_DRAG =
-  "button, input, select, textarea, a, label, kbd, code, .garden-node, .garden-nest, .bird, .chick, .event-card, .debug-overlay, .mock-panel, .root-add-overlay";
+  "button, input, select, textarea, a, label, kbd, code, .garden-node, .bird, .chick, .event-card, .debug-overlay, .mock-panel, .root-add-overlay";
 
 interface Editing {
   id: string;

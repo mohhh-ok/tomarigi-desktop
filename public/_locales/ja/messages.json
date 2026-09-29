@@ -36,7 +36,7 @@
     "message": "アクセス許可の更新に失敗しました"
   },
   "emptyNoSessions": {
-    "message": "いまは誰もとまっていません(直近30分のセッションが対象)"
+    "message": "いまは誰もとまっていません"
   },
   "emptyNeedsReauth": {
     "message": "再許可が必要です(下の監視フォルダから再許可してください)"

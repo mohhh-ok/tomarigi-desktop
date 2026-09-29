@@ -199,6 +199,56 @@ export async function readEventsInRange(file: NativeFile, start: number, end: nu
   return events;
 }
 
+const CHICK_SIGNAL_CHUNK_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Collects chick completion signals (the same collectChickSignals as TailInfo.chickSignals) from the whole
+ * transcript from start, not just the tail window. A long-lived parent's completion records scroll out of the
+ * tail window, and a chick is shown until its completion is recorded (docs/design.md "Removing birds of ended
+ * sessions"), so lib/sessions.ts keeps the result across scans and reads only what was appended. end is the
+ * position read up to; a last line cut off midway is left for the next read
+ */
+export async function scanChickSignals(
+  file: NativeFile,
+  start: number,
+): Promise<{ signals: Map<string, number>; end: number }> {
+  const signals = new Map<string, number>();
+  let pos = start;
+  while (pos < file.size) {
+    const text = await file.slice(pos, Math.min(file.size, pos + CHICK_SIGNAL_CHUNK_BYTES)).text();
+    const cut = text.lastIndexOf("\n");
+    if (cut < 0) {
+      // A single line longer than the chunk: read it whole
+      if (pos + CHICK_SIGNAL_CHUNK_BYTES < file.size) {
+        const whole = await file.slice(pos).text();
+        const lineEnd = whole.indexOf("\n");
+        if (lineEnd < 0) break;
+        collectLine(whole.slice(0, lineEnd), signals);
+        pos += new TextEncoder().encode(whole.slice(0, lineEnd + 1)).length;
+        continue;
+      }
+      break;
+    }
+    const complete = text.slice(0, cut + 1);
+    for (const line of complete.split("\n")) collectLine(line, signals);
+    pos += new TextEncoder().encode(complete).length;
+  }
+  return { signals, end: pos };
+
+  function collectLine(line: string, out: Map<string, number>): void {
+    // Only these two kinds of line can carry a signal; skip JSON.parse for the rest
+    if (!line.includes(TASK_NOTIFICATION_TAG) && !line.includes("tool_result")) return;
+    let entry: TranscriptEntry;
+    try {
+      entry = JSON.parse(line);
+    } catch {
+      return;
+    }
+    const at = parseTimestamp(entry.timestamp);
+    if (at !== null) collectChickSignals(entry, at, out);
+  }
+}
+
 /**
  * The body of readTail that reads and classifies one window. windowBytes is the number of bytes read
  * from the end of the file, which the caller (readTail) grows on each retry.

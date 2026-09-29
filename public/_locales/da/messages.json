@@ -36,7 +36,7 @@
     "message": "Kunne ikke forny adgangen"
   },
   "emptyNoSessions": {
-    "message": "Ingen fugle på pinden lige nu (seneste 30 min)"
+    "message": "Ingen fugle på pinden lige nu"
   },
   "emptyNeedsReauth": {
     "message": "Kræver fornyet godkendelse — genopret forbindelse nedenfor under Overvågede mapper"

@@ -36,7 +36,7 @@
     "message": "Kunne ikke fornye tilgangen"
   },
   "emptyNoSessions": {
-    "message": "Ingen fugler på vaglen akkurat nå (siste 30 min)"
+    "message": "Ingen fugler på vaglen akkurat nå"
   },
   "emptyNeedsReauth": {
     "message": "Krever ny autorisering — koble til på nytt under Overvåkede mapper nedenfor"

@@ -36,7 +36,7 @@
     "message": "Obnovení přístupu se nezdařilo"
   },
   "emptyNoSessions": {
-    "message": "Na bidýlku teď nikdo není (posledních 30 min)"
+    "message": "Na bidýlku teď nikdo není"
   },
   "emptyNeedsReauth": {
     "message": "Vyžaduje nové oprávnění — znovu se připojte níže ve Sledovaných složkách"

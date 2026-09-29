@@ -36,7 +36,7 @@
     "message": "Não foi possível renovar o acesso"
   },
   "emptyNoSessions": {
-    "message": "Nenhum pássaro no poleiro agora (últimos 30 min)"
+    "message": "Nenhum pássaro no poleiro agora"
   },
   "emptyNeedsReauth": {
     "message": "Precisa de reautorização — reconecte em Pastas monitoradas abaixo"

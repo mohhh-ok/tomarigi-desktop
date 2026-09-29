@@ -36,7 +36,7 @@
     "message": "Obnovitev dostopa ni uspela"
   },
   "emptyNoSessions": {
-    "message": "Trenutno na gredi ni nobene ptice (zadnjih 30 min)"
+    "message": "Trenutno na gredi ni nobene ptice"
   },
   "emptyNeedsReauth": {
     "message": "Potrebna je ponovna avtorizacija — znova se povežite spodaj pri Nadzorovanih mapah"

@@ -36,7 +36,7 @@
     "message": "Neizdevās atjaunot piekļuvi"
   },
   "emptyNoSessions": {
-    "message": "Šobrīd uz laktiņas nav neviena putna (pēdējās 30 min)"
+    "message": "Šobrīd uz laktiņas nav neviena putna"
   },
   "emptyNeedsReauth": {
     "message": "Nepieciešama atkārtota autorizācija — pievienojieties no jauna zemāk, sadaļā Pārraudzītās mapes"

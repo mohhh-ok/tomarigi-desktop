@@ -56,15 +56,14 @@ html[data-window-mode="normal"] .page {
   border-radius: 0;
 }
 
-/* Elements that jump to the Ghostty pane when pressed (Perch rows, event cards, garden birds, the nest list) */
+/* Elements that jump to the Ghostty pane when pressed (Perch rows, event cards, garden birds) */
 .focusable {
   cursor: pointer;
 }
 
 .bird.focusable:hover,
 .chick.focusable:hover,
-.event-card.focusable:hover,
-.garden-nest-row.focusable:hover {
+.event-card.focusable:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
@@ -1012,7 +1011,7 @@ button.remove {
 }
 
 /* Inner layer where WAAPI (element.animate) handles only the enter/leave animations of the glyph through the history
-   icon (fly in / go to the nest / fade). The outer .garden-node owns the positioning/drag/hover transforms, so this
+   icon (fly in / fade). The outer .garden-node owns the positioning/drag/hover transforms, so this
    only takes over the vertical stack layout that .garden-node used to have */
 .garden-node-inner {
   display: flex;
@@ -1154,95 +1153,6 @@ button.remove {
 
 .garden-icon-wrap {
   display: flex;
-}
-
-/* dozing (idle for a long time) sessions aren't individual nodes; they are gathered into a single nest in the corner
-   of the garden (issue #12d). This view follows a "no boxes" policy (issue #12b), so no border/background here
-   either; like garden-node, the glyph is the main element. opacity is lowered to leave the spotlight to others */
-/* The nest sits in front of the birds (.garden-node; 1000 while dragging) and the speech bubble layer
-   (.garden-bubble-layer 2000) so it can always be pressed. Birds can end up where the nest is (dragging, shifting
-   to the edge), so instead of making birds avoid it, the nest is stacked on top. A small backing in a color close
-   to the garden keeps overlapped bird and bubble text from showing through behind the nest */
-.garden-nest {
-  position: absolute;
-  right: 6px;
-  bottom: 4px;
-  z-index: 2100;
-  padding: 3px 5px;
-  border-radius: 8px;
-  background: rgba(28, 27, 21, 0.88);
-}
-
-/* The nest itself is a button. Remove the default button look; keep it subdued and bring it up on hover/while open */
-.garden-nest-btn {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  opacity: 0.7;
-}
-
-.garden-nest-btn:hover,
-.garden-nest-btn[aria-expanded="true"] {
-  opacity: 1;
-}
-
-.garden-nest-glyph {
-  font-size: 22px;
-  line-height: 1;
-}
-
-.garden-nest-count {
-  color: #777265;
-  font-size: 11px;
-}
-
-/* The "inside the nest" list opened by clicking. It's a temporary popover, not a permanent panel, so only this
-   gets a background to be readable */
-.garden-nest-list {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 6px);
-  margin: 0;
-  padding: 6px 9px;
-  list-style: none;
-  min-width: 150px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border: 1px solid #3a382f;
-  border-radius: 8px;
-  background: #211f18;
-  z-index: 6; /* Above the node being dragged (z-index: 5) */
-}
-
-.garden-nest-row {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.garden-nest-row-glyph {
-  font-size: 11px;
-}
-
-.garden-nest-row-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 130px;
-  color: #a49f92;
-}
-
-.garden-nest-row-since {
-  margin-left: auto;
-  color: #777265;
-  font-size: 10px;
 }
 
 @keyframes peck {
@@ -1431,7 +1341,7 @@ button.remove {
 .debug-overlay {
   position: fixed;
   inset: 0;
-  z-index: 3000; /* Above the garden's speech bubble layer (2000) and nest (2100) */
+  z-index: 3000; /* Above the garden's speech bubble layer (2000) */
   overflow-y: auto;
   background: #16161c;
 }
@@ -1644,8 +1554,8 @@ button.remove {
   stroke-linejoin: round;
 }
 
-/* A dozing bird's sprite is drawn dark and muted, so its anger mark is muted the same way (in the Perch row, Garden
-   and nest list alike). The "?" stays bright on purpose so a question isn't missed */
+/* A dozing bird's sprite is drawn dark and muted, so its anger mark is muted the same way (in the Perch row and
+   the Garden alike). The "?" stays bright on purpose so a question isn't missed */
 .bird-glyph-dozing .bird-badge-anger {
   filter: saturate(0.4) brightness(0.7);
 }
@@ -1666,10 +1576,9 @@ button.remove {
   margin-right: 4px;
 }
 
-/* In the list rows (Perch and the nest list) the anger mark sticks out to the left of the small bird by 13px
+/* In the Perch rows the anger mark sticks out to the left of the small bird by 13px
    (14px mark minus 1px overlap). Every row leaves that space so the mark stays inside the row and the birds line up */
-.bird-row-main > .bird-glyph,
-.garden-nest-row-glyph > .bird-glyph {
+.bird-row-main > .bird-glyph {
   margin-left: 13px;
 }
 

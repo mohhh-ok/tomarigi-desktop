@@ -36,7 +36,7 @@
     "message": "Käyttöoikeuden uusiminen epäonnistui"
   },
   "emptyNoSessions": {
-    "message": "Orrella ei ole nyt yhtään lintua (viimeiset 30 min)"
+    "message": "Orrella ei ole nyt yhtään lintua"
   },
   "emptyNeedsReauth": {
     "message": "Vaatii uuden valtuutuksen — yhdistä uudelleen alla olevasta kohdasta Tarkkailtavat kansiot"

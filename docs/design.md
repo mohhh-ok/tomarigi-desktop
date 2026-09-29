@@ -6,7 +6,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 - Three tabs: Garden, Perch, and Recent activity (Garden is the default), plus the ⚙ settings screen
 - Watches Claude Code / Codex transcripts in parallel through adapters. State is decided by local heuristics only; no hooks are installed on the agent side
-- Bird states (sprites, aura while working, motion animations), drag placement in the Garden, and the nest
+- Bird states (sprites, aura while working, motion animations), and drag placement in the Garden
 - Icon sets (birds / gnome / cat / robot / frog) assigned per project
 - Web Audio chirps (mute, volume), speechSynthesis readout (opt-in, volume), BYOK (OpenAI / Anthropic) summaries on done and connection tests
 - Persistent event history and a debug dialog
@@ -35,25 +35,27 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 ## Garden layout
 
 - Birds without a saved (dragged) position are placed automatically on a grid sized from the garden and one bird's size (name, icon, bubble room, status lines, marks). Cell centers are used as is (not pulled in from the edges), so neighbours keep a full cell apart
-- The bottom band of the garden (the nest in the bottom-right corner) is kept free of automatically placed birds
+- Every bird whose process is alive is placed in the Garden, however long it has been idle. There is no nest; `dozing` only changes the sprite and the status label
 - When the birds don't fit (e.g. many birds in the 340px floating window), the garden grows taller and the window scrolls instead of overlapping birds. Watch blocks count by their own height
 - Status lines: line 1 is the state and elapsed time, line 2 the tool name. Inside watch blocks, line 1 is the state and line 2 the elapsed time and tool name
 
 ## Jumping to the Ghostty pane
 
-- Clicking a bird (Garden) or a row (Perch, Recent activity, the nest list) jumps to the Ghostty pane where that claude is running. A chick's row jumps to its parent's pane
-- Mapping: `sessionId` in `<config>/sessions/<pid>.json` → pid → tty from `ps` → `tty of terminal` in Ghostty's AppleScript, then `focus` + `activate`
-- Sessions that can't be mapped (Codex, ended sessions) do nothing on click
+- Clicking a bird (Garden) or a row (Perch, Recent activity) jumps to the Ghostty pane where that claude / codex is running. A chick's row jumps to its parent's pane
+- Mapping: session → pid (see "Removing birds of ended sessions" for how each agent's pid is found) → tty from `ps` → `tty of terminal` in Ghostty's AppleScript, then `focus` + `activate`
+- Sessions whose pid can't be found do nothing on click
 - In the Garden, releasing after moving less than 4px is a click (left button only); anything more is a drag
 - Clickable elements get a pointer cursor. No hover hint is shown
 
 ## Removing birds of ended sessions
 
-- A bird whose process has ended is removed right away instead of after 30 minutes. The decision is based on whether the process is alive, not on the pane, so it doesn't depend on the terminal (closing a pane also ends the claude inside it)
+- Birds are never removed because of elapsed time. A bird stays while its process is alive, however long it has been idle, and is removed right away once the process ends. The decision is based on whether the process is alive, not on the pane, so it doesn't depend on the terminal (closing a pane also ends the process inside it)
 - Claude Code: match sessionId and pid from `<config>/sessions/<pid>.json` against `ps`; sessions whose pid isn't alive fade out on the next load. The same applies after `/exit`. Chicks go away with their parent
-- Watched folders without `<config>/sessions` (older Claude Code) still remove birds after 30 minutes
-- Avoid false removals: nothing is removed on a load where `ps` failed or where any `sessions/*.json` failed to parse. A bird is removed only after it is missing on two loads in a row
-- Codex has no equivalent, so birds are removed after 30 minutes
+- Chicks (subagents) have no process of their own. While the parent is alive, a chick stays until the parent's transcript records its completion (the same record used for the chick's state), however long the chick has been writing nothing, and is removed once the completion is recorded
+- Codex: a running codex keeps `~/.codex/thread-writer-locks/<threadId>.lock` open, and threadId is the id at the end of the rollout file name (`rollout-<time>-<threadId>.jsonl`). `lsof` on that folder gives threadId → pid. The lock file stays after codex exits, so the file's existence says nothing; only whether a process has it open counts (measured with codex-cli 0.156.1)
+- Watched folders without `<config>/sessions` (older Claude Code) are not supported: there is no pid to check, so their sessions get no birds
+- Avoid false removals: nothing is removed on a load where `ps` / `lsof` failed or where any `sessions/*.json` failed to parse. A bird is removed only after it is missing on two loads in a row
+- Caveat: `thread-writer-locks` is not a public Codex spec, the same as `sessions/<pid>.json` for Claude Code
 
 ## The "?" for sessions waiting on you
 
@@ -62,7 +64,6 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
   - Machine state `BirdState`: `working | waiting | done | dozing`. `waiting` means stopped on AskUserQuestion / ExitPlanMode / request_user_input, or Claude Code's `<config>/sessions/<pid>.json` has `status: "waiting"` (while it shows options or a permission prompt, Claude Code doesn't write that tool_use to the transcript until it's answered). Recomputed on every poll
   - Jev verdict: `pending | asking | not_asking | error` plus the probability of yes. Only for turns whose machine state became done, the last reply text (`assistantText`, last 2000 characters) is sent to TypeSafe's Jev (`POST https://api.typesafe.ai/v1/systemone`, `jev-latest`, one Noul question). The result is tied to the turn (sessionId + time of the last reply) and is not requested again on every poll
 - The "?" is shown when the machine state is waiting, or when the machine state is done / dozing and the Jev verdict is asking. Not shown for pending / error. It disappears when the session goes back to working
-- A bird with a "?" stays in the Garden even when it dozes, instead of going into the nest
 - While the "?" is shown, the event marks under the bird (✓ for done, "?" for waiting) are hidden
 - Noul criteria: yes = stopped in a state where it can't proceed until the user answers, such as presenting options, asking for approval, or asking for information. no = just reported finished work (including optional add-ons that need no answer)
 - The TypeSafe API key is the third BYOK provider (save, delete, connection test). Without a key, Jev is not used and the "?" comes only from the machine state waiting
@@ -115,6 +116,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 - A session that handed work to another session and is waiting on it is shown as "watching". The other session isn't necessarily in the same directory
 - How links are found: from traces of Claude Code's cross-session messaging (a public feature, enabled without configuration since v2.1.224) in transcripts. The sender side is the recipient name in a SendMessage tool call; the receiver side is `<cross-session-message from-name="…">`. Names are matched against `name` in `<config>/sessions/<pid>.json` to look up the other session's sessionId, cwd, and status. Two sessions that exchanged at least one message are considered linked. No particular person's tooling (such as a script that launches sessions) is relied on
 - Watching: the session's own machine state is done / dozing, and at least one linked session is working (status busy in `sessions/<pid>.json`, or its transcript's machine state is working / waiting). Chirps and readout on done are held until all linked sessions stop
+- After the linked sessions stop, the bird stays watching for 5 minutes after the last one moved (`WATCH_GRACE_MS`), so the watch block and label don't flicker between the other session's turns. A linked session whose status isn't idle (e.g. shell) also counts as moving
 - Presentation:
   - In the Garden, the watching bird and its linked birds are placed close together and wrapped in a rounded block. Birds are not connected by lines
   - One name is shown above the block: the watching (parent) bird's. Birds inside show no name if they are in the parent's folder, and only the path relative to the parent otherwise
@@ -122,7 +124,6 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
   - The number of linked sessions currently working is shown at the watching bird's feet
   - In Perch, linked rows are indented under the watching row, labeled with the path relative to the watching session's cwd (or the folder name if not under it). Rows in the same folder show no name
   - When a linked session gets a "?", the watching bird doesn't. The "?" only goes on the bird that is actually asking
-- After watching ends, the bird isn't put into the nest until 5 minutes after the linked session last moved (so it doesn't bounce in and out of the nest between the other session's turns). A linked session whose status isn't idle (e.g. shell) also counts as moving
 - The indentation parent is whichever of the two linked sessions started first. Codex has no equivalent feature and is out of scope
 - Caveat: the transcript format and `sessions/<pid>.json` are not public Claude Code specs (the sessions docs say "internal to Claude Code and changes between versions"). State detection and jumping to Ghostty rely on them too
 

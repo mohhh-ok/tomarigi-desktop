@@ -36,7 +36,7 @@
     "message": "Không làm mới được quyền truy cập"
   },
   "emptyNoSessions": {
-    "message": "Hiện chưa có chim nào trên sào (30 phút gần nhất)"
+    "message": "Hiện chưa có chim nào trên sào"
   },
   "emptyNeedsReauth": {
     "message": "Cần cấp quyền lại — kết nối lại từ Thư mục theo dõi bên dưới"

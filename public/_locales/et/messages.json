@@ -36,7 +36,7 @@
     "message": "Juurdepääsu uuendamine ebaõnnestus"
   },
   "emptyNoSessions": {
-    "message": "Õrrel pole hetkel ühtegi lindu (viimased 30 min)"
+    "message": "Õrrel pole hetkel ühtegi lindu"
   },
   "emptyNeedsReauth": {
     "message": "Vajalik uus luba — ühenda uuesti allpool, jaotises Jälgitavad kaustad"
