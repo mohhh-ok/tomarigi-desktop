@@ -848,237 +848,234 @@ export default function App({
           {addMessage && <p className="add-message">{addMessage}</p>}
         </section>
       )}
-      {/* The tomarigi Chrome extension grouped this with createPortal to move it into PiP; the desktop app has one window, so it renders directly */}
-      <>
-          {showTabs && (
-            <>
-              {/* While in settings, the tab bar is hidden and you go back via ⚙. Tabs are only the "views (Perch/events)";
-                  settings are a separate level, so they aren't listed here */}
-              {!settingsOpen && (
-                <div className="tabs" role="tablist">
-                  <button
-                    type="button"
-                    role="tab"
-                    id="tab-btn-garden"
-                    aria-selected={tab === "garden"}
-                    aria-controls="tabpanel-garden"
-                    className={tab === "garden" ? "tab-btn active" : "tab-btn"}
-                    onClick={() => setTab("garden")}
-                  >
-                    {t("tabGardenLabel")}
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    id="tab-btn-perch"
-                    aria-selected={tab === "perch"}
-                    aria-controls="tabpanel-perch"
-                    className={tab === "perch" ? "tab-btn active" : "tab-btn"}
-                    onClick={() => setTab("perch")}
-                  >
-                    {t("tabPerchLabel")}
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    id="tab-btn-events"
-                    aria-selected={tab === "events"}
-                    aria-controls="tabpanel-events"
-                    className={tab === "events" ? "tab-btn active" : "tab-btn"}
-                    onClick={() => setTab("events")}
-                  >
-                    {t("eventFeedHeading")}
-                  </button>
-                </div>
-              )}
-              {/* Each tab panel stays mounted and is hidden with the hidden attribute (recreating it on every tab
-                  switch would lose internal state such as Garden's). Same hidden while in settings */}
-              <section
-                role="tabpanel"
-                id="tabpanel-events"
-                aria-labelledby="tab-btn-events"
-                hidden={settingsOpen || tab !== "events"}
+      {showTabs && (
+        <>
+          {/* While in settings, the tab bar is hidden and you go back via ⚙. Tabs are only the "views (Perch/events)";
+              settings are a separate level, so they aren't listed here */}
+          {!settingsOpen && (
+            <div className="tabs" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                id="tab-btn-garden"
+                aria-selected={tab === "garden"}
+                aria-controls="tabpanel-garden"
+                className={tab === "garden" ? "tab-btn active" : "tab-btn"}
+                onClick={() => setTab("garden")}
               >
-                <div className="stage stage-events">
-                  <EventFeed
-                    events={displayEvents}
-                    showHeading={false}
-                    onFocus={onFocusSession}
-                    canFocus={canFocus}
-                  />
-                </div>
-              </section>
-              <section
-                role="tabpanel"
-                id="tabpanel-perch"
-                aria-labelledby="tab-btn-perch"
-                hidden={settingsOpen || tab !== "perch"}
+                {t("tabGardenLabel")}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                id="tab-btn-perch"
+                aria-selected={tab === "perch"}
+                aria-controls="tabpanel-perch"
+                className={tab === "perch" ? "tab-btn active" : "tab-btn"}
+                onClick={() => setTab("perch")}
               >
-                <div className="stage stage-perch">
-                  <Perch
-                    sessions={displaySessions}
-                    hasGranted={hasGranted}
-                    iconSetAssignments={iconSetAssignments}
-                    onFocus={onFocusSession}
-                    canFocus={canFocus}
-                  />
-                </div>
-              </section>
-              <section
-                role="tabpanel"
-                id="tabpanel-garden"
-                aria-labelledby="tab-btn-garden"
-                hidden={settingsOpen || tab !== "garden"}
+                {t("tabPerchLabel")}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                id="tab-btn-events"
+                aria-selected={tab === "events"}
+                aria-controls="tabpanel-events"
+                className={tab === "events" ? "tab-btn active" : "tab-btn"}
+                onClick={() => setTab("events")}
               >
-                <div className="stage stage-garden">
-                  <Garden
-                    sessions={displaySessions}
-                    events={displayEvents}
-                    hasGranted={hasGranted}
-                    iconSetAssignments={iconSetAssignments}
-                    onFocus={onFocusSession}
-                    canFocus={canFocus}
-                  />
-                </div>
-              </section>
-              <section className="settings-panel" hidden={!settingsOpen}>
-                {/* Watched folder management is the roots/perms subsystem itself, so it is hidden entirely
-                    in mock (no substitute). BYOK, volume, and readout settings work as the real thing
-                    even in mock (see ApiKeySettings and voice-controls below) */}
-                {source.usesRoots && (
-                  <RootManager
-                    roots={roots}
-                    perms={perms}
-                    brokenIds={brokenIds}
-                    editing={editing}
-                    addMessage={addMessage}
-                    onRequestAdd={() => setRootDialogOpen(true)}
-                    onRemove={removeRoot}
-                    onStartEdit={startEdit}
-                    onEditChange={(draft) => setEditing((prev) => (prev ? { ...prev, draft } : prev))}
-                    onCommitEdit={commitEdit}
-                    onCancelEdit={cancelEdit}
-                  />
-                )}
-                <AiKeySettings
-                  keySet={aiKeySet}
-                  selectedProvider={aiProvider}
-                  testState={aiKeyTestState}
-                  onSaveKey={saveAiKey}
-                  onDeleteKey={(provider) => void removeAiKey(provider)}
-                  onTest={(provider) => void runAiKeyTest(provider)}
-                  onSelect={(provider) => void selectAiProvider(provider)}
-                />
-                <IconSetSettings
-                  rows={iconSetRows}
-                  assignments={iconSetAssignments}
-                  onChange={assignIconSet}
-                />
-                {/* The two notification toggles share one pattern: "parent checkbox + sub-rows directly below".
-                    "Notify with sound" is the inverse of the existing muted state (checked = !muted). It shares
-                    the same state as the header's 🔔/🔕 button (toggleMuted), so they stay in sync automatically.
-                    Directly below come a volume slider only for chirps, then two preview buttons.
-                    It is a setting independent of the readout (speechSynthesis) volume (the same idea as separate
-                    SE/BGM volumes in games; see setChirpVolume in lib/chirp.ts).
-                    "Read aloud" is the event readout (speechSynthesis). It is an opt-in setting, OFF by default,
-                    with the readout volume slider directly below */}
-                <div className="voice-controls">
-                  <label className="voice-enable-row">
-                    <input type="checkbox" checked={!muted} onChange={toggleMuted} />
-                    {t("soundEnableLabel")}
-                  </label>
-                  {/* The chirp slider isn't disabled even when muted ("Notify with sound" OFF).
-                      Reason: just as the preview buttons below can be pressed while muted, this supports the flow
-                      "set the volume while previewing, then turn it ON". The readout slider (which has no preview
-                      button) keeps the policy of being disabled by voiceEnabled (the uses differ: for readout the
-                      meaning of the volume depends on the "speak or not" toggle, while chirps have previewing as a
-                      way to check, so there is no reason to disable it) */}
-                  <label className="settings-subrow volume-row">
-                    {t("voiceVolumeLabel")}
-                    <input
-                      type="range"
-                      className="volume-slider"
-                      min={0}
-                      max={100}
-                      value={Math.round(chirpVolume * 100)}
-                      onChange={(e) => changeChirpVolume(Number(e.target.value) / 100)}
-                    />
-                    <span className="volume-value">{Math.round(chirpVolume * 100)}%</span>
-                  </label>
-                  {/* Previewing is "listening to decide whether to turn it ON", so it isn't disabled even when
-                      muted ("Notify with sound" OFF). Disabling it would defeat the purpose by blocking the natural
-                      use of "try the sound, then turn it ON" (volume sliders change the setting itself, so they
-                      keep the policy of being disabled by voiceEnabled) */}
-                  <div className="settings-subrow sound-preview-row">
-                    {/* Sounds fire on events, so the labels come from the event side too (state labels wouldn't match).
-                        The button icons teach the same meaning as in the feed */}
-                    <button className="small" onClick={() => previewChirp(chirpDone)}>
-                      <MdVolumeUp size={14} className="preview-mic" />
-                      <EventIcon kind="done" size={18} /> {EVENT.done.label}
-                    </button>
-                    <button className="small" onClick={() => previewChirp(chirpWaiting)}>
-                      <MdVolumeUp size={14} className="preview-mic" />
-                      <EventIcon kind="waiting" size={18} /> {EVENT.waiting.label}
-                    </button>
-                  </div>
-                  <label className="voice-enable-row">
-                    <input type="checkbox" checked={voiceEnabled} onChange={toggleVoiceEnabled} />
-                    {t("voiceEnableLabel")}
-                  </label>
-                  {/* The volume value is kept even when voiceEnabled is OFF (the toggle is a switch for whether to
-                      speak and is independent of volume). While OFF it is only disabled to prevent meaningless
-                      adjustments; the value doesn't change */}
-                  <label className="settings-subrow volume-row">
-                    {t("voiceVolumeLabel")}
-                    <input
-                      type="range"
-                      className="volume-slider"
-                      min={0}
-                      max={100}
-                      value={Math.round(voiceVolume * 100)}
-                      disabled={!voiceEnabled}
-                      onChange={(e) => changeVoiceVolume(Number(e.target.value) / 100)}
-                    />
-                    <span className="volume-value">{Math.round(voiceVolume * 100)}%</span>
-                  </label>
-                </div>
-                {/* Floating window / standard window (can also be changed from the menu bar menu; window-mode.ts) */}
-                <section className="window-mode">
-                  <h2>{t("windowModeHeading")}</h2>
-                  <label className="voice-enable-row">
-                    <input
-                      type="radio"
-                      name="window-mode"
-                      checked={windowMode === "floating"}
-                      onChange={() => setWindowMode("floating")}
-                    />
-                    {t("windowModeFloating")}
-                  </label>
-                  <label className="voice-enable-row">
-                    <input
-                      type="radio"
-                      name="window-mode"
-                      checked={windowMode === "normal"}
-                      onChange={() => setWindowMode("normal")}
-                    />
-                    {t("windowModeNormal")}
-                  </label>
-                </section>
-              </section>
-            </>
+                {t("eventFeedHeading")}
+              </button>
+            </div>
           )}
-          {/* An independent in-page dialog that doesn't affect App's scan loop at all */}
-          {showDebug && <DebugApp onClose={closeDebug} />}
-          {rootDialogOpen && (
-            <RootAddDialog
-              onClose={() => setRootDialogOpen(false)}
-              onChoose={(kind) => {
-                setRootDialogOpen(false);
-                void addRoot(kind);
-              }}
+          {/* Each tab panel stays mounted and is hidden with the hidden attribute (recreating it on every tab
+              switch would lose internal state such as Garden's). Same hidden while in settings */}
+          <section
+            role="tabpanel"
+            id="tabpanel-events"
+            aria-labelledby="tab-btn-events"
+            hidden={settingsOpen || tab !== "events"}
+          >
+            <div className="stage stage-events">
+              <EventFeed
+                events={displayEvents}
+                showHeading={false}
+                onFocus={onFocusSession}
+                canFocus={canFocus}
+              />
+            </div>
+          </section>
+          <section
+            role="tabpanel"
+            id="tabpanel-perch"
+            aria-labelledby="tab-btn-perch"
+            hidden={settingsOpen || tab !== "perch"}
+          >
+            <div className="stage stage-perch">
+              <Perch
+                sessions={displaySessions}
+                hasGranted={hasGranted}
+                iconSetAssignments={iconSetAssignments}
+                onFocus={onFocusSession}
+                canFocus={canFocus}
+              />
+            </div>
+          </section>
+          <section
+            role="tabpanel"
+            id="tabpanel-garden"
+            aria-labelledby="tab-btn-garden"
+            hidden={settingsOpen || tab !== "garden"}
+          >
+            <div className="stage stage-garden">
+              <Garden
+                sessions={displaySessions}
+                events={displayEvents}
+                hasGranted={hasGranted}
+                iconSetAssignments={iconSetAssignments}
+                onFocus={onFocusSession}
+                canFocus={canFocus}
+              />
+            </div>
+          </section>
+          <section className="settings-panel" hidden={!settingsOpen}>
+            {/* Watched folder management is the roots/perms subsystem itself, so it is hidden entirely
+                in mock (no substitute). BYOK, volume, and readout settings work as the real thing
+                even in mock (see ApiKeySettings and voice-controls below) */}
+            {source.usesRoots && (
+              <RootManager
+                roots={roots}
+                perms={perms}
+                brokenIds={brokenIds}
+                editing={editing}
+                addMessage={addMessage}
+                onRequestAdd={() => setRootDialogOpen(true)}
+                onRemove={removeRoot}
+                onStartEdit={startEdit}
+                onEditChange={(draft) => setEditing((prev) => (prev ? { ...prev, draft } : prev))}
+                onCommitEdit={commitEdit}
+                onCancelEdit={cancelEdit}
+              />
+            )}
+            <AiKeySettings
+              keySet={aiKeySet}
+              selectedProvider={aiProvider}
+              testState={aiKeyTestState}
+              onSaveKey={saveAiKey}
+              onDeleteKey={(provider) => void removeAiKey(provider)}
+              onTest={(provider) => void runAiKeyTest(provider)}
+              onSelect={(provider) => void selectAiProvider(provider)}
             />
-          )}
-      </>
+            <IconSetSettings
+              rows={iconSetRows}
+              assignments={iconSetAssignments}
+              onChange={assignIconSet}
+            />
+            {/* The two notification toggles share one pattern: "parent checkbox + sub-rows directly below".
+                "Notify with sound" is the inverse of the existing muted state (checked = !muted). It shares
+                the same state as the header's 🔔/🔕 button (toggleMuted), so they stay in sync automatically.
+                Directly below come a volume slider only for chirps, then two preview buttons.
+                It is a setting independent of the readout (speechSynthesis) volume (the same idea as separate
+                SE/BGM volumes in games; see setChirpVolume in lib/chirp.ts).
+                "Read aloud" is the event readout (speechSynthesis). It is an opt-in setting, OFF by default,
+                with the readout volume slider directly below */}
+            <div className="voice-controls">
+              <label className="voice-enable-row">
+                <input type="checkbox" checked={!muted} onChange={toggleMuted} />
+                {t("soundEnableLabel")}
+              </label>
+              {/* The chirp slider isn't disabled even when muted ("Notify with sound" OFF).
+                  Reason: just as the preview buttons below can be pressed while muted, this supports the flow
+                  "set the volume while previewing, then turn it ON". The readout slider (which has no preview
+                  button) keeps the policy of being disabled by voiceEnabled (the uses differ: for readout the
+                  meaning of the volume depends on the "speak or not" toggle, while chirps have previewing as a
+                  way to check, so there is no reason to disable it) */}
+              <label className="settings-subrow volume-row">
+                {t("voiceVolumeLabel")}
+                <input
+                  type="range"
+                  className="volume-slider"
+                  min={0}
+                  max={100}
+                  value={Math.round(chirpVolume * 100)}
+                  onChange={(e) => changeChirpVolume(Number(e.target.value) / 100)}
+                />
+                <span className="volume-value">{Math.round(chirpVolume * 100)}%</span>
+              </label>
+              {/* Previewing is "listening to decide whether to turn it ON", so it isn't disabled even when
+                  muted ("Notify with sound" OFF). Disabling it would defeat the purpose by blocking the natural
+                  use of "try the sound, then turn it ON" (volume sliders change the setting itself, so they
+                  keep the policy of being disabled by voiceEnabled) */}
+              <div className="settings-subrow sound-preview-row">
+                {/* Sounds fire on events, so the labels come from the event side too (state labels wouldn't match).
+                    The button icons teach the same meaning as in the feed */}
+                <button className="small" onClick={() => previewChirp(chirpDone)}>
+                  <MdVolumeUp size={14} className="preview-mic" />
+                  <EventIcon kind="done" size={18} /> {EVENT.done.label}
+                </button>
+                <button className="small" onClick={() => previewChirp(chirpWaiting)}>
+                  <MdVolumeUp size={14} className="preview-mic" />
+                  <EventIcon kind="waiting" size={18} /> {EVENT.waiting.label}
+                </button>
+              </div>
+              <label className="voice-enable-row">
+                <input type="checkbox" checked={voiceEnabled} onChange={toggleVoiceEnabled} />
+                {t("voiceEnableLabel")}
+              </label>
+              {/* The volume value is kept even when voiceEnabled is OFF (the toggle is a switch for whether to
+                  speak and is independent of volume). While OFF it is only disabled to prevent meaningless
+                  adjustments; the value doesn't change */}
+              <label className="settings-subrow volume-row">
+                {t("voiceVolumeLabel")}
+                <input
+                  type="range"
+                  className="volume-slider"
+                  min={0}
+                  max={100}
+                  value={Math.round(voiceVolume * 100)}
+                  disabled={!voiceEnabled}
+                  onChange={(e) => changeVoiceVolume(Number(e.target.value) / 100)}
+                />
+                <span className="volume-value">{Math.round(voiceVolume * 100)}%</span>
+              </label>
+            </div>
+            {/* Floating window / standard window (can also be changed from the menu bar menu; window-mode.ts) */}
+            <section className="window-mode">
+              <h2>{t("windowModeHeading")}</h2>
+              <label className="voice-enable-row">
+                <input
+                  type="radio"
+                  name="window-mode"
+                  checked={windowMode === "floating"}
+                  onChange={() => setWindowMode("floating")}
+                />
+                {t("windowModeFloating")}
+              </label>
+              <label className="voice-enable-row">
+                <input
+                  type="radio"
+                  name="window-mode"
+                  checked={windowMode === "normal"}
+                  onChange={() => setWindowMode("normal")}
+                />
+                {t("windowModeNormal")}
+              </label>
+            </section>
+          </section>
+        </>
+      )}
+      {/* An independent in-page dialog that doesn't affect App's scan loop at all */}
+      {showDebug && <DebugApp onClose={closeDebug} />}
+      {rootDialogOpen && (
+        <RootAddDialog
+          onClose={() => setRootDialogOpen(false)}
+          onChoose={(kind) => {
+            setRootDialogOpen(false);
+            void addRoot(kind);
+          }}
+        />
+      )}
       {/* Control panel only for the mock source (MockPanel passed by main.tsx) */}
       {extraPanel}
     </main>
