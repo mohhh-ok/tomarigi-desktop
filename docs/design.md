@@ -93,7 +93,14 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 - Switch between floating and standard windows, from the settings screen or the menu bar menu
   - Floating: NSPanel (transparent, frameless, always on top, shown above full-screen spaces)
   - Standard: can be maximized or made full screen with the title bar buttons; not pinned on top. Shown in the Dock, Cmd+Tab, and with its own app menu bar (activation policy Regular). Switching back to floating restores Accessory
-- The window background is translucent and blurs what's behind it with the macOS frosted-glass effect (to feel less imposing on screen). Text, birds, and bubbles stay at full strength. The opacity is fixed (`.page` and `.garden` in `src/perch/perch.css`)
+- The window background is translucent and blurs what's behind it with the macOS frosted-glass effect (to feel less imposing on screen). Text, birds, and bubbles stay at full strength. The opacity is fixed (`.page` and `.garden` in `src/perch/perch.css`), apart from the fade below
+- Fade until hovered (floating window, Garden tab only)
+  - At rest, only the birds, their badges ("?", anger mark), and speech bubbles are shown. The background (translucent color, frosted glass, border, shadow), tabs, header, names, and status lines are faded almost to invisible. Bubbles are not a hover target and clicks on them go through at rest
+  - At rest, clicks anywhere except on a bird go through to the window below
+  - Putting the cursor on a bird shows the whole window at full strength. From then until the cursor leaves the window's bounds, the whole window takes clicks (tabs, settings, dragging the window work as usual)
+  - Once the cursor leaves the window's bounds, it fades again and clicks go through again
+  - Perch, Recent activity, settings, and the standard window are not faded (Perch and Recent activity have no birds to hover). This scope is Claude's own decision
+  - Because clicks go through, the WebView gets no mouse events at rest; the cursor position is watched on the Rust side to decide when a bird is under it
 - When the window is wide, Perch and Recent activity are centered at a max width of about 720px, and settings at 560px. The Garden uses the full width
 - The chosen mode is saved and used on the next launch. Floating is the default. Position and size are saved separately per mode
 

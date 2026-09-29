@@ -56,6 +56,47 @@ html[data-window-mode="normal"] .page {
   border-radius: 0;
 }
 
+/* Fade until hovered (docs/design.md "Window mode"; data-fade is set by garden-fade.ts). At rest only the birds, their
+   badges, and bubbles stay; everything else fades almost to invisible. The frosted glass and shadow are removed on the Rust
+   side (apply_fade in src-tauri) */
+.page {
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.page-header,
+.tabs,
+.garden-name,
+.garden-status,
+.garden-watch-count,
+.garden-icons,
+.garden-watch-block {
+  transition: opacity 0.2s;
+}
+
+:root[data-fade="rest"] .page {
+  background-color: rgba(22, 22, 28, 0.03);
+  border-color: rgba(46, 44, 37, 0.08);
+}
+
+:root[data-fade="rest"] .garden {
+  background: none;
+  border-color: rgba(42, 41, 34, 0.08);
+}
+
+:root[data-fade="rest"] :is(
+    .page-header,
+    .tabs,
+    .garden-name,
+    .garden-status,
+    .garden-watch-count,
+    .garden-icons,
+    .garden-watch-block
+  ) {
+  opacity: 0.06;
+}
+
 /* Elements that jump to the Ghostty pane when pressed (Perch rows, event cards, garden birds) */
 .focusable {
   cursor: pointer;

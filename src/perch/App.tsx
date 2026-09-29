@@ -79,6 +79,7 @@ import {
 import { type PerchSource } from "./source";
 import { EVENT, EventFeed, Perch } from "./stage";
 import { currentWindowMode, useWindowMode } from "./window-mode";
+import { useGardenFade } from "./garden-fade";
 
 const POLL_MS = 3_000;
 
@@ -693,6 +694,15 @@ export default function App({
   const hasGranted = !source.usesRoots || grantedCount > 0;
 
   const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
+  // Fade until hovered (garden-fade.ts). Not while settings, the debug log, or the folder dialog are open over the Garden
+  useGardenFade(
+    windowMode === "floating" &&
+      showTabs &&
+      tab === "garden" &&
+      !settingsOpen &&
+      !showDebug &&
+      !rootDialogOpen,
+  );
 
   // Rows shown in the icon set settings = "projects in the current sessions (deduplicated by slug)"
   // ∪ "projects with only a saved assignment left". Running ones form the first group to prioritize
