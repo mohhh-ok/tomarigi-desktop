@@ -4,7 +4,7 @@
 import type { TailInfo } from "./transcript";
 import type { BackgroundTask, BirdState, ChickMeta, FoundEntry, SessionEvent } from "./session-types";
 
-export interface CacheEntry {
+interface CacheEntry {
   size: number;
   lastModified: number;
   tail: TailInfo;

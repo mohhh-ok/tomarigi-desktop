@@ -6,7 +6,7 @@
 import { httpFailure, invokeKeyedApi, verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "./judge";
 
 /** For short completion summaries. The current mini model that supports the Responses API and Structured Outputs. */
-export const OPENAI_JUDGE_MODEL = "gpt-5.4-mini";
+const OPENAI_JUDGE_MODEL = "gpt-5.4-mini";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 512;
 

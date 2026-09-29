@@ -30,7 +30,7 @@ const CLAMP_Y_MAX = 90;
  * jitterX / jitterY are how far a bird may shift within its cell (as a fraction of the cell). It shifts only by the room left over when the bird is smaller than the cell,
  * so it doesn't overlap birds in neighboring cells
  */
-export interface GardenGrid {
+interface GardenGrid {
   cols: number;
   rows: number;
   jitterX: number;

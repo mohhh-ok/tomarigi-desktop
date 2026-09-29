@@ -43,16 +43,16 @@ export function httpFailure(
 }
 
 /** Model for verdicts. Fixed by the original design (issue #3). Uses the official dated ID */
-export const JUDGE_MODEL = "claude-haiku-4-5-20251001";
+const JUDGE_MODEL = "claude-haiku-4-5-20251001";
 
 /** Output is kept small since it's for verdicts. When tool_choice is forced, if this is too small
  * stop_reason: "max_tokens" breaks the tool_use input JSON, so
  * leave headroom relative to the number of fields */
 const DEFAULT_MAX_TOKENS = 512;
 
-export type JudgeFieldType = "string" | "boolean" | "number";
+type JudgeFieldType = "string" | "boolean" | "number";
 
-export interface JudgeOutputField {
+interface JudgeOutputField {
   type: JudgeFieldType;
   description: string;
   enum?: readonly string[];

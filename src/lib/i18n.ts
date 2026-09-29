@@ -13,7 +13,7 @@ type MessageEntry = { message: string; placeholders?: Record<string, MessagePlac
 type MessageDict = Record<string, MessageEntry>;
 
 // Keys are restricted to the key set of the generated en/messages.json (typos in key names are caught at compile time)
-export type MessageName = keyof typeof en;
+type MessageName = keyof typeof en;
 
 // Dictionary. initI18n() sets it here once loading completes. While initI18n() hasn't been called or all locales failed,
 // it stays empty and t() just returns "", the same as Chrome
