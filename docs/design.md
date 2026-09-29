@@ -43,6 +43,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 - Clicking a bird (Garden) or a row (Perch, Recent activity) jumps to the Ghostty pane where that claude / codex is running. A chick's row jumps to its parent's pane
 - Mapping: session → pid (see "Removing birds of ended sessions" for how each agent's pid is found) → tty from `ps` → `tty of terminal` in Ghostty's AppleScript, then `focus` + `activate`
+- A conversation handed over to another session (`continued-in`, see "Removing birds of ended sessions") can run in a Claude Code background process whose tty isn't a Ghostty pane. When Ghostty doesn't have the new session's tty, the jump tries the sessions it came from in turn (their old process still shows the conversation)
 - Sessions whose pid can't be found do nothing on click
 - In the Garden, releasing after moving less than 4px is a click (left button only); anything more is a drag
 - Clickable elements get a pointer cursor. No hover hint is shown

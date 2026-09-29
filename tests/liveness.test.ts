@@ -30,6 +30,10 @@ const isAlive = (pid: number) => {
   }
 };
 
+// focus_session calls from focusSession, and what each sessionId answers (Rust's focus_session result strings)
+const focusCalls: string[] = [];
+const focusResults = new Map<string, string>();
+
 mock.module("@tauri-apps/api/core", () => ({
   invoke: async (cmd: string, args: Record<string, never>) => {
     switch (cmd) {
@@ -80,6 +84,9 @@ mock.module("@tauri-apps/api/core", () => ({
         return false;
       case "log":
         return;
+      case "focus_session":
+        focusCalls.push(args.sessionId);
+        return focusResults.get(args.sessionId) ?? "no session file";
       default:
         throw `unmocked ${cmd}`;
     }
@@ -88,7 +95,7 @@ mock.module("@tauri-apps/api/core", () => ({
 
 const { NativeDirectoryHandle } = await import("../src/lib/native-fs.ts");
 const { scanSessions } = await import("../src/lib/sessions.ts");
-const { focusTargetOf } = await import("../src/lib/ghostty.ts");
+const { focusTargetOf, focusSession } = await import("../src/lib/ghostty.ts");
 type Roots = Parameters<typeof scanSessions>[0];
 
 const base = fs.mkdtempSync(path.join(os.tmpdir(), "tomarigi-test-"));
@@ -175,6 +182,32 @@ describe("Claude Code", () => {
       line({ type: "continued-in", timestamp: iso(0), sessionId: sid, continuedInSessionId: "55555555-0000-4000-8000-000000000005" }),
     );
     expect((await scanTwice(fx.roots)).views).toEqual([]);
+  });
+
+  test("clicking the session a conversation was handed over to jumps to the pane of the process it came from", async () => {
+    const oldSid = "66666666-0000-4000-8000-000000000006";
+    const newSid = "77777777-0000-4000-8000-000000000007";
+    const fx = claudeFixture("jump", oldSid, 2 * MIN);
+    // The old process stays alive after the handover and keeps showing the conversation in its pane
+    const oldProc = startProcess();
+    fx.live(oldProc.pid!);
+    fs.appendFileSync(
+      fx.transcript,
+      line({ type: "continued-in", timestamp: iso(0), sessionId: oldSid, continuedInSessionId: newSid }),
+    );
+    await scanSessions(fx.roots);
+    // The new session runs in a background process whose tty Ghostty doesn't have; the old process's pane shows it
+    focusResults.set(newSid, "pid=2 tty=/dev/ttys003 NOT FOUND");
+    focusResults.set(oldSid, "pid=1 tty=/dev/ttys002 front=/dev/ttys002");
+    focusCalls.length = 0;
+    await focusSession(`jump/-tmp-jump/${newSid}.jsonl`, fx.roots);
+    expect(focusCalls).toEqual([newSid, oldSid]);
+
+    // When the new session's own pane is found, it stops there
+    focusResults.set(newSid, "pid=2 tty=/dev/ttys003 front=/dev/ttys003");
+    focusCalls.length = 0;
+    await focusSession(`jump/-tmp-jump/${newSid}.jsonl`, fx.roots);
+    expect(focusCalls).toEqual([newSid]);
   });
 
   test("a chick without a completion record stays however long it is idle, and leaves once completion is recorded", async () => {

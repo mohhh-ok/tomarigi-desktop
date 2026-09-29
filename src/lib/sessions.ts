@@ -410,6 +410,18 @@ function inNeverSeenGrace(id: string, now: number): boolean {
   return appearedAt !== undefined && now - appearedAt <= NEVER_SEEN_GRACE_MS && !recentlyEndedAt.has(id);
 }
 
+// sessionId a conversation was handed over to (TailInfo.continuedIn) → sessionId it came from. Rebuilt on every
+// scan. The new session can run in a Claude Code background process whose tty isn't a Ghostty pane, while the
+// pane that shows it is still the old process, so jumping falls back along this (lib/ghostty.ts)
+let continuedFrom = new Map<string, string>();
+
+/** Sessions the conversation came from, newest first (A → B → C gives [B, A] for C) */
+export function predecessorsOf(sessionId: string): string[] {
+  const out: string[] = [];
+  for (let id = continuedFrom.get(sessionId); id && !out.includes(id); id = continuedFrom.get(id)) out.push(id);
+  return out;
+}
+
 function sessionIdOfViewId(id: string): string {
   const file = id.split("/")[2] ?? "";
   return file.endsWith(".jsonl") ? file.slice(0, -".jsonl".length) : file;
@@ -706,6 +718,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   // ids of sessions whose tail was read but which were excluded from display (sdk-cli, Codex internal rollouts).
   // They aren't in found, but pruning them from tailCache would re-read them every 3 seconds, so keep them
   const skippedIds = new Set<string>();
+  const nextContinuedFrom = new Map<string, string>();
 
   // Processes alive now. Read before walking the folders: which sessions are candidates for birds is decided from
   // them, not from how recently a transcript was written (see the NEVER_SEEN_GRACE_MS comment)
@@ -754,6 +767,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
             // Handed over to another session (TailInfo.continuedIn). The new session has its own transcript and
             // bird; the old process may stay alive, but this conversation no longer moves here
             if (tail.continuedIn) {
+              nextContinuedFrom.set(tail.continuedIn, sessionIdOfViewId(id));
               skippedIds.add(id);
               continue;
             }
@@ -831,6 +845,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
     }
   }
 
+  continuedFrom = nextContinuedFrom;
   // Remove sessions whose process has ended (together with their chicks) from display (see the
   // NEVER_SEEN_GRACE_MS comment). Their tail has been read, so add them to skippedIds to keep them in tailCache
   for (const [id, at] of recentlyEndedAt) if (now - at > NEVER_SEEN_GRACE_MS) recentlyEndedAt.delete(id);

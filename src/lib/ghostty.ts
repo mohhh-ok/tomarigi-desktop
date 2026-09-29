@@ -6,7 +6,7 @@
 // mock) does nothing.
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./fsa";
-import { codexDirOf, codexThreadIdOf, configDirOf } from "./sessions";
+import { codexDirOf, codexThreadIdOf, configDirOf, predecessorsOf } from "./sessions";
 
 export type FocusTarget =
   | {
@@ -44,7 +44,13 @@ export async function focusSession(id: string, roots: RootEntry[]): Promise<void
   if (!target) return;
   if (target.kind === "codex") {
     await invoke("focus_codex", { codexDir: target.codexDir, threadId: target.threadId });
-  } else {
-    await invoke("focus_session", { configDir: target.configDir, sessionId: target.sessionId });
+    return;
+  }
+  // A conversation handed over to another session may run in a Claude Code background process whose tty isn't
+  // a Ghostty pane; the pane showing it is the process of a session it came from, so try those in turn.
+  // focus_session returns "front=<tty>" only when Ghostty had that tty
+  for (const sessionId of [target.sessionId, ...predecessorsOf(target.sessionId)]) {
+    const result = await invoke<string>("focus_session", { configDir: target.configDir, sessionId });
+    if (result.startsWith("pid=") && result.includes(" front=")) return;
   }
 }
