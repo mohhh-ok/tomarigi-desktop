@@ -3,14 +3,14 @@
 // For the same reason as garden-layout.ts (keeping zero permissions; see the comment at the top of garden-layout.ts),
 // this uses the "tomarigi" DB / "kv" store through idb instead of chrome.storage.
 //
-// The key is the project identifier within the data source (same vocabulary as SessionView.slug in lib/sessions.ts).
+// The key is the project identifier within the data source (same vocabulary as SessionView.slug in lib/session-types.ts).
 // rootId isn't part of the key — when the same project path is seen from several roots,
 // the assignment is shared (intended behavior).
 //
 // This is the only definition (source of truth) of IconSetId. The images themselves (WebP imports) are
 // entrypoints/perch's concern (lib is the logic layer and can't depend on entrypoints/perch's asset
 // imports), but "which IDs exist" is shared vocabulary needed by both persistence (validation, resolving defaults)
-// and display, so it's kept in the same place as BirdState (lib/sessions.ts).
+// and display, so it's kept in the same place as BirdState (lib/session-types.ts).
 // entrypoints/perch/icon-sets.ts imports this type and builds the image table.
 
 import { openDB, type IDBPDatabase } from "idb";

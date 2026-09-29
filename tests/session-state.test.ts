@@ -1,18 +1,13 @@
-// Pins the current behavior of the machine-state and done-event rules in lib/sessions.ts (the expected values are
-// what the code does today, not a spec). Pure functions only; the liveness rules run through scanSessions in
-// liveness.test.ts.
+// Pins the current behavior of the machine-state and done-event rules of the session scan (lib/sessions.ts; the
+// expected values are what the code does today, not a spec). Pure functions only; the liveness rules run through
+// scanSessions in liveness.test.ts.
 import { describe, expect, test } from "bun:test";
 import type { TailEvent, TailInfo, TailKind } from "../src/lib/transcript.ts";
-import type { BirdState, ChickView } from "../src/lib/sessions.ts";
-import {
-  deriveDoneEvent,
-  deriveSdkChickState,
-  deriveState,
-  escalateWithChicks,
-  extractQuestion,
-  formatSnippet,
-  resolveChickDoneSignalAt,
-} from "../src/lib/sessions.ts";
+import type { BirdState, ChickView } from "../src/lib/session-types.ts";
+import { deriveSdkChickState, deriveState, escalateWithChicks } from "../src/lib/bird-state.ts";
+import { deriveDoneEvent } from "../src/lib/session-events.ts";
+import { resolveChickDoneSignalAt } from "../src/lib/session-chicks.ts";
+import { extractQuestion, formatSnippet } from "../src/lib/session-snippet.ts";
 
 const SEC = 1_000;
 const MIN = 60_000;

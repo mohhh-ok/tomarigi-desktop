@@ -12,7 +12,8 @@ interface RawEntry {
 }
 
 function notFound(path: string): DOMException {
-  // sessions.ts treats a DOMException NotFoundError as "doesn't exist, skip it"
+  // The session scan (lib/codex-rollout.ts, lib/session-chicks.ts) treats a DOMException NotFoundError as
+  // "doesn't exist, skip it"
   return new DOMException(`not found: ${path}`, "NotFoundError");
 }
 
