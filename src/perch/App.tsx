@@ -1,86 +1,36 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { MdBugReport, MdClose, MdSettings, MdVolumeUp } from "react-icons/md";
+import { t } from "@/lib/i18n";
+import { chirpDone, chirpWaiting, primeAudio } from "@/lib/chirp";
 import {
-  MdBugReport,
-  MdCheckCircle,
-  MdClose,
-  MdContentCopy,
-  MdSettings,
-  MdVolumeUp,
-} from "react-icons/md";
-import { t, uiLanguage } from "@/lib/i18n";
-import { summarizeTurnLine } from "@/lib/summarize";
-import { lastSentence } from "@/lib/last-sentence";
-import { chirpDone, chirpWaiting, primeAudio, setChirpVolume } from "@/lib/chirp";
-import {
-  deleteAiProvider,
-  deleteApiKey,
-  initApiKeys,
-  loadActiveAiProvider,
-  loadAiProvider,
-  loadApiKeyStatus,
-  loadChirpVolume,
-  loadMuted,
   loadRoots,
-  loadVoiceEnabled,
-  loadVoiceVolume,
   pickNewRoot,
   queryRead,
-  resolveAiProvider,
-  saveAiProvider,
-  saveApiKey,
-  saveChirpVolume,
-  saveMuted,
   saveRoots,
-  saveVoiceEnabled,
-  saveVoiceVolume,
   type RootEntry,
   type RootKind,
-  type AiProvider,
-  type ApiKeyProvider,
 } from "@/lib/fsa";
-import {
-  loadIconSetAssignments,
-  saveIconSetAssignments,
-  type IconSetAssignments,
-  type IconSetId,
-} from "@/lib/icon-set-store";
 import { focusSession, focusTargetOf } from "@/lib/ghostty";
-import { testJudgeConnection, type JudgeErrorKind } from "@/lib/judge";
-import { testOpenAiConnection } from "@/lib/openai-judge";
-import {
-  judgeAbuse,
-  judgeAsking,
-  isAngry,
-  testTypeSafeConnection,
-  type AngerJudgement,
-  type AskJudgement,
-} from "@/lib/jev";
-import {
-  recordAngerJudgement,
-  recordAskJudgement,
-  type SessionEvent,
-  type SessionView,
-} from "@/lib/sessions";
-import { cancelSpeech, setVoiceVolume, speakDoneEvent, speakEvent } from "@/lib/voice";
+import { isAngry, type AskJudgement } from "@/lib/jev";
+import type { SessionEvent, SessionView } from "@/lib/sessions";
+import { speakDoneEvent, speakEvent } from "@/lib/voice";
 import DebugApp from "./DebugApp";
 import { Garden } from "./garden";
 import { bubbleText } from "./bubble";
-import {
-  DEFAULT_ICON_SET,
-  ICON_SET_IDS,
-  ICON_SET_LABEL,
-  ICON_SETS,
-  resolveIconSet,
-} from "./icon-sets";
 import { type PerchSource } from "./source";
 import { EVENT, EventIcon } from "./event-kind";
 import { EventFeed } from "./event-feed";
 import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
 import { useGardenFade } from "./garden-fade";
+import { AiKeySettings } from "./settings/ai-key-settings";
+import { IconSetSettings, type IconSetRow } from "./settings/icon-set-settings";
+import { RootAddDialog } from "./settings/root-add-dialog";
+import { RootManager, type Editing } from "./settings/root-manager";
+import { useSettings } from "./use-settings";
+import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 
 const POLL_MS = 3_000;
 
@@ -105,38 +55,6 @@ type Tab = "perch" | "events" | "garden";
 // moved by its top bar). Excludes clickable controls, text inputs, birds (garden drag), and scrolling lists
 const NO_WINDOW_DRAG =
   "button, input, select, textarea, a, label, kbd, code, .garden-node, .bird, .chick, .event-card, .debug-overlay, .mock-panel, .root-add-overlay";
-
-interface Editing {
-  id: string;
-  draft: string;
-}
-
-// One row shown in IconSetSettings (issue #14). running=false is a row "not running now but with a saved
-// assignment" (shown dimmed; see IconSetSettings)
-interface IconSetRow {
-  slug: string;
-  label: string;
-  running: boolean;
-}
-
-// Display state of the connection test button. reason is a technical identifier (kind) embedded as is into
-// $REASON$ of byokTestResultFailure, and is not localized (treated like an HTTP status).
-// The key isn't only for judging, so the type name isn't limited to Judge either (JudgeErrorKind itself
-// just reuses the existing name in lib/judge.ts)
-/** Identifies a turn for the Jev verdict. Same basis as the done event key (sessionId + time of the last response) */
-function turnKey(sessionId: string, at: number): string {
-  return `${sessionId}:${at}`;
-}
-
-// TypeSafe's official site (linked from the settings description)
-const TYPESAFE_SITE_URL = "https://typesafe.ai";
-
-type ApiKeyTestState =
-  | { phase: "idle" }
-  | { phase: "testing" }
-  | { phase: "success" }
-  | { phase: "failure"; reason: JudgeErrorKind }
-  | { phase: "no-key" };
 
 export default function App({
   source,
@@ -169,42 +87,30 @@ export default function App({
   }, [phase]);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [addMessage, setAddMessage] = useState<string | null>(null);
-  const [muted, setMuted] = useState(false);
-  const [chirpVolume, setChirpVolumeState] = useState(1);
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [voiceVolume, setVoiceVolumeState] = useState(1);
   const [windowMode, setWindowMode] = useWindowMode();
-  // API keys are a setting shared by the done readout summary (speakDoneEvent) and the connection test, so the name isn't limited to judge
-  const [aiKeySet, setAiKeySet] = useState<Record<ApiKeyProvider, boolean>>({
-    anthropic: false,
-    openai: false,
-    typesafe: false,
-  });
-  const [aiKeyTestState, setAiKeyTestState] = useState<Record<ApiKeyProvider, ApiKeyTestState>>({
-    anthropic: { phase: "idle" },
-    openai: { phase: "idle" },
-    typesafe: { phase: "idle" },
-  });
-  // Jev verdict for needs reply (lib/jev.ts). Keyed by turn (turnKey). Turns whose check has started go into
-  // askRequestedRef and aren't re-requested on every poll. Turns that leave the screen are dropped
-  const [askJudgements, setAskJudgements] = useState<Record<string, AskJudgement>>({});
-  const askRequestedRef = useRef(new Set<string>());
-  const typeSafeKeySetRef = useRef(false);
-  // Jev abuse verdict for the anger mark (docs/design.md "Anger mark for abuse toward the AI"). Keyed by session id,
-  // holding the verdict of the latest judged user message, so the mark stays until the next message is judged.
-  // angerRequestedRef remembers the time of the message last sent per session
-  const [angerJudgements, setAngerJudgements] = useState<
-    Record<string, { at: number; anger: AngerJudgement }>
-  >({});
-  const angerRequestedRef = useRef(new Map<string, number>());
-  useEffect(() => {
-    typeSafeKeySetRef.current = aiKeySet.typesafe;
-  }, [aiKeySet.typesafe]);
-  const [aiProvider, setAiProvider] = useState<AiProvider | null>(null);
-  // Per-project icon set assignments (issue #14). A slug → {set, label} map.
-  // Perch/Garden/IconSetSettings look up this map via resolveIconSet (lib/icon-set-store.ts)
-  // and fall back to DEFAULT_ICON_SET when there is no assignment
-  const [iconSetAssignments, setIconSetAssignments] = useState<IconSetAssignments>({});
+  const {
+    muted,
+    mutedRef,
+    chirpVolume,
+    voiceEnabled,
+    voiceEnabledRef,
+    voiceVolume,
+    aiKeySet,
+    aiKeyTestState,
+    aiProvider,
+    iconSetAssignments,
+    loadSettings,
+    toggleMuted,
+    toggleVoiceEnabled,
+    changeVoiceVolume,
+    changeChirpVolume,
+    saveAiKey,
+    removeAiKey,
+    selectAiProvider,
+    runAiKeyTest,
+    assignIconSet,
+  } = useSettings();
+  const { requestJudgements, displaySessions } = useTurnJudgements(sessions, aiKeySet);
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
   // it is treated as an in-page dialog opened and closed by this state alone
   const [showDebug, setShowDebug] = useState(
@@ -212,8 +118,6 @@ export default function App({
   );
   const [rootDialogOpen, setRootDialogOpen] = useState(false);
   const closeDebug = useCallback(() => setShowDebug(false), []);
-  const mutedRef = useRef(muted);
-  const voiceEnabledRef = useRef(voiceEnabled);
   const scanBusyRef = useRef(false); // Prevents overlapping runs when a scan exceeds POLL_MS (prevents double chirps)
   // issue #6: every chirp fires from ScanResult.events (the old state-edge detection was removed).
   // Set of observed event keys. Remembers events that already chirped (or were judged for chirping) so the
@@ -225,14 +129,6 @@ export default function App({
   // for new firings and chirping all at once
   const firstScanRef = useRef(true);
   const scanSignatureRef = useRef("");
-
-  useEffect(() => {
-    mutedRef.current = muted;
-  }, [muted]);
-
-  useEffect(() => {
-    voiceEnabledRef.current = voiceEnabled;
-  }, [voiceEnabled]);
 
   useEffect(() => {
     void (async () => {
@@ -247,34 +143,7 @@ export default function App({
         );
         setPerms(Object.fromEntries(entries));
       }
-      setMuted(await loadMuted());
-      const cVolume = await loadChirpVolume();
-      setChirpVolumeState(cVolume);
-      setChirpVolume(cVolume);
-      setVoiceEnabled(await loadVoiceEnabled());
-      const volume = await loadVoiceVolume();
-      setVoiceVolumeState(volume);
-      setVoiceVolume(volume);
-      // Rust holds the keys (docs/design.md "BYOK API keys"). After migrating keys an earlier version left in IndexedDB
-      // (the keychain version) and handing over from dev's IndexedDB, it only asks whether each key is saved
-      try {
-        await initApiKeys();
-      } catch (e) {
-        console.warn("[tomarigi] failed to initialize API keys", e);
-      }
-      const [keyStatus, preferredProvider] = await Promise.all([loadApiKeyStatus(), loadAiProvider()]);
-      // Log whether each key is saved (a boolean only). Key values are never received or printed
-      void invoke("log", {
-        line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} typesafe=${keyStatus.typesafe}`,
-      });
-      const resolvedProvider = resolveAiProvider(preferredProvider, keyStatus.anthropic, keyStatus.openai);
-      setAiKeySet(keyStatus);
-      setAiProvider(resolvedProvider ?? null);
-      // Inconsistencies from old data or from deleting the key in use are normalized once to the available side.
-      if (resolvedProvider && resolvedProvider !== preferredProvider) {
-        await saveAiProvider(resolvedProvider);
-      }
-      setIconSetAssignments(await loadIconSetAssignments());
+      await loadSettings();
       setPhase("ready");
     })();
   }, []);
@@ -299,122 +168,6 @@ export default function App({
     };
     document.addEventListener("pointerdown", onDown);
     return () => document.removeEventListener("pointerdown", onDown);
-  }, []);
-
-  // Summarize the last response of a stopped turn into speech bubble text once, with BYOK (OpenAI / Anthropic)
-  // (docs/design.md "Speech bubbles"). Nothing is shown without a key.
-  // The result goes into turnLines and is attached as SessionView.summary at render. Once working, reply is gone and it disappears
-  const [turnLines, setTurnLines] = useState<Record<string, string>>({});
-  const turnLineRequestedRef = useRef(new Set<string>());
-  const summaryKeySetRef = useRef(false);
-  useEffect(() => {
-    summaryKeySetRef.current = aiKeySet.anthropic || aiKeySet.openai;
-  }, [aiKeySet.anthropic, aiKeySet.openai]);
-  const requestTurnLines = useCallback((views: SessionView[]) => {
-    const live = new Set<string>();
-    for (const view of views) {
-      // Views that already have a summary (mock) aren't summarized
-      if (!view.reply || view.summary) continue;
-      const key = turnKey(view.id, view.reply.at);
-      live.add(key);
-      if (!summaryKeySetRef.current || turnLineRequestedRef.current.has(key)) continue;
-      turnLineRequestedRef.current.add(key);
-      const { project, reply } = view;
-      void (async () => {
-        const provider = await loadActiveAiProvider();
-        if (!provider) return;
-        const result = await summarizeTurnLine(provider, {
-          ui_language: uiLanguage(),
-          assistant_text: reply.text,
-        });
-        const line = result.ok && typeof result.verdict.line === "string" ? result.verdict.line.trim() : "";
-        void invoke("log", {
-          line: `[bubble] ${result.ok ? `ok len=${line.length}` : `error=${result.kind}`} ${project}`,
-        });
-        if (!line) return;
-        setTurnLines((current) =>
-          turnLineRequestedRef.current.has(key) ? { ...current, [key]: line } : current,
-        );
-      })();
-    }
-    for (const key of turnLineRequestedRef.current) {
-      if (!live.has(key)) turnLineRequestedRef.current.delete(key);
-    }
-    setTurnLines((current) => {
-      const stale = Object.keys(current).filter((key) => !live.has(key));
-      if (stale.length === 0) return current;
-      const next = { ...current };
-      for (const key of stale) delete next[key];
-      return next;
-    });
-  }, []);
-
-  // Ask Jev once about a stopped turn (done / dozing with a reply). The done chirp and readout don't wait
-  // for it. The result goes into askJudgements and is attached as SessionView.ask at render
-  const requestAskJudgements = useCallback((views: SessionView[]) => {
-    const live = new Set<string>();
-    for (const view of views) {
-      // Views that already have ask (mock) aren't sent to Jev
-      if (!view.reply || view.ask) continue;
-      const key = turnKey(view.id, view.reply.at);
-      live.add(key);
-      if (!typeSafeKeySetRef.current || askRequestedRef.current.has(key)) continue;
-      askRequestedRef.current.add(key);
-      const { id, project, reply } = view;
-      setAskJudgements((current) => ({ ...current, [key]: { status: "pending" } }));
-      void (async () => {
-        const ask: AskJudgement = await judgeAsking(reply.text);
-        setAskJudgements((current) => (key in current ? { ...current, [key]: ask } : current));
-        recordAskJudgement(id, reply.at, ask);
-        void invoke("log", {
-          line: `[jev] ${ask.status} p=${ask.probability?.toFixed(2) ?? "-"}${ask.errorKind ? ` error=${ask.errorKind}` : ""} ${project}`,
-        });
-      })();
-    }
-    for (const key of askRequestedRef.current) {
-      if (!live.has(key)) askRequestedRef.current.delete(key);
-    }
-    setAskJudgements((current) => {
-      const stale = Object.keys(current).filter((key) => !live.has(key));
-      if (stale.length === 0) return current;
-      const next = { ...current };
-      for (const key of stale) delete next[key];
-      return next;
-    });
-  }, []);
-
-  // Send each new user message to Jev right when it appears (separately from the "?" verdict, which waits for the
-  // turn to stop). The previous verdict stays shown until the new one comes back
-  const requestAngerJudgements = useCallback((views: SessionView[]) => {
-    const live = new Set<string>();
-    for (const view of views) {
-      live.add(view.id);
-      // Views that already have anger (mock) aren't sent to Jev
-      if (!view.userMessage || view.anger) continue;
-      const { id, project, userMessage } = view;
-      if (!typeSafeKeySetRef.current || angerRequestedRef.current.get(id) === userMessage.at) continue;
-      angerRequestedRef.current.set(id, userMessage.at);
-      void (async () => {
-        const anger = await judgeAbuse(userMessage.text);
-        setAngerJudgements((current) =>
-          (current[id]?.at ?? -1) > userMessage.at ? current : { ...current, [id]: { at: userMessage.at, anger } },
-        );
-        recordAngerJudgement(id, userMessage.at, anger);
-        void invoke("log", {
-          line: `[jev] anger ${anger.status} p=${anger.probability?.toFixed(2) ?? "-"}${anger.errorKind ? ` error=${anger.errorKind}` : ""} ${project}`,
-        });
-      })();
-    }
-    for (const id of angerRequestedRef.current.keys()) {
-      if (!live.has(id)) angerRequestedRef.current.delete(id);
-    }
-    setAngerJudgements((current) => {
-      const stale = Object.keys(current).filter((id) => !live.has(id));
-      if (stale.length === 0) return current;
-      const next = { ...current };
-      for (const id of stale) delete next[id];
-      return next;
-    });
   }, []);
 
   useEffect(() => {
@@ -482,9 +235,7 @@ export default function App({
         }
         seenEventKeysRef.current = new Set(nextEvents.map((e) => e.key));
         firstScanRef.current = false;
-        requestAskJudgements(views);
-        requestAngerJudgements(views);
-        requestTurnLines(views);
+        requestJudgements(views);
         setSessions(views);
         setBrokenIds(broken);
         setEvents(nextEvents);
@@ -563,122 +314,11 @@ export default function App({
     await persistRoots(next);
   }, [editing, roots, persistRoots]);
 
-  const toggleMuted = useCallback(() => {
-    const next = !muted;
-    setMuted(next);
-    void saveMuted(next);
-  }, [muted]);
-
-  const toggleVoiceEnabled = useCallback(() => {
-    const next = !voiceEnabled;
-    setVoiceEnabled(next);
-    void saveVoiceEnabled(next);
-    // OFF is an "I want quiet" action, so speech that is playing or queued stops immediately too
-    if (!next) cancelSpeech();
-  }, [voiceEnabled]);
-
-  // Slider (input shown as 0–100, internal value 0–1). The module variable in lib/voice.ts is read at the
-  // "moment" of speaking, so here it is enough to apply it with setVoiceVolume right along with the state
-  // update (the volume changes from the next utterance)
-  const changeVoiceVolume = useCallback((next: number) => {
-    setVoiceVolumeState(next);
-    setVoiceVolume(next);
-    void saveVoiceVolume(next);
-  }, []);
-
-  // Volume for chirps. Like masterGain in lib/chirp.ts it uses a module variable, so changes are applied
-  // immediately with setChirpVolume (the preview buttons go through the same path, so a preview right after
-  // moving the slider reflects it immediately)
-  const changeChirpVolume = useCallback((next: number) => {
-    setChirpVolumeState(next);
-    setChirpVolume(next);
-    void saveChirpVolume(next);
-  }, []);
-
-  /** After saving, the draft isn't kept anywhere (no plaintext key left in state) */
-  // true if saved. On failure (can't write to the keychain, etc.) it returns false so the settings row shows the failure
-  const saveAiKey = useCallback(async (provider: ApiKeyProvider, draft: string): Promise<boolean> => {
-    const trimmed = draft.trim();
-    if (!trimmed) return false;
-    try {
-      await saveApiKey(provider, trimmed);
-    } catch (e) {
-      void invoke("log", { line: `[keys] save failed ${provider}: ${String(e).slice(0, 120)}` }).catch(() => {});
-      return false;
-    }
-    setAiKeySet((current) => ({ ...current, [provider]: true }));
-    setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "idle" } }));
-    // The summary provider auto-selects the first key saved. If one is already selected, saving a second doesn't switch it.
-    // TypeSafe isn't used for summaries, so it is excluded
-    if (provider !== "typesafe" && !aiProvider) {
-      await saveAiProvider(provider);
-      setAiProvider(provider);
-    }
-    return true;
-  }, [aiProvider]);
-
-  const removeAiKey = useCallback(async (provider: ApiKeyProvider) => {
-    await deleteApiKey(provider);
-    const nextKeySet = { ...aiKeySet, [provider]: false };
-    setAiKeySet(nextKeySet);
-    setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "idle" } }));
-    if (aiProvider === provider) {
-      const nextProvider = resolveAiProvider(
-        undefined,
-        nextKeySet.anthropic,
-        nextKeySet.openai,
-      );
-      setAiProvider(nextProvider ?? null);
-      if (nextProvider) await saveAiProvider(nextProvider);
-      else await deleteAiProvider();
-    }
-  }, [aiKeySet, aiProvider]);
-
-  const selectAiProvider = useCallback(async (provider: AiProvider) => {
-    await saveAiProvider(provider);
-    setAiProvider(provider);
-  }, []);
-
-  const runAiKeyTest = useCallback(async (provider: ApiKeyProvider) => {
-    if (!(await loadApiKeyStatus())[provider]) {
-      setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "no-key" } }));
-      return;
-    }
-    setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "testing" } }));
-    const result = await (provider === "typesafe"
-      ? testTypeSafeConnection()
-      : provider === "openai"
-        ? testOpenAiConnection()
-        : testJudgeConnection());
-    setAiKeyTestState((current) => ({
-      ...current,
-      [provider]: result.ok ? { phase: "success" } : { phase: "failure", reason: result.kind },
-    }));
-  }, []);
-
   // Preview the three chirps individually (played in a row, you can't tell which sound is which state)
   const previewChirp = useCallback((chirp: () => void) => {
     primeAudio();
     chirp();
   }, []);
-
-  /** Changes the assignment for one project. If set is DEFAULT_ICON_SET (birds), the entry itself is
-   * deleted (the semantics "choosing birds = no assignment"; see lib/icon-set-store.ts). Otherwise it
-   * upserts {set, label} (label is a snapshot of the display name at the time of selection).
-   * Changes are saved and applied to state immediately (same as other settings) */
-  const assignIconSet = useCallback(
-    (slug: string, label: string, set: IconSetId) => {
-      const next = { ...iconSetAssignments };
-      if (set === DEFAULT_ICON_SET) {
-        delete next[slug];
-      } else {
-        next[slug] = { set, label };
-      }
-      setIconSetAssignments(next);
-      void saveIconSetAssignments(next);
-    },
-    [iconSetAssignments],
-  );
 
   // Clicking a bird or row jumps to its Ghostty pane. mock doesn't use roots, so it can't be matched and does nothing
   const onFocusSession = useCallback(
@@ -728,27 +368,6 @@ export default function App({
     return [...running, ...savedOnly];
   }, [sessions, iconSetAssignments]);
 
-  // Attach the Jev verdict only to the bird of the same turn (if the turn changes, turnKey changes and it isn't attached).
-  // mock holds ask directly, so it isn't overwritten
-  const displaySessions = useMemo(() => {
-    // Without a summary key (OpenAI / Anthropic), for a turn where the Jev verdict is needs reply, the last sentence of the
-    // last response goes in the speech bubble (docs/design.md "Speech bubbles"; no AI used)
-    const hasSummaryKey = aiKeySet.anthropic || aiKeySet.openai;
-    return sessions.map((s) => {
-      // The anger mark only works while a TypeSafe key is saved, so deleting the key clears it
-      const anger = s.anger ?? (aiKeySet.typesafe ? angerJudgements[s.id]?.anger : undefined);
-      if (anger && !s.anger) s = { ...s, anger };
-      if (!s.reply) return s;
-      const key = turnKey(s.id, s.reply.at);
-      const ask = s.ask ?? askJudgements[key];
-      return {
-        ...s,
-        ask,
-        summary: s.summary ?? turnLines[key],
-        replyTail: !hasSummaryKey && ask?.status === "asking" ? lastSentence(s.reply.text) : undefined,
-      };
-    });
-  }, [sessions, askJudgements, angerJudgements, turnLines, aiKeySet.anthropic, aiKeySet.openai, aiKeySet.typesafe]);
 
   // So that Recent activity and the garden markers also show a done as needs reply when the Jev verdict for that
   // turn is needs reply, attach the verdict to the done event of the same turn (sessionId + time of the last response)
@@ -942,7 +561,7 @@ export default function App({
           <section className="settings-panel" hidden={!settingsOpen}>
             {/* Watched folder management is the roots/perms subsystem itself, so it is hidden entirely
                 in mock (no substitute). BYOK, volume, and readout settings work as the real thing
-                even in mock (see ApiKeySettings and voice-controls below) */}
+                even in mock (see AiKeySettings and voice-controls below) */}
             {source.usesRoots && (
               <RootManager
                 roots={roots}
@@ -1079,478 +698,5 @@ export default function App({
       {/* Control panel only for the mock source (MockPanel passed by main.tsx) */}
       {extraPanel}
     </main>
-  );
-}
-
-interface RootChoice {
-  kind: RootKind;
-  label: string;
-  path: string;
-  shortcut: string;
-}
-
-function rootChoicesForCurrentPlatform(): RootChoice[] {
-  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
-  const platform = nav.userAgentData?.platform ?? navigator.platform ?? "";
-  const windows = /windows|win32/i.test(platform);
-  const mac = /mac/i.test(platform);
-  const shortcut = mac ? "Cmd+Shift+G" : "Ctrl+L";
-  return [
-    {
-      kind: "claude",
-      label: "Claude Code",
-      path: windows ? String.raw`%USERPROFILE%\.claude\projects` : "~/.claude/projects",
-      shortcut,
-    },
-    {
-      kind: "codex",
-      label: "Codex",
-      path: windows ? String.raw`%USERPROFILE%\.codex\sessions` : "~/.codex/sessions",
-      shortcut,
-    },
-  ];
-}
-
-function RootAddDialog({
-  onClose,
-  onChoose,
-}: {
-  onClose: () => void;
-  onChoose: (kind: RootKind) => void;
-}) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [copiedKind, setCopiedKind] = useState<RootKind | null>(null);
-  const choices = useMemo(rootChoicesForCurrentPlatform, []);
-
-  useEffect(() => {
-    const doc = overlayRef.current?.ownerDocument ?? document;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    doc.addEventListener("keydown", onKeyDown);
-    return () => doc.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
-  useEffect(
-    () => () => {
-      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-    },
-    [],
-  );
-
-  const copyPath = async (choice: RootChoice) => {
-    try {
-      await navigator.clipboard.writeText(choice.path);
-      setCopiedKind(choice.kind);
-      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-      copyTimerRef.current = setTimeout(() => setCopiedKind(null), 1_500);
-    } catch (error) {
-      console.warn("[tomarigi] failed to copy the path to the clipboard", error);
-    }
-  };
-
-  return (
-    <div
-      className="root-add-overlay"
-      ref={overlayRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="root-add-dialog-title"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <div className="root-add-dialog">
-        <div className="root-add-dialog-header">
-          <h2 id="root-add-dialog-title">{t("setupIntro")}</h2>
-          <button
-            className="small"
-            onClick={onClose}
-            aria-label={t("closeButtonAria")}
-            title={t("closeButtonAria")}
-          >
-            <MdClose size={16} />
-          </button>
-        </div>
-        <div className="root-add-choices">
-          {choices.map((choice, index) => (
-            <div key={choice.kind} className="root-add-choice">
-              <button autoFocus={index === 0} onClick={() => onChoose(choice.kind)}>
-                ＋ {choice.label}
-              </button>
-              <span className="root-add-hint">
-                {t("setupPickPrefix")}
-                <kbd>{choice.shortcut}</kbd>
-                {t("setupPickMiddle")}
-                <button
-                  type="button"
-                  className="root-path-copy"
-                  onClick={() => void copyPath(choice)}
-                  aria-label={`${t("copyPathButton")}: ${choice.path}`}
-                  title={`${t("copyPathButton")}: ${choice.path}`}
-                >
-                  <code>{choice.path}</code>
-                  {copiedKind === choice.kind ? (
-                    <MdCheckCircle size={16} aria-hidden="true" />
-                  ) : (
-                    <MdContentCopy size={16} aria-hidden="true" />
-                  )}
-                </button>
-                {t("setupPickSuffix")}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RootManager({
-  roots,
-  perms,
-  brokenIds,
-  editing,
-  addMessage,
-  onRequestAdd,
-  onRemove,
-  onStartEdit,
-  onEditChange,
-  onCommitEdit,
-  onCancelEdit,
-}: {
-  roots: RootEntry[];
-  perms: Record<string, PermissionState>;
-  brokenIds: string[];
-  editing: Editing | null;
-  addMessage: string | null;
-  onRequestAdd: () => void;
-  onRemove: (id: string) => void;
-  onStartEdit: (root: RootEntry) => void;
-  onEditChange: (draft: string) => void;
-  onCommitEdit: () => void;
-  onCancelEdit: () => void;
-}) {
-  // Suppresses the blur that fires right after canceling with Escape from calling onCommitEdit and
-  // committing over it (there is always at most one row being edited, so one shared flag is enough)
-  const suppressBlurRef = useRef(false);
-
-  return (
-    <section className="roots">
-      <h2>{t("rootsHeading")}</h2>
-      <ul className="root-list">
-        {roots.map((root) => {
-          const perm = perms[root.id];
-          const broken = brokenIds.includes(root.id);
-          const isEditing = editing?.id === root.id;
-          return (
-            <li key={root.id} className="root-row">
-              {isEditing ? (
-                <input
-                  className="root-label-input"
-                  autoFocus
-                  value={editing.draft}
-                  placeholder={t("rootLabelPlaceholder")}
-                  onChange={(e) => onEditChange(e.target.value)}
-                  // In browsers where no blur follows Escape, a leftover flag would wrongly swallow the next
-                  // blur commit, so always reset it on the focus that starts editing
-                  onFocus={() => {
-                    suppressBlurRef.current = false;
-                  }}
-                  onBlur={() => {
-                    if (suppressBlurRef.current) {
-                      suppressBlurRef.current = false;
-                      return;
-                    }
-                    onCommitEdit();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") onCommitEdit();
-                    if (e.key === "Escape") {
-                      suppressBlurRef.current = true;
-                      onCancelEdit();
-                    }
-                  }}
-                />
-              ) : (
-                <span className="root-label" title={root.path}>
-                  {root.label}
-                  {/* The label alone doesn't tell what it actually is (which config directory), so the path is added */}
-                  <span className="root-path">{root.path.replace(/^\/Users\/[^/]+/, "~")}</span>
-                </span>
-              )}
-              {/* Folders always watched by default (~/.claude/projects etc.). Can't be removed */}
-              {root.builtin && <span className="badge badge-default">{t("rootDefaultBadge")}</span>}
-              {/* The desktop app has no concept of read permission. Shown only when the folder is missing or unreadable */}
-              {(broken || perm !== "granted") && (
-                <span className="badge badge-error">{t("badgeUnreadable")}</span>
-              )}
-              {!isEditing && (
-                <button className="small" onClick={() => onStartEdit(root)}>
-                  {t("editLabelButton")}
-                </button>
-              )}
-              {root.builtin ? (
-                // Defaults can't be removed. Reserve only the × slot so the label edit button lines up with added rows
-                <button
-                  className="small remove root-remove-placeholder"
-                  aria-hidden="true"
-                  tabIndex={-1}
-                  disabled
-                >
-                  ✕
-                </button>
-              ) : (
-                <button
-                  className="small remove"
-                  onClick={() => onRemove(root.id)}
-                  aria-label={t("removeButtonAria")}
-                >
-                  ✕
-                </button>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      <button onClick={onRequestAdd}>{t("addRootButton")}</button>
-      {addMessage && <p className="add-message">{addMessage}</p>}
-    </section>
-  );
-}
-
-/** All API key settings. The shared description is shown once here; per-provider differences stay inside each row. */
-function AiKeySettings({
-  keySet,
-  selectedProvider,
-  testState,
-  onSaveKey,
-  onDeleteKey,
-  onTest,
-  onSelect,
-}: {
-  keySet: Record<ApiKeyProvider, boolean>;
-  selectedProvider: AiProvider | null;
-  testState: Record<ApiKeyProvider, ApiKeyTestState>;
-  onSaveKey: (provider: ApiKeyProvider, draft: string) => Promise<boolean>;
-  onDeleteKey: (provider: ApiKeyProvider) => void;
-  onTest: (provider: ApiKeyProvider) => void;
-  onSelect: (provider: AiProvider) => void;
-}) {
-  return (
-    <section className="ai-keys">
-      <h2>{t("aiApiKeysHeading")}</h2>
-      <p className="judge-description">{t("aiApiKeysDescription")}</p>
-      <div className="ai-key-provider-list">
-        {(["anthropic", "openai", "typesafe"] as const).map((provider) => (
-          <ApiKeyProviderSettings
-            key={provider}
-            provider={provider}
-            keySet={keySet[provider]}
-            selected={selectedProvider === provider}
-            testState={testState[provider]}
-            onSaveKey={(draft) => onSaveKey(provider, draft)}
-            onDeleteKey={() => onDeleteKey(provider)}
-            onTest={() => onTest(provider)}
-            onSelect={provider === "typesafe" ? undefined : () => onSelect(provider)}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ApiKeyProviderSettings({
-  provider,
-  keySet,
-  selected,
-  testState,
-  onSaveKey,
-  onDeleteKey,
-  onTest,
-  onSelect,
-}: {
-  provider: ApiKeyProvider;
-  keySet: boolean;
-  selected: boolean;
-  testState: ApiKeyTestState;
-  onSaveKey: (draft: string) => Promise<boolean>;
-  onDeleteKey: () => void;
-  onTest: () => void;
-  // Passed only for rows that can be chosen as the summary provider (TypeSafe is only for the needs-reply check, not summaries)
-  onSelect?: () => void;
-}) {
-  // Temporary state held only by the key input before saving. Cleared and discarded after saving (no plaintext left behind)
-  const [draft, setDraft] = useState("");
-  // Whether the input for replacing a saved key is open. The key value isn't shown; you just enter a new one and save
-  const [replacing, setReplacing] = useState(false);
-  // Whether the last save failed. On failure the input is kept and the failure is shown on this row
-  const [saveFailed, setSaveFailed] = useState(false);
-  const heading =
-    provider === "typesafe"
-      ? t("typeSafeApiKeyHeading")
-      : provider === "openai"
-        ? t("openAiApiKeyHeading")
-        : t("aiApiKeyHeading");
-
-  return (
-    <div className={`ai-key-provider ai-key-provider-${provider}`}>
-      <h3>{heading}</h3>
-      {provider === "typesafe" && (
-        <p className="judge-description">
-          {t("typeSafeApiKeyDescription")} {t("typeSafeUserMessageNote")}{" "}
-          {/* Link to the official site so users can see how to get a key. Opens in the external browser, not inside the WebView */}
-          <a
-            href={TYPESAFE_SITE_URL}
-            className="external-link"
-            onClick={(e) => {
-              e.preventDefault();
-              void openUrl(TYPESAFE_SITE_URL).catch(() => window.open(TYPESAFE_SITE_URL, "_blank"));
-            }}
-          >
-            {t("typeSafeSiteLink")}
-          </a>
-        </p>
-      )}
-      <div className="judge-key-row">
-        {keySet && !replacing ? (
-          <>
-            <span className="judge-key-set">{t("byokApiKeySetLabel")}</span>
-            <button className="small" onClick={() => setReplacing(true)}>
-              {t("byokReplaceButton")}
-            </button>
-            <button className="small remove" onClick={onDeleteKey}>
-              {t("byokDeleteButton")}
-            </button>
-          </>
-        ) : (
-          <>
-            <input
-              className="judge-key-input"
-              type="password"
-              autoComplete="off"
-              value={draft}
-              placeholder={heading}
-              aria-label={heading}
-              onChange={(e) => setDraft(e.target.value)}
-            />
-            <button
-              className="small"
-              onClick={() => {
-                void onSaveKey(draft).then((saved) => {
-                  setSaveFailed(!saved && draft.trim() !== "");
-                  if (!saved) return;
-                  setDraft("");
-                  setReplacing(false);
-                });
-              }}
-            >
-              {t("byokSaveButton")}
-            </button>
-          </>
-        )}
-      </div>
-      {saveFailed && (
-        <p className="judge-status judge-status-error" role="alert">
-          {t("byokSaveFailedMessage")}
-        </p>
-      )}
-      {keySet && onSelect && (
-        <label className="ai-provider-choice">
-          <input
-            type="radio"
-            name="summary-provider"
-            checked={selected}
-            onChange={onSelect}
-          />
-          {t("byokUseForSummaryLabel")}
-        </label>
-      )}
-      {/* Disabled when no key is set, to prevent an action that would only produce a no-key result */}
-      <button className="small" onClick={onTest} disabled={!keySet}>
-        {t("byokTestButton")}
-      </button>
-      {testState.phase === "testing" && (
-        <p className="judge-status">{t("byokTestingLabel")}</p>
-      )}
-      {testState.phase === "success" && (
-        <p className="judge-status judge-status-ok">
-          {t("byokTestResultSuccess")}
-        </p>
-      )}
-      {testState.phase === "failure" && (
-        <p className="judge-status judge-status-error">
-          {t("byokTestResultFailure", testState.reason)}
-        </p>
-      )}
-      {testState.phase === "no-key" && (
-        <p className="judge-status judge-status-error">
-          {t("byokNoKeyMessage")}
-        </p>
-      )}
-    </div>
-  );
-}
-
-/**
- * Per-project icon set assignments (issue #14). Row = project (deduplicated by slug); each press of the
- * toggle button at the right end advances to the next set in ICON_SET_IDS order (after frog it wraps
- * around to birds). The rows are the union of "projects in the current sessions" ∪ "projects with only a
- * saved assignment left" (iconSetRows, computed in App.tsx). Rows not running are dimmed to tell them apart
- * (icon-set-row-idle). Switching back to "birds" deletes the assignment entry itself (the semantics
- * no entry = birds; see resolveIconSet in lib/icon-set-store.ts). Changes are saved and applied to state
- * immediately (like RootManager etc., there is no dedicated save button).
- */
-function IconSetSettings({
-  rows,
-  assignments,
-  onChange,
-}: {
-  rows: IconSetRow[];
-  assignments: IconSetAssignments;
-  onChange: (slug: string, label: string, set: IconSetId) => void;
-}) {
-  return (
-    <section className="icon-sets">
-      <h2>{t("iconSetHeading")}</h2>
-      {rows.length === 0 ? (
-        <p className="icon-set-empty">{t("iconSetEmpty")}</p>
-      ) : (
-        <ul className="icon-set-list">
-          {rows.map((row) => {
-            const set = resolveIconSet(assignments, row.slug);
-            const nextSet = ICON_SET_IDS[(ICON_SET_IDS.indexOf(set) + 1) % ICON_SET_IDS.length];
-            return (
-              <li
-                key={row.slug}
-                className={row.running ? "icon-set-row" : "icon-set-row icon-set-row-idle"}
-              >
-                <span className="icon-set-project" title={row.slug}>
-                  {row.label}
-                </span>
-                <img
-                  className="icon-set-glyph"
-                  src={ICON_SETS[set].working}
-                  width={20}
-                  height={20}
-                  alt=""
-                  title={ICON_SET_LABEL[set]}
-                  draggable={false}
-                />
-                <button
-                  type="button"
-                  className="small icon-set-toggle"
-                  aria-label={`${t("iconSetToggleAria")}: ${row.label} (${ICON_SET_LABEL[set]})`}
-                  onClick={() => onChange(row.slug, row.label, nextSet)}
-                >
-                  ⇄
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </section>
   );
 }
