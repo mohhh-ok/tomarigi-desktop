@@ -1,9 +1,8 @@
 // Whether each session's process is alive, and when a bird is removed
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./fsa";
-import type { LiveFoundEntry, LiveSession, SessionView } from "./session-types";
+import type { LiveFoundEntry, LiveSession } from "./session-types";
 import {
-  lastPeerStates,
   missCounts,
   recentlyEndedAt,
   scanState,
@@ -26,16 +25,15 @@ export async function loadLiveSessions(roots: RootEntry[]): Promise<{
   sessions: LiveSession[];
   presentConfigDirs: Set<string>;
   unreliableConfigDirs: Set<string>;
-  unreadable: number;
 }> {
   const configDirs = new Set(roots.filter((r) => r.kind === "claude").map(configDirOf));
   const scans = await Promise.all(
     [...configDirs].map(async (configDir) => {
-      const scan = await invoke<{ present: boolean; sessions: LiveSession[]; reliable: boolean; unreadable: number }>(
+      const scan = await invoke<{ present: boolean; sessions: LiveSession[]; reliable: boolean }>(
         "live_sessions",
         { configDir },
       // A failed call says nothing about the folder: treat it as present but unreliable so shown birds stay
-      ).catch(() => ({ present: true, sessions: [] as LiveSession[], reliable: false, unreadable: 0 }));
+      ).catch(() => ({ present: true, sessions: [] as LiveSession[], reliable: false }));
       return { configDir, ...scan };
     }),
   );
@@ -44,7 +42,6 @@ export async function loadLiveSessions(roots: RootEntry[]): Promise<{
     presentConfigDirs: new Set(scans.filter((s) => s.present).map((s) => s.configDir)),
     // Reads where ps failed or sessions/*.json had an unreadable file. Birds are not removed based on this read
     unreliableConfigDirs: new Set(scans.filter((s) => !s.reliable).map((s) => s.configDir)),
-    unreadable: scans.reduce((n, s) => n + s.unreadable, 0),
   };
 }
 
@@ -174,37 +171,4 @@ export function settleLiveness(
   }
   scanState.trackedIds = new Set(found.map((f) => f.id));
   return endedIds;
-}
-
-/**
- * Per-read record (for investigating fix18). One line per read. Logs birds with watching links, and birds that
- * disappeared or came back since the previous read
- */
-export function logScan(
-  views: SessionView[],
-  live: LiveSession[],
-  unreliableConfigDirs: Set<string>,
-  unreadable: number,
-  endedIds: Set<string>,
-): void {
-  const liveById = new Map(live.map((l) => [l.sessionId, l]));
-  const ids = new Set(views.map((v) => v.id));
-  const short = (id: string) => sessionIdOfViewId(id).slice(0, 8);
-  const gone = [...scanState.lastScanViewIds].filter((id) => !ids.has(id)).map(short);
-  const back = [...ids].filter((id) => !scanState.lastScanViewIds.has(id)).map(short);
-  scanState.lastScanViewIds = ids;
-  const linked = views
-    .filter((v) => v.peers && v.peers.length > 0)
-    .map((v) => {
-      const own = liveById.get(sessionIdOfViewId(v.id));
-      const peers = (v.peers ?? [])
-        .map((p) => `${p.sessionId.slice(0, 8)}(${liveById.get(p.sessionId)?.status ?? "not-live"}/${lastPeerStates.get(p.sessionId)?.state ?? "-"}/${p.active ? "active" : "inactive"}/${p.viewId ? "view" : "noview"}/lastActive=${p.lastActiveAt ? Math.round((Date.now() - p.lastActiveAt) / 1000) + "s" : "-"})`)
-        .join(",");
-      return `${v.project}#${short(v.id)} ${own?.name ?? "?"} live=${own ? own.status : "no"} state=${v.state} since=${Math.round(v.sinceMs / 1000)}s watching=${v.watching ?? "-"} peers=[${peers}]`;
-    });
-  const line =
-    `[scan] live=${live.length} unreliable=[${[...unreliableConfigDirs].join(",")}] unreadable=${unreadable} ` +
-    `ended=[${[...endedIds].map(short).join(",")}] gone=[${gone.join(",")}] back=[${back.join(",")}]\n  ` +
-    (linked.length > 0 ? linked.join("\n  ") : "(no linked)");
-  void invoke("log", { line }).catch(() => {});
 }

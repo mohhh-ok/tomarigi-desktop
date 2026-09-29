@@ -55,14 +55,14 @@ mock.module("@tauri-apps/api/core", () => ({
         });
       case "live_sessions": {
         const override = liveOverride.get(args.configDir);
-        if (override) return { present: true, unreadable: 0, ...override };
+        if (override) return { present: true, ...override };
         const dir = path.join(args.configDir, "sessions");
-        if (!fs.existsSync(dir)) return { present: false, sessions: [], reliable: true, unreadable: 0 };
+        if (!fs.existsSync(dir)) return { present: false, sessions: [], reliable: true };
         const sessions = fs
           .readdirSync(dir)
           .filter((n) => n.endsWith(".json"))
           .map((n) => JSON.parse(fs.readFileSync(path.join(dir, n), "utf8")));
-        return { present: true, sessions: sessions.filter((s) => isAlive(s.pid)), reliable: true, unreadable: 0 };
+        return { present: true, sessions: sessions.filter((s) => isAlive(s.pid)), reliable: true };
       }
       case "live_codex_threads": {
         const dir = path.join(args.codexDir, "thread-writer-locks");
@@ -84,8 +84,6 @@ mock.module("@tauri-apps/api/core", () => ({
       }
       case "scan_peer_names":
         return { names: [], end: 0 };
-      case "scan_log_enabled":
-        return false;
       case "log":
         return;
       case "focus_session":

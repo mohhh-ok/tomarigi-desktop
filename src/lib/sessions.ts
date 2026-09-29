@@ -1,6 +1,5 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
-import { invoke } from "@tauri-apps/api/core";
 import type { NativeDirectoryHandle, NativeFileHandle } from "./native-fs";
 import type { RootEntry } from "./fsa";
 import { watchingCount } from "./watching";
@@ -30,7 +29,6 @@ import {
   inNeverSeenGrace,
   loadLiveCodexThreads,
   loadLiveSessions,
-  logScan,
   sessionIdOfViewId,
   settleLiveness,
 } from "./session-liveness";
@@ -59,7 +57,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
 
   // Processes alive now. Read before walking the folders: which sessions are candidates for birds is decided from
   // them, not from how recently a transcript was written (see the NEVER_SEEN_GRACE_MS comment)
-  const { sessions: liveSessions, presentConfigDirs, unreliableConfigDirs, unreadable } = await loadLiveSessions(roots);
+  const { sessions: liveSessions, presentConfigDirs, unreliableConfigDirs } = await loadLiveSessions(roots);
   const liveSessionIds = new Set(liveSessions.map((l) => l.sessionId));
   const { threadIdsByCodexDir, unreliableCodexDirs } = await loadLiveCodexThreads(roots);
   const listing: RootListing = {
@@ -83,7 +81,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   }
 
   scanState.continuedFrom = nextContinuedFrom;
-  const endedIds = settleLiveness(
+  settleLiveness(
     found,
     skippedIds,
     { liveSessionIds, threadIdsByCodexDir, unreliableConfigDirs, unreliableCodexDirs },
@@ -97,11 +95,6 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   rememberPeerStates(views, watch, now);
 
   views.sort((a, b) => STATE_URGENCY[a.state] - STATE_URGENCY[b.state] || a.sinceMs - b.sinceMs);
-
-  if (scanState.scanLogEnabled === undefined) {
-    scanState.scanLogEnabled = await invoke<boolean>("scan_log_enabled").catch(() => false);
-  }
-  if (scanState.scanLogEnabled) logScan(views, liveSessions, unreliableConfigDirs, unreadable, endedIds);
 
   pruneCaches(found, skippedIds);
   const events = recentEvents(now);

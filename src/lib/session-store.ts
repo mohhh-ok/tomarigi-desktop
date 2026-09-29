@@ -68,8 +68,6 @@ export const codexRolloutPathCache = new Map<string, string>();
 export const scanState = {
   // Log only when the result of resolving link names changes
   lastWatchSignature: "",
-  // Per-read record (for investigating fix18. Written to app-log only when the TOMARIGI_SCAN_LOG env var is set)
-  scanLogEnabled: undefined as boolean | undefined,
   // Birds shown after the previous read (view id). They stay candidates even when this read can't see their process,
   // so that they go through the miss count instead of vanishing on a single unreliable read
   trackedIds: new Set<string>(),
@@ -77,8 +75,6 @@ export const scanState = {
   // scan. The new session can run in a Claude Code background process whose tty isn't a Ghostty pane, while the
   // pane that shows it is still the old process, so jumping falls back along this (lib/ghostty.ts)
   continuedFrom: new Map<string, string>(),
-  // ids that were in views on the previous read (the per-read record uses this to log birds that disappeared or came back)
-  lastScanViewIds: new Set<string>(),
 };
 
 // Persistent event log for debugging (the debug dialog). Unlike sessionEventCache it is not cleared by the
