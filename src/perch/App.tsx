@@ -51,8 +51,8 @@ type Phase = "loading" | "ready";
 // Settings are a separate level (⚙ button → settings view), so they aren't a Tab
 type Tab = "perch" | "events" | "garden";
 
-// Grabbing the window background moves the whole window (the PiP of the tomarigi Chrome extension could only be
-// moved by its top bar). Excludes clickable controls, text inputs, birds (garden drag), and scrolling lists
+// Grabbing the window background moves the whole window. Excludes clickable controls, text inputs, birds (garden
+// drag), and scrolling lists
 const NO_WINDOW_DRAG =
   "button, input, select, textarea, a, label, kbd, code, .garden-node, .bird, .chick, .event-card, .debug-overlay, .mock-panel, .root-add-overlay";
 
@@ -416,8 +416,7 @@ export default function App({
     <main className="page">
       <div className="page-header">
         <h1 className="brand">tomarigi</h1>
-        {/* Mute, debug, settings, and hide must always be visible on every tab, so they sit outside the tabs (in the header).
-            There is no PiP button like the tomarigi Chrome extension has (the app window itself is an always-on-top floating window) */}
+        {/* Mute, debug, settings, and hide must always be visible on every tab, so they sit outside the tabs (in the header) */}
         <div className="header-controls">
           {showTabs && (
             <>
@@ -695,7 +694,7 @@ export default function App({
           }}
         />
       )}
-      {/* Control panel only for the mock source (MockPanel passed by main.tsx) */}
+      {/* Control panel only for the mock source (MockPanel passed by boot.tsx) */}
       {extraPanel}
     </main>
   );

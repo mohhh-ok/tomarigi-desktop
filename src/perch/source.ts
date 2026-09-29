@@ -3,7 +3,7 @@ import { scanSessions, type ScanResult } from "@/lib/sessions";
 
 /**
  * Abstraction of the data source App.tsx uses. The boundary for injecting real data (scanning roots via FileSystemAccess) and
- * mock data (entrypoints/perch/mock.tsx) into App.tsx in the same shape.
+ * mock data (mock.tsx) into App.tsx in the same shape.
  * Introduced so that with ?mock=1 we stop maintaining a separate component that duplicates the real App.tsx shell,
  * and instead run App.tsx itself with a swapped source (one source of truth for the shell).
  */

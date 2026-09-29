@@ -1,7 +1,7 @@
 // Icon sets (issue #14): lets each project (slug) choose a look other than birds (gnome, cat, robot,
 // frog). The IconSetId definition itself, DEFAULT_ICON_SET, persisting assignments, and
 // resolving them (resolveIconSet) live in lib/icon-set-store.ts (lib is the logic layer and
-// can't depend on entrypoints/perch's asset imports, so only the vocabulary "which IDs exist" and
+// can't depend on src/perch's asset imports, so only the vocabulary "which IDs exist" and
 // "how a slug is resolved" lives in lib; this file imports those types and
 // assembles the perch-specific concerns: images (WebP imports) and display labels).
 import { t } from "@/lib/i18n";
@@ -55,8 +55,7 @@ export const ICON_SETS: Record<IconSetId, IconSetSprites> = {
 
 // Display names shown as the title of the sprite next to the toggle button in the settings UI. Like BIRD.label (bird-glyph.tsx),
 // held as strings already resolved with t() at module load (not called every time
-// at the call site). In the fallback case (outside an extension), initI18n() must complete before this module is evaluated
-// (see main.tsx)
+// at the call site). initI18n() must complete before this module is evaluated (see main.tsx)
 export const ICON_SET_LABEL: Record<IconSetId, string> = {
   birds: t("iconSetBirds"),
   gnome: t("iconSetGnome"),

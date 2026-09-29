@@ -278,7 +278,7 @@ button:hover {
 .name {
   min-width: 8em;
   font-weight: 600;
-  /* Can get long with the snippet alongside, so truncate automatically at the PiP width (300px) */
+  /* Can get long with the snippet alongside, so truncate automatically in a narrow window */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -333,7 +333,7 @@ button:hover {
   color: #8d887c;
 }
 
-/* Chronological feed of transition events (experimental). The PiP window is a narrow 300x380, so keep sizes modest */
+/* Chronological feed of transition events (experimental). The window is narrow, so keep sizes modest */
 .event-feed {
   margin-top: 6px;
   padding-top: 8px;
@@ -357,8 +357,7 @@ button:hover {
   overflow-y: auto;
 }
 
-/* Always apply the vertical flow that was for the PiP window in the tomarigi Chrome extension (in the desktop app the
-   window itself is small). #tabpanel-* → stage → event-feed → event-feed-list are chained as flex columns, and the
+/* The window is small, so lists take the remaining height and scroll inside. #tabpanel-* → stage → event-feed → event-feed-list are chained as flex columns, and the
    list takes all the remaining vertical space */
 .perch {
   flex: 1;
@@ -485,7 +484,7 @@ button:hover {
 
 .event-label {
   flex: 1;
-  /* At the PiP width (300px), long labels wrap and the row grows taller. The icon + color already convey the kind,
+  /* In a narrow window, long labels wrap and the row grows taller. The icon + color already convey the kind,
      so the label can be kept to one line with overflow truncated */
   overflow: hidden;
   text-overflow: ellipsis;
@@ -795,7 +794,7 @@ button:hover {
   color: #d4cfc2;
 }
 
-/* Placeholder for the × in the default row (RootManager in App.tsx). Same box as button.small, but invisible */
+/* Placeholder for the × in the default row (RootManager in settings/root-manager.tsx). Same box as button.small, but invisible */
 .root-remove-placeholder {
   visibility: hidden;
 }
@@ -993,12 +992,9 @@ button.remove {
 
 /* Garden tab: a view where sessions can be freely placed as "birds in the garden" (issue #12).
    Nodes are absolutely positioned with % coordinates, so the reference container needs a definite height, but a
-   fixed px height leaves dead space at the bottom when the window is resized (PiP in particular can be stretched
-   freely by the user). So the height flows via flex from .page (main page) / body (PiP), and the garden always
-   fills "all of the window that's left at the moment". This rule is unconditional (outside the PiP-only media
-   query), but App.tsx's portalHost (and the mount point on the main page) is transparent with display: contents,
-   so #tabpanel-garden works under the same rule as a direct flex child of .page on the main page and of body in
-   PiP (no need to write it in two places) */
+   fixed px height leaves dead space at the bottom when the window is resized. So the height flows via flex from
+   .page (#tabpanel-garden is its direct flex child), and the garden always fills "all of the window that's left at
+   the moment" */
 #tabpanel-garden {
   flex: 1;
   display: flex;
@@ -1066,7 +1062,7 @@ button.remove {
   transform: translate(-50%, calc(-50% - 2px));
 }
 
-/* For birds in a watching block, top is the bird's top edge (the top of the row; layoutWatchGroups in garden.tsx).
+/* For birds in a watching block, top is the bird's top edge (the top of the row; layoutWatchGroups in garden-watch-layout.ts).
    Only horizontally centered */
 .garden-node.in-watch-block,
 .garden-bubble-anchor.in-watch-block {
@@ -1126,7 +1122,7 @@ button.remove {
   white-space: nowrap;
 }
 
-/* Status row (StatusParts in stage.tsx). The same component as Perch, centered in the garden's small text */
+/* Status row (StatusParts in bird-status.tsx). The same component as Perch, centered in the garden's small text */
 .garden-status {
   /* Size to content (so the shift at the garden edge is measured by the visible width; visibleWidth in garden.tsx) */
   display: inline-flex;
@@ -1140,7 +1136,7 @@ button.remove {
   white-space: nowrap;
 }
 
-/* Inside a watching block, birds are laid out per cell (WATCH_CELL_W 96px in garden.tsx), so limit the status row to
+/* Inside a watching block, birds are laid out per cell (WATCH_CELL_W 96px in garden-watch-layout.ts), so limit the status row to
    the cell width (if it overflows, it runs into the neighbor's status row and looks like one line) */
 .garden-node.in-watch-block .garden-status {
   max-width: 88px;
@@ -1148,7 +1144,7 @@ button.remove {
 
 /* The garden status row has 2 lines. Line 1 is the state word and elapsed time, line 2 the tool name (in the narrow
    cells of a watching block, line 1 is the state word and line 2 the elapsed time and tool name; stacked in
-   StatusParts in stage.tsx). Birds without a line 2 have the same line 1 height, so line 1 lines up across birds
+   StatusParts in bird-status.tsx). Birds without a line 2 have the same line 1 height, so line 1 lines up across birds
    side by side */
 .garden-status {
   flex-direction: column;
@@ -1314,7 +1310,7 @@ button.remove {
   }
 }
 
-/* mock mode (?mock=1). Only for MockPanel (entrypoints/perch/mock.tsx) */
+/* mock mode (?mock=1). Only for MockPanel (mock.tsx) */
 .mock-panel {
   margin-top: 16px;
   padding: 12px;
@@ -1377,7 +1373,7 @@ button.remove {
 
 /* debug mode (opened directly with ?debug=1, or via the debug button in the App header).
    DebugApp is only drawn as an in-page dialog (full-screen overlay) on top of App,
-   and doesn't touch App's own scan loop or PiP.
+   and doesn't touch App's own scan loop.
    No elaborate look needed; just match the existing tone (dark background, faint notes) */
 .debug-overlay {
   position: fixed;
@@ -1671,7 +1667,7 @@ button.remove {
 }
 
 /* For birds with a speech bubble, the space between the icon and the name. Bubble height + gap to the icon (same as
-   BUBBLE_ROOM_PX in garden.tsx) */
+   BUBBLE_ROOM_PX in garden-watch-layout.ts) */
 .garden-bubble-room {
   flex: none;
   height: 26px;
@@ -1800,7 +1796,7 @@ button.remove {
 }
 
 /* Rows of peers connected by watching. Indented under the one started first (the parent) (orderByWatchLinks in
-   stage.tsx). The same indent as chick rows (.chick) shows they "hang from the parent". Separators are in
+   watch-links.ts). The same indent as chick rows (.chick) shows they "hang from the parent". Separators are in
    .linked-continues below */
 .bird.linked-child {
   padding-left: 26px;
@@ -1812,7 +1808,7 @@ button.remove {
   border-bottom-style: dashed;
 }
 
-/* Rounded block enclosing a watching group (layoutWatchGroups in garden.tsx). A faint surface and border laid under
+/* Rounded block enclosing a watching group (layoutWatchGroups in garden-watch-layout.ts). A faint surface and border laid under
    the birds */
 .garden-watch-block {
   position: absolute;
@@ -1823,7 +1819,7 @@ button.remove {
   pointer-events: none;
 }
 
-/* Name of the parent (the watching bird) shown on the block's top edge (WATCH_TITLE_PX in garden.tsx is the row
+/* Name of the parent (the watching bird) shown on the block's top edge (WATCH_TITLE_PX in garden-watch-layout.ts is the row
    height). Centered, it would look like the name of the bird right below, so it's placed at the top left in the same
    amber as the border, to read as the block's name */
 .garden-watch-block-name {

@@ -154,7 +154,7 @@ export function Garden({
   // The garden frame (.garden) isn't drawn when there are no birds (the early return below). If the frame was missing
   // on the first render, the observer was never attached and the layout stayed at the old size even after resizing the
   // window, so re-attach it when the frame appears. Also re-measure on window resize (a safeguard in case
-  // ResizeObserver breaks when moved to another document)
+  // ResizeObserver misses a change)
   const hasGardenFrame = sessions.length > 0;
   useEffect(() => {
     const el = containerRef.current;
@@ -174,8 +174,8 @@ export function Garden({
     };
   }, [hasGardenFrame]);
 
-  // Safeguard: the portalHost containing this is moved into the PiP window with document.body.append
-  // (see App.tsx), so ResizeObserver may break during the move to another document.
+  // Safeguard in case ResizeObserver misses a change (added in the Chrome extension, where the garden was moved into
+  // the PiP window's document; whether the desktop app still needs it hasn't been checked).
   // Re-measuring with getBoundingClientRect after every render means the re-render from the 3-second
   // polling catches up within 3 seconds at most. Skip setState if the value is unchanged (avoids an infinite loop)
   useEffect(() => {
@@ -533,8 +533,7 @@ function GardenNode({
 
   // Dragging needs continuous tracking beyond the node via setPointerCapture (keeps receiving pointermove/pointerup
   // even outside the node), so always attach with native addEventListener rather than React's synthetic
-  // events. Per-node listeners keep working even when moved across documents
-  // (see the portalHost comment in App.tsx).
+  // events
   useEffect(() => {
     const node = nodeRef.current;
     if (!node) return;
