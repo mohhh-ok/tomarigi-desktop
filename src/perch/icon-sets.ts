@@ -46,7 +46,7 @@ export { DEFAULT_ICON_SET, ICON_SET_IDS, resolveIconSet };
 type IconSetSprites = Record<BirdState | "chick", string>;
 
 // BirdState/chick → WebP table. waiting is shown as the same picture as done with a "?" badge on top
-// (BirdGlyph in stage.tsx; no extra drawings per set). BIRD.img in stage.tsx uses this birds set's values as its
+// (BirdGlyph in bird-glyph.tsx; no extra drawings per set). BIRD.img in bird-glyph.tsx uses this birds set's values as its
 // source (to avoid keeping two copies, BIRD only refers to ICON_SETS.birds)
 export const ICON_SETS: Record<IconSetId, IconSetSprites> = {
   birds: { working: birdsWorking, waiting: birdsDone, done: birdsDone, dozing: birdsDozing, chick: birdsChick },
@@ -56,7 +56,7 @@ export const ICON_SETS: Record<IconSetId, IconSetSprites> = {
   frog: { working: frogWorking, waiting: frogDone, done: frogDone, dozing: frogDozing, chick: frogChick },
 };
 
-// Display names shown as the title of the sprite next to the toggle button in the settings UI. Like BIRD.label (stage.tsx),
+// Display names shown as the title of the sprite next to the toggle button in the settings UI. Like BIRD.label (bird-glyph.tsx),
 // held as strings already resolved with t() at module load (not called every time
 // at the call site). In the fallback case (outside an extension), initI18n() must complete before this module is evaluated
 // (see main.tsx)

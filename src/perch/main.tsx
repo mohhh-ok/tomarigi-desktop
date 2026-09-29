@@ -1,6 +1,6 @@
 import { initI18n } from "@/lib/i18n";
 
-// App.tsx and its dependencies (stage.tsx / icon-sets.ts) call t() at module evaluation to
+// App.tsx and its dependencies (bird-glyph.tsx / event-kind.tsx / icon-sets.ts) call t() at module evaluation to
 // build display string tables (see BIRD/EVENT/ICON_SET_LABEL). Outside an extension context
 // (served statically with ?mock=1), the fallback dictionary must finish loading before that evaluation
 // happens. Waiting for initI18n() to complete before dynamically importing ./boot

@@ -25,14 +25,11 @@ import { hasQuestion, isAngry, needsAnswer } from "@/lib/jev";
 import { createPortal } from "react-dom";
 import { MdLink } from "react-icons/md";
 import { bubbleText, SpeechBubble } from "./bubble";
-import {
-  BirdGlyph,
-  EVENT,
-  eventKind,
-  StatusParts,
-  formatEventTime,
-  relativeLabel,
-} from "./stage";
+import { BirdGlyph } from "./bird-glyph";
+import { StatusParts } from "./bird-status";
+import { EVENT, EventIcon, eventKind } from "./event-kind";
+import { formatEventTime } from "./format-time";
+import { relativeLabel } from "./watch-links";
 
 // Width of a garden node (.garden-node in perch.css) and the minimum gap from the frame
 const NODE_WIDTH_PX = 120;
@@ -413,7 +410,7 @@ export function Garden({
   sessions: SessionView[];
   events: SessionEvent[];
   hasGranted: boolean;
-  // slug → assignment map (same meaning as in Perch in stage.tsx; passed from App.tsx)
+  // slug → assignment map (same meaning as in Perch in perch-list.tsx; passed from App.tsx)
   iconSetAssignments?: IconSetAssignments;
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
@@ -1089,14 +1086,13 @@ function GardenNode({
           <span className="garden-icons">
             {recentEvents.map((e) => {
               const kind = eventKind(e);
-              const Icon = EVENT[kind].icon;
               return (
                 <span
                   key={e.key}
                   className="garden-icon-wrap"
                   title={`${EVENT[kind].label} · ${formatEventTime(e.at)}`}
                 >
-                  <Icon className={`event-icon tone-${EVENT[kind].tone}`} size={12} />
+                  <EventIcon kind={kind} size={12} />
                 </span>
               );
             })}

@@ -7,7 +7,6 @@ import {
   MdCheckCircle,
   MdClose,
   MdContentCopy,
-  MdHelp,
   MdSettings,
   MdVolumeUp,
 } from "react-icons/md";
@@ -77,7 +76,9 @@ import {
   resolveIconSet,
 } from "./icon-sets";
 import { type PerchSource } from "./source";
-import { EVENT, EventFeed, Perch } from "./stage";
+import { EVENT, EventIcon } from "./event-kind";
+import { EventFeed } from "./event-feed";
+import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
 import { useGardenFade } from "./garden-fade";
 
@@ -1013,11 +1014,11 @@ export default function App({
                         The button icons teach the same meaning as in the feed */}
                     <button className="small" onClick={() => previewChirp(chirpDone)}>
                       <MdVolumeUp size={14} className="preview-mic" />
-                      <MdCheckCircle className="event-icon tone-done" size={18} /> {EVENT.done.label}
+                      <EventIcon kind="done" size={18} /> {EVENT.done.label}
                     </button>
                     <button className="small" onClick={() => previewChirp(chirpWaiting)}>
                       <MdVolumeUp size={14} className="preview-mic" />
-                      <MdHelp className="event-icon tone-turn" size={18} /> {EVENT.waiting.label}
+                      <EventIcon kind="waiting" size={18} /> {EVENT.waiting.label}
                     </button>
                   </div>
                   <label className="voice-enable-row">
