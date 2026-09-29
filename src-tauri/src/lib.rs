@@ -81,7 +81,7 @@ pub fn run() {
             init_key_store(&app.config().identifier);
             import_key_from_stdin(app.handle());
             let win = app.get_webview_window("main").expect("main window");
-            // TOMARIGI_MOCK=1 enables mock mode (same as ?mock=1 in the tomarigi Chrome extension).
+            // TOMARIGI_MOCK=1 enables mock mode (adds ?mock=1 to the page URL, read in src/perch/boot.tsx).
             // TOMARIGI_QUERY="tab=perch&settings=1" etc. sets the screen at launch (for screenshot checks; see the
             // initial state in App.tsx)
             let mut query: Vec<String> = Vec::new();
