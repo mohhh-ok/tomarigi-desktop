@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdCheckCircle, MdClose, MdContentCopy } from "react-icons/md";
 import { t } from "@/lib/i18n";
 import type { RootKind } from "@/lib/fsa";
@@ -10,27 +10,11 @@ interface RootChoice {
   shortcut: string;
 }
 
-function rootChoicesForCurrentPlatform(): RootChoice[] {
-  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
-  const platform = nav.userAgentData?.platform ?? navigator.platform ?? "";
-  const windows = /windows|win32/i.test(platform);
-  const mac = /mac/i.test(platform);
-  const shortcut = mac ? "Cmd+Shift+G" : "Ctrl+L";
-  return [
-    {
-      kind: "claude",
-      label: "Claude Code",
-      path: windows ? String.raw`%USERPROFILE%\.claude\projects` : "~/.claude/projects",
-      shortcut,
-    },
-    {
-      kind: "codex",
-      label: "Codex",
-      path: windows ? String.raw`%USERPROFILE%\.codex\sessions` : "~/.codex/sessions",
-      shortcut,
-    },
-  ];
-}
+// The app runs on macOS only, so the paths and the shortcut of the macOS folder picker (Go to Folder) are fixed
+const ROOT_CHOICES: RootChoice[] = [
+  { kind: "claude", label: "Claude Code", path: "~/.claude/projects", shortcut: "Cmd+Shift+G" },
+  { kind: "codex", label: "Codex", path: "~/.codex/sessions", shortcut: "Cmd+Shift+G" },
+];
 
 export function RootAddDialog({
   onClose,
@@ -42,7 +26,6 @@ export function RootAddDialog({
   const overlayRef = useRef<HTMLDivElement>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copiedKind, setCopiedKind] = useState<RootKind | null>(null);
-  const choices = useMemo(rootChoicesForCurrentPlatform, []);
 
   useEffect(() => {
     const doc = overlayRef.current?.ownerDocument ?? document;
@@ -95,7 +78,7 @@ export function RootAddDialog({
           </button>
         </div>
         <div className="root-add-choices">
-          {choices.map((choice, index) => (
+          {ROOT_CHOICES.map((choice, index) => (
             <div key={choice.kind} className="root-add-choice">
               <button autoFocus={index === 0} onClick={() => onChoose(choice.kind)}>
                 ＋ {choice.label}
