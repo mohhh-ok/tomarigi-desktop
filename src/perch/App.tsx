@@ -368,7 +368,6 @@ export default function App({
     return [...running, ...savedOnly];
   }, [sessions, iconSetAssignments]);
 
-
   // So that Recent activity and the garden markers also show a done as needs reply when the Jev verdict for that
   // turn is needs reply, attach the verdict to the done event of the same turn (sessionId + time of the last response)
   // Recent activity rows get the same text as that turn's speech bubble (bubbleText). No extra summary is requested;
