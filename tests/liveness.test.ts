@@ -163,6 +163,20 @@ describe("Claude Code", () => {
     expect((await scanTwice(fx.roots)).views).toEqual([]);
   });
 
+  test("a session handed over to another session loses its bird even though its old process is still alive", async () => {
+    const sid = "44444444-0000-4000-8000-000000000004";
+    const fx = claudeFixture("handoff", sid, 2 * MIN);
+    const proc = startProcess();
+    fx.live(proc.pid!);
+    expect((await scanTwice(fx.roots)).views.length).toBe(1);
+
+    fs.appendFileSync(
+      fx.transcript,
+      line({ type: "continued-in", timestamp: iso(0), sessionId: sid, continuedInSessionId: "55555555-0000-4000-8000-000000000005" }),
+    );
+    expect((await scanTwice(fx.roots)).views).toEqual([]);
+  });
+
   test("a chick without a completion record stays however long it is idle, and leaves once completion is recorded", async () => {
     const sid = "33333333-0000-4000-8000-000000000003";
     const taskId = "a0123456789abcdef";

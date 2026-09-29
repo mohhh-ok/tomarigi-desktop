@@ -751,6 +751,12 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
               skippedIds.add(id);
               continue;
             }
+            // Handed over to another session (TailInfo.continuedIn). The new session has its own transcript and
+            // bird; the old process may stay alive, but this conversation no longer moves here
+            if (tail.continuedIn) {
+              skippedIds.add(id);
+              continue;
+            }
             const chicks = await scanChicks(projectDir, child.name, id, now, tail.chickSignals, file);
             found.push({
               agent: "claude",

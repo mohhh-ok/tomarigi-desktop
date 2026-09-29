@@ -61,6 +61,11 @@ export interface TailInfo {
   // window, lib/sessions.ts (peerNameCache) keeps it across scans.
   // Used to decide the link for watching (docs/design.md "Watching")
   peerNames: Map<string, number>;
+  // The session was handed over to another session (a `continued-in` line naming continuedInSessionId, written
+  // when Claude Code moves the conversation to a background process). The old process can stay alive after
+  // this, so lib/sessions.ts removes the bird as if the session had ended. Cleared if a user/assistant line
+  // follows it (the conversation went on here after all)
+  continuedIn?: string;
 }
 
 // Classified lines, in time order. Only for reconstructing transition events (experimental feature)
@@ -89,6 +94,7 @@ interface TranscriptEntry {
   isSidechain?: boolean;
   interruptedByShutdown?: boolean;
   timestamp?: string;
+  continuedInSessionId?: unknown; // On a `continued-in` line (see TailInfo.continuedIn)
   message?: { role?: string; content?: unknown };
   cwd?: unknown;
   entrypoint?: unknown; // Internal field on user/assistant/attachment/system lines. See the TailInfo.entrypoint comment
@@ -268,6 +274,7 @@ async function readWindow(
   let cwd: string | undefined;
   let entrypoint: string | undefined;
   let lastEventAt: number | undefined;
+  let continuedIn: string | undefined;
   const events: TailEvent[] = [];
   const chickSignals = new Map<string, number>();
   const backgroundTaskStarts = new Map<string, number>();
@@ -311,8 +318,12 @@ async function readWindow(
         peerNames.set(name, Math.max(peerNames.get(name) ?? 0, at));
       }
     }
+    if (entry.type === "continued-in" && typeof entry.continuedInSessionId === "string") {
+      continuedIn = entry.continuedInSessionId;
+    }
     const next = classify(entry, includeSidechain);
     if (!next) continue;
+    continuedIn = undefined;
     kind = next.kind;
     toolName = next.toolName;
     if (at !== null) {
@@ -329,6 +340,7 @@ async function readWindow(
     peerNames,
     lastEventAt,
     entrypoint,
+    ...(continuedIn && { continuedIn }),
   };
 }
 
