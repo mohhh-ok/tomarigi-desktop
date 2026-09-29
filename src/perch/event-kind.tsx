@@ -7,7 +7,7 @@ import type { SessionEvent } from "@/lib/sessions";
 
 // Color classes for event types. Rather than giving each type its own separate color, types are grouped
 // by meaning
-type EventTone = "done" | "turn" | "alert" | "log";
+type EventTone = "done" | "turn" | "log";
 
 // Look of the transition events reconstructed from the transcript (experimental feature). Meaning is carried
 // three ways: icon (shape) + color (tone) + label. Icons designed as symbols, such as a check mark, stay

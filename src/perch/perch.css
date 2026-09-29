@@ -474,10 +474,6 @@ button:hover {
   color: #d9b06a;
 }
 
-.tone-alert {
-  color: #c96a5f;
-}
-
 .tone-log {
   color: #8d887c;
 }
@@ -797,11 +793,6 @@ button:hover {
 /* Placeholder for the × in the default row (RootManager in settings/root-manager.tsx). Same box as button.small, but invisible */
 .root-remove-placeholder {
   visibility: hidden;
-}
-
-.badge-warn {
-  background: rgba(255, 200, 90, 0.12);
-  color: #d9b06a;
 }
 
 .badge-error {
@@ -1466,7 +1457,7 @@ button.remove {
   font-size: 10px;
 }
 
-/* muted: marker for a done that didn't sound. To avoid confusion with error/warn badges (.badge-warn etc.),
+/* muted: marker for a done that didn't sound. To avoid confusion with error badges (.badge-error etc.),
    no saturated color; a subtle gray pill */
 .debug-log-muted-badge {
   padding: 1px 6px;
