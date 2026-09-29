@@ -4260,7 +4260,7 @@ dependencies = [
 
 [[package]]
 name = "tomarigi-desktop"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "objc2",
  "objc2-app-kit",
