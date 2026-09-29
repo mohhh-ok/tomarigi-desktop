@@ -1,0 +1,99 @@
+/* How the first line of a Perch row shrinks, and the rows of peers connected by watching */
+
+/* First line of the Perch parent row. When width runs short, trim in this order: request excerpt → tool name → name.
+   The excerpt and tool name have a basis of 0 and grow, getting only what's left after the name, state word, and
+   elapsed time fit at their natural widths (capped at the text length). The tool name takes the remainder first (larger
+   grow weight). If the tool name doesn't fit, it is hidden entirely. The name shrinks only once nothing is left.
+   When the tool name had the same basis as the name (the text length), the hidden tool name kept taking width and
+   shrank together with the name, cutting the name down to "packa…" even though there was space on the state side.
+   The state word and elapsed time don't shrink. Differences in flex-shrink weight aren't used because in WKWebView
+   the name shrank at the same time */
+.bird-row-name {
+  flex: 0 1 auto;
+  min-width: 3em;
+}
+
+.bird-row-snippet[data-tight="true"] {
+  visibility: hidden;
+}
+
+/* The request excerpt gets width before the tool name (what the session was asked to do matters more; the tool name
+   uses what's left) */
+.bird-row-snippet {
+  flex: 100 1 0;
+  min-width: 0;
+  max-width: max-content;
+  margin-left: -6px; /* Tighter than the row gap (10px) next to the name (looks the same as when it used to sit inside the name) */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The state word and elapsed time don't shrink. The state word pushes them to the right side of the row */
+.bird-row-label,
+.bird-row-since {
+  flex: none;
+  overflow: visible;
+}
+
+/* In Perch rows, only when the name doesn't fit, shrink the state word last and cut it with … (the name takes
+   priority) */
+.bird-row-main > .bird-row-label {
+  flex: 0 1000 auto;
+  min-width: 2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bird-row-main > .bird-row-label {
+  margin-left: auto;
+}
+
+/* Tool name in Perch rows (see the .bird-row-name comment above). The garden status row (.garden-status) is unchanged */
+.bird-row-main > .bird-row-tool {
+  flex: 1 1 0;
+  max-width: max-content;
+}
+
+/* Tighten the row gap so the state word, tool name, and elapsed time read as one run */
+.bird-row-main > .bird-row-tool,
+.bird-row-main > .bird-row-since {
+  margin-left: -10px;
+}
+
+/* The tool name isn't cut mid-word; if it doesn't fit entirely, it is hidden entirely. If it doesn't fit next to the
+   zero-width leading element, it wraps to a second line and is clipped at one line's height, so it isn't visible */
+.bird-row-tool {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 1lh;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.bird-row-tool::before {
+  content: "";
+  width: 0;
+  height: 1lh;
+}
+
+/* Second line of Recent activity rows. The card body is already indented, so the Perch indent isn't applied */
+.event-card-body .speech-bubble-line {
+  padding-left: 0;
+}
+
+/* Rows of peers connected by watching. Indented under the one started first (the parent) (orderByWatchLinks in
+   watch-links.ts). The same indent as chick rows (.chick) shows they "hang from the parent". Separators are in
+   .linked-continues below */
+.bird.linked-child {
+  padding-left: 26px;
+}
+
+/* Separators within a watching group (between parent and peer, and between peers) are dashed; the boundary with
+   rows outside the group is solid (the .bird default) */
+.bird.linked-continues {
+  border-bottom-style: dashed;
+}

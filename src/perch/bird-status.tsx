@@ -30,7 +30,7 @@ export function LiveDots() {
  * A bird's status line (state word · elapsed time · tool name). Used by both Perch rows and garden birds.
  * The container (.bird-row-main on the Perch, .garden-status in the garden) is flex; the state word and
  * elapsed time don't shrink, and the tool name is hidden entirely if it doesn't fit (.bird-row-tool in
- * perch.css). The tool name goes last so that the gap left when it is hidden doesn't appear between the
+ * styles/perch-row-layout.css). The tool name goes last so that the gap left when it is hidden doesn't appear between the
  * word and the time. Needs reply shows only "needs reply · elapsed time"
  * (what is being asked goes in the speech bubble)
  */

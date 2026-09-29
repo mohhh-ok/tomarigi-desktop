@@ -42,7 +42,7 @@ import {
   type WatchPlace,
 } from "./garden-watch-layout";
 
-// Minimum gap between a garden node (.garden-node in perch.css) and the frame
+// Minimum gap between a garden node (.garden-node in styles/garden.css) and the frame
 const NODE_EDGE_PX = 4;
 
 /**
@@ -64,7 +64,7 @@ function visibleWidth(node: HTMLElement | null): number {
 
 // Gap left between birds by auto placement (px)
 const AUTO_GAP_PX = 12;
-// min-height of .garden in perch.css (it is overridden via style, so never go below it)
+// min-height of .garden in styles/garden.css (it is overridden via style, so never go below it)
 const GARDEN_MIN_HEIGHT_PX = 220;
 // Keep speech bubbles this far inside the garden frame
 const BUBBLE_EDGE_PX = 4;
@@ -499,7 +499,7 @@ function GardenNode({
   // Birds in a watching group may reserve bubble space even without a speech bubble (WatchPlace.bubbleRoom)
   const bubbleRoom = Boolean(bubble) || Boolean(watchPlace?.bubbleRoom);
   // From the node's top edge to the icon's bottom edge (the top of the speech bubble). The icon resizes smoothly
-  // with the garden size (transition in perch.css), so track size changes instead of reading once at render
+  // with the garden size (transition in styles/garden.css), so track size changes instead of reading once at render
   const [glyphBottom, setGlyphBottom] = useState<number | undefined>(undefined);
   useLayoutEffect(() => {
     const el = glyphRef.current;

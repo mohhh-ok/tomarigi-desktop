@@ -1,0 +1,181 @@
+/* mock controls (?mock=1) and the debug log (?debug=1) */
+
+/* mock mode (?mock=1). Only for MockPanel (mock.tsx) */
+.mock-panel {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.mock-panel h2 {
+  font-size: 12px;
+  margin: 0 0 8px;
+  opacity: 0.7;
+  font-weight: 600;
+}
+
+.mock-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.mock-preset-active {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+.mock-hint {
+  font-size: 11px;
+  opacity: 0.5;
+  margin: 4px 0 6px;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
+.mock-editor {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  resize: vertical;
+}
+
+.mock-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.mock-error {
+  color: #f87171;
+  font-size: 11px;
+}
+
+/* debug mode (opened directly with ?debug=1, or via the debug button in the App header).
+   DebugApp is only drawn as an in-page dialog (full-screen overlay) on top of App,
+   and doesn't touch App's own scan loop.
+   No elaborate look needed; just match the existing tone (dark background, faint notes) */
+.debug-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000; /* Above the garden's speech bubble layer (2000) */
+  overflow-y: auto;
+  background: #16161c;
+}
+
+.debug-page {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.debug-log-error {
+  color: #f87171;
+}
+
+.debug-log-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.debug-log-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+}
+
+.debug-log-time {
+  color: #8d887c;
+  font-variant-numeric: tabular-nums;
+}
+
+.debug-log-type {
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.debug-log-type-done {
+  color: #34d399;
+}
+
+.debug-log-type-waiting {
+  color: #d9b06a;
+}
+
+.debug-log-project {
+  font-weight: 600;
+}
+
+.debug-log-snippet {
+  opacity: 0.75;
+}
+
+.debug-log-key {
+  margin-left: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  opacity: 0.4;
+  word-break: break-all;
+}
+
+/* firedAt: the actual time the timeout fired. Supplementary to at (the parent's turn end time), so kept subtle */
+.debug-log-fired-at {
+  margin-left: 4px;
+  opacity: 0.6;
+  font-size: 11px;
+}
+
+/* Jev verdict on needs reply (lib/jev.ts). status and the probability of yes */
+.debug-log-ask {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(242, 179, 61, 0.12);
+  color: #d9a441;
+  font-size: 10px;
+}
+
+/* muted: marker for a done that didn't sound. To avoid confusion with error badges (.badge-error etc.),
+   no saturated color; a subtle gray pill */
+.debug-log-muted-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #8d887c;
+  font-size: 10px;
+}
+
+/* Per-project file save (~/Downloads/tomarigi-eventlog-*.json) */
+.debug-save-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.debug-save-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+}

@@ -5,7 +5,7 @@ import type { SessionView } from "@/lib/sessions";
 import { bubbleText } from "./bubble";
 import { relativeLabel } from "./watch-links";
 
-// Width of a garden node (.garden-node in perch.css)
+// Width of a garden node (.garden-node in styles/garden.css)
 export const NODE_WIDTH_PX = 120;
 
 /** Clamp to min..max. When the garden is smaller than the bird, use min (align to the left/top) */
@@ -14,11 +14,11 @@ export function clampInside(value: number, min: number, max: number): number {
 }
 
 // Speech bubble height + gap to the bird. For a bird with a speech bubble, this much space is left between
-// the icon and the name to place the bubble (same value as the height of .garden-bubble-room in perch.css)
+// the icon and the name to place the bubble (same value as the height of .garden-bubble-room in styles/speech-bubble.css)
 export const BUBBLE_ROOM_PX = 26;
 // Estimated height of the non-glyph part of a garden node (name and status rows)
 export const NODE_TEXT_PX = 32;
-// Estimated max width of a speech bubble (max-width 15em × 11px of .speech-bubble-below in perch.css
+// Estimated max width of a speech bubble (max-width 15em × 11px of .speech-bubble-below in styles/speech-bubble.css
 // + left/right padding)
 export const BUBBLE_MAX_PX = 180;
 
@@ -27,16 +27,16 @@ export const BUBBLE_MAX_PX = 180;
 const WATCH_CELL_W = 96;
 const WATCH_PAD = 8;
 const WATCH_EDGE = 4;
-// Height of the row under a watching bird showing how many peers are active (.garden-watch-count in perch.css;
+// Height of the row under a watching bird showing how many peers are active (.garden-watch-count in styles/garden-watch.css;
 // text height + top gap)
 export const WATCH_COUNT_PX = 18;
-// Height of a garden bird's name row (.garden-name in perch.css; text height + bottom gap). Rows in a block
+// Height of a garden bird's name row (.garden-name in styles/garden.css; text height + bottom gap). Rows in a block
 // that show no names are tightened by this much
 const GARDEN_NAME_PX = 16;
-// Height of the parent's name row shown on the top edge of the block (.garden-watch-block-name in perch.css)
+// Height of the parent's name row shown on the top edge of the block (.garden-watch-block-name in styles/garden-watch.css)
 const WATCH_TITLE_PX = 16;
 // Height of the second line of the status row (tool name; inside a block, elapsed time and tool name)
-// (.garden-status-sub in perch.css)
+// (.garden-status-sub in styles/garden.css)
 export const STATUS_SUB_PX = 15;
 
 /** A bird's position within a group: CSS left (bird center) / top (bird's top edge; names are aligned to the top of the row)

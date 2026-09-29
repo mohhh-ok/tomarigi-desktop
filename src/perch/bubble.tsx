@@ -31,7 +31,7 @@ export function SpeechBubble({
 }) {
   // Long text is cut with "…" by CSS. Hovering shows the full text (title)
   if (placement === "below") {
-    // Garden: an outer box holding the tail and position sits outside the body that is cut with "…" (overflow: hidden) (.speech-bubble-below in perch.css)
+    // Garden: an outer box holding the tail and position sits outside the body that is cut with "…" (overflow: hidden) (.speech-bubble-below in styles/speech-bubble.css)
     return (
       <span className="speech-bubble-below" title={text} style={style}>
         <span className="speech-bubble">{text}</span>

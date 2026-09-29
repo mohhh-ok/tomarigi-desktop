@@ -1,0 +1,43 @@
+/* Rules that override earlier ones: the layout with the mock panel, the disabled volume slider, and the content
+   width of Perch / Recent activity / settings */
+
+/* In mock mode (TOMARIGI_MOCK=1), the mock panel follows below in the window. Flowing the surface into the rest of
+   the window makes it fight the panel for space and get squashed, so give the surface a fixed height and scroll the
+   whole window */
+.page:has(.mock-panel) > * {
+  flex-shrink: 0;
+}
+
+/* At least 300px. If the window is tall (maximized as a standard window), use the space left above the mock panel */
+.page:has(.mock-panel) #tabpanel-garden,
+.page:has(.mock-panel) #tabpanel-perch,
+.page:has(.mock-panel) #tabpanel-events {
+  flex: 1 0 300px;
+}
+
+/* Dim the disabled (readout off) volume slider and its value. macOS draws enabled and disabled in the same gray when
+   the window isn't in front, so make it clear it's disabled regardless of the window state */
+.volume-slider:disabled,
+.volume-row:has(.volume-slider:disabled) .volume-value {
+  opacity: 0.4;
+}
+
+/* Content of Perch and Recent activity. So rows don't stretch out horizontally when the window is widened, cap at a
+   width where the speech bubble's second line is readable (720px) and center it. Garden stays full width. The tabs
+   (header) are shared with Garden, so they stay at window width (so the tabs don't move each time you switch tabs;
+   same as the settings screen). The floating window (340px) is narrower than this, so it looks the same */
+.stage-perch,
+.stage-events {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* Content of the settings screen. Width is capped so inputs and sliders don't stretch out even when maximized as a
+   standard window, and centered in the window (the header stays at window width). The floating window is narrower
+   than this, so it looks the same */
+.settings-panel {
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+}

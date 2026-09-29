@@ -1,0 +1,30 @@
+/* Tab switcher */
+
+/* Tab switcher. Shows the current tab subtly with an underline (an underline rather than a faint background change) */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 6px 0 4px;
+  border-bottom: 1px solid #2a2922;
+}
+
+.tab-btn {
+  padding: 8px 14px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8d887c;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+
+.tab-btn:hover {
+  background: transparent;
+  color: #c9c4b8;
+}
+
+.tab-btn.active {
+  color: #e9e6de;
+  border-bottom-color: #d9b06a;
+}

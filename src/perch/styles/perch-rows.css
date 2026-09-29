@@ -1,0 +1,175 @@
+/* Perch rows: parent rows, chick rows, name / snippet / status, and the live dots */
+
+/* Each row's underline is a branch. The bird perches on it */
+/* Perch parent row. Stacks the first line (.bird-row-main) and the speech bubble (.speech-bubble-line) vertically */
+.bird {
+  display: block;
+  padding: 10px 8px;
+  border-bottom: 2px solid #6b5a3e;
+}
+
+.bird-row-main {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.glyph {
+  font-size: 22px;
+}
+
+/* .bird-glyph-img, which assumes emoji-like glyphs, has its vertical position fine-tuned to the row baseline.
+   The garden's horizontal mirroring goes through a custom property (--glyph-flip) (see BirdGlyph).
+   Each keyframes of the working effect multiplies by the same var(--glyph-flip, 1) every time,
+   so the mirroring is kept both while animating and at rest */
+.bird-glyph-img {
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
+  transform: scaleX(var(--glyph-flip, 1));
+}
+
+.bird.working .glyph {
+  animation: peck 1.1s ease-in-out infinite;
+}
+
+/* A special effect only for working (an aura of gathering energy). The actual hook is .bird-working-fx, which
+   BirdGlyph and the raw img of Perch chick rows add only while working; this base rule applies to chick rows
+   and garden nodes (garden nodes put the peck on the outer .garden-glyph span, so the img itself has no
+   competing transform animation).
+   Only in the Perch parent row (.bird.working .bird-glyph-img) does the existing peck (pecking bounce) own
+   the same img's transform, and CSS Animations don't add up multiple animation-names on the same property:
+   the last one wins and overrides (two can't run side by side). So the dedicated rule below merges the peck
+   and the slight shake into a single keyframes (bird-peck-shake) */
+.bird-working-fx {
+  animation: bird-aura-shake 0.6s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
+}
+
+.bird.working .bird-glyph-img.bird-working-fx {
+  animation: bird-peck-shake 1.1s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
+}
+
+/* Garden nodes (26-52px) are larger than Perch (18px), so the same blur looks faint.
+   shake stays shared; only glow is swapped for dedicated keyframes with a larger blur/spread */
+.garden-node .bird-glyph-img.bird-working-fx {
+  animation: bird-aura-shake 0.6s ease-in-out infinite,
+    bird-aura-glow-lg 0.9s ease-in-out infinite;
+}
+
+/* prefers-reduced-motion: stop the flicker (glow) and slight shake (shake), leaving only a static glow.
+   For the Perch parent row, the original peck (pecking bounce) is existing behavior outside the scope of this
+   change, so it isn't newly disabled here; only the flicker/shake stops */
+@media (prefers-reduced-motion: reduce) {
+  .bird-working-fx {
+    animation: none;
+    filter: drop-shadow(0 0 2.5px rgba(255, 196, 90, 0.7)) drop-shadow(0 0 5px rgba(255, 248, 220, 0.5));
+  }
+
+  .bird.working .bird-glyph-img.bird-working-fx {
+    animation: peck 1.1s ease-in-out infinite;
+  }
+
+  .garden-node .bird-glyph-img.bird-working-fx {
+    animation: none;
+    filter: drop-shadow(0 0 4px rgba(255, 196, 90, 0.7)) drop-shadow(0 0 8px rgba(255, 248, 220, 0.5));
+  }
+}
+
+.bird.dozing {
+  opacity: 0.55;
+}
+
+/* Subagent rows. Hang quietly under the parent */
+.chick {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 8px 4px 26px;
+  border-bottom: 1px dashed #2c2a22;
+  opacity: 0.75;
+}
+
+.chick .glyph {
+  font-size: 14px;
+}
+
+/* In a narrow window, shorten the name with …; the state, tool name, and elapsed time (and the working dot) are not
+   cut off at the window edge */
+.chick .name {
+  flex: 0 1 auto;
+  min-width: 3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.chick .status {
+  flex: none;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.chick.dozing {
+  opacity: 0.45;
+}
+
+.name {
+  min-width: 8em;
+  font-weight: 600;
+  /* Can get long with the snippet alongside, so truncate automatically in a narrow window */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Snippet of the latest user message, always shown after project. Styled subtly */
+.snippet {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #a49f92;
+}
+
+.status {
+  color: #a49f92;
+  font-size: 12px;
+  /* If state label + tool name + elapsed time wraps for lack of width, the branch (row) height becomes uneven, so keep
+     it to one line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pulsing dot only on working rows. Shows at a glance that "a moving row = alive" */
+.live-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.live-dots i {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #e8a13d;
+  font-style: normal;
+  animation: live-pulse 1.2s ease-in-out infinite;
+}
+
+.live-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.live-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.empty {
+  padding: 24px 8px;
+  color: #8d887c;
+}

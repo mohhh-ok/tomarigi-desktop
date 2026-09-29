@@ -14,7 +14,7 @@ import { orderByWatchLinks, relativeLabel } from "./watch-links";
 // The request excerpt on a Perch row is hidden entirely when narrower than this (so fragments like "「." aren't shown)
 const SNIPPET_MIN_VISIBLE_EM = 2.5;
 
-/** The request excerpt on a Perch row. Its width is set by .bird-row-snippet in perch.css; this only hides it
+/** The request excerpt on a Perch row. Its width is set by .bird-row-snippet in styles/perch-row-layout.css; this only hides it
  * when too narrow (it uses visibility, so the width doesn't change and remeasuring doesn't flicker) */
 function RowSnippet({ text }: { text: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -86,7 +86,7 @@ export function Perch({
               {/* First line (bird, name, status). The speech bubble goes separately on a second line; the first line doesn't wrap */}
               <div className="bird-row-main">
               <BirdGlyph state={s.state} size={18} set={set} asking={hasQuestion(s)} angry={isAngry(s)} />
-              {/* When width runs short, the shrink order is request excerpt → name → status (.bird-row-* in perch.css).
+              {/* When width runs short, the shrink order is request excerpt → name → status (.bird-row-* in styles/perch-row-layout.css).
                   The state word and elapsed time always stay; the tool name is hidden entirely if it doesn't fit */}
               {/* Indented peer rows are named by the path relative to the parent's working folder (the folder name if not under it) */}
               {/* Peer rows in the same folder as the parent show no name (relativeLabel is undefined) */}

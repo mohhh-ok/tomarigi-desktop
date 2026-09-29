@@ -55,10 +55,10 @@ export function BirdGlyph({
   asking?: boolean;
   angry?: boolean;
 }) {
-  // Only working gets the "charging aura" effect class (.bird-working-fx in perch.css).
+  // Only working gets the "charging aura" effect class (.bird-working-fx in styles/perch-rows.css).
   // flip used to mirror directly with style.transform: scaleX(-1), but while working the CSS animation
   // (sway/peck) owns the same transform property, so it goes through a custom property (--glyph-flip)
-  // instead. Both .bird-glyph-img in perch.css (at rest) and each working keyframes (during animation)
+  // instead. Both .bird-glyph-img in styles/perch-rows.css (at rest) and each working keyframes (during animation)
   // multiply by var(--glyph-flip, 1), so the mirror is kept whether working or not
   // The value is passed as a string. React doesn't append px to custom properties (--*) and passes the
   // value through stringified, so a number would also work, but this is a scaleX factor, not a length,
