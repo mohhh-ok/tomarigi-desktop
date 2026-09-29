@@ -218,7 +218,6 @@ pub fn run() {
             keys::key_set,
             keys::key_delete,
             liveness::live_sessions,
-            liveness::scan_log_enabled,
             liveness::scan_peer_names
         ])
         .run(tauri::generate_context!())

@@ -25,7 +25,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rfd = { version = "0.15", default-features = false, features = ["tokio"] }
 tauri-plugin-single-instance = "2"
-# Calls the TypeSafe API (typesafe_systemone in lib.rs; requests from WKWebView are blocked by CORS)
+# Calls the TypeSafe API (typesafe_systemone in keys.rs; requests from WKWebView are blocked by CORS)
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 
 
@@ -40,12 +40,13 @@ strip = true
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics"] }
 objc2 = "0.6"
-# The frosted glass behind the window (set_backdrop in lib.rs) uses NSString and NSRect
+# The frosted glass behind the window (set_backdrop in window.rs) uses NSString and NSRect
 objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry"] }
-# Stores BYOK API keys in the macOS Keychain (KeyStore in lib.rs)
+# Stores BYOK API keys in the macOS Keychain (KeyStore in keys.rs)
 security-framework = "3"
 tauri-nspanel = "2.1"
-# Pin the Rust side to 2.11.x to match @tauri-apps/api 2.11 on the npm side (tauri build stops on a major/minor mismatch)
+# tauri is pinned to =2.11.1 to match @tauri-apps/api 2.11.1 on the npm side (tauri build stops on a major/minor mismatch).
+# The crates below are held to the minor versions tauri 2.11.1 resolves to, so cargo update doesn't pull a newer minor
 tauri-macros = "~2.6"
 tauri-utils = "~2.9"
 tauri-runtime = "~2.11"

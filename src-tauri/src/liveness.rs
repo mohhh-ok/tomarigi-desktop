@@ -35,8 +35,6 @@ pub(crate) struct LiveScan {
     present: bool,
     sessions: Vec<LiveSession>,
     reliable: bool,
-    /// Number of files that failed to read or parse (for logging)
-    unreadable: usize,
 }
 
 /// How long ps / lsof may take for a liveness check (lsof on thread-writer-locks measured 0.16–0.18s). A run that
@@ -89,7 +87,7 @@ fn output_with_timeout(cmd: &mut Command, timeout: std::time::Duration) -> Optio
 pub(crate) async fn live_sessions(config_dir: String) -> LiveScan {
     tauri::async_runtime::spawn_blocking(move || live_sessions_blocking(&config_dir))
         .await
-        .unwrap_or(LiveScan { present: true, sessions: Vec::new(), reliable: false, unreadable: 0 })
+        .unwrap_or(LiveScan { present: true, sessions: Vec::new(), reliable: false })
 }
 
 fn live_sessions_blocking(config_dir: &str) -> LiveScan {
@@ -97,10 +95,10 @@ fn live_sessions_blocking(config_dir: &str) -> LiveScan {
     let items = match std::fs::read_dir(&dir) {
         Ok(items) => items,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            return LiveScan { present: false, sessions: Vec::new(), reliable: true, unreadable: 0 };
+            return LiveScan { present: false, sessions: Vec::new(), reliable: true };
         }
         // Exists but couldn't be read: don't conclude anything (birds stay)
-        Err(_) => return LiveScan { present: true, sessions: Vec::new(), reliable: false, unreadable: 0 },
+        Err(_) => return LiveScan { present: true, sessions: Vec::new(), reliable: false },
     };
     let mut unreadable = 0;
     let mut sessions: Vec<LiveSession> = Vec::new();
@@ -114,27 +112,21 @@ fn live_sessions_blocking(config_dir: &str) -> LiveScan {
         }
     }
     if sessions.is_empty() {
-        return LiveScan { present: true, sessions, reliable: unreadable == 0, unreadable };
+        return LiveScan { present: true, sessions, reliable: unreadable == 0 };
     }
     let pids = sessions.iter().map(|s| s.pid.to_string()).collect::<Vec<_>>().join(",");
     // ps -p returns exit code 1 when some of the given pids don't exist (the output is correct). Failing to
     // launch, timing out, or dying from a signal (no exit code) counts as failure
     let Some(out) = output_with_timeout(Command::new("ps").args(["-o", "pid=", "-p", &pids]), LIVENESS_CMD_TIMEOUT) else {
-        return LiveScan { present: true, sessions: Vec::new(), reliable: false, unreadable };
+        return LiveScan { present: true, sessions: Vec::new(), reliable: false };
     };
     let alive: std::collections::HashSet<u32> =
         String::from_utf8_lossy(&out.stdout).split_whitespace().filter_map(|p| p.parse().ok()).collect();
     let ps_ok = out.status.code().is_some_and(|c| c == 0 || c == 1);
     sessions.retain(|s| alive.contains(&s.pid));
-    LiveScan { present: true, sessions, reliable: ps_ok && unreadable == 0, unreadable }
+    LiveScan { present: true, sessions, reliable: ps_ok && unreadable == 0 }
 }
 
-/// Whether to write a per-scan record (for the fix18 investigation) to app-log. Only when the TOMARIGI_SCAN_LOG
-/// environment variable is set
-#[tauri::command]
-pub(crate) fn scan_log_enabled() -> bool {
-    std::env::var_os("TOMARIGI_SCAN_LOG").is_some()
-}
 
 #[derive(Serialize)]
 pub(crate) struct PeerScan {
