@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "返回"
+  },
+  "hideWindowButtonLabel": {
+    "message": "隱藏視窗（可從選單列圖示叫回）"
   }
 }

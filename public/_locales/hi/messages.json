@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "वापस"
+  },
+  "hideWindowButtonLabel": {
+    "message": "विंडो छिपाएँ (मेन्यू बार आइकन से वापस लाएँ)"
   }
 }

@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "ফিরে যান"
+  },
+  "hideWindowButtonLabel": {
+    "message": "উইন্ডো লুকান (মেনু বারের আইকন থেকে ফিরিয়ে আনুন)"
   }
 }

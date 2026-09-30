@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Kembali"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Sembunyikan jendela (buka lagi dari ikon bilah menu)"
   }
 }

@@ -28,9 +28,9 @@ export interface SessionEvent {
   // IndexedDB, so appendToEventLog strips it right before saving (it stays in the in-memory
   // sessionEventCache/events, so it can still be used for the readout at the moment App.tsx detects a new done)
   assistantText?: string;
-  // Whether Jev judged the done turn as needs reply (recordAskJudgement). Shown in the debug dialog
+  // Whether Jev judged the done turn as needs reply (recordAskJudgement). Shown in the debug log screen
   ask?: AskJudgement;
-  // Jev's abuse verdict for the user message of a started event (recordAngerJudgement). Shown in the debug dialog
+  // Jev's abuse verdict for the user message of a started event (recordAngerJudgement). Shown in the debug log screen
   anger?: AngerJudgement;
   // Whether this session's bird has the anger mark now. App sets it only for display; it is not written to the
   // persistent log

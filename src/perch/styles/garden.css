@@ -3,14 +3,14 @@
 /* Garden tab: a view where sessions can be freely placed as "birds in the garden" (issue #12).
    Nodes are absolutely positioned with % coordinates, so the reference container needs a definite height, but a
    fixed px height leaves dead space at the bottom when the window is resized. So the height flows via flex from
-   .page (#tabpanel-garden is its direct flex child), and the garden always fills "all of the window that's left at
+   .page-body (#tabpanel-garden is its direct flex child), and the garden always fills "all of the window that's left at
    the moment" */
 #tabpanel-garden {
   flex: 1;
   display: flex;
   flex-direction: column;
   /* When the garden grows vertically to fit the number of birds (gardenMinHeight in garden.tsx), grow with it and
-     let the page scroll */
+     let .page-body scroll */
   min-height: auto;
 }
 
@@ -24,7 +24,7 @@
   display: flex;
   flex-direction: column;
   /* When the garden grows vertically to fit the number of birds (gardenMinHeight in garden.tsx), grow with it and
-     let the page scroll */
+     let .page-body scroll */
   min-height: auto;
 }
 

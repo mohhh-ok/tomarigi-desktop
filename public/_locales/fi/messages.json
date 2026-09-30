@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Takaisin"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Piilota ikkuna (tuo takaisin valikkorivin kuvakkeesta)"
   }
 }

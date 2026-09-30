@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { MdClose } from "react-icons/md";
 import { loadPersistedEvents, type SessionEvent } from "@/lib/sessions";
 
 type SaveStatus = "idle" | "saved";
@@ -31,7 +30,7 @@ function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
-// Opened as an in-page dialog from App.tsx's header (opening directly with ?debug=1 only makes showDebug's
+// Opened as a screen (like settings) from App.tsx's header (opening directly with ?debug=1 only makes showDebug's
 // initial value true; after that the URL is never touched). Lists as is the persistent history of fired
 // event decisions that lib/session-event-log.ts stores (eventLog in lib/settings-store.ts). Never touches real data, root settings,
 // BYOK, etc. It's a debug screen, so there's no i18n and hardcoded English is fine
@@ -73,7 +72,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
     };
   }, []);
 
-  // Close on Escape (because it's a dialog-like UI)
+  // Close on Escape (same as settings)
   useEffect(() => {
     const doc = overlayRef.current?.ownerDocument ?? document;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -115,16 +114,9 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    // fixed + z-index overlays the whole screen above App. App's DOM tree stays
-    // behind it as is, so mounting/unmounting here doesn't affect App (the scan loop)
-    <div className="debug-overlay" ref={overlayRef}>
-      <div className="page debug-page">
-        <div className="page-header">
-          <h1 className="brand">tomarigi event log (debug)</h1>
-          <button className="small" onClick={onClose} aria-label="Close" title="Close">
-            <MdClose size={16} />
-          </button>
-        </div>
+    // Shown in App's .page-body under the header, in place of the tabs' content, the same way as settings
+    // (App renders the "‹ Back" row). Unmounting it doesn't affect App (the scan loop)
+    <div className="debug-log" ref={overlayRef}>
         <p className="note">
           Persistent history of events fired by lib/sessions.ts (up to 500 entries, no TTL).
         </p>
@@ -191,7 +183,6 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
             ))}
           </ul>
         )}
-      </div>
     </div>
   );
 }

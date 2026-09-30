@@ -9,7 +9,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 - Bird states (sprites, aura while working, motion animations), and drag placement in the Garden
 - Icon sets (birds / gnome / cat / robot / frog) assigned per project
 - Web Audio chirps (mute, volume), speechSynthesis readout (opt-in, volume), BYOK (OpenAI / Anthropic / TypeSafe) for summaries on done, Jev verdicts, and connection tests
-- Persistent event history and a debug dialog
+- Persistent event history and a debug log screen
 - i18n (see "Language")
 - Mock mode (presets + JSON injection)
 
@@ -68,7 +68,10 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 - The app watches for as long as it runs and is controlled from the menu bar icon (left click toggles show/hide, right click opens the menu)
 - The menu bar icon is `src-tauri/icons/tray.png` (a template image; Tauri's tray only accepts PNG)
-- The × at the right end of the header hides the window (bring it back from the menu bar icon)
+- The × at the right end of the header hides the window (bring it back from the menu bar icon). Its label says "hide window", not "close", so it isn't mistaken for leaving settings or a dialog
+- The header and the row under it (the tabs, or the settings bar while in settings) stay at the top; only the content below them scrolls. The add-folder dialog follows the same rule: its title and × stay in view and only its content scrolls
+- The debug log is a screen like settings: it replaces the tabs' content under the header (the header buttons stay), shows a "‹ Back" row in place of the tabs, and closes with Back, the debug button again, or Esc. Settings and the debug log are never open at the same time
+- Settings: ⚙ in the header opens it. While open, the tab row is replaced by a bar with "‹ Back" and the "Settings" title. Back, ⚙ again, or Esc (when no dialog or inline edit is open) returns to the tab that was showing
 - Single instance (tauri-plugin-single-instance). A second launch shows the existing window and exits
 - Window mode: switch between floating and standard windows, from the settings screen or the menu bar menu
   - Floating (default): a floating NSPanel (tauri-nspanel). Transparent, frameless, always on top, and shown above full-screen spaces too. It can be dragged from anywhere on its background. The window has a shadow. The app stays out of the Dock and Cmd+Tab (activation policy Accessory)
@@ -103,7 +106,7 @@ Applies to the floating window's Garden tab only.
 
 - Birds without a saved (dragged) position are placed automatically in the Garden on a grid sized from the garden and one bird's size (name, icon, bubble room, status lines, marks). Cell centers are used as is (not pulled in from the edges), so neighbours keep a full cell apart
 - Every bird whose process is alive is placed in the Garden, however long it has been idle, including `dozing` birds. There is no nest
-- When the birds don't fit (e.g. many birds in the 340px floating window), the garden grows taller and the window scrolls instead of overlapping birds. Watch blocks count by their own height
+- When the birds don't fit (e.g. many birds in the 340px floating window), the garden grows taller and the content area scrolls instead of overlapping birds. Watch blocks count by their own height
 - Status lines: line 1 is the state and elapsed time, line 2 the tool name. Inside watch blocks, line 1 is the state and line 2 the elapsed time and tool name
 - When the window is wide, Perch and Recent activity are centered at a max width of about 720px, and settings at 560px. The Garden uses the full width
 
@@ -127,7 +130,7 @@ Applies to the floating window's Garden tab only.
 - While the "?" is shown, the event marks under the bird (✓ for done, "?" for waiting) are hidden
 - Noul criteria: yes = stopped in a state where it can't proceed until the user answers, such as presenting options, asking for approval, or asking for information. no = just reported finished work (including optional add-ons that need no answer)
 - Without a TypeSafe key, Jev is not used and the "?" comes only from the machine state waiting
-- The "?" is a badge shared by all icon sets, drawn over the bird. The asking threshold is probability 0.5 (a single constant). Chirps and readout on done don't wait for Jev. Verdicts are logged in the debug dialog
+- The "?" is a badge shared by all icon sets, drawn over the bird. The asking threshold is probability 0.5 (a single constant). Chirps and readout on done don't wait for Jev. Verdicts are logged in the debug log screen
 
 ## Anger mark for abuse toward the AI
 
@@ -142,7 +145,7 @@ Applies to the floating window's Garden tab only.
 - What counts as the user's message: the latest `user` entry in the transcript that is a person's text. Excluded: tool_result, isMeta lines, lines whose `origin.kind` is not `human` (task notifications etc.), and machine text starting with `<` (slash command echoes, bash-input) or `[Request interrupted`. The first 500 characters are sent. Codex uses the user messages its adapter already keeps
 - The latest message seen is remembered per session, so it survives the 64KB tail window filling up with tool output. Bytes appended between two polls that already fell outside the window (a large tool result right after the message) are scanned separately so the message isn't missed (Claude Code transcripts only)
 - At launch, the latest message of each session on screen is judged once. While a new message is being judged, the previous verdict stays shown
-- Verdicts are logged as `[jev] anger <status> p=<probability>` in the app log and shown on the started event of that message in the debug dialog
+- Verdicts are logged as `[jev] anger <status> p=<probability>` in the app log and shown on the started event of that message in the debug log screen
 
 ## Speech bubbles
 
@@ -157,7 +160,7 @@ Applies to the floating window's Garden tab only.
 
 ## Other
 
-- "Save" in the debug dialog is written by Rust to `~/Downloads/tomarigi-eventlog-<project>.json`. Existing files are not overwritten; " (1)" etc. is appended
+- "Save" in the debug log screen is written by Rust to `~/Downloads/tomarigi-eventlog-<project>.json`. Existing files are not overwritten; " (1)" etc. is appended
 - File reading: `src/lib/native-fs.ts` exposes the subset of FileSystemDirectoryHandle / File methods the app uses, in the same shape, and calls Rust's `fs_list` / `fs_stat` / `fs_read`. `@/` points to `src`
 - Mock mode and other launch options are listed in README.md
 

@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Atgal"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Slėpti langą (grąžinsite meniu juostos piktograma)"
   }
 }

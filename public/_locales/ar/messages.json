@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "رجوع"
+  },
+  "hideWindowButtonLabel": {
+    "message": "إخفاء النافذة (يمكن إعادتها من أيقونة شريط القوائم)"
   }
 }

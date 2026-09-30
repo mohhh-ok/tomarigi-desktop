@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Voltar"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Ocultar janela (reabra pelo ícone da barra de menus)"
   }
 }

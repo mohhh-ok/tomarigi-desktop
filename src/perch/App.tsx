@@ -25,6 +25,7 @@ import { EventFeed } from "./event-feed";
 import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
 import { useGardenFade } from "./garden-fade";
+import { BackBar } from "./back-bar";
 import { AiKeySettings } from "./settings/ai-key-settings";
 import { IconSetSettings, type IconSetRow } from "./settings/icon-set-settings";
 import { RootAddDialog } from "./settings/root-add-dialog";
@@ -54,7 +55,7 @@ type Tab = "perch" | "events" | "garden";
 // Grabbing the window background moves the whole window. Excludes clickable controls, text inputs, birds (garden
 // drag), and scrolling lists
 const NO_WINDOW_DRAG =
-  "button, input, select, textarea, a, label, kbd, code, .garden-node, .bird, .chick, .event-card, .debug-overlay, .mock-panel, .root-add-overlay";
+  "button, input, select, textarea, a, label, kbd, code, .garden-node, .bird, .chick, .event-card, .debug-log, .mock-panel, .root-add-overlay";
 
 export default function App({
   source,
@@ -112,12 +113,28 @@ export default function App({
   } = useSettings();
   const { requestJudgements, displaySessions } = useTurnJudgements(sessions, aiKeySet);
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
-  // it is treated as an in-page dialog opened and closed by this state alone
+  // it is a screen (like settings) opened and closed by this state alone
   const [showDebug, setShowDebug] = useState(
     () => new URLSearchParams(location.search).has("debug"),
   );
   const [rootDialogOpen, setRootDialogOpen] = useState(false);
   const closeDebug = useCallback(() => setShowDebug(false), []);
+  // Esc leaves settings. Skipped while a dialog or a folder name edit is open, because their own Esc handlers close
+  // just that one thing and the same key press shouldn't also drop the user out of settings
+  useEffect(() => {
+    if (!settingsOpen || showDebug || rootDialogOpen || editing) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSettingsOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [settingsOpen, showDebug, rootDialogOpen, editing]);
+  // Settings, the debug log, and the tabs share one scroll area, so start each side from the top instead of carrying over where the
+  // other one was scrolled to
+  const pageBodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    pageBodyRef.current?.scrollTo(0, 0);
+  }, [settingsOpen, showDebug]);
   const scanBusyRef = useRef(false); // Prevents overlapping runs when a scan exceeds POLL_MS (prevents double chirps)
   // issue #6: every chirp fires from ScanResult.events (the old state-edge detection was removed).
   // Set of observed event keys. Remembers events that already chirped (or were judged for chirping) so the
@@ -429,7 +446,11 @@ export default function App({
             {/* A debug-only button, so no i18n; English is hardcoded (same policy as DebugApp.tsx) */}
             <button
               className={showDebug ? "small active" : "small"}
-              onClick={() => setShowDebug((v) => !v)}
+              onClick={() => {
+                // Settings and the debug log are both screens shown in place of the tabs, so only one is open
+                setSettingsOpen(false);
+                setShowDebug((v) => !v);
+              }}
               aria-label="Debug log"
               title="Debug log"
               aria-pressed={showDebug}
@@ -438,7 +459,10 @@ export default function App({
             </button>
             <button
               className={settingsOpen ? "small active" : "small"}
-              onClick={() => setSettingsOpen((v) => !v)}
+              onClick={() => {
+                setShowDebug(false);
+                setSettingsOpen((v) => !v);
+              }}
               aria-label={t("tabSettingsLabel")}
               aria-pressed={settingsOpen}
             >
@@ -446,30 +470,31 @@ export default function App({
             </button>
             </>
           )}
-          {/* Hides the window. It can be brought back from the menu bar icon */}
+          {/* Hides the window. It can be brought back from the menu bar icon. Labeled as "hide window" rather than "close",
+              so it isn't mistaken for leaving settings or a dialog */}
           <button
             className="small"
             onClick={() => void invoke("hide_window")}
-            aria-label={t("closeButtonAria")}
-            title={t("closeButtonAria")}
+            aria-label={t("hideWindowButtonLabel")}
+            title={t("hideWindowButtonLabel")}
           >
             <MdClose size={16} />
           </button>
         </div>
       </div>
-      {phase === "loading" && <p className="note">{t("loadingLabel")}</p>}
-      {phase === "ready" && source.usesRoots && roots.length === 0 && (
-        <section className="setup">
-          <p>{t("setupIntro")}</p>
-          <button onClick={() => setRootDialogOpen(true)}>{t("setupButton")}</button>
-          {addMessage && <p className="add-message">{addMessage}</p>}
-        </section>
-      )}
-      {showTabs && (
-        <>
-          {/* While in settings, the tab bar is hidden and you go back via ⚙. Tabs are only the "views (Perch/events)";
-              settings are a separate level, so they aren't listed here */}
-          {!settingsOpen && (
+      {/* While in settings, the tab row is replaced by a bar with Back and the title, so the way out is written on
+          screen (⚙ again and Esc also close it). Tabs are only the "views"; settings are a separate level, so they
+          aren't listed as a tab. This row sits outside .page-body so it stays put while the content scrolls */}
+      {showDebug ? (
+        <BackBar backLabel="Back" title="Event log (debug)" onBack={closeDebug} />
+      ) : showTabs &&
+        (settingsOpen ? (
+          <BackBar
+            backLabel={t("settingsBackButton")}
+            title={t("tabSettingsLabel")}
+            onBack={() => setSettingsOpen(false)}
+          />
+        ) : (
             <div className="tabs" role="tablist">
               <button
                 type="button"
@@ -505,14 +530,26 @@ export default function App({
                 {t("eventFeedHeading")}
               </button>
             </div>
-          )}
+        ))}
+      {/* Only this area scrolls, so the header (⚙ and ×) and the tab / settings row stay visible */}
+      <div className="page-body" ref={pageBodyRef}>
+      {phase === "loading" && <p className="note">{t("loadingLabel")}</p>}
+      {phase === "ready" && source.usesRoots && roots.length === 0 && (
+        <section className="setup">
+          <p>{t("setupIntro")}</p>
+          <button onClick={() => setRootDialogOpen(true)}>{t("setupButton")}</button>
+          {addMessage && <p className="add-message">{addMessage}</p>}
+        </section>
+      )}
+      {showTabs && (
+        <>
           {/* Each tab panel stays mounted and is hidden with the hidden attribute (recreating it on every tab
               switch would lose internal state such as Garden's). Same hidden while in settings */}
           <section
             role="tabpanel"
             id="tabpanel-events"
             aria-labelledby="tab-btn-events"
-            hidden={settingsOpen || tab !== "events"}
+            hidden={settingsOpen || showDebug || tab !== "events"}
           >
             <div className="stage stage-events">
               <EventFeed
@@ -527,7 +564,7 @@ export default function App({
             role="tabpanel"
             id="tabpanel-perch"
             aria-labelledby="tab-btn-perch"
-            hidden={settingsOpen || tab !== "perch"}
+            hidden={settingsOpen || showDebug || tab !== "perch"}
           >
             <div className="stage stage-perch">
               <Perch
@@ -543,7 +580,7 @@ export default function App({
             role="tabpanel"
             id="tabpanel-garden"
             aria-labelledby="tab-btn-garden"
-            hidden={settingsOpen || tab !== "garden"}
+            hidden={settingsOpen || showDebug || tab !== "garden"}
           >
             <div className="stage stage-garden">
               <Garden
@@ -556,7 +593,7 @@ export default function App({
               />
             </div>
           </section>
-          <section className="settings-panel" hidden={!settingsOpen}>
+          <section className="settings-panel" hidden={!settingsOpen || showDebug}>
             {/* Watched folder management is the roots/perms subsystem itself, so it is hidden entirely
                 in mock (no substitute). BYOK, volume, and readout settings work as the real thing
                 even in mock (see AiKeySettings and voice-controls below) */}
@@ -682,8 +719,11 @@ export default function App({
           </section>
         </>
       )}
-      {/* An independent in-page dialog that doesn't affect App's scan loop at all */}
+      {/* The debug log takes the place of the tabs' content, like settings. English only (docs/design.md "Language") */}
       {showDebug && <DebugApp onClose={closeDebug} />}
+      {/* Control panel only for the mock source (MockPanel passed by boot.tsx) */}
+      {extraPanel}
+      </div>
       {rootDialogOpen && (
         <RootAddDialog
           onClose={() => setRootDialogOpen(false)}
@@ -693,8 +733,6 @@ export default function App({
           }}
         />
       )}
-      {/* Control panel only for the mock source (MockPanel passed by boot.tsx) */}
-      {extraPanel}
     </main>
   );
 }

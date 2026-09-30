@@ -28,3 +28,44 @@
   color: #e9e6de;
   border-bottom-color: #d9b06a;
 }
+
+/* Row that replaces the tabs on settings and the debug log (back-bar.tsx). Same margin, border, and height as .tabs,
+   so the header and content don't shift when entering or leaving. The exit is written as text ("‹ Back") rather than relying on the
+   ⚙ toggle, because × next to ⚙ hides the window and is easy to mistake for "close settings" */
+.back-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 4px;
+  border-bottom: 1px solid #2a2922;
+}
+
+.back-bar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  /* Same padding as .tab-btn so the row height matches; the left side is trimmed so the chevron lines up with the
+     first tab's text */
+  padding: 8px 10px 10px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8d887c;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+
+.back-bar-button:hover {
+  background: transparent;
+  color: #e9e6de;
+}
+
+.back-bar-title {
+  margin: 0;
+  padding: 8px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e9e6de;
+  border-bottom: 2px solid #d9b06a;
+}

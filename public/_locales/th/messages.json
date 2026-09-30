@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "กลับ"
+  },
+  "hideWindowButtonLabel": {
+    "message": "ซ่อนหน้าต่าง (เปิดคืนได้จากไอคอนในแถบเมนู)"
   }
 }

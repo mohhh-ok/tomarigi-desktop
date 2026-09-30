@@ -3,15 +3,15 @@
 
 /* In mock mode (TOMARIGI_MOCK=1), the mock panel follows below in the window. Flowing the surface into the rest of
    the window makes it fight the panel for space and get squashed, so give the surface a fixed height and scroll the
-   whole window */
-.page:has(.mock-panel) > * {
+   content area */
+.page-body:has(.mock-panel) > * {
   flex-shrink: 0;
 }
 
 /* At least 300px. If the window is tall (maximized as a standard window), use the space left above the mock panel */
-.page:has(.mock-panel) #tabpanel-garden,
-.page:has(.mock-panel) #tabpanel-perch,
-.page:has(.mock-panel) #tabpanel-events {
+.page-body:has(.mock-panel) #tabpanel-garden,
+.page-body:has(.mock-panel) #tabpanel-perch,
+.page-body:has(.mock-panel) #tabpanel-events {
   flex: 1 0 300px;
 }
 
@@ -40,4 +40,13 @@
   width: 100%;
   max-width: 560px;
   margin-inline: auto;
+}
+
+/* Each settings section starts with its own separator line (.roots, .judge, .voice-controls, ...). The first one sits
+   right under .back-bar, whose bottom border already separates it, so drop its line and top gap to avoid a
+   double line. Which section comes first depends on the source (watched folders are hidden in mock) */
+.settings-panel > :first-child {
+  margin-top: 14px;
+  padding-top: 0;
+  border-top: none;
 }

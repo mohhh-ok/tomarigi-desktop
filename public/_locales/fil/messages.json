@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Bumalik"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Itago ang window (ibalik mula sa icon sa menu bar)"
   }
 }

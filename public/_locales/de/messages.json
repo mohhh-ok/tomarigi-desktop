@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Zurück"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Fenster ausblenden (über das Menüleistensymbol wieder öffnen)"
   }
 }

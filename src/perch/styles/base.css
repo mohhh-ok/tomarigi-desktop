@@ -33,16 +33,26 @@ body {
 .page {
   height: 100%;
   padding: 6px 10px 8px;
-  /* Make the whole page a vertical flex so the Garden tab can fill the remaining vertical space */
+  /* Vertical flex: the header and the tab / settings row stay at the top, and .page-body takes the rest and scrolls */
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
   /* Semi-transparent, so what's behind shows blurred through the frosted glass behind the window (set_backdrop in
      src-tauri). This is to feel less heavy, not to make the background readable (docs/design.md "Window and menu bar").
      The opacity is fixed */
   background: rgba(22, 22, 28, 0.75);
   border: 1px solid #2e2c25;
   border-radius: 12px;
+}
+
+/* The only scrolling area. If the whole .page scrolled, ⚙ and × in the header scrolled away with the content.
+   Also a vertical flex so the Garden tab can fill the remaining vertical space */
+.page-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 /* Verification build (data-build="verify" in boot.tsx). A color to tell it apart from the everyday build */
@@ -69,6 +79,7 @@ html[data-window-mode="normal"] .page {
 
 .page-header,
 .tabs,
+.back-bar,
 .garden-name,
 .garden-status,
 .garden-watch-count,
@@ -90,6 +101,7 @@ html[data-window-mode="normal"] .page {
 :root[data-fade="rest"] :is(
     .page-header,
     .tabs,
+    .back-bar,
     .garden-name,
     .garden-status,
     .garden-watch-count,

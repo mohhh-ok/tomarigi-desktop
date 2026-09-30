@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Natrag"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Sakrij prozor (vrati ga ikonom na traci izbornika)"
   }
 }

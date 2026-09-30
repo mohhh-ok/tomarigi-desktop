@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Назад"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Скрыть окно (вернуть можно через значок в строке меню)"
   }
 }

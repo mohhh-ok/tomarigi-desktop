@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Indietro"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Nascondi finestra (riaprila dall’icona nella barra dei menu)"
   }
 }

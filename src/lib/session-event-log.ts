@@ -1,4 +1,4 @@
-// Recent activity (sessionEventCache) and the persistent event log for the debug dialog
+// Recent activity (sessionEventCache) and the persistent event log for the debug log screen
 import { loadEventLog, saveEventLog } from "./settings-store";
 import type { AngerJudgement, AskJudgement } from "./jev";
 import type { SessionEvent } from "./session-types";
@@ -116,7 +116,7 @@ export function saveEventLogIfDirty(): void {
 
 /**
  * Writes the Jev verdict to the persistent log entry of the same turn's done event (key = sessionId:at:done),
- * to see the probability in the debug dialog. Not written when the done isn't in the log yet (e.g. suppressed)
+ * to see the probability in the debug log screen. Not written when the done isn't in the log yet (e.g. suppressed)
  */
 export function recordAskJudgement(sessionId: string, at: number, ask: AskJudgement): void {
   const key = `${sessionId}:${at}:done`;
@@ -134,7 +134,7 @@ export function recordAngerJudgement(sessionId: string, at: number, anger: Anger
   eventLogState.dirty = true;
 }
 
-/** Entry point for DebugApp in the debug dialog to read the persistent event log.
+/** Entry point for DebugApp in the debug log screen to read the persistent event log.
  * The value type is owned by lib/session-types.ts, so this wraps loadEventLog<T> from lib/settings-store.ts.
  * Retired types (formerly "harsh" etc.) are ignored via KNOWN_EVENT_TYPES (same policy as hydrateEventLog) */
 export async function loadPersistedEvents(): Promise<SessionEvent[]> {

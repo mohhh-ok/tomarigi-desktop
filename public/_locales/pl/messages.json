@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Wstecz"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Ukryj okno (przywróć ikoną na pasku menu)"
   }
 }

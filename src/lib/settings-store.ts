@@ -181,7 +181,7 @@ export const saveVoiceVolume = (volume: number) => kvPut(KEY_VOICE_VOLUME, volum
 export const loadChirpVolume = () => loadVolume(KEY_CHIRP_VOLUME);
 export const saveChirpVolume = (volume: number) => kvPut(KEY_CHIRP_VOLUME, volume);
 
-// History of fired event decisions (for debugging). A persistent log viewed in the debug dialog.
+// History of fired event decisions (for debugging). A persistent log viewed in the debug log screen.
 // The in-memory sessionEventCache has a 30-minute TTL and at most 30 entries and is lost on reload, so
 // this is persisted separately so you can check later "did a done fire at this time". Not removed by TTL;
 // only the last 500 entries are kept (the count limit is managed by the caller, lib/session-event-log.ts).

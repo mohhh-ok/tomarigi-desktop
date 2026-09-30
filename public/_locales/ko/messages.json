@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "뒤로"
+  },
+  "hideWindowButtonLabel": {
+    "message": "창 숨기기(메뉴 막대 아이콘으로 다시 열 수 있음)"
   }
 }

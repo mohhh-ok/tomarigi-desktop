@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Enrere"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Amaga la finestra (es recupera des de la icona de la barra de menús)"
   }
 }

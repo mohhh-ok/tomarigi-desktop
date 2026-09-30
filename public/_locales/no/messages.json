@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Tilbake"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Skjul vinduet (hent det tilbake via menylinjeikonet)"
   }
 }

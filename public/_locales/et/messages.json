@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Tagasi"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Peida aken (too tagasi menüüriba ikoonilt)"
   }
 }

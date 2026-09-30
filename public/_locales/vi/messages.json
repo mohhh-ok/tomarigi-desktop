@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Quay lại"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Ẩn cửa sổ (mở lại từ biểu tượng trên thanh menu)"
   }
 }

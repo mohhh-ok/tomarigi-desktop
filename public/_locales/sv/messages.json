@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Tillbaka"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Dölj fönstret (ta fram det via menyradsikonen)"
   }
 }

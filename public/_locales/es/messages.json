@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Atrás"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Ocultar ventana (se recupera desde el icono de la barra de menús)"
   }
 }

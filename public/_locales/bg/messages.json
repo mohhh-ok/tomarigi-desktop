@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Назад"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Скриване на прозореца (връща се от иконата в лентата с менюта)"
   }
 }

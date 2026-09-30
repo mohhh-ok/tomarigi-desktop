@@ -129,6 +129,8 @@ export const KEYS = [
   "byokSaveFailedMessage",
   "typeSafeSiteLink",
   "quotedSnippet",
+  "settingsBackButton",
+  "hideWindowButtonLabel",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

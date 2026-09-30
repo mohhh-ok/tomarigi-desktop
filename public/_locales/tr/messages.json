@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Geri"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Pencereyi gizle (menü çubuğu simgesinden geri getirilir)"
   }
 }

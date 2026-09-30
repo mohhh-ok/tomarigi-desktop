@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "戻る"
+  },
+  "hideWindowButtonLabel": {
+    "message": "窓を隠す（メニューバーのアイコンで戻せます）"
   }
 }

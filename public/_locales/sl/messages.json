@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Nazaj"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Skrij okno (vrnete ga z ikono v menijski vrstici)"
   }
 }

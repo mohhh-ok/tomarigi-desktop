@@ -77,7 +77,7 @@ export const scanState = {
   continuedFrom: new Map<string, string>(),
 };
 
-// Persistent event log for debugging (the debug dialog). Unlike sessionEventCache it is not cleared by the
+// Persistent event log for debugging (the debug log screen). Unlike sessionEventCache it is not cleared by the
 // 30-minute TTL; only the last MAX_EVENT_LOG entries are kept. knownLogKeys is an all-time marker of "has this
 // ever been written to the log", and acts as a barrier against double appends to the log even when the same
 // event is re-derived from the tail after sessionEventCache pruned it by the 30-minute TTL (which looks like

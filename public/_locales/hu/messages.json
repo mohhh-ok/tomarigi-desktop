@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Vissza"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Ablak elrejtése (a menüsor ikonjával visszahozható)"
   }
 }

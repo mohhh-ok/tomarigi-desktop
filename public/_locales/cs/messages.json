@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "Zpět"
+  },
+  "hideWindowButtonLabel": {
+    "message": "Skrýt okno (vrátíte ho ikonou v řádku nabídek)"
   }
 }

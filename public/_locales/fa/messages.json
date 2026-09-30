@@ -280,5 +280,11 @@
         "content": "$1"
       }
     }
+  },
+  "settingsBackButton": {
+    "message": "بازگشت"
+  },
+  "hideWindowButtonLabel": {
+    "message": "پنهان کردن پنجره (از نماد نوار منو برمی‌گردد)"
   }
 }
