@@ -26,7 +26,6 @@ import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
 import { useGardenFade } from "./garden-fade";
 import { useGardenGrow } from "./garden-grow";
-import type { GardenFit } from "@/lib/garden-fit";
 import { BackBar } from "./back-bar";
 import { AiKeySettings } from "./settings/ai-key-settings";
 import { IconSetSettings, type IconSetRow } from "./settings/icon-set-settings";
@@ -365,10 +364,8 @@ export default function App({
   );
   // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
   // Garden, so it doesn't count
-  const [gardenFit, setGardenFit] = useState<GardenFit | null>(null);
-  useGardenGrow(
+  const onGardenFit = useGardenGrow(
     windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
-    gardenFit,
     displaySessions.length,
   );
 
@@ -600,7 +597,7 @@ export default function App({
                 iconSetAssignments={iconSetAssignments}
                 onFocus={onFocusSession}
                 canFocus={canFocus}
-                onFit={setGardenFit}
+                onFit={onGardenFit}
               />
             </div>
           </section>

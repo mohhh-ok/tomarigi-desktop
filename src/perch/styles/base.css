@@ -52,7 +52,8 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  /* Always scroll (not auto): see the scrollbar notes under "Fade until hovered" below */
+  overflow-y: scroll;
 }
 
 /* Verification build (data-build="verify" in boot.tsx). A color to tell it apart from the everyday build */
@@ -93,15 +94,17 @@ html[data-window-mode="normal"] .page {
   border-color: rgba(46, 44, 37, 0.08);
 }
 
-/* No scrollbar at rest. The room for it is always kept (scrollbar-gutter), so the content width doesn't change and the
-   birds (placed by % of the width) don't shift under the cursor when the window fades in. Hidden by overflow, not by
-   restyling the thumb: WebKit doesn't repaint a scrollbar when only its ::-webkit-scrollbar style changes (observed) */
-.page-body {
-  scrollbar-gutter: stable;
-}
-
+/* The scrollbar's room is always kept, so the content width never depends on whether the content overflows. When the
+   width did (the scrollbar came and went), the Garden's needed height changed with the width, which toggled the
+   scrollbar again, until React stopped with "Maximum update depth exceeded" and the page went blank (observed).
+   scrollbar-gutter: stable didn't keep the room in the app's WebView (observed), so the bar is always shown (no thumb
+   while there is nothing to scroll).
+   No scrollbar at rest: hidden by overflow, not by restyling the thumb (WebKit doesn't repaint a scrollbar when only its
+   ::-webkit-scrollbar style changes; observed), and the same width is kept by padding so the birds (placed by % of the
+   width) don't shift under the cursor when the window fades in */
 :root[data-fade="rest"] .page-body {
   overflow-y: hidden;
+  padding-right: 8px;
 }
 
 .page-body::-webkit-scrollbar {

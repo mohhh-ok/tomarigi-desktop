@@ -67,6 +67,21 @@ function visibleWidth(node: HTMLElement | null): number {
   return width;
 }
 
+interface GardenSize {
+  w: number;
+  h: number;
+  viewH: number;
+}
+
+/** The garden's size, and its height without its own stretching (minHeight): the scroll area's visible height minus
+    what else is in it (padding, margins) */
+function measureGarden(el: HTMLElement): GardenSize {
+  const { width, height } = el.getBoundingClientRect();
+  const body = el.closest<HTMLElement>(".page-body");
+  const viewH = body ? body.clientHeight - (body.scrollHeight - el.offsetHeight) : height;
+  return { w: width, h: height, viewH: Math.max(0, viewH) };
+}
+
 // Gap left between birds by auto placement (px)
 const AUTO_GAP_PX = 12;
 // Keep speech bubbles this far inside the garden frame
@@ -154,9 +169,13 @@ export function Garden({
     };
   }, []);
 
-  // Actual size of the container (.garden). Used to compute the glyph size from the number of birds.
+  // Actual size of the container (.garden), and the height the garden has without its own stretching (viewH).
   // Follows window resizes via ResizeObserver
-  const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [containerSize, setContainerSize] = useState<GardenSize>({ w: 0, h: 0, viewH: 0 });
+  const updateContainerSize = (el: HTMLElement) => {
+    const next = measureGarden(el);
+    setContainerSize((prev) => (prev.w === next.w && prev.h === next.h && prev.viewH === next.viewH ? prev : next));
+  };
 
   // The garden frame (.garden) isn't drawn when there are no birds (the early return below). If the frame was missing
   // on the first render, the observer was never attached and the layout stayed at the old size even after resizing the
@@ -166,10 +185,7 @@ export function Garden({
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const measure = () => {
-      const { width, height } = el.getBoundingClientRect();
-      setContainerSize((prev) => (prev.w === width && prev.h === height ? prev : { w: width, h: height }));
-    };
+    const measure = () => updateContainerSize(el);
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     const win = el.ownerDocument.defaultView ?? window;
@@ -183,15 +199,11 @@ export function Garden({
 
   // Safeguard in case ResizeObserver misses a change (added in the Chrome extension, where the garden was moved into
   // the PiP window's document; whether the desktop app still needs it hasn't been checked).
-  // Re-measuring with getBoundingClientRect after every render means the re-render from the 3-second
-  // polling catches up within 3 seconds at most. Skip setState if the value is unchanged (avoids an infinite loop)
+  // Re-measuring after every render means the re-render from the 3-second polling catches up within 3 seconds at
+  // most. Skip setState if the value is unchanged (avoids an infinite loop)
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setContainerSize((prev) =>
-      prev.w === rect.width && prev.h === rect.height ? prev : { w: rect.width, h: rect.height },
-    );
+    if (el) updateContainerSize(el);
   });
 
   // Birds already present when the tab is first shown should be laid out statically without the fly-in animation.
@@ -258,8 +270,11 @@ export function Garden({
 
   // Decide the glyph size from the number of birds and the container's actual size. At zero width (tab hidden),
   // skip the computation and keep the previous value (held in a ref)
-  if (containerSize.w > 0 && containerSize.h > 0) {
-    glyphSizeRef.current = gardenGlyphSize(containerSize.w, containerSize.h, sessions.length);
+  // From viewH, not h: h is stretched by gardenMinHeight, which depends on the glyph size, and feeding it back
+  // made the size go back and forth on every render until React stopped with "Maximum update depth exceeded" and
+  // the whole page went blank (observed)
+  if (containerSize.w > 0 && containerSize.viewH > 0) {
+    glyphSizeRef.current = gardenGlyphSize(containerSize.w, containerSize.viewH, sessions.length);
   }
   const glyphSize = glyphSizeRef.current;
 

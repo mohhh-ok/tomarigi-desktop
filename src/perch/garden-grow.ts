@@ -3,7 +3,7 @@
 // direction, caps it at the display's visible area, and keeps the user's size apart from the grown one
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gardenFitScale, nextGrowScale, type GardenFit, type GrowKept } from "@/lib/garden-fit";
 
 interface UserSize {
@@ -15,9 +15,13 @@ interface UserSize {
 
 /**
  * active: floating window, Garden tab, nothing else shown in its place. Otherwise the window goes back to the user's
- * size. birdCount: after a manual resize the window isn't grown back until a bird joins
+ * size. birdCount: after a manual resize the window isn't grown back until a bird joins.
+ * Returns the callback for Garden's onFit. The fit is kept in a ref, not in state: Garden reports it after every
+ * render, and its values move with the layout (measured block heights), so putting it in the parent's state re-rendered
+ * Garden, which reported a different fit again, until React stopped with "Maximum update depth exceeded" and the
+ * whole page went blank (observed)
  */
-export function useGardenGrow(active: boolean, fit: GardenFit | null, birdCount: number) {
+export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenFit | null) => void {
   const [user, setUser] = useState<UserSize | null>(null);
   // Number of birds at the last manual resize. Growth waits until there are more birds than this
   const [heldAt, setHeldAt] = useState<number | null>(null);
@@ -41,14 +45,21 @@ export function useGardenGrow(active: boolean, fit: GardenFit | null, birdCount:
   }, [birdCount, heldAt]);
 
   const held = heldAt !== null && birdCount <= heldAt;
-  const growing = active && fit && user && !held;
-  const needed = growing ? gardenFitScale(user.width, user.height, fit) : 1;
+  // Inputs other than the fit, read by update (which Garden's onFit also calls)
+  const inputsRef = useRef({ active, held, user, birdCount });
+  inputsRef.current = { active, held, user, birdCount };
+  const fitRef = useRef<GardenFit | null>(null);
   // The scale applied while growing. Cleared when not growing, so it starts over from the needed scale
   const keptRef = useRef<GrowKept | null>(null);
   const sentRef = useRef<number | undefined>(undefined);
-  useEffect(() => {
+
+  const update = useCallback(() => {
+    const { active, held, user, birdCount } = inputsRef.current;
+    const fit = fitRef.current;
     let scale = 1;
-    if (growing) {
+    let needed = 1;
+    if (active && fit && user && !held) {
+      needed = gardenFitScale(user.width, user.height, fit);
       scale = nextGrowScale(keptRef.current, needed, birdCount, user.width, user.height);
       keptRef.current = { scale, count: birdCount, userW: user.width, userH: user.height };
     } else {
@@ -60,5 +71,15 @@ export function useGardenGrow(active: boolean, fit: GardenFit | null, birdCount:
     const line = `[grow] page scale=${scale} needed=${needed} birds=${birdCount} fit=${JSON.stringify(fit)}`;
     void invoke("log", { line }).catch(() => {});
     void invoke("garden_fit", { scale }).catch(() => {});
-  });
+  }, []);
+
+  useEffect(update, [active, held, user, birdCount, update]);
+
+  return useCallback(
+    (fit: GardenFit | null) => {
+      fitRef.current = fit;
+      update();
+    },
+    [update],
+  );
 }
