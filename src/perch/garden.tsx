@@ -18,6 +18,11 @@ import {
   saveGardenPositions,
   type GardenPosition,
 } from "@/lib/garden-layout";
+import {
+  gardenGlyphSize,
+  gardenNeededHeight,
+  type GardenFit,
+} from "@/lib/garden-fit";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
@@ -64,8 +69,6 @@ function visibleWidth(node: HTMLElement | null): number {
 
 // Gap left between birds by auto placement (px)
 const AUTO_GAP_PX = 12;
-// min-height of .garden in styles/garden.css (it is overridden via style, so never go below it)
-const GARDEN_MIN_HEIGHT_PX = 220;
 // Keep speech bubbles this far inside the garden frame
 const BUBBLE_EDGE_PX = 4;
 
@@ -117,6 +120,7 @@ export function Garden({
   iconSetAssignments = {},
   onFocus,
   canFocus,
+  onFit,
 }: {
   sessions: SessionView[];
   events: SessionEvent[];
@@ -125,6 +129,9 @@ export function Garden({
   iconSetAssignments?: IconSetAssignments;
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
+  // Receives what decides whether the birds fit, for growing the floating window (garden-grow.ts). null when the
+  // garden isn't measured (no birds, tab hidden)
+  onFit?: (fit: GardenFit | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   // Holds only saved positions (index-based auto placement is not included here).
@@ -252,9 +259,7 @@ export function Garden({
   // Decide the glyph size from the number of birds and the container's actual size. At zero width (tab hidden),
   // skip the computation and keep the previous value (held in a ref)
   if (containerSize.w > 0 && containerSize.h > 0) {
-    const count = Math.max(sessions.length, 1);
-    const raw = Math.sqrt((containerSize.w * containerSize.h) / count) * 0.16;
-    glyphSizeRef.current = Math.min(52, Math.max(26, Math.round(raw)));
+    glyphSizeRef.current = gardenGlyphSize(containerSize.w, containerSize.h, sessions.length);
   }
   const glyphSize = glyphSizeRef.current;
 
@@ -266,14 +271,14 @@ export function Garden({
   // row even in a wide garden
   const anyBubble = sessions.some((s) => bubbleText(s) !== undefined);
   const nodeW = (anyBubble ? BUBBLE_MAX_PX : NODE_WIDTH_PX) + AUTO_GAP_PX;
-  const nodeH =
-    glyphSize +
+  const nodeExtraH =
     NODE_TEXT_PX +
     14 +
     (sessions.some((s) => s.toolName !== undefined) ? STATUS_SUB_PX : 0) +
     (anyBubble ? BUBBLE_ROOM_PX : 0) +
     (sessions.some((s) => s.watching !== undefined) ? WATCH_COUNT_PX : 0) +
     AUTO_GAP_PX;
+  const nodeH = glyphSize + nodeExtraH;
   const grid = gardenGrid(containerSize.w, containerSize.h, nodeW, nodeH, sessions.length);
   const present = new Set(sessions.map((s) => s.id));
   const sticky = autoPosRef.current;
@@ -343,7 +348,33 @@ export function Garden({
     shownSnapshotRef.current = newSnapshot;
   });
 
+  // What decides whether the birds fit, set during render below. The effect adds the window overhead measured
+  // after commit and sends it to onFit only when it changed
+  const fitRef = useRef<Omit<GardenFit, "overheadW" | "overheadH"> | null>(null);
+  const sentFitRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const el = containerRef.current;
+    const body = el?.closest<HTMLElement>(".page-body");
+    const base = fitRef.current;
+    let fit: GardenFit | null = null;
+    if (el && body && base && el.offsetWidth > 0) {
+      // Everything in .page-body other than the garden (tab panel padding, the garden's margin) counts as overhead,
+      // so the garden's own stretched height (gardenMinHeight) doesn't
+      const others = body.scrollHeight - el.offsetHeight;
+      fit = {
+        ...base,
+        overheadW: Math.round(window.innerWidth - el.offsetWidth),
+        overheadH: Math.round(window.innerHeight - body.clientHeight + others),
+      };
+    }
+    const key = JSON.stringify(fit);
+    if (sentFitRef.current === key) return;
+    sentFitRef.current = key;
+    onFit?.(fit);
+  });
+
   if (sessions.length === 0) {
+    fitRef.current = null;
     return (
       <div className="empty">
         {t(hasGranted ? "emptyNoSessions" : "emptyNeedsReauth")}
@@ -370,13 +401,12 @@ export function Garden({
   );
   // When birds don't fit in a narrow garden, stretch the garden vertically (the window scrolls). Better than
   // overlapping them until unreadable. Birds inside watching blocks aren't counted; the block heights are added instead
-  const fitCols = Math.max(1, Math.floor(containerSize.w / nodeW));
   const looseCount = sessions.filter((s) => !watchGroups.groupOf.has(s.id)).length;
   const blocksH = watchGroups.blocks.reduce((sum, b) => sum + b.height + AUTO_GAP_PX, 0);
+  const fitBase = { count: sessions.length, looseCount, nodeW, nodeExtraH, blocksH };
+  fitRef.current = containerSize.w > 0 ? fitBase : null;
   const gardenMinHeight =
-    containerSize.w > 0
-      ? Math.max(GARDEN_MIN_HEIGHT_PX, Math.ceil(looseCount / fitCols) * nodeH + blocksH)
-      : undefined;
+    containerSize.w > 0 ? gardenNeededHeight(containerSize.w, glyphSize, fitBase) : undefined;
   return (
     <div className="garden" ref={containerRef} style={{ minHeight: gardenMinHeight }}>
       {/* Speech bubble layer. Placed above the bird/name layer so no bird's name hides bubble text (or the "…").

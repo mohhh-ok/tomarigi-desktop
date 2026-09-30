@@ -93,6 +93,30 @@ html[data-window-mode="normal"] .page {
   border-color: rgba(46, 44, 37, 0.08);
 }
 
+/* No scrollbar at rest. The room for it is always kept (scrollbar-gutter), so the content width doesn't change and the
+   birds (placed by % of the width) don't shift under the cursor when the window fades in. Hidden by overflow, not by
+   restyling the thumb: WebKit doesn't repaint a scrollbar when only its ::-webkit-scrollbar style changes (observed) */
+.page-body {
+  scrollbar-gutter: stable;
+}
+
+:root[data-fade="rest"] .page-body {
+  overflow-y: hidden;
+}
+
+.page-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.page-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+}
+
+.page-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.36);
+}
+
 :root[data-fade="rest"] .garden {
   background: none;
   border-color: rgba(42, 41, 34, 0.08);

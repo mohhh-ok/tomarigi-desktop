@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 
 use crate::append_log;
+use crate::garden_grow;
 use crate::tray::ModeMenu;
 
 // ---- Window ----
@@ -60,6 +61,9 @@ pub(crate) fn schedule_save(app: &AppHandle) {
             .run_on_main_thread(move || {
                 if let Some(w) = h.get_webview_window("main") {
                     save_window_state(&w);
+                    if !SUPPRESS_SAVE.load(Ordering::SeqCst) {
+                        garden_grow::notify_user_size(&w, true);
+                    }
                 }
             })
             .ok();
@@ -110,7 +114,13 @@ fn save_window_state(win: &WebviewWindow) {
         return;
     }
     let (Ok(pos), Ok(size)) = (win.outer_position(), win.inner_size()) else { return };
-    let state = WindowState { x: pos.x, y: pos.y, width: size.width, height: size.height };
+    let mut state = WindowState { x: pos.x, y: pos.y, width: size.width, height: size.height };
+    // While the floating window is grown for the Garden, save the user's frame (the grown one is never saved)
+    if current_mode() == WindowMode::Floating {
+        if let Some(user) = garden_grow::grown_user_frame() {
+            state = WindowState { x: user.x, y: user.y, width: user.width, height: user.height };
+        }
+    }
     let Some(path) = state_path(win.app_handle(), current_mode()) else { return };
     if let Some(dir) = path.parent() {
         let _ = std::fs::create_dir_all(dir);
@@ -449,6 +459,8 @@ fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
     }
     if p.attempt == 0 {
         save_window_state(&win);
+        // The user's frame was just saved and is what restore_window_state brings back, so drop the grown frame
+        garden_grow::forget();
         // Don't save the Moved / Resized from leaving full screen or maximize as the current mode's position
         SUPPRESS_SAVE.store(true, Ordering::SeqCst);
     }
@@ -513,6 +525,7 @@ fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
             .run_on_main_thread(move || {
                 if let Some(w) = h.get_webview_window("main") {
                     save_window_state(&w);
+                    garden_grow::notify_user_size(&w, false);
                 }
             })
             .ok();

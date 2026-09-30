@@ -7,11 +7,13 @@
 // - window: switches on the fly between the floating window (NSPanel; transparent, borderless, always on top,
 //   also shown above full-screen spaces) and the standard window (with title bar; can maximize and go full
 //   screen). Saves and restores the mode, and the position and size per mode
+// - garden_grow: grows the floating window when the Garden's birds don't fit, without saving the grown frame
 // - fade: the floating window's Garden fades until a bird is hovered
 // - tray: menu bar icon (show/hide, window mode, quit). Shown in the Dock and Cmd+Tab only in standard window mode
 // This file keeps the shared log / path helpers, startup (run), and the command registration
 mod fade;
 mod fs;
+mod garden_grow;
 mod ghostty;
 mod keys;
 mod liveness;
@@ -122,7 +124,12 @@ pub fn run() {
             append_log(&format!("[window] startup mode={mode:?}"));
             let w = win.clone();
             win.on_window_event(move |event| match event {
-                WindowEvent::Moved(_) | WindowEvent::Resized(_) => schedule_save(w.app_handle()),
+                // Moved / Resized caused by growing for the Garden aren't saved (garden_grow.rs)
+                WindowEvent::Moved(_) | WindowEvent::Resized(_) => {
+                    if garden_grow::on_frame_changed(&w) {
+                        schedule_save(w.app_handle());
+                    }
+                }
                 // The standard window's red traffic-light button hides the window without destroying it (same as the ×
                 // in the header; bring it back from the menu bar icon)
                 WindowEvent::CloseRequested { api, .. } => {
@@ -209,6 +216,8 @@ pub fn run() {
             window::get_window_mode,
             window::set_window_mode,
             fade::set_garden_fade,
+            garden_grow::garden_fit,
+            garden_grow::window_user_size,
             fs::save_download,
             keys::typesafe_systemone,
             keys::anthropic_messages,

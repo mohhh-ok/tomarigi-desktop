@@ -25,6 +25,8 @@ import { EventFeed } from "./event-feed";
 import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
 import { useGardenFade } from "./garden-fade";
+import { useGardenGrow } from "./garden-grow";
+import type { GardenFit } from "@/lib/garden-fit";
 import { BackBar } from "./back-bar";
 import { AiKeySettings } from "./settings/ai-key-settings";
 import { IconSetSettings, type IconSetRow } from "./settings/icon-set-settings";
@@ -361,6 +363,14 @@ export default function App({
       !showDebug &&
       !rootDialogOpen,
   );
+  // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
+  // Garden, so it doesn't count
+  const [gardenFit, setGardenFit] = useState<GardenFit | null>(null);
+  useGardenGrow(
+    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
+    gardenFit,
+    displaySessions.length,
+  );
 
   // Rows shown in the icon set settings = "projects in the current sessions (deduplicated by slug)"
   // ∪ "projects with only a saved assignment left". Running ones form the first group to prioritize
@@ -590,6 +600,7 @@ export default function App({
                 iconSetAssignments={iconSetAssignments}
                 onFocus={onFocusSession}
                 canFocus={canFocus}
+                onFit={setGardenFit}
               />
             </div>
           </section>

@@ -84,7 +84,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 Applies to the floating window's Garden tab only.
 
-- At rest, only the birds, their badges ("?", anger mark), and speech bubbles are shown. The background (translucent color, frosted glass, border, shadow), tabs, header, names, and status lines are faded almost to invisible. Bubbles are not a hover target and clicks on them go through at rest
+- At rest, only the birds, their badges ("?", anger mark), and speech bubbles are shown. The background (translucent color, frosted glass, border, shadow), tabs, header, names, and status lines are faded almost to invisible. The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
 - At rest, clicks anywhere except on a bird go through to the window below
 - Putting the cursor on a bird shows the whole window at full strength. From then until the cursor leaves the window's bounds, the whole window takes clicks (tabs, settings, dragging the window work as usual)
 - Once the cursor leaves the window's bounds, it fades again and clicks go through again
@@ -106,7 +106,14 @@ Applies to the floating window's Garden tab only.
 
 - Birds without a saved (dragged) position are placed automatically in the Garden on a grid sized from the garden and one bird's size (name, icon, bubble room, status lines, marks). Cell centers are used as is (not pulled in from the edges), so neighbours keep a full cell apart
 - Every bird whose process is alive is placed in the Garden, however long it has been idle, including `dozing` birds. There is no nest
-- When the birds don't fit (e.g. many birds in the 340px floating window), the garden grows taller and the content area scrolls instead of overlapping birds. Watch blocks count by their own height
+- Birds are not made any smaller to fit: the icon's lower limit (26px) is the smallest that stays readable (the user's decision)
+- When the birds don't fit in the floating window's Garden tab, the window grows automatically (the user's decision). Watch blocks count by their own height
+  - It grows away from the display edges it sits near, decided per axis: a window in the right part of the display keeps its right edge and grows left, one in the bottom part keeps its bottom edge and grows up, and one in the middle grows both ways around its center (the user's decision). "Part" is the display's thirds, judged by the window's center (Claude's own decision)
+  - It grows up to the visible area of the display the window is on (excluding the menu bar and the Dock). If the birds still don't fit at that size, the garden grows taller and the content area scrolls
+  - Width and height grow together keeping the aspect ratio of the user's size (the user's decision)
+  - A manual resize always wins, including making it smaller (the user's decision): the resized size becomes the user's size and the window is not grown back over it. It grows again only when a bird joins and no longer fits (Claude's own decision)
+  - When birds leave, the window shrinks back toward the user's size, never below it. The grown size is not saved; the next launch opens at the user's size
+  - Only the floating window's Garden tab. On Perch, Recent activity, settings, the debug log, and in the standard window, the window stays at the user's size (Claude's own decision)
 - Status lines: line 1 is the state and elapsed time, line 2 the tool name. Inside watch blocks, line 1 is the state and line 2 the elapsed time and tool name
 - When the window is wide, Perch and Recent activity are centered at a max width of about 720px, and settings at 560px. The Garden uses the full width
 
