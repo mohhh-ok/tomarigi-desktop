@@ -6,6 +6,14 @@ import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gardenFitScale, nextGrowScale, type GardenFit, type GrowKept } from "@/lib/garden-fit";
 
+/**
+ * Which part of the window stays put on screen when it grows or shrinks back, per axis (0 the left / top edge, 1 the
+ * right / bottom edge, 0.5 the center; garden_grow_anchor in src-tauri/src/garden_grow.rs). Fetched before each
+ * resize is asked for, so it is known when the Garden sees the new size; the Garden shifts its birds by it so they
+ * stay at the same place on screen (docs/design.md "Layout")
+ */
+export const gardenGrowAnchor = { x: 0, y: 0 };
+
 interface UserSize {
   width: number;
   height: number;
@@ -59,7 +67,13 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
     let scale = 1;
     let needed = 1;
     if (active && fit && user && !held) {
-      needed = gardenFitScale(user.width, user.height, fit);
+      const kept = keptRef.current;
+      const current = kept && kept.userW === user.width && kept.userH === user.height ? kept.scale : 1;
+      // An overflow measured before the window reached the current scale (the resize is still on its way, or the
+      // Rust side capped it at the display) doesn't ask for more: it would grow twice for one bird
+      const stale =
+        fit.gardenW < user.width * current - fit.overheadW - 2 || fit.gardenH < user.height * current - fit.overheadH - 2;
+      needed = gardenFitScale(user.width, user.height, stale ? { ...fit, overflow: false } : fit, current);
       scale = nextGrowScale(keptRef.current, needed, birdCount, user.width, user.height);
       keptRef.current = { scale, count: birdCount, userW: user.width, userH: user.height };
     } else {
@@ -68,9 +82,17 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
     if (sentRef.current === scale) return;
     sentRef.current = scale;
     // What the needed scale came from, to check in the log why it changed
-    const line = `[grow] page scale=${scale} needed=${needed} birds=${birdCount} fit=${JSON.stringify(fit)}`;
+    const line = `[grow] page scale=${scale} needed=${needed} birds=${birdCount} fit=${JSON.stringify(
+      fit && { ...fit, boxes: fit.boxes.length, simulate: undefined },
+    )}`;
     void invoke("log", { line }).catch(() => {});
-    void invoke("garden_fit", { scale }).catch(() => {});
+    void invoke<{ x: number; y: number } | null>("garden_grow_anchor")
+      .then((anchor) => {
+        if (anchor) Object.assign(gardenGrowAnchor, anchor);
+      })
+      .catch(() => {})
+      .then(() => invoke("garden_fit", { scale }))
+      .catch(() => {});
   }, []);
 
   useEffect(update, [active, held, user, birdCount, update]);

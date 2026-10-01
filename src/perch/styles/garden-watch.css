@@ -1,33 +1,13 @@
 /* Watching blocks and the peer count in the Garden */
 
-/* Rounded block enclosing a watching group (layoutWatchGroups in garden-watch-layout.ts). A faint surface and border laid under
-   the birds */
+/* Rounded block enclosing a watching group (watchShapes in garden-watch-layout.ts). A faint surface and border laid under
+   the birds. left/top are its top-left corner in px (garden.tsx) */
 .garden-watch-block {
   position: absolute;
-  transform: translate(-50%, -50%);
   border: 1px solid rgba(217, 176, 106, 0.28);
   border-radius: 14px;
   background: rgba(217, 176, 106, 0.05);
   pointer-events: none;
-}
-
-/* Name of the parent (the watching bird) shown on the block's top edge (WATCH_TITLE_PX in garden-watch-layout.ts is the row
-   height). Centered, it would look like the name of the bird right below, so it's placed at the top left in the same
-   amber as the border, to read as the block's name */
-.garden-watch-block-name {
-  display: block;
-  box-sizing: border-box;
-  height: 16px;
-  margin-top: 6px;
-  padding: 0 12px;
-  overflow: hidden;
-  color: rgba(217, 176, 106, 0.85);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 16px;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Number of active peers shown under a watching bird */

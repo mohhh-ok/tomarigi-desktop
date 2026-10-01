@@ -26,9 +26,28 @@ const NO_BROKEN: string[] = [];
 /** Creates one instance bundling the PerchSource implementation and the operation API MockPanel uses.
  * boot.tsx creates one of these and passes it to both App and MockPanel, so
  * edits in the panel are reflected immediately (through subscribe in App.tsx) */
+/** ?birds=<n> adds n plain birds to the preset (for checking a garden with more birds than the window can hold) */
+function withExtraBirds(data: MockData): MockData {
+  const n = Number(new URLSearchParams(location.search).get("birds"));
+  if (!(n > 0)) return data;
+  const extra: SessionView[] = Array.from({ length: n }, (_, i) => ({
+    id: `mock/extra/${i}`,
+    project: `extra-${i + 1}`,
+    slug: `extra-${i + 1}`,
+    state: i % 3 === 0 ? "working" : "done",
+    sinceMs: (i + 1) * 7_000,
+  }));
+  return { ...data, sessions: [...data.sessions, ...extra] };
+}
+
 export function createMockSource(): MockSource {
-  let data: MockData = INITIAL_PRESET.build();
+  let data: MockData = withExtraBirds(INITIAL_PRESET.build());
   const listeners = new Set<() => void>();
+  const setData = (next: MockData) => {
+    data = next;
+    for (const cb of listeners) cb();
+  };
+  startCycle(() => data, setData);
 
   return {
     usesRoots: false,
@@ -44,11 +63,68 @@ export function createMockSource(): MockSource {
     getData() {
       return data;
     },
-    setData(next) {
-      data = next;
-      for (const cb of listeners) cb();
-    },
+    setData,
   };
+}
+
+/**
+ * ?cycle=<seconds> (TOMARIGI_QUERY="preset=mix&cycle=4"): every few seconds, change one thing on the preset's birds in
+ * turn (a bubble appears / goes, a tool line appears / goes, a watch link forms / goes, a bird joins / leaves). For
+ * checking with timed screenshots that the Garden's other birds stay where they are (docs/design.md "Layout").
+ * Each step is logged as "[mock-cycle] <step>"
+ */
+function startCycle(get: () => MockData, set: (next: MockData) => void) {
+  const seconds = Number(new URLSearchParams(location.search).get("cycle"));
+  if (!(seconds > 0)) return;
+  const at = (i: number) => get().sessions[i]?.id;
+  const edit = (id: string | undefined, patch: (s: SessionView) => SessionView) => {
+    const d = get();
+    set({ ...d, sessions: d.sessions.map((s) => (s.id === id ? patch(s) : s)) });
+  };
+  const link = (a: string | undefined, b: string | undefined, on: boolean) => {
+    const d = get();
+    const now = Date.now();
+    set({
+      ...d,
+      sessions: d.sessions.map((s) => {
+        const other = s.id === a ? b : s.id === b ? a : undefined;
+        if (!other) return s;
+        if (!on) return { ...s, peers: undefined, watching: undefined };
+        return {
+          ...s,
+          startedAt: s.id === a ? now - 60 * 60_000 : now - 30 * 60_000,
+          watching: s.id === a ? 1 : undefined,
+          peers: [{ sessionId: other, viewId: other, name: other, active: true }],
+        };
+      }),
+    });
+  };
+  const JOINER = "mock/cycle/joiner";
+  const steps: [string, () => void][] = [
+    ["bubble on bird 0", () => edit(at(0), (s) => ({ ...s, state: "done", toolName: undefined, summary: "Fixed the header spacing and checked the build" }))],
+    ["tool line on bird 1", () => edit(at(1), (s) => ({ ...s, state: "working", toolName: "Bash" }))],
+    ["bubble off bird 0", () => edit(at(0), (s) => ({ ...s, state: "working", summary: undefined, toolName: undefined }))],
+    ["link birds 1 and 2", () => link(at(1), at(2), true)],
+    ["bird joins", () => {
+      const d = get();
+      set({ ...d, sessions: [...d.sessions, { id: JOINER, project: "new-bird", slug: "new-bird", state: "working", sinceMs: 1_000, toolName: "Read" }] });
+    }],
+    ["tool line off bird 1", () => edit(at(1), (s) => ({ ...s, toolName: undefined, state: "done" }))],
+    ["unlink birds 1 and 2", () => link(at(1), at(2), false)],
+    ["bird leaves", () => {
+      const d = get();
+      set({ ...d, sessions: d.sessions.filter((s) => s.id !== JOINER) });
+    }],
+  ];
+  let i = 0;
+  setInterval(() => {
+    const [name, run] = steps[i % steps.length];
+    i++;
+    run();
+    void import("@tauri-apps/api/core")
+      .then(({ invoke }) => invoke("log", { line: `[mock-cycle] ${i} ${name}` }))
+      .catch(() => {});
+  }, seconds * 1000);
 }
 
 export function MockPanel({ source }: { source: MockSource }) {

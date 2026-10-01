@@ -64,12 +64,12 @@
   pointer-events: none;
 }
 
-/* Speech bubble anchor. Same center, width, and height as the bird node (.garden-node) (garden.tsx passes
-   left/top/height) */
+/* Speech bubble anchor. Same position (center x, top edge), width, and height as the bird node (.garden-node)
+   (garden.tsx passes left/top/height) */
 .garden-bubble-anchor {
   position: absolute;
   width: 120px;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
 }
 
 .garden-bubble-anchor .speech-bubble {

@@ -19,19 +19,36 @@ pub(crate) struct Frame {
     pub height: u32,
 }
 
-/// One axis: where the window of length `len` at `start` starts once grown to `new_len`. Decided by which third of
-/// the area (`area_start`, `area_len`) the window's center is in: the first third keeps the start edge, the last
-/// third keeps the end edge, the middle keeps the center. Then kept inside the area
-fn grow_axis(start: i32, len: u32, new_len: u32, area_start: i32, area_len: u32) -> i32 {
+/// Which edge of an axis stays put when the window grows or shrinks back
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum Keep {
+    Start,
+    Center,
+    End,
+}
+
+/// Decided by which third of the area (`area_start`, `area_len`) the window's center is in: the first third keeps the
+/// start edge, the last third keeps the end edge, the middle keeps the center
+fn keep_of(start: i32, len: u32, area_start: i32, area_len: u32) -> Keep {
     let center = start as f64 + len as f64 / 2.0 - area_start as f64;
     let third = area_len as f64 / 3.0;
-    let grow = new_len as i64 - len as i64;
-    let pos = if center < third {
-        start as i64
+    if center < third {
+        Keep::Start
     } else if center > third * 2.0 {
-        start as i64 - grow
+        Keep::End
     } else {
-        start as i64 - grow / 2
+        Keep::Center
+    }
+}
+
+/// One axis: where the window of length `len` at `start` starts once grown to `new_len` (keep_of decides which edge
+/// stays). Then kept inside the area
+fn grow_axis(start: i32, len: u32, new_len: u32, area_start: i32, area_len: u32) -> i32 {
+    let grow = new_len as i64 - len as i64;
+    let pos = match keep_of(start, len, area_start, area_len) {
+        Keep::Start => start as i64,
+        Keep::End => start as i64 - grow,
+        Keep::Center => start as i64 - grow / 2,
     };
     let max = area_start as i64 + area_len as i64 - new_len as i64;
     pos.clamp(area_start as i64, max.max(area_start as i64)) as i32
@@ -159,6 +176,34 @@ pub(crate) fn garden_fit(app: AppHandle, scale: f64) {
     app.run_on_main_thread(move || apply(&handle, scale)).ok();
 }
 
+/// Which part of the window stays put on screen when it grows or shrinks back, per axis: 0 the left / top edge, 1 the
+/// right / bottom edge, 0.5 the center. The page keeps the Garden's birds at the same place on screen with it
+#[derive(Serialize, Clone, Copy)]
+pub(crate) struct GrowAnchor {
+    x: f64,
+    y: f64,
+}
+
+fn anchor_value(keep: Keep) -> f64 {
+    match keep {
+        Keep::Start => 0.0,
+        Keep::Center => 0.5,
+        Keep::End => 1.0,
+    }
+}
+
+/// The anchor the next grow_frame of the user's frame uses (the page asks before each garden_fit)
+#[tauri::command]
+pub(crate) fn garden_grow_anchor(app: AppHandle) -> Option<GrowAnchor> {
+    let win = app.get_webview_window("main")?;
+    let user = grown_user_frame().or_else(|| current_frame(&win))?;
+    let area = visible_area(&win, user)?;
+    Some(GrowAnchor {
+        x: anchor_value(keep_of(user.x, user.width, area.x, area.width)),
+        y: anchor_value(keep_of(user.y, user.height, area.y, area.height)),
+    })
+}
+
 #[derive(Serialize, Clone, Copy)]
 pub(crate) struct UserSize {
     /// CSS pixels
@@ -218,6 +263,18 @@ mod tests {
         // Right and bottom edges stay where they were
         assert_eq!(f.x + f.width as i32, user.x + user.width as i32);
         assert_eq!(f.y + f.height as i32, user.y + user.height as i32);
+    }
+
+    #[test]
+    fn anchor_the_page_gets_matches_the_edge_that_stays() {
+        // The page keeps the Garden's birds on screen with this (garden_grow_anchor)
+        let right_bottom = Frame { x: 1080, y: 505, width: 340, height: 300 };
+        assert_eq!(keep_of(right_bottom.x, right_bottom.width, AREA.x, AREA.width), Keep::End);
+        assert_eq!(keep_of(right_bottom.y, right_bottom.height, AREA.y, AREA.height), Keep::End);
+        let middle = Frame { x: 550, y: 275, width: 340, height: 300 };
+        assert_eq!(keep_of(middle.x, middle.width, AREA.x, AREA.width), Keep::Center);
+        let top_left = Frame { x: 20, y: 40, width: 340, height: 300 };
+        assert_eq!(keep_of(top_left.y, top_left.height, AREA.y, AREA.height), Keep::Start);
     }
 
     #[test]

@@ -24,7 +24,7 @@ import { EVENT, EventIcon } from "./event-kind";
 import { EventFeed } from "./event-feed";
 import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
-import { useGardenFade } from "./garden-fade";
+import { onFadeHandlePointerDown, useGardenFade } from "./garden-fade";
 import { useGardenGrow } from "./garden-grow";
 import { BackBar } from "./back-bar";
 import { AiKeySettings } from "./settings/ai-key-settings";
@@ -54,9 +54,9 @@ type Phase = "loading" | "ready";
 type Tab = "perch" | "events" | "garden";
 
 // Grabbing the window background moves the whole window. Excludes clickable controls, text inputs, birds (garden
-// drag), and scrolling lists
+// drag), scrolling lists, and the window handle (it drags the window itself, garden-fade.ts)
 const NO_WINDOW_DRAG =
-  "button, input, select, textarea, a, label, kbd, code, .garden-node, .bird, .chick, .event-card, .debug-log, .mock-panel, .root-add-overlay";
+  ".fade-handle, button, input, select, textarea, a, label, kbd, code, .garden-node, .bird, .chick, .event-card, .debug-log, .mock-panel, .root-add-overlay";
 
 export default function App({
   source,
@@ -438,7 +438,10 @@ export default function App({
   return (
     <main className="page">
       <div className="page-header">
-        <h1 className="brand">tomarigi</h1>
+        {/* The window handle while the Garden is faded (docs/design.md "Fade until hovered") */}
+        <h1 className="brand fade-handle" onPointerDown={onFadeHandlePointerDown}>
+          tomarigi
+        </h1>
         {/* Mute, debug, settings, and hide must always be visible on every tab, so they sit outside the tabs (in the header) */}
         <div className="header-controls">
           {showTabs && (

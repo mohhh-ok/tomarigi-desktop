@@ -78,7 +78,7 @@ html[data-window-mode="normal"] .page {
     border-color 0.2s;
 }
 
-.page-header,
+.header-controls,
 .tabs,
 .back-bar,
 .garden-name,
@@ -100,8 +100,8 @@ html[data-window-mode="normal"] .page {
    scrollbar-gutter: stable didn't keep the room in the app's WebView (observed), so the bar is always shown (no thumb
    while there is nothing to scroll).
    No scrollbar at rest: hidden by overflow, not by restyling the thumb (WebKit doesn't repaint a scrollbar when only its
-   ::-webkit-scrollbar style changes; observed), and the same width is kept by padding so the birds (placed by % of the
-   width) don't shift under the cursor when the window fades in */
+   ::-webkit-scrollbar style changes; observed), and the same width is kept by padding so the birds (placed in px from
+   the garden's corner) don't shift under the cursor when the window fades in */
 :root[data-fade="rest"] .page-body {
   overflow-y: hidden;
   padding-right: 8px;
@@ -126,7 +126,7 @@ html[data-window-mode="normal"] .page {
 }
 
 :root[data-fade="rest"] :is(
-    .page-header,
+    .header-controls,
     .tabs,
     .back-bar,
     .garden-name,
@@ -169,6 +169,31 @@ html[data-window-mode="normal"] .page {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.14em;
+  /* Room for the backing it gets at rest, kept always so the name doesn't move when the window fades. The margins
+     take the padding back (h1's default 0.67em above and below), so the text and the header height stay as they were */
+  padding: 3px 8px;
+  margin: calc(0.67em - 3px) 0 calc(0.67em - 3px) -8px;
+  border-radius: 6px;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+
+/* The floating window's name is also the window handle (garden-fade.ts): drag it to move the window */
+html:not([data-window-mode="normal"]) .fade-handle {
+  cursor: grab;
+}
+
+/* At rest the handle is the only part of the window besides the birds that stays, over whatever is behind the window,
+   so it gets a dark backing of its own to stay readable on light and busy backgrounds */
+:root[data-fade="rest"] .fade-handle {
+  /* Translucent at rest (docs/design.md "Fade until hovered"): the text and its backing together */
+  opacity: 0.6;
+  background-color: rgba(24, 23, 20, 0.82);
+  box-shadow:
+    0 0 0 1px rgba(233, 230, 222, 0.18),
+    0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 .setup p {

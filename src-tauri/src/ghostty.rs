@@ -7,43 +7,95 @@ use crate::{append_log, expand};
 
 // ---- Ghostty ----
 
-fn osascript(script: &str) -> String {
-    match Command::new("osascript").arg("-e").arg(script).output() {
-        Ok(o) => {
-            let out = String::from_utf8_lossy(&o.stdout).trim_end().to_string();
-            let err = String::from_utf8_lossy(&o.stderr).trim_end().to_string();
-            if o.status.success() {
-                out
-            } else {
-                format!("ERROR rc={:?} {err}", o.status.code())
-            }
+/// Focuses the Ghostty terminal whose tty matches, and returns the tty of the front pane after focusing.
+/// Ghostty can run as several app instances (`open -n`), and `tell application "Ghostty"` reaches only one of them,
+/// so every instance is asked by pid through ScriptingBridge (docs/design.md "Jumping to the Ghostty pane")
+pub(crate) fn ghostty_focus(tty: &str) -> String {
+    let instances = sb::ghostty_pids();
+    for gpid in &instances {
+        if let Some(front) = sb::focus_tty(*gpid, tty) {
+            return format!("ghostty={gpid} front={front}");
         }
-        Err(e) => format!("ERROR spawn {e}"),
+    }
+    format!("NOT FOUND in ghostty={instances:?}")
+}
+
+#[cfg(target_os = "macos")]
+mod sb {
+    use objc2::msg_send;
+    use objc2::rc::Retained;
+    use objc2::runtime::{AnyClass, AnyObject};
+    use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication};
+    use objc2_foundation::{NSArray, NSString};
+
+    #[link(name = "ScriptingBridge", kind = "framework")]
+    unsafe extern "C" {}
+
+    const fn fourcc(s: &[u8; 4]) -> u32 {
+        u32::from_be_bytes(*s)
+    }
+
+    pub(super) fn ghostty_pids() -> Vec<i32> {
+        let apps = NSRunningApplication::runningApplicationsWithBundleIdentifier(&NSString::from_str("com.mitchellh.ghostty"));
+        apps.iter().map(|a| a.processIdentifier()).collect()
+    }
+
+    fn value(obj: &AnyObject, key: &str) -> Option<Retained<AnyObject>> {
+        let key = NSString::from_str(key);
+        unsafe { msg_send![obj, valueForKey: &*key] }
+    }
+
+    fn text(obj: &AnyObject) -> Option<String> {
+        obj.downcast_ref::<NSString>().map(|s| s.to_string())
+    }
+
+    /// Focuses the terminal with this tty in the Ghostty instance gpid. None if that instance doesn't have it
+    pub(super) fn focus_tty(gpid: i32, tty: &str) -> Option<String> {
+        // Called on a tokio worker, which has no autorelease pool
+        objc2::rc::autoreleasepool(|_| focus_tty_inner(gpid, tty))
+    }
+
+    fn focus_tty_inner(gpid: i32, tty: &str) -> Option<String> {
+        let cls = AnyClass::get(c"SBApplication")?;
+        let app: Option<Retained<AnyObject>> = unsafe { msg_send![cls, applicationWithProcessIdentifier: gpid] };
+        let app = app?;
+        // A hung instance must not block the click for the default 2 minutes (the unit is 1/60 s)
+        let _: () = unsafe { msg_send![&*app, setTimeout: 300isize] };
+        let terminals = value(&app, "terminals")?;
+        // One Apple Event for every terminal's tty
+        let ttys = value(&terminals, "tty")?;
+        let ttys = ttys.downcast_ref::<NSArray>()?;
+        let index = ttys.iter().position(|t| text(&t).as_deref() == Some(tty))?;
+        let terminal: Option<Retained<AnyObject>> = unsafe { msg_send![&*terminals, objectAtIndex: index] };
+        let terminal = terminal?;
+        // `focus` (GhstFcus) with the terminal as the direct parameter
+        let _: Option<Retained<AnyObject>> =
+            unsafe { msg_send![&*terminal, sendEvent: fourcc(b"Ghst"), id: fourcc(b"Fcus"), parameters: 0u32] };
+        if let Some(running) = NSRunningApplication::runningApplicationWithProcessIdentifier(gpid) {
+            running.activateWithOptions(NSApplicationActivationOptions::empty());
+        }
+        std::thread::sleep(std::time::Duration::from_millis(1000));
+        let windows = value(&app, "windows")?;
+        // objectAtIndex: on an empty list raises and aborts the process (the window may close during the wait)
+        let count: usize = unsafe { msg_send![&*windows, count] };
+        if count == 0 {
+            return Some("?".to_string());
+        }
+        let window: Option<Retained<AnyObject>> = unsafe { msg_send![&*windows, objectAtIndex: 0usize] };
+        let window = window?;
+        let front = value(&window, "selectedTab").and_then(|t| value(&t, "focusedTerminal")).and_then(|t| value(&t, "tty"));
+        Some(front.as_deref().and_then(text).unwrap_or_else(|| "?".to_string()))
     }
 }
 
-/// Focuses the Ghostty terminal whose tty matches, and returns the tty of the front pane after focusing
-pub(crate) fn ghostty_focus(tty: &str) -> String {
-    // tty is embedded in an AppleScript string, so only the /dev/ttysNNN form is accepted
-    if !tty.starts_with("/dev/ttys") || tty.len() <= 9 || !tty[9..].chars().all(|c| c.is_ascii_digit()) {
-        return format!("ERROR invalid tty {tty}");
+#[cfg(not(target_os = "macos"))]
+mod sb {
+    pub(super) fn ghostty_pids() -> Vec<i32> {
+        Vec::new()
     }
-    osascript(&format!(
-        r#"tell application "Ghostty"
-set hit to false
-repeat with t in terminals
-if tty of t is "{tty}" then
-focus t
-activate
-set hit to true
-exit repeat
-end if
-end repeat
-if not hit then return "NOT FOUND"
-delay 1.0
-return "front=" & (tty of focused terminal of selected tab of front window)
-end tell"#
-    ))
+    pub(super) fn focus_tty(_gpid: i32, _tty: &str) -> Option<String> {
+        None
+    }
 }
 
 #[derive(Deserialize)]

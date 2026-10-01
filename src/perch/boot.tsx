@@ -25,7 +25,8 @@ if (isMock) {
   const source = createMockSource();
   root.render(
     <React.StrictMode>
-      <App source={source} extraPanel={<MockPanel source={source} />} />
+      {/* panel=0 hides the mock controls, so the window looks and grows as it does with real data (screenshots) */}
+      <App source={source} extraPanel={params.get("panel") === "0" ? undefined : <MockPanel source={source} />} />
     </React.StrictMode>,
   );
 } else {

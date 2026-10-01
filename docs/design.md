@@ -34,7 +34,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 - After the linked sessions stop, the bird stays watching for 5 minutes after the last one moved (`WATCH_GRACE_MS`), so the watch block and label don't flicker between the other session's turns. A linked session whose status isn't idle (e.g. shell) also counts as moving
 - Presentation:
   - In the Garden, the watching bird and its linked birds are placed close together and wrapped in a rounded block. Birds are not connected by lines
-  - One name is shown above the block: the watching (parent) bird's. Birds inside show no name if they are in the parent's folder, and only the path relative to the parent otherwise
+  - The watching (parent) bird's name is shown above the parent bird itself, wherever its cell is in the block; the block has no title of its own (the user's decision: a title on the block's top edge read as the name of the bird below it). Other birds inside show no name if they are in the parent's folder, and only the path relative to the parent otherwise
   - Dragging a bird inside the block moves the whole block
   - The number of linked sessions currently working is shown at the watching bird's feet
   - In Perch, linked rows are indented under the watching row, labeled with the path relative to the watching session's cwd (or the folder name if not under it). Rows in the same folder show no name
@@ -85,11 +85,20 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 Applies to the floating window's Garden tab only.
 
 - At rest, only the birds, their badges ("?", anger mark), and speech bubbles are shown. The background (translucent color, frosted glass, border, shadow), tabs, header, names, and status lines are faded almost to invisible. The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
-- At rest, clicks anywhere except on a bird go through to the window below
-- Putting the cursor on a bird shows the whole window at full strength. From then until the cursor leaves the window's bounds, the whole window takes clicks (tabs, settings, dragging the window work as usual)
+- At rest, clicks anywhere except on a bird or the window handle go through to the window below
+- Birds can be clicked (jump to Ghostty) and dragged while the window stays faded; hovering a bird no longer shows the whole window (the user's decision)
+- The window handle stays visible at rest. Dragging it moves the window; clicking it shows the whole window at full strength (the user's decision: 「どらっぐでまどがうごく、くりっくでとうめいかいじょ、いいね」)
+  - The handle has no menu of its own. The tabs and header buttons are reached by clicking it to show the window (the user's decision: 「透明解除されたらそこでめにゅーみれるもんな」)
+  - The handle is the text "Tomarigi" (the user's decision: 「えだってみえないやろ。普通にTomarigi文字にしろ」)
+  - It sits where the app name is in the header (top left). The header row is outside the Garden, so birds don't need to keep clear of it, and it stays at the window's top left when the window grows or shrinks (the user's decision: 「ヘッダーのとこでええわ」)
+  - A press on it becomes a window drag once the cursor moves 4px with the button held; released before that, it is a click (Claude's own decision: a drag started on press swallows the release, so the click could not be told apart)
+  - At rest it gets a dark backing of its own so it stays readable over light or busy windows behind; the backing's room is kept when shown, so the name doesn't move (Claude's own decision). It acts as the handle (drag moves the window) on every tab of the floating window, not only at rest
+  - At rest the handle (text and backing together) is translucent (the user's decision: 「tomarigiははんとうめいにしておいて」). Its opacity is 0.6, chosen so it still reads as the handle and the text stays readable (Claude's own decision). Shown, it is at full strength
+  - Not yet decided: whether hovering a bird shows only that bird's name and status (Claude's proposal). Until decided, hovering a bird shows nothing more
+- After clicking the handle, the whole window takes clicks until the cursor leaves the window's bounds (tabs, settings, dragging the window work as usual)
 - Once the cursor leaves the window's bounds, it fades again and clicks go through again
 - Perch, Recent activity, settings, and the standard window are not faded (Perch and Recent activity have no birds to hover). This scope is Claude's own decision
-- Because clicks go through, the WebView gets no mouse events at rest; the cursor position is watched on the Rust side to decide when a bird is under it
+- Because clicks go through, the WebView gets no mouse events at rest; the cursor position is watched on the Rust side to decide when a bird or the handle is under it. Once a drag starts there, clicks are taken until the button is released
 
 ## Removing birds of ended sessions
 
@@ -104,15 +113,24 @@ Applies to the floating window's Garden tab only.
 
 ## Layout
 
-- Birds without a saved (dragged) position are placed automatically in the Garden on a grid sized from the garden and one bird's size (name, icon, bubble room, status lines, marks). Cell centers are used as is (not pulled in from the edges), so neighbours keep a full cell apart
+- A bird that appears goes to its saved (dragged) position if it has one, otherwise to a free cell of a grid sized from the garden and one bird's footprint, starting from a cell picked by its id. A watch block that forms goes where its birds were: they take its cells in the order they stood (top to bottom, then left to right), and the block goes to the spot that moves them the least on average. A block keeps that cell order afterwards; birds that join it later take the next cells (Claude's own decision)
+- Each bird and block takes a footprint: the most room it can need (name, icon, bubble room, both status lines, marks, and for a watching bird the count row). Every row of a watch block has that fixed height too (name row, bubble room, count row), so a bubble, a name inside the block, or the count appearing never moves a bird in it (Claude's own decision; the empty name row of a block is no longer tightened). A block uses up to 3 columns, fewer if the garden is too narrow, and keeps its column count when the window grows. Neighbours keep a 12px gap between footprints, so bubbles and status lines coming and going never make them overlap
+- A bird or watch block on screen stays at the same place on screen until the user drags it (the user asked that birds stop moving around). Nothing else moves it: bubbles appearing or disappearing, tool / status lines, text wrapping, watch links forming or changing, other birds joining or leaving, and the window growing or shrinking. The only exception is a bird that would otherwise overlap another bird or block; then only that one moves, to the nearest free spot
+  - Positions are kept in px, not as a share of the garden. When the window is resized (grown, shrunk, or by hand), they are shifted by how far the garden's corner moved on screen, so they stay at the same place on screen. A bird or block that then sticks out of the garden also moves to the nearest free spot inside
+  - Which one moves when two would overlap: blocks already on screen come first, then birds already on screen (the earlier shown first), then what the user just dropped, then what just appeared. A bird dropped onto another is nudged next to it (Claude's own decision)
+  - A dragged position is saved as the bird's center and top edge in % of the garden, and is used only when the bird appears (e.g. after a relaunch). On screen, birds are anchored at their top edge, so a line added under a bird doesn't move its icon
+- The Garden never sticks out of the window and never scrolls, in any state. When birds can't all fit, they overlap instead (the user's decision: 「ウィンドウからはみだすのはあかんわやっぱり。スクロール状態になるのがあかん。それよりはあいこんがかさなるほうがまだまし」)
 - Every bird whose process is alive is placed in the Garden, however long it has been idle, including `dozing` birds. There is no nest
 - Birds are not made any smaller to fit: the icon's lower limit (26px) is the smallest that stays readable (the user's decision)
+- The icon size follows the garden size and the number of birds, but it grows only when birds leave and nothing on screen would have to move for it, never when the window grows: a larger icon makes every bird taller and would push neighbours away (Claude's own decision)
 - When the birds don't fit in the floating window's Garden tab, the window grows automatically (the user's decision). Watch blocks count by their own height
+  - It grows only when the birds actually can't be placed without overlapping at the current size, and only by as much as needed. Growing when they would fit leaves the birds sparse, which is a bug (the user's report)
+  - "Can't be placed" is judged by the actual placement: the birds on screen stay where they are, and a bird or block that has no free spot among them overflows. How far is also found with the actual placement: the smallest size at which, with the birds on screen kept at the same place on screen, everything gets a spot without moving anyone (failing that, the smallest at which everything gets a spot). Until the window has grown, the bird that has no spot is placed overlapping others
   - It grows away from the display edges it sits near, decided per axis: a window in the right part of the display keeps its right edge and grows left, one in the bottom part keeps its bottom edge and grows up, and one in the middle grows both ways around its center (the user's decision). "Part" is the display's thirds, judged by the window's center (Claude's own decision)
-  - It grows up to the visible area of the display the window is on (excluding the menu bar and the Dock). If the birds still don't fit at that size, the garden grows taller and the content area scrolls
+  - It grows up to the visible area of the display the window is on (excluding the menu bar and the Dock). If the birds still don't fit at that size, birds that have no spot overlap others at the nearest place
   - Width and height grow together keeping the aspect ratio of the user's size (the user's decision)
   - A manual resize always wins, including making it smaller (the user's decision): the resized size becomes the user's size and the window is not grown back over it. It grows again only when a bird joins and no longer fits (Claude's own decision)
-  - When birds leave, the window shrinks back toward the user's size, never below it. The grown size is not saved; the next launch opens at the user's size
+  - When birds leave, the window shrinks back toward the user's size, never below it, and only as far as no bird on screen would have to move (Claude's own decision). The grown size is not saved; the next launch opens at the user's size
   - Only the floating window's Garden tab. On Perch, Recent activity, settings, the debug log, and in the standard window, the window stays at the user's size (Claude's own decision)
 - Status lines: line 1 is the state and elapsed time, line 2 the tool name. Inside watch blocks, line 1 is the state and line 2 the elapsed time and tool name
 - When the window is wide, Perch and Recent activity are centered at a max width of about 720px, and settings at 560px. The Garden uses the full width
@@ -120,8 +138,8 @@ Applies to the floating window's Garden tab only.
 ## Jumping to the Ghostty pane
 
 - Clicking a bird (Garden) or a row (Perch, Recent activity) jumps to the Ghostty pane where that claude / codex is running. A chick's row jumps to its parent's pane
-- Mapping: session → pid (see "Removing birds of ended sessions" for how each agent's pid is found) → tty from `ps` → `tty of terminal` in Ghostty's AppleScript, then `focus` + `activate`
-- In the osascript, `tab` inside `tell application "Ghostty"` is the tab class, so the terminal list uses `character id 9` as the delimiter
+- Mapping: session → pid (see "Removing birds of ended sessions" for how each agent's pid is found) → tty from `ps` → the terminal whose `tty` matches in Ghostty's scripting dictionary, then `focus` + activate that Ghostty
+- Ghostty can run as several app instances (`open -n`). `tell application "Ghostty"` reaches only one of them, so a pane in another instance was never found. Every running instance (bundle id `com.mitchellh.ghostty`) is asked by pid through ScriptingBridge (`SBApplication applicationWithProcessIdentifier:`) instead of osascript (`ghostty_focus` in `src-tauri/src/ghostty.rs`)
 - A conversation handed over to another session (`continued-in`, see "Removing birds of ended sessions") can run in a Claude Code background process whose tty isn't a Ghostty pane. When Ghostty doesn't have the new session's tty, the jump tries the sessions it came from in turn (their old process still shows the conversation)
 - Sessions whose pid can't be found do nothing on click
 - In the Garden, releasing after moving less than 4px is a click (left button only); anything more is a drag

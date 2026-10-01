@@ -38,10 +38,11 @@ panic = "abort"
 strip = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics"] }
+# NSRunningApplication + libc: finds every running Ghostty instance and activates one by pid (ghostty_focus in ghostty.rs)
+objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics", "NSRunningApplication", "libc"] }
 objc2 = "0.6"
 # The frosted glass behind the window (set_backdrop in window.rs) uses NSString and NSRect
-objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry"] }
+objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry", "NSArray"] }
 # Stores BYOK API keys in the macOS Keychain (KeyStore in keys.rs)
 security-framework = "3"
 tauri-nspanel = "2.1"

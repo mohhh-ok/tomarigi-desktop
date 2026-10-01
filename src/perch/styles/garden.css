@@ -1,17 +1,24 @@
 /* Garden tab: the frame, bird nodes, and their status rows */
 
 /* Garden tab: a view where sessions can be freely placed as "birds in the garden" (issue #12).
-   Nodes are absolutely positioned with % coordinates, so the reference container needs a definite height, but a
+   Nodes are absolutely positioned in px inside it, so the reference container needs a definite height, but a
    fixed px height leaves dead space at the bottom when the window is resized. So the height flows via flex from
    .page-body (#tabpanel-garden is its direct flex child), and the garden always fills "all of the window that's left at
-   the moment" */
+   the moment". The garden never grows past the window and the content area never scrolls on this tab; birds that
+   don't fit overlap instead (docs/design.md "Layout"), so nothing here may be taller than the room left */
 #tabpanel-garden {
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* When the garden grows vertically to fit the number of birds (gardenMinHeight in garden.tsx), grow with it and
-     let .page-body scroll */
-  min-height: auto;
+  min-height: 0;
+}
+
+/* No scrollbar on this tab, hovered or not: the same as at rest in base.css (hidden, with the bar's width kept as
+   padding), so the garden's width doesn't change when the window fades in. Not in mock mode with its controls under
+   the tabs, which must stay reachable */
+.page-body:has(> #tabpanel-garden:not([hidden])):not(:has(> .mock-panel)) {
+  overflow-y: hidden;
+  padding-right: 8px;
 }
 
 /* Applying display: flex makes the hidden attribute (the UA's display: none) lose, so restore it explicitly */
@@ -23,15 +30,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* When the garden grows vertically to fit the number of birds (gardenMinHeight in garden.tsx), grow with it and
-     let .page-body scroll */
-  min-height: auto;
+  min-height: 0;
 }
 
 .garden {
   position: relative;
   flex: 1;
-  min-height: 220px;
+  min-height: 0;
   margin-top: 4px;
   border: 1px solid #2a2922;
   border-radius: 10px;
@@ -44,11 +49,12 @@
 
 /* 1 session = 1 bird. No card box (border/background/padding); stack vertically with the glyph
    as the main element. Set cursor: grab/grabbing explicitly so it's clear it can be dragged.
-   left/top are % (centered via the transform's translate) */
+   left is the bird's center and top its top edge, in px (garden.tsx). Anchored at the top edge so the bird doesn't
+   move when a line is added or removed under it (docs/design.md "Layout") */
 .garden-node {
   position: absolute;
   width: 120px;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   cursor: grab;
   user-select: none;
   /* Dragging uses native pointer events, so don't let the browser's default scroll/zoom
@@ -67,19 +73,8 @@
 }
 
 /* Hover is shown by the bird lifting slightly, not by a panel border.
-   Combined with the positioning translate(-50%, -50%) */
+   Combined with the positioning translateX(-50%) */
 .garden-node:hover {
-  transform: translate(-50%, calc(-50% - 2px));
-}
-
-/* For birds in a watching block, top is the bird's top edge (the top of the row; layoutWatchGroups in garden-watch-layout.ts).
-   Only horizontally centered */
-.garden-node.in-watch-block,
-.garden-bubble-anchor.in-watch-block {
-  transform: translateX(-50%);
-}
-
-.garden-node.in-watch-block:hover {
   transform: translate(-50%, -2px);
 }
 
@@ -88,7 +83,7 @@
 .garden-node.dragging {
   cursor: grabbing;
   z-index: 5;
-  transform: translate(-50%, -50%) scale(1.06);
+  transform: translateX(-50%) scale(1.06);
   transition: none;
 }
 
@@ -144,12 +139,6 @@
   color: #777265;
   font-size: 10px;
   white-space: nowrap;
-}
-
-/* Inside a watching block, birds are laid out per cell (WATCH_CELL_W 96px in garden-watch-layout.ts), so limit the status row to
-   the cell width (if it overflows, it runs into the neighbor's status row and looks like one line) */
-.garden-node.in-watch-block .garden-status {
-  max-width: 88px;
 }
 
 /* The garden status row has 2 lines. Line 1 is the state word and elapsed time, line 2 the tool name (in the narrow
