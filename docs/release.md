@@ -24,8 +24,6 @@ lipo -archs "$M/tomarigi-desktop.app/Contents/MacOS/tomarigi-desktop"   # x86_64
 hdiutil detach "$M"
 ```
 
-Installing it replaces the everyday build in /Applications (same identifier). After installing, click a bird and check that it jumps to the Ghostty pane.
-
 ## Repository secrets
 
 | Secret | Value |
