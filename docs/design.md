@@ -84,7 +84,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 Applies to the floating window's Garden tab only.
 
-- At rest, only the birds, their badges ("?", anger mark), and speech bubbles are shown. The background (translucent color, frosted glass, border, shadow), tabs, header, names, and status lines are faded almost to invisible. The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
+- At rest, only the birds, their badges ("?", anger mark), speech bubbles, and the handle are shown. The background (translucent color, frosted glass, border, shadow), the garden's frame, watch blocks, tabs, header buttons, names, and status lines are fully transparent (the user's decision: 「とうめいもーどのときは完全透明にして」). The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
 - At rest, clicks anywhere except on a bird or the window handle go through to the window below
 - Birds can be clicked (jump to Ghostty) and dragged while the window stays faded; hovering a bird no longer shows the whole window (the user's decision)
 - The window handle stays visible at rest. Dragging it moves the window; clicking it shows the whole window at full strength (the user's decision: 「どらっぐでまどがうごく、くりっくでとうめいかいじょ、いいね」)
