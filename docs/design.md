@@ -93,7 +93,7 @@ Applies to the floating window's Garden tab only.
   - It sits where the app name is in the header (top left). The header row is outside the Garden, so birds don't need to keep clear of it, and it stays at the window's top left when the window grows or shrinks (the user's decision: 「ヘッダーのとこでええわ」)
   - A press on it becomes a window drag once the cursor moves 4px with the button held; released before that, it is a click (Claude's own decision: a drag started on press swallows the release, so the click could not be told apart)
   - At rest it gets a dark backing of its own so it stays readable over light or busy windows behind; the backing's room is kept when shown, so the name doesn't move (Claude's own decision). It acts as the handle (drag moves the window) on every tab of the floating window, not only at rest
-  - At rest the handle (text and backing together) is translucent (the user's decision: 「tomarigiははんとうめいにしておいて」). Its opacity is 0.6, chosen so it still reads as the handle and the text stays readable (Claude's own decision). Shown, it is at full strength
+  - At rest the handle (text and backing together) is translucent (the user's decision: 「tomarigiははんとうめいにしておいて」). Its opacity is 0.8: 0.6 was too faint (the user: 「tomarigiの半透明はもうちょっとみえるようにして」; the value 0.8 is Claude's own decision). Shown, it is at full strength
   - Not yet decided: whether hovering a bird shows only that bird's name and status (Claude's proposal). Until decided, hovering a bird shows nothing more
 - After clicking the handle, the whole window takes clicks until the cursor leaves the window's bounds (tabs, settings, dragging the window work as usual)
 - Once the cursor leaves the window's bounds, it fades again and clicks go through again
