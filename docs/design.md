@@ -68,6 +68,8 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 
 - The app watches for as long as it runs and is controlled from the menu bar icon (left click toggles show/hide, right click opens the menu)
 - The menu bar icon is `src-tauri/icons/tray.png` (a template image; Tauri's tray only accepts PNG)
+- The app icon (Dock, Finder, Product Hunt thumbnail) shows the same blue round bird as the in-app birds icon set (`src/assets/birds/`), so the icon and the app read as the same character (the user's decision). The icons in `src-tauri/icons/` are generated from `src-tauri/app-icon.png` (1024px, transparent outside the rounded tile) with `bunx tauri icon src-tauri/app-icon.png -o <temp dir>`, then only the files already in `src-tauri/icons/` are copied in (the android / ios output isn't used; `tray.png` is separate and kept)
+- Gallery images for Product Hunt and the README are in `docs/images/` (WebP). They are shot from mock mode (`TOMARIGI_MOCK=1`, `TOMARIGI_QUERY="tint=0&preset=..."`)
 - The × at the right end of the header hides the window (bring it back from the menu bar icon). Its label says "hide window", not "close", so it isn't mistaken for leaving settings or a dialog
 - The header and the row under it (the tabs, or the settings bar while in settings) stay at the top; only the content below them scrolls. The add-folder dialog follows the same rule: its title and × stay in view and only its content scrolls
 - The debug log is a screen like settings: it replaces the tabs' content under the header (the header buttons stay), shows a "‹ Back" row in place of the tabs, and closes with Back, the debug button again, or Esc. Settings and the debug log are never open at the same time
