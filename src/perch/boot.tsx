@@ -6,14 +6,15 @@ import "./perch.css";
 import { realSource } from "./source";
 import { getIdentifier } from "@tauri-apps/api/app";
 
-// The verification build (bun run build:verify) changes the background color so it can be told apart from the everyday build at a glance
+const params = new URLSearchParams(location.search);
+
+// The verification build (bun run build:verify) changes the background color so it can be told apart from the everyday build at a glance.
+// tint=0 skips it, for screenshots that should show the everyday look
 getIdentifier()
   .then((id) => {
-    if (id.endsWith(".verify")) document.documentElement.dataset.build = "verify";
+    if (id.endsWith(".verify") && params.get("tint") !== "0") document.documentElement.dataset.build = "verify";
   })
   .catch(() => {}); // do nothing outside Tauri, e.g. static serving with ?mock=1
-
-const params = new URLSearchParams(location.search);
 const isMock = params.has("mock");
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
