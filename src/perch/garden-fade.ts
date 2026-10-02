@@ -1,7 +1,8 @@
 // Fade until hovered (docs/design.md "Fade until hovered"). While clicks go through, the WebView gets no mouse events,
 // so the Rust side (fade_tick in src-tauri/src/fade.rs) watches the cursor. This sends it the bird and window handle
 // rectangles and whether the fade applies, and copies its "garden-fade" event to <html data-fade="rest">, which
-// styles/base.css fades
+// styles/base.css fades, and its "garden-fade-bird" event (cursor on a bird at rest) to <html data-fade-bird>, which
+// makes the handle stand out
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -90,8 +91,15 @@ export function useGardenFade(enabled: boolean) {
       if (e.payload) root.dataset.fade = "rest";
       else delete root.dataset.fade;
     });
-    listening.current = unlisten;
-    return () => void unlisten.then((f) => f());
+    const unlistenBird = listen<boolean>("garden-fade-bird", (e) => {
+      if (e.payload) root.dataset.fadeBird = "";
+      else delete root.dataset.fadeBird;
+    });
+    listening.current = Promise.all([unlisten, unlistenBird]);
+    return () => {
+      void unlisten.then((f) => f());
+      void unlistenBird.then((f) => f());
+    };
   }, []);
 
   useEffect(() => {
@@ -107,6 +115,7 @@ export function useGardenFade(enabled: boolean) {
     };
     if (!enabled) {
       delete document.documentElement.dataset.fade;
+      delete document.documentElement.dataset.fadeBird;
       void listening.current.then(() => !stopped && send(false, [], null, true));
       return () => {
         stopped = true;

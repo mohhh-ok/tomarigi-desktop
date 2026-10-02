@@ -94,6 +94,7 @@ Applies to the floating window's Garden tab only.
   - A press on it becomes a window drag once the cursor moves 4px with the button held; released before that, it is a click (Claude's own decision: a drag started on press swallows the release, so the click could not be told apart)
   - At rest it gets a dark backing of its own so it stays readable over light or busy windows behind; the backing's room is kept when shown, so the name doesn't move (Claude's own decision). It acts as the handle (drag moves the window) on every tab of the floating window, not only at rest
   - At rest the handle (text and backing together) is translucent (the user's decision: 「tomarigiははんとうめいにしておいて」). Its opacity is 0.8: 0.6 was too faint (the user: 「tomarigiの半透明はもうちょっとみえるようにして」; the value 0.8 is Claude's own decision). Shown, it is at full strength
+  - While the cursor is on a bird at rest, the handle stands out (full strength, a light ring and glow) (the user's decision: 「とりにマウスオーバーした時にめだつようにして」; the look is Claude's own decision). The Rust side decides it from the cursor, since the WebView's :hover isn't reliable while clicks go through
   - Not yet decided: whether hovering a bird shows only that bird's name and status (Claude's proposal). Until decided, hovering a bird shows nothing more
 - After clicking the handle, the whole window takes clicks until the cursor leaves the window's bounds (tabs, settings, dragging the window work as usual)
 - Once the cursor leaves the window's bounds, it fades again and clicks go through again

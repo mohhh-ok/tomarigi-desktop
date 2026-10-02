@@ -38,6 +38,8 @@ struct Fade {
     revealed: bool,
     /// Taking clicks: shown, or faded with the cursor on a bird or the handle (or a drag started there still held)
     interactive: bool,
+    /// Faded with the cursor on a bird (or a drag started on one still held): the page makes the handle stand out
+    on_bird: bool,
     /// The handle was clicked; shown on the next tick
     reveal: bool,
     /// Emit the current state on the next tick even if it didn't change. The page may have lost it: reloaded
@@ -53,6 +55,7 @@ static FADE: Mutex<Fade> = Mutex::new(Fade {
     active: false,
     revealed: false,
     interactive: false,
+    on_bird: false,
     reveal: false,
     resync: false,
 });
@@ -176,20 +179,29 @@ fn fade_tick(app: &AppHandle) {
             let on_target = fade.birds.iter().chain(fade.handle.iter()).any(|b| b.contains(x, y));
             next_interactive(fade.interactive, revealed, on_target, button_down)
         };
+        let over_bird = fade.birds.iter().any(|b| b.contains(x, y));
+        let on_bird = active && !revealed && if button_down { fade.on_bird } else { over_bird };
         let changed = active != fade.active || (active && revealed != fade.revealed);
+        let bird_changed = on_bird != fade.on_bird;
         let through_changed = active != fade.active || interactive != fade.interactive;
         let resync = std::mem::take(&mut fade.resync);
         fade.active = active;
         fade.revealed = revealed;
         fade.interactive = interactive;
-        (changed || through_changed || resync)
-            .then_some((active, revealed, interactive, changed, through_changed, resync))
+        fade.on_bird = on_bird;
+        (changed || through_changed || bird_changed || resync)
+            .then_some((active, revealed, interactive, on_bird, changed, through_changed, bird_changed, resync))
     };
-    let Some((active, revealed, interactive, changed, through_changed, resync)) = change else { return };
+    let Some((active, revealed, interactive, on_bird, changed, through_changed, bird_changed, resync)) = change else {
+        return;
+    };
     apply_click_through(&win, !interactive);
     // Taking clicks over a bird or the handle doesn't change how the window looks, so only a reveal or fade emits
     if changed || resync {
         apply_fade(&win, active && !revealed);
+    }
+    if bird_changed || resync {
+        win.emit("garden-fade-bird", on_bird).ok();
     }
     if changed {
         append_log(&if active { format!("[fade] revealed={revealed}") } else { "[fade] off".to_string() });
