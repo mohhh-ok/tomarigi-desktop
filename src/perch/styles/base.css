@@ -196,6 +196,28 @@ html:not([data-window-mode="normal"]) .fade-handle {
     0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
+/* With no birds, the Garden's empty message stays at rest as a second handle (garden.tsx), at full strength so the
+   faded window can still be found (docs/design.md "Fade until hovered"). Its padding is kept when shown so it doesn't
+   move */
+.garden-empty {
+  text-align: center;
+}
+
+.garden-empty-label {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s,
+    color 0.2s;
+}
+
+:root[data-fade="rest"] .garden-empty-label {
+  opacity: 1;
+  color: #e9e6de;
+}
+
 /* With the cursor on a bird at rest, the handle stands out, so it can be found to show the whole window
    (docs/design.md "Fade until hovered"; data-fade-bird is set by garden-fade.ts) */
 :root[data-fade="rest"][data-fade-bird] .fade-handle {

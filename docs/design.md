@@ -98,6 +98,7 @@ Applies to the floating window's Garden tab only.
   - Not yet decided: whether hovering a bird shows only that bird's name and status (Claude's proposal). Until decided, hovering a bird shows nothing more
 - After clicking the handle, the whole window takes clicks until the cursor leaves the window's bounds (tabs, settings, dragging the window work as usual)
 - Once the cursor leaves the window's bounds, it fades again and clicks go through again
+- With no birds in the Garden it fades too (the user's decision: 「0ワの時は、透明にしたい」). The empty message (「いまは誰もとまっていません」, or the one asking to grant folder access again) then stays at rest at full strength on the same dark backing as the handle, since the handle alone is easy to miss (the user: 「なにかめだつものをおいておかないといかんよな。「tomarigi」はめだたないし」; the user chose the empty message among Claude's options). It acts as a second handle: dragging it moves the window, clicking it shows the whole window. Full strength rather than the handle's 0.8 is Claude's own decision
 - Perch, Recent activity, settings, and the standard window are not faded (Perch and Recent activity have no birds to hover). This scope is Claude's own decision
 - Because clicks go through, the WebView gets no mouse events at rest; the cursor position is watched on the Rust side to decide when a bird or the handle is under it. Once a drag starts there, clicks are taken until the button is released
 

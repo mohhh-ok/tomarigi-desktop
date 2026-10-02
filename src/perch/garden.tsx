@@ -25,6 +25,7 @@ import type { SessionEvent, SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
 import { gardenGrowAnchor } from "./garden-grow";
+import { onFadeHandlePointerDown } from "./garden-fade";
 import { hasQuestion, isAngry, needsAnswer } from "@/lib/jev";
 import { createPortal } from "react-dom";
 import { MdLink } from "react-icons/md";
@@ -619,8 +620,12 @@ export function Garden({
 
   if (sessions.length === 0) {
     return (
-      <div className="empty">
-        {t(hasGranted ? "emptyNoSessions" : "emptyNeedsReauth")}
+      <div className="empty garden-empty">
+        {/* With no birds the Garden still fades, and this message is what stays at rest, acting as a second window
+            handle (docs/design.md "Fade until hovered") */}
+        <span className="fade-handle garden-empty-label" onPointerDown={onFadeHandlePointerDown}>
+          {t(hasGranted ? "emptyNoSessions" : "emptyNeedsReauth")}
+        </span>
       </div>
     );
   }

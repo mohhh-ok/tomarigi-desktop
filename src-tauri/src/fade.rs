@@ -6,7 +6,8 @@ use crate::append_log;
 use crate::window::{current_mode, find_backdrop, ns_window, WindowMode};
 
 // ---- Fade until hovered (docs/design.md "Fade until hovered") ----
-// At rest the floating window's Garden shows only the birds and the window handle ("Tomarigi" in the header), and
+// At rest the floating window's Garden shows only the birds and the window handles ("Tomarigi" in the header, and the
+// Garden's empty message while it has no birds), and
 // clicks go through to the window below (ignoresMouseEvents). The WebView then gets no mouse events, so the cursor is
 // watched here: on a bird or the handle the window takes clicks while staying faded, and clicking the handle
 // (reveal_garden) shows the whole window. garden-fade.ts sends the bird and handle rectangles and whether the fade
@@ -31,7 +32,7 @@ struct Fade {
     /// From garden-fade.ts: floating window, Garden tab, and at least one bird
     wanted: bool,
     birds: Vec<BirdRect>,
-    handle: Option<BirdRect>,
+    handles: Vec<BirdRect>,
     /// Whether the fade was in effect at the last tick (false in the standard window, while hidden, etc.)
     active: bool,
     /// Shown at full strength (the handle was clicked and the cursor hasn't left the window yet)
@@ -51,7 +52,7 @@ struct Fade {
 static FADE: Mutex<Fade> = Mutex::new(Fade {
     wanted: false,
     birds: Vec::new(),
-    handle: None,
+    handles: Vec::new(),
     active: false,
     revealed: false,
     interactive: false,
@@ -81,7 +82,7 @@ fn fade_state() -> std::sync::MutexGuard<'static, Fade> {
 pub(crate) fn set_garden_fade(
     enabled: bool,
     birds: Vec<BirdRect>,
-    handle: Option<BirdRect>,
+    handles: Vec<BirdRect>,
     resync: bool,
 ) {
     let mut fade = fade_state();
@@ -90,7 +91,7 @@ pub(crate) fn set_garden_fade(
     }
     fade.wanted = enabled;
     fade.birds = birds;
-    fade.handle = handle;
+    fade.handles = handles;
 }
 
 /// The handle was clicked while faded (garden-fade.ts): show the whole window
@@ -176,7 +177,7 @@ fn fade_tick(app: &AppHandle) {
         let interactive = if !active {
             true
         } else {
-            let on_target = fade.birds.iter().chain(fade.handle.iter()).any(|b| b.contains(x, y));
+            let on_target = fade.birds.iter().chain(fade.handles.iter()).any(|b| b.contains(x, y));
             next_interactive(fade.interactive, revealed, on_target, button_down)
         };
         let over_bird = fade.birds.iter().any(|b| b.contains(x, y));

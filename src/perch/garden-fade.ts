@@ -1,5 +1,5 @@
 // Fade until hovered (docs/design.md "Fade until hovered"). While clicks go through, the WebView gets no mouse events,
-// so the Rust side (fade_tick in src-tauri/src/fade.rs) watches the cursor. This sends it the bird and window handle
+// so the Rust side (fade_tick in src-tauri/src/fade.rs) watches the cursor. This sends it the bird and window handles'
 // rectangles and whether the fade applies, and copies its "garden-fade" event to <html data-fade="rest">, which
 // styles/base.css fades, and its "garden-fade-bird" event (cursor on a bird at rest) to <html data-fade-bird>, which
 // makes the handle stand out
@@ -38,16 +38,22 @@ function birdRects(): BirdRect[] {
   return rects;
 }
 
-/** The window handle ("Tomarigi" in the header, App.tsx) */
+/** The window handles: "Tomarigi" in the header (App.tsx), and the Garden's empty message while it has no birds
+ * (garden.tsx) */
 const HANDLE_SELECTOR = ".fade-handle";
 
-function handleRect(): BirdRect | null {
-  const el = document.querySelector(HANDLE_SELECTOR);
-  if (!el) return null;
-  const { left, top, right, bottom } = el.getBoundingClientRect();
-  if (right <= left || bottom <= top) return null;
-  return { x: left, y: top, width: right - left, height: bottom - top };
+function handleRects(): BirdRect[] {
+  const rects: BirdRect[] = [];
+  for (const el of document.querySelectorAll(HANDLE_SELECTOR)) {
+    const { left, top, right, bottom } = el.getBoundingClientRect();
+    if (right <= left || bottom <= top) continue;
+    rects.push({ x: left, y: top, width: right - left, height: bottom - top });
+  }
+  return rects;
 }
+
+/** The Garden's empty message (garden.tsx), shown instead of birds */
+const EMPTY_SELECTOR = ".garden-empty";
 
 // Moving this far with the button held makes a press on the handle a drag instead of a click
 const HANDLE_DRAG_PX = 4;
@@ -80,8 +86,8 @@ export function onFadeHandlePointerDown(e: ReactPointerEvent<HTMLElement>) {
   window.addEventListener("pointercancel", end);
 }
 
-/** enabled: floating window, Garden tab, and nothing else open over it. With no birds there is nothing to show at
- * rest, so it doesn't fade then */
+/** enabled: floating window, Garden tab, and nothing else open over it. It fades with birds, or with the empty
+ * message in their place (it stays at rest). Neither (e.g. still loading) leaves nothing to show, so no fade then */
 export function useGardenFade(enabled: boolean) {
   // The first send waits for this, so the state Rust emits in reply isn't lost before the listener is registered
   const listening = useRef<Promise<unknown>>(Promise.resolve());
@@ -107,23 +113,24 @@ export function useGardenFade(enabled: boolean) {
     let stopped = false;
     let timer: ReturnType<typeof setInterval> | undefined;
     // resync: have Rust emit its current state again (the page may have been reloaded while it was faded)
-    const send = (on: boolean, birds: BirdRect[], handle: BirdRect | null, resync = false) => {
-      const key = JSON.stringify([on, birds, handle]);
+    const send = (on: boolean, birds: BirdRect[], handles: BirdRect[], resync = false) => {
+      const key = JSON.stringify([on, birds, handles]);
       if (key === last && !resync) return;
       last = key;
-      invoke("set_garden_fade", { enabled: on, birds, handle, resync }).catch(() => {});
+      invoke("set_garden_fade", { enabled: on, birds, handles, resync }).catch(() => {});
     };
     if (!enabled) {
       delete document.documentElement.dataset.fade;
       delete document.documentElement.dataset.fadeBird;
-      void listening.current.then(() => !stopped && send(false, [], null, true));
+      void listening.current.then(() => !stopped && send(false, [], [], true));
       return () => {
         stopped = true;
       };
     }
     const measure = (resync = false) => {
       const birds = birdRects();
-      send(birds.length > 0, birds, handleRect(), resync);
+      const empty = document.querySelector(EMPTY_SELECTOR) !== null;
+      send(birds.length > 0 || empty, birds, handleRects(), resync);
     };
     void listening.current.then(() => {
       if (stopped) return;
@@ -133,7 +140,7 @@ export function useGardenFade(enabled: boolean) {
     return () => {
       stopped = true;
       clearInterval(timer);
-      send(false, [], null);
+      send(false, [], []);
     };
   }, [enabled]);
 }
