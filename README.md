@@ -8,6 +8,11 @@ A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as 
 - Optional BYOK keys: OpenAI or Anthropic for the speech bubble that summarizes each finished turn, and TypeSafe for spotting questions asked in plain text (the "?") and abuse toward the AI (the anger mark). Voice readout uses the system speech synthesizer and needs no key
 - Requirements: macOS. Jumping to a pane works with Ghostty only
 
+| | |
+|---|---|
+| <img src="docs/images/gallery-1-on-top.webp" alt="Stays on top anywhere on your screen, and you can see through it" /> | <img src="docs/images/gallery-2-garden.webp" alt="One bird for each Claude Code or Codex session" /> |
+| <img src="docs/images/gallery-3-needs-reply.webp" alt="A question mark shows up when the agent is waiting on you" /> | <img src="docs/images/gallery-4-bubble.webp" alt="When a turn ends, the bubble sums it up" /> |
+
 The design spec lives in docs/design.md.
 
 ## Build
