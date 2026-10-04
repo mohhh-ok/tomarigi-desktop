@@ -79,6 +79,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
   - Floating (default): a floating NSPanel (tauri-nspanel). Transparent, frameless, always on top, and shown above full-screen spaces too. It can be dragged from anywhere on its background. The window has a shadow. The app stays out of the Dock and Cmd+Tab (activation policy Accessory)
   - Standard: can be maximized or made full screen with the title bar buttons; not pinned on top. Shown in the Dock, Cmd+Tab, and with its own app menu bar (activation policy Regular). Switching back to floating restores Accessory
   - Info.plist includes `LSUIElement`, so the Dock icon doesn't flash at launch
+  - In both modes, the first click on the window while another app is in front already reaches the content, so a bird or the window can be dragged without clicking once to activate it (`acceptFirstMouse` in `src-tauri/tauri.conf.json`; the user asked for it)
 - The chosen mode is saved and used on the next launch. Position and size are saved separately per mode and restored on the next launch. On first launch (no saved position, or the saved position isn't on any display) the window goes to the top-right of the main display
 - The window background is translucent and blurs what's behind it with the macOS frosted-glass effect (to feel less imposing on screen). Text, birds, and bubbles stay at full strength. The opacity is fixed (`.page` in `src/perch/styles/base.css` and `.garden` in `src/perch/styles/garden.css`), apart from "Fade until hovered"
 

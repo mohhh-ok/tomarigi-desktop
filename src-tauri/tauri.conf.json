@@ -25,6 +25,7 @@
         "resizable": true,
         "shadow": false,
         "skipTaskbar": true,
+        "acceptFirstMouse": true,
         "visible": false,
         "minWidth": 260,
         "minHeight": 220
