@@ -7,6 +7,10 @@ AI コーディングエージェント（Claude Code / Codex）のセッショ�
 | <img src="docs/images/gallery-1-on-top.webp" alt="画面のどこでも最前面に出て、下が透けて見える" /> | <img src="docs/images/gallery-2-garden.webp" alt="Claude Code や Codex のセッションごとに 1 羽の鳥" /> |
 | <img src="docs/images/gallery-3-needs-reply.webp" alt="エージェントが返事を待っていると「?」が出る" /> | <img src="docs/images/gallery-4-bubble.webp" alt="ターンが終わると吹き出しが要約する" /> |
 
+> [!IMPORTANT]
+> **怒りマーク: AI にきつく当たったら知らせます。** TypeSafe のキーがあると、送ったメッセージを 1 通ずつ Jev が AI への暴言かどうか判定し、暴言らしいときはそのセッションの鳥に怒りマークが付きます。
+> Anthropic は [2026 年の利用規約改定](https://www.anthropic.com/news/2026-usage-policy-update)（2026 年 11 月 12 日施行）で、Claude への理由のない暴言や残酷な扱いを続けることを禁止しました。Claude.ai と Claude Code では、暴言を続けるユーザーとの会話を Claude が終わらせることがあります。怒りマークは 1 通ごとの判定で、規約違反かどうかを判定するものではありません。
+
 ## 機能
 
 - 浮遊窓の「にわ」では、鳥と吹き出しと「tomarigi」のハンドルだけが見え、それ以外の場所のクリックは下の窓に届きます。ハンドルを押すと窓全体が出て、ドラッグすると窓が動きます

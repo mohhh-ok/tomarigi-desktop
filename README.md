@@ -9,6 +9,10 @@ A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as 
 | <img src="docs/images/gallery-1-on-top.webp" alt="Stays on top anywhere on your screen, and you can see through it" /> | <img src="docs/images/gallery-2-garden.webp" alt="One bird for each Claude Code or Codex session" /> |
 | <img src="docs/images/gallery-3-needs-reply.webp" alt="A question mark shows up when the agent is waiting on you" /> | <img src="docs/images/gallery-4-bubble.webp" alt="When a turn ends, the bubble sums it up" /> |
 
+> [!IMPORTANT]
+> **The anger mark: a heads-up when you're harsh to the AI.** With a TypeSafe key, every message you send is checked by Jev for abuse toward the AI, and the session's bird gets an anger mark when it looks abusive.
+> Anthropic's [2026 Usage Policy update](https://www.anthropic.com/news/2026-usage-policy-update) (effective November 12, 2026) prohibits sustained and needless abusive or cruel behavior toward Claude, and Claude can end conversations with persistently abusive users on Claude.ai and Claude Code. The anger mark judges one message at a time and is not a judgment of whether you violated that policy.
+
 ## Features
 
 - In the floating window's Garden, only the birds, their bubbles, and the "tomarigi" handle are shown, and clicks go through to the window below. Click the handle to show the whole window; drag it to move the window
