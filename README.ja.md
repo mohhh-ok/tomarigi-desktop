@@ -1,10 +1,10 @@
 # Tomarigi
 
-AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitHub Copilot CLI・Gemini CLI・OpenCode・Cursor CLI）のセッションを、常に手前に出る窓の中の鳥として見守るデスクトップアプリです（macOS 向け。Windows と Linux 向けのビルドもあります。下記参照）。セッションごとに 1 羽の鳥が「にわ」にいて、どれが作業中で、どれがあなたの返事を待っていて、どれが終わったかがひと目で分かります。鳥を押すと、そのセッションが動いているターミナルのペインへ飛びます。
+AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitHub Copilot CLI・Gemini CLI・OpenCode・Cursor CLI）のセッションを、常に手前に出る窓の中の鳥として見守るデスクトップアプリです（macOS 向け。次の版から Windows と Linux 向けのビルドも出します。下記参照）。セッションごとに 1 羽の鳥が「にわ」にいて、どれが作業中で、どれがあなたの返事を待っていて、どれが終わったかがひと目で分かります。鳥を押すと、そのセッションが動いているターミナルのペインへ飛びます。
 
 | | |
 |---|---|
-| <img src="docs/images/gallery-1-on-top.webp" alt="画面のどこでも最前面に出て、下が透けて見える" /> | <img src="docs/images/gallery-2-garden.webp" alt="Claude Code や Codex のセッションごとに 1 羽の鳥" /> |
+| <img src="docs/images/gallery-1-on-top.webp" alt="画面のどこでも最前面に出て、下が透けて見える" /> | <img src="docs/images/gallery-2-garden.webp" alt="エージェントのセッションごとに 1 羽の鳥" /> |
 | <img src="docs/images/gallery-3-needs-reply.webp" alt="エージェントが返事を待っていると「?」が出る" /> | <img src="docs/images/gallery-4-bubble.webp" alt="ターンが終わると吹き出しが要約する" /> |
 
 > [!IMPORTANT]
@@ -22,7 +22,7 @@ AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitH
 
 [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) から `.dmg` をダウンロードしてください。
 
-動作環境: macOS。Windows 10 / 11（x64）と Linux（x64、X11。Wayland では Xwayland 経由で動きます）向けのビルド（`.exe` のインストーラー、`.deb`、`.AppImage`）も Releases に置きますが、まだ実機では確かめていません。
+動作環境: macOS。Windows 10 / 11（x64）と Linux（x64、X11。Wayland では Xwayland 経由で動きます）向けのビルド（`.exe` のインストーラー、`.deb`、`.AppImage`）は、次の版から Releases に置きます（v0.6.0 までは macOS 版だけです）。まだ実機では確かめていません。
 
 ### ターミナルのペインへ飛ぶ
 
@@ -35,7 +35,7 @@ allow_remote_control socket-only
 listen_on unix:/tmp/kitty
 ```
 
-VS Code・Cursor などの VS Code 系のエディタ: 統合ターミナルのタブへ飛ぶには、Tomarigi の拡張を入れてください。[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) から `tomarigi-v<バージョン>.vsix` をダウンロードし、コマンドパレットの「Extensions: Install from VSIX...」で入れます（`code --install-extension <ファイル>`、`cursor --install-extension <ファイル>` でも入ります）。初めて飛ぶとき、エディタが「この拡張に URI を開かせるか」を聞くので、「Do not ask me again for this extension」に印を付けてください。拡張が無い場合は、エディタを手前に出すだけです。拡張は、ウィンドウごとにターミナルのプロセス ID を `~/.tomarigi/vscode/` に書き、Tomarigi がそれを読みます。
+VS Code・Cursor などの VS Code 系のエディタ: 統合ターミナルのタブへ飛ぶには、Tomarigi の拡張を入れてください。次の版から、[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) に `tomarigi-v<バージョン>.vsix` を置きます（v0.6.0 までにはありません）。それをダウンロードし、コマンドパレットの「Extensions: Install from VSIX...」で入れます（`code --install-extension <ファイル>`、`cursor --install-extension <ファイル>` でも入ります）。初めて飛ぶとき、エディタが「この拡張に URI を開かせるか」を聞くので、「Do not ask me again for this extension」に印を付けてください。拡張が無い場合は、エディタを手前に出すだけです。拡張は、ウィンドウごとにターミナルのプロセス ID を `~/.tomarigi/vscode/` に書き、Tomarigi がそれを読みます。
 
 ### Windows と Linux
 

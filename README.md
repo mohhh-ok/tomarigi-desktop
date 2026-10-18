@@ -2,11 +2,11 @@
 
 [日本語](README.ja.md)
 
-A desktop app for macOS (Windows and Linux builds too; see below) that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
+A desktop app for macOS (Windows and Linux builds from the next version; see below) that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
 
 | | |
 |---|---|
-| <img src="docs/images/gallery-1-on-top.webp" alt="Stays on top anywhere on your screen, and you can see through it" /> | <img src="docs/images/gallery-2-garden.webp" alt="One bird for each Claude Code or Codex session" /> |
+| <img src="docs/images/gallery-1-on-top.webp" alt="Stays on top anywhere on your screen, and you can see through it" /> | <img src="docs/images/gallery-2-garden.webp" alt="One bird for each agent session" /> |
 | <img src="docs/images/gallery-3-needs-reply.webp" alt="A question mark shows up when the agent is waiting on you" /> | <img src="docs/images/gallery-4-bubble.webp" alt="When a turn ends, the bubble sums it up" /> |
 
 > [!IMPORTANT]
@@ -24,7 +24,7 @@ A desktop app for macOS (Windows and Linux builds too; see below) that watches y
 
 Download the `.dmg` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases).
 
-Requirements: macOS. Windows 10 / 11 (x64) and Linux (x64, X11; on Wayland it runs through Xwayland) builds are also attached to Releases (`.exe` installer, `.deb`, `.AppImage`), but they haven't been checked on real machines yet.
+Requirements: macOS. Windows 10 / 11 (x64) and Linux (x64, X11; on Wayland it runs through Xwayland) builds (`.exe` installer, `.deb`, `.AppImage`) will be attached to Releases from the next version (v0.6.0 and earlier are macOS only), but they haven't been checked on real machines yet.
 
 ### Jumping to the terminal pane
 
@@ -37,7 +37,7 @@ allow_remote_control socket-only
 listen_on unix:/tmp/kitty
 ```
 
-VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. Download `tomarigi-v<version>.vsix` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
+VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. From the next version, download `tomarigi-v<version>.vsix` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) (v0.6.0 and earlier don't have it) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
 
 ### Windows and Linux
 
