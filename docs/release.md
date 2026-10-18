@@ -64,7 +64,7 @@ When the extension is published, README can point to the marketplace instead of 
 
 The Windows and Linux jobs run after the macOS job (`needs: release`), so the macOS job creates the draft and they add to it. They need no secrets. The Windows installer is unsigned until a code-signing certificate is chosen (docs/design.md "Platforms"), so SmartScreen warns on first run.
 
-What has been checked without real machines (on a Mac): the Linux build, `cargo test`, and a launch under Xvfb in a Docker container (arm64, Debian bookworm); the Windows build only as far as `cargo check --target x86_64-pc-windows-gnu` in the same container. Nothing below has been checked on a real Windows or Linux machine yet.
+What has been checked without real machines (on a Mac): the Linux build, `cargo test`, and a launch under Xvfb in a Docker container (arm64, Debian bookworm; Garden, Perch, and the settings without Secret Service); the Windows build only as far as `cargo check --target x86_64-pc-windows-gnu` (rustup's windows-gnu std, zig as the C compiler, `llvm-rc` for the resources). Nothing below has been checked on a real Windows or Linux machine yet.
 
 ### Checks on a real Windows 10 / 11 (x64) machine
 

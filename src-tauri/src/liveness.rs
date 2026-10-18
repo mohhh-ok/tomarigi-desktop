@@ -42,10 +42,12 @@ pub(crate) struct LiveScan {
 
 /// How long ps / lsof may take for a liveness check (lsof on thread-writer-locks measured 0.16–0.18s). A run that
 /// takes longer is killed and treated as unreliable, so a hung command neither blocks the poll nor removes birds
+#[cfg_attr(windows, allow(dead_code))]
 const LIVENESS_CMD_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 
 /// Runs cmd and collects its output, or None if it couldn't be launched or didn't finish within timeout (it is
 /// killed then)
+#[cfg_attr(windows, allow(dead_code))]
 fn output_with_timeout(cmd: &mut Command, timeout: std::time::Duration) -> Option<std::process::Output> {
     let mut child = cmd
         .stdin(std::process::Stdio::null())
