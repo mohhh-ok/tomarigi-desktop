@@ -15,7 +15,7 @@ import {
 import { focusSession, focusTargetOf } from "@/lib/terminal-focus";
 import { isAngry, type AskJudgement } from "@/lib/jev";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
-import { speakDoneEvent, speakEvent } from "@/lib/voice";
+import { speakDoneEvent, speakEvent, speechAvailable } from "@/lib/voice";
 import DebugApp from "./DebugApp";
 import { Garden } from "./garden";
 import { bubbleText } from "./bubble";
@@ -98,6 +98,7 @@ export default function App({
     voiceEnabledRef,
     voiceVolume,
     aiKeySet,
+    keyStoreAvailable,
     aiKeyTestState,
     aiProvider,
     iconSetAssignments,
@@ -113,6 +114,8 @@ export default function App({
     assignIconSet,
   } = useSettings();
   const { requestJudgements, displaySessions } = useTurnJudgements(sessions, aiKeySet);
+  // Readout is off where the WebView can't speak (some Linux builds; docs/design.md "Platforms")
+  const canSpeak = speechAvailable();
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
   // it is a screen (like settings) opened and closed by this state alone
   const [showDebug, setShowDebug] = useState(
@@ -636,6 +639,7 @@ export default function App({
             )}
             <AiKeySettings
               keySet={aiKeySet}
+              storeAvailable={keyStoreAvailable}
               selectedProvider={aiProvider}
               testState={aiKeyTestState}
               onSaveKey={saveAiKey}
@@ -696,9 +700,15 @@ export default function App({
                 </button>
               </div>
               <label className="voice-enable-row">
-                <input type="checkbox" checked={voiceEnabled} onChange={toggleVoiceEnabled} />
+                <input
+                  type="checkbox"
+                  checked={voiceEnabled && canSpeak}
+                  disabled={!canSpeak}
+                  onChange={toggleVoiceEnabled}
+                />
                 {t("voiceEnableLabel")}
               </label>
+              {!canSpeak && <p className="settings-subrow settings-note">{t("voiceUnavailable")}</p>}
               {/* The volume value is kept even when voiceEnabled is OFF (the toggle is a switch for whether to
                   speak and is independent of volume). While OFF it is only disabled to prevent meaningless
                   adjustments; the value doesn't change */}
@@ -710,7 +720,7 @@ export default function App({
                   min={0}
                   max={100}
                   value={Math.round(voiceVolume * 100)}
-                  disabled={!voiceEnabled}
+                  disabled={!voiceEnabled || !canSpeak}
                   onChange={(e) => changeVoiceVolume(Number(e.target.value) / 100)}
                 />
                 <span className="volume-value">{Math.round(voiceVolume * 100)}%</span>

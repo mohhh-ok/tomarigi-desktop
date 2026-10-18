@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "پنهان کردن پنجره (از نماد نوار منو برمی‌گردد)"
+  },
+  "byokStoreUnavailable": {
+    "message": "کلیدهای API ذخیره نمی‌شوند، چون هیچ دسته‌کلیدی (GNOME Keyring یا KWallet) روی این رایانه در حال اجرا نیست. یکی را اجرا کنید و tomarigi را دوباره باز کنید."
+  },
+  "voiceUnavailable": {
+    "message": "خواندن با صدا در دسترس نیست، چون این سیستم موتور گفتار ندارد."
   }
 }

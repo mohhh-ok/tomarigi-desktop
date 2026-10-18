@@ -132,6 +132,8 @@ export const KEYS = [
   "quotedSnippet",
   "settingsBackButton",
   "hideWindowButtonLabel",
+  "byokStoreUnavailable",
+  "voiceUnavailable",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

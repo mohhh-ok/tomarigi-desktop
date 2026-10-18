@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "विंडो छिपाएँ (मेन्यू बार आइकन से वापस लाएँ)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API कुंजियाँ सहेजी नहीं जा सकतीं, क्योंकि इस कंप्यूटर पर कोई कीरिंग (GNOME Keyring या KWallet) नहीं चल रही है। एक चालू करें, फिर tomarigi को दोबारा खोलें।"
+  },
+  "voiceUnavailable": {
+    "message": "आवाज़ से पढ़ना उपलब्ध नहीं है, क्योंकि इस सिस्टम में स्पीच इंजन नहीं है।"
   }
 }

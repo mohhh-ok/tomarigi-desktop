@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Ascunde fereastra (o readuci din pictograma din bara de meniu)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Cheile API nu pot fi salvate, deoarece pe acest computer nu rulează niciun portchei (GNOME Keyring sau KWallet). Pornește unul, apoi redeschide tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Citirea cu voce nu este disponibilă, deoarece acest sistem nu are motor de vorbire."
   }
 }

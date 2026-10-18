@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Sakrij prozor (vrati ga ikonom na traci izbornika)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API ključevi ne mogu se spremiti jer na ovom računalu nije pokrenut privjesak ključeva (GNOME Keyring ili KWallet). Pokrenite ga pa ponovno otvorite tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Čitanje naglas nije dostupno jer ovaj sustav nema pogon za govor."
   }
 }

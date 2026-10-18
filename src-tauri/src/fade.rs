@@ -3,12 +3,15 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 
 use crate::append_log;
-use crate::window::{current_mode, find_backdrop, ns_window, WindowMode};
+use crate::window::{current_mode, WindowMode};
+#[cfg(target_os = "macos")]
+use crate::window::{find_backdrop, ns_window};
 
 // ---- Fade until hovered (docs/design.md "Fade until hovered") ----
 // At rest the floating window's Garden shows only the birds and the window handles ("Tomarigi" in the header, and the
 // Garden's empty message while it has no birds), and
-// clicks go through to the window below (ignoresMouseEvents). The WebView then gets no mouse events, so the cursor is
+// clicks go through to the window below (ignoresMouseEvents; set_ignore_cursor_events on Windows / Linux). The WebView
+// then gets no mouse events, so the cursor is
 // watched here: on a bird or the handle the window takes clicks while staying faded, and clicking the handle
 // (reveal_garden) shows the whole window. garden-fade.ts sends the bird and handle rectangles and whether the fade
 // applies, and receives "garden-fade" (true = faded) to fade the page itself
@@ -116,18 +119,44 @@ fn next_interactive(interactive: bool, revealed: bool, on_target: bool, button_d
     revealed || if button_down { interactive } else { on_target }
 }
 
-/// Cursor position in the window's content coordinates, and whether a mouse button is held
+/// Cursor position in the window's content coordinates, the content size, and whether a mouse button is held
 #[cfg(target_os = "macos")]
-fn cursor_in_window(ns: &objc2_app_kit::NSWindow) -> (f64, f64, f64, f64, bool) {
+fn cursor_in_window(win: &WebviewWindow) -> Option<(f64, f64, f64, f64, bool)> {
     use objc2::{class, msg_send};
     use objc2_foundation::NSPoint;
+    let ns = ns_window(win)?;
     // Screen coordinates with the origin at the bottom left, in points (same as the window frame)
     let mouse: NSPoint = unsafe { msg_send![class!(NSEvent), mouseLocation] };
     let pressed: usize = unsafe { msg_send![class!(NSEvent), pressedMouseButtons] };
     let frame = ns.frame();
     let x = mouse.x - frame.origin.x;
     let y = frame.origin.y + frame.size.height - mouse.y;
-    (x, y, frame.size.width, frame.size.height, pressed != 0)
+    Some((x, y, frame.size.width, frame.size.height, pressed != 0))
+}
+
+/// Windows / Linux: the cursor in physical screen pixels, converted to the content's CSS px (the window is
+/// borderless while floating, so the content starts at the inner position)
+#[cfg(not(target_os = "macos"))]
+fn cursor_in_window(win: &WebviewWindow) -> Option<(f64, f64, f64, f64, bool)> {
+    let cursor = win.cursor_position().ok()?;
+    let pos = win.inner_position().ok()?;
+    let size = win.inner_size().ok()?;
+    let scale = win.scale_factor().ok()?;
+    let x = (cursor.x - pos.x as f64) / scale;
+    let y = (cursor.y - pos.y as f64) / scale;
+    Some((x, y, size.width as f64 / scale, size.height as f64 / scale, mouse_button_down()))
+}
+
+#[cfg(windows)]
+fn mouse_button_down() -> bool {
+    use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_MBUTTON, VK_RBUTTON};
+    // The high bit is set while the button is down
+    [VK_LBUTTON, VK_RBUTTON, VK_MBUTTON].iter().any(|vk| unsafe { GetAsyncKeyState(vk.0 as i32) } as u16 & 0x8000 != 0)
+}
+
+#[cfg(target_os = "linux")]
+fn mouse_button_down() -> bool {
+    crate::xconn::buttons_down()
 }
 
 /// Whether clicks go through (not on a bird or the handle at rest)
@@ -135,6 +164,21 @@ fn cursor_in_window(ns: &objc2_app_kit::NSWindow) -> (f64, f64, f64, f64, bool) 
 fn apply_click_through(win: &WebviewWindow, through: bool) {
     let Some(ns) = ns_window(win) else { return };
     ns.setIgnoresMouseEvents(through);
+}
+
+#[cfg(not(target_os = "macos"))]
+fn apply_click_through(win: &WebviewWindow, through: bool) {
+    win.set_ignore_cursor_events(through).ok();
+}
+
+/// Faded: the Acrylic disappears on Windows. The rest of the page fades in CSS. While faded the window takes only
+/// clicks on birds and the handle, so it doesn't take focus from the terminal then (WS_EX_NOACTIVATE on Windows,
+/// accept-focus on X11); shown, it takes focus again so the settings inputs can be typed in
+#[cfg(not(target_os = "macos"))]
+fn apply_fade(win: &WebviewWindow, faded: bool) {
+    crate::window::set_backdrop(win, !faded);
+    win.set_focusable(!faded).ok();
+    win.emit("garden-fade", faded).ok();
 }
 
 /// Faded: the frosted glass and shadow disappear. The rest of the page fades in CSS
@@ -155,12 +199,10 @@ fn apply_fade(win: &WebviewWindow, faded: bool) {
 
 /// Called on the main thread every FADE_TICK_MS. The state is decided under the lock; the window, the emit, and the
 /// log are touched after releasing it
-#[cfg(target_os = "macos")]
 fn fade_tick(app: &AppHandle) {
     let Some(win) = app.get_webview_window("main") else { return };
-    let Some(ns) = ns_window(&win) else { return };
     let visible = win.is_visible().unwrap_or(false);
-    let (x, y, w, h, button_down) = cursor_in_window(ns);
+    let Some((x, y, w, h, button_down)) = cursor_in_window(&win) else { return };
     let inside = (x >= 0.0 && y >= 0.0 && x <= w && y <= h) || holding_inside();
     let change = {
         let mut fade = fade_state();
@@ -213,7 +255,6 @@ fn fade_tick(app: &AppHandle) {
 
 /// Watches the cursor while the fade is wanted. Hops to the main thread only then, since AppKit windows are
 /// touched only there
-#[cfg(target_os = "macos")]
 pub(crate) fn start_fade_watch(app: &AppHandle) {
     // Self-test: 4 seconds after launch, reveal as a handle click would, and keep it shown for 6 seconds as if the
     // cursor were in the window (for screenshots of both states without moving the cursor)

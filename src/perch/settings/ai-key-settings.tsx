@@ -21,6 +21,7 @@ export type ApiKeyTestState =
 /** All API key settings. The shared description is shown once here; per-provider differences stay inside each row. */
 export function AiKeySettings({
   keySet,
+  storeAvailable,
   selectedProvider,
   testState,
   onSaveKey,
@@ -29,6 +30,8 @@ export function AiKeySettings({
   onSelect,
 }: {
   keySet: Record<ApiKeyProvider, boolean>;
+  // false on a computer without a key store (Linux without Secret Service): says so, and the inputs are disabled
+  storeAvailable: boolean;
   selectedProvider: AiProvider | null;
   testState: Record<ApiKeyProvider, ApiKeyTestState>;
   onSaveKey: (provider: ApiKeyProvider, draft: string) => Promise<boolean>;
@@ -40,12 +43,16 @@ export function AiKeySettings({
     <section className="ai-keys">
       <h2>{t("aiApiKeysHeading")}</h2>
       <p className="judge-description">{t("aiApiKeysDescription")}</p>
+      {!storeAvailable && (
+        <p className="judge-status judge-status-error key-store-unavailable">{t("byokStoreUnavailable")}</p>
+      )}
       <div className="ai-key-provider-list">
         {(["anthropic", "openai", "typesafe"] as const).map((provider) => (
           <ApiKeyProviderSettings
             key={provider}
             provider={provider}
             keySet={keySet[provider]}
+            storeAvailable={storeAvailable}
             selected={selectedProvider === provider}
             testState={testState[provider]}
             onSaveKey={(draft) => onSaveKey(provider, draft)}
@@ -62,6 +69,7 @@ export function AiKeySettings({
 function ApiKeyProviderSettings({
   provider,
   keySet,
+  storeAvailable,
   selected,
   testState,
   onSaveKey,
@@ -71,6 +79,7 @@ function ApiKeyProviderSettings({
 }: {
   provider: ApiKeyProvider;
   keySet: boolean;
+  storeAvailable: boolean;
   selected: boolean;
   testState: ApiKeyTestState;
   onSaveKey: (draft: string) => Promise<boolean>;
@@ -131,10 +140,12 @@ function ApiKeyProviderSettings({
               value={draft}
               placeholder={heading}
               aria-label={heading}
+              disabled={!storeAvailable}
               onChange={(e) => setDraft(e.target.value)}
             />
             <button
               className="small"
+              disabled={!storeAvailable}
               onClick={() => {
                 void onSaveKey(draft).then((saved) => {
                   setSaveFailed(!saved && draft.trim() !== "");

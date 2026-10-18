@@ -1,4 +1,7 @@
-// ---- Liveness of sessions (ps / lsof) and watching links ----
+// ---- Liveness of sessions and watching links ----
+// The process lookups behind liveness are one implementation per OS (docs/design.md "Platforms"): ps and lsof on
+// macOS; /proc on Linux (ps only for the list of processes with a terminal); sysinfo and the Restart Manager on
+// Windows, which has neither ps nor lsof
 
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Seek, SeekFrom};
@@ -114,17 +117,65 @@ fn live_sessions_blocking(config_dir: &str) -> LiveScan {
     if sessions.is_empty() {
         return LiveScan { present: true, sessions, reliable: unreadable == 0 };
     }
-    let pids = sessions.iter().map(|s| s.pid.to_string()).collect::<Vec<_>>().join(",");
-    // ps -p returns exit code 1 when some of the given pids don't exist (the output is correct). Failing to
-    // launch, timing out, or dying from a signal (no exit code) counts as failure
-    let Some(out) = output_with_timeout(Command::new("ps").args(["-o", "pid=", "-p", &pids]), LIVENESS_CMD_TIMEOUT) else {
+    let pids: Vec<u32> = sessions.iter().map(|s| s.pid).collect();
+    let Some((alive, ps_ok)) = running_pids(&pids) else {
         return LiveScan { present: true, sessions: Vec::new(), reliable: false };
     };
-    let alive: std::collections::HashSet<u32> =
-        String::from_utf8_lossy(&out.stdout).split_whitespace().filter_map(|p| p.parse().ok()).collect();
-    let ps_ok = out.status.code().is_some_and(|c| c == 0 || c == 1);
     sessions.retain(|s| alive.contains(&s.pid));
     LiveScan { present: true, sessions, reliable: ps_ok && unreadable == 0 }
+}
+
+/// Which of pids are running, and whether the answer can be trusted. None when the lookup couldn't be made at all
+#[cfg(target_os = "macos")]
+fn running_pids(pids: &[u32]) -> Option<(std::collections::HashSet<u32>, bool)> {
+    let list = pids.iter().map(|p| p.to_string()).collect::<Vec<_>>().join(",");
+    // ps -p returns exit code 1 when some of the given pids don't exist (the output is correct). Failing to
+    // launch, timing out, or dying from a signal (no exit code) counts as failure
+    let out = output_with_timeout(Command::new("ps").args(["-o", "pid=", "-p", &list]), LIVENESS_CMD_TIMEOUT)?;
+    let alive = String::from_utf8_lossy(&out.stdout).split_whitespace().filter_map(|p| p.parse().ok()).collect();
+    Some((alive, out.status.code().is_some_and(|c| c == 0 || c == 1)))
+}
+
+/// Linux: a running process has /proc/<pid>
+#[cfg(target_os = "linux")]
+fn running_pids(pids: &[u32]) -> Option<(std::collections::HashSet<u32>, bool)> {
+    if !std::path::Path::new("/proc/self").exists() {
+        return None;
+    }
+    Some((pids.iter().copied().filter(|p| std::path::Path::new(&format!("/proc/{p}")).exists()).collect(), true))
+}
+
+#[cfg(windows)]
+fn running_pids(pids: &[u32]) -> Option<(std::collections::HashSet<u32>, bool)> {
+    let sys = win::snapshot(win::Detail::Bare);
+    Some((pids.iter().copied().filter(|p| sys.process(sysinfo::Pid::from_u32(*p)).is_some()).collect(), true))
+}
+
+/// sysinfo on Windows: a snapshot of the processes, with only the details a caller needs
+#[cfg(windows)]
+pub(crate) mod win {
+    use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind};
+
+    pub(crate) enum Detail {
+        /// pid and parent only
+        Bare,
+        /// with command lines (tty_processes)
+        Command,
+        /// with working directories (process_cwds)
+        Cwd,
+    }
+
+    pub(crate) fn snapshot(detail: Detail) -> System {
+        let kind = ProcessRefreshKind::nothing();
+        let kind = match detail {
+            Detail::Bare => kind,
+            Detail::Command => kind.with_cmd(UpdateKind::Always).with_exe(UpdateKind::Always),
+            Detail::Cwd => kind.with_cwd(UpdateKind::Always),
+        };
+        let mut sys = System::new();
+        sys.refresh_processes_specifics(ProcessesToUpdate::All, true, kind);
+        sys
+    }
 }
 
 
@@ -262,37 +313,140 @@ fn live_codex_threads_blocking(codex_dir: &str) -> CodexLiveScan {
         }
         Err(_) => return CodexLiveScan { threads: Vec::new(), reliable: false },
     }
+    match lock_holders(&dir) {
+        Some(held) => {
+            let mut threads: Vec<CodexThread> = Vec::new();
+            for (file, pid) in held {
+                if let Some(thread_id) = thread_of_lock(&file) {
+                    if !threads.iter().any(|t| t.thread_id == thread_id) {
+                        threads.push(CodexThread { thread_id: thread_id.to_string(), pid });
+                    }
+                }
+            }
+            CodexLiveScan { threads, reliable: true }
+        }
+        None => CodexLiveScan { threads: Vec::new(), reliable: false },
+    }
+}
+
+/// The thread id of a lock file name: only `<threadId>.lock` (not .coordination.lock etc.)
+fn thread_of_lock(file: &str) -> Option<&str> {
+    let thread_id = file.strip_suffix(".lock")?;
+    (!thread_id.is_empty() && !thread_id.starts_with('.')).then_some(thread_id)
+}
+
+/// (file name, pid) for each file in dir that a process has open. None when the lookup failed
+#[cfg(target_os = "macos")]
+fn lock_holders(dir: &std::path::Path) -> Option<Vec<(String, u32)>> {
     // lsof exits with 1 both when nothing is open and when something is found (measured on macOS), so the exit
     // code value isn't used. -w silences warnings, so anything on stderr is a failure. Failing to launch, timing
     // out, or dying from a signal (no exit code) is a failure too
-    let Some(out) =
-        output_with_timeout(Command::new("lsof").arg("-w").args(["-F", "pn", "+d"]).arg(&dir), LIVENESS_CMD_TIMEOUT)
-    else {
-        return CodexLiveScan { threads: Vec::new(), reliable: false };
-    };
+    let out = output_with_timeout(Command::new("lsof").arg("-w").args(["-F", "pn", "+d"]).arg(dir), LIVENESS_CMD_TIMEOUT)?;
     if !out.stderr.is_empty() || out.status.code().is_none() {
-        return CodexLiveScan { threads: Vec::new(), reliable: false };
+        return None;
     }
-    let mut threads: Vec<CodexThread> = Vec::new();
+    let mut held = Vec::new();
     let mut pid: Option<u32> = None;
     for line in String::from_utf8_lossy(&out.stdout).lines() {
         if let Some(p) = line.strip_prefix('p') {
             pid = p.parse().ok();
-        } else if let Some(name) = line.strip_prefix('n') {
-            let file = name.rsplit('/').next().unwrap_or("");
-            // Only <threadId>.lock (not .coordination.lock etc.)
-            let Some(thread_id) = file.strip_suffix(".lock") else { continue };
-            if thread_id.is_empty() || thread_id.starts_with('.') {
-                continue;
-            }
-            if let Some(pid) = pid {
-                if !threads.iter().any(|t| t.thread_id == thread_id) {
-                    threads.push(CodexThread { thread_id: thread_id.to_string(), pid });
+        } else if let (Some(name), Some(pid)) = (line.strip_prefix('n'), pid) {
+            held.push((name.rsplit('/').next().unwrap_or("").to_string(), pid));
+        }
+    }
+    Some(held)
+}
+
+/// Linux: the open files of every process this user can read, from the /proc/<pid>/fd links
+#[cfg(target_os = "linux")]
+fn lock_holders(dir: &std::path::Path) -> Option<Vec<(String, u32)>> {
+    let dir = dir.canonicalize().ok()?;
+    let mut held = Vec::new();
+    for item in std::fs::read_dir("/proc").ok()?.flatten() {
+        let Some(pid) = item.file_name().to_str().and_then(|n| n.parse::<u32>().ok()) else { continue };
+        // Other users' processes can't be read; codex runs as this user
+        let Ok(fds) = std::fs::read_dir(item.path().join("fd")) else { continue };
+        for fd in fds.flatten() {
+            let Ok(target) = std::fs::read_link(fd.path()) else { continue };
+            if target.parent() == Some(dir.as_path()) {
+                if let Some(name) = target.file_name().and_then(|n| n.to_str()) {
+                    held.push((name.to_string(), pid));
                 }
             }
         }
     }
-    CodexLiveScan { threads, reliable: true }
+    Some(held)
+}
+
+/// Windows: a file some process has open can't be opened without sharing (ERROR_SHARING_VIOLATION); the Restart
+/// Manager then names the process for those files only (one session per file, since its list isn't per file)
+#[cfg(windows)]
+fn lock_holders(dir: &std::path::Path) -> Option<Vec<(String, u32)>> {
+    use std::os::windows::fs::OpenOptionsExt;
+    const ERROR_SHARING_VIOLATION: i32 = 32;
+    let mut held = Vec::new();
+    for item in std::fs::read_dir(dir).ok()?.flatten() {
+        let name = item.file_name().to_string_lossy().into_owned();
+        if thread_of_lock(&name).is_none() {
+            continue;
+        }
+        let path = item.path();
+        match std::fs::OpenOptions::new().read(true).share_mode(0).open(&path) {
+            Ok(_) => continue,
+            Err(e) if e.raw_os_error() == Some(ERROR_SHARING_VIOLATION) => {}
+            Err(_) => continue,
+        }
+        if let Some(pid) = win_rm::holders(&path)?.first() {
+            held.push((name, *pid));
+        }
+    }
+    Some(held)
+}
+
+/// The Restart Manager (RmGetList): which processes have a file open
+#[cfg(windows)]
+mod win_rm {
+    use windows::core::{PCWSTR, PWSTR};
+    use windows::Win32::Foundation::{ERROR_MORE_DATA, WIN32_ERROR};
+    use windows::Win32::System::RestartManager::{
+        RmEndSession, RmGetList, RmRegisterResources, RmStartSession, CCH_RM_SESSION_KEY, RM_PROCESS_INFO,
+    };
+
+    /// pids that have path open. None when the Restart Manager failed
+    pub(super) fn holders(path: &std::path::Path) -> Option<Vec<u32>> {
+        use std::os::windows::ffi::OsStrExt;
+        let wide: Vec<u16> = path.as_os_str().encode_wide().chain(std::iter::once(0)).collect();
+        let mut session = 0u32;
+        let mut key = [0u16; CCH_RM_SESSION_KEY as usize + 1];
+        unsafe {
+            if RmStartSession(&mut session, None, PWSTR(key.as_mut_ptr())) != WIN32_ERROR(0) {
+                return None;
+            }
+            let result = (|| {
+                let files = [PCWSTR(wide.as_ptr())];
+                if RmRegisterResources(session, Some(&files), None, None) != WIN32_ERROR(0) {
+                    return None;
+                }
+                let mut infos: Vec<RM_PROCESS_INFO> = vec![RM_PROCESS_INFO::default(); 4];
+                loop {
+                    let mut needed = 0u32;
+                    let mut count = infos.len() as u32;
+                    let mut reasons = 0u32;
+                    let r = RmGetList(session, &mut needed, &mut count, Some(infos.as_mut_ptr()), &mut reasons);
+                    if r == ERROR_MORE_DATA {
+                        infos.resize(needed as usize + 1, RM_PROCESS_INFO::default());
+                        continue;
+                    }
+                    if r != WIN32_ERROR(0) {
+                        return None;
+                    }
+                    return Some(infos[..count as usize].iter().map(|i| i.Process.dwProcessId).collect());
+                }
+            })();
+            let _ = RmEndSession(session);
+            result
+        }
+    }
 }
 
 // ---- Agents without a pid file (docs/design.md "Agents") ----
@@ -322,6 +476,29 @@ pub(crate) async fn tty_processes() -> ProcessScan {
         .unwrap_or(ProcessScan { processes: Vec::new(), reliable: false })
 }
 
+#[cfg(windows)]
+fn tty_processes_blocking() -> ProcessScan {
+    // Windows has no ttys, so every process with a command line is listed (tty is left empty)
+    let sys = win::snapshot(win::Detail::Command);
+    let processes = sys
+        .processes()
+        .iter()
+        .filter(|(_, p)| !p.cmd().is_empty())
+        .map(|(pid, p)| {
+            let command = p.cmd().iter().map(|a| a.to_string_lossy()).collect::<Vec<_>>().join(" ");
+            TtyProcess {
+                pid: pid.as_u32(),
+                tty: String::new(),
+                started_at_ms: p.start_time() as f64 * 1000.0,
+                command: command.chars().take(400).collect(),
+            }
+        })
+        .collect();
+    ProcessScan { processes, reliable: true }
+}
+
+/// `ps` on macOS and Linux (procps prints the same columns; a process without a tty shows "?" there)
+#[cfg(not(windows))]
 fn tty_processes_blocking() -> ProcessScan {
     let Some(out) =
         output_with_timeout(Command::new("ps").args(["axww", "-o", "pid=,tty=,etime=,command="]), LIVENESS_CMD_TIMEOUT)
@@ -343,6 +520,7 @@ fn tty_processes_blocking() -> ProcessScan {
 }
 
 /// One line of `ps -o pid=,tty=,etime=,command=`. None for processes without a tty and for lines that don't parse
+#[cfg_attr(windows, allow(dead_code))]
 fn parse_ps_line(line: &str, now_ms: f64) -> Option<TtyProcess> {
     let mut rest = line.trim_start();
     let mut field = || {
@@ -354,7 +532,7 @@ fn parse_ps_line(line: &str, now_ms: f64) -> Option<TtyProcess> {
     let pid = field().parse().ok()?;
     let tty = field().to_string();
     let elapsed = elapsed_secs(field())?;
-    if tty == "??" || tty == "-" || rest.is_empty() {
+    if tty == "??" || tty == "?" || tty == "-" || rest.is_empty() {
         return None;
     }
     // Long command lines (a prompt passed as an argument) are cut; only the program and its first arguments are used
@@ -363,6 +541,7 @@ fn parse_ps_line(line: &str, now_ms: f64) -> Option<TtyProcess> {
 }
 
 /// ps's etime: `[[dd-]hh:]mm:ss`
+#[cfg_attr(windows, allow(dead_code))]
 fn elapsed_secs(etime: &str) -> Option<u64> {
     let (days, clock) = match etime.split_once('-') {
         Some((d, c)) => (d.parse::<u64>().ok()?, c),
@@ -391,6 +570,33 @@ pub(crate) async fn process_cwds(pids: Vec<u32>) -> CwdScan {
         .unwrap_or(CwdScan { cwds: Vec::new(), reliable: false })
 }
 
+/// Linux: the /proc/<pid>/cwd link
+#[cfg(target_os = "linux")]
+fn process_cwds_blocking(pids: &[u32]) -> CwdScan {
+    let cwds = pids
+        .iter()
+        .filter_map(|p| std::fs::read_link(format!("/proc/{p}/cwd")).ok().map(|d| (*p, d.to_string_lossy().into_owned())))
+        .collect();
+    CwdScan { cwds, reliable: true }
+}
+
+#[cfg(windows)]
+fn process_cwds_blocking(pids: &[u32]) -> CwdScan {
+    if pids.is_empty() {
+        return CwdScan { cwds: Vec::new(), reliable: true };
+    }
+    let sys = win::snapshot(win::Detail::Cwd);
+    let cwds = pids
+        .iter()
+        .filter_map(|p| {
+            let cwd = sys.process(sysinfo::Pid::from_u32(*p))?.cwd()?;
+            Some((*p, cwd.to_string_lossy().into_owned()))
+        })
+        .collect();
+    CwdScan { cwds, reliable: true }
+}
+
+#[cfg(target_os = "macos")]
 fn process_cwds_blocking(pids: &[u32]) -> CwdScan {
     if pids.is_empty() {
         return CwdScan { cwds: Vec::new(), reliable: true };
@@ -437,13 +643,12 @@ fn alive_pids_blocking(pids: &[u32]) -> PidScan {
     if pids.is_empty() {
         return PidScan { alive: Vec::new(), reliable: true };
     }
-    let list = pids.iter().map(|p| p.to_string()).collect::<Vec<_>>().join(",");
-    // Same as live_sessions: ps -p exits with 1 when some pids don't exist
-    let Some(out) = output_with_timeout(Command::new("ps").args(["-o", "pid=", "-p", &list]), LIVENESS_CMD_TIMEOUT) else {
+    // Same as live_sessions (on macOS ps -p exits with 1 when some pids don't exist)
+    let Some((alive, ok)) = running_pids(pids) else {
         return PidScan { alive: Vec::new(), reliable: false };
     };
-    let alive = String::from_utf8_lossy(&out.stdout).split_whitespace().filter_map(|p| p.parse().ok()).collect();
-    PidScan { alive, reliable: out.status.code().is_some_and(|c| c == 0 || c == 1) }
+    // In the order asked for
+    PidScan { alive: pids.iter().copied().filter(|p| alive.contains(p)).collect(), reliable: ok }
 }
 
 #[cfg(test)]
@@ -462,6 +667,7 @@ mod tests {
 
     /// A shell started in a temp folder is found with that folder as its cwd, and a pid that has ended is missing
     #[test]
+    #[cfg(unix)]
     fn process_cwds_and_alive_pids_follow_the_process() {
         let dir = std::env::temp_dir().join(format!("tomarigi-cwd-test-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
@@ -488,6 +694,7 @@ mod tests {
     /// A codex that has a thread open keeps its lock open. Once it exits the lock file stays but no longer counts
     /// (docs/design.md "Removing birds of ended sessions")
     #[test]
+    #[cfg(unix)]
     fn live_codex_threads_follows_the_process_holding_the_lock() {
         let dir = std::env::temp_dir().join(format!("tomarigi-codex-test-{}", std::process::id()));
         let locks = dir.join("thread-writer-locks");

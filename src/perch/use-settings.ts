@@ -16,6 +16,7 @@ import {
   deleteApiKey,
   initApiKeys,
   loadAiProvider,
+  loadApiKeyBackend,
   loadApiKeyStatus,
   resolveAiProvider,
   saveAiProvider,
@@ -44,6 +45,8 @@ export function useSettings() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [voiceVolume, setVoiceVolumeState] = useState(1);
   // API keys are a setting shared by the done readout summary (speakDoneEvent) and the connection test, so the name isn't limited to judge
+  // false on a computer without a key store (Linux without Secret Service); the settings say keys can't be saved
+  const [keyStoreAvailable, setKeyStoreAvailable] = useState(true);
   const [aiKeySet, setAiKeySet] = useState<Record<ApiKeyProvider, boolean>>({
     anthropic: false,
     openai: false,
@@ -86,7 +89,12 @@ export function useSettings() {
     } catch (e) {
       console.warn("[tomarigi] failed to initialize API keys", e);
     }
-    const [keyStatus, preferredProvider] = await Promise.all([loadApiKeyStatus(), loadAiProvider()]);
+    const [keyStatus, preferredProvider, keyBackend] = await Promise.all([
+      loadApiKeyStatus(),
+      loadAiProvider(),
+      loadApiKeyBackend(),
+    ]);
+    setKeyStoreAvailable(keyBackend !== "unavailable");
     // Log whether each key is saved (a boolean only). Key values are never received or printed
     void invoke("log", {
       line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} typesafe=${keyStatus.typesafe}`,
@@ -220,6 +228,7 @@ export function useSettings() {
     voiceEnabledRef,
     voiceVolume,
     aiKeySet,
+    keyStoreAvailable,
     aiKeyTestState,
     aiProvider,
     iconSetAssignments,

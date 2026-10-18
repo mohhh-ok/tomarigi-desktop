@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Dölj fönstret (ta fram det via menyradsikonen)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API-nycklar kan inte sparas eftersom ingen nyckelring (GNOME Keyring eller KWallet) körs på den här datorn. Starta en och öppna tomarigi igen."
+  },
+  "voiceUnavailable": {
+    "message": "Uppläsning är inte tillgänglig eftersom systemet saknar talsyntes."
   }
 }

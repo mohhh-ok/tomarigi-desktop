@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Pencereyi gizle (menü çubuğu simgesinden geri getirilir)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Bu bilgisayarda çalışan bir anahtarlık (GNOME Keyring veya KWallet) olmadığı için API anahtarları kaydedilemiyor. Birini başlatıp tomarigi'yi yeniden açın."
+  },
+  "voiceUnavailable": {
+    "message": "Bu sistemde konuşma motoru olmadığı için sesli okuma kullanılamıyor."
   }
 }

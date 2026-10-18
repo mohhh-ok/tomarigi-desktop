@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "창 숨기기(메뉴 막대 아이콘으로 다시 열 수 있음)"
+  },
+  "byokStoreUnavailable": {
+    "message": "이 컴퓨터에서 키링(GNOME Keyring 또는 KWallet)이 실행되고 있지 않아 API 키를 저장할 수 없습니다. 키링을 실행한 뒤 tomarigi를 다시 여세요."
+  },
+  "voiceUnavailable": {
+    "message": "이 시스템에는 음성 합성 기능이 없어 읽어주기를 사용할 수 없습니다."
   }
 }

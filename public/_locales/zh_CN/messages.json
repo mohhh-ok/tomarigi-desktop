@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "隐藏窗口（可从菜单栏图标恢复）"
+  },
+  "byokStoreUnavailable": {
+    "message": "此电脑上没有运行密钥环（GNOME Keyring 或 KWallet），因此无法保存 API 密钥。请启动密钥环后重新打开 tomarigi。"
+  },
+  "voiceUnavailable": {
+    "message": "此系统没有语音合成功能，因此无法朗读。"
   }
 }

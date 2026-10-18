@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Piilota ikkuna (tuo takaisin valikkorivin kuvakkeesta)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API-avaimia ei voi tallentaa, koska tällä tietokoneella ei ole käynnissä avainnippua (GNOME Keyring tai KWallet). Käynnistä se ja avaa tomarigi uudelleen."
+  },
+  "voiceUnavailable": {
+    "message": "Ääneen lukeminen ei ole käytettävissä, koska järjestelmässä ei ole puhesyntetisaattoria."
   }
 }

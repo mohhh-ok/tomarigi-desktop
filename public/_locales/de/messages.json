@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Fenster ausblenden (über das Menüleistensymbol wieder öffnen)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API-Schlüssel können nicht gespeichert werden, weil auf diesem Computer kein Schlüsselbund (GNOME Keyring oder KWallet) läuft. Starte einen und öffne tomarigi erneut."
+  },
+  "voiceUnavailable": {
+    "message": "Vorlesen ist nicht verfügbar, weil dieses System keine Sprachausgabe hat."
   }
 }

@@ -301,6 +301,54 @@ fn set_backdrop(win: &WebviewWindow, radius: f64) {
     }
 }
 
+// Windows and Linux (docs/design.md "Platforms"): the same two modes with tauri's window calls. The floating window is
+// transparent, borderless, always on top (a request the X11 window manager may ignore), and hidden from the taskbar.
+// The frosted background is Acrylic on Windows; Linux has none and shows the page's translucent color as is
+
+/// Floating window on Windows / Linux
+#[cfg(not(target_os = "macos"))]
+pub(crate) fn make_panel(win: &WebviewWindow) {
+    win.set_decorations(false).ok();
+    win.set_shadow(false).ok();
+    win.set_always_on_top(true).ok();
+    // Unsupported on Windows (no call for showing on every virtual desktop); a no-op there
+    win.set_visible_on_all_workspaces(true).ok();
+    win.set_skip_taskbar(true).ok();
+    set_backdrop(win, true);
+}
+
+/// Standard window on Windows / Linux: title bar, in the taskbar, not pinned on top
+#[cfg(not(target_os = "macos"))]
+pub(crate) fn make_normal(win: &WebviewWindow) {
+    win.set_always_on_top(false).ok();
+    win.set_visible_on_all_workspaces(false).ok();
+    win.set_skip_taskbar(false).ok();
+    win.set_decorations(true).ok();
+    win.set_resizable(true).ok();
+    win.set_maximizable(true).ok();
+    win.set_theme(Some(tauri::Theme::Dark)).ok();
+    set_backdrop(win, true);
+}
+
+#[cfg(not(target_os = "macos"))]
+fn make_floating(win: &WebviewWindow) {
+    win.set_theme(None).ok();
+    make_panel(win);
+}
+
+/// Acrylic behind the window on Windows (shown = false while the Garden is faded; fade.rs). Linux has no blur
+#[cfg(not(target_os = "macos"))]
+pub(crate) fn set_backdrop(win: &WebviewWindow, shown: bool) {
+    #[cfg(windows)]
+    {
+        use tauri::window::{Effect, EffectsBuilder};
+        // Dark tint, like the dark frosted glass on macOS
+        let effects = shown.then(|| EffectsBuilder::new().effect(Effect::Acrylic).color(tauri::window::Color(18, 18, 18, 125)).build());
+        win.set_effects(effects).ok();
+    }
+    let _ = (win, shown);
+}
+
 /// Turns the floating window (NSPanel) back into an ordinary window. Adds the title bar and traffic-light buttons,
 /// and removes always-on-top and showing on all spaces
 #[cfg(target_os = "macos")]
@@ -498,7 +546,6 @@ fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
         write_json(path, &mode);
     }
     let visible = win.is_visible().unwrap_or(false);
-    #[cfg(target_os = "macos")]
     match mode {
         WindowMode::Floating => make_floating(&win),
         WindowMode::Normal => make_normal(&win),
@@ -564,6 +611,16 @@ pub(crate) fn show_window(app: &AppHandle) {
             // Standard window: it is buried under other windows, so bring it to the front
             win.set_focus().ok();
             append_log("[window] shown mode=Normal");
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    match current_mode() {
+        // Showing again can drop the always-on-top request on X11, so make it again
+        WindowMode::Floating => {
+            win.set_always_on_top(true).ok();
+        }
+        WindowMode::Normal => {
+            win.set_focus().ok();
         }
     }
 }

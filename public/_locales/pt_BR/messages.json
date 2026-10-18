@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Ocultar janela (reabra pelo ícone da barra de menus)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Não é possível salvar as chaves de API porque nenhum chaveiro (GNOME Keyring ou KWallet) está em execução neste computador. Inicie um e abra o tomarigi novamente."
+  },
+  "voiceUnavailable": {
+    "message": "A leitura em voz alta não está disponível porque este sistema não tem mecanismo de voz."
   }
 }

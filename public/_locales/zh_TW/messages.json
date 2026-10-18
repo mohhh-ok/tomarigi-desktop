@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "隱藏視窗（可從選單列圖示叫回）"
+  },
+  "byokStoreUnavailable": {
+    "message": "此電腦上沒有執行金鑰圈（GNOME Keyring 或 KWallet），因此無法儲存 API 金鑰。請啟動金鑰圈後重新開啟 tomarigi。"
+  },
+  "voiceUnavailable": {
+    "message": "此系統沒有語音合成功能，因此無法朗讀。"
   }
 }

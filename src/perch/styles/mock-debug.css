@@ -38,7 +38,7 @@
 .mock-editor {
   width: 100%;
   box-sizing: border-box;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace;
   font-size: 11px;
   line-height: 1.4;
   padding: 8px;
@@ -127,7 +127,7 @@
 
 .debug-log-key {
   margin-left: auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace;
   font-size: 10px;
   opacity: 0.4;
   word-break: break-all;

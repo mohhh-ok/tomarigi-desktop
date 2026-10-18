@@ -1,6 +1,6 @@
 # tomarigi-desktop design
 
-A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex and the other agents in "Agents") as birds in an always-on-top floating window. It is the desktop version of the tomarigi Chrome extension.
+A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watches AI coding agent sessions (Claude Code / Codex and the other agents in "Agents") as birds in an always-on-top floating window. It is the desktop version of the tomarigi Chrome extension.
 
 ## Scope
 
@@ -45,7 +45,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 ## BYOK API keys
 
 - Providers: OpenAI / Anthropic for speech bubble summaries, TypeSafe for Jev (the "?" and the anger mark). Each can be saved, deleted, and connection-tested from the settings screen
-- API keys are stored in the macOS Keychain in the everyday build (the WebView's IndexedDB is a plaintext file readable by other processes of the same user)
+- API keys are stored in the macOS Keychain in the everyday build (the WebView's IndexedDB is a plaintext file readable by other processes of the same user). Windows and Linux use their own OS stores (see "Platforms"); "Keychain" below means the OS store there
 - The store is decided in one place at launch, by identifier. Everyday (`net.mohtech.tomarigi-desktop`) and verify (`.verify`) use the Keychain; dev (`.dev`) uses IndexedDB (dev's signature changes every build, which would trigger Keychain permission prompts every time)
 - verify is signed with the local Apple Development certificate so rebuilding doesn't trigger permission prompts
 - Keychain items are separated per identifier (a generic password with service `<identifier>.byok` and the provider name as the account)
@@ -68,7 +68,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
 ## Window and menu bar
 
 - The app watches for as long as it runs and is controlled from the menu bar icon (left click toggles show/hide, right click opens the menu)
-- The menu bar icon is `src-tauri/icons/tray.png` (a template image; Tauri's tray only accepts PNG)
+- The menu bar icon is `src-tauri/icons/tray.png` (a template image; Tauri's tray only accepts PNG). Windows and Linux use the color app icon (`src-tauri/icons/32x32.png`) instead, since their taskbars are often dark and a black template image would disappear (Claude's own decision)
 - The app icon (Dock, Finder, Product Hunt thumbnail) shows the same blue round bird as the in-app birds icon set (`src/assets/birds/`), so the icon and the app read as the same character (the user's decision). The icons in `src-tauri/icons/` are generated from `src-tauri/app-icon.png` (1024px, transparent outside the rounded tile) with `bunx tauri icon src-tauri/app-icon.png -o <temp dir>`, then only the files already in `src-tauri/icons/` are copied in (the android / ios output isn't used; `tray.png` is separate and kept)
 - Gallery images for Product Hunt and the README are in `docs/images/` (WebP). They are shot from mock mode (`TOMARIGI_MOCK=1`, `TOMARIGI_QUERY="tint=0&preset=..."`)
 - The × at the right end of the header hides the window (bring it back from the menu bar icon). Its label says "hide window", not "close", so it isn't mistaken for leaving settings or a dialog
@@ -193,12 +193,14 @@ Applies to the floating window's Garden tab only.
 - Platform-specific code is behind three seams, each with one implementation per OS: the window (transparent, always on top, not stealing focus, click-through except on birds and the handle), key storage, and process lookup (liveness and jumping). Everything else is shared
 - Window on Windows / Linux: transparent, frameless, always on top, hidden from the taskbar. The "fade until hovered" click-through works the same way as on macOS (the cursor position is polled and the window takes clicks only over birds and the handle). Always-on-top on X11 is a request the window manager may ignore. Showing on every virtual desktop is not supported on Windows
 - Frosted background: Windows uses Acrylic; Linux has none and uses the plain translucent background (Claude's own decision)
-- Clicking the window doesn't take focus from the terminal where possible (`focusable: false` equivalent); if a platform can't take a click without focus, it takes focus (Claude's own decision)
-- Keys: Windows Credential Manager and Linux Secret Service (GNOME Keyring / KWallet) through the `keyring` crate. When Secret Service is not available, keys can't be saved and the settings screen says so; there is no plaintext fallback (Claude's own decision)
+- Clicking the window doesn't take focus from the terminal where possible (`focusable: false` equivalent); if a platform can't take a click without focus, it takes focus (Claude's own decision). On Windows / Linux the window is not focusable only while the Garden is faded (it takes only bird and handle clicks then), and focusable again when shown, so the settings inputs can be typed in
+- Keys: Windows Credential Manager and Linux Secret Service (GNOME Keyring / KWallet) through the `keyring` crate. When Secret Service is not available (checked once at launch), keys can't be saved: the settings screen says so and disables the key inputs; there is no plaintext fallback (Claude's own decision)
 - Tray: on Linux the left click is not delivered, so the menu has "Show / Hide". The menu language comes from the system locale (not `defaults`)
 - Liveness: pids are checked without `ps` on Windows (`sysinfo`). Codex's lock holders are found with the Restart Manager on Windows and `/proc/<pid>/fd` on Linux. Agent folders are under the user's home directory on every OS (`%USERPROFILE%` on Windows)
+  - Linux reads `/proc` for pids, working directories, and the process tree; only the list of processes with a terminal (agents without a pid file) comes from `ps`. Windows has no ttys, so that list holds every process with a command line
+  - Windows Codex locks: a lock file that can't be opened without sharing is held by some process, and only those files are asked about through the Restart Manager (one session per file)
 - Jumping: tmux works the same on Linux. Otherwise only the terminal window is brought to the front: on Windows the nearest ancestor with a visible window (`SetForegroundWindow`; Windows Terminal tabs can't be addressed from outside), on X11 the window whose `_NET_WM_PID` is an ancestor (`_NET_ACTIVE_WINDOW`). The VS Code extension works on every OS
-- Readout uses the WebView's speechSynthesis; where it's missing (some Linux builds), readout is off and the settings say so
+- Readout uses the WebView's speechSynthesis; where it's missing (some Linux builds), readout is off: the "Read aloud" checkbox is disabled and a note under it says the system has no speech engine
 - Distribution: CI builds Windows (NSIS) and Linux (deb, AppImage) next to macOS. Windows builds are unsigned for now, so Windows shows a SmartScreen warning on first run (Claude's own decision; a code-signing certificate is pending, see below). Real-machine checks on Windows and Linux are listed in docs/release.md and are not done yet
 - Pending: a Windows code-signing certificate. Azure Artifact Signing is open to individual developers only in the US and Canada (organizations in Japan are eligible), so an individual in Japan needs a certificate from a CA. The user has not decided
 
@@ -245,6 +247,7 @@ Applies to the floating window's Garden tab only.
 - "Save" in the debug log screen is written by Rust to `~/Downloads/tomarigi-eventlog-<project>.json`. Existing files are not overwritten; " (1)" etc. is appended
 - File reading: `src/lib/native-fs.ts` exposes the subset of FileSystemDirectoryHandle / File methods the app uses, in the same shape, and calls Rust's `fs_list` / `fs_stat` / `fs_read`. `@/` points to `src`
 - Mock mode and other launch options are listed in README.md
+- The app log is `/tmp/tomarigi-desktop/app-log.txt` on macOS and Linux, and `%TEMP%\tomarigi-desktop\app-log.txt` on Windows
 
 ## Distribution
 

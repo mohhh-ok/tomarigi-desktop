@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Masquer la fenêtre (réaffichable via l’icône de la barre des menus)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Impossible d'enregistrer les clés API : aucun trousseau (GNOME Keyring ou KWallet) ne fonctionne sur cet ordinateur. Lancez-en un, puis rouvrez tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "La lecture à voix haute n'est pas disponible, car ce système n'a pas de moteur vocal."
   }
 }

@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "إخفاء النافذة (يمكن إعادتها من أيقونة شريط القوائم)"
+  },
+  "byokStoreUnavailable": {
+    "message": "لا يمكن حفظ مفاتيح API لأنه لا توجد سلسلة مفاتيح (GNOME Keyring أو KWallet) قيد التشغيل على هذا الكمبيوتر. شغّل واحدة ثم أعد فتح tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "القراءة بصوت عالٍ غير متاحة لأن هذا النظام لا يحتوي على محرك نطق."
   }
 }

@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Venster verbergen (terughalen via het menubalkpictogram)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API-sleutels kunnen niet worden opgeslagen omdat er op deze computer geen sleutelbos (GNOME Keyring of KWallet) draait. Start er een en open tomarigi opnieuw."
+  },
+  "voiceUnavailable": {
+    "message": "Voorlezen is niet beschikbaar omdat dit systeem geen spraakengine heeft."
   }
 }

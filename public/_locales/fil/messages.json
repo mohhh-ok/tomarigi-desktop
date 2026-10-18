@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Itago ang window (ibalik mula sa icon sa menu bar)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Hindi ma-save ang mga API key dahil walang tumatakbong keyring (GNOME Keyring o KWallet) sa computer na ito. Magpatakbo ng isa, saka buksan muli ang tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Hindi magagamit ang pagbasa nang malakas dahil walang speech engine ang system na ito."
   }
 }

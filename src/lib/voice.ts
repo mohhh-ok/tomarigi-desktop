@@ -8,6 +8,14 @@ import { loadActiveAiProvider } from "./api-keys";
 import { summarizeDoneEvent } from "./summarize";
 import type { SessionEvent } from "./sessions";
 
+/**
+ * Whether the WebView can speak. Some Linux builds of WebKitGTK have no speechSynthesis; readout is off there and
+ * the settings say so (docs/design.md "Platforms"). ?speech=none shows that state for screenshot checks
+ */
+export function speechAvailable(): boolean {
+  return typeof speechSynthesis !== "undefined" && new URLSearchParams(location.search).get("speech") !== "none";
+}
+
 // i18n key names of the readout template sentences (scripts/locales/voice.mjs). A plain string is
 // enough for the key argument of t() (lib/i18n.ts), but this stays a literal type as documentation
 // that VOICE_KEY only holds this one key
@@ -109,7 +117,7 @@ function enqueueUtterance(text: string, lang: string): void {
  * on a path where the done summary readout has already succeeded (see speakDoneEvent).
  */
 export function speakEvent(event: SessionEvent): void {
-  if (typeof speechSynthesis === "undefined") return;
+  if (!speechAvailable()) return;
   const snippet = event.snippet ? sanitizeSnippetForSpeech(event.snippet) : undefined;
   const project = sanitizeProjectForSpeech(event.project);
   // No separator symbol is used — not just ".", any symbol may be read literally as "dot" etc.
@@ -157,7 +165,7 @@ function extractLastSentence(text: string, lang: string): string | undefined {
  * single call of this function, so it never speaks twice alongside speakEvent.
  */
 function speakDoneFallback(event: SessionEvent, lang: string): void {
-  if (typeof speechSynthesis === "undefined") return;
+  if (!speechAvailable()) return;
   const lastSentence = event.assistantText ? extractLastSentence(event.assistantText, lang) : undefined;
   if (!lastSentence) {
     speakEvent(event);
@@ -226,7 +234,7 @@ export async function speakDoneEvent(
     speakDoneFallback(event, lang);
     return;
   }
-  if (typeof speechSynthesis === "undefined") return; // Reject environments without speech before calling the summary API
+  if (!speechAvailable()) return; // Reject environments without speech before calling the summary API
 
   const provider = await loadActiveAiProvider();
   if (!stillEnabled()) return;
@@ -275,6 +283,6 @@ function sanitizeSummaryForSpeech(raw: string): string {
 
 /** Stops all playing and queued utterances (for turning the readout toggle OFF) */
 export function cancelSpeech(): void {
-  if (typeof speechSynthesis === "undefined") return;
+  if (!speechAvailable()) return;
   speechSynthesis.cancel();
 }

@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Skjul vinduet (hent det tilbake via menylinjeikonet)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API-nøkler kan ikke lagres fordi ingen nøkkelring (GNOME Keyring eller KWallet) kjører på denne datamaskinen. Start en, og åpne tomarigi på nytt."
+  },
+  "voiceUnavailable": {
+    "message": "Opplesing er ikke tilgjengelig fordi systemet mangler talesyntese."
   }
 }

@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Peida aken (too tagasi menüüriba ikoonilt)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API-võtmeid ei saa salvestada, sest selles arvutis ei tööta ühtegi võtmerõngast (GNOME Keyring või KWallet). Käivita see ja ava tomarigi uuesti."
+  },
+  "voiceUnavailable": {
+    "message": "Häälega ettelugemine pole saadaval, sest selles süsteemis pole kõnesünteesi."
   }
 }

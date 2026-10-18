@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Hide window (bring it back from the menu bar icon)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API keys can't be saved because no keyring (GNOME Keyring or KWallet) is running on this computer. Start one, then reopen tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Reading aloud isn't available because this system has no speech engine."
   }
 }

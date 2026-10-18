@@ -1,4 +1,5 @@
-# Pushing a v* tag builds a signed and notarized universal .dmg and attaches it to a draft GitHub Release.
+# Pushing a v* tag builds a signed and notarized universal .dmg and attaches it to a draft GitHub Release, then
+# the Windows installer (NSIS, unsigned for now) and the Linux packages (deb, AppImage) to the same draft.
 # Publish the draft by hand after checking it. Required secrets are listed in docs/release.md
 name: Release
 
@@ -111,3 +112,65 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "$GITHUB_REF_NAME" "tomarigi-${GITHUB_REF_NAME}.vsix" --clobber
+
+  # Windows and Linux run after the macOS job so that it creates the draft release first and they add to it
+  # (two jobs creating the draft at once could make two drafts). docs/design.md "Platforms"
+  release-windows:
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: bun install --frozen-lockfile
+
+      # Unsigned until a code-signing certificate is chosen, so Windows shows a SmartScreen warning on first run
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tauriScript: bun run tauri
+          args: --bundles nsis
+          tagName: ${{ github.ref_name }}
+          releaseName: tomarigi-desktop ${{ github.ref_name }}
+          releaseDraft: true
+
+  release-linux:
+    needs: release
+    # The oldest supported Ubuntu, so the deb and AppImage run on older glibc too
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      # https://v2.tauri.app/start/prerequisites/ (WebKitGTK 4.1, the tray's appindicator)
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: bun install --frozen-lockfile
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tauriScript: bun run tauri
+          args: --bundles deb,appimage
+          tagName: ${{ github.ref_name }}
+          releaseName: tomarigi-desktop ${{ github.ref_name }}
+          releaseDraft: true

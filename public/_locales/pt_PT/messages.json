@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Ocultar janela (reabra pelo ícone da barra de menus)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Não é possível guardar as chaves de API porque nenhum porta-chaves (GNOME Keyring ou KWallet) está em execução neste computador. Inicie um e volte a abrir o tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "A leitura em voz alta não está disponível porque este sistema não tem motor de voz."
   }
 }
