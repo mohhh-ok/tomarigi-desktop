@@ -315,6 +315,7 @@ async function listByProcess(
   candidates: (since: number | undefined) => AsyncIterable<ProcessCandidate>,
   keyOf: (cwd: string) => string = (cwd) => cwd,
 ): Promise<void> {
+  if (!(await hasWork(kind, root, listing))) return;
   const { processes, reliable } = await listing.processes(kind);
   const since = reliable ? earliestStart(processes) : undefined;
   const picked: ProcessCandidate[] = [];
@@ -334,6 +335,13 @@ async function listByProcess(
     const live = match ? true : reliable ? false : undefined;
     listing.found.push(entryOf(kind, root, c.id, c.file, tail, live, match?.pid));
   }
+}
+
+/** No process of this agent and no bird of this folder on screen: nothing to list (the folder isn't walked) */
+async function hasWork(kind: AgentKind, root: RootEntry, listing: ScanListing): Promise<boolean> {
+  const { processes, reliable } = await listing.processes(kind);
+  const prefix = `${root.id}/${kind}/`;
+  return processes.length > 0 || !reliable || [...scanState.trackedIds].some((id) => id.startsWith(prefix));
 }
 
 // The cwd a session was last matched with (for agents whose transcript has no cwd), so the name stays while it ends
@@ -436,6 +444,7 @@ const opencode: AgentAdapter = {
   home: ".local/share/opencode",
   matchesProcess: programNamed("opencode"),
   async list(root, listing) {
+    if (!(await hasWork("opencode", root, listing))) return;
     const dbPath = `${root.path.replace(/\/+$/, "")}/opencode.db`;
     const scan = await invoke<{ present: boolean; sessions: OpenCodeSession[]; reliable: boolean }>("opencode_sessions", {
       dbPath,
