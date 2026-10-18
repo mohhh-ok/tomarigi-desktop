@@ -42,9 +42,9 @@ export function AiKeySettings({
   return (
     <section className="ai-keys">
       <h2>{t("aiApiKeysHeading")}</h2>
-      <p className="judge-description">{t("aiApiKeysDescription")}</p>
-      {/* Without a key store there is nothing to save into, so the provider rows aren't shown; the note says why */}
-      {!storeAvailable && <p className="judge-description key-store-unavailable">{t("byokStoreUnavailable")}</p>}
+      {/* Without a key store there is nothing to save into, so the note replaces the description (which talks about
+          saving keys) and the provider rows aren't shown */}
+      <p className="judge-description">{t(storeAvailable ? "aiApiKeysDescription" : "byokStoreUnavailable")}</p>
       {storeAvailable && (
         <div className="ai-key-provider-list">
           {(["anthropic", "openai", "typesafe"] as const).map((provider) => (

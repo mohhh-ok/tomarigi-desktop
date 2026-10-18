@@ -631,7 +631,7 @@ export default {
     sl: "Najprej vnesite in shranite API ključ",
     ca: "Introdueix i desa primer una clau API",
   },
-  // Note under the API keys description, shown only when the OS has no key store to save to (Linux without Secret
+  // Shown in place of the API keys description only when the OS has no key store to save to (Linux without Secret
   // Service; key_backend returns "unavailable"). The provider rows are not shown then. docs/design.md "Platforms"
   byokStoreUnavailable: {
     en: "API keys can't be saved because no keyring (GNOME Keyring or KWallet) is running on this computer. Start one, then reopen tomarigi.",

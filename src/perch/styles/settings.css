@@ -401,12 +401,6 @@ button.remove {
   color: #d97e6a;
 }
 
-/* Keys can't be saved on this computer: a second paragraph of the description, in the same gray as the readout's
-   .settings-note (both say why a setting can't be used here) */
-.key-store-unavailable {
-  margin-top: -4px;
-}
-
 /* Per-project icon set assignments (issue #14). Same separator tone as .roots/.ai-keys */
 .icon-sets,
 .window-mode {
