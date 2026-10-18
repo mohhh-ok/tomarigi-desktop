@@ -42,7 +42,7 @@ VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab
 ### Windows and Linux
 
 - Jumping brings the terminal window to the front but can't pick its tab or split (on Linux, a session inside tmux still gets its pane). Windows Terminal comes forward on whatever tab it shows. On a Wayland session only terminals running through Xwayland can be brought forward
-- The Windows installer isn't signed yet, so Windows SmartScreen warns on first run ("More info" → "Run anyway")
+- The Windows installer isn't code-signed, so Windows SmartScreen warns on first run ("More info" → "Run anyway")
 - Linux: API keys are saved to GNOME Keyring or KWallet; without one running, keys can't be saved. The tray icon opens its menu ("Show / Hide" is there), the background isn't blurred, and staying on top depends on the window manager. Some Linux systems have no speech engine, and readout is off there
 
 ## Development

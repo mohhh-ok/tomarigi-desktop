@@ -201,8 +201,7 @@ Applies to the floating window's Garden tab only.
   - Windows Codex locks: a lock file that can't be opened without sharing is held by some process, and only those files are asked about through the Restart Manager (one session per file)
 - Jumping: tmux works the same on Linux. Otherwise only the terminal window is brought to the front: on Windows the nearest ancestor with a visible window (`SetForegroundWindow`; Windows Terminal tabs can't be addressed from outside), on X11 the window whose `_NET_WM_PID` is an ancestor (`_NET_ACTIVE_WINDOW`). The VS Code extension works on every OS
 - Readout uses the WebView's speechSynthesis; where it's missing (some Linux builds), readout is off: the "Read aloud" checkbox is disabled and a note under it says the system has no speech engine
-- Distribution: CI builds Windows (NSIS) and Linux (deb, AppImage) next to macOS. Windows builds are unsigned for now, so Windows shows a SmartScreen warning on first run (Claude's own decision; a code-signing certificate is pending, see below). Real-machine checks on Windows and Linux are listed in docs/release.md and are not done yet
-- Pending: a Windows code-signing certificate. Azure Artifact Signing is open to individual developers only in the US and Canada (organizations in Japan are eligible), so an individual in Japan needs a certificate from a CA. The user has not decided
+- Distribution: CI builds Windows (NSIS) and Linux (deb, AppImage) next to macOS. Windows builds are not code-signed, so Windows shows a SmartScreen warning on first run (the user's decision: 「しょうめいしょはとらない」. Azure Artifact Signing is open to individual developers only in the US and Canada, so an individual in Japan would need a certificate from a CA). Real-machine checks on Windows and Linux are listed in docs/release.md and are not done yet
 
 ## The "?" for sessions waiting on you
 
