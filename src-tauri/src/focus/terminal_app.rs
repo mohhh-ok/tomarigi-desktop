@@ -16,8 +16,13 @@ pub(super) fn focus(target: &Target) -> Result<String, String> {
             sb::set_bool(&tab, "selected", true);
             sb::set_bool(&window, "frontmost", true);
             sb::set_int(&window, "index", 1);
+            // `activate` sent to the app makes it come forward itself, the same way Ghostty's `focus` does;
+            // NSRunningApplication's activate alone sometimes left the other app in front in testing
+            sb::send(&app, b"misc", b"actv");
             sb::activate(target.app_pid);
-            return Ok(format!("terminal window={w} tab={t}"));
+            // Whether the window is frontmost afterwards, for the log (the order of `windows` isn't the z-order)
+            let front = sb::value(&window, "frontmost").and_then(|v| v.downcast_ref::<objc2_foundation::NSNumber>().map(|n| n.as_bool()));
+            return Ok(format!("terminal window={w} tab={t} frontmost={front:?}"));
         }
         Err("NOT FOUND in terminal".to_string())
     })

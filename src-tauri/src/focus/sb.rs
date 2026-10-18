@@ -30,6 +30,14 @@ mod imp {
         })
     }
 
+    /// The .app folder of the app running as pid (CLI tools are taken from inside it)
+    pub(crate) fn bundle_path(pid: u32) -> Option<String> {
+        objc2::rc::autoreleasepool(|_| {
+            let app = NSRunningApplication::runningApplicationWithProcessIdentifier(pid as i32)?;
+            app.bundleURL()?.path().map(|p| p.to_string())
+        })
+    }
+
     pub(crate) fn activate(pid: u32) {
         objc2::rc::autoreleasepool(|_| {
             if let Some(app) = NSRunningApplication::runningApplicationWithProcessIdentifier(pid as i32) {
@@ -100,6 +108,9 @@ mod imp {
         Vec::new()
     }
     pub(crate) fn bundle_id_of(_pid: u32) -> Option<String> {
+        None
+    }
+    pub(crate) fn bundle_path(_pid: u32) -> Option<String> {
         None
     }
     pub(crate) fn activate(_pid: u32) {}

@@ -26,7 +26,7 @@ use std::path::PathBuf;
 use std::time::UNIX_EPOCH;
 use tauri::{AppHandle, Manager, WindowEvent};
 
-use focus::{focus_session, focus_tty_sync};
+use focus::{focus_pid, focus_session, focus_tty_sync};
 use keys::{import_key_from_stdin, init_key_store};
 use window::{
     current_mode, load_mode, restore_window_state, schedule_save, set_dock_policy, show_window, switch_mode,
@@ -139,16 +139,23 @@ pub fn run() {
                 }
                 _ => {}
             });
-            // Self-test: with TOMARIGI_FOCUS_TEST="<config_dir>|<session_id>|<return tty>", moves to that session's
-            // pane 3 seconds after launch, then moves back to the return tty 1.5 seconds later (for checking in
-            // environments where synthetic clicks can't be used)
+            // Self-test: with TOMARIGI_FOCUS_TEST="<config_dir>|<session_id>|<return tty>" (or "pid=<pid>|<return tty>"
+            // for any agent), moves to that session's pane 3 seconds after launch, then moves back to the return tty
+            // 1.5 seconds later (for checking in environments where synthetic clicks can't be used)
             if let Ok(spec) = std::env::var("TOMARIGI_FOCUS_TEST") {
                 let parts: Vec<String> = spec.split('|').map(str::to_string).collect();
-                if let [config_dir, session_id, back] = parts.as_slice() {
-                    let (config_dir, session_id, back) = (config_dir.clone(), session_id.clone(), back.clone());
+                let target = match parts.as_slice() {
+                    [config_dir, session_id, back] => Some((Err((config_dir.clone(), session_id.clone())), back.clone())),
+                    [pid, back] => pid.strip_prefix("pid=").and_then(|p| p.parse::<u32>().ok()).map(|p| (Ok(p), back.clone())),
+                    _ => None,
+                };
+                if let Some((target, back)) = target {
                     tauri::async_runtime::spawn(async move {
                         tokio_sleep(3000).await;
-                        let r = focus_session(config_dir, session_id, false).await;
+                        let r = match target {
+                            Ok(pid) => focus_pid(pid, false).await,
+                            Err((config_dir, session_id)) => focus_session(config_dir, session_id, false).await,
+                        };
                         append_log(&format!("[focus-test] -> {:?} {}", r.level, r.detail));
                         tokio_sleep(1500).await;
                         let b = tauri::async_runtime::spawn_blocking(move || {

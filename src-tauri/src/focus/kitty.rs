@@ -17,7 +17,6 @@ pub(super) fn socket_paths(lsof: &str) -> Vec<String> {
 }
 
 pub(super) fn focus(target: &Target) -> Result<String, String> {
-    let app = target.chain.iter().find(|p| p.pid == target.app_pid).ok_or("no app process")?;
     let shell = window_pid(target.chain, target.app_pid).ok_or("no window process")?;
     let out = Command::new("lsof")
         .args(["-a", "-U", "-p", &target.app_pid.to_string(), "-Fn"])
@@ -27,10 +26,8 @@ pub(super) fn focus(target: &Target) -> Result<String, String> {
     if sockets.is_empty() {
         return Err("kitty has no remote control socket (allow_remote_control / listen_on not set)".to_string());
     }
-    let kitten = match app.comm.rsplit_once('/') {
-        Some((dir, _)) => format!("{dir}/kitten"),
-        None => "/Applications/kitty.app/Contents/MacOS/kitten".to_string(),
-    };
+    let bundle = sb::bundle_path(target.app_pid).unwrap_or_else(|| "/Applications/kitty.app".to_string());
+    let kitten = format!("{bundle}/Contents/MacOS/kitten");
     let mut last = String::new();
     for socket in &sockets {
         let out = Command::new(&kitten)

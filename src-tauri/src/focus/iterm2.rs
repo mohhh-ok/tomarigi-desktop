@@ -19,8 +19,16 @@ pub(super) fn focus(target: &Target) -> Result<String, String> {
                 sb::send(&session, b"Itrm", b"slct");
                 sb::send(&tab, b"Itrm", b"slct");
                 sb::send(&window, b"Itrm", b"slct");
+                // `activate` sent to the app makes it come forward itself, the same way Ghostty's `focus` does;
+                // NSRunningApplication's activate alone sometimes left the other app in front in testing
+                sb::send(&app, b"misc", b"actv");
                 sb::activate(target.app_pid);
-                return Ok(format!("iterm2 window={w} tab={t} session={s}"));
+                // The tty of the current window's current session afterwards, for the log
+                let front = sb::value(&app, "currentWindow")
+                    .and_then(|w| sb::value(&w, "currentSession"))
+                    .and_then(|s| sb::value(&s, "tty"));
+                let front = front.as_deref().and_then(sb::text).unwrap_or_else(|| "?".to_string());
+                return Ok(format!("iterm2 window={w} tab={t} session={s} front={front}"));
             }
         }
         Err("NOT FOUND in iterm2".to_string())

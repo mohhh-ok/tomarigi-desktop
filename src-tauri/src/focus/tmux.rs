@@ -60,12 +60,9 @@ pub(super) fn pick_client(list_clients: &str, session: &str) -> Option<(String, 
         .map(|(_, tty, pid)| (tty, pid))
 }
 
-/// The tmux binary: the server's own path when ps shows one, else the usual install places (a GUI app has no
-/// shell PATH)
-fn binary(server: &Proc) -> String {
-    if server.comm.starts_with('/') {
-        return server.comm.clone();
-    }
+/// The tmux binary from the usual install places (a GUI app has no shell PATH). The path ps shows is not run,
+/// so a process's own name can't make Tomarigi run another program
+fn binary() -> String {
     ["/opt/homebrew/bin/tmux", "/usr/local/bin/tmux", "/opt/local/bin/tmux", "/usr/bin/tmux"]
         .into_iter()
         .find(|p| std::path::Path::new(p).exists())
@@ -83,7 +80,7 @@ fn run(bin: &str, socket: &[String], args: &[&str]) -> Result<String, String> {
 
 /// Selects the pane with tty in the tmux server that is an ancestor, and returns the client now showing it
 pub(super) fn switch_to(server: &Proc, tty: &str) -> Result<Client, String> {
-    let bin = binary(server);
+    let bin = binary();
     let command_line = Command::new("ps")
         .args(["-o", "args=", "-p", &server.pid.to_string()])
         .output()

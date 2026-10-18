@@ -42,8 +42,9 @@ strip = true
 objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics", "NSRunningApplication", "libc"] }
 objc2 = "0.6"
 # The frosted glass behind the window (set_backdrop in window.rs) uses NSString and NSRect
-# NSValue (NSNumber) sets Terminal.app window properties through ScriptingBridge (focus/terminal_app.rs)
-objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry", "NSArray", "NSValue"] }
+# NSValue (NSNumber) sets Terminal.app window properties through ScriptingBridge (focus/terminal_app.rs); NSURL gives the
+# bundle path of WezTerm / kitty for their CLI (focus/sb.rs)
+objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry", "NSArray", "NSValue", "NSURL"] }
 # Stores BYOK API keys in the macOS Keychain (KeyStore in keys.rs)
 security-framework = "3"
 tauri-nspanel = "2.1"
