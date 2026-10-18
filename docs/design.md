@@ -152,14 +152,18 @@ Applies to the floating window's Garden tab only.
   - Terminal.app: the tab whose `tty` matches becomes the selected tab of its window, the window becomes frontmost with index 1, and the app is activated
   - WezTerm: `wezterm cli list --format json` gives `tty_name` → `pane_id`, then `wezterm cli activate-pane --pane-id <id>`, and the app is brought forward through LaunchServices (`NSWorkspace openApplicationAtURL:` with `activates`; WezTerm has no AppleScript dictionary, and `NSRunningApplication activate` alone lost to another app coming forward at the same time). The binary is taken from the bundle of the running app (`NSRunningApplication.bundleURL`)
   - kitty: only when the user has set `allow_remote_control` and `listen_on` in `kitty.conf`; then `kitten @ --to <socket> focus-window --match pid:<pid>` with the pid of the ancestor kitty started (the shell). The socket is the unix socket the kitty process listens on (`lsof -a -U -p <pid>`), and `kitten` comes from the app bundle. Tomarigi never edits `kitty.conf`; without the setting, kitty is only activated. README tells kitty users which two settings to add
-  - Any other app (Warp, Alacritty, VS Code, Cursor, and terminals not listed): the app is only brought to the front. Warp has no way to address a tab from outside (warpdotdev/warp#8929 is open); Alacritty has no tabs or panes and its IPC has no focus command
+  - Any other app (Warp, Alacritty, and terminals not listed): the app is only brought to the front. Warp has no way to address a tab from outside (warpdotdev/warp#8929 is open); Alacritty has no tabs or panes and its IPC has no focus command
 - A conversation handed over to another session (`continued-in`, see "Removing birds of ended sessions") can run in a Claude Code background process whose tty isn't a terminal pane. When no adapter finds the new session's pane, the jump tries the sessions it came from in turn (their old process still shows the conversation). Only a pane-level focus counts as found; when none is found, the app owning the first session is brought to the front
 - Apple Events permission dialogs appear once per terminal app (Ghostty, iTerm2, Terminal.app). `NSAppleEventsUsageDescription` names terminals in general, not only Ghostty
 - Sessions whose pid can't be found do nothing on click
 - Every agent's jump goes through one command, `focus_pid(pid, fallbackToApp)`, which returns how far it got (`pane` / `app` / `none`); `focusPid` in `src/lib/terminal-focus.ts` calls it
 - In the Garden, releasing after moving less than 4px is a click (left button only); anything more is a drag
 - Clickable elements get a pointer cursor. No hover hint is shown
-- Pending: focusing a VS Code / Cursor integrated terminal tab needs a Tomarigi extension for VS Code (a URI handler that shows the terminal whose `processId` is an ancestor of the agent). Whether to publish such an extension is the user's decision and has not been asked yet; until then VS Code / Cursor are only brought to the front
+- VS Code / Cursor (and other VS Code forks): the integrated terminal tab is focused through Tomarigi's own VS Code extension (the user's decision: 「vscodeようの拡張？そんなんもできるの？やって」). The extension lives in `vscode-extension/` in this repo
+  - The extension registers a URI handler (`window.registerUriHandler`). Tomarigi opens `<scheme>://<publisher>.<extension>/focus?pids=<agent pid and its ancestors>`; the scheme is the one of the app that owns the agent (`vscode`, `cursor`, ... read from the app bundle's `CFBundleURLTypes`)
+  - Every window of the editor gets the URI only once the OS routes it, so the extension in each window looks for a terminal whose `processId` is one of the pids, and only the window that has one calls `terminal.show()` and brings its window to the front. Whether a URI reaches the right window when several are open is checked on a real machine before shipping
+  - Without the extension installed (Tomarigi can't tell), the URI does nothing visible in the editor; the app is brought to the front as before, so the user sees no difference from today
+  - README tells users how to install the extension. Publishing to the VS Code Marketplace (for VS Code) and Open VSX (for Cursor and other forks) needs the user's accounts; until it is published, the `.vsix` built by CI is attached to the GitHub Release
 
 ## Agents
 
@@ -181,9 +185,18 @@ Applies to the floating window's Garden tab only.
 
 ## Platforms
 
-- Today: macOS only. Planned after the terminal and agent work above: Windows and Linux (X11; Wayland runs through Xwayland). Not started yet
-- Known limits, from research (2026-10-18): on Windows, jumping can bring the terminal window to the front but not select a Windows Terminal tab; Ghostty has no Windows build. On Linux the tray's left click is not delivered (menu only), there is no frosted background, and always-on-top depends on the window manager. Pure Wayland has no always-on-top, no global cursor position, no window position restore, and no way to focus another app's window
-- Pending: a Windows code-signing certificate (OV / EV or Azure Artifact Signing) is the user's decision and has not been asked yet
+- macOS, Windows 10 / 11 (x64), and Linux (x64, X11). On a Wayland session the app runs through Xwayland (`GDK_BACKEND=x11` is set at launch), because pure Wayland has no always-on-top, no global cursor position, no window position restore, and no way to focus another app's window (Claude's own decision, from research)
+- Platform-specific code is behind three seams, each with one implementation per OS: the window (transparent, always on top, not stealing focus, click-through except on birds and the handle), key storage, and process lookup (liveness and jumping). Everything else is shared
+- Window on Windows / Linux: transparent, frameless, always on top, hidden from the taskbar. The "fade until hovered" click-through works the same way as on macOS (the cursor position is polled and the window takes clicks only over birds and the handle). Always-on-top on X11 is a request the window manager may ignore. Showing on every virtual desktop is not supported on Windows
+- Frosted background: Windows uses Acrylic; Linux has none and uses the plain translucent background (Claude's own decision)
+- Clicking the window doesn't take focus from the terminal where possible (`focusable: false` equivalent); if a platform can't take a click without focus, it takes focus (Claude's own decision)
+- Keys: Windows Credential Manager and Linux Secret Service (GNOME Keyring / KWallet) through the `keyring` crate. When Secret Service is not available, keys can't be saved and the settings screen says so; there is no plaintext fallback (Claude's own decision)
+- Tray: on Linux the left click is not delivered, so the menu has "Show / Hide". The menu language comes from the system locale (not `defaults`)
+- Liveness: pids are checked without `ps` on Windows (`sysinfo`). Codex's lock holders are found with the Restart Manager on Windows and `/proc/<pid>/fd` on Linux. Agent folders are under the user's home directory on every OS (`%USERPROFILE%` on Windows)
+- Jumping: tmux works the same on Linux. Otherwise only the terminal window is brought to the front: on Windows the nearest ancestor with a visible window (`SetForegroundWindow`; Windows Terminal tabs can't be addressed from outside), on X11 the window whose `_NET_WM_PID` is an ancestor (`_NET_ACTIVE_WINDOW`). The VS Code extension works on every OS
+- Readout uses the WebView's speechSynthesis; where it's missing (some Linux builds), readout is off and the settings say so
+- Distribution: CI builds Windows (NSIS) and Linux (deb, AppImage) next to macOS. Windows builds are unsigned for now, so Windows shows a SmartScreen warning on first run (Claude's own decision; a code-signing certificate is pending, see below). Real-machine checks on Windows and Linux are listed in docs/release.md and are not done yet
+- Pending: a Windows code-signing certificate. Azure Artifact Signing is open to individual developers only in the US and Canada (organizations in Japan are eligible), so an individual in Japan needs a certificate from a CA. The user has not decided
 
 ## The "?" for sessions waiting on you
 
