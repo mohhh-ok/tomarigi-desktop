@@ -118,7 +118,10 @@ export default function App({
   const [showDebug, setShowDebug] = useState(
     () => new URLSearchParams(location.search).has("debug"),
   );
-  const [rootDialogOpen, setRootDialogOpen] = useState(false);
+  // ?dialog=add-folder opens the add-folder dialog at launch (for checking screenshots; TOMARIGI_QUERY in the README)
+  const [rootDialogOpen, setRootDialogOpen] = useState(
+    () => new URLSearchParams(location.search).get("dialog") === "add-folder",
+  );
   const closeDebug = useCallback(() => setShowDebug(false), []);
   // Esc leaves settings. Skipped while a dialog or a folder name edit is open, because their own Esc handlers close
   // just that one thing and the same key press shouldn't also drop the user out of settings

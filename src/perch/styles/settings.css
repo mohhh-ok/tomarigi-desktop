@@ -152,6 +152,8 @@
 .root-add-dialog-header h2 {
   flex: 1;
   margin: 0;
+  /* Lines of even length, so a narrow window doesn't leave a few characters alone on the last line */
+  text-wrap: balance;
   font-size: 15px;
   line-height: 1.6;
   color: #d5d1c7;
@@ -178,6 +180,7 @@
 }
 
 .root-add-hint {
+  text-wrap: pretty;
   color: #8f8a7e;
   font-size: 13px;
   line-height: 1.85;
