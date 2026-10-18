@@ -19,7 +19,7 @@ gh run watch <run id> -R mohhh-ok/tomarigi-desktop
 gh run download <run id> -R mohhh-ok/tomarigi-desktop -D /tmp/tomarigi-desktop/ci-run-<run id>
 ```
 
-Job permissions can't depend on the event, so a manual run's token also has `contents: write`; the steps that run on a manual run get no token or secrets.
+Job permissions can't depend on the event, so a manual run's token also has `contents: write`; the steps that run on a manual run get no token or secrets, and checkout runs with `persist-credentials: false` so the token isn't left in `.git/config` for `bun install`, the build scripts, or the tests to read. The tag run doesn't need it there either: tauri-action and `gh release upload` get the token from their own `env`.
 
 ## Verifying the .dmg
 

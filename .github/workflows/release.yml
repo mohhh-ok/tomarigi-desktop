@@ -13,7 +13,8 @@ on:
 
 # Third-party actions are pinned to a commit (the tag they pointed to is in the comment), so a moved tag can't change
 # what runs with the release token. Each job gets only what it needs: all of them upload to the draft release.
-# Permissions can't depend on the event, so a manual run gets contents: write too; its steps get no token or secrets
+# Permissions can't depend on the event, so a manual run gets contents: write too; its steps get no token or secrets, and
+# checkout doesn't leave the token in .git/config (persist-credentials: false), so the repo's own code can't read it either
 permissions: {}
 
 jobs:
@@ -23,6 +24,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Check that the tag matches the app version
         if: github.event_name == 'push'
@@ -101,6 +104,8 @@ jobs:
         working-directory: vscode-extension
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Check that the tag matches the extension version
         if: github.event_name == 'push'
@@ -156,6 +161,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
@@ -194,6 +201,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       # https://v2.tauri.app/start/prerequisites/ (WebKitGTK 4.1, the tray's appindicator)
       - name: Install system packages
