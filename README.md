@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-A desktop app for macOS (Windows and Linux builds from the next version; see below) that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
+A desktop app for macOS, Windows, and Linux (the Windows and Linux builds haven't been checked on real machines yet; see below) that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
 
 | | |
 |---|---|
@@ -22,9 +22,9 @@ A desktop app for macOS (Windows and Linux builds from the next version; see bel
 
 ## Install
 
-Download the `.dmg` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases).
+Download from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases): the `.dmg` for macOS, the `.exe` installer for Windows, or the `.deb` / `.AppImage` for Linux.
 
-Requirements: macOS. Windows 10 / 11 (x64) and Linux (x64, X11; on Wayland it runs through Xwayland) builds (`.exe` installer, `.deb`, `.AppImage`) will be attached to Releases from the next version (v0.6.0 and earlier are macOS only), but they haven't been checked on real machines yet.
+Requirements: macOS, Windows 10 / 11 (x64), or Linux (x64, X11; on Wayland it runs through Xwayland). The Windows and Linux builds are on Releases from v0.7.0 (v0.6.0 and earlier are macOS only) and haven't been checked on real machines yet.
 
 ### Jumping to the terminal pane
 
@@ -37,7 +37,7 @@ allow_remote_control socket-only
 listen_on unix:/tmp/kitty
 ```
 
-VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. From the next version, download `tomarigi-v<version>.vsix` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) (v0.6.0 and earlier don't have it) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
+VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. Download `tomarigi-v<version>.vsix` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) (from v0.7.0) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
 
 ### Windows and Linux
 
