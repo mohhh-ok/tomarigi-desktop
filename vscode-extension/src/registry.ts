@@ -29,6 +29,14 @@ export function writeEntry(file: string, entry: WindowEntry): void {
   fs.renameSync(tmp, file);
 }
 
+/** Replaces the one-line log of the last URI handled. A failure to write is ignored: it is only for checking */
+export function writeLastFocus(file: string, line: string): void {
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, line);
+  } catch {}
+}
+
 export function removeEntry(file: string): void {
   fs.rmSync(file, { force: true });
 }
