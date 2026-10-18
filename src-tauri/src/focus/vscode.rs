@@ -49,10 +49,24 @@ pub(super) fn focus_uri(window: &Window, chain: &[Proc]) -> String {
     format!("{}{sep}pids={pids}", window.uri)
 }
 
+/// Only an editor URI to the extension's focus path is opened, so a file written by something else can't make
+/// Tomarigi open a web page or a local file
+pub(super) fn is_editor_uri(uri: &str) -> bool {
+    let Some((scheme, rest)) = uri.split_once("://") else { return false };
+    let scheme_ok = !scheme.is_empty()
+        && scheme.chars().all(|c| c.is_ascii_alphanumeric() || "+-.".contains(c))
+        && !["http", "https", "file", "ftp", "mailto"].contains(&scheme.to_ascii_lowercase().as_str());
+    let path = rest.split(['?', '#']).next().unwrap_or("");
+    scheme_ok && path.split_once('/').is_some_and(|(_, p)| p == "focus")
+}
+
 /// Ok when a window was found and its URI was handed to the OS
 pub(super) fn focus(chain: &[Proc], procs: &HashMap<u32, Proc>) -> Result<String, String> {
     let windows = read_windows(&dir());
     let window = window_of(&windows, chain, procs).ok_or("vscode: no window")?;
+    if !is_editor_uri(&window.uri) {
+        return Err(format!("vscode: not an editor uri {}", window.uri));
+    }
     let uri = focus_uri(window, chain);
     tauri_plugin_opener::open_url(&uri, None::<&str>).map_err(|e| format!("open {uri}: {e}"))?;
     Ok(format!("vscode {uri}"))
@@ -105,6 +119,16 @@ mod tests {
         );
         let plain = Window { uri: "vscode://mohtech.tomarigi/focus".into(), extension_host_pid: 1, terminal_pids: vec![] };
         assert_eq!(focus_uri(&plain, &chain[..1]), "vscode://mohtech.tomarigi/focus?pids=540");
+    }
+
+    #[test]
+    fn only_editor_uris_to_the_focus_path_are_opened() {
+        assert!(is_editor_uri("cursor://mohtech.tomarigi/focus?windowId=3"));
+        assert!(is_editor_uri("vscode-insiders://mohtech.tomarigi/focus"));
+        assert!(!is_editor_uri("https://example.com/focus"));
+        assert!(!is_editor_uri("file:///Applications/Calculator.app"));
+        assert!(!is_editor_uri("cursor://mohtech.tomarigi/other?x=/focus"));
+        assert!(!is_editor_uri("not a uri"));
     }
 
     #[test]

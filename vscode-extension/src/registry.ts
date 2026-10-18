@@ -33,6 +33,30 @@ export function removeEntry(file: string): void {
   fs.rmSync(file, { force: true });
 }
 
+function alive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    // EPERM: the process exists but belongs to someone else
+    return (e as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+/** Deletes files left by extension hosts that ended without deactivate (a crash or kill) */
+export function removeStaleEntries(dir: string, isAlive: (pid: number) => boolean = alive): void {
+  let names: string[];
+  try {
+    names = fs.readdirSync(dir);
+  } catch {
+    return;
+  }
+  for (const name of names) {
+    const pid = Number(/-(\d+)\.json$/.exec(name)?.[1]);
+    if (pid > 0 && !isAlive(pid)) removeEntry(path.join(dir, name));
+  }
+}
+
 /** The pids Tomarigi put in the URI query (`pids=540,530,520`) */
 export function pidsOf(query: string): number[] {
   const value = new URLSearchParams(query).get("pids") ?? "";
@@ -42,17 +66,22 @@ export function pidsOf(query: string): number[] {
     .filter((n) => Number.isInteger(n) && n > 0);
 }
 
+/** A terminal's shell pid, or undefined when it has none or doesn't answer within ms */
+function pidOf(t: { processId: PromiseLike<number | undefined> }, ms = 2000): Promise<number | undefined> {
+  return Promise.race([Promise.resolve(t.processId), new Promise<undefined>((r) => setTimeout(() => r(undefined), ms).unref?.())]);
+}
+
 /** The first terminal whose shell is one of the pids. processId is undefined for terminals without a process */
 export async function terminalOf<T extends { processId: PromiseLike<number | undefined> }>(
   terminals: readonly T[],
   pids: readonly number[],
 ): Promise<T | undefined> {
-  const ids = await Promise.all(terminals.map((t) => t.processId));
+  const ids = await Promise.all(terminals.map((t) => pidOf(t)));
   const index = ids.findIndex((id) => id !== undefined && pids.includes(id));
   return index < 0 ? undefined : terminals[index];
 }
 
 export async function terminalPids(terminals: readonly { processId: PromiseLike<number | undefined> }[]): Promise<number[]> {
-  const ids = await Promise.all(terminals.map((t) => t.processId));
+  const ids = await Promise.all(terminals.map((t) => pidOf(t)));
   return ids.filter((id): id is number => id !== undefined);
 }

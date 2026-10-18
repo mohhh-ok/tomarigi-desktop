@@ -102,11 +102,12 @@ jobs:
       # VS Code needs a display
       - run: xvfb-run -a bun run test:integration
 
-      - name: Build the .vsix and attach it to the release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the .vsix
         run: |
           bun run package
-          vsix="tomarigi-${GITHUB_REF_NAME}.vsix"
-          mv tomarigi.vsix "$vsix"
-          gh release upload "$GITHUB_REF_NAME" "$vsix" --clobber
+          mv tomarigi.vsix "tomarigi-${GITHUB_REF_NAME}.vsix"
+
+      - name: Attach the .vsix to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" "tomarigi-${GITHUB_REF_NAME}.vsix" --clobber

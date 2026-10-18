@@ -3,9 +3,11 @@
 // showing the terminal whose shell is one of the pids. A plain URI would reach only the topmost window, which is why
 // Tomarigi opens the URI of the window that has the terminal
 import * as vscode from "vscode";
-import { entryPath, pidsOf, registryDir, removeEntry, terminalOf, terminalPids, writeEntry } from "./registry";
+import { entryPath, pidsOf, registryDir, removeEntry, removeStaleEntries, terminalOf, terminalPids, writeEntry } from "./registry";
 
 let file: string | undefined;
+/** Set by deactivate so a write still waiting on processId doesn't bring the file back */
+let closed = false;
 
 const handler: vscode.UriHandler = {
   async handleUri(uri) {
@@ -25,6 +27,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
   context.subscriptions.push(vscode.window.registerUriHandler(handler));
 
   const own = await vscode.env.asExternalUri(vscode.Uri.parse(`${vscode.env.uriScheme}://${context.extension.id}/focus`));
+  removeStaleEntries(registryDir());
   const path = entryPath(registryDir(), vscode.env.uriScheme, process.pid);
   file = path;
   // Writes run one after another so a slow processId can't overwrite a newer list
@@ -32,11 +35,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
   const update = () => {
     queue = queue
       .then(async () => {
-        writeEntry(path, {
-          uri: own.toString(true),
-          extensionHostPid: process.pid,
-          terminalPids: await terminalPids(vscode.window.terminals),
-        });
+        const pids = await terminalPids(vscode.window.terminals);
+        if (closed) return;
+        writeEntry(path, { uri: own.toString(true), extensionHostPid: process.pid, terminalPids: pids });
       })
       .catch((e) => console.error("[tomarigi] could not write", path, e));
   };
@@ -49,5 +50,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 }
 
 export function deactivate(): void {
+  closed = true;
   if (file) removeEntry(file);
 }

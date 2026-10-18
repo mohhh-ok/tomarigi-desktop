@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { entryPath, pidsOf, registryDir, removeEntry, terminalOf, terminalPids, writeEntry } from "../../src/registry";
+import { entryPath, pidsOf, registryDir, removeEntry, removeStaleEntries, terminalOf, terminalPids, writeEntry } from "../../src/registry";
 
 const term = (pid: number | undefined) => ({ processId: Promise.resolve(pid) });
 
@@ -23,6 +23,25 @@ describe("registry", () => {
     removeEntry(file);
     expect(fs.existsSync(file)).toBe(false);
     fs.rmSync(dir, { recursive: true });
+  });
+
+  test("files of extension hosts that are gone are removed, others are kept", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "tomarigi-ext-"));
+    for (const name of ["vscode-10.json", "cursor-11.json", "cursor-12.json", "notes.txt"]) fs.writeFileSync(path.join(dir, name), "{}");
+    removeStaleEntries(dir, (pid) => pid === 11);
+    expect(fs.readdirSync(dir).sort()).toEqual(["cursor-11.json", "notes.txt"]);
+    removeStaleEntries(dir);
+    expect(fs.readdirSync(dir)).toEqual(["notes.txt"]);
+    removeStaleEntries(path.join(dir, "missing"));
+    fs.writeFileSync(path.join(dir, `vscode-${process.pid}.json`), "{}");
+    removeStaleEntries(dir);
+    expect(fs.readdirSync(dir).sort()).toEqual(["notes.txt", `vscode-${process.pid}.json`]);
+    fs.rmSync(dir, { recursive: true });
+  });
+
+  test("a terminal whose processId never answers doesn't hold up the others", async () => {
+    const hung = { processId: new Promise<number | undefined>(() => {}) };
+    expect(await terminalPids([hung, term(5)])).toEqual([5]);
   });
 
   test("pids are read from the query and junk is dropped", () => {
