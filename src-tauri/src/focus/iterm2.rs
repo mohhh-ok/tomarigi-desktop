@@ -9,6 +9,8 @@ pub(super) fn focus(target: &Target) -> Result<String, String> {
         let windows = sb::value(&app, "windows").ok_or("no windows")?;
         for w in 0..sb::count(&windows) {
             let Some(window) = sb::at(&windows, w) else { continue };
+            // Selecting reorders the windows, so the window is addressed by id
+            let window = sb::by_id(&windows, &window).unwrap_or(window);
             let Some(tabs) = sb::value(&window, "tabs") else { continue };
             for t in 0..sb::count(&tabs) {
                 let Some(tab) = sb::at(&tabs, t) else { continue };

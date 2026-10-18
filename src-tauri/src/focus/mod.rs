@@ -110,7 +110,7 @@ impl Terminal {
     pub(crate) fn of_bundle(bundle_id: &str) -> Terminal {
         match bundle_id {
             "com.mitchellh.ghostty" => Terminal::Ghostty,
-            "com.googlecode.iterm2" => Terminal::ITerm2,
+            ITERM2_BUNDLE_ID => Terminal::ITerm2,
             "com.apple.Terminal" => Terminal::TerminalApp,
             "com.github.wez.wezterm" => Terminal::WezTerm,
             "net.kovidgoyal.kitty" => Terminal::Kitty,
@@ -121,17 +121,24 @@ impl Terminal {
 
 /// The app process that owns the chain: the nearest ancestor that is a running app with a bundle id.
 /// iTerm2 can run its shells under an iTermServer process whose parent is launchd, so that name counts as iTerm2
-pub(crate) fn owner_app(chain: &[Proc], bundle_of: impl Fn(u32) -> Option<String>) -> Option<(u32, String)> {
+/// (iterm2_pid gives the running iTerm2)
+pub(crate) fn owner_app(
+    chain: &[Proc],
+    bundle_of: impl Fn(u32) -> Option<String>,
+    iterm2_pid: impl Fn() -> Option<u32>,
+) -> Option<(u32, String)> {
     for p in chain {
         if let Some(bundle) = bundle_of(p.pid) {
             return Some((p.pid, bundle));
         }
         if p.name().starts_with("iTermServer") {
-            return sb::pids_of_bundle("com.googlecode.iterm2").first().map(|pid| (*pid, "com.googlecode.iterm2".to_string()));
+            return iterm2_pid().map(|pid| (pid, ITERM2_BUNDLE_ID.to_string()));
         }
     }
     None
 }
+
+const ITERM2_BUNDLE_ID: &str = "com.googlecode.iterm2";
 
 /// What an adapter gets: the tty to find, the chain from the agent (or the tmux client) up to the app, and the app's pid
 pub(crate) struct Target<'a> {
@@ -165,7 +172,8 @@ pub(crate) fn focus_pid_sync(pid: u32, fallback_to_app: bool) -> FocusResult {
             Err(e) => detail.push_str(&format!(" tmux: {e}")),
         }
     }
-    let Some((app_pid, bundle)) = owner_app(&chain, sb::bundle_id_of) else {
+    let iterm2_pid = || sb::pids_of_bundle(ITERM2_BUNDLE_ID).first().copied();
+    let Some((app_pid, bundle)) = owner_app(&chain, sb::bundle_id_of, iterm2_pid) else {
         return FocusResult::none(format!("{detail} no terminal app"));
     };
     detail.push_str(&format!(" app={bundle}({app_pid})"));
@@ -305,8 +313,19 @@ mod tests {
         let procs = parse_ps(PS);
         let chain = ancestors(&procs, 4373);
         let bundle_of = |pid: u32| (pid == 4237).then(|| "com.mitchellh.ghostty".to_string());
-        assert_eq!(owner_app(&chain, bundle_of), Some((4237, "com.mitchellh.ghostty".to_string())));
-        assert_eq!(owner_app(&chain, |_| None), None);
+        assert_eq!(owner_app(&chain, bundle_of, || None), Some((4237, "com.mitchellh.ghostty".to_string())));
+        assert_eq!(owner_app(&chain, |_| None, || None), None);
+    }
+
+    #[test]
+    fn an_iterm_server_left_under_launchd_counts_as_iterm2() {
+        let procs = parse_ps(
+            "21655 1 ?? /Users/me/Library/Application Support/iTerm2/iTermServer-3.6.11\n\
+             30223 21655 ttys022 /usr/bin/login\n30231 30223 ttys022 -zsh\n30526 30231 ttys022 claude\n",
+        );
+        let chain = ancestors(&procs, 30526);
+        assert_eq!(owner_app(&chain, |_| None, || Some(93181)), Some((93181, "com.googlecode.iterm2".to_string())));
+        assert_eq!(owner_app(&chain, |_| None, || None), None);
     }
 
     #[test]

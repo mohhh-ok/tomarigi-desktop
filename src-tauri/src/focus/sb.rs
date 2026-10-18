@@ -19,8 +19,11 @@ mod imp {
     }
 
     pub(crate) fn pids_of_bundle(bundle_id: &str) -> Vec<u32> {
-        let apps = NSRunningApplication::runningApplicationsWithBundleIdentifier(&NSString::from_str(bundle_id));
-        apps.iter().map(|a| a.processIdentifier() as u32).collect()
+        // Called on a worker thread, which has no autorelease pool
+        objc2::rc::autoreleasepool(|_| {
+            let apps = NSRunningApplication::runningApplicationsWithBundleIdentifier(&NSString::from_str(bundle_id));
+            apps.iter().map(|a| a.processIdentifier() as u32).collect()
+        })
     }
 
     pub(crate) fn bundle_id_of(pid: u32) -> Option<String> {
@@ -94,6 +97,13 @@ mod imp {
             return None;
         }
         unsafe { msg_send![elements, objectAtIndex: index] }
+    }
+
+    /// The same element addressed by its `id` instead of its position, so it still points at the same window after
+    /// activating the app reorders the windows
+    pub(crate) fn by_id(elements: &AnyObject, element: &AnyObject) -> Option<Obj> {
+        let id = value(element, "id")?;
+        unsafe { msg_send![elements, objectWithID: &*id] }
     }
 
     /// Sends a command (event class + id) with obj as the direct parameter

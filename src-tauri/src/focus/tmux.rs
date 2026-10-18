@@ -23,6 +23,11 @@ pub(super) fn socket_args(command_line: &str) -> Vec<String> {
         if !w.starts_with('-') {
             break;
         }
+        // Server options that take a value; the value is skipped so a later -L / -S is still read
+        if ["-f", "-c", "-T"].contains(&w) {
+            i += 2;
+            continue;
+        }
         for flag in ["-L", "-S"] {
             if w == flag {
                 if let Some(v) = words.get(i + 1) {
@@ -107,6 +112,7 @@ mod tests {
         assert_eq!(socket_args("tmux -Lother"), vec!["-L", "other"]);
         // Flags after the tmux command belong to the command, not the server
         assert!(socket_args("tmux new -s x -L y").is_empty());
+        assert_eq!(socket_args("tmux -f /tmp/conf -L other attach"), vec!["-L", "other"]);
     }
 
     #[test]
