@@ -131,6 +131,33 @@ mod tests {
         assert!(!is_editor_uri("not a uri"));
     }
 
+    /// Checks the path on a real machine without opening anything: the real `ps` and the real window files, starting
+    /// from a process under the terminal shell given in TOMARIGI_VSCODE_SHELL_PID (a made-up child is added to the
+    /// `ps` snapshot, so nothing has to be typed into the user's terminal). Expects TOMARIGI_VSCODE_EXPECT as the start
+    /// of the URI. `cargo test --lib real_window_is_found -- --ignored --nocapture`
+    #[test]
+    #[ignore]
+    fn real_window_is_found_from_a_process_under_its_terminal() {
+        let shell: u32 = std::env::var("TOMARIGI_VSCODE_SHELL_PID").expect("TOMARIGI_VSCODE_SHELL_PID").parse().unwrap();
+        let expect = std::env::var("TOMARIGI_VSCODE_EXPECT").expect("TOMARIGI_VSCODE_EXPECT");
+        let mut procs = super::super::ps_snapshot().expect("ps");
+        assert!(procs.contains_key(&shell), "shell {shell} is not running");
+        let child = u32::MAX - 1;
+        procs.insert(child, Proc { pid: child, ppid: shell, tty: procs[&shell].tty.clone(), comm: "sleep".into() });
+        let windows = read_windows(&dir());
+        println!("window files: {windows:?}");
+        for start in [child, shell] {
+            let chain = ancestors(&procs, start);
+            println!("chain from {start}: {:?}", chain.iter().map(|p| (p.pid, p.name().to_string())).collect::<Vec<_>>());
+            let window = window_of(&windows, &chain, &procs).expect("a window has the terminal");
+            let uri = focus_uri(window, &chain);
+            println!("uri from {start}: {uri}");
+            assert!(is_editor_uri(&window.uri));
+            assert!(uri.starts_with(&expect), "{uri}");
+            assert!(uri.contains(&shell.to_string()));
+        }
+    }
+
     #[test]
     fn window_files_are_read_and_broken_ones_skipped() {
         let dir = std::env::temp_dir().join(format!("tomarigi-vscode-test-{}", std::process::id()));
