@@ -30,7 +30,7 @@ describe("registry", () => {
     for (const name of ["vscode-10.json", "cursor-11.json", "cursor-12.json", "notes.txt"]) fs.writeFileSync(path.join(dir, name), "{}");
     removeStaleEntries(dir, (pid) => pid === 11);
     expect(fs.readdirSync(dir).sort()).toEqual(["cursor-11.json", "notes.txt"]);
-    removeStaleEntries(dir);
+    removeStaleEntries(dir, () => false);
     expect(fs.readdirSync(dir)).toEqual(["notes.txt"]);
     removeStaleEntries(path.join(dir, "missing"));
     fs.writeFileSync(path.join(dir, `vscode-${process.pid}.json`), "{}");
