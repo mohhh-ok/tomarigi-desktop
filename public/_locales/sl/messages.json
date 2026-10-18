@@ -12,7 +12,7 @@
     "message": "Nalaganje…"
   },
   "setupIntro": {
-    "message": "Izberite mapo, kamor Claude Code / Codex shranjuje dnevnike sej, in ptice bodo začele pristajati na gredi."
+    "message": "Izberite mapo, kamor vaš agent UI za programiranje shranjuje dnevnike sej, in ptice bodo začele pristajati na gredi."
   },
   "setupPickPrefix": {
     "message": "V izbirniku pritisnite "

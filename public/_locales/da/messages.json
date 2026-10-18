@@ -12,7 +12,7 @@
     "message": "Indlæser…"
   },
   "setupIntro": {
-    "message": "Vælg den mappe, hvor Claude Code / Codex gemmer sine sessionslogs, så begynder fuglene at lande på pinden."
+    "message": "Vælg den mappe, hvor din AI-kodeagent gemmer sine sessionslogs, så begynder fuglene at lande på pinden."
   },
   "setupPickPrefix": {
     "message": "Tryk på "

@@ -12,7 +12,7 @@
     "message": "読み込み中…"
   },
   "setupIntro": {
-    "message": "Claude Code または Codex の記録フォルダを選ぶと、止まり木に鳥がとまります。"
+    "message": "使っている AI コーディングエージェントの記録フォルダを選ぶと、止まり木に鳥がとまります。"
   },
   "setupPickPrefix": {
     "message": "選択画面で "

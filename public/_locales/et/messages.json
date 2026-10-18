@@ -12,7 +12,7 @@
     "message": "Laadimine…"
   },
   "setupIntro": {
-    "message": "Vali kaust, kuhu Claude Code / Codex salvestab oma seansside logid, ja linnud hakkavad õrrele istuma."
+    "message": "Vali kaust, kuhu sinu tehisintellekti koodiagent salvestab oma seansside logid, ja linnud hakkavad õrrele istuma."
   },
   "setupPickPrefix": {
     "message": "Valimisaknas vajuta "

@@ -12,7 +12,7 @@
     "message": "Carregant…"
   },
   "setupIntro": {
-    "message": "Tria la carpeta on Claude Code / Codex desa els registres de sessió, i els ocells començaran a posar-se a la perxa."
+    "message": "Tria la carpeta on el teu agent de programació amb IA desa els registres de sessió, i els ocells començaran a posar-se a la perxa."
   },
   "setupPickPrefix": {
     "message": "Al selector, prem "

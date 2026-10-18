@@ -12,7 +12,7 @@
     "message": "Wczytywanie…"
   },
   "setupIntro": {
-    "message": "Wybierz folder, w którym Claude Code / Codex przechowuje dzienniki sesji, a ptaki zaczną siadać na grzędzie."
+    "message": "Wybierz folder, w którym Twój agent AI do programowania przechowuje dzienniki sesji, a ptaki zaczną siadać na grzędzie."
   },
   "setupPickPrefix": {
     "message": "W oknie wyboru naciśnij "

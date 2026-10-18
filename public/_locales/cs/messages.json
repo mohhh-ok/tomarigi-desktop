@@ -12,7 +12,7 @@
     "message": "Načítání…"
   },
   "setupIntro": {
-    "message": "Vyberte složku, kam Claude Code / Codex ukládá záznamy relací, a ptáci začnou usedat na bidýlko."
+    "message": "Vyberte složku, kam váš AI agent pro programování ukládá záznamy relací, a ptáci začnou usedat na bidýlko."
   },
   "setupPickPrefix": {
     "message": "Ve výběru stiskněte "

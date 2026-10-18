@@ -12,7 +12,7 @@
     "message": "Đang tải…"
   },
   "setupIntro": {
-    "message": "Chọn thư mục nơi Claude Code / Codex lưu nhật ký phiên, và chim sẽ bắt đầu đậu lên cây sào."
+    "message": "Chọn thư mục nơi tác nhân lập trình AI bạn dùng lưu nhật ký phiên, và chim sẽ bắt đầu đậu lên cây sào."
   },
   "setupPickPrefix": {
     "message": "Trong hộp chọn, nhấn "

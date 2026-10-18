@@ -12,7 +12,7 @@
     "message": "Notiek ielāde…"
   },
   "setupIntro": {
-    "message": "Izvēlieties mapi, kurā Claude Code / Codex glabā sesiju žurnālus, un putni sāks nolaisties uz laktiņas."
+    "message": "Izvēlieties mapi, kurā jūsu MI programmēšanas aģents glabā sesiju žurnālus, un putni sāks nolaisties uz laktiņas."
   },
   "setupPickPrefix": {
     "message": "Atlasītājā nospiediet "

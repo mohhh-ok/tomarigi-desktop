@@ -12,7 +12,7 @@
     "message": "A carregar…"
   },
   "setupIntro": {
-    "message": "Escolha a pasta onde o Claude Code / Codex guarda os registos de sessão e os pássaros começarão a pousar no poleiro."
+    "message": "Escolha a pasta onde o seu agente de programação com IA guarda os registos de sessão e os pássaros começarão a pousar no poleiro."
   },
   "setupPickPrefix": {
     "message": "No seletor, prima "

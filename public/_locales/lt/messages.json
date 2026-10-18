@@ -12,7 +12,7 @@
     "message": "Įkeliama…"
   },
   "setupIntro": {
-    "message": "Pasirinkite aplanką, kuriame Claude Code / Codex saugo sesijų žurnalus, ir paukščiai pradės tūpti ant laktelės."
+    "message": "Pasirinkite aplanką, kuriame jūsų DI programavimo agentas saugo sesijų žurnalus, ir paukščiai pradės tūpti ant laktelės."
   },
   "setupPickPrefix": {
     "message": "Pasirinkimo lange paspauskite "

@@ -12,7 +12,7 @@
     "message": "Loading…"
   },
   "setupIntro": {
-    "message": "Pick a Claude Code or Codex session-log folder, and birds will start landing on the perch."
+    "message": "Pick the session-log folder of the AI coding agent you use, and birds will start landing on the perch."
   },
   "setupPickPrefix": {
     "message": "In the picker, press "

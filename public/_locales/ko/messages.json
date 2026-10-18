@@ -12,7 +12,7 @@
     "message": "불러오는 중…"
   },
   "setupIntro": {
-    "message": "Claude Code / Codex가 세션 기록을 저장하는 폴더를 선택하면, 새들이 횃대에 앉기 시작합니다."
+    "message": "사용하는 AI 코딩 에이전트가 세션 기록을 저장하는 폴더를 선택하면, 새들이 횃대에 앉기 시작합니다."
   },
   "setupPickPrefix": {
     "message": "선택 화면에서 "

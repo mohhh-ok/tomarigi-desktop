@@ -12,7 +12,7 @@
     "message": "Cargando…"
   },
   "setupIntro": {
-    "message": "Elige la carpeta donde Claude Code / Codex guarda sus registros de sesión y los pájaros empezarán a posarse en la percha."
+    "message": "Elige la carpeta donde tu agente de programación con IA guarda sus registros de sesión y los pájaros empezarán a posarse en la percha."
   },
   "setupPickPrefix": {
     "message": "En el selector, pulsa "

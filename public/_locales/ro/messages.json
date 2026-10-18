@@ -12,7 +12,7 @@
     "message": "Se încarcă…"
   },
   "setupIntro": {
-    "message": "Alege folderul în care Claude Code / Codex păstrează jurnalele de sesiune, iar păsările vor începe să aterizeze pe stinghie."
+    "message": "Alege folderul în care agentul tău de programare AI păstrează jurnalele de sesiune, iar păsările vor începe să aterizeze pe stinghie."
   },
   "setupPickPrefix": {
     "message": "În selector, apasă "

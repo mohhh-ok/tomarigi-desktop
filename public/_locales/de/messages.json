@@ -12,7 +12,7 @@
     "message": "Wird geladen…"
   },
   "setupIntro": {
-    "message": "Wähle den Ordner, in dem Claude Code / Codex seine Sitzungsprotokolle speichert, und Vögel beginnen, sich auf der Sitzstange niederzulassen."
+    "message": "Wähle den Ordner, in dem dein KI-Coding-Agent seine Sitzungsprotokolle speichert, und Vögel beginnen, sich auf der Sitzstange niederzulassen."
   },
   "setupPickPrefix": {
     "message": "Drücke im Auswahldialog "

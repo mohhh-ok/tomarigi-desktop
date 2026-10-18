@@ -12,7 +12,7 @@
     "message": "Načítava sa…"
   },
   "setupIntro": {
-    "message": "Vyber priečinok, kam Claude Code / Codex ukladá záznamy relácií, a vtáky začnú sadať na bidlo."
+    "message": "Vyber priečinok, kam tvoj AI agent na programovanie ukladá záznamy relácií, a vtáky začnú sadať na bidlo."
   },
   "setupPickPrefix": {
     "message": "Vo výbere stlač "

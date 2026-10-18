@@ -12,7 +12,7 @@
     "message": "Caricamento…"
   },
   "setupIntro": {
-    "message": "Scegli la cartella in cui Claude Code / Codex conserva i log delle sessioni, e gli uccellini inizieranno a posarsi sul posatoio."
+    "message": "Scegli la cartella in cui il tuo agente di programmazione IA conserva i log delle sessioni, e gli uccellini inizieranno a posarsi sul posatoio."
   },
   "setupPickPrefix": {
     "message": "Nel selettore premi "

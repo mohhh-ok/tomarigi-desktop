@@ -12,7 +12,7 @@
     "message": "Laster inn…"
   },
   "setupIntro": {
-    "message": "Velg mappen der Claude Code / Codex lagrer øktloggene sine, så begynner fuglene å lande på vaglen."
+    "message": "Velg mappen der AI-kodeagenten din lagrer øktloggene sine, så begynner fuglene å lande på vaglen."
   },
   "setupPickPrefix": {
     "message": "Trykk "

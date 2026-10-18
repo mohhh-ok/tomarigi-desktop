@@ -12,7 +12,7 @@
     "message": "Memuat…"
   },
   "setupIntro": {
-    "message": "Pilih folder tempat Claude Code / Codex menyimpan log sesinya, dan burung-burung akan mulai hinggap di tempat bertengger."
+    "message": "Pilih folder tempat agen pemrograman AI yang Anda pakai menyimpan log sesinya, dan burung-burung akan mulai hinggap di tempat bertengger."
   },
   "setupPickPrefix": {
     "message": "Di jendela pemilih, tekan "
