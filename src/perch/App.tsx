@@ -160,6 +160,9 @@ export default function App({
           loaded.map(async (r) => [r.id, await queryRead(r)] as const),
         );
         setPerms(Object.fromEntries(entries));
+      } else if (source.displayRoots) {
+        setRoots(source.displayRoots);
+        setPerms(Object.fromEntries(source.displayRoots.map((r) => [r.id, "granted" as const])));
       }
       await loadSettings();
       setPhase("ready");
@@ -277,6 +280,8 @@ export default function App({
 
   /** So that state and persistence don't silently diverge on failure, it warns and shows a message on screen */
   const persistRoots = useCallback(async (next: RootEntry[]) => {
+    // Folders shown by mock are not saved
+    if (!source.usesRoots) return;
     try {
       await saveRoots(next);
     } catch (e) {
@@ -286,6 +291,8 @@ export default function App({
   }, []);
 
   const addRoot = useCallback(async (kind: RootKind) => {
+    // mock has no folder picker
+    if (!source.usesRoots) return;
     const result = await pickNewRoot(roots, kind);
     if (result === "cancelled") return;
     if (result === "duplicate") {
@@ -605,10 +612,11 @@ export default function App({
             </div>
           </section>
           <section className="settings-panel" hidden={!settingsOpen || showDebug}>
-            {/* Watched folder management is the roots/perms subsystem itself, so it is hidden entirely
-                in mock (no substitute). BYOK, volume, and readout settings work as the real thing
-                even in mock (see AiKeySettings and voice-controls below) */}
-            {source.usesRoots && (
+            {/* Watched folder management is the roots/perms subsystem itself. mock shows its fixed folders
+                (source.displayRoots) so the list and the add dialog can be checked, without reading or saving.
+                BYOK, volume, and readout settings work as the real thing even in mock (see AiKeySettings and
+                voice-controls below) */}
+            {(source.usesRoots || source.displayRoots) && (
               <RootManager
                 roots={roots}
                 perms={perms}

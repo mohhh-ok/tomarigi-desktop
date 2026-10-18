@@ -1,6 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import type { PerchSource } from "./source";
+import { AGENTS } from "@/lib/agents";
+import { NativeDirectoryHandle } from "@/lib/native-fs";
+import type { RootEntry } from "@/lib/settings-store";
 import { DEFAULT_PRESET, PRESETS } from "./mock-presets";
 
 // Presets at launch. Choose with ?preset=<id> (TOMARIGI_QUERY="preset=asking" etc.). For checking screenshots
@@ -22,6 +25,12 @@ interface MockSource extends PerchSource {
 // receiving an array with a new reference, so re-renders keep happening on every poll even when the value is the same
 // (spreading into the Garden's motion/AnimatePresence tree). Pinned to a single module constant.
 const NO_BROKEN: string[] = [];
+
+// The default watched folder of every agent, as the real settings list them when they all exist
+const MOCK_ROOTS: RootEntry[] = AGENTS.map((agent) => {
+  const path = `/Users/me/${agent.home}`;
+  return { id: `default:${agent.kind}`, kind: agent.kind, label: agent.label, path, builtin: true, handle: new NativeDirectoryHandle(path) };
+});
 
 /** Creates one instance bundling the PerchSource implementation and the operation API MockPanel uses.
  * boot.tsx creates one of these and passes it to both App and MockPanel, so
@@ -51,6 +60,7 @@ export function createMockSource(): MockSource {
 
   return {
     usesRoots: false,
+    displayRoots: MOCK_ROOTS,
     async scan() {
       // Return the current sessions/events as is (no copy). This reference never changes except through
       // setData, so App.tsx keeps receiving the same array reference as long as the value doesn't change
