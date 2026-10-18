@@ -8,6 +8,19 @@ Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (
 2. Commit, then `git tag v<version>` and `git push origin v<version>`
 3. When the workflow finishes (about 8–13 minutes), verify the .dmg as below, write release notes on the draft, and publish
 
+## Building without a release
+
+To check that the macOS, Windows, Linux, and VS Code extension builds pass before cutting a tag, start the same workflow by hand. It runs the same jobs and build steps, but skips the version checks, signing, notarization, and everything that makes or uploads to a GitHub Release. The bundles are kept as workflow artifacts on the run instead (the .dmg is unsigned, so Gatekeeper blocks it; it is only for checking the build).
+
+```sh
+gh workflow run release.yml -R mohhh-ok/tomarigi-desktop --ref <branch>
+gh run list -R mohhh-ok/tomarigi-desktop --workflow release.yml -L 1      # the run id
+gh run watch <run id> -R mohhh-ok/tomarigi-desktop
+gh run download <run id> -R mohhh-ok/tomarigi-desktop -D /tmp/tomarigi-desktop/ci-run-<run id>
+```
+
+Job permissions can't depend on the event, so a manual run's token also has `contents: write`; the steps that run on a manual run get no token or secrets.
+
 ## Verifying the .dmg
 
 The workflow notarizes the .app (tauri-action) and then the .dmg itself (a separate step, since tauri-action only notarizes the .app). Check both on the downloaded file:
