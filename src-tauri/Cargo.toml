@@ -68,7 +68,7 @@ sys-locale = "0.3"
 [target.'cfg(target_os = "windows")'.dependencies]
 # Processes without `ps` / `lsof` on Windows: liveness, parents, command lines, working directories (liveness.rs, focus/)
 sysinfo = { version = "0.39", default-features = false, features = ["system"] }
-# Held to the version tauri already pulls in. Window lookup and focus (focus/windows.rs), mouse buttons (fade.rs), and
+# Held to the version tauri already pulls in. Window lookup and focus (focus/win32.rs), mouse buttons (fade.rs), and
 # the Restart Manager for Codex's lock holders (liveness.rs)
 windows = { version = "0.61", features = [
   "Win32_Foundation",

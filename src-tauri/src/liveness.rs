@@ -487,7 +487,17 @@ fn tty_processes_blocking() -> ProcessScan {
         .iter()
         .filter(|(_, p)| !p.cmd().is_empty())
         .map(|(pid, p)| {
-            let command = p.cmd().iter().map(|a| a.to_string_lossy()).collect::<Vec<_>>().join(" ");
+            // Arguments with spaces (C:\Program Files\..., a user name with a space) are quoted, so argvOf in
+            // src/lib/agent-processes.ts reads them as one
+            let command = p
+                .cmd()
+                .iter()
+                .map(|a| {
+                    let a = a.to_string_lossy();
+                    if a.contains(char::is_whitespace) { format!("\"{a}\"") } else { a.into_owned() }
+                })
+                .collect::<Vec<_>>()
+                .join(" ");
             TtyProcess {
                 pid: pid.as_u32(),
                 tty: String::new(),

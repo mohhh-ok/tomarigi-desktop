@@ -113,6 +113,11 @@ fn save_window_state(win: &WebviewWindow) {
     if win.is_maximized().unwrap_or(false) || win.is_fullscreen().unwrap_or(false) || in_fullscreen_transition(win) {
         return;
     }
+    // A minimized window on Windows sits at (-32000, -32000) with a 0x0 size; saving that would lose the user's frame
+    #[cfg(not(target_os = "macos"))]
+    if win.is_minimized().unwrap_or(false) {
+        return;
+    }
     let (Ok(pos), Ok(size)) = (win.outer_position(), win.inner_size()) else { return };
     let mut state = WindowState { x: pos.x, y: pos.y, width: size.width, height: size.height };
     // While the floating window is grown for the Garden, save the user's frame (the grown one is never saved)

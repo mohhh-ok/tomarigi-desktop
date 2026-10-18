@@ -26,9 +26,13 @@ pub(super) fn snapshot() -> HashMap<u32, Proc> {
         .collect()
 }
 
-/// The nearest process in the chain that owns one of the windows
+/// The nearest process in the chain that owns one of the windows. The walk stops at explorer.exe: its windows are
+/// the desktop and the taskbar, never the terminal (a shell started from Explorer has it as its parent)
 pub(super) fn pick_window(chain: &[Proc], windows: &[(isize, u32)]) -> Option<(isize, u32)> {
-    chain.iter().find_map(|p| windows.iter().find(|(_, pid)| *pid == p.pid).copied())
+    chain
+        .iter()
+        .take_while(|p| !p.comm.rsplit(['\\', '/']).next().unwrap_or("").eq_ignore_ascii_case("explorer.exe"))
+        .find_map(|p| windows.iter().find(|(_, pid)| *pid == p.pid).copied())
 }
 
 /// Visible top-level windows that no other window owns (dialogs and tool windows are owned), with their process.
@@ -97,5 +101,9 @@ mod tests {
         let chain = vec![proc(30, 20), proc(20, 10), proc(10, 4)];
         assert_eq!(pick_window(&chain, &[(0x200, 99), (0x100, 10)]), Some((0x100, 10)));
         assert_eq!(pick_window(&chain, &[(0x200, 99)]), None);
+        // A console window whose owner isn't an ancestor: Explorer's desktop window isn't taken instead
+        let mut from_explorer = vec![proc(30, 20), proc(20, 7)];
+        from_explorer.push(Proc { pid: 7, ppid: 4, tty: String::new(), comm: r"C:\Windows\explorer.exe".into() });
+        assert_eq!(pick_window(&from_explorer, &[(0x300, 7)]), None);
     }
 }
