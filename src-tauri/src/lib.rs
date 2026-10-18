@@ -38,11 +38,18 @@ use window::{
     WindowMode, WINDOW_MODE,
 };
 
-/// /tmp/tomarigi-desktop on macOS and Linux; the user's temp folder on Windows (it has no /tmp)
+/// /tmp/tomarigi-desktop on macOS. Elsewhere a folder of this user, since another user could plant a link in a shared
+/// /tmp: `$XDG_STATE_HOME` (or ~/.local/state)/tomarigi-desktop on Linux, the user's temp folder on Windows
 fn log_dir() -> PathBuf {
     #[cfg(windows)]
     return std::env::temp_dir().join("tomarigi-desktop");
-    #[cfg(not(windows))]
+    #[cfg(target_os = "linux")]
+    return std::env::var_os("XDG_STATE_HOME")
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| home().join(".local/state"))
+        .join("tomarigi-desktop");
+    #[cfg(target_os = "macos")]
     PathBuf::from("/tmp/tomarigi-desktop")
 }
 

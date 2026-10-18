@@ -30,7 +30,7 @@ export function AiKeySettings({
   onSelect,
 }: {
   keySet: Record<ApiKeyProvider, boolean>;
-  // false on a computer without a key store (Linux without Secret Service): says so, and the inputs are disabled
+  // false on a computer without a key store (Linux without Secret Service): says so instead of the provider rows
   storeAvailable: boolean;
   selectedProvider: AiProvider | null;
   testState: Record<ApiKeyProvider, ApiKeyTestState>;
@@ -43,25 +43,25 @@ export function AiKeySettings({
     <section className="ai-keys">
       <h2>{t("aiApiKeysHeading")}</h2>
       <p className="judge-description">{t("aiApiKeysDescription")}</p>
-      {!storeAvailable && (
-        <p className="judge-status judge-status-error key-store-unavailable">{t("byokStoreUnavailable")}</p>
+      {/* Without a key store there is nothing to save into, so the provider rows aren't shown; the note says why */}
+      {!storeAvailable && <p className="judge-description key-store-unavailable">{t("byokStoreUnavailable")}</p>}
+      {storeAvailable && (
+        <div className="ai-key-provider-list">
+          {(["anthropic", "openai", "typesafe"] as const).map((provider) => (
+            <ApiKeyProviderSettings
+              key={provider}
+              provider={provider}
+              keySet={keySet[provider]}
+              selected={selectedProvider === provider}
+              testState={testState[provider]}
+              onSaveKey={(draft) => onSaveKey(provider, draft)}
+              onDeleteKey={() => onDeleteKey(provider)}
+              onTest={() => onTest(provider)}
+              onSelect={provider === "typesafe" ? undefined : () => onSelect(provider)}
+            />
+          ))}
+        </div>
       )}
-      <div className="ai-key-provider-list">
-        {(["anthropic", "openai", "typesafe"] as const).map((provider) => (
-          <ApiKeyProviderSettings
-            key={provider}
-            provider={provider}
-            keySet={keySet[provider]}
-            storeAvailable={storeAvailable}
-            selected={selectedProvider === provider}
-            testState={testState[provider]}
-            onSaveKey={(draft) => onSaveKey(provider, draft)}
-            onDeleteKey={() => onDeleteKey(provider)}
-            onTest={() => onTest(provider)}
-            onSelect={provider === "typesafe" ? undefined : () => onSelect(provider)}
-          />
-        ))}
-      </div>
     </section>
   );
 }
@@ -69,7 +69,6 @@ export function AiKeySettings({
 function ApiKeyProviderSettings({
   provider,
   keySet,
-  storeAvailable,
   selected,
   testState,
   onSaveKey,
@@ -79,7 +78,6 @@ function ApiKeyProviderSettings({
 }: {
   provider: ApiKeyProvider;
   keySet: boolean;
-  storeAvailable: boolean;
   selected: boolean;
   testState: ApiKeyTestState;
   onSaveKey: (draft: string) => Promise<boolean>;
@@ -140,12 +138,10 @@ function ApiKeyProviderSettings({
               value={draft}
               placeholder={heading}
               aria-label={heading}
-              disabled={!storeAvailable}
               onChange={(e) => setDraft(e.target.value)}
             />
             <button
               className="small"
-              disabled={!storeAvailable}
               onClick={() => {
                 void onSaveKey(draft).then((saved) => {
                   setSaveFailed(!saved && draft.trim() !== "");

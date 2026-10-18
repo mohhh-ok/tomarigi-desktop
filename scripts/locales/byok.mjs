@@ -632,7 +632,7 @@ export default {
     ca: "Introdueix i desa primer una clau API",
   },
   // Note under the API keys description, shown only when the OS has no key store to save to (Linux without Secret
-  // Service; key_backend returns "unavailable"). The inputs are disabled then. docs/design.md "Platforms"
+  // Service; key_backend returns "unavailable"). The provider rows are not shown then. docs/design.md "Platforms"
   byokStoreUnavailable: {
     en: "API keys can't be saved because no keyring (GNOME Keyring or KWallet) is running on this computer. Start one, then reopen tomarigi.",
     ja: "このコンピューターでキーリング（GNOME Keyring または KWallet）が動いていないため、API キーを保存できません。キーリングを起動してから tomarigi を開き直してください。",

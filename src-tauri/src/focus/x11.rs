@@ -8,7 +8,7 @@ use x11rb::protocol::xproto::{
     AtomEnum, ClientMessageEvent, ConnectionExt, EventMask, Window, CLIENT_MESSAGE_EVENT,
 };
 
-use super::{ancestors, tmux, FocusLevel, FocusResult, Proc};
+use super::{ancestors, tmux, vscode, FocusLevel, FocusResult, Proc};
 
 /// From /proc/<pid>/stat: (ppid, tty_nr). The command name in parentheses may contain spaces and parentheses, so
 /// the fields are read after the last ")"
@@ -134,6 +134,13 @@ pub(super) fn focus_pid_sync(pid: u32, fallback_to_app: bool) -> FocusResult {
                 }
                 Err(e) => detail.push_str(&format!(" tmux: {e}")),
             }
+        }
+    }
+    // A terminal inside a VS Code window: its tab is focused through Tomarigi's extension (vscode.rs)
+    if !pane {
+        match vscode::focus(&chain, &procs) {
+            Ok(d) => return FocusResult { level: FocusLevel::Pane, detail: format!("{detail} {d}") },
+            Err(e) => detail.push_str(&format!(" {e}")),
         }
     }
     // Without a pane, only the window can be brought forward, and only when asked to (same as the app fallback on

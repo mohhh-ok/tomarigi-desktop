@@ -81,7 +81,7 @@ What has been checked without real machines (on a Mac): the Linux build, `cargo 
 - [ ] Jumping: clicking a bird brings the terminal window forward (Windows Terminal, PowerShell / cmd in conhost, VS Code); check that SetForegroundWindow is allowed (the log line `[focus] ... foreground=true`)
 - [ ] API keys: saved to Credential Manager (`net.mohtech.tomarigi-desktop.byok`), kept after a restart, deleted from settings
 - [ ] Readout speaks with the system voice
-- [ ] "Save" in the debug log writes to `%USERPROFILE%\Downloads`; the app log is at `%TEMP%\tomarigi-desktop\app-log.txt`
+- [ ] "Save" in the debug log writes to `%USERPROFILE%\Downloads`; the app log is at `%TEMP%\tomarigi-desktop\app-log.txt` (Linux: `~/.local/state/tomarigi-desktop/app-log.txt`)
 - [ ] The UI font is Segoe UI / Yu Gothic UI; Japanese text has no missing glyphs
 
 ### Checks on a real Linux (x64) machine
@@ -94,7 +94,7 @@ Check on GNOME (X11 and Wayland sessions) and KDE Plasma at least, with the `.de
 - [ ] Clicking a bird while faded doesn't take focus from the terminal; after the handle click, the settings inputs can be typed in
 - [ ] Standard window and switching back; position and size restored per mode after a restart
 - [ ] Tray icon is shown (GNOME needs the AppIndicator extension); the menu opens and "Show / Hide" works; menu language follows the system locale
-- [ ] API keys: saved to GNOME Keyring / KWallet and kept after a restart; with no Secret Service running, the settings say keys can't be saved and the inputs are disabled
+- [ ] API keys: saved to GNOME Keyring / KWallet and kept after a restart; with no Secret Service running, the settings say keys can't be saved (no key rows are shown)
 - [ ] Readout: speaks where WebKitGTK has speech synthesis; where it doesn't, the "Read aloud" checkbox is disabled with the note under it
 - [ ] Jumping: in tmux the pane is selected and the terminal window comes forward; outside tmux the terminal window comes forward (GNOME Terminal, Konsole, Ghostty, kitty, Alacritty); on Wayland, native Wayland terminals can't be brought forward (the log says `no window of an ancestor`)
 - [ ] Codex liveness through `/proc/<pid>/fd`; processes of agents without a pid file are found (`ps` from procps is needed)

@@ -10,7 +10,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
     GW_OWNER, SW_RESTORE,
 };
 
-use super::{ancestors, FocusLevel, FocusResult, Proc};
+use super::{ancestors, vscode, FocusLevel, FocusResult, Proc};
 use crate::liveness::win::{snapshot as sys_snapshot, Detail};
 
 /// Every process, with its parent. comm is the executable path; tty is empty (Windows has none)
@@ -57,7 +57,12 @@ pub(super) fn focus_pid_sync(pid: u32, fallback_to_app: bool) -> FocusResult {
     if chain.is_empty() {
         return FocusResult::none(format!("pid={pid} not running"));
     }
-    let detail = format!("pid={pid}");
+    let mut detail = format!("pid={pid}");
+    // A terminal inside a VS Code window: its tab is focused through Tomarigi's extension (vscode.rs)
+    match vscode::focus(&chain, &procs) {
+        Ok(d) => return FocusResult { level: FocusLevel::Pane, detail: format!("{detail} {d}") },
+        Err(e) => detail.push_str(&format!(" {e}")),
+    }
     // There is no pane to focus; the window is brought forward only when asked to (same as the app fallback on macOS)
     if !fallback_to_app {
         return FocusResult::none(format!("{detail} no pane"));
