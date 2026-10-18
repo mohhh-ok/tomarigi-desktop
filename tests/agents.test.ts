@@ -182,6 +182,9 @@ describe("OpenCode", () => {
     expect(extractQuestion(tail.events.at(-1)?.text)).toBe("Keep the old name?");
     const aborted: OpenCodeMessage = { ...streaming, data: { role: "assistant", error: "MessageAbortedError", time: { created: T0 + 4000, completed: T0 + 5000 } } };
     expect(parseOpenCodeMessages([user, aborted], session).kind).toBe("closed");
+    // A provider error ends the turn: done, not interrupted
+    const failed: OpenCodeMessage = { ...streaming, data: { role: "assistant", error: "APIError", time: { created: T0 + 4000, completed: T0 + 5000 } } };
+    expect(stateOf(parseOpenCodeMessages([user, failed], session), 10)).toBe("done");
   });
 });
 

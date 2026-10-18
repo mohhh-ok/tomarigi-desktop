@@ -2,7 +2,8 @@
 // (src-tauri/src/opencode.rs) opens it read-only and returns each session's last messages with their parts cut
 // down. Measured with opencode 1.19.0: message.data has role, time {created, completed}, finish ("stop" ends the
 // reply, "tool-calls" goes on with tools) and error (MessageAbortedError on interrupt); parts are text / tool
-// (state.status pending / running / completed / error) / step-start / step-finish / patch. The "question" tool is
+// (state.status pending / running / completed / error) / step-start / step-finish / patch. A failed request ends
+// with error.name (APIError seen with 1.19.0 when the provider refused the request). The "question" tool is
 // OpenCode asking the user. Not a public spec
 import type { TailEvent, TailInfo } from "./transcript";
 import { isRecord, replyText, str, tailFromEvents, userText } from "./agent-tail";
@@ -57,9 +58,10 @@ export function parseOpenCodeMessages(messages: OpenCodeMessage[], session: Open
     }
     const completed = message.data.time?.completed;
     if (completed === undefined) continue;
-    if (message.data.error) {
+    // Interrupted by the user. Other errors (APIError etc.) end the turn like a reply, as Claude Code's API errors do
+    if (message.data.error === "MessageAbortedError") {
       events.push({ at: completed, kind: "closed" });
-    } else if (message.data.finish === "stop") {
+    } else if (message.data.error || message.data.finish === "stop") {
       const text = texts.map((p) => p.text?.tail ?? "").join("\n");
       events.push({ at: completed, kind: "assistant_text", text: text ? replyText(text) : undefined });
     }
