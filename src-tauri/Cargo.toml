@@ -38,8 +38,9 @@ panic = "abort"
 strip = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
-# NSRunningApplication + libc: finds the terminal app that owns an agent and activates it by pid (focus/)
-objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics", "NSRunningApplication", "libc"] }
+# NSRunningApplication + libc: finds the terminal app that owns an agent and activates it by pid (focus/). NSWorkspace +
+# block2: brings an app forward through LaunchServices (open_app in focus/sb.rs)
+objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics", "NSRunningApplication", "libc", "NSWorkspace", "block2"] }
 objc2 = "0.6"
 # The frosted glass behind the window (set_backdrop in window.rs) uses NSString and NSRect
 # NSValue (NSNumber) sets Terminal.app window properties through ScriptingBridge (focus/terminal_app.rs); NSURL gives the

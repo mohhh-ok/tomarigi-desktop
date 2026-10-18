@@ -1,5 +1,6 @@
 // WezTerm: `wezterm cli list --format json` gives `tty_name` → `pane_id`, then `wezterm cli activate-pane --pane-id
-// <id>`, and the app is activated. The binary is taken from the running app's bundle
+// <id>`, and the app is brought forward through LaunchServices (NSWorkspace openApplication, activates). The binary
+// is taken from the running app's bundle
 use serde::Deserialize;
 use std::process::Command;
 
@@ -35,7 +36,8 @@ pub(super) fn focus(target: &Target) -> Result<String, String> {
     if !out.status.success() {
         return Err(format!("wezterm activate-pane failed: {}", String::from_utf8_lossy(&out.stderr).trim()));
     }
-    sb::activate(target.app_pid);
+    // WezTerm has no AppleScript dictionary to ask it to come forward itself, so LaunchServices brings it forward
+    sb::open_app(target.app_pid);
     Ok(format!("wezterm pane={pane}"))
 }
 

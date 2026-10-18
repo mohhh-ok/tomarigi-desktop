@@ -6,7 +6,7 @@ mod imp {
     use objc2::msg_send;
     use objc2::rc::Retained;
     use objc2::runtime::{AnyClass, AnyObject};
-    use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication};
+    use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication, NSWorkspace, NSWorkspaceOpenConfiguration};
     use objc2_foundation::{NSArray, NSNumber, NSString};
 
     #[link(name = "ScriptingBridge", kind = "framework")]
@@ -46,6 +46,19 @@ mod imp {
             if let Some(app) = NSRunningApplication::runningApplicationWithProcessIdentifier(pid as i32) {
                 app.activateWithOptions(NSApplicationActivationOptions::empty());
             }
+        })
+    }
+
+    /// Brings the app running as pid forward through LaunchServices, the same way opening it from the Dock does.
+    /// For apps without an AppleScript dictionary, where NSRunningApplication's activate alone lost to another app
+    /// coming forward at the same time
+    pub(crate) fn open_app(pid: u32) {
+        objc2::rc::autoreleasepool(|_| {
+            let Some(app) = NSRunningApplication::runningApplicationWithProcessIdentifier(pid as i32) else { return };
+            let Some(url) = app.bundleURL() else { return };
+            let config = NSWorkspaceOpenConfiguration::configuration();
+            config.setActivates(true);
+            NSWorkspace::sharedWorkspace().openApplicationAtURL_configuration_completionHandler(&url, &config, None);
         })
     }
 
@@ -124,6 +137,7 @@ mod imp {
         None
     }
     pub(crate) fn activate(_pid: u32) {}
+    pub(crate) fn open_app(_pid: u32) {}
 }
 
 pub(crate) use imp::*;
