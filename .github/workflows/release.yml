@@ -1,5 +1,5 @@
 # Pushing a v* tag builds a signed and notarized universal .dmg and attaches it to a draft GitHub Release, then
-# the Windows installer (NSIS, unsigned for now) and the Linux packages (deb, AppImage) to the same draft.
+# the Windows installer (NSIS, not code-signed) and the Linux packages (deb, AppImage) to the same draft.
 # Publish the draft by hand after checking it. Required secrets are listed in docs/release.md
 # Started by hand (workflow_dispatch), it runs the same builds without signing, makes no release, and keeps the
 # bundles as workflow artifacts instead (docs/release.md "Building without a release")
@@ -174,7 +174,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # Unsigned until a code-signing certificate is chosen, so Windows shows a SmartScreen warning on first run
+      # Not code-signed (docs/design.md "Platforms"), so Windows shows a SmartScreen warning on first run
       - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         if: github.event_name == 'push'
         env:
