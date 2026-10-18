@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { openDB, type IDBPDatabase } from "idb";
 import { isReadableDir, NativeDirectoryHandle } from "./native-fs";
 import { AGENTS, agentOf, type AgentKind } from "./agents";
+import { pathKey, samePath } from "./paths";
 
 const DB_NAME = "tomarigi";
 const STORE = "kv";
@@ -86,9 +87,9 @@ export async function loadRoots(): Promise<RootEntry[]> {
       }),
     );
 
-  const defaultPaths = new Set(defaults.map((d) => d.path));
+  const defaultPaths = new Set(defaults.map((d) => pathKey(d.path)));
   const saved = ((await kvGet(KEY_ROOTS)) as StoredRoot[] | undefined) ?? [];
-  const added = saved.filter((root) => !defaultPaths.has(root.path));
+  const added = saved.filter((root) => !defaultPaths.has(pathKey(root.path)));
   if (added.length !== saved.length) await kvPut(KEY_ROOTS, added);
   return [...builtins, ...added.map((root) => withHandle({ ...root, builtin: false }))];
 }
@@ -119,8 +120,7 @@ export async function pickNewRoot(
     defaultPath: `~/${agentOf(kind).home}`,
   });
   if (!path) return "cancelled";
-  const normalized = path.replace(/\/+$/, "");
-  if (existing.some((root) => root.path.replace(/\/+$/, "") === normalized)) return "duplicate";
+  if (existing.some((root) => samePath(root.path, path))) return "duplicate";
   return withHandle({
     id: crypto.randomUUID(),
     kind,

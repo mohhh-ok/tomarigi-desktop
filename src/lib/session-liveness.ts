@@ -2,6 +2,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./settings-store";
 import type { LiveFoundEntry } from "./session-types";
+import { basename, parentDir, trimSeparators } from "./paths";
 import {
   missCounts,
   recentlyEndedAt,
@@ -13,14 +14,12 @@ import {
 
 /** The <config> of a Claude Code watched folder (<config>/projects) */
 export function configDirOf(root: RootEntry): string {
-  const path = root.path.replace(/\/+$/, "");
-  return path.slice(0, path.lastIndexOf("/"));
+  return parentDir(root.path);
 }
 
 /** The <codex dir> of a Codex watched folder (~/.codex/sessions or ~/.codex) */
 export function codexDirOf(root: RootEntry): string {
-  const path = root.path.replace(/\/+$/, "");
-  return path.endsWith("/sessions") ? path.slice(0, path.lastIndexOf("/")) : path;
+  return basename(root.path) === "sessions" ? parentDir(root.path) : trimSeparators(root.path);
 }
 
 // Birds are shown while their process is alive and removed right away once it ends; elapsed time plays no part

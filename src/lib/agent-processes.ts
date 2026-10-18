@@ -2,6 +2,7 @@
 // agent runs in the session's cwd. The processes come from ps (tty_processes in Rust) and their cwd from lsof
 // (process_cwds); which sessions they stand for is decided here (matchSessionsToProcesses)
 import { invoke } from "@tauri-apps/api/core";
+import { basename } from "./paths";
 
 export interface AgentProcess {
   pid: number;
@@ -27,7 +28,7 @@ export function argvOf(command: string): string[] {
 
 /** The file name of a path, "/" or "\\" separated. A Windows ".exe" is dropped so `opencode.exe` reads as opencode */
 export function basenameOf(path: string): string {
-  return path.slice(Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\")) + 1).replace(/\.exe$/i, "");
+  return basename(path).replace(/\.exe$/i, "");
 }
 
 /**

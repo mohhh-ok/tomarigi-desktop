@@ -4,6 +4,7 @@ import type { NativeFile } from "./native-fs";
 // parsing stays here and the rest of the app consumes the shared TailInfo shape.
 
 import type { TailEvent, TailInfo, TailKind } from "./transcript";
+import { basename, trimSeparators } from "./paths";
 
 interface CodexEntry {
   type?: string;
@@ -179,6 +180,5 @@ function stringValue(value: unknown): string | undefined {
 }
 
 function lastPathPart(path: string | undefined): string | undefined {
-  if (!path) return undefined;
-  return path.split("/").filter(Boolean).at(-1);
+  return path && trimSeparators(path) ? basename(path) : undefined;
 }

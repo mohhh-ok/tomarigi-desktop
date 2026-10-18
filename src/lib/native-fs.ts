@@ -3,6 +3,7 @@
 // against FileSystemDirectoryHandle / File in the tomarigi Chrome extension, so this provides handles with just the
 // methods it uses, in the same shape.
 import { invoke } from "@tauri-apps/api/core";
+import { basename, trimSeparators } from "./paths";
 
 interface RawEntry {
   name: string;
@@ -22,12 +23,7 @@ function isNotFound(e: unknown): boolean {
 }
 
 function join(dir: string, name: string): string {
-  return dir.endsWith("/") ? `${dir}${name}` : `${dir}/${name}`;
-}
-
-function basename(path: string): string {
-  const trimmed = path.replace(/\/+$/, "");
-  return trimmed.slice(trimmed.lastIndexOf("/") + 1);
+  return `${trimSeparators(dir)}/${name}`;
 }
 
 /** Replacement for File. size / lastModified are a snapshot taken at getFile() */

@@ -1,4 +1,5 @@
 import type { NativeFile } from "./native-fs";
+import { isAbsolutePath } from "./paths";
 // Reads Claude Code transcripts (~/.claude/projects/<slug>/<sessionId>.jsonl).
 // The format is a Claude Code internal detail and can change without notice, so parsing is
 // confined to this file. Codex is converted to the same TailInfo by a separate adapter in
@@ -289,7 +290,7 @@ async function readWindow(
     }
     // Lines without cwd (summary etc.) are mixed in, so update with the last value found regardless of
     // whether classification succeeds
-    if (typeof entry.cwd === "string" && entry.cwd.startsWith("/")) cwd = entry.cwd;
+    if (typeof entry.cwd === "string" && isAbsolutePath(entry.cwd)) cwd = entry.cwd;
     // entrypoint appears not only on user lines but also on assistant/attachment/system lines (see the
     // TailInfo.entrypoint comment). Like cwd, update with the last value found
     if (typeof entry.entrypoint === "string") entrypoint = entry.entrypoint;
@@ -557,17 +558,6 @@ export function projectLabels(slugs: string[]): Map<string, string> {
     map.set(slug, label || slug);
   }
   return map;
-}
-
-/**
- * Returns the last segment of a path (`/`-separated, trailing slashes ignored).
- * Inputs whose segment would be empty (e.g. "/") are returned as is.
- */
-export function basename(path: string): string {
-  const trimmed = path.replace(/\/+$/, "");
-  const idx = trimmed.lastIndexOf("/");
-  const result = idx === -1 ? trimmed : trimmed.slice(idx + 1);
-  return result || path;
 }
 
 function commonPrefix(items: string[]): string {

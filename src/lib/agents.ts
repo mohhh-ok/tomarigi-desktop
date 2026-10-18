@@ -26,6 +26,7 @@ import { geminiProjectRoot, readGeminiTail } from "./gemini-transcript";
 import { parseOpenCodeMessages, type OpenCodeMessage, type OpenCodeSession } from "./opencode-transcript";
 import { cursorProjectSlug, forgetCursorFile, readCursorTail } from "./cursor-transcript";
 import type { TailInfo } from "./transcript";
+import { basename, parentDir, trimSeparators } from "./paths";
 
 export type AgentKind = "claude" | "codex" | "qwen" | "copilot" | "gemini" | "opencode" | "cursor";
 
@@ -410,7 +411,7 @@ const gemini: AgentAdapter = {
   matchesProcess: programNamed("gemini"),
   async list(root, listing) {
     // ~/.gemini/projects.json maps each project folder to its slug under ~/.gemini/tmp
-    const geminiDir = new NativeDirectoryHandle(root.path.replace(/\/+$/, "").replace(/\/tmp$/, ""));
+    const geminiDir = new NativeDirectoryHandle(basename(root.path) === "tmp" ? parentDir(root.path) : trimSeparators(root.path));
     const projectsJson = await geminiDir
       .getFileHandle("projects.json")
       .then(async (h) => (await h.getFile()).text())
@@ -445,7 +446,7 @@ const opencode: AgentAdapter = {
   matchesProcess: programNamed("opencode"),
   async list(root, listing) {
     if (!(await hasWork("opencode", root, listing))) return;
-    const dbPath = `${root.path.replace(/\/+$/, "")}/opencode.db`;
+    const dbPath = `${trimSeparators(root.path)}/opencode.db`;
     const scan = await invoke<{ present: boolean; sessions: OpenCodeSession[]; reliable: boolean }>("opencode_sessions", {
       dbPath,
     }).catch(() => ({ present: true, sessions: [] as OpenCodeSession[], reliable: false }));
@@ -478,7 +479,7 @@ const cursor: AgentAdapter = {
   // cursor-agent 2025.09.18 runs as `<home>/.local/share/cursor-agent/versions/<v>/node --use-system-ca <same>/index.js`
   matchesProcess: (argv) => {
     const program = programOf(argv) ?? "";
-    return basenameOf(program) === "cursor-agent" || /\/cursor-agent\/versions\/[^/]+\/index\.js$/.test(program);
+    return basenameOf(program) === "cursor-agent" || /[\\/]cursor-agent[\\/]versions[\\/][^\\/]+[\\/]index\.js$/.test(program);
   },
   async list(root, listing) {
     await listByProcess(

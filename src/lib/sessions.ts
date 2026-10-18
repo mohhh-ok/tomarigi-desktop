@@ -2,7 +2,8 @@
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
 import { watchingCount } from "./watching";
-import { basename, projectLabels } from "./transcript";
+import { basename } from "./paths";
+import { projectLabels } from "./transcript";
 import type {
   BirdState,
   ChickScan,

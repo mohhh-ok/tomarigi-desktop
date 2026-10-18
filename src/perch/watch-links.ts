@@ -1,4 +1,5 @@
 import type { SessionView } from "@/lib/sessions";
+import { relativeTo, samePath } from "@/lib/paths";
 
 /**
  * Perch ordering. Among birds linked by watching, the one started first (smaller startedAt; if absent,
@@ -51,9 +52,7 @@ export function orderByWatchLinks(sessions: SessionView[]): {
  * folder; otherwise the folder name (display name)
  */
 export function relativeLabel(parent: SessionView, child: SessionView): string | undefined {
-  const base = parent.cwd?.replace(/\/+$/, "");
-  const own = child.cwd?.replace(/\/+$/, "");
-  if (base && own === base) return undefined;
-  if (base && own?.startsWith(`${base}/`)) return own.slice(base.length + 1);
-  return child.project;
+  if (!parent.cwd || !child.cwd) return child.project;
+  if (samePath(parent.cwd, child.cwd)) return undefined;
+  return relativeTo(parent.cwd, child.cwd) ?? child.project;
 }
