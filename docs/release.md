@@ -4,7 +4,7 @@ Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (
 
 ## Cutting a release
 
-1. Set the same version in `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` (the workflow stops if any of them differ from the tag). Run `cargo metadata --manifest-path src-tauri/Cargo.toml --format-version 1 > /dev/null` so `src-tauri/Cargo.lock` picks up the new version, and commit it too
+1. Set the same version in `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `vscode-extension/package.json` (the workflow stops if any of them differ from the tag). Run `cargo metadata --manifest-path src-tauri/Cargo.toml --format-version 1 > /dev/null` so `src-tauri/Cargo.lock` picks up the new version, and commit it too
 2. Commit, then `git tag v<version>` and `git push origin v<version>`
 3. When the workflow finishes (about 8–13 minutes), verify the .dmg as below, write release notes on the draft, and publish
 
@@ -41,3 +41,21 @@ The Developer ID Application certificate can only be created by the Account Hold
 ## Signing and Apple Events
 
 Notarization requires the hardened runtime (Tauri enables it by default). The hardened runtime blocks Apple Events unless the app has the `com.apple.security.automation.apple-events` entitlement, so `src-tauri/Entitlements.plist` sets it (`bundle.macOS.entitlements` in `tauri.conf.json`). Without it, jumping to a terminal pane fails (Ghostty, iTerm2, and Terminal.app are driven by Apple Events).
+
+## The VS Code extension
+
+The `vsix` job in the same workflow runs the extension's tests (unit tests, then the integration test inside a downloaded VS Code under `xvfb-run`), builds `tomarigi-v<version>.vsix`, and attaches it to the same draft release. To build it locally: `cd vscode-extension && bun install && bun run package` (writes `vscode-extension/tomarigi.vsix`). `bun run test:integration` opens a VS Code window, so run it on a machine where that is fine.
+
+Not published to a marketplace yet; both need the user's own accounts. The extension ID is `publisher` + `name` in `vscode-extension/package.json` (`mohtech.tomarigi`); it is the authority of the URI Tomarigi opens, and the publisher on each marketplace must be the same string.
+
+VS Code Marketplace (VS Code) — https://code.visualstudio.com/api/working-with-extensions/publishing-extension
+1. Sign in to https://marketplace.visualstudio.com/manage with a Microsoft account and create a publisher whose ID is the `publisher` in `vscode-extension/package.json` (the ID can't be changed later)
+2. Make a token: an Azure DevOps personal access token with the scope Marketplace → Manage and organization "All accessible organizations". The page says global PATs are retired on December 1, 2026 and recommends Microsoft Entra ID (`vsce publish --azure-credential`) instead; check the page before setting this up
+3. `cd vscode-extension && bunx vsce login <publisher>`, then `bunx vsce publish --packagePath tomarigi-v<version>.vsix` (or upload the .vsix on the publisher management page)
+
+Open VSX (Cursor, Windsurf, VSCodium and other forks) — https://github.com/eclipse/openvsx/wiki/Publishing-Extensions
+1. Log in to https://open-vsx.org with GitHub, link an eclipse.org account ("Log in with Eclipse" on the profile page), and agree to the Publisher Agreement
+2. Make an access token in the account settings
+3. Once: `bunx ovsx create-namespace <publisher> -p <token>`. Each release: `bunx ovsx publish tomarigi-v<version>.vsix -p <token>`
+
+When the extension is published, README can point to the marketplace instead of the .vsix on Releases.

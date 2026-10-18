@@ -28,7 +28,7 @@ Requirements: macOS.
 
 ### Jumping to the terminal pane
 
-Clicking a bird jumps to the pane (tab or split) where that session runs in Ghostty, iTerm2, Terminal.app, or WezTerm, also when the session runs inside tmux. macOS asks once per terminal app for permission to control it. Other terminals (Warp, Alacritty, VS Code, Cursor, and others) are only brought to the front.
+Clicking a bird jumps to the pane (tab or split) where that session runs in Ghostty, iTerm2, Terminal.app, or WezTerm, also when the session runs inside tmux. macOS asks once per terminal app for permission to control it. Other terminals (Warp, Alacritty, and others) are only brought to the front. VS Code, Cursor, and other VS Code forks need Tomarigi's extension (below).
 
 kitty: to jump to the kitty window, add these two lines to `kitty.conf` and restart kitty. Without them, kitty is only brought to the front.
 
@@ -36,6 +36,8 @@ kitty: to jump to the kitty window, add these two lines to `kitty.conf` and rest
 allow_remote_control socket-only
 listen_on unix:/tmp/kitty
 ```
+
+VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. Download `tomarigi-v<version>.vsix` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
 
 ## Development
 

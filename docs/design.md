@@ -164,6 +164,7 @@ Applies to the floating window's Garden tab only.
   - Tomarigi looks for a file whose terminal pids include the agent's pid or one of its ancestors and whose extension host is alive, and opens that window's URI with the pids added. The extension shows that terminal, and the editor brings that window to the front. A plain URI would go only to the topmost window (VS Code API docs: "the topmost window will handle the uri"), so the window-addressed URI is required
   - When no such file exists (extension not installed, or a stale file whose extension host is gone), no URI is opened, because an editor without the extension shows an "install extension?" dialog for every unknown URI. The app is only brought to the front, as before
   - The editor asks once whether the extension may open the URI ("don't ask again" stops it). README says so
+  - The extension ID (`publisher.name`, now `mohtech.tomarigi`) is written only in `vscode-extension/package.json`; Tomarigi never needs it, because it opens the URI the extension wrote. The extension runs on the UI side (`extensionKind: ui`), so the window file is written on the machine where Tomarigi runs, also for a remote window
   (Claude's own decision, from the vscode worker's findings in /tmp/tomarigi-desktop/vscode-findings.md)
   - README tells users how to install the extension. Publishing to the VS Code Marketplace (for VS Code) and Open VSX (for Cursor and other forks) needs the user's accounts; until it is published, the `.vsix` built by CI is attached to the GitHub Release
 

@@ -1,0 +1,42 @@
+{
+  "name": "tomarigi",
+  "publisher": "mohtech",
+  "displayName": "Tomarigi",
+  "description": "Lets Tomarigi jump to the integrated terminal where an AI coding agent runs",
+  "version": "0.6.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohhh-ok/tomarigi-desktop"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onUri"
+  ],
+  "main": "./out/src/extension.js",
+  "scripts": {
+    "compile": "tsc -p .",
+    "typecheck": "tsc -p . --noEmit",
+    "test": "bun test test/unit",
+    "test:integration": "tsc -p . && node out/test/integration/run.js",
+    "package": "tsc -p . && vsce package --no-dependencies --out tomarigi.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/vscode": "~1.90.0",
+    "@types/mocha": "^10",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
+    "mocha": "^11",
+    "typescript": "~6.0.3"
+  }
+}

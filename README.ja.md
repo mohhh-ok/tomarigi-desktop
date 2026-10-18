@@ -26,7 +26,7 @@ AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitH
 
 ### ターミナルのペインへ飛ぶ
 
-鳥を押すと、Ghostty・iTerm2・ターミナル（Terminal.app）・WezTerm で、そのセッションが動いているペイン（タブや分割）へ飛びます。tmux の中で動いているセッションにも飛べます。ターミナルのアプリごとに 1 回、操作の許可を macOS が聞きます。ほかのターミナル（Warp、Alacritty、VS Code、Cursor など）は、アプリを手前に出すだけです。
+鳥を押すと、Ghostty・iTerm2・ターミナル（Terminal.app）・WezTerm で、そのセッションが動いているペイン（タブや分割）へ飛びます。tmux の中で動いているセッションにも飛べます。ターミナルのアプリごとに 1 回、操作の許可を macOS が聞きます。ほかのターミナル（Warp、Alacritty など）は、アプリを手前に出すだけです。VS Code・Cursor などの VS Code 系のエディタは、Tomarigi の拡張を入れると飛べます（下記）。
 
 kitty: kitty のウィンドウへ飛ぶには、`kitty.conf` に次の 2 行を足して kitty を起動し直してください。足さない場合は、kitty を手前に出すだけです。
 
@@ -34,6 +34,8 @@ kitty: kitty のウィンドウへ飛ぶには、`kitty.conf` に次の 2 行を
 allow_remote_control socket-only
 listen_on unix:/tmp/kitty
 ```
+
+VS Code・Cursor などの VS Code 系のエディタ: 統合ターミナルのタブへ飛ぶには、Tomarigi の拡張を入れてください。[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) から `tomarigi-v<バージョン>.vsix` をダウンロードし、コマンドパレットの「Extensions: Install from VSIX...」で入れます（`code --install-extension <ファイル>`、`cursor --install-extension <ファイル>` でも入ります）。初めて飛ぶとき、エディタが「この拡張に URI を開かせるか」を聞くので、「Do not ask me again for this extension」に印を付けてください。拡張が無い場合は、エディタを手前に出すだけです。拡張は、ウィンドウごとにターミナルのプロセス ID を `~/.tomarigi/vscode/` に書き、Tomarigi がそれを読みます。
 
 ## 開発
 

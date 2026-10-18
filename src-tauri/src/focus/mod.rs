@@ -1,13 +1,15 @@
 // Jumping to the terminal pane where an agent runs (docs/design.md "Jumping to the terminal pane").
 // pid → tty and the chain of ancestor processes from `ps` → tmux (switches the pane, then continues with the client's
 // tty) → the terminal app that owns an ancestor (by bundle id) → that terminal's adapter focuses the pane whose tty
-// matches. Only the adapter of the owning app is called. Each adapter is one file in this folder
+// matches. Only the adapter of the owning app is called. Each adapter is one file in this folder. A terminal inside a
+// VS Code window is found through Tomarigi's extension before the owning app is looked up (vscode.rs)
 mod ghostty;
 mod iterm2;
 mod kitty;
 mod sb;
 mod terminal_app;
 mod tmux;
+mod vscode;
 mod wezterm;
 
 use serde::{Deserialize, Serialize};
@@ -171,6 +173,11 @@ pub(crate) fn focus_pid_sync(pid: u32, fallback_to_app: bool) -> FocusResult {
             }
             Err(e) => detail.push_str(&format!(" tmux: {e}")),
         }
+    }
+    // VS Code and its forks: found by the terminal pids the extension wrote, whichever app the editor is
+    match vscode::focus(&chain, &procs) {
+        Ok(d) => return FocusResult { level: FocusLevel::Pane, detail: format!("{detail} {d}") },
+        Err(e) => detail.push_str(&format!(" {e}")),
     }
     let iterm2_pid = || sb::pids_of_bundle(ITERM2_BUNDLE_ID).first().copied();
     let Some((app_pid, bundle)) = owner_app(&chain, sb::bundle_id_of, iterm2_pid) else {

@@ -69,3 +69,44 @@ jobs:
           xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
           xcrun stapler staple "$dmg"
           gh release upload "$GITHUB_REF_NAME" "$dmg" --clobber
+
+  # Tomarigi's VS Code extension (vscode-extension/). Tests it inside a downloaded VS Code and attaches the .vsix to the
+  # same draft release. Publishing to the Marketplace / Open VSX is done by hand (docs/release.md)
+  vsix:
+    needs: release
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode-extension
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check that the tag matches the extension version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          ext=$(node -p "require('./package.json').version")
+          echo "tag=$tag vscode-extension/package.json=$ext"
+          if [ "$tag" != "$ext" ]; then
+            echo "::error::tag and extension versions differ"
+            exit 1
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run typecheck
+
+      - run: bun run test
+
+      # VS Code needs a display
+      - run: xvfb-run -a bun run test:integration
+
+      - name: Build the .vsix and attach it to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bun run package
+          vsix="tomarigi-${GITHUB_REF_NAME}.vsix"
+          mv tomarigi.vsix "$vsix"
+          gh release upload "$GITHUB_REF_NAME" "$vsix" --clobber

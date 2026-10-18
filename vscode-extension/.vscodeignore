@@ -1,0 +1,9 @@
+src/**
+test/**
+out/test/**
+node_modules/**
+tsconfig.json
+bun.lock
+.vscode-test/**
+*.vsix
+.gitignore
