@@ -1,11 +1,11 @@
 # tomarigi-desktop design
 
-A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex) as birds in an always-on-top floating window. It is the desktop version of the tomarigi Chrome extension.
+A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex and the other agents in "Agents") as birds in an always-on-top floating window. It is the desktop version of the tomarigi Chrome extension.
 
 ## Scope
 
 - Three tabs: Garden, Perch, and Recent activity (Garden is the default), plus the ⚙ settings screen
-- Watches Claude Code / Codex transcripts in parallel through adapters. State is decided by local heuristics only; no hooks are installed on the agent side
+- Watches the transcripts of every agent in "Agents" in parallel through adapters. State is decided by local heuristics only; no hooks are installed on the agent side
 - Bird states (sprites, aura while working, motion animations), and drag placement in the Garden
 - Icon sets (birds / gnome / cat / robot / frog) assigned per project
 - Web Audio chirps (mute, volume), speechSynthesis readout (opt-in, volume), BYOK (OpenAI / Anthropic / TypeSafe) for summaries on done, Jev verdicts, and connection tests
@@ -40,7 +40,7 @@ A macOS app (Tauri 2) that watches AI coding agent sessions (Claude Code / Codex
   - In Perch, linked rows are indented under the watching row, labeled with the path relative to the watching session's cwd (or the folder name if not under it). Rows in the same folder show no name
   - When a linked session gets a "?", the watching bird doesn't. The "?" only goes on the bird that is actually asking
 - The indentation parent is whichever of the two linked sessions started first. Codex has no equivalent feature and is out of scope
-- Caveat: the transcript format and `sessions/<pid>.json` are not public Claude Code specs (the sessions docs say "internal to Claude Code and changes between versions"). State detection and jumping to Ghostty rely on them too
+- Caveat: the transcript format and `sessions/<pid>.json` are not public Claude Code specs (the sessions docs say "internal to Claude Code and changes between versions"). State detection and jumping to the terminal pane rely on them too
 
 ## BYOK API keys
 
@@ -89,7 +89,7 @@ Applies to the floating window's Garden tab only.
 
 - At rest, only the birds, their badges ("?", anger mark), speech bubbles, and the handle are shown. The background (translucent color, frosted glass, border, shadow), the garden's frame, watch blocks, tabs, header buttons, names, and status lines are fully transparent (the user's decision: 「とうめいもーどのときは完全透明にして」). The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
 - At rest, clicks anywhere except on a bird or the window handle go through to the window below
-- Birds can be clicked (jump to Ghostty) and dragged while the window stays faded; hovering a bird no longer shows the whole window (the user's decision)
+- Birds can be clicked (jump to the terminal pane) and dragged while the window stays faded; hovering a bird no longer shows the whole window (the user's decision)
 - The window handle stays visible at rest. Dragging it moves the window; clicking it shows the whole window at full strength (the user's decision: 「どらっぐでまどがうごく、くりっくでとうめいかいじょ、いいね」)
   - The handle has no menu of its own. The tabs and header buttons are reached by clicking it to show the window (the user's decision: 「透明解除されたらそこでめにゅーみれるもんな」)
   - The handle is the text "Tomarigi" (the user's decision: 「えだってみえないやろ。普通にTomarigi文字にしろ」)
@@ -140,15 +140,48 @@ Applies to the floating window's Garden tab only.
 - Status lines: line 1 is the state and elapsed time, line 2 the tool name. Inside watch blocks, line 1 is the state and line 2 the elapsed time and tool name
 - When the window is wide, Perch and Recent activity are centered at a max width of about 720px, and settings at 560px. The Garden uses the full width
 
-## Jumping to the Ghostty pane
+## Jumping to the terminal pane
 
-- Clicking a bird (Garden) or a row (Perch, Recent activity) jumps to the Ghostty pane where that claude / codex is running. A chick's row jumps to its parent's pane
-- Mapping: session → pid (see "Removing birds of ended sessions" for how each agent's pid is found) → tty from `ps` → the terminal whose `tty` matches in Ghostty's scripting dictionary, then `focus` + activate that Ghostty
-- Ghostty can run as several app instances (`open -n`). `tell application "Ghostty"` reaches only one of them, so a pane in another instance was never found. Every running instance (bundle id `com.mitchellh.ghostty`) is asked by pid through ScriptingBridge (`SBApplication applicationWithProcessIdentifier:`) instead of osascript (`ghostty_focus` in `src-tauri/src/ghostty.rs`)
-- A conversation handed over to another session (`continued-in`, see "Removing birds of ended sessions") can run in a Claude Code background process whose tty isn't a Ghostty pane. When Ghostty doesn't have the new session's tty, the jump tries the sessions it came from in turn (their old process still shows the conversation)
+- Clicking a bird (Garden) or a row (Perch, Recent activity) jumps to the terminal pane where that agent is running. A chick's row jumps to its parent's pane
+- Mapping: session → pid (see "Removing birds of ended sessions" and "Agents" for how each agent's pid is found) → tty and the chain of ancestor processes from `ps` → the terminal app that owns an ancestor process (by bundle id) → that terminal's adapter focuses the pane whose tty matches. Only the adapter of the owning app is called
+- tmux: when the tty is a tmux pane (`tmux list-panes -a -F '#{pane_tty} #{pane_id} #{session_name}'`), the pane is selected with `tmux switch-client -c <client tty> -t <pane id>` on the client attached to that session that was used last (`client_activity`), and the jump continues with that client's tty as the target, so the outer terminal is focused by its own adapter. Sockets other than the default are taken from the tmux client's command line
+- Adapters (macOS):
+  - Ghostty: every running instance (bundle id `com.mitchellh.ghostty`) is asked by pid through ScriptingBridge (`SBApplication applicationWithProcessIdentifier:`) for the terminal whose `tty` matches, then `focus` + activate. `tell application "Ghostty"` reaches only one of several instances (`open -n`), so osascript is not used
+  - iTerm2: the session whose `tty` matches is selected, then its tab, then its window (AppleScript dictionary)
+  - Terminal.app: the tab whose `tty` matches becomes the selected tab of its window, the window becomes frontmost with index 1, and the app is activated
+  - WezTerm: `wezterm cli list --format json` gives `tty_name` → `pane_id`, then `wezterm cli activate-pane --pane-id <id>`, and the app is activated. The binary is taken from the app bundle
+  - kitty: only when the user has set `allow_remote_control` and `listen_on` in `kitty.conf`; then `kitten @ --to <socket> focus-window --match pid:<pid>` with the shell pid among the ancestors. Tomarigi never edits `kitty.conf`; without the setting, kitty is only activated. README tells kitty users which two settings to add
+  - Any other app (Warp, Alacritty, VS Code, Cursor, and terminals not listed): the app is only brought to the front. Warp has no way to address a tab from outside (warpdotdev/warp#8929 is open); Alacritty has no tabs or panes and its IPC has no focus command
+- A conversation handed over to another session (`continued-in`, see "Removing birds of ended sessions") can run in a Claude Code background process whose tty isn't a terminal pane. When no adapter finds the new session's pane, the jump tries the sessions it came from in turn (their old process still shows the conversation). Only a pane-level focus counts as found; when none is found, the app owning the first session is brought to the front
+- Apple Events permission dialogs appear once per terminal app (Ghostty, iTerm2, Terminal.app). `NSAppleEventsUsageDescription` names terminals in general, not only Ghostty
 - Sessions whose pid can't be found do nothing on click
 - In the Garden, releasing after moving less than 4px is a click (left button only); anything more is a drag
 - Clickable elements get a pointer cursor. No hover hint is shown
+- Pending: focusing a VS Code / Cursor integrated terminal tab needs a Tomarigi extension for VS Code (a URI handler that shows the terminal whose `processId` is an ancestor of the agent). Whether to publish such an extension is the user's decision and has not been asked yet; until then VS Code / Cursor are only brought to the front
+
+## Agents
+
+- Each agent is one adapter in one place: list sessions under its root → read the tail into the shared `TailInfo` → liveness (which sessions have a live process, and their pid) → the pid used for jumping. State (`deriveState`) and everything after it don't know which agent a session is
+- Supported agents and where they are read (each standard location is watched when it exists, the same as the defaults in "Watched folders"):
+  - Claude Code: `~/.claude/projects`. pid from `<config>/sessions/<pid>.json`
+  - Codex: `~/.codex/sessions`. pid from `thread-writer-locks`
+  - Qwen Code: `~/.qwen/projects/<project>/chats/<sessionId>.jsonl`. pid from `<sessionId>.runtime.json`
+  - GitHub Copilot CLI: `~/.copilot/session-state/<sessionId>/events.jsonl`
+  - Gemini CLI: `~/.gemini/tmp/<project>/chats/session-*.jsonl`; cwd from `projects.json`
+  - OpenCode: `~/.local/share/opencode/opencode.db` (SQLite, opened read-only on the Rust side); cwd from `session.directory`
+  - Cursor CLI: `~/.cursor/projects/<cwd slug>/agent-transcripts/<id>/<id>.jsonl`
+- Agents without a pid file: a session is alive while a process of that agent (matched by the process name in `ps axww -o pid=,tty=,command=`) runs with the session's cwd (`lsof -a -d cwd -p <pid> -Fn`). Processes without a tty are ignored. When N processes of one agent share a cwd, the N sessions in that cwd written last are alive (Claude's own decision). Jumping uses the matched pid; when several sessions share a cwd, the session written last gets the newest process and the others do nothing on click (Claude's own decision)
+- The same safeguards as "Removing birds of ended sessions" apply: nothing is removed on a load where `ps` / `lsof` failed, and a bird is removed only after it is missing on two loads in a row
+- "Needs reply" is shown only where the agent's transcript records that it is waiting on the user; agents with no such record show working or done instead
+- Watching (cross-session links) is Claude Code only
+- Not supported: Aider (its history is Markdown with no record of turns ending, so no state can be derived). Kiro CLI and Amp are deferred until their session files are confirmed on a real install (the only sources found disagree or are unofficial; Claude's own decision). Resume when a session file from each is available to read
+- Caveat: none of these transcript formats is a public spec, the same as for Claude Code and Codex. Qwen Code's `runtime.json` is the exception (written for outside tools)
+
+## Platforms
+
+- Today: macOS only. Planned after the terminal and agent work above: Windows and Linux (X11; Wayland runs through Xwayland). Not started yet
+- Known limits, from research (2026-10-18): on Windows, jumping can bring the terminal window to the front but not select a Windows Terminal tab; Ghostty has no Windows build. On Linux the tray's left click is not delivered (menu only), there is no frosted background, and always-on-top depends on the window manager. Pure Wayland has no always-on-top, no global cursor position, no window position restore, and no way to focus another app's window
+- Pending: a Windows code-signing certificate (OV / EV or Azure Artifact Signing) is the user's decision and has not been asked yet
 
 ## The "?" for sessions waiting on you
 
@@ -197,4 +230,4 @@ Applies to the floating window's Garden tab only.
 ## Distribution
 
 - Put the .app from `bun run tauri build` at `/Applications/tomarigi-desktop.app`
-- Info.plist includes `NSAppleEventsUsageDescription` (the text of the Ghostty automation permission dialog). The base text is English (`CFBundleDevelopmentRegion` en); the Japanese text is in `src-tauri/locales/ja.lproj/InfoPlist.strings`, copied into the bundle via `bundle.macOS.files` in `tauri.conf.json`
+- Info.plist includes `NSAppleEventsUsageDescription` (the text of the terminal automation permission dialog). The base text is English (`CFBundleDevelopmentRegion` en); the Japanese text is in `src-tauri/locales/ja.lproj/InfoPlist.strings`, copied into the bundle via `bundle.macOS.files` in `tauri.conf.json`
