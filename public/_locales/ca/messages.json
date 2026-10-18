@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Amaga la finestra (es recupera des de la icona de la barra de menús)"
+  },
+  "byokStoreUnavailable": {
+    "message": "No es poden desar les claus API perquè no hi ha cap clauer (GNOME Keyring o KWallet) en execució en aquest ordinador. Inicia'n un i torna a obrir tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "La lectura en veu alta no està disponible perquè aquest sistema no té motor de veu."
   }
 }

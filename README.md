@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-A macOS app that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
+A desktop app for macOS (Windows and Linux builds too; see below) that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
 
 | | |
 |---|---|
@@ -24,7 +24,7 @@ A macOS app that watches your AI coding agent sessions (Claude Code, Codex, Qwen
 
 Download the `.dmg` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases).
 
-Requirements: macOS.
+Requirements: macOS. Windows 10 / 11 (x64) and Linux (x64, X11; on Wayland it runs through Xwayland) builds are also attached to Releases (`.exe` installer, `.deb`, `.AppImage`), but they haven't been checked on real machines yet.
 
 ### Jumping to the terminal pane
 
@@ -38,6 +38,12 @@ listen_on unix:/tmp/kitty
 ```
 
 VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. Download `tomarigi-v<version>.vsix` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
+
+### Windows and Linux
+
+- Jumping brings the terminal window to the front but can't pick its tab or split (on Linux, a session inside tmux still gets its pane). Windows Terminal comes forward on whatever tab it shows. On a Wayland session only terminals running through Xwayland can be brought forward
+- The Windows installer isn't signed yet, so Windows SmartScreen warns on first run ("More info" → "Run anyway")
+- Linux: API keys are saved to GNOME Keyring or KWallet; without one running, keys can't be saved. The tray icon opens its menu ("Show / Hide" is there), the background isn't blurred, and staying on top depends on the window manager. Some Linux systems have no speech engine, and readout is off there
 
 ## Development
 
@@ -77,7 +83,7 @@ The dev server port is fixed at 4842 in `vite.config.ts` and `src-tauri/tauri.co
 Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly.
 
 - `TOMARIGI_MOCK=1`: mock mode. Injects presets / JSON instead of real data. The mock screen also opens in a plain browser at `http://localhost:4842/?mock=1` while the dev server runs (`bun run dev:web`)
-- `TOMARIGI_QUERY`: initial screen. Join `tab=perch` / `tab=events` / `settings=1` / `dialog=add-folder` (the add-folder dialog; with `TOMARIGI_MOCK=1` the default folders of every agent are listed) / `debug=1` / `preset=<id>` (initial mock preset; `preset=asking` shows the "?") / `scrollTo=<class name>` (scrolls the window to that element, e.g. `settings=1&scrollTo=window-mode`) / `cycle=<seconds>` (mock: every few seconds changes one thing on the birds in turn, a bubble, a tool line, a watch link, a bird joining or leaving; logged as `[mock-cycle]`) / `panel=0` (mock: hides the mock controls) / `birds=<n>` (mock: adds n plain birds) / `tint=0` (verify build: skips the greenish background, so screenshots show the everyday look) with `&`
+- `TOMARIGI_QUERY`: initial screen. Join `tab=perch` / `tab=events` / `settings=1` / `dialog=add-folder` (the add-folder dialog; with `TOMARIGI_MOCK=1` the default folders of every agent are listed) / `debug=1` / `preset=<id>` (initial mock preset; `preset=asking` shows the "?") / `scrollTo=<class name>` (scrolls the window to that element, e.g. `settings=1&scrollTo=window-mode`) / `cycle=<seconds>` (mock: every few seconds changes one thing on the birds in turn, a bubble, a tool line, a watch link, a bird joining or leaving; logged as `[mock-cycle]`) / `panel=0` (mock: hides the mock controls) / `birds=<n>` (mock: adds n plain birds) / `tint=0` (verify build: skips the greenish background, so screenshots show the everyday look) / `keystore=unavailable` (settings as on a Linux computer without a key store) / `speech=none` (settings as on a system without a speech engine) with `&`
 - `TOMARIGI_FOCUS_TEST="<config_dir>|<sessionId>|<return tty>"` (or `"pid=<pid>|<return tty>"` for a process of any agent): 3 seconds after launch, jumps to that session's terminal pane, then 1.5 seconds later jumps back to the return pane (logs `[focus-test] -> Pane ...` with the terminal and how it was found)
 - `TOMARIGI_FADE_TEST=1`: "Fade until hovered" self-test. 4 seconds after launch, shows the faded Garden as clicking the window handle would, keeps it shown for 6 seconds as if the cursor were in the window, then lets it fade again (logs `[fade-test] reveal` and `[fade] revealed=...`)
 - `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window
@@ -88,7 +94,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly.
 
 Where BYOK API keys are stored depends on the identifier (KeyStore in src-tauri/src/keys.rs); see "BYOK API keys" in docs/design.md.
 
-Logs are appended to `/tmp/tomarigi-desktop/app-log.txt`.
+Logs are appended to `/tmp/tomarigi-desktop/app-log.txt` (`~/.local/state/tomarigi-desktop/app-log.txt` on Linux, `%TEMP%\tomarigi-desktop\app-log.txt` on Windows).
 
 The Rust tauri crates are pinned to match `@tauri-apps/api` on the npm side; see the comment in `src-tauri/Cargo.toml`.
 

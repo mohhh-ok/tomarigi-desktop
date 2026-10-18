@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Nascondi finestra (riaprila dall’icona nella barra dei menu)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Impossibile salvare le chiavi API perché su questo computer non è in esecuzione alcun portachiavi (GNOME Keyring o KWallet). Avviane uno e riapri tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "La lettura ad alta voce non è disponibile perché questo sistema non ha un motore vocale."
   }
 }

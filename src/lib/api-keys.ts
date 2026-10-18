@@ -24,10 +24,19 @@ const API_KEY_IDB_KEYS: Record<ApiKeyProvider, string> = {
 };
 const API_KEY_PROVIDERS = Object.keys(API_KEY_IDB_KEYS) as ApiKeyProvider[];
 
-export type ApiKeyBackend = "keychain" | "webview";
+// unavailable: the OS has no store to save to (Linux without Secret Service). Keys can't be saved and the settings
+// say so; there is no plaintext fallback (docs/design.md "Platforms")
+export type ApiKeyBackend = "keychain" | "webview" | "unavailable";
 
 async function apiKeyBackend(): Promise<ApiKeyBackend> {
-  return (await invoke<ApiKeyBackend>("key_backend")) === "webview" ? "webview" : "keychain";
+  const backend = await invoke<ApiKeyBackend>("key_backend");
+  return backend === "webview" || backend === "unavailable" ? backend : "keychain";
+}
+
+/** For the settings screen. ?keystore=unavailable shows the state without a key store (for screenshot checks) */
+export async function loadApiKeyBackend(): Promise<ApiKeyBackend> {
+  if (new URLSearchParams(location.search).get("keystore") === "unavailable") return "unavailable";
+  return apiKeyBackend().catch((): ApiKeyBackend => "keychain");
 }
 
 /**
@@ -36,6 +45,8 @@ async function apiKeyBackend(): Promise<ApiKeyBackend> {
  */
 export async function initApiKeys(): Promise<void> {
   const backend = await apiKeyBackend();
+  // Keys an older version left in IndexedDB stay there until a store can take them
+  if (backend === "unavailable") return;
   for (const provider of API_KEY_PROVIDERS) {
     const idbKey = API_KEY_IDB_KEYS[provider];
     const saved = (await kvGet(idbKey)) as string | undefined;

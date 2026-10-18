@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Ukryj okno (przywróć ikoną na pasku menu)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Nie można zapisać kluczy API, ponieważ na tym komputerze nie działa żaden pęk kluczy (GNOME Keyring lub KWallet). Uruchom go i otwórz tomarigi ponownie."
+  },
+  "voiceUnavailable": {
+    "message": "Czytanie na głos jest niedostępne, ponieważ ten system nie ma syntezatora mowy."
   }
 }

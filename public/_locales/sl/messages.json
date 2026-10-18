@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Skrij okno (vrnete ga z ikono v menijski vrstici)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Ključev API ni mogoče shraniti, ker v tem računalniku ne teče nobena shramba ključev (GNOME Keyring ali KWallet). Zaženite jo in znova odprite tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Branje z glasom ni na voljo, ker ta sistem nima govornega pogona."
   }
 }

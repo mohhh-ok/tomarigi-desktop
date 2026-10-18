@@ -76,7 +76,7 @@ pub(crate) fn fs_read(path: &str, start: u64, end: u64) -> Result<String, String
 /// Saves the event log from the debug dialog. Writes to ~/Downloads/<name> and returns the path
 #[tauri::command]
 pub(crate) fn save_download(name: &str, content: &str) -> Result<String, String> {
-    if name.is_empty() || name.contains('/') || name.starts_with('.') {
+    if name.is_empty() || name.contains('/') || name.contains(std::path::MAIN_SEPARATOR) || name.starts_with('.') {
         return Err(format!("invalid name {name}"));
     }
     // If the name exists, append " (1)" " (2)" … like Chrome downloads, instead of overwriting

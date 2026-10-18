@@ -59,6 +59,20 @@
   flex-wrap: wrap;
 }
 
+/* A row whose checkbox can't be used here (readout without a speech engine) is dimmed as a whole */
+.voice-enable-row:has(input:disabled) {
+  color: #6f6b61;
+  cursor: default;
+}
+
+/* Why a setting can't be used on this computer (readout without a speech engine). Indented as a sub-row */
+.settings-note {
+  margin: 6px 0 0;
+  color: #8d887c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .sound-preview-row button {
   display: inline-flex;
   align-items: center;

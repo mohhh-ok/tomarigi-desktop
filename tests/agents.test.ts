@@ -253,4 +253,10 @@ describe("process matching (sessions of agents without a pid file)", () => {
     expect(gemini(argvOf("vim gemini"))).toBe(false);
     expect(programNamed("opencode")(argvOf("claude look at opencode"))).toBe(false);
   });
+
+  test("Windows paths are read with backslashes and without .exe", () => {
+    expect(programNamed("opencode")(argvOf("C:\\Users\\me\\bin\\opencode.exe run"))).toBe(true);
+    expect(programNamed("gemini")(argvOf("C:\\nodejs\\node.exe C:\\npm\\gemini"))).toBe(true);
+    expect(programNamed("copilot")(argvOf('"C:\\Program Files\\nodejs\\node.exe" "C:\\Users\\Jane Doe\\npm\\copilot"'))).toBe(true);
+  });
 });

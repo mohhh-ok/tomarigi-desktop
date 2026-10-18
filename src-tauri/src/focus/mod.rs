@@ -3,6 +3,7 @@
 // tty) → the terminal app that owns an ancestor (by bundle id) → that terminal's adapter focuses the pane whose tty
 // matches. Only the adapter of the owning app is called. Each adapter is one file in this folder. A terminal inside a
 // VS Code window is found through Tomarigi's extension before the owning app is looked up (vscode.rs)
+// Windows (win32.rs) and Linux (x11.rs) have their own focus_pid_sync (docs/design.md "Platforms")
 mod ghostty;
 mod iterm2;
 mod kitty;
@@ -11,6 +12,10 @@ mod terminal_app;
 mod tmux;
 mod vscode;
 mod wezterm;
+#[cfg(windows)]
+mod win32;
+#[cfg(target_os = "linux")]
+mod x11;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -156,7 +161,12 @@ fn ps_snapshot() -> Option<HashMap<u32, Proc>> {
 
 /// Focuses the terminal pane where pid runs. With fallback_to_app, when no pane is found the owning app is still
 /// brought to the front
+#[cfg_attr(not(target_os = "macos"), allow(unreachable_code))]
 pub(crate) fn focus_pid_sync(pid: u32, fallback_to_app: bool) -> FocusResult {
+    #[cfg(windows)]
+    return win32::focus_pid_sync(pid, fallback_to_app);
+    #[cfg(target_os = "linux")]
+    return x11::focus_pid_sync(pid, fallback_to_app);
     let Some(procs) = ps_snapshot() else { return FocusResult::none(format!("pid={pid} ps failed")) };
     let mut chain = ancestors(&procs, pid);
     let Some(mut tty) = chain.first().and_then(Proc::tty_path) else {

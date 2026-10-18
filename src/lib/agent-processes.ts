@@ -16,13 +16,18 @@ export interface AgentProcessScan {
   reliable: boolean;
 }
 
-/** argv split on whitespace. Paths with spaces are rare for agent binaries; such a process just isn't recognised */
+/**
+ * argv split on whitespace. A double-quoted part is one argument: Windows command lines come quoted where an
+ * argument has spaces (tty_processes in Rust). ps on macOS / Linux prints no quotes, so a path with spaces there just
+ * isn't recognised
+ */
 export function argvOf(command: string): string[] {
-  return command.trim().split(/\s+/).filter(Boolean);
+  return [...command.matchAll(/"([^"]*)"|(\S+)/g)].map((m) => m[1] ?? m[2]).filter(Boolean);
 }
 
+/** The file name of a path, "/" or "\\" separated. A Windows ".exe" is dropped so `opencode.exe` reads as opencode */
 export function basenameOf(path: string): string {
-  return path.slice(path.lastIndexOf("/") + 1);
+  return path.slice(Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\")) + 1).replace(/\.exe$/i, "");
 }
 
 /**

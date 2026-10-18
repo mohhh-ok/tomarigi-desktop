@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Ẩn cửa sổ (mở lại từ biểu tượng trên thanh menu)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Không thể lưu khóa API vì máy tính này không chạy trình quản lý khóa nào (GNOME Keyring hoặc KWallet). Hãy khởi động một trình rồi mở lại tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Không thể đọc bằng giọng nói vì hệ thống này không có công cụ tổng hợp giọng nói."
   }
 }

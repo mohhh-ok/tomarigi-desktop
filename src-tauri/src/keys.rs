@@ -6,8 +6,10 @@ use crate::append_log;
 
 // ---- BYOK API keys and the API calls that use them ----
 // docs/design.md "BYOK API keys". Key values are handled only inside Rust and never returned to the WebView JS.
-// The store is decided once at startup from the identifier: everyday use and verify use the macOS Keychain
-// (items per identifier); dev (identifier ending in .dev) uses the WebView's IndexedDB. This is because the dev
+// The store is decided once at startup from the identifier: everyday use and verify use the OS store (items per
+// identifier): the macOS Keychain, Windows Credential Manager, or Linux Secret Service (GNOME Keyring / KWallet)
+// through the keyring crate. On Linux without Secret Service keys can't be saved; there is no plaintext fallback
+// (docs/design.md "Platforms"). dev (identifier ending in .dev) uses the WebView's IndexedDB. This is because the dev
 // signature changes on every build, and Keychain permission would be asked every time. In dev, JS keeps the keys
 // in IndexedDB and passes them to Rust at startup and on save (Rust keeps them only in memory). API calls that
 // use keys are made from Rust with either store
@@ -15,10 +17,60 @@ use crate::append_log;
 const KEY_PROVIDERS: [&str; 3] = ["anthropic", "openai", "typesafe"];
 
 enum KeyStore {
-    /// Keychain generic password. service is `<identifier>.byok`, account is the provider name
+    /// OS store (Keychain generic password on macOS). service is `<identifier>.byok`, account is the provider name
     Keychain { service: String },
     /// dev: IndexedDB is the source of truth; Rust only keeps a copy in memory
     WebView,
+    /// The OS store can't be used (Linux without Secret Service). The reason is for the log only
+    #[cfg_attr(target_os = "macos", allow(dead_code))]
+    Unavailable(String),
+}
+
+/// The OS store: the Keychain on macOS
+#[cfg(target_os = "macos")]
+mod os_store {
+    pub(super) fn get(service: &str, provider: &str) -> Option<String> {
+        let bytes = security_framework::passwords::get_generic_password(service, provider).ok()?;
+        String::from_utf8(bytes).ok()
+    }
+
+    pub(super) fn set(service: &str, provider: &str, value: &str) -> Result<(), String> {
+        security_framework::passwords::set_generic_password(service, provider, value.as_bytes()).map_err(|e| e.to_string())
+    }
+
+    pub(super) fn delete(service: &str, provider: &str) {
+        let _ = security_framework::passwords::delete_generic_password(service, provider);
+    }
+}
+
+/// The OS store on Windows (Credential Manager) and Linux (Secret Service), picked by the keyring crate
+#[cfg(not(target_os = "macos"))]
+mod os_store {
+    use keyring::{Entry, Error};
+
+    /// None when the store works. A missing item counts as working; anything else (no Secret Service on the
+    /// session bus, a locked store that can't be opened) means keys can't be saved
+    pub(super) fn probe(service: &str) -> Option<String> {
+        if let Err(e) = Entry::store_status() {
+            return Some(e.to_string());
+        }
+        match Entry::new(service, "anthropic").and_then(|e| e.get_password()) {
+            Ok(_) | Err(Error::NoEntry) => None,
+            Err(e) => Some(e.to_string()),
+        }
+    }
+
+    pub(super) fn get(service: &str, provider: &str) -> Option<String> {
+        Entry::new(service, provider).and_then(|e| e.get_password()).ok()
+    }
+
+    pub(super) fn set(service: &str, provider: &str, value: &str) -> Result<(), String> {
+        Entry::new(service, provider).and_then(|e| e.set_password(value)).map_err(|e| e.to_string())
+    }
+
+    pub(super) fn delete(service: &str, provider: &str) {
+        let _ = Entry::new(service, provider).and_then(|e| e.delete_credential());
+    }
 }
 
 static KEY_STORE: std::sync::OnceLock<KeyStore> = std::sync::OnceLock::new();
@@ -36,11 +88,19 @@ pub(crate) fn init_key_store(identifier: &str) {
     {
         KeyStore::WebView
     } else {
-        KeyStore::Keychain { service: format!("{identifier}.byok") }
+        let service = format!("{identifier}.byok");
+        #[cfg(not(target_os = "macos"))]
+        if let Some(reason) = os_store::probe(&service) {
+            let _ = KEY_STORE.set(KeyStore::Unavailable(reason.clone()));
+            append_log(&format!("[keys] store=unavailable: {reason}"));
+            return;
+        }
+        KeyStore::Keychain { service }
     };
     let name = match &store {
         KeyStore::Keychain { service } => format!("keychain service={service}"),
         KeyStore::WebView => "webview".to_string(),
+        KeyStore::Unavailable(reason) => format!("unavailable: {reason}"),
     };
     let _ = KEY_STORE.set(store);
     append_log(&format!("[keys] store={name}"));
@@ -78,12 +138,11 @@ fn key_of(provider: &str) -> Option<String> {
     }
     match key_store() {
         KeyStore::Keychain { service } => {
-            let bytes = security_framework::passwords::get_generic_password(service, provider).ok()?;
-            let value = String::from_utf8(bytes).ok()?;
+            let value = os_store::get(service, provider)?;
             cache_set(provider, Some(value.clone()));
             Some(value)
         }
-        KeyStore::WebView => None,
+        KeyStore::WebView | KeyStore::Unavailable(_) => None,
     }
 }
 
@@ -93,20 +152,23 @@ fn store_key(provider: &str, value: &str) -> Result<(), String> {
     if value.is_empty() {
         return Err("empty key".into());
     }
-    if let KeyStore::Keychain { service } = key_store() {
-        security_framework::passwords::set_generic_password(service, provider, value.as_bytes())
-            .map_err(|e| e.to_string())?;
+    match key_store() {
+        KeyStore::Keychain { service } => os_store::set(service, provider, value)?,
+        KeyStore::Unavailable(_) => return Err("key store unavailable".into()),
+        KeyStore::WebView => {}
     }
     cache_set(provider, Some(value.to_string()));
     Ok(())
 }
 
-/// The store. JS checks this and saves to IndexedDB only for dev (webview)
+/// The store. JS checks this and saves to IndexedDB only for dev (webview); "unavailable" makes the settings say keys
+/// can't be saved
 #[tauri::command]
 pub(crate) fn key_backend() -> &'static str {
     match key_store() {
         KeyStore::Keychain { .. } => "keychain",
         KeyStore::WebView => "webview",
+        KeyStore::Unavailable(_) => "unavailable",
     }
 }
 
@@ -129,7 +191,7 @@ pub(crate) fn key_delete(provider: String) -> Result<(), String> {
     check_provider(&provider)?;
     if let KeyStore::Keychain { service } = key_store() {
         // Deleting something that doesn't exist counts as success
-        let _ = security_framework::passwords::delete_generic_password(service, &provider);
+        os_store::delete(service, &provider);
     }
     cache_set(&provider, None);
     append_log(&format!("[keys] deleted {provider}"));

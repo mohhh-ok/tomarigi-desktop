@@ -20,7 +20,8 @@ body {
 
 body {
   color: #e9e6de;
-  font-family: -apple-system, "Hiragino Sans", sans-serif;
+  /* macOS first; then Windows (Segoe UI, Yu Gothic UI for Japanese) and Linux (Noto Sans, Noto Sans CJK) */
+  font-family: -apple-system, "Hiragino Sans", "Segoe UI", "Yu Gothic UI", "Noto Sans", "Noto Sans CJK JP", sans-serif;
   /* Dragging the background moves the window (NO_WINDOW_DRAG in App.tsx), so background text isn't selectable */
   user-select: none;
   -webkit-user-select: none;

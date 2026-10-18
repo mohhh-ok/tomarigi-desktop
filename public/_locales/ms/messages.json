@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Sembunyikan tetingkap (buka semula dari ikon bar menu)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Kunci API tidak dapat disimpan kerana tiada keyring (GNOME Keyring atau KWallet) berjalan pada komputer ini. Mulakan satu, kemudian buka semula tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Bacaan dengan suara tidak tersedia kerana sistem ini tiada enjin pertuturan."
   }
 }

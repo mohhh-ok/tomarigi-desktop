@@ -21,6 +21,7 @@ export type ApiKeyTestState =
 /** All API key settings. The shared description is shown once here; per-provider differences stay inside each row. */
 export function AiKeySettings({
   keySet,
+  storeAvailable,
   selectedProvider,
   testState,
   onSaveKey,
@@ -29,6 +30,8 @@ export function AiKeySettings({
   onSelect,
 }: {
   keySet: Record<ApiKeyProvider, boolean>;
+  // false on a computer without a key store (Linux without Secret Service): says so instead of the provider rows
+  storeAvailable: boolean;
   selectedProvider: AiProvider | null;
   testState: Record<ApiKeyProvider, ApiKeyTestState>;
   onSaveKey: (provider: ApiKeyProvider, draft: string) => Promise<boolean>;
@@ -39,22 +42,26 @@ export function AiKeySettings({
   return (
     <section className="ai-keys">
       <h2>{t("aiApiKeysHeading")}</h2>
-      <p className="judge-description">{t("aiApiKeysDescription")}</p>
-      <div className="ai-key-provider-list">
-        {(["anthropic", "openai", "typesafe"] as const).map((provider) => (
-          <ApiKeyProviderSettings
-            key={provider}
-            provider={provider}
-            keySet={keySet[provider]}
-            selected={selectedProvider === provider}
-            testState={testState[provider]}
-            onSaveKey={(draft) => onSaveKey(provider, draft)}
-            onDeleteKey={() => onDeleteKey(provider)}
-            onTest={() => onTest(provider)}
-            onSelect={provider === "typesafe" ? undefined : () => onSelect(provider)}
-          />
-        ))}
-      </div>
+      {/* Without a key store there is nothing to save into, so the note replaces the description (which talks about
+          saving keys) and the provider rows aren't shown */}
+      <p className="judge-description">{t(storeAvailable ? "aiApiKeysDescription" : "byokStoreUnavailable")}</p>
+      {storeAvailable && (
+        <div className="ai-key-provider-list">
+          {(["anthropic", "openai", "typesafe"] as const).map((provider) => (
+            <ApiKeyProviderSettings
+              key={provider}
+              provider={provider}
+              keySet={keySet[provider]}
+              selected={selectedProvider === provider}
+              testState={testState[provider]}
+              onSaveKey={(draft) => onSaveKey(provider, draft)}
+              onDeleteKey={() => onDeleteKey(provider)}
+              onTest={() => onTest(provider)}
+              onSelect={provider === "typesafe" ? undefined : () => onSelect(provider)}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

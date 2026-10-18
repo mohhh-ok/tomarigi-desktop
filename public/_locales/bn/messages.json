@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "উইন্ডো লুকান (মেনু বারের আইকন থেকে ফিরিয়ে আনুন)"
+  },
+  "byokStoreUnavailable": {
+    "message": "এই কম্পিউটারে কোনো কীরিং (GNOME Keyring বা KWallet) চালু নেই, তাই API কী সংরক্ষণ করা যাচ্ছে না। একটি চালু করে tomarigi আবার খুলুন।"
+  },
+  "voiceUnavailable": {
+    "message": "এই সিস্টেমে কোনো স্পিচ ইঞ্জিন নেই, তাই কণ্ঠে পড়ে শোনানো যাবে না।"
   }
 }

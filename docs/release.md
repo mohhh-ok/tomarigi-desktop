@@ -1,6 +1,6 @@
 # Release
 
-Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. Publish the draft by hand after checking it.
+Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. After that job, the Windows installer (NSIS `.exe`, unsigned) and the Linux packages (`.deb`, `.AppImage`) are built and attached to the same draft. Publish the draft by hand after checking it.
 
 ## Cutting a release
 
@@ -59,3 +59,45 @@ Open VSX (Cursor, Windsurf, VSCodium and other forks) — https://github.com/ecl
 3. Once: `bunx ovsx create-namespace <publisher> -p <token>`. Each release: `bunx ovsx publish tomarigi-v<version>.vsix -p <token>`
 
 When the extension is published, README can point to the marketplace instead of the .vsix on Releases.
+
+## Windows and Linux
+
+The Windows and Linux jobs run after the macOS job (`needs: release`), so the macOS job creates the draft and they add to it. They need no secrets. The Windows installer is unsigned until a code-signing certificate is chosen (docs/design.md "Platforms"), so SmartScreen warns on first run.
+
+What has been checked without real machines (on a Mac): the Linux build, `cargo test`, and a launch under Xvfb in a Docker container (arm64, Debian bookworm; Garden, Perch, and the settings without Secret Service); the Windows build only as far as `cargo check --target x86_64-pc-windows-gnu` (rustup's windows-gnu std, zig as the C compiler, `llvm-rc` for the resources). Nothing below has been checked on a real Windows or Linux machine yet.
+
+### Checks on a real Windows 10 / 11 (x64) machine
+
+- [ ] The NSIS installer installs and the app starts; SmartScreen shows its warning and "Run anyway" works
+- [ ] Floating window: transparent with Acrylic behind it, borderless, always on top, not in the taskbar; it stays above other windows after switching apps
+- [ ] Fade until hovered: at rest clicks go through to the window below except on birds and the handle; clicking the handle shows the window; leaving the window fades it. Dragging a bird and dragging the window work while faded
+- [ ] Clicking a bird while faded doesn't take focus from the terminal before the jump (the window is not focusable while faded); after the handle click, the settings inputs (API keys) can be typed in
+- [ ] Standard window: title bar, can maximize, shows in the taskbar; switching back to floating restores the floating look and position
+- [ ] Position and size are restored per mode after a restart, also with two displays and display scaling other than 100%
+- [ ] Tray icon is visible on a dark and a light taskbar; left click shows / hides; the menu is in the system language (Japanese / English)
+- [ ] Claude Code (native install) sessions under `%USERPROFILE%\.claude\projects` appear as birds, and birds of ended sessions are removed (`%USERPROFILE%\.claude\sessions\<pid>.json` exists on Windows)
+- [ ] Codex sessions under `%USERPROFILE%\.codex\sessions` appear, and `thread-writer-locks\<threadId>.lock` is held open while codex runs (liveness through the Restart Manager). Check that a codex starting a new thread is not disturbed by Tomarigi's sharing check on the lock files
+- [ ] Agents found by their process (Qwen Code, Copilot CLI, Gemini CLI, OpenCode, Cursor CLI): their processes are recognised from the command line (node-based CLIs run as `node.exe <script>`, whose script name may not be the agent's name)
+- [ ] Jumping: clicking a bird brings the terminal window forward (Windows Terminal, PowerShell / cmd in conhost, VS Code); check that SetForegroundWindow is allowed (the log line `[focus] ... foreground=true`)
+- [ ] API keys: saved to Credential Manager (`net.mohtech.tomarigi-desktop.byok`), kept after a restart, deleted from settings
+- [ ] Readout speaks with the system voice
+- [ ] "Save" in the debug log writes to `%USERPROFILE%\Downloads`; the app log is at `%TEMP%\tomarigi-desktop\app-log.txt` (Linux: `~/.local/state/tomarigi-desktop/app-log.txt`)
+- [ ] The UI font is Segoe UI / Yu Gothic UI; Japanese text has no missing glyphs
+
+### Checks on a real Linux (x64) machine
+
+Check on GNOME (X11 and Wayland sessions) and KDE Plasma at least, with the `.deb` on Ubuntu 22.04 / 24.04 and the `.AppImage` on another distribution.
+
+- [ ] The app starts from the `.deb` and the `.AppImage`; on a Wayland session it runs through Xwayland (`xprop` can click it)
+- [ ] Floating window: transparent (with a compositor), borderless, always on top (window manager dependent), not in the taskbar, shown on every workspace
+- [ ] Fade until hovered: click-through except on birds and the handle, the handle click shows the window, leaving fades it; dragging works
+- [ ] Clicking a bird while faded doesn't take focus from the terminal; after the handle click, the settings inputs can be typed in
+- [ ] Standard window and switching back; position and size restored per mode after a restart
+- [ ] Tray icon is shown (GNOME needs the AppIndicator extension); the menu opens and "Show / Hide" works; menu language follows the system locale
+- [ ] API keys: saved to GNOME Keyring / KWallet and kept after a restart; with no Secret Service running, the settings say keys can't be saved (no key rows are shown)
+- [ ] Readout: speaks where WebKitGTK has speech synthesis; where it doesn't, the "Read aloud" checkbox is disabled with the note under it
+- [ ] Jumping: in tmux the pane is selected and the terminal window comes forward; outside tmux the terminal window comes forward (GNOME Terminal, Konsole, Ghostty, kitty, Alacritty); on Wayland, native Wayland terminals can't be brought forward (the log says `no window of an ancestor`)
+- [ ] Codex liveness through `/proc/<pid>/fd`; processes of agents without a pid file are found (`ps` from procps is needed)
+- [ ] NVIDIA: no white window (if it happens, check `WEBKIT_DISABLE_DMABUF_RENDERER=1`; https://v2.tauri.app/develop/debug/linux-graphics/)
+- [ ] Japanese text renders with Noto Sans CJK
+

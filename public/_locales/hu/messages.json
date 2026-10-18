@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Ablak elrejtése (a menüsor ikonjával visszahozható)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Az API-kulcsok nem menthetők, mert ezen a számítógépen nem fut kulcstartó (GNOME Keyring vagy KWallet). Indítson el egyet, majd nyissa meg újra a tomarigit."
+  },
+  "voiceUnavailable": {
+    "message": "A felolvasás nem érhető el, mert ezen a rendszeren nincs beszédmotor."
   }
 }

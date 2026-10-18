@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Skryť okno (vrátite ho ikonou v lište ponuky)"
+  },
+  "byokStoreUnavailable": {
+    "message": "Kľúče API nemožno uložiť, pretože na tomto počítači nebeží žiadna kľúčenka (GNOME Keyring alebo KWallet). Spustite ju a znova otvorte tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Čítanie nahlas nie je k dispozícii, pretože tento systém nemá rečový modul."
   }
 }

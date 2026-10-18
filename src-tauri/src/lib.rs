@@ -2,11 +2,12 @@
 // - fs: reading watched folders for src/lib/native-fs.ts (fs_list / fs_stat / fs_read), saving downloads, and the
 //   initial registration and adding of watched folders (default_roots / pick_folder)
 // - keys: BYOK API keys and the API calls that use them
-// - liveness: which sessions are alive (ps / lsof) and the peer names of watching links
+// - liveness: which sessions are alive (ps / lsof on macOS, /proc on Linux, sysinfo and the Restart Manager on Windows)
+//   and the peer names of watching links
 // - focus: jump to the terminal pane where an agent runs: focus_pid (pid → tty → owning terminal app → its adapter),
 //   and focus_session / focus_codex that find the pid and go through focus_pid
 // - opencode: OpenCode's sessions, read from its SQLite database (read-only)
-// - window: switches on the fly between the floating window (NSPanel; transparent, borderless, always on top,
+// - window: switches on the fly between the floating window (NSPanel on macOS; transparent, borderless, always on top,
 //   also shown above full-screen spaces) and the standard window (with title bar; can maximize and go full
 //   screen). Saves and restores the mode, and the position and size per mode
 // - garden_grow: grows the floating window when the Garden's birds don't fit, without saving the grown frame
@@ -22,6 +23,8 @@ mod liveness;
 mod opencode;
 mod tray;
 mod window;
+#[cfg(target_os = "linux")]
+mod xconn;
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -35,11 +38,25 @@ use window::{
     WindowMode, WINDOW_MODE,
 };
 
-const LOG_PATH: &str = "/tmp/tomarigi-desktop/app-log.txt";
+/// /tmp/tomarigi-desktop on macOS. Elsewhere a folder of this user, since another user could plant a link in a shared
+/// /tmp: `$XDG_STATE_HOME` (or ~/.local/state)/tomarigi-desktop on Linux, the user's temp folder on Windows
+fn log_dir() -> PathBuf {
+    #[cfg(windows)]
+    return std::env::temp_dir().join("tomarigi-desktop");
+    #[cfg(target_os = "linux")]
+    return std::env::var_os("XDG_STATE_HOME")
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| home().join(".local/state"))
+        .join("tomarigi-desktop");
+    #[cfg(target_os = "macos")]
+    PathBuf::from("/tmp/tomarigi-desktop")
+}
 
 pub(crate) fn append_log(line: &str) {
-    let _ = std::fs::create_dir_all("/tmp/tomarigi-desktop");
-    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(LOG_PATH) {
+    let dir = log_dir();
+    let _ = std::fs::create_dir_all(&dir);
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(dir.join("app-log.txt")) {
         let ts = std::time::SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_millis())
@@ -53,8 +70,14 @@ fn log(line: &str) {
     append_log(line);
 }
 
+/// The home directory: HOME, or USERPROFILE on Windows (agent folders are under it on every OS; docs/design.md
+/// "Platforms")
 pub(crate) fn home() -> PathBuf {
-    PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/".into()))
+    #[cfg(windows)]
+    let var = "USERPROFILE";
+    #[cfg(not(windows))]
+    let var = "HOME";
+    PathBuf::from(std::env::var(var).unwrap_or_else(|_| "/".into()))
 }
 
 /// Expands a leading "~/" to the home directory
@@ -71,7 +94,14 @@ async fn tokio_sleep(ms: u64) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    // Linux: on a Wayland session the app runs through Xwayland. Pure Wayland has no always-on-top, no global cursor
+    // position, no window position restore, and no way to focus another app's window (docs/design.md "Platforms").
+    // Set before GTK starts; a GDK_BACKEND the user set is kept
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("GDK_BACKEND").is_none() {
+        std::env::set_var("GDK_BACKEND", "x11");
+    }
+    let builder = tauri::Builder::default()
         // Single instance. A second launch shows the existing window and exits (prevents two menu bar icons side by side)
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             // This callback is called off the main thread. AppKit window operations only work on the main thread
@@ -79,8 +109,10 @@ pub fn run() {
             let handle = app.clone();
             app.run_on_main_thread(move || show_window(&handle)).ok();
         }))
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_nspanel::init())
+        .plugin(tauri_plugin_opener::init());
+    #[cfg(target_os = "macos")]
+    let builder = builder.plugin(tauri_nspanel::init());
+    builder
         .setup(|app| {
             // Decide the BYOK key store from the identifier (docs/design.md "BYOK API keys")
             init_key_store(&app.config().identifier);
@@ -105,7 +137,6 @@ pub fn run() {
             *WINDOW_MODE.lock().unwrap() = mode;
             set_dock_policy(app.handle(), mode);
             // For the standard window, add the title bar before restoring the position (same order as switch_mode_step)
-            #[cfg(target_os = "macos")]
             match mode {
                 WindowMode::Floating => {
                     restore_window_state(&win, mode);
@@ -116,13 +147,10 @@ pub fn run() {
                     restore_window_state(&win, mode);
                 }
             }
-            #[cfg(not(target_os = "macos"))]
-            restore_window_state(&win, mode);
             tray::setup_tray(app, mode)?;
             // The window is created with visible:false and shown after it becomes a panel (showing it first pins it
             // to the original space)
             show_window(app.handle());
-            #[cfg(target_os = "macos")]
             fade::start_fade_watch(app.handle());
             append_log(&format!("[window] startup mode={mode:?}"));
             let w = win.clone();

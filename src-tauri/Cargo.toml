@@ -57,3 +57,28 @@ tauri-macros = "~2.6"
 tauri-utils = "~2.9"
 tauri-runtime = "~2.11"
 tauri-runtime-wry = "~2.11"
+
+# Windows and Linux (docs/design.md "Platforms"). BYOK API keys go to Windows Credential Manager / Linux Secret Service
+# (KeyStore in keys.rs). The v1 feature picks the store per OS
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+keyring = "4.2"
+# Tray menu language from the system locale (tray.rs; macOS reads `defaults`)
+sys-locale = "0.3"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+# Processes without `ps` / `lsof` on Windows: liveness, parents, command lines, working directories (liveness.rs, focus/)
+sysinfo = { version = "0.39", default-features = false, features = ["system"] }
+# Held to the version tauri already pulls in. Window lookup and focus (focus/win32.rs), mouse buttons (fade.rs), and
+# the Restart Manager for Codex's lock holders (liveness.rs)
+windows = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_UI_WindowsAndMessaging",
+  "Win32_UI_Input_KeyboardAndMouse",
+  "Win32_System_RestartManager",
+] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# The folder picker uses GTK on Linux (tauri already links GTK 3)
+rfd = { version = "0.15", default-features = false, features = ["tokio", "gtk3"] }
+# X11 (EWMH): the terminal window by _NET_WM_PID and _NET_ACTIVE_WINDOW (focus/x11.rs), and the mouse buttons (fade.rs)
+x11rb = "0.14"

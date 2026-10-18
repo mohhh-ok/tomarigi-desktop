@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "הסתרת החלון (אפשר להחזיר מסמל שורת התפריטים)"
+  },
+  "byokStoreUnavailable": {
+    "message": "לא ניתן לשמור מפתחות API כי אין מחזיק מפתחות (GNOME Keyring או KWallet) שפועל במחשב הזה. הפעילו אחד ופתחו מחדש את tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "הקראה בקול אינה זמינה כי אין במערכת הזו מנוע דיבור."
   }
 }

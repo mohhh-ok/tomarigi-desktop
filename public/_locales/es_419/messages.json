@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Ocultar ventana (se recupera desde el ícono de la barra de menús)"
+  },
+  "byokStoreUnavailable": {
+    "message": "No se pueden guardar las claves API porque no hay ningún llavero (GNOME Keyring o KWallet) en ejecución en esta computadora. Inicia uno y vuelve a abrir tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "La lectura en voz alta no está disponible porque este sistema no tiene motor de voz."
   }
 }

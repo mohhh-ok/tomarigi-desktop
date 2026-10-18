@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Slėpti langą (grąžinsite meniu juostos piktograma)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API raktų išsaugoti negalima, nes šiame kompiuteryje neveikia raktinė (GNOME Keyring arba KWallet). Paleiskite ją ir vėl atidarykite tomarigi."
+  },
+  "voiceUnavailable": {
+    "message": "Skaitymas balsu negalimas, nes šioje sistemoje nėra kalbos sintezatoriaus."
   }
 }

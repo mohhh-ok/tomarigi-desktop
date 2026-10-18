@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "Paslēpt logu (atgriež ar izvēļņu joslas ikonu)"
+  },
+  "byokStoreUnavailable": {
+    "message": "API atslēgas nevar saglabāt, jo šajā datorā nedarbojas neviena atslēgu saišķa programma (GNOME Keyring vai KWallet). Palaidiet to un atveriet tomarigi vēlreiz."
+  },
+  "voiceUnavailable": {
+    "message": "Lasīšana ar balsi nav pieejama, jo šai sistēmai nav runas sintēzes."
   }
 }

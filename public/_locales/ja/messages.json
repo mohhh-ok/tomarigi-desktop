@@ -289,5 +289,11 @@
   },
   "hideWindowButtonLabel": {
     "message": "窓を隠す（メニューバーのアイコンで戻せます）"
+  },
+  "byokStoreUnavailable": {
+    "message": "このコンピューターでキーリング（GNOME Keyring または KWallet）が動いていないため、API キーを保存できません。キーリングを起動してから tomarigi を開き直してください。"
+  },
+  "voiceUnavailable": {
+    "message": "このシステムには音声合成の機能が無いため、読み上げは使えません。"
   }
 }
