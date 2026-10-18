@@ -40,4 +40,4 @@ The Developer ID Application certificate can only be created by the Account Hold
 
 ## Signing and Apple Events
 
-Notarization requires the hardened runtime (Tauri enables it by default). The hardened runtime blocks Apple Events unless the app has the `com.apple.security.automation.apple-events` entitlement, so `src-tauri/Entitlements.plist` sets it (`bundle.macOS.entitlements` in `tauri.conf.json`). Without it, jumping to a Ghostty pane fails.
+Notarization requires the hardened runtime (Tauri enables it by default). The hardened runtime blocks Apple Events unless the app has the `com.apple.security.automation.apple-events` entitlement, so `src-tauri/Entitlements.plist` sets it (`bundle.macOS.entitlements` in `tauri.conf.json`). Without it, jumping to a terminal pane fails (Ghostty, iTerm2, and Terminal.app are driven by Apple Events).

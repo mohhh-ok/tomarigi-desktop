@@ -72,8 +72,8 @@ export const scanState = {
   // so that they go through the miss count instead of vanishing on a single unreliable read
   trackedIds: new Set<string>(),
   // sessionId a conversation was handed over to (TailInfo.continuedIn) → sessionId it came from. Rebuilt on every
-  // scan. The new session can run in a Claude Code background process whose tty isn't a Ghostty pane, while the
-  // pane that shows it is still the old process, so jumping falls back along this (lib/ghostty.ts)
+  // scan. The new session can run in a Claude Code background process whose tty isn't a terminal pane, while the
+  // pane that shows it is still the old process, so jumping falls back along this (lib/terminal-focus.ts)
   continuedFrom: new Map<string, string>(),
 };
 

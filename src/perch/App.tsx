@@ -12,7 +12,7 @@ import {
   type RootEntry,
   type RootKind,
 } from "@/lib/settings-store";
-import { focusSession, focusTargetOf } from "@/lib/ghostty";
+import { focusSession, focusTargetOf } from "@/lib/terminal-focus";
 import { isAngry, type AskJudgement } from "@/lib/jev";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import { speakDoneEvent, speakEvent } from "@/lib/voice";
@@ -338,7 +338,7 @@ export default function App({
     chirp();
   }, []);
 
-  // Clicking a bird or row jumps to its Ghostty pane. mock doesn't use roots, so it can't be matched and does nothing
+  // Clicking a bird or row jumps to its terminal pane. mock doesn't use roots, so it can't be matched and does nothing
   const onFocusSession = useCallback(
     (id: string) => {
       void focusSession(id, roots).catch((e) => console.warn("[tomarigi] focus failed", e));

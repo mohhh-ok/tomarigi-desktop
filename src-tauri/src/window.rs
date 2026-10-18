@@ -175,7 +175,7 @@ pub(crate) fn make_panel(win: &WebviewWindow) {
     use objc2_app_kit::NSWindowStyleMask;
     use tauri_nspanel::{CollectionBehavior, WebviewWindowExt};
     let panel = win.to_panel::<TomarigiPanel>().expect("to_panel");
-    // Non-activating panel: clicking doesn't steal focus from Ghostty. Resizable lets you resize from the edges
+    // Non-activating panel: clicking doesn't steal focus from the terminal. Resizable lets you resize from the edges
     panel
         .set_style_mask(
             NSWindowStyleMask::Borderless

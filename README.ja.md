@@ -1,6 +1,6 @@
 # Tomarigi
 
-AI コーディングエージェント（Claude Code / Codex）のセッションを、常に手前に出る窓の中の鳥として見守る macOS アプリです。セッションごとに 1 羽の鳥が「にわ」にいて、どれが作業中で、どれがあなたの返事を待っていて、どれが終わったかがひと目で分かります。鳥を押すと、そのセッションが動いている Ghostty のペインへ飛びます。
+AI コーディングエージェント（Claude Code / Codex）のセッションを、常に手前に出る窓の中の鳥として見守る macOS アプリです。セッションごとに 1 羽の鳥が「にわ」にいて、どれが作業中で、どれがあなたの返事を待っていて、どれが終わったかがひと目で分かります。鳥を押すと、そのセッションが動いているターミナルのペインへ飛びます。
 
 | | |
 |---|---|
@@ -22,7 +22,18 @@ AI コーディングエージェント（Claude Code / Codex）のセッショ�
 
 [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) から `.dmg` をダウンロードしてください。
 
-動作環境: macOS。ペインへ飛ぶ機能は Ghostty だけで動きます。
+動作環境: macOS。
+
+### ターミナルのペインへ飛ぶ
+
+鳥を押すと、Ghostty・iTerm2・ターミナル（Terminal.app）・WezTerm で、そのセッションが動いているペイン（タブや分割）へ飛びます。tmux の中で動いているセッションにも飛べます。ターミナルのアプリごとに 1 回、操作の許可を macOS が聞きます。ほかのターミナル（Warp、Alacritty、VS Code、Cursor など）は、アプリを手前に出すだけです。
+
+kitty: kitty のウィンドウへ飛ぶには、`kitty.conf` に次の 2 行を足して kitty を起動し直してください。足さない場合は、kitty を手前に出すだけです。
+
+```
+allow_remote_control socket-only
+listen_on unix:/tmp/kitty
+```
 
 ## 開発
 

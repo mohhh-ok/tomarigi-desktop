@@ -1,1 +1,1 @@
-"NSAppleEventsUsageDescription" = "鳥をクリックしたとき、その Claude Code が動いている Ghostty のペインへ移るために Ghostty を操作します。";
+"NSAppleEventsUsageDescription" = "鳥をクリックしたとき、そのエージェントが動いているターミナルのペインへ移るために、ターミナルのアプリ（Ghostty、iTerm2、ターミナル など）を操作します。";

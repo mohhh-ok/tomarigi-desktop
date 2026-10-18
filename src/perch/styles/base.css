@@ -138,7 +138,7 @@ html[data-window-mode="normal"] .page {
   opacity: 0;
 }
 
-/* Elements that jump to the Ghostty pane when pressed (Perch rows, event cards, garden birds) */
+/* Elements that jump to the terminal pane when pressed (Perch rows, event cards, garden birds) */
 .focusable {
   cursor: pointer;
 }

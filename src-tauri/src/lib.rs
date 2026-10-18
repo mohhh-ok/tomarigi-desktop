@@ -3,7 +3,8 @@
 //   initial registration and adding of watched folders (default_roots / pick_folder)
 // - keys: BYOK API keys and the API calls that use them
 // - liveness: which sessions are alive (ps / lsof) and the peer names of watching links
-// - ghostty: focus a Ghostty pane: focus_session (sessionId → pid → tty → Ghostty) / focus_codex
+// - focus: jump to the terminal pane where an agent runs: focus_pid (pid → tty → owning terminal app → its adapter),
+//   and focus_session / focus_codex that find the pid and go through focus_pid
 // - window: switches on the fly between the floating window (NSPanel; transparent, borderless, always on top,
 //   also shown above full-screen spaces) and the standard window (with title bar; can maximize and go full
 //   screen). Saves and restores the mode, and the position and size per mode
@@ -13,8 +14,8 @@
 // This file keeps the shared log / path helpers, startup (run), and the command registration
 mod fade;
 mod fs;
+mod focus;
 mod garden_grow;
-mod ghostty;
 mod keys;
 mod liveness;
 mod tray;
@@ -25,7 +26,7 @@ use std::path::PathBuf;
 use std::time::UNIX_EPOCH;
 use tauri::{AppHandle, Manager, WindowEvent};
 
-use ghostty::{focus_session, ghostty_focus};
+use focus::{focus_session, focus_tty_sync};
 use keys::{import_key_from_stdin, init_key_store};
 use window::{
     current_mode, load_mode, restore_window_state, schedule_save, set_dock_policy, show_window, switch_mode,
@@ -147,10 +148,14 @@ pub fn run() {
                     let (config_dir, session_id, back) = (config_dir.clone(), session_id.clone(), back.clone());
                     tauri::async_runtime::spawn(async move {
                         tokio_sleep(3000).await;
-                        let r = focus_session(config_dir, session_id).await;
-                        append_log(&format!("[focus-test] -> {r}"));
+                        let r = focus_session(config_dir, session_id, false).await;
+                        append_log(&format!("[focus-test] -> {:?} {}", r.level, r.detail));
                         tokio_sleep(1500).await;
-                        append_log(&format!("[focus-test] back {back} -> {}", ghostty_focus(&back)));
+                        let b = tauri::async_runtime::spawn_blocking(move || {
+                            let r = focus_tty_sync(&back);
+                            format!("{back} -> {:?} {}", r.level, r.detail)
+                        });
+                        append_log(&format!("[focus-test] back {}", b.await.unwrap_or_default()));
                     });
                 }
             }
@@ -209,8 +214,9 @@ pub fn run() {
             fs::fs_read,
             fs::default_roots,
             fs::pick_folder,
-            ghostty::focus_session,
-            ghostty::focus_codex,
+            focus::focus_pid,
+            focus::focus_session,
+            focus::focus_codex,
             liveness::live_codex_threads,
             window::hide_window,
             window::get_window_mode,

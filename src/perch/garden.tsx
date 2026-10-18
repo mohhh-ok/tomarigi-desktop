@@ -94,7 +94,7 @@ function bubbleShift(x: number, lo: number, hi: number): CSSProperties | undefin
 // Stacking order of a node being dragged. Above the speech bubble order (1 to the number of birds)
 const BUBBLE_Z_DRAGGING = 1000;
 
-// Releasing after moving less than this counts as a click (jump to the Ghostty pane), not a drag
+// Releasing after moving less than this counts as a click (jump to the terminal pane), not a drag
 const CLICK_SLOP_PX = 4;
 
 // Number of recent event icons shown under a node (only the latest one, so the garden doesn't get crowded)
@@ -835,7 +835,7 @@ function GardenNode({
     let groupRoot: string | undefined;
 
     const onPointerDown = (e: PointerEvent) => {
-      // Left button only, so a right/middle click released without moving doesn't jump to Ghostty
+      // Left button only, so a right/middle click released without moving doesn't jump to the terminal
       if (e.button !== 0) return;
       const container = containerRef.current;
       if (!container) return;

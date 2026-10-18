@@ -102,7 +102,7 @@ export function Perch({
             </li>
             {/* Chicks belong to the same project as the parent, so use the chick image from the parent's set */}
             {s.chicks?.map((c) => (
-              // Chicks jump to the parent's pane (focusTargetOf in lib/ghostty.ts)
+              // Chicks jump to the parent's pane (focusTargetOf in lib/terminal-focus.ts)
               <li
                 key={c.id}
                 {...focus}

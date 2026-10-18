@@ -30,9 +30,10 @@ const isAlive = (pid: number) => {
   }
 };
 
-// focus_session calls from focusSession, and what each sessionId answers (Rust's focus_session result strings)
+// focus_session calls from focusSession (sessionId, and "+app" when asked to fall back to the app), and the level
+// each sessionId answers (Rust's FocusResult)
 const focusCalls: string[] = [];
-const focusResults = new Map<string, string>();
+const focusResults = new Map<string, "pane" | "app" | "none">();
 // live_sessions answers by configDir that bypass ps, to drive reads exactly (sessions listed as alive, reliable or not)
 const liveOverride = new Map<string, { sessions: object[]; reliable: boolean }>();
 
@@ -87,8 +88,8 @@ mock.module("@tauri-apps/api/core", () => ({
       case "log":
         return;
       case "focus_session":
-        focusCalls.push(args.sessionId);
-        return focusResults.get(args.sessionId) ?? "no session file";
+        focusCalls.push(args.fallbackToApp ? `${args.sessionId}+app` : args.sessionId);
+        return { level: focusResults.get(args.sessionId) ?? "none", detail: "" };
       default:
         throw `unmocked ${cmd}`;
     }
@@ -97,7 +98,7 @@ mock.module("@tauri-apps/api/core", () => ({
 
 const { NativeDirectoryHandle } = await import("../src/lib/native-fs.ts");
 const { scanSessions } = await import("../src/lib/sessions.ts");
-const { focusTargetOf, focusSession } = await import("../src/lib/ghostty.ts");
+const { focusTargetOf, focusSession } = await import("../src/lib/terminal-focus.ts");
 type Roots = Parameters<typeof scanSessions>[0];
 
 const base = fs.mkdtempSync(path.join(os.tmpdir(), "tomarigi-test-"));
@@ -198,18 +199,25 @@ describe("Claude Code", () => {
       line({ type: "continued-in", timestamp: iso(0), sessionId: oldSid, continuedInSessionId: newSid }),
     );
     await scanSessions(fx.roots);
-    // The new session runs in a background process whose tty Ghostty doesn't have; the old process's pane shows it
-    focusResults.set(newSid, "pid=2 tty=/dev/ttys003 NOT FOUND");
-    focusResults.set(oldSid, "pid=1 tty=/dev/ttys002 front=/dev/ttys002");
+    // The new session runs in a background process whose tty isn't a terminal pane; the old process's pane shows it
+    focusResults.set(newSid, "none");
+    focusResults.set(oldSid, "pane");
     focusCalls.length = 0;
     await focusSession(`jump/-tmp-jump/${newSid}.jsonl`, fx.roots);
     expect(focusCalls).toEqual([newSid, oldSid]);
 
     // When the new session's own pane is found, it stops there
-    focusResults.set(newSid, "pid=2 tty=/dev/ttys003 front=/dev/ttys003");
+    focusResults.set(newSid, "pane");
     focusCalls.length = 0;
     await focusSession(`jump/-tmp-jump/${newSid}.jsonl`, fx.roots);
     expect(focusCalls).toEqual([newSid]);
+
+    // When no pane is found in any of them, the app owning the first session is brought to the front
+    focusResults.set(newSid, "none");
+    focusResults.set(oldSid, "none");
+    focusCalls.length = 0;
+    await focusSession(`jump/-tmp-jump/${newSid}.jsonl`, fx.roots);
+    expect(focusCalls).toEqual([newSid, oldSid, `${newSid}+app`]);
   });
 
   test("a chick without a completion record stays however long it is idle, and leaves once completion is recorded", async () => {

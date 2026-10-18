@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the Ghostty pane where that session is running.
+A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
 
 | | |
 |---|---|
@@ -24,7 +24,18 @@ A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as 
 
 Download the `.dmg` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases).
 
-Requirements: macOS. Jumping to a pane works with Ghostty only.
+Requirements: macOS.
+
+### Jumping to the terminal pane
+
+Clicking a bird jumps to the pane (tab or split) where that session runs in Ghostty, iTerm2, Terminal.app, or WezTerm, also when the session runs inside tmux. macOS asks once per terminal app for permission to control it. Other terminals (Warp, Alacritty, VS Code, Cursor, and others) are only brought to the front.
+
+kitty: to jump to the kitty window, add these two lines to `kitty.conf` and restart kitty. Without them, kitty is only brought to the front.
+
+```
+allow_remote_control socket-only
+listen_on unix:/tmp/kitty
+```
 
 ## Development
 
@@ -49,7 +60,7 @@ Distribution builds are made by CI when a `v*` tag is pushed (signed, notarized,
 
 ### Everyday, dev, and verify builds
 
-The everyday build (/Applications), `bun run dev`, and `bun run build:verify` use different identifiers (`src-tauri/tauri.dev.conf.json` and `tauri.verify.conf.json` are layered with `--config`). Single-instance locking, settings, and window position are separate for each, so they can run side by side. Each one asks for Ghostty automation permission on first use. Agents that launch the app for verification should only launch the verify .app (so they don't stop the everyday build or dev).
+The everyday build (/Applications), `bun run dev`, and `bun run build:verify` use different identifiers (`src-tauri/tauri.dev.conf.json` and `tauri.verify.conf.json` are layered with `--config`). Single-instance locking, settings, and window position are separate for each, so they can run side by side. Each one asks for permission to control each terminal app on first use. Agents that launch the app for verification should only launch the verify .app (so they don't stop the everyday build or dev).
 
 ### Locales
 
@@ -65,7 +76,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly.
 
 - `TOMARIGI_MOCK=1`: mock mode. Injects presets / JSON instead of real data. The mock screen also opens in a plain browser at `http://localhost:4842/?mock=1` while the dev server runs (`bun run dev:web`)
 - `TOMARIGI_QUERY`: initial screen. Join `tab=perch` / `tab=events` / `settings=1` / `debug=1` / `preset=<id>` (initial mock preset; `preset=asking` shows the "?") / `scrollTo=<class name>` (scrolls the window to that element, e.g. `settings=1&scrollTo=window-mode`) / `cycle=<seconds>` (mock: every few seconds changes one thing on the birds in turn, a bubble, a tool line, a watch link, a bird joining or leaving; logged as `[mock-cycle]`) / `panel=0` (mock: hides the mock controls) / `birds=<n>` (mock: adds n plain birds) / `tint=0` (verify build: skips the greenish background, so screenshots show the everyday look) with `&`
-- `TOMARIGI_FOCUS_TEST="<config_dir>|<sessionId>|<return tty>"`: 3 seconds after launch, jumps to that session's Ghostty pane, then 1.5 seconds later jumps back to the return pane (logs `front=<tty>`)
+- `TOMARIGI_FOCUS_TEST="<config_dir>|<sessionId>|<return tty>"`: 3 seconds after launch, jumps to that session's terminal pane, then 1.5 seconds later jumps back to the return pane (logs `[focus-test] -> Pane ...` with the terminal and how it was found)
 - `TOMARIGI_FADE_TEST=1`: "Fade until hovered" self-test. 4 seconds after launch, shows the faded Garden as clicking the window handle would, keeps it shown for 6 seconds as if the cursor were in the window, then lets it fade again (logs `[fade-test] reveal` and `[fade] revealed=...`)
 - `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window
 - `TOMARIGI_IMPORT_KEY=<anthropic|openai|typesafe>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)

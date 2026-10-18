@@ -1,1 +1,1 @@
-"NSAppleEventsUsageDescription" = "tomarigi controls Ghostty so that clicking a bird takes you to the Ghostty pane where that Claude Code session is running.";
+"NSAppleEventsUsageDescription" = "tomarigi controls your terminal app (Ghostty, iTerm2, Terminal.app, and others) so that clicking a bird takes you to the terminal pane where that agent session is running.";
