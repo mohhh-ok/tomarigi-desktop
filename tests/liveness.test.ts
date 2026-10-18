@@ -125,6 +125,9 @@ mock.module("@tauri-apps/api/core", () => ({
         return { names: [], end: 0 };
       case "log":
         return;
+      case "focus_pid":
+        focusCalls.push(`pid=${args.pid}${args.fallbackToApp ? "+app" : ""}`);
+        return { level: "pane", detail: "" };
       case "focus_session":
         focusCalls.push(args.fallbackToApp ? `${args.sessionId}+app` : args.sessionId);
         return { level: focusResults.get(args.sessionId) ?? "none", detail: "" };
@@ -442,10 +445,17 @@ describe("agents matched by process and cwd", () => {
     const shown = await scanTwice(roots);
     expect(shown.views.map((v) => [v.id, v.project, v.state])).toEqual([["oc/opencode/ses_live", "oc-app", "working"]]);
     expect(jumpPidOf("oc/opencode/ses_live")).toBe(proc.pid!);
+    // Clicking the bird jumps to that pid (focus_pid); the subagent and yesterday's session have no bird to click
+    expect(focusTargetOf("oc/opencode/ses_live", roots)).toEqual({ kind: "pid", pid: proc.pid! });
+    focusCalls.length = 0;
+    await focusSession("oc/opencode/ses_live", roots);
+    expect(focusCalls).toEqual([`pid=${proc.pid}+app`]);
 
     await stop(proc);
     expect((await scanSessions(roots)).views.length).toBe(1);
     expect((await scanSessions(roots)).views).toEqual([]);
+    // Once the process is gone there is nothing to jump to
+    expect(focusTargetOf("oc/opencode/ses_live", roots)).toBeNull();
   });
 
   test("Cursor CLI: the project folder is found from the process's cwd; nothing is removed on a read where ps failed", async () => {
