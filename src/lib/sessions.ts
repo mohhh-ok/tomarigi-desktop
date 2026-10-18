@@ -1,6 +1,5 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
-import type { NativeDirectoryHandle, NativeFileHandle } from "./native-fs";
 import type { RootEntry } from "./settings-store";
 import { watchingCount } from "./watching";
 import { basename, projectLabels } from "./transcript";
@@ -10,31 +9,16 @@ import type {
   ChickView,
   FoundEntry,
   LiveFoundEntry,
+  LiveSession,
   ScanResult,
   SessionView,
 } from "./session-types";
-import {
-  knownTranscriptIds,
-  lastPeerStates,
-  listedRootIds,
-  pruneCaches,
-  scanState,
-  snippetCache,
-  transcriptAppearedAt,
-  userMessageCache,
-} from "./session-store";
-import {
-  configDirOf,
-  codexDirOf,
-  inNeverSeenGrace,
-  loadLiveCodexThreads,
-  loadLiveSessions,
-  sessionIdOfViewId,
-  settleLiveness,
-} from "./session-liveness";
-import { codexSessionsDir, codexThreadIdOf, fileAt, findCodexRollout, forgetEndedRollouts, type CodexRollout } from "./codex-rollout";
-import { readCodexTailCached, readTailCached, rememberUserMessage } from "./session-tail";
-import { assignSdkChicks, isSdkSession, scanChicks } from "./session-chicks";
+import { lastPeerStates, pruneCaches, scanState, snippetCache, userMessageCache } from "./session-store";
+import { sessionIdOfViewId, settleLiveness } from "./session-liveness";
+import { rememberUserMessage } from "./session-tail";
+import { assignSdkChicks, isSdkSession } from "./session-chicks";
+import { AGENTS, type AgentKind, type ScanListing } from "./agents";
+import { loadAgentProcesses, type AgentProcessScan } from "./agent-processes";
 import { deriveSdkChickState, deriveState, escalateWithChicks, STATE_URGENCY } from "./bird-state";
 import { extractQuestion, lastUserMessage, pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
@@ -44,6 +28,7 @@ import { rememberPeerStates, resolveWatchLinks, type WatchLinks } from "./sessio
 export type { BirdState, ChickView, PeerLink, ScanResult, SessionEvent, SessionView } from "./session-types";
 export { codexDirOf, configDirOf, predecessorsOf } from "./session-liveness";
 export { codexThreadIdOf } from "./codex-rollout";
+export { jumpPidOf } from "./session-liveness";
 export { loadPersistedEvents, recordAngerJudgement, recordAskJudgement } from "./session-event-log";
 
 export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
@@ -57,23 +42,38 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
 
   // Processes alive now. Read before walking the folders: which sessions are candidates for birds is decided from
   // them, not from how recently a transcript was written (see the NEVER_SEEN_GRACE_MS comment)
-  const { sessions: liveSessions, presentConfigDirs, unreliableConfigDirs } = await loadLiveSessions(roots);
-  const liveSessionIds = new Set(liveSessions.map((l) => l.sessionId));
-  const { threadIdsByCodexDir, unreliableCodexDirs } = await loadLiveCodexThreads(roots);
-  const listing: RootListing = {
+  const liveSessions: LiveSession[] = [];
+  let processScan: Promise<{ byKind: Map<AgentKind, AgentProcessScan["processes"]>; reliable: boolean }> | undefined;
+  const listing: ScanListing = {
     now,
     found,
     skippedIds,
     nextContinuedFrom,
-    liveSessionIds,
-    presentConfigDirs,
-    threadIdsByCodexDir,
+    liveSessions,
+    async processes(kind) {
+      processScan ??= loadAgentProcesses(
+        new Map(
+          AGENTS.flatMap((a) =>
+            a.matchesProcess && roots.some((r) => r.kind === a.kind) ? [[a.kind, a.matchesProcess] as const] : [],
+          ),
+        ),
+      );
+      const { byKind, reliable } = await processScan;
+      return { processes: byKind.get(kind) ?? [], reliable };
+    },
   };
+  const adapters = AGENTS.map((agent) => ({ agent, roots: roots.filter((r) => r.kind === agent.kind) })).filter(
+    (a) => a.roots.length > 0,
+  );
+  const prepared = new Map(
+    await Promise.all(adapters.map(async ({ agent, roots }) => [agent.kind, await agent.prepare?.(roots, listing)] as const)),
+  );
 
   for (const root of roots) {
+    const agent = AGENTS.find((a) => a.kind === root.kind);
+    if (!agent) continue;
     try {
-      if (root.kind === "claude") await listClaudeRoot(root, listing);
-      if (root.kind === "codex") await listCodexRoot(root, listing);
+      await agent.list(root, listing, prepared.get(agent.kind));
     } catch (e) {
       console.warn("[tomarigi] failed to scan root", root.id, e);
       brokenIds.push(root.id);
@@ -81,13 +81,9 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   }
 
   scanState.continuedFrom = nextContinuedFrom;
-  settleLiveness(
-    found,
-    skippedIds,
-    { liveSessionIds, threadIdsByCodexDir, unreliableConfigDirs, unreliableCodexDirs },
-    now,
-  );
-  forgetEndedRollouts(roots, threadIdsByCodexDir);
+  settleLiveness(found, skippedIds, now);
+  for (const { agent, roots } of adapters) agent.finish?.(roots, prepared.get(agent.kind));
+  scanState.jumpPids = new Map(found.flatMap((f) => (f.pid === undefined ? [] : [[f.id, f.pid] as const])));
   const { displayEntries, sdkChicksByParentId } = assignSdkChicks(found, now);
   const { withTail, baseNameRoots } = displayNames(roots, found, displayEntries);
   const watch = await resolveWatchLinks(withTail, liveSessions);
@@ -101,137 +97,6 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   saveEventLogIfDirty();
 
   return { views, brokenIds, events };
-}
-
-// What one scan collects while walking the roots, and what it needs to decide the candidates
-interface RootListing {
-  now: number;
-  found: LiveFoundEntry[];
-  skippedIds: Set<string>;
-  nextContinuedFrom: Map<string, string>;
-  liveSessionIds: Set<string>;
-  presentConfigDirs: Set<string>;
-  threadIdsByCodexDir: Map<string, Set<string>>;
-}
-
-/** Lists the candidate transcripts of a Claude Code watched folder (<config>/projects) into listing.found */
-async function listClaudeRoot(
-  root: RootEntry,
-  { now, found, skippedIds, nextContinuedFrom, liveSessionIds, presentConfigDirs }: RootListing,
-): Promise<void> {
-  const configDir = configDirOf(root);
-  // Older Claude Code without <config>/sessions: there is no pid to check, so no birds
-  if (!presentConfigDirs.has(configDir)) return;
-  const firstListing = !listedRootIds.has(root.id);
-  for await (const entry of root.handle.values()) {
-    if (entry.kind !== "directory") continue;
-    const projectDir = entry as NativeDirectoryHandle;
-    for await (const child of projectDir.values()) {
-      if (child.kind !== "file" || !child.name.endsWith(".jsonl")) continue;
-      const file = await (child as NativeFileHandle).getFile();
-      const id = `${root.id}/${projectDir.name}/${child.name}`;
-      const sessionId = child.name.slice(0, -".jsonl".length);
-      if (!knownTranscriptIds.has(id)) {
-        knownTranscriptIds.add(id);
-        if (!firstListing) transcriptAppearedAt.set(id, now);
-      }
-      // Candidates: the process is alive, the bird is already shown (it goes through the miss count in settleLiveness),
-      // or the transcript appeared within NEVER_SEEN_GRACE_MS (the sessions file can lag behind it).
-      // However long ago the transcript was written doesn't matter
-      if (!liveSessionIds.has(sessionId) && !scanState.trackedIds.has(id) && !inNeverSeenGrace(id, now)) continue;
-      // The completion check for chicks (subagents) treats the parent ledger (chickSignals in the parent
-      // tail) as the source of truth, so read the parent's tail before scanChicks (see the isChick comment
-      // in deriveState). The tail read here is reused when building withTail (displayNames) (to compute cwd/base
-      // name), so it isn't read twice
-      const tail = await readTailCached(id, file);
-      // `claude -p` (entrypoint "sdk-cli") is out of scope for tomarigi (no birds, no events).
-      // Most are started in the background by Claude Code as a command; neither child nor parent keeps the
-      // other's id, so they can't be tied to a parent reliably (cwd is the launch directory too, with no
-      // parent in the same directory). The launching parent's done is handled by background task
-      // suppression (deriveDoneEvent). A `claude -p` typed by hand prints its result in that terminal,
-      // so there is little need to watch it
-      if (tail.entrypoint === "sdk-cli") {
-        skippedIds.add(id);
-        continue;
-      }
-      // Handed over to another session (TailInfo.continuedIn). The new session has its own transcript and
-      // bird; the old process may stay alive, but this conversation no longer moves here
-      if (tail.continuedIn) {
-        nextContinuedFrom.set(tail.continuedIn, sessionIdOfViewId(id));
-        skippedIds.add(id);
-        continue;
-      }
-      const chicks = await scanChicks(projectDir, child.name, id, now, tail.chickSignals, file);
-      found.push({
-        agent: "claude",
-        rootId: root.id,
-        rootLabel: root.label,
-        slug: projectDir.name,
-        file,
-        id,
-        tail,
-        chicks,
-        liveKey: sessionId,
-        liveDir: configDir,
-      });
-    }
-  }
-  // Only a listing that got through the whole folder counts (a failed one would make its unlisted files look
-  // new on the next listing)
-  listedRootIds.add(root.id);
-}
-
-/** Lists the rollouts of live (or already shown) threads of a Codex watched folder into listing.found */
-async function listCodexRoot(
-  root: RootEntry,
-  { found, skippedIds, threadIdsByCodexDir }: RootListing,
-): Promise<void> {
-  const codexDir = codexDirOf(root);
-  const sessionsDir = await codexSessionsDir(root.handle);
-  if (!sessionsDir) return;
-  // Rollouts of live threads (however old), plus birds already shown so they go through the miss count
-  const rollouts = new Map<string, CodexRollout>(); // key: path
-  for (const threadId of threadIdsByCodexDir.get(codexDir) ?? []) {
-    const rollout = await findCodexRollout(root.id, sessionsDir, threadId);
-    if (rollout) rollouts.set(rollout.path, rollout);
-  }
-  const prefix = `${root.id}/codex/`;
-  for (const trackedId of scanState.trackedIds) {
-    if (!trackedId.startsWith(prefix)) continue;
-    const path = trackedId.slice(prefix.length);
-    if (rollouts.has(path)) continue;
-    const file = await fileAt(sessionsDir, path);
-    if (file) rollouts.set(path, { file, path });
-  }
-  for (const { file, path } of rollouts.values()) {
-    const threadId = codexThreadIdOf(file.name);
-    if (!threadId) continue;
-    const id = `${prefix}${path}`;
-    const tail = await readCodexTailCached(id, file);
-    // Internal rollouts (subagents, guardian reviews, and future non-user sources) can
-    // complete repeatedly while the parent is still working. Treating them as independent
-    // sessions duplicates birds and emits false done events. Older rollouts may not have
-    // thread_source, so keep those for backward compatibility and reject only explicit
-    // non-user sources.
-    if (tail.threadSource !== undefined && tail.threadSource !== "user") {
-      skippedIds.add(id);
-      continue;
-    }
-    const cwd = tail.cwd;
-    const slug = cwd ? `codex:${cwd}` : `codex:${file.name}`;
-    found.push({
-      agent: "codex",
-      rootId: root.id,
-      rootLabel: root.label,
-      slug,
-      file,
-      id,
-      tail,
-      chicks: [],
-      liveKey: threadId,
-      liveDir: codexDir,
-    });
-  }
 }
 
 /** Display names of the entries shown as birds */

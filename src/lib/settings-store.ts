@@ -2,6 +2,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { openDB, type IDBPDatabase } from "idb";
 import { isReadableDir, NativeDirectoryHandle } from "./native-fs";
+import { AGENTS, agentOf, type AgentKind } from "./agents";
 
 const DB_NAME = "tomarigi";
 const STORE = "kv";
@@ -32,7 +33,8 @@ export async function kvDelete(key: string): Promise<void> {
   await (await db()).delete(STORE, key);
 }
 
-export type RootKind = "claude" | "codex";
+// Which agent a watched folder belongs to (lib/agents.ts)
+export type RootKind = AgentKind;
 export interface RootEntry {
   id: string;
   kind: RootKind;
@@ -54,11 +56,6 @@ interface DefaultRoot {
   exists: boolean;
 }
 
-// Display names of the default folders. Keys correspond to default_roots in Rust
-const DEFAULT_LABEL: Record<string, string> = {
-  claude: "Claude Code",
-  codex: "Codex",
-};
 // Where edited labels of default folders are saved (defaults aren't in the saved list, so they're kept separately). key → label
 const KEY_DEFAULT_ROOT_LABELS = "defaultRootLabels";
 
@@ -72,7 +69,10 @@ function withHandle(root: Omit<RootEntry, "handle">): RootEntry {
  * launch" and that match a default path are dropped and the list is saved again (no double watching). See docs/design.md "Watched folders"
  */
 export async function loadRoots(): Promise<RootEntry[]> {
-  const defaults = await invoke<DefaultRoot[]>("default_roots");
+  // The standard folder of each agent; Rust only resolves them against the home directory
+  const defaults = await invoke<DefaultRoot[]>("default_roots", {
+    candidates: AGENTS.map((a) => ({ key: a.kind, kind: a.kind, rel: a.home })),
+  });
   const labels = ((await kvGet(KEY_DEFAULT_ROOT_LABELS)) as Record<string, string> | undefined) ?? {};
   const builtins = defaults
     .filter((d) => d.exists)
@@ -80,7 +80,7 @@ export async function loadRoots(): Promise<RootEntry[]> {
       withHandle({
         id: `default:${d.key}`,
         kind: d.kind,
-        label: labels[d.key] ?? DEFAULT_LABEL[d.key] ?? d.path,
+        label: labels[d.key] ?? agentOf(d.kind).label,
         path: d.path,
         builtin: true,
       }),
@@ -116,7 +116,7 @@ export async function pickNewRoot(
   kind: RootKind,
 ): Promise<RootEntry | "duplicate" | "cancelled"> {
   const path = await invoke<string | null>("pick_folder", {
-    defaultPath: kind === "claude" ? "~/.claude/projects" : "~/.codex/sessions",
+    defaultPath: `~/${agentOf(kind).home}`,
   });
   if (!path) return "cancelled";
   const normalized = path.replace(/\/+$/, "");
@@ -131,7 +131,7 @@ export async function pickNewRoot(
 }
 
 function nextAutomaticLabel(existing: StoredRoot[], kind: RootKind): string {
-  const base = kind === "claude" ? "Claude Code" : "Codex";
+  const base = agentOf(kind).label;
   const labels = new Set(existing.map((root) => root.label));
   if (!labels.has(base)) return base;
   for (let n = 2; ; n++) {

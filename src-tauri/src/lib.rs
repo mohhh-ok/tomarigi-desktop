@@ -5,6 +5,7 @@
 // - liveness: which sessions are alive (ps / lsof) and the peer names of watching links
 // - focus: jump to the terminal pane where an agent runs: focus_pid (pid → tty → owning terminal app → its adapter),
 //   and focus_session / focus_codex that find the pid and go through focus_pid
+// - opencode: OpenCode's sessions, read from its SQLite database (read-only)
 // - window: switches on the fly between the floating window (NSPanel; transparent, borderless, always on top,
 //   also shown above full-screen spaces) and the standard window (with title bar; can maximize and go full
 //   screen). Saves and restores the mode, and the position and size per mode
@@ -18,6 +19,7 @@ mod focus;
 mod garden_grow;
 mod keys;
 mod liveness;
+mod opencode;
 mod tray;
 mod window;
 
@@ -242,7 +244,12 @@ pub fn run() {
             keys::key_set,
             keys::key_delete,
             liveness::live_sessions,
-            liveness::scan_peer_names
+            liveness::scan_peer_names,
+            liveness::tty_processes,
+            liveness::process_cwds,
+            liveness::alive_pids,
+            opencode::opencode_sessions,
+            opencode::opencode_tail
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

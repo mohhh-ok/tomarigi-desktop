@@ -1,7 +1,7 @@
 // Whether each session's process is alive, and when a bird is removed
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./settings-store";
-import type { LiveFoundEntry, LiveSession } from "./session-types";
+import type { LiveFoundEntry } from "./session-types";
 import {
   missCounts,
   recentlyEndedAt,
@@ -17,62 +17,10 @@ export function configDirOf(root: RootEntry): string {
   return path.slice(0, path.lastIndexOf("/"));
 }
 
-/**
- * Reads <config>/sessions/*.json for each watched folder (<config>/projects) (live_sessions in Rust).
- * sessions are those of running processes. presentConfigDirs are the <config>s that have <config>/sessions
- */
-export async function loadLiveSessions(roots: RootEntry[]): Promise<{
-  sessions: LiveSession[];
-  presentConfigDirs: Set<string>;
-  unreliableConfigDirs: Set<string>;
-}> {
-  const configDirs = new Set(roots.filter((r) => r.kind === "claude").map(configDirOf));
-  const scans = await Promise.all(
-    [...configDirs].map(async (configDir) => {
-      const scan = await invoke<{ present: boolean; sessions: LiveSession[]; reliable: boolean }>(
-        "live_sessions",
-        { configDir },
-      // A failed call says nothing about the folder: treat it as present but unreliable so shown birds stay
-      ).catch(() => ({ present: true, sessions: [] as LiveSession[], reliable: false }));
-      return { configDir, ...scan };
-    }),
-  );
-  return {
-    sessions: scans.flatMap((s) => s.sessions),
-    presentConfigDirs: new Set(scans.filter((s) => s.present).map((s) => s.configDir)),
-    // Reads where ps failed or sessions/*.json had an unreadable file. Birds are not removed based on this read
-    unreliableConfigDirs: new Set(scans.filter((s) => !s.reliable).map((s) => s.configDir)),
-  };
-}
-
 /** The <codex dir> of a Codex watched folder (~/.codex/sessions or ~/.codex) */
 export function codexDirOf(root: RootEntry): string {
   const path = root.path.replace(/\/+$/, "");
   return path.endsWith("/sessions") ? path.slice(0, path.lastIndexOf("/")) : path;
-}
-
-/**
- * Codex threads whose process is alive, per <codex dir> (live_codex_threads in Rust: which
- * thread-writer-locks/<threadId>.lock files some process has open). unreliableCodexDirs are reads where lsof failed
- */
-export async function loadLiveCodexThreads(roots: RootEntry[]): Promise<{
-  threadIdsByCodexDir: Map<string, Set<string>>;
-  unreliableCodexDirs: Set<string>;
-}> {
-  const codexDirs = new Set(roots.filter((r) => r.kind === "codex").map(codexDirOf));
-  const scans = await Promise.all(
-    [...codexDirs].map(async (codexDir) => {
-      const scan = await invoke<{ threads: { threadId: string; pid: number }[]; reliable: boolean }>(
-        "live_codex_threads",
-        { codexDir },
-      ).catch(() => ({ threads: [], reliable: false }));
-      return { codexDir, ...scan };
-    }),
-  );
-  return {
-    threadIdsByCodexDir: new Map(scans.map((s) => [s.codexDir, new Set(s.threads.map((t) => t.threadId))])),
-    unreliableCodexDirs: new Set(scans.filter((s) => !s.reliable).map((s) => s.codexDir)),
-  };
 }
 
 // Birds are shown while their process is alive and removed right away once it ends; elapsed time plays no part
@@ -80,7 +28,9 @@ export async function loadLiveCodexThreads(roots: RootEntry[]): Promise<{
 // Claude Code (including `claude -p` / SDK starts; measured with 2.1.284) writes <config>/sessions/<pid>.json right
 // after it starts and deletes it when it ends (measured: every remaining file had a live pid). The transcript isn't
 // created until the first message, so "there is a transcript but no live sessions file" normally means the process
-// has ended. Codex keeps thread-writer-locks/<threadId>.lock open while it runs.
+// has ended. Codex keeps thread-writer-locks/<threadId>.lock open while it runs. The other agents are matched by
+// process and cwd (lib/agent-processes.ts). Each adapter in lib/agents.ts decides LiveFoundEntry.live; this file
+// only applies the rules below, the same for every agent
 // - Candidates for birds are the sessions whose process is alive, birds already shown (trackedIds), and Claude
 //   Code transcripts that appeared within the last NEVER_SEEN_GRACE_MS. A transcript's age doesn't matter
 // - A session this app has seen alive at least once while running is removed on the next reads after it
@@ -110,6 +60,11 @@ export function predecessorsOf(sessionId: string): string[] {
   return out;
 }
 
+/** The pid a session's process was found with on the last scan (the jump target), or undefined */
+export function jumpPidOf(id: string): number | undefined {
+  return scanState.jumpPids.get(id);
+}
+
 export function sessionIdOfViewId(id: string): string {
   const file = id.split("/")[2] ?? "";
   return file.endsWith(".jsonl") ? file.slice(0, -".jsonl".length) : file;
@@ -123,15 +78,8 @@ export function sessionIdOfViewId(id: string): string {
 export function settleLiveness(
   found: LiveFoundEntry[],
   skippedIds: Set<string>,
-  live: {
-    liveSessionIds: Set<string>;
-    threadIdsByCodexDir: Map<string, Set<string>>;
-    unreliableConfigDirs: Set<string>;
-    unreliableCodexDirs: Set<string>;
-  },
   now: number,
 ): Set<string> {
-  const { liveSessionIds, threadIdsByCodexDir, unreliableConfigDirs, unreliableCodexDirs } = live;
   for (const [id, at] of recentlyEndedAt) if (now - at > NEVER_SEEN_GRACE_MS) recentlyEndedAt.delete(id);
   for (const [id, at] of transcriptAppearedAt) if (now - at > NEVER_SEEN_GRACE_MS) transcriptAppearedAt.delete(id);
   const endedIds = new Set<string>();
@@ -139,15 +87,13 @@ export function settleLiveness(
   for (const id of seenAliveIds) if (!foundIds.has(id)) seenAliveIds.delete(id);
   for (const id of missCounts.keys()) if (!foundIds.has(id)) missCounts.delete(id);
   for (const f of found) {
-    const alive =
-      f.agent === "claude" ? liveSessionIds.has(f.liveKey) : (threadIdsByCodexDir.get(f.liveDir)?.has(f.liveKey) ?? false);
-    if (alive) {
+    if (f.live === true) {
       seenAliveIds.add(f.id);
       missCounts.delete(f.id);
       continue;
     }
     // If this read's result is unreliable, neither remove nor count
-    if ((f.agent === "claude" ? unreliableConfigDirs : unreliableCodexDirs).has(f.liveDir)) continue;
+    if (f.live === undefined) continue;
     const seen = seenAliveIds.has(f.id);
     if (!seen && inNeverSeenGrace(f.id, now)) continue;
     const misses = (missCounts.get(f.id) ?? 0) + 1;

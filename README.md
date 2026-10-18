@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
+A macOS app that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
 
 | | |
 |---|---|
@@ -17,7 +17,7 @@ A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as 
 
 - In the floating window's Garden, only the birds, their bubbles, and the "tomarigi" handle are shown, and clicks go through to the window below. Click the handle to show the whole window; drag it to move the window
 - Icon sets: Birds, Gnome, Cat, Robot, and Frog, assigned per project
-- No hooks or config changes on the agent side. It only reads the transcripts under `~/.claude/projects` and `~/.codex/sessions`
+- No hooks or config changes on the agent side. It only reads each agent's session files (`~/.claude/projects`, `~/.codex/sessions`, `~/.qwen/projects`, `~/.copilot/session-state`, `~/.gemini/tmp`, `~/.local/share/opencode`, `~/.cursor/projects`)
 - Optional BYOK keys: OpenAI or Anthropic for the speech bubble that summarizes each finished turn, and TypeSafe for spotting questions asked in plain text (the "?") and abuse toward the AI (the anger mark). Voice readout uses the system speech synthesizer and needs no key
 
 ## Install

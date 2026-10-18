@@ -100,27 +100,33 @@ pub(crate) fn save_download(name: &str, content: &str) -> Result<String, String>
 
 #[derive(Serialize)]
 pub(crate) struct DefaultRoot {
-    key: &'static str,
-    kind: &'static str,
+    key: String,
+    kind: String,
     path: String,
     exists: bool,
 }
 
-/// Folders always watched by default (docs/design.md "Watched folders"). Ones that don't exist are
-/// also returned, with exists=false (used to decide whether to drop registrations of the same path saved by
-/// earlier versions)
+#[derive(serde::Deserialize)]
+pub(crate) struct DefaultRootCandidate {
+    key: String,
+    kind: String,
+    /// Relative to the home directory
+    rel: String,
+}
+
+/// Folders always watched by default (docs/design.md "Watched folders"). The list comes from the agent adapters
+/// (src/lib/agents.ts); this only resolves each against the home directory. Ones that don't exist are also
+/// returned, with exists=false (used to decide whether to drop registrations of the same path saved by earlier
+/// versions)
 #[tauri::command]
-pub(crate) fn default_roots() -> Vec<DefaultRoot> {
-    [
-        ("claude", "claude", ".claude/projects"),
-        ("codex", "codex", ".codex/sessions"),
-    ]
-    .into_iter()
-    .map(|(key, kind, rel)| {
-        let p = home().join(rel);
-        DefaultRoot { key, kind, exists: p.is_dir(), path: p.to_string_lossy().into_owned() }
-    })
-    .collect()
+pub(crate) fn default_roots(candidates: Vec<DefaultRootCandidate>) -> Vec<DefaultRoot> {
+    candidates
+        .into_iter()
+        .map(|DefaultRootCandidate { key, kind, rel }| {
+            let p = home().join(rel);
+            DefaultRoot { key, kind, exists: p.is_dir(), path: p.to_string_lossy().into_owned() }
+        })
+        .collect()
 }
 
 /// Native folder picker. None if cancelled
