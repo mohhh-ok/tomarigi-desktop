@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "選擇你使用的 AI 程式設計助理保存工作階段紀錄的資料夾,鳥兒就會開始降落到棲木上。"
   },
+  "setupMovedFolderHint": {
+    "message": "如果你用環境變數(CLAUDE_CONFIG_DIR、COPILOT_HOME 等)改了位置,請選擇其中同名的資料夾。"
+  },
   "setupPickPrefix": {
     "message": "在選擇器中按下 "
   },

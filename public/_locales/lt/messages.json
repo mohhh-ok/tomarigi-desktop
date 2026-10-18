@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Pasirinkite aplanką, kuriame jūsų DI programavimo agentas saugo sesijų žurnalus, ir paukščiai pradės tūpti ant laktelės."
   },
+  "setupMovedFolderHint": {
+    "message": "Jei vietą pakeitėte aplinkos kintamuoju (CLAUDE_CONFIG_DIR, COPILOT_HOME ir pan.), pasirinkite jame esantį tokio paties pavadinimo aplanką."
+  },
   "setupPickPrefix": {
     "message": "Pasirinkimo lange paspauskite "
   },

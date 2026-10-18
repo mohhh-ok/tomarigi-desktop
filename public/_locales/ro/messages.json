@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Alege folderul în care agentul tău de programare AI păstrează jurnalele de sesiune, iar păsările vor începe să aterizeze pe stinghie."
   },
+  "setupMovedFolderHint": {
+    "message": "Dacă ai mutat locația cu o variabilă de mediu (CLAUDE_CONFIG_DIR, COPILOT_HOME etc.), alege folderul cu același nume din interiorul ei."
+  },
   "setupPickPrefix": {
     "message": "În selector, apasă "
   },

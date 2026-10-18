@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Velg mappen der AI-kodeagenten din lagrer øktloggene sine, så begynner fuglene å lande på vaglen."
   },
+  "setupMovedFolderHint": {
+    "message": "Hvis du har flyttet plasseringen med en miljøvariabel (CLAUDE_CONFIG_DIR, COPILOT_HOME osv.), velg mappen med samme navn inni den."
+  },
   "setupPickPrefix": {
     "message": "Trykk "
   },

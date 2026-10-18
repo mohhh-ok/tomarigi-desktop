@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Välj mappen där din AI-kodagent sparar sina sessionsloggar, så börjar fåglarna landa på pinnen."
   },
+  "setupMovedFolderHint": {
+    "message": "Om du har flyttat platsen med en miljövariabel (CLAUDE_CONFIG_DIR, COPILOT_HOME osv.), välj mappen med samma namn inuti den."
+  },
   "setupPickPrefix": {
     "message": "Tryck på "
   },

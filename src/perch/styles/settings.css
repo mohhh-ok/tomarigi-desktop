@@ -183,6 +183,10 @@
   line-height: 1.85;
 }
 
+.root-add-moved {
+  margin: 0;
+}
+
 .root-path-copy {
   display: inline-flex;
   align-items: center;

@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Pilih folder tempat agen pemrograman AI yang Anda pakai menyimpan log sesinya, dan burung-burung akan mulai hinggap di tempat bertengger."
   },
+  "setupMovedFolderHint": {
+    "message": "Jika Anda memindahkan lokasinya dengan variabel lingkungan (CLAUDE_CONFIG_DIR, COPILOT_HOME, dll.), pilih folder bernama sama di dalamnya."
+  },
   "setupPickPrefix": {
     "message": "Di jendela pemilih, tekan "
   },

@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "使っている AI コーディングエージェントの記録フォルダを選ぶと、止まり木に鳥がとまります。"
   },
+  "setupMovedFolderHint": {
+    "message": "環境変数（CLAUDE_CONFIG_DIR・COPILOT_HOME など）で場所を変えている場合は、その中の同じ名前のフォルダを選んでください。"
+  },
   "setupPickPrefix": {
     "message": "選択画面で "
   },

@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Escolha a pasta onde o seu agente de programação com IA guarda os registros de sessão, e os pássaros vão começar a pousar no poleiro."
   },
+  "setupMovedFolderHint": {
+    "message": "Se você mudou o local com uma variável de ambiente (CLAUDE_CONFIG_DIR, COPILOT_HOME etc.), escolha a pasta de mesmo nome dentro dele."
+  },
   "setupPickPrefix": {
     "message": "No seletor, pressione "
   },

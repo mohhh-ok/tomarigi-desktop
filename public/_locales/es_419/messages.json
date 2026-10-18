@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Elige la carpeta donde tu agente de programación con IA guarda sus registros de sesión y los pájaros empezarán a posarse en la percha."
   },
+  "setupMovedFolderHint": {
+    "message": "Si cambiaste la ubicación con una variable de entorno (CLAUDE_CONFIG_DIR, COPILOT_HOME, etc.), elige la carpeta con el mismo nombre dentro de ella."
+  },
   "setupPickPrefix": {
     "message": "En el selector, presiona "
   },

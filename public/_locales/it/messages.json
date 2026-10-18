@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Scegli la cartella in cui il tuo agente di programmazione IA conserva i log delle sessioni, e gli uccellini inizieranno a posarsi sul posatoio."
   },
+  "setupMovedFolderHint": {
+    "message": "Se hai cambiato la posizione con una variabile d'ambiente (CLAUDE_CONFIG_DIR, COPILOT_HOME, ecc.), scegli la cartella con lo stesso nome al suo interno."
+  },
   "setupPickPrefix": {
     "message": "Nel selettore premi "
   },

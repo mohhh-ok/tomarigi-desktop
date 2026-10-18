@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "选择你所用 AI 编程助手保存会话记录的文件夹,鸟儿就会开始落到栖木上。"
   },
+  "setupMovedFolderHint": {
+    "message": "如果你用环境变量(CLAUDE_CONFIG_DIR、COPILOT_HOME 等)改了位置,请选择其中同名的文件夹。"
+  },
   "setupPickPrefix": {
     "message": "在选择器中按 "
   },

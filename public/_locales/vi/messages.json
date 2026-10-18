@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Chọn thư mục nơi tác nhân lập trình AI bạn dùng lưu nhật ký phiên, và chim sẽ bắt đầu đậu lên cây sào."
   },
+  "setupMovedFolderHint": {
+    "message": "Nếu bạn đã đổi vị trí bằng biến môi trường (CLAUDE_CONFIG_DIR, COPILOT_HOME, v.v.), hãy chọn thư mục cùng tên nằm bên trong."
+  },
   "setupPickPrefix": {
     "message": "Trong hộp chọn, nhấn "
   },

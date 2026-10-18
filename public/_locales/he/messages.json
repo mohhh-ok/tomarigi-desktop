@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "בחר את התיקייה שבה סוכן התכנות מבוסס ה-AI שלך שומר את יומני ההפעלה, והציפורים יתחילו לנחות על המוט."
   },
+  "setupMovedFolderHint": {
+    "message": "אם שינית את המיקום באמצעות משתנה סביבה (CLAUDE_CONFIG_DIR,‏ COPILOT_HOME וכו'), בחר את התיקייה בעלת אותו שם שבתוכו."
+  },
   "setupPickPrefix": {
     "message": "בחלון הבחירה, לחץ "
   },

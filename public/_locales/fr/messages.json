@@ -14,6 +14,9 @@
   "setupIntro": {
     "message": "Choisissez le dossier où votre agent de codage IA conserve ses journaux de session, et les oiseaux commenceront à se poser sur le perchoir."
   },
+  "setupMovedFolderHint": {
+    "message": "Si vous avez déplacé l'emplacement avec une variable d'environnement (CLAUDE_CONFIG_DIR, COPILOT_HOME, etc.), choisissez le dossier du même nom à l'intérieur."
+  },
   "setupPickPrefix": {
     "message": "Dans le sélecteur, appuyez sur "
   },
