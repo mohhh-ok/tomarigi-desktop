@@ -183,7 +183,7 @@ export default {
   },
   setupPickSuffix: {
     en: " (it's a hidden folder).",
-    ja: " と入力してください(隠しフォルダのため)。",
+    ja: "と入力してください（隠しフォルダのため）。",
     zh_CN: "(这是一个隐藏文件夹)。",
     zh_TW: "(這是一個隱藏資料夾)。",
     ko: " 를 입력하세요(숨김 폴더입니다).",

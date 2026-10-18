@@ -24,7 +24,7 @@
     "message": " を押し、 "
   },
   "setupPickSuffix": {
-    "message": " と入力してください(隠しフォルダのため)。"
+    "message": "と入力してください（隠しフォルダのため）。"
   },
   "setupButton": {
     "message": "止まり木を設置する"
