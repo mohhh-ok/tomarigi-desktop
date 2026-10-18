@@ -51,6 +51,7 @@ export const KEYS = [
   "birdDozingLabel",
   "loadingLabel",
   "setupIntro",
+  "setupMovedFolderHint",
   "setupPickPrefix",
   "setupPickMiddle",
   "setupPickSuffix",

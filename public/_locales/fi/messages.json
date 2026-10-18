@@ -12,7 +12,10 @@
     "message": "Ladataan…"
   },
   "setupIntro": {
-    "message": "Valitse kansio, johon Claude Code / Codex tallentaa istuntolokinsa, niin linnut alkavat laskeutua orrelle."
+    "message": "Valitse kansio, johon käyttämäsi tekoälykoodausagentti tallentaa istuntolokinsa, niin linnut alkavat laskeutua orrelle."
+  },
+  "setupMovedFolderHint": {
+    "message": "Jos olet vaihtanut sijainnin ympäristömuuttujalla (CLAUDE_CONFIG_DIR, COPILOT_HOME tms.), valitse sen sisältä samanniminen kansio."
   },
   "setupPickPrefix": {
     "message": "Paina valitsimessa "

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { MdCheckCircle, MdClose, MdContentCopy } from "react-icons/md";
 import { t } from "@/lib/i18n";
 import type { RootKind } from "@/lib/settings-store";
+import { AGENTS } from "@/lib/agents";
 
 interface RootChoice {
   kind: RootKind;
@@ -10,11 +11,14 @@ interface RootChoice {
   shortcut: string;
 }
 
-// The app runs on macOS only, so the paths and the shortcut of the macOS folder picker (Go to Folder) are fixed
-const ROOT_CHOICES: RootChoice[] = [
-  { kind: "claude", label: "Claude Code", path: "~/.claude/projects", shortcut: "Cmd+Shift+G" },
-  { kind: "codex", label: "Codex", path: "~/.codex/sessions", shortcut: "Cmd+Shift+G" },
-];
+// One choice per agent, with its standard folder. The app runs on macOS only, so the shortcut of the macOS folder
+// picker (Go to Folder) is fixed
+const ROOT_CHOICES: RootChoice[] = AGENTS.map((agent) => ({
+  kind: agent.kind,
+  label: agent.label,
+  path: `~/${agent.home}`,
+  shortcut: "Cmd+Shift+G",
+}));
 
 export function RootAddDialog({
   onClose,
@@ -78,6 +82,8 @@ export function RootAddDialog({
           </button>
         </div>
         <div className="root-add-choices">
+          {/* For people who moved an agent's folder with an environment variable (docs/design.md "Watched folders") */}
+          <p className="root-add-hint root-add-moved">{t("setupMovedFolderHint")}</p>
           {ROOT_CHOICES.map((choice, index) => (
             <div key={choice.kind} className="root-add-choice">
               <button autoFocus={index === 0} onClick={() => onChoose(choice.kind)}>

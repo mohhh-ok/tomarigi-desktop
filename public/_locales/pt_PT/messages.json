@@ -12,7 +12,10 @@
     "message": "A carregar…"
   },
   "setupIntro": {
-    "message": "Escolha a pasta onde o Claude Code / Codex guarda os registos de sessão e os pássaros começarão a pousar no poleiro."
+    "message": "Escolha a pasta onde o seu agente de programação com IA guarda os registos de sessão e os pássaros começarão a pousar no poleiro."
+  },
+  "setupMovedFolderHint": {
+    "message": "Se mudou o local com uma variável de ambiente (CLAUDE_CONFIG_DIR, COPILOT_HOME, etc.), escolha a pasta com o mesmo nome dentro dele."
   },
   "setupPickPrefix": {
     "message": "No seletor, prima "

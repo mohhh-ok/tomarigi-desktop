@@ -12,7 +12,10 @@
     "message": "Načítava sa…"
   },
   "setupIntro": {
-    "message": "Vyber priečinok, kam Claude Code / Codex ukladá záznamy relácií, a vtáky začnú sadať na bidlo."
+    "message": "Vyber priečinok, kam tvoj AI agent na programovanie ukladá záznamy relácií, a vtáky začnú sadať na bidlo."
+  },
+  "setupMovedFolderHint": {
+    "message": "Ak si umiestnenie zmenil premennou prostredia (CLAUDE_CONFIG_DIR, COPILOT_HOME a pod.), vyber v ňom priečinok s rovnakým názvom."
   },
   "setupPickPrefix": {
     "message": "Vo výbere stlač "

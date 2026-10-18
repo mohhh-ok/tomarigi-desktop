@@ -12,7 +12,10 @@
     "message": "Nilo-load…"
   },
   "setupIntro": {
-    "message": "Piliin ang folder kung saan itinatago ng Claude Code / Codex ang mga log ng sesyon, at magsisimulang dumapo ang mga ibon sa tuntungan."
+    "message": "Piliin ang folder kung saan itinatago ng ginagamit mong AI coding agent ang mga log ng sesyon, at magsisimulang dumapo ang mga ibon sa tuntungan."
+  },
+  "setupMovedFolderHint": {
+    "message": "Kung inilipat mo ang lokasyon gamit ang environment variable (CLAUDE_CONFIG_DIR, COPILOT_HOME, atbp.), piliin ang folder na may parehong pangalan sa loob nito."
   },
   "setupPickPrefix": {
     "message": "Sa picker, pindutin ang "

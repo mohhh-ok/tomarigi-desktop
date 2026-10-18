@@ -41,6 +41,19 @@ export function rememberUserMessage(id: string, message: { at: number; text: str
   if (message && message.at >= (userMessageCache.get(id)?.at ?? -1)) userMessageCache.set(id, message);
 }
 
+/** Tail read of the other agents' adapters (lib/agents.ts), cached the same way */
+export async function readTailCachedWith(
+  id: string,
+  file: NativeFile,
+  read: (file: NativeFile) => Promise<TailInfo>,
+): Promise<TailInfo> {
+  const cached = tailCache.get(id);
+  if (cached && cached.size === file.size && cached.lastModified === file.lastModified) return cached.tail;
+  const tail = await read(file);
+  tailCache.set(id, { size: file.size, lastModified: file.lastModified, tail });
+  return tail;
+}
+
 export async function readCodexTailCached(id: string, file: NativeFile): Promise<CodexTailInfo> {
   const cached = tailCache.get(id);
   if (cached && cached.size === file.size && cached.lastModified === file.lastModified) {

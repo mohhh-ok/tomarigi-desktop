@@ -7,7 +7,7 @@
 // Anything that can't be mapped (ended sessions, mock) does nothing.
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./settings-store";
-import { codexDirOf, codexThreadIdOf, configDirOf, predecessorsOf } from "./sessions";
+import { codexDirOf, codexThreadIdOf, configDirOf, jumpPidOf, predecessorsOf } from "./sessions";
 
 /** pane: the pane was focused. app: only the terminal app was brought to the front. none: nothing was done */
 export type FocusResult = { level: "pane" | "app" | "none"; detail: string };
@@ -28,6 +28,11 @@ type FocusTarget =
       kind: "codex";
       codexDir: string; // ~/.codex (parent of the watched folder ~/.codex/sessions, or the watched folder itself)
       threadId: string;
+    }
+  | {
+      // The other agents (docs/design.md "Agents"): the pid their adapter matched on the last scan
+      kind: "pid";
+      pid: number;
     };
 
 /**
@@ -39,6 +44,11 @@ export function focusTargetOf(id: string, roots: RootEntry[]): FocusTarget | nul
   const parts = id.split("/");
   const root = roots.find((r) => r.id === parts[0]);
   if (!root) return null;
+  // When several sessions share a cwd only the one written last has a pid; the others do nothing on click
+  if (root.kind !== "claude" && root.kind !== "codex") {
+    const pid = jumpPidOf(id);
+    return pid === undefined ? null : { kind: "pid", pid };
+  }
   if (root.kind === "codex") {
     const threadId = codexThreadIdOf(parts[parts.length - 1]);
     if (parts[1] !== "codex" || !threadId) return null;
@@ -52,6 +62,10 @@ export function focusTargetOf(id: string, roots: RootEntry[]): FocusTarget | nul
 export async function focusSession(id: string, roots: RootEntry[]): Promise<void> {
   const target = focusTargetOf(id, roots);
   if (!target) return;
+  if (target.kind === "pid") {
+    await focusPid(target.pid);
+    return;
+  }
   if (target.kind === "codex") {
     await invoke<FocusResult>("focus_codex", { codexDir: target.codexDir, threadId: target.threadId, fallbackToApp: true });
     return;

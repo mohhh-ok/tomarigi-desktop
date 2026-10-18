@@ -12,7 +12,10 @@
     "message": "Betöltés…"
   },
   "setupIntro": {
-    "message": "Válaszd ki azt a mappát, ahol a Claude Code / Codex tárolja a munkamenet-naplóit, és a madarak elkezdenek leszállni az ülőrúdra."
+    "message": "Válaszd ki azt a mappát, ahol az általad használt AI-kódolóügynök tárolja a munkamenet-naplóit, és a madarak elkezdenek leszállni az ülőrúdra."
+  },
+  "setupMovedFolderHint": {
+    "message": "Ha környezeti változóval (CLAUDE_CONFIG_DIR, COPILOT_HOME stb.) máshová tetted, válaszd az azon belüli, azonos nevű mappát."
   },
   "setupPickPrefix": {
     "message": "A választóban nyomd meg a "

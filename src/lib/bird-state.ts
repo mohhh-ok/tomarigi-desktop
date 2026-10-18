@@ -34,12 +34,21 @@ export function escalateWithChicks(state: BirdState, chicks: ChickView[]): BirdS
   return escalated;
 }
 
+// Tools with which an agent stops to ask the user: Claude Code (AskUserQuestion / ExitPlanMode), Codex
+// (request_user_input), Qwen Code (ask_user_question / exit_plan_mode), Gemini CLI and Copilot CLI (ask_user /
+// exit_plan_mode), OpenCode (question). docs/design.md "Agents"
+const WAITING_TOOLS = new Set([
+  "AskUserQuestion",
+  "ExitPlanMode",
+  "request_user_input",
+  "ask_user_question",
+  "ask_user",
+  "exit_plan_mode",
+  "question",
+]);
+
 export function isWaitingTool(toolName: string | undefined): boolean {
-  return (
-    toolName === "AskUserQuestion" ||
-    toolName === "ExitPlanMode" ||
-    toolName === "request_user_input"
-  );
+  return toolName !== undefined && WAITING_TOOLS.has(toolName);
 }
 
 /**

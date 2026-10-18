@@ -12,7 +12,10 @@
     "message": "Laden…"
   },
   "setupIntro": {
-    "message": "Kies de map waarin Claude Code / Codex sessielogboeken bewaart, en vogels beginnen op de zitstok te landen."
+    "message": "Kies de map waarin je AI-codeeragent sessielogboeken bewaart, en vogels beginnen op de zitstok te landen."
+  },
+  "setupMovedFolderHint": {
+    "message": "Heb je de locatie gewijzigd met een omgevingsvariabele (CLAUDE_CONFIG_DIR, COPILOT_HOME enz.), kies dan de map met dezelfde naam daarin."
   },
   "setupPickPrefix": {
     "message": "Druk in de kiezer op "

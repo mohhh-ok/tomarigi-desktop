@@ -36,6 +36,12 @@ const focusCalls: string[] = [];
 const focusResults = new Map<string, "pane" | "app" | "none">();
 // live_sessions answers by configDir that bypass ps, to drive reads exactly (sessions listed as alive, reliable or not)
 const liveOverride = new Map<string, { sessions: object[]; reliable: boolean }>();
+// Agents without a pid file (docs/design.md "Agents"): stand-in processes and the command line ps shows for each.
+// tty_processes answers with the ones still alive; process_cwds runs the real lsof on them
+const agentCommands = new Map<number, { command: string; startedAtMs: number }>();
+let psFails = false;
+// OpenCode's database as the Rust side returns it (src-tauri/src/opencode.rs), by dbPath
+const openCodeDbs = new Map<string, { sessions: object[]; tails: Map<string, object[]> }>();
 
 mock.module("@tauri-apps/api/core", () => ({
   invoke: async (cmd: string, args: Record<string, never>) => {
@@ -83,10 +89,45 @@ mock.module("@tauri-apps/api/core", () => ({
         }
         return { threads, reliable: true };
       }
+      case "tty_processes":
+        if (psFails) return { processes: [], reliable: false };
+        return {
+          processes: [...agentCommands]
+            .filter(([pid]) => isAlive(pid))
+            .map(([pid, p]) => ({ pid, tty: "ttys009", startedAtMs: p.startedAtMs, command: p.command })),
+          reliable: true,
+        };
+      case "process_cwds": {
+        const pids = args.pids as number[];
+        let out = "";
+        try {
+          out = execFileSync("lsof", ["-w", "-a", "-d", "cwd", "-p", pids.join(","), "-Fn"]).toString();
+        } catch (e) {
+          out = String((e as { stdout?: Buffer }).stdout ?? "");
+        }
+        const cwds: [number, string][] = [];
+        let pid = 0;
+        for (const l of out.split("\n")) {
+          if (l.startsWith("p")) pid = Number(l.slice(1));
+          if (l.startsWith("n")) cwds.push([pid, l.slice(1)]);
+        }
+        return { cwds, reliable: true };
+      }
+      case "alive_pids":
+        return { alive: (args.pids as number[]).filter(isAlive), reliable: true };
+      case "opencode_sessions": {
+        const db = openCodeDbs.get(args.dbPath);
+        return db ? { present: true, sessions: db.sessions, reliable: true } : { present: false, sessions: [], reliable: true };
+      }
+      case "opencode_tail":
+        return openCodeDbs.get(args.dbPath)?.tails.get(args.sessionId) ?? null;
       case "scan_peer_names":
         return { names: [], end: 0 };
       case "log":
         return;
+      case "focus_pid":
+        focusCalls.push(`pid=${args.pid}${args.fallbackToApp ? "+app" : ""}`);
+        return { level: "pane", detail: "" };
       case "focus_session":
         focusCalls.push(args.fallbackToApp ? `${args.sessionId}+app` : args.sessionId);
         return { level: focusResults.get(args.sessionId) ?? "none", detail: "" };
@@ -97,7 +138,7 @@ mock.module("@tauri-apps/api/core", () => ({
 }));
 
 const { NativeDirectoryHandle } = await import("../src/lib/native-fs.ts");
-const { scanSessions } = await import("../src/lib/sessions.ts");
+const { scanSessions, jumpPidOf } = await import("../src/lib/sessions.ts");
 const { focusTargetOf, focusSession } = await import("../src/lib/terminal-focus.ts");
 type Roots = Parameters<typeof scanSessions>[0];
 
@@ -115,7 +156,7 @@ const setMtime = (file: string, msAgo: number) => {
   const t = new Date(Date.now() - msAgo);
   fs.utimesSync(file, t, t);
 };
-const rootOf = (id: string, kind: "claude" | "codex", p: string) =>
+const rootOf = (id: string, kind: string, p: string) =>
   ({ id, kind, label: id, path: p, builtin: true, handle: new NativeDirectoryHandle(p) }) as unknown as Roots[number];
 /** A stand-in for the agent process. Its pid is what sessions/<pid>.json or the lock holder points at */
 const startProcess = (command = "exec sleep 600") => {
@@ -362,6 +403,151 @@ describe("Codex", () => {
 
     await stop(proc);
     expect(fs.existsSync(lock)).toBe(true);
+    expect((await scanTwice(roots)).views).toEqual([]);
+  });
+});
+
+describe("agents matched by process and cwd", () => {
+  /** A stand-in for the agent's process, running in cwd, that ps shows as command */
+  const startAgent = (command: string, cwd: string) => {
+    const child = spawn("sh", ["-c", "exec sleep 600"], { stdio: "ignore", cwd });
+    children.push(child);
+    agentCommands.set(child.pid!, { command, startedAtMs: Date.now() - 1000 });
+    return child;
+  };
+  const workDir = (name: string) => {
+    const dir = path.join(fs.realpathSync(base), "work", name);
+    fs.mkdirSync(dir, { recursive: true });
+    return dir;
+  };
+
+  test("OpenCode: a session in the process's cwd is a bird with its pid, and is removed two reads after it ends", async () => {
+    const cwd = workDir("oc-app");
+    const home = path.join(base, "opencode");
+    fs.mkdirSync(home, { recursive: true });
+    const now = Date.now();
+    openCodeDbs.set(path.join(home, "opencode.db"), {
+      sessions: [
+        { id: "ses_live", directory: cwd, parentId: null, timeCreated: now, lastWriteAt: now },
+        { id: "ses_sub", directory: cwd, parentId: "ses_live", timeCreated: now, lastWriteAt: now },
+        { id: "ses_yesterday", directory: cwd, parentId: null, timeCreated: now - 86_400_000, lastWriteAt: now - 86_400_000 },
+      ],
+      tails: new Map([
+        ["ses_live", [
+          { id: "m1", timeCreated: now - 500, timeUpdated: now - 500, data: { role: "user", time: { created: now - 500 } }, parts: [{ type: "text", text: { head: "hi", tail: "hi" } }] },
+          { id: "m2", timeCreated: now - 400, timeUpdated: now, data: { role: "assistant", finish: "stop", time: { created: now - 400, completed: now } }, parts: [{ type: "text", text: { head: "Hello.", tail: "Hello." } }] },
+        ]],
+      ]),
+    });
+    const roots = [rootOf("oc", "opencode", home)];
+    const proc = startAgent("/opt/homebrew/bin/opencode", cwd);
+
+    const shown = await scanTwice(roots);
+    expect(shown.views.map((v) => [v.id, v.project, v.state])).toEqual([["oc/opencode/ses_live", "oc-app", "working"]]);
+    expect(jumpPidOf("oc/opencode/ses_live")).toBe(proc.pid!);
+    // Clicking the bird jumps to that pid (focus_pid); the subagent and yesterday's session have no bird to click
+    expect(focusTargetOf("oc/opencode/ses_live", roots)).toEqual({ kind: "pid", pid: proc.pid! });
+    focusCalls.length = 0;
+    await focusSession("oc/opencode/ses_live", roots);
+    expect(focusCalls).toEqual([`pid=${proc.pid}+app`]);
+
+    await stop(proc);
+    expect((await scanSessions(roots)).views.length).toBe(1);
+    expect((await scanSessions(roots)).views).toEqual([]);
+    // Once the process is gone there is nothing to jump to
+    expect(focusTargetOf("oc/opencode/ses_live", roots)).toBeNull();
+  });
+
+  test("Cursor CLI: the project folder is found from the process's cwd; nothing is removed on a read where ps failed", async () => {
+    const cwd = workDir("cursor-app");
+    const slug = cwd.replace(/[^A-Za-z0-9]/g, "-").replace(/^-+/, "");
+    const id = "61a18a76-2dcd-4e2b-afd0-4a7c488bc1e4";
+    const dir = path.join(base, "cursor", "projects", slug, "agent-transcripts", id);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, `${id}.jsonl`),
+      line({ role: "user", message: { content: [{ type: "text", text: "hi" }] } }) +
+        line({ role: "assistant", message: { content: [{ type: "text", text: "Hello." }] } }) +
+        line({ type: "turn_ended", status: "success" }),
+    );
+    const roots = [rootOf("cu", "cursor", path.join(base, "cursor", "projects"))];
+    const proc = startAgent(
+      "/Users/me/.local/share/cursor-agent/versions/2025.09.18-7ae6800/node --use-system-ca /Users/me/.local/share/cursor-agent/versions/2025.09.18-7ae6800/index.js",
+      cwd,
+    );
+
+    const shown = await scanTwice(roots);
+    expect(shown.views.map((v) => [v.project, v.cwd])).toEqual([["cursor-app", cwd]]);
+    expect(jumpPidOf(shown.views[0].id)).toBe(proc.pid!);
+
+    await stop(proc);
+    psFails = true;
+    expect((await scanTwice(roots)).views.length).toBe(1);
+    psFails = false;
+    expect((await scanSessions(roots)).views.length).toBe(1);
+    expect((await scanSessions(roots)).views).toEqual([]);
+  });
+
+  test("Copilot CLI and Gemini CLI: sessions written since the process started are birds", async () => {
+    const cwd = workDir("cli-app");
+    const copilotDir = path.join(base, "copilot", "session-state", "8abb87fa-4187-49e0-ba62-ded536d9ba99");
+    fs.mkdirSync(copilotDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(copilotDir, "events.jsonl"),
+      line({ type: "session.start", data: { sessionId: "8abb", context: { cwd } }, id: "e1", timestamp: iso(0), parentId: null }) +
+        line({ type: "user.message", data: { content: "hi" }, id: "e2", timestamp: iso(0), parentId: "e1" }),
+    );
+    const geminiHome = path.join(base, "gemini");
+    const chats = path.join(geminiHome, "tmp", "cli-app", "chats");
+    fs.mkdirSync(chats, { recursive: true });
+    fs.writeFileSync(path.join(geminiHome, "projects.json"), JSON.stringify({ projects: { [cwd]: "cli-app" } }));
+    fs.writeFileSync(
+      path.join(chats, "session-2026-10-18T01-00-1b9d6bcd.jsonl"),
+      line({ sessionId: "1b9d", projectHash: "x", startTime: iso(0), lastUpdated: iso(0) }) +
+        line({ id: "m1", timestamp: iso(0), type: "user", content: [{ text: "hi" }] }),
+    );
+    const roots = [
+      rootOf("cp", "copilot", path.join(base, "copilot", "session-state")),
+      rootOf("ge", "gemini", path.join(geminiHome, "tmp")),
+    ];
+    const copilot = startAgent("node /opt/homebrew/bin/copilot", cwd);
+    const gemini = startAgent("node --no-warnings /opt/homebrew/bin/gemini", cwd);
+
+    const shown = await scanTwice(roots);
+    expect(shown.views.map((v) => [v.id.split("/")[1], v.project]).sort()).toEqual([
+      // The same project seen from two watched folders gets the folder's label, as for Claude Code and Codex
+      ["copilot", "cli-app (cp)"],
+      ["gemini", "cli-app (ge)"],
+    ]);
+    expect(jumpPidOf(shown.views.find((v) => v.id.startsWith("cp/"))!.id)).toBe(copilot.pid!);
+    expect(jumpPidOf(shown.views.find((v) => v.id.startsWith("ge/"))!.id)).toBe(gemini.pid!);
+
+    await stop(copilot);
+    await stop(gemini);
+    expect((await scanTwice(roots)).views).toEqual([]);
+  });
+
+  test("Qwen Code: the pid comes from <sessionId>.runtime.json, which stays after qwen exits", async () => {
+    const chats = path.join(base, "qwen", "projects", "-work-qwen-app", "chats");
+    fs.mkdirSync(chats, { recursive: true });
+    const sid = "0d6f3c1e-1111-4000-8000-000000000001";
+    fs.writeFileSync(
+      path.join(chats, `${sid}.jsonl`),
+      line({ uuid: "u1", parentUuid: null, sessionId: sid, timestamp: iso(MIN), type: "user", cwd: "/work/qwen-app", version: "0.15.0", message: { role: "user", parts: [{ text: "hi" }] } }) +
+        line({ uuid: "u2", parentUuid: "u1", sessionId: sid, timestamp: iso(MIN - 1000), type: "assistant", cwd: "/work/qwen-app", version: "0.15.0", message: { role: "model", parts: [{ text: "Hello." }] } }),
+    );
+    const proc = startProcess();
+    fs.writeFileSync(
+      path.join(chats, `${sid}.runtime.json`),
+      JSON.stringify({ schema_version: 1, pid: proc.pid, session_id: sid, work_dir: "/work/qwen-app", hostname: "h", started_at: 1, qwen_version: "0.15.0" }),
+    );
+    const roots = [rootOf("qw", "qwen", path.join(base, "qwen", "projects"))];
+
+    const shown = await scanTwice(roots);
+    expect(shown.views.map((v) => [v.project, v.state])).toEqual([["qwen-app", "done"]]);
+    expect(jumpPidOf(shown.views[0].id)).toBe(proc.pid!);
+
+    await stop(proc);
     expect((await scanTwice(roots)).views).toEqual([]);
   });
 });

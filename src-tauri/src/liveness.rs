@@ -295,9 +295,195 @@ fn live_codex_threads_blocking(codex_dir: &str) -> CodexLiveScan {
     CodexLiveScan { threads, reliable: true }
 }
 
+// ---- Agents without a pid file (docs/design.md "Agents") ----
+
+/// A process with a terminal. started_at_ms is derived from ps's elapsed time, so it is accurate to the second
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct TtyProcess {
+    pid: u32,
+    tty: String,
+    started_at_ms: f64,
+    command: String,
+}
+
+#[derive(Serialize)]
+pub(crate) struct ProcessScan {
+    processes: Vec<TtyProcess>,
+    reliable: bool,
+}
+
+/// Every process that has a tty (`ps axww -o pid=,tty=,etime=,command=`). The JS side (src/lib/agent-processes.ts)
+/// picks each agent's processes out of the command lines; processes without a tty (`??`) are left out here
+#[tauri::command]
+pub(crate) async fn tty_processes() -> ProcessScan {
+    tauri::async_runtime::spawn_blocking(tty_processes_blocking)
+        .await
+        .unwrap_or(ProcessScan { processes: Vec::new(), reliable: false })
+}
+
+fn tty_processes_blocking() -> ProcessScan {
+    let Some(out) =
+        output_with_timeout(Command::new("ps").args(["axww", "-o", "pid=,tty=,etime=,command="]), LIVENESS_CMD_TIMEOUT)
+    else {
+        return ProcessScan { processes: Vec::new(), reliable: false };
+    };
+    if !out.status.success() {
+        return ProcessScan { processes: Vec::new(), reliable: false };
+    }
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as f64)
+        .unwrap_or(0.0);
+    let processes = String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .filter_map(|line| parse_ps_line(line, now_ms))
+        .collect();
+    ProcessScan { processes, reliable: true }
+}
+
+/// One line of `ps -o pid=,tty=,etime=,command=`. None for processes without a tty and for lines that don't parse
+fn parse_ps_line(line: &str, now_ms: f64) -> Option<TtyProcess> {
+    let mut rest = line.trim_start();
+    let mut field = || {
+        let end = rest.find(char::is_whitespace).unwrap_or(rest.len());
+        let value = &rest[..end];
+        rest = rest[end..].trim_start();
+        value
+    };
+    let pid = field().parse().ok()?;
+    let tty = field().to_string();
+    let elapsed = elapsed_secs(field())?;
+    if tty == "??" || tty == "-" || rest.is_empty() {
+        return None;
+    }
+    // Long command lines (a prompt passed as an argument) are cut; only the program and its first arguments are used
+    let command: String = rest.chars().take(400).collect();
+    Some(TtyProcess { pid, tty, started_at_ms: now_ms - elapsed as f64 * 1000.0, command })
+}
+
+/// ps's etime: `[[dd-]hh:]mm:ss`
+fn elapsed_secs(etime: &str) -> Option<u64> {
+    let (days, clock) = match etime.split_once('-') {
+        Some((d, c)) => (d.parse::<u64>().ok()?, c),
+        None => (0, etime),
+    };
+    let mut secs = 0;
+    for part in clock.split(':') {
+        secs = secs * 60 + part.parse::<u64>().ok()?;
+    }
+    Some(days * 86_400 + secs)
+}
+
+#[derive(Serialize)]
+pub(crate) struct CwdScan {
+    /// (pid, cwd)
+    cwds: Vec<(u32, String)>,
+    reliable: bool,
+}
+
+/// The working directory of each pid (`lsof -a -d cwd -p <pids> -Fn`). A pid that ended in the meantime is just
+/// missing from the result
+#[tauri::command]
+pub(crate) async fn process_cwds(pids: Vec<u32>) -> CwdScan {
+    tauri::async_runtime::spawn_blocking(move || process_cwds_blocking(&pids))
+        .await
+        .unwrap_or(CwdScan { cwds: Vec::new(), reliable: false })
+}
+
+fn process_cwds_blocking(pids: &[u32]) -> CwdScan {
+    if pids.is_empty() {
+        return CwdScan { cwds: Vec::new(), reliable: true };
+    }
+    let list = pids.iter().map(|p| p.to_string()).collect::<Vec<_>>().join(",");
+    // lsof exits with 1 when one of the pids is gone, with the rest still listed, so the exit code isn't used.
+    // -w silences warnings; a run that couldn't launch, timed out, or died from a signal is a failure
+    let Some(out) = output_with_timeout(
+        Command::new("lsof").args(["-w", "-a", "-d", "cwd", "-p", &list, "-Fn"]),
+        LIVENESS_CMD_TIMEOUT,
+    ) else {
+        return CwdScan { cwds: Vec::new(), reliable: false };
+    };
+    if out.status.code().is_none() {
+        return CwdScan { cwds: Vec::new(), reliable: false };
+    }
+    let mut cwds = Vec::new();
+    let mut pid: Option<u32> = None;
+    for line in String::from_utf8_lossy(&out.stdout).lines() {
+        if let Some(p) = line.strip_prefix('p') {
+            pid = p.parse().ok();
+        } else if let (Some(name), Some(p)) = (line.strip_prefix('n'), pid) {
+            cwds.push((p, name.to_string()));
+        }
+    }
+    CwdScan { cwds, reliable: true }
+}
+
+#[derive(Serialize)]
+pub(crate) struct PidScan {
+    alive: Vec<u32>,
+    reliable: bool,
+}
+
+/// Which of the pids are running (Qwen Code's `<sessionId>.runtime.json` stays after the process ends)
+#[tauri::command]
+pub(crate) async fn alive_pids(pids: Vec<u32>) -> PidScan {
+    tauri::async_runtime::spawn_blocking(move || alive_pids_blocking(&pids))
+        .await
+        .unwrap_or(PidScan { alive: Vec::new(), reliable: false })
+}
+
+fn alive_pids_blocking(pids: &[u32]) -> PidScan {
+    if pids.is_empty() {
+        return PidScan { alive: Vec::new(), reliable: true };
+    }
+    let list = pids.iter().map(|p| p.to_string()).collect::<Vec<_>>().join(",");
+    // Same as live_sessions: ps -p exits with 1 when some pids don't exist
+    let Some(out) = output_with_timeout(Command::new("ps").args(["-o", "pid=", "-p", &list]), LIVENESS_CMD_TIMEOUT) else {
+        return PidScan { alive: Vec::new(), reliable: false };
+    };
+    let alive = String::from_utf8_lossy(&out.stdout).split_whitespace().filter_map(|p| p.parse().ok()).collect();
+    PidScan { alive, reliable: out.status.code().is_some_and(|c| c == 0 || c == 1) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn ps_lines_keep_only_processes_with_a_tty() {
+        let p = parse_ps_line("  4242 ttys010    01:02:03 /opt/homebrew/bin/opencode --model x", 10_000_000.0).unwrap();
+        assert_eq!((p.pid, p.tty.as_str(), p.command.as_str()), (4242, "ttys010", "/opt/homebrew/bin/opencode --model x"));
+        assert_eq!(p.started_at_ms, 10_000_000.0 - 3723.0 * 1000.0);
+        assert!(parse_ps_line("  77 ??  00:05 /usr/sbin/cfprefsd agent", 0.0).is_none());
+        assert_eq!(elapsed_secs("2-00:00:01"), Some(172_801));
+        assert_eq!(elapsed_secs("00:07"), Some(7));
+    }
+
+    /// A shell started in a temp folder is found with that folder as its cwd, and a pid that has ended is missing
+    #[test]
+    fn process_cwds_and_alive_pids_follow_the_process() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-cwd-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let dir = dir.canonicalize().unwrap();
+        let mut child = Command::new("sh").arg("-c").arg("exec sleep 600").current_dir(&dir).spawn().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        let scan = process_cwds_blocking(&[child.id()]);
+        assert!(scan.reliable);
+        assert_eq!(scan.cwds, vec![(child.id(), dir.to_string_lossy().into_owned())]);
+        let pids = alive_pids_blocking(&[child.id()]);
+        assert!(pids.reliable);
+        assert_eq!(pids.alive, vec![child.id()]);
+
+        child.kill().unwrap();
+        child.wait().unwrap();
+        let scan = process_cwds_blocking(&[child.id()]);
+        assert!(scan.reliable);
+        assert!(scan.cwds.is_empty());
+        let pids = alive_pids_blocking(&[child.id()]);
+        assert!(pids.reliable && pids.alive.is_empty());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
 
     /// A codex that has a thread open keeps its lock open. Once it exits the lock file stays but no longer counts
     /// (docs/design.md "Removing birds of ended sessions")

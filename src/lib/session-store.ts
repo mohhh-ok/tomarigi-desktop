@@ -75,6 +75,8 @@ export const scanState = {
   // scan. The new session can run in a Claude Code background process whose tty isn't a terminal pane, while the
   // pane that shows it is still the old process, so jumping falls back along this (lib/terminal-focus.ts)
   continuedFrom: new Map<string, string>(),
+  // view id → pid of the session's process on the last scan (the target of a jump; lib/agents.ts)
+  jumpPids: new Map<string, number>(),
 };
 
 // Persistent event log for debugging (the debug log screen). Unlike sessionEventCache it is not cleared by the

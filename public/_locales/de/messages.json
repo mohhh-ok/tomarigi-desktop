@@ -12,7 +12,10 @@
     "message": "Wird geladen…"
   },
   "setupIntro": {
-    "message": "Wähle den Ordner, in dem Claude Code / Codex seine Sitzungsprotokolle speichert, und Vögel beginnen, sich auf der Sitzstange niederzulassen."
+    "message": "Wähle den Ordner, in dem dein KI-Coding-Agent seine Sitzungsprotokolle speichert, und Vögel beginnen, sich auf der Sitzstange niederzulassen."
+  },
+  "setupMovedFolderHint": {
+    "message": "Wenn du den Ort mit einer Umgebungsvariable (CLAUDE_CONFIG_DIR, COPILOT_HOME usw.) geändert hast, wähle darin den Ordner mit demselben Namen."
   },
   "setupPickPrefix": {
     "message": "Drücke im Auswahldialog "

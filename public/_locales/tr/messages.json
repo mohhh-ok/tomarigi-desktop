@@ -12,7 +12,10 @@
     "message": "Yükleniyor…"
   },
   "setupIntro": {
-    "message": "Claude Code / Codex'un oturum kayıtlarını tuttuğu klasörü seçin, kuşlar tüneğe konmaya başlasın."
+    "message": "Kullandığınız yapay zekâ kodlama ajanının oturum kayıtlarını tuttuğu klasörü seçin, kuşlar tüneğe konmaya başlasın."
+  },
+  "setupMovedFolderHint": {
+    "message": "Konumu bir ortam değişkeniyle (CLAUDE_CONFIG_DIR, COPILOT_HOME vb.) değiştirdiyseniz, içindeki aynı adlı klasörü seçin."
   },
   "setupPickPrefix": {
     "message": "Seçicide "

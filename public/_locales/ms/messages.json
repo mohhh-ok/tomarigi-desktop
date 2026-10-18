@@ -12,7 +12,10 @@
     "message": "Memuatkan…"
   },
   "setupIntro": {
-    "message": "Pilih folder tempat Claude Code / Codex menyimpan log sesi, dan burung-burung akan mula hinggap di tempat bertenggek."
+    "message": "Pilih folder tempat ejen pengekodan AI anda menyimpan log sesi, dan burung-burung akan mula hinggap di tempat bertenggek."
+  },
+  "setupMovedFolderHint": {
+    "message": "Jika anda mengubah lokasi dengan pemboleh ubah persekitaran (CLAUDE_CONFIG_DIR, COPILOT_HOME, dll.), pilih folder yang sama nama di dalamnya."
   },
   "setupPickPrefix": {
     "message": "Dalam pemilih, tekan "

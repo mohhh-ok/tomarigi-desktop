@@ -12,7 +12,10 @@
     "message": "Učitavanje…"
   },
   "setupIntro": {
-    "message": "Odaberite mapu u koju Claude Code / Codex sprema zapise sesija, i ptice će početi slijetati na sjedalo."
+    "message": "Odaberite mapu u koju vaš AI agent za programiranje sprema zapise sesija, i ptice će početi slijetati na sjedalo."
+  },
+  "setupMovedFolderHint": {
+    "message": "Ako ste promijenili lokaciju varijablom okruženja (CLAUDE_CONFIG_DIR, COPILOT_HOME itd.), odaberite mapu istog naziva unutar nje."
   },
   "setupPickPrefix": {
     "message": "U izborniku pritisnite "

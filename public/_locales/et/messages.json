@@ -12,7 +12,10 @@
     "message": "Laadimine…"
   },
   "setupIntro": {
-    "message": "Vali kaust, kuhu Claude Code / Codex salvestab oma seansside logid, ja linnud hakkavad õrrele istuma."
+    "message": "Vali kaust, kuhu sinu tehisintellekti koodiagent salvestab oma seansside logid, ja linnud hakkavad õrrele istuma."
+  },
+  "setupMovedFolderHint": {
+    "message": "Kui muutsid asukohta keskkonnamuutujaga (CLAUDE_CONFIG_DIR, COPILOT_HOME jne), vali selle seest samanimeline kaust."
   },
   "setupPickPrefix": {
     "message": "Valimisaknas vajuta "

@@ -12,7 +12,10 @@
     "message": "Wczytywanie…"
   },
   "setupIntro": {
-    "message": "Wybierz folder, w którym Claude Code / Codex przechowuje dzienniki sesji, a ptaki zaczną siadać na grzędzie."
+    "message": "Wybierz folder, w którym Twój agent AI do programowania przechowuje dzienniki sesji, a ptaki zaczną siadać na grzędzie."
+  },
+  "setupMovedFolderHint": {
+    "message": "Jeśli zmieniono lokalizację zmienną środowiskową (CLAUDE_CONFIG_DIR, COPILOT_HOME itp.), wybierz znajdujący się w niej folder o tej samej nazwie."
   },
   "setupPickPrefix": {
     "message": "W oknie wyboru naciśnij "

@@ -2,6 +2,7 @@
 import type { NativeFile } from "./native-fs";
 import type { TailInfo } from "./transcript";
 import type { AngerJudgement, AskJudgement } from "./jev";
+import type { AgentKind } from "./agents";
 
 // Transition events reconstructed from the transcript with timestamps (experimental).
 // key is for deduplicating the same event (every poll re-parses the same trailing 64KB)
@@ -145,7 +146,7 @@ export interface LiveSession {
 
 // One scan result inside scanSessions. The same shape is used for found, withTail, and SDK chick distribution
 export interface FoundEntry {
-  agent: "claude" | "codex";
+  agent: AgentKind;
   rootId: string;
   rootLabel: string;
   slug: string; // project directory name (under ~/.claude*/projects/). Also part of the grouping key when
@@ -156,8 +157,10 @@ export interface FoundEntry {
   chicks: ChickScan[]; // subagent chicks found by scanChicks (SDK chicks are not included here)
 }
 
-// A FoundEntry with what its process is looked up by: the sessionId / threadId, and the <config> / <codex dir>
-export type LiveFoundEntry = FoundEntry & { liveKey: string; liveDir: string };
+// A FoundEntry with whether its process is alive on this read, decided by its agent's adapter (lib/agents.ts):
+// true / false, or undefined when this read can't tell (ps / lsof or the agent's files failed; nothing is removed).
+// pid is the process found for it, used for jumping (several sessions in one cwd: only the one written last has it)
+export type LiveFoundEntry = FoundEntry & { live: boolean | undefined; pid?: number };
 
 export interface ChickMeta {
   name: string; // resolved from meta.json in order name → description → file name

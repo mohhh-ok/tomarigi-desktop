@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
+A macOS app that watches your AI coding agent sessions (Claude Code, Codex, Qwen Code, GitHub Copilot CLI, Gemini CLI, OpenCode, Cursor CLI) as birds in an always-on-top window. Each session gets its own bird in the Garden, so you can tell at a glance which one is working, which one is waiting for your reply, and which one is done. Click a bird to jump to the terminal pane where that session is running.
 
 | | |
 |---|---|
@@ -17,7 +17,7 @@ A macOS app that watches your AI coding agent sessions (Claude Code / Codex) as 
 
 - In the floating window's Garden, only the birds, their bubbles, and the "tomarigi" handle are shown, and clicks go through to the window below. Click the handle to show the whole window; drag it to move the window
 - Icon sets: Birds, Gnome, Cat, Robot, and Frog, assigned per project
-- No hooks or config changes on the agent side. It only reads the transcripts under `~/.claude/projects` and `~/.codex/sessions`
+- No hooks or config changes on the agent side. It only reads each agent's session files (`~/.claude/projects`, `~/.codex/sessions`, `~/.qwen/projects`, `~/.copilot/session-state`, `~/.gemini/tmp`, `~/.local/share/opencode`, `~/.cursor/projects`)
 - Optional BYOK keys: OpenAI or Anthropic for the speech bubble that summarizes each finished turn, and TypeSafe for spotting questions asked in plain text (the "?") and abuse toward the AI (the anger mark). Voice readout uses the system speech synthesizer and needs no key
 
 ## Install
@@ -75,7 +75,7 @@ The dev server port is fixed at 4842 in `vite.config.ts` and `src-tauri/tauri.co
 Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly.
 
 - `TOMARIGI_MOCK=1`: mock mode. Injects presets / JSON instead of real data. The mock screen also opens in a plain browser at `http://localhost:4842/?mock=1` while the dev server runs (`bun run dev:web`)
-- `TOMARIGI_QUERY`: initial screen. Join `tab=perch` / `tab=events` / `settings=1` / `debug=1` / `preset=<id>` (initial mock preset; `preset=asking` shows the "?") / `scrollTo=<class name>` (scrolls the window to that element, e.g. `settings=1&scrollTo=window-mode`) / `cycle=<seconds>` (mock: every few seconds changes one thing on the birds in turn, a bubble, a tool line, a watch link, a bird joining or leaving; logged as `[mock-cycle]`) / `panel=0` (mock: hides the mock controls) / `birds=<n>` (mock: adds n plain birds) / `tint=0` (verify build: skips the greenish background, so screenshots show the everyday look) with `&`
+- `TOMARIGI_QUERY`: initial screen. Join `tab=perch` / `tab=events` / `settings=1` / `dialog=add-folder` (the add-folder dialog; with `TOMARIGI_MOCK=1` the default folders of every agent are listed) / `debug=1` / `preset=<id>` (initial mock preset; `preset=asking` shows the "?") / `scrollTo=<class name>` (scrolls the window to that element, e.g. `settings=1&scrollTo=window-mode`) / `cycle=<seconds>` (mock: every few seconds changes one thing on the birds in turn, a bubble, a tool line, a watch link, a bird joining or leaving; logged as `[mock-cycle]`) / `panel=0` (mock: hides the mock controls) / `birds=<n>` (mock: adds n plain birds) / `tint=0` (verify build: skips the greenish background, so screenshots show the everyday look) with `&`
 - `TOMARIGI_FOCUS_TEST="<config_dir>|<sessionId>|<return tty>"` (or `"pid=<pid>|<return tty>"` for a process of any agent): 3 seconds after launch, jumps to that session's terminal pane, then 1.5 seconds later jumps back to the return pane (logs `[focus-test] -> Pane ...` with the terminal and how it was found)
 - `TOMARIGI_FADE_TEST=1`: "Fade until hovered" self-test. 4 seconds after launch, shows the faded Garden as clicking the window handle would, keeps it shown for 6 seconds as if the cursor were in the window, then lets it fade again (logs `[fade-test] reveal` and `[fade] revealed=...`)
 - `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window

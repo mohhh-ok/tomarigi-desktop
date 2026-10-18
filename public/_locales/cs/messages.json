@@ -12,7 +12,10 @@
     "message": "Načítání…"
   },
   "setupIntro": {
-    "message": "Vyberte složku, kam Claude Code / Codex ukládá záznamy relací, a ptáci začnou usedat na bidýlko."
+    "message": "Vyberte složku, kam váš AI agent pro programování ukládá záznamy relací, a ptáci začnou usedat na bidýlko."
+  },
+  "setupMovedFolderHint": {
+    "message": "Pokud jste umístění změnili proměnnou prostředí (CLAUDE_CONFIG_DIR, COPILOT_HOME apod.), vyberte v něm složku se stejným názvem."
   },
   "setupPickPrefix": {
     "message": "Ve výběru stiskněte "

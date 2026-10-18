@@ -12,7 +12,10 @@
     "message": "Notiek ielāde…"
   },
   "setupIntro": {
-    "message": "Izvēlieties mapi, kurā Claude Code / Codex glabā sesiju žurnālus, un putni sāks nolaisties uz laktiņas."
+    "message": "Izvēlieties mapi, kurā jūsu MI programmēšanas aģents glabā sesiju žurnālus, un putni sāks nolaisties uz laktiņas."
+  },
+  "setupMovedFolderHint": {
+    "message": "Ja atrašanās vietu mainījāt ar vides mainīgo (CLAUDE_CONFIG_DIR, COPILOT_HOME u. c.), izvēlieties tajā esošo mapi ar tādu pašu nosaukumu."
   },
   "setupPickPrefix": {
     "message": "Atlasītājā nospiediet "
