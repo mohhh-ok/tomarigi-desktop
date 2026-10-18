@@ -187,11 +187,14 @@
   margin: 0;
 }
 
+/* The path chip is a line of its own, so every agent's hint wraps the same way (text, path, text) */
 .root-path-copy {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
   align-items: center;
   gap: 6px;
-  margin: 2px 4px;
+  margin: 4px 0;
   padding: 4px 8px;
   border-color: #4a463c;
   font-size: 13px;
