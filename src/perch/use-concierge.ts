@@ -73,7 +73,12 @@ export function useConcierge(
     void (async () => {
       const provider = await loadActiveAiProvider();
       if (!provider || seq !== seqRef.current) return;
-      appendConciergeLog({ at: Date.now(), kind: "request", text: `${provider} ${summary}` });
+      appendConciergeLog({
+        at: Date.now(),
+        kind: "request",
+        text: `${provider} ${summary}`,
+        detail: JSON.stringify(payload, null, 2),
+      });
       void invoke("log", { line: `[concierge] request ${provider} ${summary}` }).catch(() => {});
       const result = await askConcierge(provider, payload);
       if (seq !== seqRef.current) return;
@@ -94,11 +99,13 @@ export function useConcierge(
       const tokens = result.usage
         ? ` tokens in=${result.usage.input} cached=${result.usage.cachedInput} out=${result.usage.output}`
         : "";
-      appendConciergeLog(
-        next
+      const detail = result.answer === undefined ? undefined : JSON.stringify(result.answer, null, 2);
+      appendConciergeLog({
+        ...(next
           ? { at: Date.now(), kind: "advice", text: `${next.line}${next.targetId ? ` → ${next.targetId}` : " (no target)"}${tokens}` }
-          : { at: Date.now(), kind: "none", text: `no advice${tokens}` },
-      );
+          : { at: Date.now(), kind: "none", text: `no advice${tokens}` }),
+        ...(detail !== undefined && { detail }),
+      });
       void invoke("log", {
         line: next
           ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}${tokens}`

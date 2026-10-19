@@ -126,11 +126,19 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
         </p>
         {conciergeLog.length > 0 && (
           <ul className="debug-log-list">
-            {conciergeLog.map((c, i) => (
-              <li key={`${c.at}-${i}`} className="debug-log-row">
+            {/* Keyed by time and kind, not position, so a new entry on top doesn't fold the details already open */}
+            {conciergeLog.map((c) => (
+              <li key={`${c.at}-${c.kind}`} className="debug-log-row">
                 <span className="debug-log-time">{new Date(c.at).toLocaleString()}</span>
                 <span className="debug-log-type">concierge {c.kind}</span>
                 <span className="debug-log-project">{c.text}</span>
+                {/* The full input or the AI's answer (in memory only), folded so the list stays scannable */}
+                {c.detail !== undefined && (
+                  <details className="debug-log-detail">
+                    <summary>{c.kind === "request" ? "Input" : "Answer"} ({c.detail.length} chars)</summary>
+                    <pre>{c.detail}</pre>
+                  </details>
+                )}
               </li>
             ))}
           </ul>

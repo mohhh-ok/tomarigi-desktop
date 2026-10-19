@@ -210,7 +210,19 @@ test("askConcierge sends one request with the task and payload, and returns the 
   expect(calls.length).toBe(1);
   expect(calls[0].task).toBe(CONCIERGE_TASK);
   expect(calls[0].payload).toBe(payload);
-  expect(result).toEqual({ ok: true, verdict: { line: "Go back to A", targetId: "a" } });
+  expect(result).toEqual({
+    ok: true,
+    verdict: { line: "Go back to A", targetId: "a" },
+    answer: { advice: "Go back to A", session_id: "a" },
+  });
+
+  // The answer keeps an id that isn't one of the sessions sent, so the debug log screen shows what the AI gave
+  const stray = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "Check B", session_id: "b" } as V });
+  expect(await askConcierge("openai", payload, stray)).toEqual({
+    ok: true,
+    verdict: { line: "Check B" },
+    answer: { advice: "Check B", session_id: "b" },
+  });
 
   const failing = async <V>(): Promise<JudgeResult<V>> => ({ ok: false, kind: "rate_limit", status: 429 });
   expect(await askConcierge("openai", payload, failing)).toEqual({ ok: false, kind: "rate_limit", status: 429 });

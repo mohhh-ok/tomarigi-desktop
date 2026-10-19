@@ -254,17 +254,21 @@ export function parseConciergeVerdict(verdict: unknown, sentIds: ReadonlySet<str
 
 type Run = <V>(task: JudgeTaskDefinition, payload: unknown) => Promise<JudgeResult<V>>;
 
-/** Asks the concierge once. Errors are returned as a JudgeResult, not thrown. run is swapped in tests */
+/**
+ * Asks the concierge once. Errors are returned as a JudgeResult, not thrown. answer is the verdict as the AI gave it
+ * (including an id that is ignored), for the debug log screen. run is swapped in tests
+ */
 export async function askConcierge(
   provider: AiProvider,
   payload: ConciergePayload,
   run: Run = provider === "openai" ? runOpenAiJudge : runJudge,
-): Promise<JudgeResult<ConciergeAdvice | null>> {
+): Promise<JudgeResult<ConciergeAdvice | null> & { answer?: unknown }> {
   const result = await run<ConciergeVerdict>(CONCIERGE_TASK, payload);
   if (!result.ok) return result;
   return {
     ok: true,
     verdict: parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id))),
+    answer: result.verdict,
     ...(result.usage && { usage: result.usage }),
   };
 }
@@ -474,6 +478,9 @@ export interface ConciergeLogEntry {
   at: number;
   kind: "request" | "advice" | "none" | "error";
   text: string;
+  /** The full input of a request, or the answer as the AI gave it, as JSON. Holds text from the sessions, so it is
+   * shown in the debug log screen only and never goes to the app log (docs/design.md "Concierge") */
+  detail?: string;
 }
 
 const MAX_LOG = 50;
