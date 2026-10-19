@@ -336,3 +336,32 @@ test("advice kept after a failed request stays only while its target is in the s
   // Advice without a target stays
   expect(adviceStillHolds({ line: "All calm" }, undefined, [view("b")])).toBe(true);
 });
+
+test("a change pending when the 5-minute repeat fires makes no second request", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  // b finishes a second before the repeat: the repeat fires first and covers the change
+  clock.advance(CONCIERGE_REPEAT_MS - 1_000);
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b", { state: "done" })), true);
+  clock.advance(1_000);
+  expect(counts.requests).toBe(2);
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS);
+  expect(counts.requests).toBe(2);
+});
+
+test("the advice is cleared when the concierge stops (no session on screen), so it doesn't come back old", () => {
+  const { clock, counts, scheduler } = scheduled();
+  const waiting = classes(view("a", { state: "waiting" }));
+  scheduler.update(waiting, true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  scheduler.update(new Map(), false);
+  scheduler.update(new Map(), false);
+  expect(counts.clears).toBe(1);
+  // Sessions come back: the next request comes with the new advice
+  scheduler.update(waiting, true);
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS);
+  expect(counts.requests).toBe(2);
+});

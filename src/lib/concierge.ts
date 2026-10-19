@@ -329,7 +329,12 @@ export class ConciergeScheduler {
 
   update(classes: ReadonlyMap<string, ConciergeTriggerClass>, enabled: boolean): void {
     if (!enabled) {
+      // No session on screen (or no key): the advice goes too, so it doesn't show old when sessions come back
       this.stop();
+      if (!this.cleared) {
+        this.cleared = true;
+        this.clear();
+      }
       return;
     }
     const prev = this.classes;
@@ -373,6 +378,8 @@ export class ConciergeScheduler {
   }
 
   private fire(): void {
+    // The repeat can fire while a change is pending; that change is covered by this request
+    if (this.pending !== undefined) this.timers.clear(this.pending);
     this.pending = undefined;
     if (this.repeat !== undefined) this.timers.clear(this.repeat);
     const waiting = [...(this.classes?.values() ?? [])].includes("reply");
