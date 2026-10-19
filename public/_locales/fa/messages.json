@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "پنگوئن"
+  },
+  "updatesHeading": {
+    "message": "به‌روزرسانی‌ها"
+  },
+  "updatesCurrentVersion": {
+    "message": "نسخهٔ $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "بررسی به‌روزرسانی"
+  },
+  "updatesChecking": {
+    "message": "در حال بررسی…"
+  },
+  "updatesUpToDate": {
+    "message": "آخرین نسخه را دارید"
+  },
+  "updatesCheckFailed": {
+    "message": "بررسی به‌روزرسانی ممکن نشد. اتصال اینترنت را بررسی کنید و دوباره امتحان کنید"
+  },
+  "updatesInstallButton": {
+    "message": "به‌روزرسانی به v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi برای پایان به‌روزرسانی دوباره راه‌اندازی می‌شود"
+  },
+  "updatesDownloading": {
+    "message": "در حال دانلود…"
+  },
+  "updatesInstalling": {
+    "message": "در حال نصب…"
+  },
+  "updatesInstallFailed": {
+    "message": "به‌روزرسانی تمام نشد. tomarigi روی نسخهٔ فعلی می‌ماند؛ دوباره امتحان کنید"
   }
 }

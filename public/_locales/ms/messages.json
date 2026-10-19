@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Penguin"
+  },
+  "updatesHeading": {
+    "message": "Kemas kini"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versi $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Semak kemas kini"
+  },
+  "updatesChecking": {
+    "message": "Menyemak…"
+  },
+  "updatesUpToDate": {
+    "message": "Anda mempunyai versi terkini"
+  },
+  "updatesCheckFailed": {
+    "message": "Tidak dapat menyemak kemas kini. Semak sambungan internet dan cuba lagi"
+  },
+  "updatesInstallButton": {
+    "message": "Kemas kini ke v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi akan dimulakan semula untuk menyelesaikan kemas kini"
+  },
+  "updatesDownloading": {
+    "message": "Memuat turun…"
+  },
+  "updatesInstalling": {
+    "message": "Memasang…"
+  },
+  "updatesInstallFailed": {
+    "message": "Kemas kini tidak selesai. tomarigi kekal pada versi semasa; cuba lagi"
   }
 }

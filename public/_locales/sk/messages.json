@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Tučniak"
+  },
+  "updatesHeading": {
+    "message": "Aktualizácie"
+  },
+  "updatesCurrentVersion": {
+    "message": "Verzia $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Skontrolovať aktualizácie"
+  },
+  "updatesChecking": {
+    "message": "Kontroluje sa…"
+  },
+  "updatesUpToDate": {
+    "message": "Máte najnovšiu verziu"
+  },
+  "updatesCheckFailed": {
+    "message": "Aktualizácie sa nepodarilo skontrolovať. Skontrolujte pripojenie na internet a skúste to znova"
+  },
+  "updatesInstallButton": {
+    "message": "Aktualizovať na v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi sa reštartuje, aby dokončil aktualizáciu"
+  },
+  "updatesDownloading": {
+    "message": "Sťahuje sa…"
+  },
+  "updatesInstalling": {
+    "message": "Inštaluje sa…"
+  },
+  "updatesInstallFailed": {
+    "message": "Aktualizácia sa nedokončila. tomarigi zostáva v aktuálnej verzii; skúste to znova"
   }
 }

@@ -27,12 +27,13 @@ import desktop from "./locales/desktop.mjs";
 import window from "./locales/window.mjs";
 import ask from "./locales/ask.mjs";
 import concierge from "./locales/concierge.mjs";
+import update from "./locales/update.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "..", "public", "_locales");
 
 // Merge the groups into one table. The same key appearing in two groups is an accident, so fail.
-const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge };
+const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge, update };
 
 const MERGED = {};
 for (const [groupName, table] of Object.entries(GROUPS)) {
@@ -140,6 +141,17 @@ export const KEYS = [
   "conciergeSettingsNote",
   "conciergeLookOwl",
   "conciergeLookPenguin",
+  "updatesHeading",
+  "updatesCurrentVersion",
+  "updatesCheckButton",
+  "updatesChecking",
+  "updatesUpToDate",
+  "updatesCheckFailed",
+  "updatesInstallButton",
+  "updatesRestartNote",
+  "updatesDownloading",
+  "updatesInstalling",
+  "updatesInstallFailed",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).
@@ -162,6 +174,8 @@ export const PLACEHOLDERS = {
   byokTestResultFailure: { reason: "$1" },
   eventWaitingVoice: { project: "$1" },
   quotedSnippet: { snippet: "$1" },
+  updatesCurrentVersion: { version: "$1" },
+  updatesInstallButton: { version: "$1" },
 };
 
 // default_locale. English is the fallback for users of unsupported languages.

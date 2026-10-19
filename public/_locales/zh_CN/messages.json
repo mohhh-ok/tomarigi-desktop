@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "企鹅"
+  },
+  "updatesHeading": {
+    "message": "更新"
+  },
+  "updatesCurrentVersion": {
+    "message": "版本 $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "检查更新"
+  },
+  "updatesChecking": {
+    "message": "正在检查…"
+  },
+  "updatesUpToDate": {
+    "message": "已是最新版本"
+  },
+  "updatesCheckFailed": {
+    "message": "无法检查更新。请检查网络连接后重试"
+  },
+  "updatesInstallButton": {
+    "message": "更新到 v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi 会重新启动以完成更新"
+  },
+  "updatesDownloading": {
+    "message": "正在下载…"
+  },
+  "updatesInstalling": {
+    "message": "正在安装…"
+  },
+  "updatesInstallFailed": {
+    "message": "更新未能完成。tomarigi 仍是当前版本，请重试"
   }
 }

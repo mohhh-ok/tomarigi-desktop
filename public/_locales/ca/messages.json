@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingüí"
+  },
+  "updatesHeading": {
+    "message": "Actualitzacions"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versió $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Cerca actualitzacions"
+  },
+  "updatesChecking": {
+    "message": "S’està cercant…"
+  },
+  "updatesUpToDate": {
+    "message": "Teniu la versió més recent"
+  },
+  "updatesCheckFailed": {
+    "message": "No s’han pogut cercar actualitzacions. Comproveu la connexió a Internet i torneu-ho a provar"
+  },
+  "updatesInstallButton": {
+    "message": "Actualitza a v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi es reinicia per acabar l’actualització"
+  },
+  "updatesDownloading": {
+    "message": "S’està baixant…"
+  },
+  "updatesInstalling": {
+    "message": "S’està instal·lant…"
+  },
+  "updatesInstallFailed": {
+    "message": "L’actualització no s’ha acabat. tomarigi continua a la versió actual; torneu-ho a provar"
   }
 }

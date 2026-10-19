@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingvin"
+  },
+  "updatesHeading": {
+    "message": "Uppdateringar"
+  },
+  "updatesCurrentVersion": {
+    "message": "Version $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Sök efter uppdateringar"
+  },
+  "updatesChecking": {
+    "message": "Söker …"
+  },
+  "updatesUpToDate": {
+    "message": "Du har den senaste versionen"
+  },
+  "updatesCheckFailed": {
+    "message": "Det gick inte att söka efter uppdateringar. Kontrollera internetanslutningen och försök igen"
+  },
+  "updatesInstallButton": {
+    "message": "Uppdatera till v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi startar om för att slutföra uppdateringen"
+  },
+  "updatesDownloading": {
+    "message": "Hämtar …"
+  },
+  "updatesInstalling": {
+    "message": "Installerar …"
+  },
+  "updatesInstallFailed": {
+    "message": "Uppdateringen slutfördes inte. tomarigi har kvar den nuvarande versionen; försök igen"
   }
 }

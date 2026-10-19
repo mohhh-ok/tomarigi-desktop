@@ -1,4 +1,4 @@
-/* Settings view: sound and readout, watched folders, badges, small buttons, API keys, window mode, icon sets */
+/* Settings view: sound and readout, watched folders, badges, small buttons, API keys, window mode, icon sets, updates */
 
 /* End of the settings tab. The two notification toggles ("notify with sound", "read aloud") are parents, and the
    sub-rows right under them (preview buttons, volume sliders) are children. A separator in the same tone as
@@ -404,7 +404,8 @@ button.remove {
 /* Per-project icon set assignments (issue #14). Same separator tone as .roots/.ai-keys */
 .icon-sets,
 .concierge-settings,
-.window-mode {
+.window-mode,
+.update-settings {
   margin-top: 28px;
   padding-top: 16px;
   border-top: 1px solid #2a2922;
@@ -412,7 +413,8 @@ button.remove {
 
 .icon-sets h2,
 .concierge-settings h2,
-.window-mode h2 {
+.window-mode h2,
+.update-settings h2 {
   margin: 0 0 10px;
   font-size: 13px;
   font-weight: 600;
@@ -461,4 +463,59 @@ button.remove {
   margin: 0;
   font-size: 12px;
   color: #8d887c;
+}
+
+/* Updates (settings/update-settings.tsx). The running version, then "Check for updates" or, once found, the update
+   button: the one main action of the section, in the amber of the active tab, larger than the small buttons */
+.update-version {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #d8d3c6;
+  font-variant-numeric: tabular-nums;
+}
+
+button.update-install {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-color: #8a7550;
+  background: rgba(217, 176, 106, 0.18);
+  color: #e8c27e;
+}
+
+button.update-install:hover {
+  background: rgba(217, 176, 106, 0.26);
+}
+
+/* "Downloading…" on its own line, the bar and the percentage under it (side by side they were cramped at 340px) */
+.update-progress {
+  font-size: 13px;
+  color: #d8d3c6;
+}
+
+.update-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.update-progress progress {
+  flex: 1;
+  min-width: 0;
+  accent-color: #d9b06a;
+}
+
+/* "Check for updates" while a check runs: visibly not clickable, next to "Checking…" */
+.update-settings button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.update-settings button:disabled:hover {
+  background: #26251f;
+}
+
+.update-settings p {
+  text-wrap: pretty;
 }

@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Пингвин"
+  },
+  "updatesHeading": {
+    "message": "Актуализации"
+  },
+  "updatesCurrentVersion": {
+    "message": "Версия $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Проверка за актуализации"
+  },
+  "updatesChecking": {
+    "message": "Проверява се…"
+  },
+  "updatesUpToDate": {
+    "message": "Имате най-новата версия"
+  },
+  "updatesCheckFailed": {
+    "message": "Проверката за актуализации не бе успешна. Проверете връзката с интернет и опитайте отново"
+  },
+  "updatesInstallButton": {
+    "message": "Актуализиране до v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi ще се рестартира, за да завърши актуализацията"
+  },
+  "updatesDownloading": {
+    "message": "Изтегля се…"
+  },
+  "updatesInstalling": {
+    "message": "Инсталира се…"
+  },
+  "updatesInstallFailed": {
+    "message": "Актуализацията не завърши. tomarigi остава на текущата версия; опитайте отново"
   }
 }

@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingviin"
+  },
+  "updatesHeading": {
+    "message": "Värskendused"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versioon $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Otsi värskendusi"
+  },
+  "updatesChecking": {
+    "message": "Otsin…"
+  },
+  "updatesUpToDate": {
+    "message": "Sul on uusim versioon"
+  },
+  "updatesCheckFailed": {
+    "message": "Värskendusi ei saanud otsida. Kontrolli internetiühendust ja proovi uuesti"
+  },
+  "updatesInstallButton": {
+    "message": "Värskenda versioonile v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "Värskenduse lõpetamiseks käivitub tomarigi uuesti"
+  },
+  "updatesDownloading": {
+    "message": "Laadin alla…"
+  },
+  "updatesInstalling": {
+    "message": "Paigaldan…"
+  },
+  "updatesInstallFailed": {
+    "message": "Värskendus ei lõppenud. tomarigi jääb praegusele versioonile; proovi uuesti"
   }
 }

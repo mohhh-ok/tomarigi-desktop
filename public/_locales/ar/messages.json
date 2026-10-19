@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "بطريق"
+  },
+  "updatesHeading": {
+    "message": "التحديثات"
+  },
+  "updatesCurrentVersion": {
+    "message": "الإصدار $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "البحث عن تحديثات"
+  },
+  "updatesChecking": {
+    "message": "جارٍ البحث…"
+  },
+  "updatesUpToDate": {
+    "message": "لديك أحدث إصدار"
+  },
+  "updatesCheckFailed": {
+    "message": "تعذّر البحث عن تحديثات. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى"
+  },
+  "updatesInstallButton": {
+    "message": "التحديث إلى v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "يُعاد تشغيل tomarigi لإكمال التحديث"
+  },
+  "updatesDownloading": {
+    "message": "جارٍ التنزيل…"
+  },
+  "updatesInstalling": {
+    "message": "جارٍ التثبيت…"
+  },
+  "updatesInstallFailed": {
+    "message": "لم يكتمل التحديث. يبقى tomarigi على الإصدار الحالي؛ حاول مرة أخرى"
   }
 }

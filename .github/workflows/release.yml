@@ -1,6 +1,8 @@
 # Pushing a v* tag builds a signed and notarized universal .dmg and attaches it to a draft GitHub Release, then
 # the Windows installer (NSIS, not code-signed) and the Linux packages (deb, AppImage) to the same draft.
 # Publish the draft by hand after checking it. Required secrets are listed in docs/release.md
+# Every build also makes signed updater bundles, and tauri-action adds each platform to latest.json on the release,
+# which the app's updater reads once the release is published (docs/design.md "Updates")
 # Started by hand (workflow_dispatch), it runs the same builds without signing, makes no release, and keeps the
 # bundles as workflow artifacts instead (docs/release.md "Building without a release")
 name: Release
@@ -63,8 +65,12 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tauriScript: bun run tauri
+          # The .app.tar.gz for the updater comes with the app bundle; latest.json gets it as both darwin-aarch64 and
+          # darwin-x86_64 (it is universal)
           args: --target universal-apple-darwin --bundles app,dmg
           tagName: ${{ github.ref_name }}
           releaseName: tomarigi-desktop ${{ github.ref_name }}
@@ -84,12 +90,13 @@ jobs:
           xcrun stapler staple "$dmg"
           gh release upload "$GITHUB_REF_NAME" "$dmg" --clobber
 
-      # A manual run: no tagName, so tauri-action makes no release; unsigned, since no Apple secrets are passed
+      # A manual run: no tagName, so tauri-action makes no release; unsigned, since no Apple secrets are passed. No updater
+      # bundles either, since they can't be made without the updater key (same in the Windows and Linux jobs)
       - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         if: github.event_name == 'workflow_dispatch'
         with:
           tauriScript: bun run tauri
-          args: --target universal-apple-darwin --bundles app,dmg
+          args: --target universal-apple-darwin --bundles app,dmg --config '{"bundle":{"createUpdaterArtifacts":false}}'
           uploadWorkflowArtifacts: true
 
   # Tomarigi's VS Code extension (vscode-extension/). Tests it inside a downloaded VS Code and attaches the .vsix to the
@@ -153,7 +160,9 @@ jobs:
           if-no-files-found: error
 
   # Windows and Linux run after the macOS job so that it creates the draft release first and they add to it
-  # (two jobs creating the draft at once could make two drafts). docs/design.md "Platforms"
+  # (two jobs creating the draft at once could make two drafts). docs/design.md "Platforms".
+  # Linux also waits for Windows: tauri-action reads latest.json from the release, adds its platforms, and uploads it
+  # again, so two jobs doing that at once could drop the other's entries
   release-windows:
     permissions:
       contents: write
@@ -179,6 +188,8 @@ jobs:
         if: github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tauriScript: bun run tauri
           args: --bundles nsis
@@ -190,13 +201,13 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         with:
           tauriScript: bun run tauri
-          args: --bundles nsis
+          args: --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
           uploadWorkflowArtifacts: true
 
   release-linux:
     permissions:
       contents: write
-    needs: release
+    needs: [release, release-windows]
     # The oldest supported Ubuntu, so the deb and AppImage run on older glibc too
     runs-on: ubuntu-22.04
     steps:
@@ -224,6 +235,8 @@ jobs:
         if: github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tauriScript: bun run tauri
           args: --bundles deb,appimage
@@ -235,5 +248,5 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         with:
           tauriScript: bun run tauri
-          args: --bundles deb,appimage
+          args: --bundles deb,appimage --config '{"bundle":{"createUpdaterArtifacts":false}}'
           uploadWorkflowArtifacts: true

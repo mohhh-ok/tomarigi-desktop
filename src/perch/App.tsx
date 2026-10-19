@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MdBugReport, MdClose, MdSettings, MdVolumeUp } from "react-icons/md";
 import { t } from "@/lib/i18n";
@@ -24,6 +25,7 @@ import { EVENT, EventIcon } from "./event-kind";
 import { EventFeed } from "./event-feed";
 import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
+import { useUpdates } from "./use-updates";
 import { onFadeHandlePointerDown, useGardenFade } from "./garden-fade";
 import { useGardenGrow } from "./garden-grow";
 import { BackBar } from "./back-bar";
@@ -31,6 +33,7 @@ import { AiKeySettings } from "./settings/ai-key-settings";
 import { IconSetSettings, type IconSetRow } from "./settings/icon-set-settings";
 import { RootAddDialog } from "./settings/root-add-dialog";
 import { RootManager, type Editing } from "./settings/root-manager";
+import { UpdateSettings } from "./settings/update-settings";
 import { useSettings } from "./use-settings";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
@@ -93,6 +96,7 @@ export default function App({
   const [editing, setEditing] = useState<Editing | null>(null);
   const [addMessage, setAddMessage] = useState<string | null>(null);
   const [windowMode, setWindowMode] = useWindowMode();
+  const updates = useUpdates();
   const {
     muted,
     mutedRef,
@@ -141,6 +145,17 @@ export default function App({
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [settingsOpen, showDebug, rootDialogOpen, editing]);
+  // The menu bar's update item opens settings at the update section, where its result and progress are shown
+  // (tray.rs on_update_item)
+  useEffect(() => {
+    const unlisten = listen("open-updates", () => {
+      setShowDebug(false);
+      setSettingsOpen(true);
+      // After the scroll reset below runs for the newly opened settings
+      requestAnimationFrame(() => document.querySelector(".update-settings")?.scrollIntoView({ block: "center" }));
+    });
+    return () => void unlisten.then((f) => f());
+  }, []);
   // Settings, the debug log, and the tabs share one scroll area, so start each side from the top instead of carrying over where the
   // other one was scrolled to
   const pageBodyRef = useRef<HTMLDivElement>(null);
@@ -772,6 +787,12 @@ export default function App({
                 {t("windowModeNormal")}
               </label>
             </section>
+            <UpdateSettings
+              status={updates.status}
+              version={updates.version}
+              onCheck={updates.check}
+              onInstall={updates.install}
+            />
           </section>
         </>
       )}

@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "펭귄"
+  },
+  "updatesHeading": {
+    "message": "업데이트"
+  },
+  "updatesCurrentVersion": {
+    "message": "버전 $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "업데이트 확인"
+  },
+  "updatesChecking": {
+    "message": "확인하는 중…"
+  },
+  "updatesUpToDate": {
+    "message": "최신 버전입니다"
+  },
+  "updatesCheckFailed": {
+    "message": "업데이트를 확인할 수 없습니다. 인터넷 연결을 확인한 뒤 다시 시도하세요"
+  },
+  "updatesInstallButton": {
+    "message": "v$VERSION$(으)로 업데이트",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "업데이트를 마치려면 tomarigi가 다시 시작됩니다"
+  },
+  "updatesDownloading": {
+    "message": "다운로드하는 중…"
+  },
+  "updatesInstalling": {
+    "message": "설치하는 중…"
+  },
+  "updatesInstallFailed": {
+    "message": "업데이트를 마치지 못했습니다. tomarigi는 현재 버전 그대로입니다. 다시 시도하세요"
   }
 }

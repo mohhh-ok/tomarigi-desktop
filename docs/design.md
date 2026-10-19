@@ -299,6 +299,10 @@ The app updates itself with Tauri's official updater plugin (the user chose it o
 - Bundles: macOS `.app.tar.gz` (universal), Windows NSIS, Linux AppImage and .deb (the updater plugin supports .deb from 2.10.0)
 - Signing: update bundles are signed with an updater key pair, separate from Apple's signing (the plugin requires it). The public key is in `tauri.conf.json`. The private key and its password are GitHub secrets for CI, with a backup in Google Secret Manager (the user has no password manager: 「1passwordとかもってないんだよなぁ。google secret managerくらいしかもってない」; the project is the user's personal `mycloud-56789`, which already keeps their other backup secrets, Claude's own decision). Losing the key would leave existing users unable to update, so the backup is required. Names and steps are in docs/release.md
 - Versions before the first one with the updater can't update themselves; their users replace the app by hand once
+- The checking, downloading, and installing are done on the Rust side (`src-tauri/src/updater.rs`), since the menu bar item has to work without the window; the window only shows the status and asks for a check or an install. So the webview gets no updater permissions, and the relaunch is Tauri's own `AppHandle::restart` instead of the process plugin (Claude's own decision)
+- Clicking the menu bar item opens the window on the settings' Updates section, so the result of a check and the download progress are visible (Claude's own decision)
+- The menu bar item is "Check for Updates", "Checking for Updates…" (greyed) during a manual check, "Update to v<version>" once found, and "Updating…" (greyed) while downloading and installing. Japanese / English like the rest of the menu (Claude's own decision)
+- A debug build checks `TOMARIGI_UPDATER_ENDPOINT` instead of GitHub when it is set, so the whole flow can be tried against a local `latest.json` before a release (the plugin allows http only in debug builds) (Claude's own decision)
 
 ## Other
 

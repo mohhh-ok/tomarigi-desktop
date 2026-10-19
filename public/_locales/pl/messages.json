@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingwin"
+  },
+  "updatesHeading": {
+    "message": "Aktualizacje"
+  },
+  "updatesCurrentVersion": {
+    "message": "Wersja $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Sprawdź aktualizacje"
+  },
+  "updatesChecking": {
+    "message": "Sprawdzanie…"
+  },
+  "updatesUpToDate": {
+    "message": "Masz najnowszą wersję"
+  },
+  "updatesCheckFailed": {
+    "message": "Nie udało się sprawdzić aktualizacji. Sprawdź połączenie z internetem i spróbuj ponownie"
+  },
+  "updatesInstallButton": {
+    "message": "Zaktualizuj do v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi uruchomi się ponownie, aby dokończyć aktualizację"
+  },
+  "updatesDownloading": {
+    "message": "Pobieranie…"
+  },
+  "updatesInstalling": {
+    "message": "Instalowanie…"
+  },
+  "updatesInstallFailed": {
+    "message": "Aktualizacja się nie powiodła. tomarigi pozostaje w obecnej wersji; spróbuj ponownie"
   }
 }

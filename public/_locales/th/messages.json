@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "เพนกวิน"
+  },
+  "updatesHeading": {
+    "message": "อัปเดต"
+  },
+  "updatesCurrentVersion": {
+    "message": "เวอร์ชัน $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "ตรวจหาอัปเดต"
+  },
+  "updatesChecking": {
+    "message": "กำลังตรวจสอบ…"
+  },
+  "updatesUpToDate": {
+    "message": "คุณใช้เวอร์ชันล่าสุดอยู่แล้ว"
+  },
+  "updatesCheckFailed": {
+    "message": "ตรวจหาอัปเดตไม่ได้ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง"
+  },
+  "updatesInstallButton": {
+    "message": "อัปเดตเป็น v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi จะเริ่มใหม่เพื่อให้การอัปเดตเสร็จสมบูรณ์"
+  },
+  "updatesDownloading": {
+    "message": "กำลังดาวน์โหลด…"
+  },
+  "updatesInstalling": {
+    "message": "กำลังติดตั้ง…"
+  },
+  "updatesInstallFailed": {
+    "message": "อัปเดตไม่สำเร็จ tomarigi ยังเป็นเวอร์ชันเดิม ลองอีกครั้ง"
   }
 }

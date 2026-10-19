@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Tučňák"
+  },
+  "updatesHeading": {
+    "message": "Aktualizace"
+  },
+  "updatesCurrentVersion": {
+    "message": "Verze $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Zkontrolovat aktualizace"
+  },
+  "updatesChecking": {
+    "message": "Kontroluje se…"
+  },
+  "updatesUpToDate": {
+    "message": "Máte nejnovější verzi"
+  },
+  "updatesCheckFailed": {
+    "message": "Aktualizace se nepodařilo zkontrolovat. Zkontrolujte připojení k internetu a zkuste to znovu"
+  },
+  "updatesInstallButton": {
+    "message": "Aktualizovat na v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi se restartuje, aby dokončil aktualizaci"
+  },
+  "updatesDownloading": {
+    "message": "Stahuje se…"
+  },
+  "updatesInstalling": {
+    "message": "Instaluje se…"
+  },
+  "updatesInstallFailed": {
+    "message": "Aktualizace se nedokončila. tomarigi zůstává v aktuální verzi; zkuste to znovu"
   }
 }

@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pinguin"
+  },
+  "updatesHeading": {
+    "message": "Actualizări"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versiunea $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Caută actualizări"
+  },
+  "updatesChecking": {
+    "message": "Se caută…"
+  },
+  "updatesUpToDate": {
+    "message": "Aveți cea mai recentă versiune"
+  },
+  "updatesCheckFailed": {
+    "message": "Nu s-au putut căuta actualizări. Verificați conexiunea la internet și încercați din nou"
+  },
+  "updatesInstallButton": {
+    "message": "Actualizează la v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi repornește pentru a finaliza actualizarea"
+  },
+  "updatesDownloading": {
+    "message": "Se descarcă…"
+  },
+  "updatesInstalling": {
+    "message": "Se instalează…"
+  },
+  "updatesInstallFailed": {
+    "message": "Actualizarea nu s-a terminat. tomarigi rămâne la versiunea curentă; încercați din nou"
   }
 }

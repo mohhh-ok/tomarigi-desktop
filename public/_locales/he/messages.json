@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "פינגווין"
+  },
+  "updatesHeading": {
+    "message": "עדכונים"
+  },
+  "updatesCurrentVersion": {
+    "message": "גרסה $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "חיפוש עדכונים"
+  },
+  "updatesChecking": {
+    "message": "מחפש…"
+  },
+  "updatesUpToDate": {
+    "message": "הגרסה שלך היא העדכנית ביותר"
+  },
+  "updatesCheckFailed": {
+    "message": "לא ניתן היה לחפש עדכונים. בדקו את החיבור לאינטרנט ונסו שוב"
+  },
+  "updatesInstallButton": {
+    "message": "עדכון ל-v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi יופעל מחדש כדי לסיים את העדכון"
+  },
+  "updatesDownloading": {
+    "message": "מוריד…"
+  },
+  "updatesInstalling": {
+    "message": "מתקין…"
+  },
+  "updatesInstallFailed": {
+    "message": "העדכון לא הושלם. tomarigi נשאר בגרסה הנוכחית; נסו שוב"
   }
 }

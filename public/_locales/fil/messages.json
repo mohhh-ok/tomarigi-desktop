@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Penguin"
+  },
+  "updatesHeading": {
+    "message": "Mga update"
+  },
+  "updatesCurrentVersion": {
+    "message": "Bersyon $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Tingnan kung may update"
+  },
+  "updatesChecking": {
+    "message": "Tinitingnan…"
+  },
+  "updatesUpToDate": {
+    "message": "Nasa pinakabagong bersyon ka na"
+  },
+  "updatesCheckFailed": {
+    "message": "Hindi matingnan ang mga update. Tingnan ang koneksyon sa internet at subukang muli"
+  },
+  "updatesInstallButton": {
+    "message": "I-update sa v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "Magre-restart ang tomarigi para tapusin ang update"
+  },
+  "updatesDownloading": {
+    "message": "Dina-download…"
+  },
+  "updatesInstalling": {
+    "message": "Ini-install…"
+  },
+  "updatesInstallFailed": {
+    "message": "Hindi natapos ang update. Nasa kasalukuyang bersyon pa rin ang tomarigi; subukang muli"
   }
 }

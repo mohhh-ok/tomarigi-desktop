@@ -1,6 +1,6 @@
 # Release
 
-Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. After that job, the Windows installer (NSIS `.exe`, unsigned) and the Linux packages (`.deb`, `.AppImage`) are built and attached to the same draft. Publish the draft by hand after checking it.
+Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. After that job, the Windows installer (NSIS `.exe`, unsigned) and then the Linux packages (`.deb`, `.AppImage`) are built and attached to the same draft. Each job also attaches the updater bundles with their signatures and adds its platforms to `latest.json` on the draft (the Linux job waits for the Windows job so they don't overwrite each other's `latest.json`). Publish the draft by hand after checking it; the app's updater only sees a release once it is published (docs/design.md "Updates").
 
 ## Cutting a release
 
@@ -48,8 +48,23 @@ hdiutil detach "$M"
 | `APPLE_ID` | The Apple ID email of the developer account |
 | `APPLE_PASSWORD` | An app-specific password for that Apple ID (account.apple.com → Sign-In and Security → App-Specific Passwords) |
 | `APPLE_TEAM_ID` | The team ID (developer.apple.com → Membership details) |
+| `TAURI_SIGNING_PRIVATE_KEY` | The updater's private key (the file written by `bunx tauri signer generate -w <file>`), as is |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | The password of that key, with no trailing newline |
 
 The Developer ID Application certificate can only be created by the Account Holder of the developer account (developer.apple.com → Certificates → +). The Apple Development certificate used by `bun run build:verify` can't be used for distribution.
+
+### The updater key
+
+The updater (docs/design.md "Updates") only installs bundles signed with the key whose public half is `plugins.updater.pubkey` in `src-tauri/tauri.conf.json`. The tag run signs the macOS `.app.tar.gz`, the Windows `.exe`, and the Linux `.AppImage` / `.deb` with the two secrets above and writes their signatures into `latest.json` on the release. The manual run builds without updater bundles (`createUpdaterArtifacts: false` in its `--config`), since it gets no secrets.
+
+The key and its password are also kept in Google Secret Manager, project `mycloud-56789`, as `tomarigi-desktop-updater-private-key` and `tomarigi-desktop-updater-private-key-password` (GitHub secrets can't be read back). To restore them into the repository secrets:
+
+```sh
+gcloud secrets versions access latest --secret=tomarigi-desktop-updater-private-key --project mycloud-56789 | gh secret set TAURI_SIGNING_PRIVATE_KEY -R mohhh-ok/tomarigi-desktop
+gcloud secrets versions access latest --secret=tomarigi-desktop-updater-private-key-password --project mycloud-56789 | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD -R mohhh-ok/tomarigi-desktop
+```
+
+If the key is lost, nothing installed can update itself again: a new key pair means a new public key in the app, which the versions already installed don't have, so every user would have to replace the app by hand once more. If the key leaks, anyone with it could sign an update the app would accept; make a new pair, ship it, and ask users to replace the app by hand.
 
 ## Signing and Apple Events
 
@@ -75,7 +90,7 @@ When the extension is published, README can point to the marketplace instead of 
 
 ## Windows and Linux
 
-The Windows and Linux jobs run after the macOS job (`needs: release`), so the macOS job creates the draft and they add to it. They need no secrets. The Windows installer is not code-signed (docs/design.md "Platforms"), so SmartScreen warns on first run.
+The Windows and Linux jobs run after the macOS job (`needs: release`), so the macOS job creates the draft and they add to it; Linux also runs after Windows, so the two don't update `latest.json` at once. They need no secrets other than the updater key. The Windows installer is not code-signed (docs/design.md "Platforms"), so SmartScreen warns on first run.
 
 What has been checked without real machines (on a Mac): the Linux build, `cargo test`, and a launch under Xvfb in a Docker container (arm64, Debian bookworm; Garden, Perch, and the settings without Secret Service); the Windows build only as far as `cargo check --target x86_64-pc-windows-gnu` (rustup's windows-gnu std, zig as the C compiler, `llvm-rc` for the resources). Nothing below has been checked on a real Windows or Linux machine yet.
 

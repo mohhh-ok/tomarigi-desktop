@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingvīns"
+  },
+  "updatesHeading": {
+    "message": "Atjauninājumi"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versija $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Meklēt atjauninājumus"
+  },
+  "updatesChecking": {
+    "message": "Notiek meklēšana…"
+  },
+  "updatesUpToDate": {
+    "message": "Jums ir jaunākā versija"
+  },
+  "updatesCheckFailed": {
+    "message": "Neizdevās meklēt atjauninājumus. Pārbaudiet interneta savienojumu un mēģiniet vēlreiz"
+  },
+  "updatesInstallButton": {
+    "message": "Atjaunināt uz v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi restartēsies, lai pabeigtu atjaunināšanu"
+  },
+  "updatesDownloading": {
+    "message": "Notiek lejupielāde…"
+  },
+  "updatesInstalling": {
+    "message": "Notiek instalēšana…"
+  },
+  "updatesInstallFailed": {
+    "message": "Atjaunināšana netika pabeigta. tomarigi paliek pašreizējā versijā; mēģiniet vēlreiz"
   }
 }
