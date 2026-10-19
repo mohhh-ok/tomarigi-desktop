@@ -252,6 +252,15 @@ describe("shrinking back when birds leave, with the actual placement (gardenSimu
     expect(r.at.get("b")).toEqual({ x: 264 - lost, y: 4 });
   });
 
+  test("the anchor is read when a size is tried, so one fetched after the placement is the one used", () => {
+    const anchor = { x: 0, y: 0 };
+    const { placed } = leftAt(1.6, [bird("a", { x: 396, y: 4 })], anchor);
+    Object.assign(anchor, { x: 1, y: 0 });
+    const g = gardenAt(1);
+    const lost = gardenAt(1.6).w - g.w;
+    expect(gardenSimulate(placed, g.w, g.h).at.get("a")).toEqual({ x: 396 - lost, y: 4 });
+  });
+
   test("other changes than birds leaving don't shrink it (bubbles and status lines come and go)", () => {
     const kept = { scale: 1.6, count: 4, userW, userH };
     expect(nextGrowScale(kept, 1, 4, userW, userH)).toBe(1.6);

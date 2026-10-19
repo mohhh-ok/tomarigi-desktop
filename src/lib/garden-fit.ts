@@ -62,8 +62,11 @@ export interface PlacedGarden {
   /** Garden size now (px) */
   w: number;
   h: number;
-  /** Part of the window that stays put on screen when it resizes (gardenGrowAnchor in perch/garden-grow.ts) */
-  anchor: Point;
+  /**
+   * Part of the window that stays put on screen when it resizes (gardenGrowAnchor in perch/garden-grow.ts). Read on
+   * each try, so the object may be updated after the placement
+   */
+  anchor: Readonly<Point>;
   /** Boxes that had no spot now: expected to move to the new room, so they don't count as moved */
   overflowIds: ReadonlySet<string>;
 }

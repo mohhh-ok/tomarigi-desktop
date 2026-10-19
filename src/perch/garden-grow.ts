@@ -60,8 +60,10 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
   // The scale applied while growing. Cleared when not growing, so it starts over from the needed scale
   const keptRef = useRef<GrowKept | null>(null);
   const sentRef = useRef<number | undefined>(undefined);
+  // Latest update asked for; an older one whose anchor arrives later is dropped
+  const seqRef = useRef(0);
 
-  const update = useCallback(() => {
+  const decide = useCallback(() => {
     const { active, held, user, birdCount } = inputsRef.current;
     const fit = fitRef.current;
     let scale = 1;
@@ -86,14 +88,24 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
       fit && { ...fit, boxes: fit.boxes.length, simulate: undefined },
     )}`;
     void invoke("log", { line }).catch(() => {});
-    void invoke<{ x: number; y: number } | null>("garden_grow_anchor")
-      .then((anchor) => {
-        if (anchor) Object.assign(gardenGrowAnchor, anchor);
-      })
-      .catch(() => {})
-      .then(() => invoke("garden_fit", { scale }))
-      .catch(() => {});
+    void invoke("garden_fit", { scale }).catch(() => {});
   }, []);
+
+  // The anchor is fetched before the scale is decided, not only before a resize: Garden's simulate tries other sizes
+  // with it, and one left over from before (the window moved to another part of the display while grown, or the page
+  // reloaded and it went back to 0) shrank the window to a size where a block had no spot, and it grew right back
+  // (observed: tried keeping the top-left, resized keeping the bottom-right)
+  const update = useCallback(() => {
+    const seq = ++seqRef.current;
+    void Promise.resolve()
+      .then(() => invoke<{ x: number; y: number } | null>("garden_grow_anchor"))
+      .catch(() => null)
+      .then((anchor) => {
+        if (seq !== seqRef.current) return;
+        if (anchor) Object.assign(gardenGrowAnchor, anchor);
+        decide();
+      });
+  }, [decide]);
 
   useEffect(update, [active, held, user, birdCount, update]);
 

@@ -496,7 +496,8 @@ export function Garden({
       count: sessions.length,
       w: W,
       h: baseH,
-      anchor: { ...gardenGrowAnchor },
+      // Read when tried, not copied now: garden-grow.ts fetches it before deciding the scale
+      anchor: gardenGrowAnchor,
       overflowIds: new Set(overflowAtBase),
     };
     const simulate = (gw: number, gh: number) => {
