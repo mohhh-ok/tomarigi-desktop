@@ -1,4 +1,4 @@
-/* The concierge (docs/design.md "Concierge"). Perch and Recent activity: its advice above the list, laid out like a
+/* The concierge (docs/design.md "Concierge"). Perch: its advice above the list, laid out like a
    Perch row and set apart from the session rows below by a panel so it doesn't read as one more session */
 .concierge-line {
   display: block;

@@ -596,7 +596,6 @@ export default function App({
             hidden={settingsOpen || showDebug || tab !== "events"}
           >
             <div className="stage stage-events">
-              <ConciergeLine advice={concierge.advice} look={conciergeLook} onFocus={onFocusSession} canFocus={canFocus} />
               <EventFeed
                 events={displayEvents}
                 showHeading={false}

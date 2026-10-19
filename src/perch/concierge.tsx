@@ -24,8 +24,9 @@ export function ConciergeGlyph({ look, size }: { look: ConciergeLook; size: numb
 }
 
 /**
- * Perch and Recent activity: the advice above the list, laid out like a Perch row (the concierge and its name on the
- * first line, the advice on the second) so the full line fits. Clicking it jumps like the Garden's concierge
+ * Perch: the advice above the list, laid out like a Perch row (the concierge and its name on the first line, the
+ * advice on the second) so the full line fits. Clicking it jumps like the Garden's concierge. Recent activity has no
+ * concierge: it is a list of past events
  */
 export function ConciergeLine({
   advice,
