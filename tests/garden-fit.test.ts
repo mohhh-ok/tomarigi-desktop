@@ -6,9 +6,13 @@ import {
   gardenFitScale,
   gardenGlyphSize,
   MAX_FIT_SCALE,
+  gardenSimulate,
   nextGrowScale,
+  ROUNDING_PX,
   type GardenFit,
+  type PlacedGarden,
 } from "../src/lib/garden-fit.ts";
+import { PLACE_EDGE_PX, PLACE_GAP_PX, placeBoxes, type PlaceBox, type Point } from "../src/lib/garden-place.ts";
 
 // count birds with no blocks (each 120 wide, 87 + icon tall), header and tabs about 80px tall
 const fit = (count: number, extra: Partial<GardenFit> = {}): GardenFit => ({
@@ -85,14 +89,16 @@ describe("gardenFitScale with the actual placement (simulate)", () => {
   const withSim = (overflow: boolean) => ({ ...fit(5, { overflow }), simulate: (w: number) => sim(w) });
 
   test("overflow: the smallest scale where everything has a spot and nobody moves", () => {
-    // 340 * s - 22 >= 400 → s >= 1.2412 → 1.26 on the 0.02 steps
+    // 340 * s - 22 - 1 (ROUNDING_PX) >= 400 → s >= 1.2441 → 1.26 on the 0.02 steps
     expect(gardenFitScale(340, 400, withSim(true), 1)).toBe(1.26);
   });
 
-  test("nothing overflowed: never grows; shrinks back only as far as nobody moves", () => {
+  test("nothing overflowed: never grows; shrinks back as far as everything has a spot, even if some must move", () => {
     expect(gardenFitScale(340, 400, withSim(false), 1)).toBe(1);
-    // From 1.5: the smallest s with 340 * s - 22 >= 400 (no overflow, no move) is 1.26
-    expect(gardenFitScale(340, 400, withSim(false), 1.5)).toBe(1.26);
+    // A garden that places everything from 350px wide on, and keeps everyone in place only from 400px on
+    const f = { ...fit(5), simulate: (w: number) => ({ overflow: w >= 350 ? 0 : 1, moved: w >= 400 ? 0 : 2 }) };
+    // From 1.5: the smallest s with 340 * s - 22 - 1 >= 350 is 1.0971 → 1.1 on the 0.02 steps (not 1.26, where nobody moves)
+    expect(gardenFitScale(340, 400, f, 1.5)).toBe(1.1);
   });
 });
 
@@ -118,5 +124,137 @@ describe("nextGrowScale", () => {
   });
   test("a different user's size (manual resize): starts over from the needed scale", () => {
     expect(nextGrowScale(kept, 1.1, 5, 300, 350)).toBe(1.1);
+  });
+});
+
+describe("shrinking back when birds leave, with the actual placement (gardenSimulate)", () => {
+  // The user's window is 340x400; header and tabs take 22x80, so the garden is (340s - 22)x(400s - 80) at scale s
+  const userW = 340;
+  const userH = 400;
+  const overheadW = 22;
+  const overheadH = 80;
+  // As tried by gardenFitScale (ROUNDING_PX smaller than the exact size, for the window's whole pixels)
+  const gardenAt = (s: number) => ({ w: userW * s - overheadW - ROUNDING_PX, h: userH * s - overheadH - ROUNDING_PX });
+  const bird = (id: string, at: Point): PlaceBox => ({ id, w: 120, h: 113, at });
+
+  /** The Garden after some birds left the window grown to `grown`: those left stay where they were */
+  const leftAt = (grown: number, left: PlaceBox[], anchor: Point = { x: 0, y: 0 }) => {
+    const g = gardenAt(grown);
+    const shown = placeBoxes(left, g.w, g.h);
+    expect(shown.overflow).toEqual([]);
+    const placed: PlacedGarden = {
+      settled: left.map((b) => ({ ...b, at: shown.at.get(b.id) })),
+      heightAt: new Map(),
+      glyph: 26,
+      count: left.length,
+      w: g.w,
+      h: g.h,
+      anchor,
+      overflowIds: new Set(),
+    };
+    const f: GardenFit = {
+      ...fit(left.length),
+      boxes: left.map(() => ({ w: 120, h0: 87, rows: 1 })),
+      gardenW: g.w,
+      gardenH: g.h,
+      overheadW,
+      overheadH,
+      simulate: (w, h) => gardenSimulate(placed, w, h),
+    };
+    return { placed, f };
+  };
+
+  const noOverlap = (at: Map<string, Point>, boxes: readonly PlaceBox[], w: number, h: number) => {
+    const rects = boxes.map((b) => ({ ...at.get(b.id)!, w: b.w, h: b.h }));
+    for (const r of rects) {
+      expect(r.x).toBeGreaterThanOrEqual(PLACE_EDGE_PX);
+      expect(r.y).toBeGreaterThanOrEqual(PLACE_EDGE_PX);
+      expect(r.x + r.w).toBeLessThanOrEqual(w - PLACE_EDGE_PX + 1e-9);
+      expect(r.y + r.h).toBeLessThanOrEqual(h - PLACE_EDGE_PX + 1e-9);
+    }
+    for (let i = 0; i < rects.length; i++)
+      for (let j = i + 1; j < rects.length; j++) {
+        const a = rects[i];
+        const b = rects[j];
+        const apart =
+          a.x + a.w + PLACE_GAP_PX <= b.x + 1e-9 ||
+          b.x + b.w + PLACE_GAP_PX <= a.x + 1e-9 ||
+          a.y + a.h + PLACE_GAP_PX <= b.y + 1e-9 ||
+          b.y + b.h + PLACE_GAP_PX <= a.y + 1e-9;
+        expect(apart).toBe(true);
+      }
+  };
+
+  test("shrinks to the smallest size above the user's at which all 6 left get a spot; one step less doesn't", () => {
+    // Grown to 1.8 (590x640 garden); 6 birds left, spread over it
+    const left = [
+      bird("a", { x: 4, y: 4 }),
+      bird("b", { x: 200, y: 4 }),
+      bird("c", { x: 460, y: 4 }),
+      bird("d", { x: 4, y: 300 }),
+      bird("e", { x: 300, y: 300 }),
+      bird("f", { x: 460, y: 520 }),
+    ];
+    const { placed, f } = leftAt(1.8, left);
+    const s = gardenFitScale(userW, userH, f, 1.8);
+    expect(s).toBeGreaterThan(1);
+    expect(s).toBeLessThan(1.8);
+    const g = gardenAt(s);
+    const r = gardenSimulate(placed, g.w, g.h);
+    expect(r.overflow).toBe(0);
+    noOverlap(r.at, r.tried, g.w, g.h);
+    const less = gardenAt(s - 0.02);
+    expect(gardenSimulate(placed, less.w, less.h).overflow).toBeGreaterThan(0);
+    // The window takes whole pixels: rounded down, they still all get a spot
+    const shown = gardenSimulate(placed, Math.floor(userW * s) - overheadW, Math.floor(userH * s) - overheadH);
+    expect(shown.overflow).toBe(0);
+  });
+
+  test("never below the user's size, even when the birds left would fit in less", () => {
+    const { f } = leftAt(1.6, [bird("a", { x: 380, y: 400 })]);
+    expect(gardenFitScale(userW, userH, f, 1.6)).toBe(1);
+  });
+
+  test("only birds that stick out of the smaller garden move, to the nearest free spot; the others keep their place", () => {
+    // Grown to 1.6 (522x560 garden): a and b fit in the user's 318x320 garden, c sticks out on the right, d at the bottom
+    const left = [
+      bird("a", { x: 4, y: 4 }),
+      bird("b", { x: 136, y: 4 }),
+      bird("c", { x: 396, y: 4 }),
+      bird("d", { x: 4, y: 440 }),
+    ];
+    const { placed, f } = leftAt(1.6, left);
+    const s = gardenFitScale(userW, userH, f, 1.6);
+    expect(s).toBe(1);
+    const g = gardenAt(s);
+    const r = gardenSimulate(placed, g.w, g.h);
+    expect(r.overflow).toBe(0);
+    noOverlap(r.at, r.tried, g.w, g.h);
+    expect(r.at.get("a")).toEqual({ x: 4, y: 4 });
+    expect(r.at.get("b")).toEqual({ x: 136, y: 4 });
+    // c and d moved into the free room below a and b (noOverlap above: inside the garden, apart from the others)
+    expect(r.at.get("c")).not.toEqual({ x: 396, y: 4 });
+    expect(r.at.get("d")).not.toEqual({ x: 4, y: 440 });
+    expect(r.at.get("c")!.y).toBeGreaterThan(4);
+    expect(r.at.get("d")!.y).toBeLessThan(440);
+  });
+
+  test("a window that grew left shrinks toward its right edge: the birds keep their place on screen", () => {
+    // Anchor x = 1: the right edge stays put, so the garden's left edge moves right by the width it loses
+    const left = [bird("a", { x: 396, y: 4 }), bird("b", { x: 264, y: 4 })];
+    const { placed, f } = leftAt(1.6, left, { x: 1, y: 0 });
+    const s = gardenFitScale(userW, userH, f, 1.6);
+    expect(s).toBe(1);
+    const g = gardenAt(s);
+    const r = gardenSimulate(placed, g.w, g.h);
+    const lost = gardenAt(1.6).w - g.w;
+    expect(r.at.get("a")).toEqual({ x: 396 - lost, y: 4 });
+    expect(r.at.get("b")).toEqual({ x: 264 - lost, y: 4 });
+  });
+
+  test("other changes than birds leaving don't shrink it (bubbles and status lines come and go)", () => {
+    const kept = { scale: 1.6, count: 4, userW, userH };
+    expect(nextGrowScale(kept, 1, 4, userW, userH)).toBe(1.6);
+    expect(nextGrowScale(kept, 1, 3, userW, userH)).toBe(1);
   });
 });

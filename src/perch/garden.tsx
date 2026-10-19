@@ -17,8 +17,10 @@ import {
 } from "@/lib/garden-layout";
 import {
   gardenGlyphSize,
+  gardenSimulate,
   type FitBox,
   type GardenFit,
+  type PlacedGarden,
 } from "@/lib/garden-fit";
 import { PLACE_EDGE_PX, placeBoxes, shiftPoints, type PlaceBox, type Point } from "@/lib/garden-place";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
@@ -485,30 +487,21 @@ export function Garden({
     ];
     const over = overflowAtBase.map((id) => boxes.find((b) => b.id === id)!);
     // The same placement at another garden size, as if the window were resized to it: what is on screen shifted to
-    // stay at the same place on screen (gardenGrowAnchor), what had no spot placed again. For growing only as far as
-    // needed and shrinking back only as far as nothing moves (garden-grow.ts)
-    const anchor = { ...gardenGrowAnchor };
-    const count = sessions.length;
+    // stay at the same place on screen (gardenGrowAnchor), what had no spot or sticks out placed again. For growing
+    // only as far as needed and shrinking back as far as everything still gets a spot (garden-grow.ts)
+    const placed: PlacedGarden = {
+      settled,
+      heightAt,
+      glyph: glyphSize,
+      count: sessions.length,
+      w: W,
+      h: baseH,
+      anchor: { ...gardenGrowAnchor },
+      overflowIds: new Set(overflowAtBase),
+    };
     const simulate = (gw: number, gh: number) => {
-      const h = gh;
-      const glyph = Math.min(glyphSize, gardenGlyphSize(gw, gh, count));
-      const dx = (gw - W) * anchor.x;
-      const dy = (h - baseH) * anchor.y;
-      const tried = settled.map((b): PlaceBox => {
-        const bh = heightAt.get(b.id)?.(glyph) ?? b.h;
-        const move = (p: Point) => ({ x: p.x + dx, y: p.y + dy });
-        if (b.at) return { id: b.id, w: b.w, h: bh, at: move(b.at) };
-        return { id: b.id, w: b.w, h: bh, want: b.want && move(b.want) };
-      });
-      const result = placeBoxes(tried, gw, h);
-      let moved = 0;
-      for (const b of tried) {
-        const to = result.at.get(b.id)!;
-        // What overlapped for want of a spot is expected to move to the new room
-        if (overflowAtBase.includes(b.id)) continue;
-        if (b.at && (Math.abs(to.x - b.at.x) > 0.5 || Math.abs(to.y - b.at.y) > 0.5)) moved++;
-      }
-      return { overflow: result.overflow.length, moved };
+      const { overflow, moved } = gardenSimulate(placed, gw, gh);
+      return { overflow, moved };
     };
     fitBase = {
       simulate,

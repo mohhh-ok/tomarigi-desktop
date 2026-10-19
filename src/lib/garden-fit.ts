@@ -2,7 +2,7 @@
 // The Garden reports whether its actual placement (placeBoxes in lib/garden-place.ts, with the birds on screen kept
 // where they are) left a bird without a free spot. The window grows only then, and only by as much as needed.
 
-import { PLACE_GAP_PX, placeBoxes } from "./garden-place";
+import { PLACE_GAP_PX, placeBoxes, type PlaceBox, type Point } from "./garden-place";
 
 // Bird icon size limits (px). 26px is the smallest that stays readable (the user's decision; birds are not made
 // smaller to fit)
@@ -49,6 +49,51 @@ export interface GardenFit {
   simulate?: (w: number, h: number) => { overflow: number; moved: number };
 }
 
+/** What the Garden placed at its current size, for trying the same placement at another size (gardenSimulate) */
+export interface PlacedGarden {
+  /** Boxes in placement order: what has a spot as `at`, what had no spot (overlapping) as `want` from where it is */
+  settled: readonly PlaceBox[];
+  /** Footprint height of a box at another icon size (boxes without one keep their height) */
+  heightAt: ReadonlyMap<string, (glyph: number) => number>;
+  /** Icon size now */
+  glyph: number;
+  /** Number of birds (for the icon size) */
+  count: number;
+  /** Garden size now (px) */
+  w: number;
+  h: number;
+  /** Part of the window that stays put on screen when it resizes (gardenGrowAnchor in perch/garden-grow.ts) */
+  anchor: Point;
+  /** Boxes that had no spot now: expected to move to the new room, so they don't count as moved */
+  overflowIds: ReadonlySet<string>;
+}
+
+/**
+ * The Garden's actual placement tried at another garden size (gw×gh), as if the window were resized to it: what is on
+ * screen shifted to stay at the same place on screen, a box that then sticks out or overlaps moved to the nearest free
+ * spot inside, what had no spot placed again (placeBoxes, the same as on the next render). Returns how many have no
+ * spot, how many on screen would move, and where everything goes
+ */
+export function gardenSimulate(placed: PlacedGarden, gw: number, gh: number) {
+  const glyph = Math.min(placed.glyph, gardenGlyphSize(gw, gh, placed.count));
+  const dx = (gw - placed.w) * placed.anchor.x;
+  const dy = (gh - placed.h) * placed.anchor.y;
+  const move = (p: Point) => ({ x: p.x + dx, y: p.y + dy });
+  const tried = placed.settled.map((b): PlaceBox => {
+    const h = placed.heightAt.get(b.id)?.(glyph) ?? b.h;
+    if (b.at) return { id: b.id, w: b.w, h, at: move(b.at) };
+    return { id: b.id, w: b.w, h, want: b.want && move(b.want) };
+  });
+  const result = placeBoxes(tried, gw, gh);
+  let moved = 0;
+  for (const b of tried) {
+    const to = result.at.get(b.id)!;
+    if (placed.overflowIds.has(b.id)) continue;
+    if (b.at && (Math.abs(to.x - b.at.x) > 0.5 || Math.abs(to.y - b.at.y) > 0.5)) moved++;
+  }
+  return { overflow: result.overflow.length, moved, at: result.at, tried };
+}
+
 /**
  * Whether the footprints fit in an empty garden of w×h px, packed from the top-left (placeBoxes). Used only to find how
  * far to grow; whether to grow at all comes from the actual placement (GardenFit.overflow)
@@ -65,6 +110,9 @@ export function gardenFits(w: number, h: number, fit: Pick<GardenFit, "count" | 
 const SCALE_STEP = 0.02;
 // Upper end of the search. The Rust side caps the window at the display's visible area anyway
 export const MAX_FIT_SCALE = 8;
+
+// Room left for the window's size being rounded to whole pixels (see gardenFitScale)
+export const ROUNDING_PX = 1;
 
 const roundUp = (s: number) => Math.min(MAX_FIT_SCALE, Math.ceil(s / SCALE_STEP - 1e-9) * SCALE_STEP);
 
@@ -91,8 +139,9 @@ function emptyFitScale(userW: number, userH: number, fit: GardenFit): number {
  *   with the birds on screen kept at the same place on screen) gives everything a spot without moving anyone; failing
  *   that, the smallest at which everything has a spot
  * - Nothing overflowed: never more than current (no growing when they fit; the user's report was a window grown with
- *   the birds sparse). The smallest scale at which nothing would overflow or move, for shrinking back after birds left
- *   (nextGrowScale decides whether to shrink)
+ *   the birds sparse). The smallest scale at which the actual placement gives everything a spot, for shrinking back
+ *   after birds left (nextGrowScale decides whether to shrink). Birds that would stick out of the smaller garden may
+ *   move to the nearest free spot inside, as on a manual shrink; requiring that nobody moves left the window grown
  * Without fit.simulate, an estimate: enough for the footprints to fit in an empty garden, and when something
  * overflowed, at least a strip as wide or tall as the footprint that had no spot
  */
@@ -103,7 +152,11 @@ export function gardenFitScale(userW: number, userH: number, fit: GardenFit, cur
   const scaleAt = (i: number) => Math.round((1 + i * SCALE_STEP) * 100) / 100;
   const simulate = fit.simulate;
   if (simulate) {
-    const at = (s: number) => simulate(userW * s - fit.overheadW, userH * s - fit.overheadH);
+    // Tried 1px smaller than the exact size: the window takes whole pixels (rounded on the Rust side) and the overhead
+    // is measured rounded, so the garden can come out a fraction smaller. Shrinking to a size that fit only by that
+    // fraction left a block without a spot and grew the window right back (observed: 574.02 tried, 574 shown)
+    const at = (s: number) =>
+      simulate(userW * s - fit.overheadW - ROUNDING_PX, userH * s - fit.overheadH - ROUNDING_PX);
     // Smallest step index in lo..hi for which ok holds, assuming more room never makes it worse (binary search: a
     // placement can take tens of ms with many birds, so not every step is tried)
     const first = (lo: number, hi: number, ok: (s: number) => boolean): number | undefined => {
@@ -126,10 +179,7 @@ export function gardenFitScale(userW: number, userH: number, fit: GardenFit, cur
       }
       return scaleAt(placed);
     }
-    const keep = first(0, baseStep - 1, (s) => {
-      const r = at(s);
-      return r.overflow === 0 && r.moved === 0;
-    });
+    const keep = first(0, baseStep - 1, (s) => at(s).overflow === 0);
     return keep === undefined ? base : scaleAt(keep);
   }
   const empty = emptyFitScale(userW, userH, fit);
