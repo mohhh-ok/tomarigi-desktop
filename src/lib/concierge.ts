@@ -210,6 +210,8 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "session will check it later (e.g. an export or a build is running and it will look at the log at some time), " +
     "the session is still working, waiting on its own work: do not call it finished, do not tell the developer " +
     "to check its result or to do the checks it said it will do itself, and do not advise about it.\n" +
+    "While any session needs a reply now, advise about one of those, never about a finished or working session; " +
+    "an advice about another session is not shown then.\n" +
     "Only a session whose needs_reply is true now (or that you judged as waiting from last_reply_tail) may be " +
     "advised to reply, answer, or check its question or request. A session in state done that does not need a " +
     "reply has finished its turn: if you advise about it, say it finished and its result is ready to check " +
@@ -273,26 +275,44 @@ export function adviceNamesTarget(line: string, name: string): boolean {
 
 type Run = <V>(task: JudgeTaskDefinition, payload: unknown) => Promise<JudgeResult<V>>;
 
+/** An advice that isn't shown, and why: it doesn't contain its session's name, or it is about a session that doesn't
+ * need a reply while another does */
+export interface DroppedConciergeAdvice extends ConciergeAdvice {
+  targetId: string;
+  reason: "no_name" | "not_waiting";
+}
+
+/** Why an advice about a sent session isn't shown, or undefined when it is (docs/design.md "Concierge") */
+function dropReason(advice: ConciergeAdvice, sessions: PayloadSession[]): DroppedConciergeAdvice["reason"] | undefined {
+  const target = sessions.find((s) => s.id === advice.targetId);
+  if (!target) return undefined;
+  if (!adviceNamesTarget(advice.line, target.name)) return "no_name";
+  // A "?" from Jev counts too, even if the concierge judged it as not waiting from the reply: then no advice is
+  // shown rather than one about another session (Claude's own decision)
+  if (!target.needs_reply && sessions.some((s) => s.needs_reply)) return "not_waiting";
+  return undefined;
+}
+
 /**
  * Asks the concierge once. Errors are returned as a JudgeResult, not thrown. answer is the verdict as the AI gave it
  * (including an id that is ignored), for the debug log screen. An advice about a session that doesn't contain its
- * name is not shown: the verdict is null and the advice goes in dropped, for the debug log screen (the prompt alone
- * didn't hold). run is swapped in tests
+ * name, or about a session that doesn't need a reply while another does, is not shown: the verdict is null and the
+ * advice goes in dropped with the reason, for the debug log screen (the prompt alone didn't hold). An advice without
+ * a target is not checked. run is swapped in tests
  */
 export async function askConcierge(
   provider: AiProvider,
   payload: ConciergePayload,
   run: Run = provider === "openai" ? runOpenAiJudge : runJudge,
-): Promise<JudgeResult<ConciergeAdvice | null> & { answer?: unknown; dropped?: ConciergeAdvice }> {
+): Promise<JudgeResult<ConciergeAdvice | null> & { answer?: unknown; dropped?: DroppedConciergeAdvice }> {
   const result = await run<ConciergeVerdict>(CONCIERGE_TASK, payload);
   if (!result.ok) return result;
-  const names = new Map(payload.sessions.map((s) => [s.id, s.name]));
-  const parsed = parseConciergeVerdict(result.verdict, new Set(names.keys()));
-  const unnamed = parsed?.targetId !== undefined && !adviceNamesTarget(parsed.line, names.get(parsed.targetId)!);
+  const parsed = parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id)));
+  const reason = parsed && dropReason(parsed, payload.sessions);
   return {
     ok: true,
-    verdict: unnamed ? null : parsed,
-    ...(unnamed && { dropped: parsed! }),
+    verdict: reason ? null : parsed,
+    ...(reason && { dropped: { line: parsed!.line, targetId: parsed!.targetId!, reason } }),
     answer: result.verdict,
     ...(result.usage && { usage: result.usage }),
   };
@@ -501,7 +521,7 @@ export function recentJumps(): ConciergeJump[] {
 
 export interface ConciergeLogEntry {
   at: number;
-  /** dropped: an advice that wasn't shown because it doesn't contain its session's name */
+  /** dropped: an advice that wasn't shown (no session name, or not about a session that needs a reply while one does) */
   kind: "request" | "advice" | "none" | "dropped" | "error";
   text: string;
   /** The full input of a request, or the answer as the AI gave it, as JSON. Holds text from the sessions, so it is

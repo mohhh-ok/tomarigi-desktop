@@ -104,7 +104,7 @@ export function useConcierge(
         ...(next
           ? { at: Date.now(), kind: "advice", text: `${next.line}${next.targetId ? ` → ${next.targetId}` : " (no target)"}${tokens}` }
           : result.dropped
-            ? { at: Date.now(), kind: "dropped", text: `not shown, no session name: ${result.dropped.line} → ${result.dropped.targetId}${tokens}` }
+            ? { at: Date.now(), kind: "dropped", text: `not shown, ${result.dropped.reason === "no_name" ? "no session name" : "another session needs a reply"}: ${result.dropped.line} → ${result.dropped.targetId}${tokens}` }
             : { at: Date.now(), kind: "none", text: `no advice${tokens}` }),
         ...(detail !== undefined && { detail }),
       });
@@ -112,7 +112,7 @@ export function useConcierge(
         line: next
           ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}${tokens}`
           : result.dropped
-            ? `[concierge] dropped no-name len=${result.dropped.line.length} target=${result.dropped.targetId}${tokens}`
+            ? `[concierge] dropped ${result.dropped.reason} len=${result.dropped.line.length} target=${result.dropped.targetId}${tokens}`
             : `[concierge] no advice${tokens}`,
       }).catch(() => {});
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;

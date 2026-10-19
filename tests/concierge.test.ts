@@ -217,6 +217,27 @@ test("the answer: empty advice is no advice; an id that wasn't sent leaves no ju
   expect(parseConciergeVerdict(null, sent)).toBeNull();
 });
 
+test("while a session needs a reply, an advice about another session is not shown, and is kept as dropped", async () => {
+  const payload = buildConciergePayload(
+    [{ view: view("t", { project: "tomarigi-desktop", state: "done" }) }, { view: view("b", { project: "billionclips", state: "waiting" }) }],
+    [], [], NOW, "ja",
+  );
+  const answer = { advice: "完了したtomarigi-desktopの結果を確認", session_id: "t" };
+  const finished = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: answer as V });
+  expect(await askConcierge("openai", payload, finished)).toEqual({
+    ok: true,
+    verdict: null,
+    dropped: { line: answer.advice, targetId: "t", reason: "not_waiting" },
+    answer,
+  });
+  const waiting = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "billionclipsの質問に答える", session_id: "b" } as V });
+  expect(await askConcierge("openai", payload, waiting)).toMatchObject({ verdict: { line: "billionclipsの質問に答える", targetId: "b" } });
+  // With no session needing a reply, a finished session may be advised about
+  const none = buildConciergePayload([{ view: view("t", { project: "tomarigi-desktop", state: "done" }) }], [], [], NOW, "ja");
+  expect(await askConcierge("openai", none, finished)).toMatchObject({ verdict: { line: answer.advice, targetId: "t" } });
+  expect(CONCIERGE_TASK.systemPrompt).toContain("While any session needs a reply now, advise about one of those");
+});
+
 test("the name check: compared after NFKC and lower case, a cut name without its cut mark", () => {
   expect(adviceNamesTarget("yokai-no-senseiが終わりました。結果を確認", "yokai-no-sensei")).toBe(true);
   expect(adviceNamesTarget("Ｙｏｋａｉ-No-Senseiが終わりました", "yokai-no-sensei")).toBe(true);
@@ -227,7 +248,7 @@ test("the name check: compared after NFKC and lower case, a cut name without its
 
 test("an advice about a session without its name is not shown, and is kept as dropped for the debug log", async () => {
   const payload = buildConciergePayload(
-    [{ view: view("y", { project: "yokai-no-sensei", state: "done" }) }, { view: view("a", { state: "waiting" }) }],
+    [{ view: view("y", { project: "yokai-no-sensei", state: "done" }) }, { view: view("a", { state: "working" }) }],
     [], [], NOW, "ja",
   );
   const answer = { advice: "完了したセッションの成果物を順に確認してください", session_id: "y" };
@@ -235,7 +256,7 @@ test("an advice about a session without its name is not shown, and is kept as dr
   expect(await askConcierge("openai", payload, unnamed)).toEqual({
     ok: true,
     verdict: null,
-    dropped: { line: answer.advice, targetId: "y" },
+    dropped: { line: answer.advice, targetId: "y", reason: "no_name" },
     answer,
   });
   // Without a target (none, or an id that wasn't sent) the advice is shown as before
