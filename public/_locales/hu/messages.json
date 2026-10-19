@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingvin"
+  },
+  "updatesHeading": {
+    "message": "Frissítések"
+  },
+  "updatesCurrentVersion": {
+    "message": "Verzió: $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Frissítések keresése"
+  },
+  "updatesChecking": {
+    "message": "Keresés…"
+  },
+  "updatesUpToDate": {
+    "message": "A legújabb verzió van telepítve"
+  },
+  "updatesCheckFailed": {
+    "message": "Nem sikerült frissítéseket keresni. Ellenőrizd az internetkapcsolatot, és próbáld újra"
+  },
+  "updatesInstallButton": {
+    "message": "Frissítés erre: v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "A frissítés befejezéséhez a tomarigi újraindul"
+  },
+  "updatesDownloading": {
+    "message": "Letöltés…"
+  },
+  "updatesInstalling": {
+    "message": "Telepítés…"
+  },
+  "updatesInstallFailed": {
+    "message": "A frissítés nem fejeződött be. A tomarigi a jelenlegi verzión maradt; próbáld újra"
   }
 }

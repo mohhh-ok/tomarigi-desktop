@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Chim cánh cụt"
+  },
+  "updatesHeading": {
+    "message": "Cập nhật"
+  },
+  "updatesCurrentVersion": {
+    "message": "Phiên bản $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Kiểm tra cập nhật"
+  },
+  "updatesChecking": {
+    "message": "Đang kiểm tra…"
+  },
+  "updatesUpToDate": {
+    "message": "Bạn đang dùng phiên bản mới nhất"
+  },
+  "updatesCheckFailed": {
+    "message": "Không thể kiểm tra cập nhật. Hãy kiểm tra kết nối Internet rồi thử lại"
+  },
+  "updatesInstallButton": {
+    "message": "Cập nhật lên v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi sẽ khởi động lại để hoàn tất cập nhật"
+  },
+  "updatesDownloading": {
+    "message": "Đang tải xuống…"
+  },
+  "updatesInstalling": {
+    "message": "Đang cài đặt…"
+  },
+  "updatesInstallFailed": {
+    "message": "Cập nhật chưa hoàn tất. tomarigi vẫn ở phiên bản hiện tại; hãy thử lại"
   }
 }

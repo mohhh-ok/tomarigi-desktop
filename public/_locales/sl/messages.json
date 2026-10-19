@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingvin"
+  },
+  "updatesHeading": {
+    "message": "Posodobitve"
+  },
+  "updatesCurrentVersion": {
+    "message": "Različica $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Preveri posodobitve"
+  },
+  "updatesChecking": {
+    "message": "Preverjanje …"
+  },
+  "updatesUpToDate": {
+    "message": "Imate najnovejšo različico"
+  },
+  "updatesCheckFailed": {
+    "message": "Posodobitev ni bilo mogoče preveriti. Preverite internetno povezavo in poskusite znova"
+  },
+  "updatesInstallButton": {
+    "message": "Posodobi na v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi se znova zažene, da dokonča posodobitev"
+  },
+  "updatesDownloading": {
+    "message": "Prenašanje …"
+  },
+  "updatesInstalling": {
+    "message": "Nameščanje …"
+  },
+  "updatesInstallFailed": {
+    "message": "Posodobitev ni bila dokončana. tomarigi ostaja na trenutni različici; poskusite znova"
   }
 }

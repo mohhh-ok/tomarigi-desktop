@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Penguin"
+  },
+  "updatesHeading": {
+    "message": "Pembaruan"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versi $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Periksa pembaruan"
+  },
+  "updatesChecking": {
+    "message": "Memeriksa…"
+  },
+  "updatesUpToDate": {
+    "message": "Anda sudah memakai versi terbaru"
+  },
+  "updatesCheckFailed": {
+    "message": "Tidak dapat memeriksa pembaruan. Periksa koneksi internet lalu coba lagi"
+  },
+  "updatesInstallButton": {
+    "message": "Perbarui ke v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi akan dimulai ulang untuk menyelesaikan pembaruan"
+  },
+  "updatesDownloading": {
+    "message": "Mengunduh…"
+  },
+  "updatesInstalling": {
+    "message": "Memasang…"
+  },
+  "updatesInstallFailed": {
+    "message": "Pembaruan tidak selesai. tomarigi tetap di versi saat ini; coba lagi"
   }
 }

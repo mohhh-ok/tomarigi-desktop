@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingvin"
+  },
+  "updatesHeading": {
+    "message": "Oppdateringer"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versjon $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Se etter oppdateringer"
+  },
+  "updatesChecking": {
+    "message": "Ser etter …"
+  },
+  "updatesUpToDate": {
+    "message": "Du har den nyeste versjonen"
+  },
+  "updatesCheckFailed": {
+    "message": "Kunne ikke se etter oppdateringer. Sjekk internettforbindelsen og prøv igjen"
+  },
+  "updatesInstallButton": {
+    "message": "Oppdater til v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi starter på nytt for å fullføre oppdateringen"
+  },
+  "updatesDownloading": {
+    "message": "Laster ned …"
+  },
+  "updatesInstalling": {
+    "message": "Installerer …"
+  },
+  "updatesInstallFailed": {
+    "message": "Oppdateringen ble ikke fullført. tomarigi er fortsatt på gjeldende versjon; prøv igjen"
   }
 }

@@ -12,7 +12,8 @@
 //   screen). Saves and restores the mode, and the position and size per mode
 // - garden_grow: grows the floating window when the Garden's birds don't fit, without saving the grown frame
 // - fade: the floating window's Garden fades until a bird is hovered
-// - tray: menu bar icon (show/hide, window mode, quit). Shown in the Dock and Cmd+Tab only in standard window mode
+// - tray: menu bar icon (show/hide, window mode, updates, quit). Shown in the Dock and Cmd+Tab only in standard window mode
+// - updater: checks for, downloads, and installs app updates (docs/design.md "Updates")
 // This file keeps the shared log / path helpers, startup (run), and the command registration
 mod fade;
 mod fs;
@@ -22,6 +23,7 @@ mod keys;
 mod liveness;
 mod opencode;
 mod tray;
+mod updater;
 mod window;
 #[cfg(target_os = "linux")]
 mod xconn;
@@ -109,7 +111,8 @@ pub fn run() {
             let handle = app.clone();
             app.run_on_main_thread(move || show_window(&handle)).ok();
         }))
-        .plugin(tauri_plugin_opener::init());
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build());
     #[cfg(target_os = "macos")]
     let builder = builder.plugin(tauri_nspanel::init());
     builder
@@ -148,6 +151,7 @@ pub fn run() {
                 }
             }
             tray::setup_tray(app, mode)?;
+            updater::start_update_checks(app.handle());
             // The window is created with visible:false and shown after it becomes a panel (showing it first pins it
             // to the original space)
             show_window(app.handle());
@@ -277,7 +281,10 @@ pub fn run() {
             liveness::process_cwds,
             liveness::alive_pids,
             opencode::opencode_sessions,
-            opencode::opencode_tail
+            opencode::opencode_tail,
+            updater::update_status,
+            updater::update_check,
+            updater::update_install
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

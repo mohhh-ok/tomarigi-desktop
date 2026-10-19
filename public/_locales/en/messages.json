@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Penguin"
+  },
+  "updatesHeading": {
+    "message": "Updates"
+  },
+  "updatesCurrentVersion": {
+    "message": "Version $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Check for updates"
+  },
+  "updatesChecking": {
+    "message": "Checking…"
+  },
+  "updatesUpToDate": {
+    "message": "You have the latest version"
+  },
+  "updatesCheckFailed": {
+    "message": "Couldn't check for updates. Check your internet connection and try again"
+  },
+  "updatesInstallButton": {
+    "message": "Update to v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi restarts to finish the update"
+  },
+  "updatesDownloading": {
+    "message": "Downloading…"
+  },
+  "updatesInstalling": {
+    "message": "Installing…"
+  },
+  "updatesInstallFailed": {
+    "message": "The update didn't finish. tomarigi is still on the current version; try again"
   }
 }

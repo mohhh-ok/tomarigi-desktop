@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pinguim"
+  },
+  "updatesHeading": {
+    "message": "Atualizações"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versão $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Verificar atualizações"
+  },
+  "updatesChecking": {
+    "message": "Verificando…"
+  },
+  "updatesUpToDate": {
+    "message": "Você está com a versão mais recente"
+  },
+  "updatesCheckFailed": {
+    "message": "Não foi possível verificar atualizações. Confira sua conexão com a internet e tente de novo"
+  },
+  "updatesInstallButton": {
+    "message": "Atualizar para v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "O tomarigi será reiniciado para concluir a atualização"
+  },
+  "updatesDownloading": {
+    "message": "Baixando…"
+  },
+  "updatesInstalling": {
+    "message": "Instalando…"
+  },
+  "updatesInstallFailed": {
+    "message": "A atualização não terminou. O tomarigi continua na versão atual; tente de novo"
   }
 }

@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingvin"
+  },
+  "updatesHeading": {
+    "message": "Ažuriranja"
+  },
+  "updatesCurrentVersion": {
+    "message": "Verzija $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Provjeri ažuriranja"
+  },
+  "updatesChecking": {
+    "message": "Provjera…"
+  },
+  "updatesUpToDate": {
+    "message": "Imate najnoviju verziju"
+  },
+  "updatesCheckFailed": {
+    "message": "Ažuriranja nije bilo moguće provjeriti. Provjerite internetsku vezu i pokušajte ponovno"
+  },
+  "updatesInstallButton": {
+    "message": "Ažuriraj na v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi se ponovno pokreće da dovrši ažuriranje"
+  },
+  "updatesDownloading": {
+    "message": "Preuzimanje…"
+  },
+  "updatesInstalling": {
+    "message": "Instalacija…"
+  },
+  "updatesInstallFailed": {
+    "message": "Ažuriranje nije dovršeno. tomarigi ostaje na trenutačnoj verziji; pokušajte ponovno"
   }
 }

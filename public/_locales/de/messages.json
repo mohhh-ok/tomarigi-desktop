@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pinguin"
+  },
+  "updatesHeading": {
+    "message": "Updates"
+  },
+  "updatesCurrentVersion": {
+    "message": "Version $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Nach Updates suchen"
+  },
+  "updatesChecking": {
+    "message": "Wird gesucht …"
+  },
+  "updatesUpToDate": {
+    "message": "Du hast die neueste Version"
+  },
+  "updatesCheckFailed": {
+    "message": "Updates konnten nicht gesucht werden. Prüfe deine Internetverbindung und versuche es erneut"
+  },
+  "updatesInstallButton": {
+    "message": "Auf v$VERSION$ aktualisieren",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi startet neu, um das Update abzuschließen"
+  },
+  "updatesDownloading": {
+    "message": "Wird geladen …"
+  },
+  "updatesInstalling": {
+    "message": "Wird installiert …"
+  },
+  "updatesInstallFailed": {
+    "message": "Das Update wurde nicht abgeschlossen. tomarigi bleibt auf der aktuellen Version; versuche es erneut"
   }
 }

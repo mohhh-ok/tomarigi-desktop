@@ -54,6 +54,15 @@
         "Resources/en.lproj/InfoPlist.strings": "locales/en.lproj/InfoPlist.strings",
         "Resources/ja.lproj/InfoPlist.strings": "locales/ja.lproj/InfoPlist.strings"
       }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENDQ0U5NTRFNUU1RkY4NEEKUldSSytGOWVUcFhPekxwWkFFODh6Uzc2SzBVTHhlNm1pam1IZGpsTzVHOTdvbVJlRllVVzNWRkwK",
+      "endpoints": [
+        "https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/latest.json"
+      ]
     }
   }
 }

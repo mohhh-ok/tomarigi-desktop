@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Пінгвін"
+  },
+  "updatesHeading": {
+    "message": "Оновлення"
+  },
+  "updatesCurrentVersion": {
+    "message": "Версія $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Перевірити оновлення"
+  },
+  "updatesChecking": {
+    "message": "Перевірка…"
+  },
+  "updatesUpToDate": {
+    "message": "Встановлено останню версію"
+  },
+  "updatesCheckFailed": {
+    "message": "Не вдалося перевірити оновлення. Перевірте підключення до інтернету й спробуйте ще раз"
+  },
+  "updatesInstallButton": {
+    "message": "Оновити до v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi перезапуститься, щоб завершити оновлення"
+  },
+  "updatesDownloading": {
+    "message": "Завантаження…"
+  },
+  "updatesInstalling": {
+    "message": "Встановлення…"
+  },
+  "updatesInstallFailed": {
+    "message": "Оновлення не завершилося. tomarigi залишається на поточній версії; спробуйте ще раз"
   }
 }

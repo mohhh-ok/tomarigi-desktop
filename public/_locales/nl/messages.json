@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pinguïn"
+  },
+  "updatesHeading": {
+    "message": "Updates"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versie $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Zoeken naar updates"
+  },
+  "updatesChecking": {
+    "message": "Bezig met zoeken…"
+  },
+  "updatesUpToDate": {
+    "message": "Je hebt de nieuwste versie"
+  },
+  "updatesCheckFailed": {
+    "message": "Kan niet zoeken naar updates. Controleer je internetverbinding en probeer het opnieuw"
+  },
+  "updatesInstallButton": {
+    "message": "Bijwerken naar v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi start opnieuw om de update af te ronden"
+  },
+  "updatesDownloading": {
+    "message": "Bezig met downloaden…"
+  },
+  "updatesInstalling": {
+    "message": "Bezig met installeren…"
+  },
+  "updatesInstallFailed": {
+    "message": "De update is niet voltooid. tomarigi blijft op de huidige versie; probeer het opnieuw"
   }
 }

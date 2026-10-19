@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "পেঙ্গুইন"
+  },
+  "updatesHeading": {
+    "message": "আপডেট"
+  },
+  "updatesCurrentVersion": {
+    "message": "সংস্করণ $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "আপডেট দেখুন"
+  },
+  "updatesChecking": {
+    "message": "দেখা হচ্ছে…"
+  },
+  "updatesUpToDate": {
+    "message": "আপনার কাছে সর্বশেষ সংস্করণ আছে"
+  },
+  "updatesCheckFailed": {
+    "message": "আপডেট দেখা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন"
+  },
+  "updatesInstallButton": {
+    "message": "v$VERSION$-এ আপডেট করুন",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "আপডেট শেষ করতে tomarigi আবার চালু হবে"
+  },
+  "updatesDownloading": {
+    "message": "ডাউনলোড হচ্ছে…"
+  },
+  "updatesInstalling": {
+    "message": "ইনস্টল হচ্ছে…"
+  },
+  "updatesInstallFailed": {
+    "message": "আপডেট শেষ হয়নি। tomarigi বর্তমান সংস্করণেই আছে; আবার চেষ্টা করুন"
   }
 }

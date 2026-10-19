@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Πιγκουίνος"
+  },
+  "updatesHeading": {
+    "message": "Ενημερώσεις"
+  },
+  "updatesCurrentVersion": {
+    "message": "Έκδοση $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Έλεγχος για ενημερώσεις"
+  },
+  "updatesChecking": {
+    "message": "Έλεγχος…"
+  },
+  "updatesUpToDate": {
+    "message": "Έχετε την πιο πρόσφατη έκδοση"
+  },
+  "updatesCheckFailed": {
+    "message": "Δεν ήταν δυνατός ο έλεγχος για ενημερώσεις. Ελέγξτε τη σύνδεση στο διαδίκτυο και δοκιμάστε ξανά"
+  },
+  "updatesInstallButton": {
+    "message": "Ενημέρωση σε v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "Το tomarigi επανεκκινείται για να ολοκληρωθεί η ενημέρωση"
+  },
+  "updatesDownloading": {
+    "message": "Λήψη…"
+  },
+  "updatesInstalling": {
+    "message": "Εγκατάσταση…"
+  },
+  "updatesInstallFailed": {
+    "message": "Η ενημέρωση δεν ολοκληρώθηκε. Το tomarigi παραμένει στην τρέχουσα έκδοση· δοκιμάστε ξανά"
   }
 }

@@ -40,6 +40,8 @@
   width: 100%;
   max-width: 560px;
   margin-inline: auto;
+  /* So the last section's last line doesn't sit on the window's bottom edge when scrolled to the end */
+  padding-bottom: 20px;
 }
 
 /* Each settings section starts with its own separator line (.roots, .judge, .voice-controls, ...). The first one sits

@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "पेंगुइन"
+  },
+  "updatesHeading": {
+    "message": "अपडेट"
+  },
+  "updatesCurrentVersion": {
+    "message": "संस्करण $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "अपडेट जाँचें"
+  },
+  "updatesChecking": {
+    "message": "जाँच हो रही है…"
+  },
+  "updatesUpToDate": {
+    "message": "आपके पास नवीनतम संस्करण है"
+  },
+  "updatesCheckFailed": {
+    "message": "अपडेट नहीं जाँचे जा सके। इंटरनेट कनेक्शन जाँचें और फिर से कोशिश करें"
+  },
+  "updatesInstallButton": {
+    "message": "v$VERSION$ में अपडेट करें",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "अपडेट पूरा करने के लिए tomarigi फिर से शुरू होगा"
+  },
+  "updatesDownloading": {
+    "message": "डाउनलोड हो रहा है…"
+  },
+  "updatesInstalling": {
+    "message": "इंस्टॉल हो रहा है…"
+  },
+  "updatesInstallFailed": {
+    "message": "अपडेट पूरा नहीं हुआ। tomarigi मौजूदा संस्करण पर ही है; फिर से कोशिश करें"
   }
 }

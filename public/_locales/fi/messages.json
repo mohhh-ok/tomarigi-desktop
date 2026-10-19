@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingviini"
+  },
+  "updatesHeading": {
+    "message": "Päivitykset"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versio $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Tarkista päivitykset"
+  },
+  "updatesChecking": {
+    "message": "Tarkistetaan…"
+  },
+  "updatesUpToDate": {
+    "message": "Sinulla on uusin versio"
+  },
+  "updatesCheckFailed": {
+    "message": "Päivityksiä ei voitu tarkistaa. Tarkista internetyhteys ja yritä uudelleen"
+  },
+  "updatesInstallButton": {
+    "message": "Päivitä versioon v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi käynnistyy uudelleen päivityksen viimeistelemiseksi"
+  },
+  "updatesDownloading": {
+    "message": "Ladataan…"
+  },
+  "updatesInstalling": {
+    "message": "Asennetaan…"
+  },
+  "updatesInstallFailed": {
+    "message": "Päivitys ei valmistunut. tomarigi on yhä nykyisessä versiossa; yritä uudelleen"
   }
 }

@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Pingvinas"
+  },
+  "updatesHeading": {
+    "message": "Naujiniai"
+  },
+  "updatesCurrentVersion": {
+    "message": "Versija $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Tikrinti naujinius"
+  },
+  "updatesChecking": {
+    "message": "Tikrinama…"
+  },
+  "updatesUpToDate": {
+    "message": "Turite naujausią versiją"
+  },
+  "updatesCheckFailed": {
+    "message": "Nepavyko patikrinti naujinių. Patikrinkite interneto ryšį ir bandykite dar kartą"
+  },
+  "updatesInstallButton": {
+    "message": "Atnaujinti į v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "tomarigi pasileis iš naujo, kad baigtų naujinimą"
+  },
+  "updatesDownloading": {
+    "message": "Atsisiunčiama…"
+  },
+  "updatesInstalling": {
+    "message": "Diegiama…"
+  },
+  "updatesInstallFailed": {
+    "message": "Naujinimas nebaigtas. tomarigi lieka dabartinės versijos; bandykite dar kartą"
   }
 }

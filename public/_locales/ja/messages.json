@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "ペンギン"
+  },
+  "updatesHeading": {
+    "message": "アップデート"
+  },
+  "updatesCurrentVersion": {
+    "message": "バージョン $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "アップデートを確認"
+  },
+  "updatesChecking": {
+    "message": "確認しています…"
+  },
+  "updatesUpToDate": {
+    "message": "最新のバージョンです"
+  },
+  "updatesCheckFailed": {
+    "message": "アップデートを確認できませんでした。インターネットの接続を確かめて、もう一度お試しください"
+  },
+  "updatesInstallButton": {
+    "message": "v$VERSION$ に更新",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "更新を終えるために tomarigi が再起動します"
+  },
+  "updatesDownloading": {
+    "message": "ダウンロードしています…"
+  },
+  "updatesInstalling": {
+    "message": "インストールしています…"
+  },
+  "updatesInstallFailed": {
+    "message": "更新を終えられませんでした。tomarigi は今のバージョンのままです。もう一度お試しください"
   }
 }

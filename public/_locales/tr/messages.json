@@ -310,5 +310,48 @@
   },
   "conciergeLookPenguin": {
     "message": "Penguen"
+  },
+  "updatesHeading": {
+    "message": "Güncellemeler"
+  },
+  "updatesCurrentVersion": {
+    "message": "Sürüm $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesCheckButton": {
+    "message": "Güncellemeleri denetle"
+  },
+  "updatesChecking": {
+    "message": "Denetleniyor…"
+  },
+  "updatesUpToDate": {
+    "message": "En son sürümü kullanıyorsunuz"
+  },
+  "updatesCheckFailed": {
+    "message": "Güncellemeler denetlenemedi. İnternet bağlantınızı kontrol edip yeniden deneyin"
+  },
+  "updatesInstallButton": {
+    "message": "v$VERSION$ sürümüne güncelle",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "updatesRestartNote": {
+    "message": "Güncellemeyi bitirmek için tomarigi yeniden başlar"
+  },
+  "updatesDownloading": {
+    "message": "İndiriliyor…"
+  },
+  "updatesInstalling": {
+    "message": "Yükleniyor…"
+  },
+  "updatesInstallFailed": {
+    "message": "Güncelleme tamamlanamadı. tomarigi mevcut sürümde kalıyor; yeniden deneyin"
   }
 }
