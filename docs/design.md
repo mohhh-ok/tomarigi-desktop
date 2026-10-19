@@ -136,7 +136,10 @@ Applies to the floating window's Garden tab only.
   - It grows up to the visible area of the display the window is on (excluding the menu bar and the Dock). If the birds still don't fit at that size, birds that have no spot overlap others at the nearest place
   - Width and height grow together keeping the aspect ratio of the user's size (the user's decision)
   - A manual resize always wins, including making it smaller (the user's decision): the resized size becomes the user's size and the window is not grown back over it. It grows again only when a bird joins and no longer fits (Claude's own decision)
-  - When birds leave, the window shrinks back toward the user's size, never below it, and only as far as no bird on screen would have to move (Claude's own decision). The grown size is not saved; the next launch opens at the user's size
+  - When birds leave, the window shrinks automatically (the user's request: 「今は自動でウィンドウ大きくなるが、自動で小さくもなるようにしてほしい」). It shrinks to the smallest size, never below the user's size, at which every bird and block still on screen gets a spot without overlapping, found with the actual placement the same way as growing. Birds that would stick out of the smaller garden move to the nearest free spot inside, the same as a manual shrink; birds that still fit stay at the same place on screen (Claude's own decision; the earlier rule "only as far as no bird on screen would have to move" left the window grown, so it is dropped)
+    - It shrinks toward the same edges it grew away from (a window in the right part keeps its right edge, and so on), keeping the aspect ratio of the user's size (Claude's own decision)
+    - It shrinks only when birds leave, not on other changes, so the window doesn't keep resizing while the user watches (Claude's own decision)
+  - The grown size is not saved; the next launch opens at the user's size
   - Only the floating window's Garden tab. On Perch, Recent activity, settings, the debug log, and in the standard window, the window stays at the user's size (Claude's own decision)
 - Status lines: line 1 is the state and elapsed time, line 2 the tool name. Inside watch blocks, line 1 is the state and line 2 the elapsed time and tool name
 - When the window is wide, Perch and Recent activity are centered at a max width of about 720px, and settings at 560px. The Garden uses the full width
