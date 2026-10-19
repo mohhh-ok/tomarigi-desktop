@@ -7,10 +7,12 @@ import {
   buildConciergePayload,
   CONCIERGE_DEBOUNCE_MS,
   CONCIERGE_EVENT_LIMIT,
+  CONCIERGE_MIN_INTERVAL_MS,
   CONCIERGE_REPEAT_MS,
   CONCIERGE_TASK,
   ConciergeScheduler,
-  conciergeSignature,
+  conciergeTriggerClasses,
+  conciergeTriggered,
   parseConciergeVerdict,
   type ConciergeSessionInput,
 } from "../src/lib/concierge.ts";
@@ -155,13 +157,27 @@ test("the task asks for two strings and states that the input is untrusted", () 
   expect(CONCIERGE_TASK.systemPrompt).toContain("untrusted");
 });
 
-test("the signature changes on needs reply, the user replying, and done, not on dozing or time", () => {
-  const base = conciergeSignature([view("a", { state: "done" })]);
-  expect(conciergeSignature([view("a", { state: "dozing", sinceMs: 999_999 })])).toBe(base);
-  expect(conciergeSignature([view("a", { state: "waiting" })])).not.toBe(base);
-  expect(conciergeSignature([view("a", { state: "done", ask: { status: "asking" } })])).not.toBe(base);
-  expect(conciergeSignature([view("a", { state: "working" })])).not.toBe(base);
-  expect(conciergeSignature([view("a", { state: "done" }), view("b")])).not.toBe(base);
+const classes = (...views: SessionView[]) => conciergeTriggerClasses(views);
+
+test("asked on needs reply (with the ?), its answer, and done; not on working ↔ working, done → dozing, or a new prompt", () => {
+  const working = classes(view("a"));
+  const done = classes(view("a", { state: "done" }));
+  // Starts needing a reply, including the "?" Jev found in a finished turn
+  expect(conciergeTriggered(working, classes(view("a", { state: "waiting" })))).toBe(true);
+  expect(conciergeTriggered(done, classes(view("a", { state: "done", ask: { status: "asking" } })))).toBe(true);
+  // The reply is answered
+  expect(conciergeTriggered(classes(view("a", { state: "waiting" })), working)).toBe(true);
+  // A turn finishes
+  expect(conciergeTriggered(working, done)).toBe(true);
+  // Not: working ↔ working (a new tool line, time passing), done → dozing, a new prompt to a finished session
+  expect(conciergeTriggered(working, classes(view("a", { sinceMs: 999_999 })))).toBe(false);
+  expect(conciergeTriggered(done, classes(view("a", { state: "dozing" })))).toBe(false);
+  expect(conciergeTriggered(done, working)).toBe(false);
+  // A new working session doesn't; one first seen needing a reply or done does
+  expect(conciergeTriggered(working, classes(view("a"), view("b")))).toBe(false);
+  expect(conciergeTriggered(working, classes(view("a"), view("b", { state: "done" })))).toBe(true);
+  // A session that needed a reply leaving the screen counts as its answer
+  expect(conciergeTriggered(classes(view("a", { state: "waiting" }), view("b")), classes(view("b")))).toBe(true);
 });
 
 /** Timers driven by hand: advance(ms) runs what is due, in order */
@@ -171,6 +187,7 @@ function fakeTimers() {
   const pending = new Map<number, { at: number; fn: () => void }>();
   return {
     timers: {
+      now: () => now,
       set: (fn: () => void, ms: number) => {
         pending.set(++next, { at: now + ms, fn });
         return next;
@@ -191,55 +208,121 @@ function fakeTimers() {
   };
 }
 
-test("changes that come together make one request, 3 seconds after the last", () => {
+function scheduled() {
   const clock = fakeTimers();
-  let requests = 0;
-  const scheduler = new ConciergeScheduler(() => requests++, clock.timers);
-  scheduler.update("s1", false, true);
-  clock.advance(2_000);
-  scheduler.update("s2", false, true);
-  clock.advance(2_000);
-  expect(requests).toBe(0);
-  clock.advance(1_000);
-  expect(requests).toBe(1);
-  // The same signature again doesn't ask
-  scheduler.update("s2", false, true);
-  clock.advance(CONCIERGE_DEBOUNCE_MS * 2);
-  expect(requests).toBe(1);
+  const counts = { requests: 0, clears: 0 };
+  const scheduler = new ConciergeScheduler(
+    () => counts.requests++,
+    () => counts.clears++,
+    clock.timers,
+  );
+  return { clock, counts, scheduler };
+}
+
+test("working ↔ working and tool line changes don't ask", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "done" }), view("b")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  // Scans while b keeps working, with a new tool line and time passing
+  for (let i = 0; i < 30; i++) {
+    clock.advance(10_000);
+    scheduler.update(classes(view("a", { state: "done" }), view("b", { sinceMs: i * 1000, toolName: `Read${i}`, snippet: `line ${i}` })), true);
+  }
+  clock.advance(CONCIERGE_REPEAT_MS);
+  expect(counts.requests).toBe(1);
 });
 
-test("asked again every 5 minutes while something needs a reply, not while nothing waits", () => {
-  const clock = fakeTimers();
-  let requests = 0;
-  const scheduler = new ConciergeScheduler(() => requests++, clock.timers);
-  scheduler.update("waiting", true, true);
+test("changes that come together make one request, gathered for 3 seconds", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a"), view("b")), true);
+  scheduler.update(classes(view("a", { state: "done" }), view("b")), true);
+  clock.advance(2_000);
+  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "waiting" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS - 2_000 - 1);
+  expect(counts.requests).toBe(0);
+  clock.advance(1);
+  expect(counts.requests).toBe(1);
+});
+
+test("at most one request per 60 seconds; the changes inside it make one request when it ends", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "done" }), view("b"), view("c")), true);
   clock.advance(CONCIERGE_DEBOUNCE_MS);
-  expect(requests).toBe(1);
-  clock.advance(CONCIERGE_REPEAT_MS);
-  expect(requests).toBe(2);
-  clock.advance(CONCIERGE_REPEAT_MS);
-  expect(requests).toBe(3);
-  // Nothing waits any more: one request for the change, then no repeat
-  scheduler.update("calm", false, true);
+  expect(counts.requests).toBe(1);
+  // Three changes within the next minute
+  clock.advance(5_000);
+  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c")), true);
+  clock.advance(10_000);
+  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c", { state: "waiting" })), true);
+  clock.advance(10_000);
+  scheduler.update(classes(view("a"), view("b", { state: "done" }), view("c", { state: "waiting" })), true);
+  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c", { state: "waiting" })), true);
+  // 25 seconds after the first request (which was 3 seconds in): nothing yet
+  expect(counts.requests).toBe(1);
+  clock.advance(CONCIERGE_DEBOUNCE_MS + CONCIERGE_MIN_INTERVAL_MS - 28_000 - 1);
+  expect(counts.requests).toBe(1);
+  // One minute after the first request: one request for all of them
+  clock.advance(1);
+  expect(counts.requests).toBe(2);
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS);
+  expect(counts.requests).toBe(2);
+});
+
+test("not asked, and the advice cleared, while nothing needs a reply, has the ?, or is done", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b")), true);
   clock.advance(CONCIERGE_DEBOUNCE_MS);
-  expect(requests).toBe(4);
+  expect(counts.requests).toBe(1);
+  // The user answered a: everything works. The pending change is dropped and the advice cleared once
+  scheduler.update(classes(view("a"), view("b")), true);
+  scheduler.update(classes(view("a"), view("b")), true);
+  expect(counts.clears).toBe(1);
+  clock.advance(CONCIERGE_REPEAT_MS * 2);
+  expect(counts.requests).toBe(1);
+  // Only dozing sessions: still nothing
+  scheduler.update(classes(view("a", { state: "dozing" }), view("b", { state: "dozing" })), true);
+  clock.advance(CONCIERGE_REPEAT_MS);
+  expect(counts.requests).toBe(1);
+  expect(counts.clears).toBe(1);
+  // A "?" found in a dozing session asks again
+  scheduler.update(classes(view("a", { state: "dozing", ask: { status: "asking" } }), view("b", { state: "dozing" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(2);
+});
+
+test("asked again every 5 minutes while something needs a reply, not while only done sessions remain", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  clock.advance(CONCIERGE_REPEAT_MS);
+  expect(counts.requests).toBe(2);
+  clock.advance(CONCIERGE_REPEAT_MS);
+  expect(counts.requests).toBe(3);
+  // a is answered and its turn finishes right after the repeat: one request for the change a minute after the repeat,
+  // then no repeat
+  scheduler.update(classes(view("a", { state: "done" })), true);
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS - 1);
+  expect(counts.requests).toBe(3);
+  clock.advance(1);
+  expect(counts.requests).toBe(4);
   clock.advance(CONCIERGE_REPEAT_MS * 3);
-  expect(requests).toBe(4);
+  expect(counts.requests).toBe(4);
 });
 
 test("without a key nothing is asked, and saving one asks again", () => {
-  const clock = fakeTimers();
-  let requests = 0;
-  const scheduler = new ConciergeScheduler(() => requests++, clock.timers);
-  scheduler.update("s", true, false);
+  const { clock, counts, scheduler } = scheduled();
+  const waiting = classes(view("a", { state: "waiting" }));
+  scheduler.update(waiting, false);
   clock.advance(CONCIERGE_REPEAT_MS);
-  expect(requests).toBe(0);
-  scheduler.update("s", true, true);
+  expect(counts.requests).toBe(0);
+  scheduler.update(waiting, true);
   clock.advance(CONCIERGE_DEBOUNCE_MS);
-  expect(requests).toBe(1);
-  scheduler.update("s", true, false);
+  expect(counts.requests).toBe(1);
+  scheduler.update(waiting, false);
   clock.advance(CONCIERGE_REPEAT_MS * 2);
-  expect(requests).toBe(1);
+  expect(counts.requests).toBe(1);
 });
 
 test("advice kept after a failed request stays only while its target is in the state it was in", () => {

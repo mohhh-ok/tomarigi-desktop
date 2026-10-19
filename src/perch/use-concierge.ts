@@ -1,18 +1,17 @@
-// Asks the concierge (lib/concierge.ts) when sessions change and while any needs a reply, and keeps its advice for
-// the Garden's concierge bird and the line above Perch / Recent activity (docs/design.md "Concierge")
+// Asks the concierge (lib/concierge.ts) when a session starts or stops needing a reply or finishes, and while any needs
+// a reply, and keeps its advice for the Garden's concierge bird and the line above Perch (docs/design.md "Concierge")
 import { useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { uiLanguage } from "@/lib/i18n";
 import { loadActiveAiProvider } from "@/lib/api-keys";
-import { needsAnswer } from "@/lib/jev";
 import {
   adviceStillHolds,
   appendConciergeLog,
   askConcierge,
   buildConciergePayload,
   ConciergeScheduler,
-  conciergeSignature,
   conciergeStateOf,
+  conciergeTriggerClasses,
   recentJumps,
   type ConciergeAdvice,
   type ConciergeStateClass,
@@ -47,6 +46,12 @@ export function useConcierge(
   // The latest request wins: an older one that comes back later is dropped
   const seqRef = useRef(0);
   const schedulerRef = useRef<ConciergeScheduler | null>(null);
+  // While no session needs a reply or is done the advice is cleared; one that comes back after that is dropped
+  const clearAdvice = () => {
+    seqRef.current++;
+    shownRef.current = null;
+    setAdvice(null);
+  };
   schedulerRef.current ??= new ConciergeScheduler(() => {
     const seq = ++seqRef.current;
     const { sessions, events, agentOf } = inputsRef.current;
@@ -85,37 +90,34 @@ export function useConcierge(
         return;
       }
       const next = result.verdict;
+      const tokens = result.usage
+        ? ` tokens in=${result.usage.input} cached=${result.usage.cachedInput} out=${result.usage.output}`
+        : "";
       appendConciergeLog(
         next
-          ? { at: Date.now(), kind: "advice", text: `${next.line}${next.targetId ? ` → ${next.targetId}` : " (no target)"}` }
-          : { at: Date.now(), kind: "none", text: "no advice" },
+          ? { at: Date.now(), kind: "advice", text: `${next.line}${next.targetId ? ` → ${next.targetId}` : " (no target)"}${tokens}` }
+          : { at: Date.now(), kind: "none", text: `no advice${tokens}` },
       );
       void invoke("log", {
         line: next
-          ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}`
-          : "[concierge] no advice",
+          ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}${tokens}`
+          : `[concierge] no advice${tokens}`,
       }).catch(() => {});
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;
       shownRef.current = next && { advice: next, targetState: target && conciergeStateOf(target) };
       setAdvice(next);
     })();
-  });
+  }, clearAdvice);
 
   const live = enabled && mockAdvice === undefined && sessions.length > 0;
   useEffect(() => {
-    schedulerRef.current?.update(
-      conciergeSignature(sessions),
-      sessions.some((s) => needsAnswer(s.state, s.ask)),
-      live,
-    );
+    schedulerRef.current?.update(conciergeTriggerClasses(sessions), live);
   }, [sessions, live]);
   useEffect(() => () => schedulerRef.current?.stop(), []);
   // Deleting the key clears the advice; one that comes back after that is dropped
   useEffect(() => {
     if (enabled) return;
-    seqRef.current++;
-    shownRef.current = null;
-    setAdvice(null);
+    clearAdvice();
   }, [enabled]);
 
   const current = mockAdvice !== undefined ? mockAdvice : advice;

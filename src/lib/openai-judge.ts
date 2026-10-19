@@ -5,8 +5,11 @@
 
 import { httpFailure, invokeKeyedApi, verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "./judge";
 
-/** For short completion summaries. The current mini model that supports the Responses API and Structured Outputs. */
-const OPENAI_JUDGE_MODEL = "gpt-5.4-mini";
+/**
+ * For summaries and the concierge (docs/design.md "BYOK API keys"). A light model that supports the Responses API,
+ * Structured Outputs, and reasoning effort none.
+ */
+const OPENAI_JUDGE_MODEL = "gpt-5.6-luna";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 512;
 
@@ -50,6 +53,11 @@ export async function runOpenAiJudge<V = Record<string, unknown>>(
   let data: {
     status?: string;
     incomplete_details?: { reason?: string } | null;
+    usage?: {
+      input_tokens?: number;
+      output_tokens?: number;
+      input_tokens_details?: { cached_tokens?: number };
+    };
     output?: Array<{
       type?: string;
       content?: Array<{ type?: string; text?: string; refusal?: string }>;
@@ -77,8 +85,13 @@ export async function runOpenAiJudge<V = Record<string, unknown>>(
     return { ok: false, kind: "malformed", status, message: "no output_text" };
   }
 
+  const usage = data.usage && {
+    input: data.usage.input_tokens ?? 0,
+    cachedInput: data.usage.input_tokens_details?.cached_tokens ?? 0,
+    output: data.usage.output_tokens ?? 0,
+  };
   try {
-    return { ok: true, verdict: JSON.parse(outputText) as V };
+    return { ok: true, verdict: JSON.parse(outputText) as V, ...(usage && { usage }) };
   } catch {
     return { ok: false, kind: "malformed", status, message: "invalid JSON output" };
   }

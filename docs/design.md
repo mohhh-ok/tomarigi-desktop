@@ -268,10 +268,12 @@ An AI looks at every session together and gives the user one piece of advice abo
 - Output: one line of advice (about 30 full-width characters) and the id of the session it is about, or no advice. An id that isn't one of the sessions sent is ignored and the advice is shown without a jump target (Claude's own decision)
 - When it is asked. Measured with the first version, which asked on every working / stopped change: 56 requests in 19 minutes with 9 sessions moving (about 176 an hour), about 5,800 characters of input each, 15 of them returning no advice. The user found that too costly (「おーそれはちょっとなぁ」) and agreed to the fix below (「うん、」); the rules are Claude's own decisions:
   - Only on these changes: a session starts needing a reply (including the "?"), a session that needed a reply is answered, or a turn finishes (done). Other changes (tool lines, working ↔ working, a new prompt to a finished session) don't ask
+    - A session first seen needing a reply or done (at launch, after saving a key, a new session) counts as that change, and a session that needed a reply leaving the screen counts as its answer; done → dozing doesn't ask (Claude's own decision)
   - At most one request per 60 seconds. Changes inside that time are merged into one request when it ends. Changes that come together are still gathered for 3 seconds first
+    - The 3 seconds count from the first change; later changes join it without restarting the wait, so sessions that keep changing can't hold the request off (Claude's own decision)
   - Not asked while no session needs a reply, has the "?", or is done (not dozing); the advice is cleared then
   - Every 5 minutes while any session needs a reply or has the "?", so a skipped session is brought up again
-  - The token counts the API returns (input, cached input, output) are logged per request, so cost is measured rather than estimated
+  - The token counts the API returns (input, cached input, output) are logged per request, so cost is measured rather than estimated. Input is the whole input including the cached part; for Anthropic it is input_tokens plus the cache reads and writes (Claude's own decision)
 - Requests and advice are logged in the app log and the debug log screen, like Jev
   - The debug log screen keeps them in memory only; the app log keeps them across launches (Claude's own decision)
 - With no session on screen, the concierge isn't shown either; the Garden keeps its empty message (Claude's own decision)

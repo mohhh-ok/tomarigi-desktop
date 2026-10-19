@@ -20,6 +20,8 @@ export const DEFAULT_CONCIERGE_LOOK: ConciergeLook = "owl";
 
 /** Changes that come together within this long make one request */
 export const CONCIERGE_DEBOUNCE_MS = 3_000;
+/** At most one request this often; changes inside it are merged into one request when it ends */
+export const CONCIERGE_MIN_INTERVAL_MS = 60_000;
 /** While any session needs a reply, ask again this often so a skipped session is brought up again */
 export const CONCIERGE_REPEAT_MS = 5 * 60_000;
 /** Number of recent events sent */
@@ -232,7 +234,11 @@ export async function askConcierge(
 ): Promise<JudgeResult<ConciergeAdvice | null>> {
   const result = await run<ConciergeVerdict>(CONCIERGE_TASK, payload);
   if (!result.ok) return result;
-  return { ok: true, verdict: parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id))) };
+  return {
+    ok: true,
+    verdict: parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id))),
+    ...(result.usage && { usage: result.usage }),
+  };
 }
 
 /** A session as the concierge tells its changes apart: needs a reply, working, or stopped */
@@ -242,15 +248,36 @@ export function conciergeStateOf(v: SessionView): ConciergeStateClass {
   return needsAnswer(v.state, v.ask) ? "reply" : v.state === "working" ? "working" : "stopped";
 }
 
+/** A session as the scheduler tells its changes apart: needs a reply (including the "?"), done, working, or dozing */
+export type ConciergeTriggerClass = "reply" | "done" | "working" | "dozing";
+
+/** Each session's class, by id. update() of ConciergeScheduler takes this on every scan */
+export function conciergeTriggerClasses(views: SessionView[]): Map<string, ConciergeTriggerClass> {
+  return new Map(
+    views.map((v) => [v.id, needsAnswer(v.state, v.ask) || v.state === "waiting" ? "reply" : v.state]),
+  );
+}
+
 /**
- * What a change of sessions is compared by: the set of sessions and, for each, whether it needs a reply, is working,
- * or is stopped. The three changes that ask the concierge (needs reply, the user replied, done) all change it
+ * Whether a change of sessions asks the concierge (docs/design.md "Concierge"): a session starts needing a reply, a
+ * session that needed a reply is answered (or leaves the screen), or a turn finishes (done). Tool lines, working ↔
+ * working, done → dozing, and a new prompt to a finished session don't. A session first seen needing a reply or done
+ * counts as that change, so the first scan after launch or after saving a key asks (Claude's own decision)
  */
-export function conciergeSignature(views: SessionView[]): string {
-  return views
-    .map((v) => `${v.id}:${conciergeStateOf(v)}`)
-    .sort()
-    .join(",");
+export function conciergeTriggered(
+  prev: ReadonlyMap<string, ConciergeTriggerClass> | undefined,
+  next: ReadonlyMap<string, ConciergeTriggerClass>,
+): boolean {
+  for (const [id, now] of next) {
+    const before = prev?.get(id);
+    if (now === "reply" && before !== "reply") return true;
+    if (before === "reply" && now !== "reply") return true;
+    if (now === "done" && before !== "done" && before !== "dozing") return true;
+  }
+  for (const [id, before] of prev ?? []) {
+    if (before === "reply" && !next.has(id)) return true;
+  }
+  return false;
 }
 
 /**
@@ -269,63 +296,89 @@ export function adviceStillHolds(
 }
 
 interface Timers {
+  now(): number;
   set(fn: () => void, ms: number): unknown;
   clear(handle: unknown): void;
 }
 
 const realTimers: Timers = {
+  now: () => Date.now(),
   set: (fn, ms) => setTimeout(fn, ms),
   clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
 };
 
 /**
- * When the concierge is asked (docs/design.md "Concierge"): CONCIERGE_DEBOUNCE_MS after the sessions change (later
- * changes restart the wait), and every CONCIERGE_REPEAT_MS while any session needs a reply. update() is called on
- * every scan; request() is called when it is time to ask
+ * When the concierge is asked (docs/design.md "Concierge"): on the changes conciergeTriggered tells, gathered for
+ * CONCIERGE_DEBOUNCE_MS, at most once per CONCIERGE_MIN_INTERVAL_MS (changes inside it make one request when it ends),
+ * and every CONCIERGE_REPEAT_MS while any session needs a reply. While no session needs a reply or is done, nothing is
+ * asked and clear() is called so the advice goes away. update() is called on every scan; request() when it is time
+ * to ask
  */
 export class ConciergeScheduler {
-  private signature: string | undefined;
-  private debounce: unknown;
+  private classes: ReadonlyMap<string, ConciergeTriggerClass> | undefined;
+  private pending: unknown;
   private repeat: unknown;
-  private waiting = false;
+  private lastAt = Number.NEGATIVE_INFINITY;
+  private cleared = false;
 
   constructor(
     private readonly request: () => void,
+    private readonly clear: () => void,
     private readonly timers: Timers = realTimers,
   ) {}
 
-  update(signature: string, anyNeedsReply: boolean, enabled: boolean): void {
+  update(classes: ReadonlyMap<string, ConciergeTriggerClass>, enabled: boolean): void {
     if (!enabled) {
       this.stop();
       return;
     }
-    if (signature !== this.signature) {
-      this.signature = signature;
-      if (this.debounce !== undefined) this.timers.clear(this.debounce);
-      this.debounce = this.timers.set(() => this.fire(), CONCIERGE_DEBOUNCE_MS);
+    const prev = this.classes;
+    this.classes = classes;
+    const states = [...classes.values()];
+    const waiting = states.includes("reply");
+    if (!waiting && !states.includes("done")) {
+      this.cancelTimers();
+      if (!this.cleared) {
+        this.cleared = true;
+        this.clear();
+      }
+      return;
     }
-    this.waiting = anyNeedsReply;
-    if (!anyNeedsReply && this.repeat !== undefined) {
+    if (conciergeTriggered(prev, classes) && this.pending === undefined) {
+      // Changes that come after this one join it; the wait isn't restarted, so steady changes can't hold it off
+      // (Claude's own decision)
+      const now = this.timers.now();
+      const at = Math.max(now + CONCIERGE_DEBOUNCE_MS, this.lastAt + CONCIERGE_MIN_INTERVAL_MS);
+      this.pending = this.timers.set(() => this.fire(), at - now);
+    }
+    if (!waiting && this.repeat !== undefined) {
       this.timers.clear(this.repeat);
       this.repeat = undefined;
-    } else if (anyNeedsReply && this.repeat === undefined && this.debounce === undefined) {
+    } else if (waiting && this.repeat === undefined && this.pending === undefined) {
       this.repeat = this.timers.set(() => this.fire(), CONCIERGE_REPEAT_MS);
     }
   }
 
-  /** Stops both timers and forgets the signature, so the next enabled update asks again */
+  /** Stops both timers and forgets the sessions, so the next enabled update asks again (still once per interval) */
   stop(): void {
-    if (this.debounce !== undefined) this.timers.clear(this.debounce);
+    this.cancelTimers();
+    this.classes = undefined;
+  }
+
+  private cancelTimers(): void {
+    if (this.pending !== undefined) this.timers.clear(this.pending);
     if (this.repeat !== undefined) this.timers.clear(this.repeat);
-    this.debounce = undefined;
+    this.pending = undefined;
     this.repeat = undefined;
-    this.signature = undefined;
   }
 
   private fire(): void {
-    this.debounce = undefined;
+    this.pending = undefined;
     if (this.repeat !== undefined) this.timers.clear(this.repeat);
-    this.repeat = this.waiting ? this.timers.set(() => this.fire(), CONCIERGE_REPEAT_MS) : undefined;
+    const waiting = [...(this.classes?.values() ?? [])].includes("reply");
+    this.repeat = waiting ? this.timers.set(() => this.fire(), CONCIERGE_REPEAT_MS) : undefined;
+    this.lastAt = this.timers.now();
+    this.cleared = false;
     this.request();
   }
 }

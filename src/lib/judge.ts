@@ -42,8 +42,12 @@ export function httpFailure(
   return { ok: false, kind: "malformed", status, message };
 }
 
-/** Model for verdicts. Fixed by the original design (issue #3). Uses the official dated ID */
-const JUDGE_MODEL = "claude-haiku-4-5-20251001";
+/**
+ * Model for verdicts (docs/design.md "BYOK API keys"). Claude Haiku 5.5 has no dated ID; claude-haiku-5-5 is itself a
+ * pinned snapshot. It thinks adaptively by default, but a forced tool_choice makes the reply start with the tool call
+ * and carry no thinking block, so max_tokens isn't spent on thinking
+ */
+const JUDGE_MODEL = "claude-haiku-5-5";
 
 /** Output is kept small since it's for verdicts. When tool_choice is forced, if this is too small
  * stop_reason: "max_tokens" breaks the tool_use input JSON, so
@@ -77,8 +81,15 @@ export interface JudgeTaskDefinition {
 
 export type JudgeErrorKind = "auth" | "rate_limit" | "server" | "network" | "malformed";
 
+/** Token counts the API returned for one request. input includes the cached part */
+export interface JudgeUsage {
+  input: number;
+  cachedInput: number;
+  output: number;
+}
+
 export type JudgeResult<V> =
-  | { ok: true; verdict: V }
+  | { ok: true; verdict: V; usage?: JudgeUsage }
   | { ok: false; kind: JudgeErrorKind; status?: number; message?: string };
 
 function fieldToJsonSchema(field: JudgeOutputField): Record<string, unknown> {
@@ -150,11 +161,21 @@ export async function runJudge<V = Record<string, unknown>>(
   let data: {
     stop_reason?: string;
     content?: Array<{ type: string; name?: string; input?: unknown }>;
+    usage?: {
+      input_tokens?: number;
+      output_tokens?: number;
+      cache_read_input_tokens?: number | null;
+      cache_creation_input_tokens?: number | null;
+    };
   };
   try {
     data = JSON.parse(text);
   } catch {
     return { ok: false, kind: "malformed", status };
+  }
+
+  if (data.stop_reason === "refusal") {
+    return { ok: false, kind: "malformed", status, message: "refusal" };
   }
 
   if (data.stop_reason === "max_tokens") {
@@ -167,7 +188,16 @@ export async function runJudge<V = Record<string, unknown>>(
     return { ok: false, kind: "malformed", status, message: "no tool_use in response" };
   }
 
-  return { ok: true, verdict: toolUse.input as V };
+  // input_tokens doesn't include the cache reads and writes; they are added so input means the whole input
+  const usage = data.usage && {
+    input:
+      (data.usage.input_tokens ?? 0) +
+      (data.usage.cache_read_input_tokens ?? 0) +
+      (data.usage.cache_creation_input_tokens ?? 0),
+    cachedInput: data.usage.cache_read_input_tokens ?? 0,
+    output: data.usage.output_tokens ?? 0,
+  };
+  return { ok: true, verdict: toolUse.input as V, ...(usage && { usage }) };
 }
 
 interface PingVerdict {
