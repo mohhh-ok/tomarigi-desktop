@@ -45,6 +45,7 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 ## BYOK API keys
 
 - Providers: OpenAI / Anthropic for speech bubble summaries, TypeSafe for Jev (the "?" and the anger mark). Each can be saved, deleted, and connection-tested from the settings screen
+- Models for summaries and the concierge: OpenAI `gpt-5.6-luna` (reasoning effort none), Anthropic Claude Haiku 5.5. Both are the low-cost models meant for many small requests. They replaced `gpt-5.4-mini` and Claude Haiku 4.5, which were carried over from the first version without being chosen for the concierge's volume (the user: 「5.6lunaはどう」, then agreed to both: 「うん、」)
 - API keys are stored in the macOS Keychain in the everyday build (the WebView's IndexedDB is a plaintext file readable by other processes of the same user). Windows and Linux use their own OS stores (see "Platforms"); "Keychain" below means the OS store there
 - The store is decided in one place at launch, by identifier. Everyday (`net.mohtech.tomarigi-desktop`) and verify (`.verify`) use the Keychain; dev (`.dev`) uses IndexedDB (dev's signature changes every build, which would trigger Keychain permission prompts every time)
 - verify is signed with the local Apple Development certificate so rebuilding doesn't trigger permission prompts
@@ -258,17 +259,19 @@ An AI looks at every session together and gives the user one piece of advice abo
   - It is shown only while an OpenAI / Anthropic key is saved (Claude's own decision). With no advice, it stays without a bubble
 - Perch: the advice above the list. Clicking it jumps the same way (Claude's own decision)
 - Recent activity: no concierge. It is a list of past events, and a row about what to do now at its top was confusing (user-reviewer's finding; the user: 「なおしといて」. Removing it rather than restyling it is Claude's own decision)
-- Model and key: the same BYOK provider and verdict layer as speech bubble summaries (`runJudge` / `runOpenAiJudge`), output pinned to one tool call (Claude's own decision)
+- Model and key: the same BYOK provider and verdict layer as speech bubble summaries (`runJudge` / `runOpenAiJudge`), output pinned to one tool call (Claude's own decision). Models are in "BYOK API keys"
 - Input, in one request for all sessions (Claude's own decision):
   - Per session: id, display name, agent, machine state and elapsed time, the speech bubble line, the question text when waiting, the Jev verdict, the watch link (which session it watches or is watched by), and the number of chicks working. Chicks are counted per parent, not listed one by one, so many subagents don't grow the request
   - The last 20 events (needs reply, user replied, done, jumps), so the AI can see which waiting session the user skipped
   - Watch links, chick counts, and what holds up what are computed in code and passed as facts; the AI does not infer them
   - Reply and question text are untrusted input, the same as the other verdict tasks
 - Output: one line of advice (about 30 full-width characters) and the id of the session it is about, or no advice. An id that isn't one of the sessions sent is ignored and the advice is shown without a jump target (Claude's own decision)
-- When it is asked (Claude's own decision):
-  - When a session's state changes (needs reply, the user replied, done), after waiting 3 seconds so changes that come together make one request
-  - Every 5 minutes while any session needs a reply or has the "?", so a skipped session is brought up again. Not while nothing is waiting
-  - Estimate: about 1,500 input and 100 output tokens per request (Claude's estimate before measuring)
+- When it is asked. Measured with the first version, which asked on every working / stopped change: 56 requests in 19 minutes with 9 sessions moving (about 176 an hour), about 5,800 characters of input each, 15 of them returning no advice. The user found that too costly (「おーそれはちょっとなぁ」) and agreed to the fix below (「うん、」); the rules are Claude's own decisions:
+  - Only on these changes: a session starts needing a reply (including the "?"), a session that needed a reply is answered, or a turn finishes (done). Other changes (tool lines, working ↔ working, a new prompt to a finished session) don't ask
+  - At most one request per 60 seconds. Changes inside that time are merged into one request when it ends. Changes that come together are still gathered for 3 seconds first
+  - Not asked while no session needs a reply, has the "?", or is done (not dozing); the advice is cleared then
+  - Every 5 minutes while any session needs a reply or has the "?", so a skipped session is brought up again
+  - The token counts the API returns (input, cached input, output) are logged per request, so cost is measured rather than estimated
 - Requests and advice are logged in the app log and the debug log screen, like Jev
   - The debug log screen keeps them in memory only; the app log keeps them across launches (Claude's own decision)
 - With no session on screen, the concierge isn't shown either; the Garden keeps its empty message (Claude's own decision)
