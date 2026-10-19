@@ -28,7 +28,8 @@ export const CONCIERGE_REPEAT_MS = 5 * 60_000;
 export const CONCIERGE_EVENT_LIMIT = 20;
 /** Cap on each free text field sent (bubble line, question), so a long question doesn't grow the request */
 const MAX_TEXT_CHARS = 120;
-/** The end of the last reply sent with a "?" from Jev, so the concierge can judge it again from the text */
+/** The end of the last reply sent with a "?" from Jev or with a finished turn, so the concierge can judge it from the
+ * text (a "?" that only reports, a finished session that only waits on its own background work) */
 export const CONCIERGE_REPLY_TAIL_CHARS = 300;
 
 /** One session as the caller sees it: the view plus what only the display layer knows */
@@ -62,7 +63,7 @@ interface PayloadSession {
   line?: string;
   question?: string;
   jev?: { asking: boolean; probability?: number };
-  /** The last CONCIERGE_REPLY_TAIL_CHARS of the last reply, only when needs_reply comes from Jev */
+  /** The last CONCIERGE_REPLY_TAIL_CHARS of the last reply, when needs_reply comes from Jev or the session is done */
   last_reply_tail?: string;
   watch_parent?: string;
   watch_children?: string[];
@@ -142,7 +143,9 @@ export function buildConciergePayload(
         (ask.status === "asking" || ask.status === "not_asking") && {
           jev: { asking: ask.status === "asking", probability: ask.probability },
         }),
-      ...(source === "jev" && view.reply && { last_reply_tail: tail(view.reply.text) }),
+      // A finished session gets it too, so one that only waits on its own background work isn't taken as finished.
+      // Dozing doesn't: it has been stopped long enough not to be news (docs/design.md "Concierge")
+      ...((source === "jev" || view.state === "done") && view.reply && { last_reply_tail: tail(view.reply.text) }),
       ...(parentId && ids.has(parentId) && { watch_parent: parentId }),
       ...(children.has(view.id) && { watch_children: children.get(view.id) }),
       ...(chicksWorking > 0 && { chicks_working: chicksWorking }),
@@ -203,6 +206,10 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "reply, with jev.probability as its confidence; judge again from last_reply_tail (the end of that reply). " +
     "A reply that ends with a report of what was done, or with a promise to ask or check later, does not wait on " +
     "the developer: treat that session as not needing a reply.\n" +
+    "A session in state done also has last_reply_tail. When it says the work goes on in the background and the " +
+    "session will check it later (e.g. an export or a build is running and it will look at the log at some time), " +
+    "the session is still working, waiting on its own work: do not call it finished, do not tell the developer " +
+    "to check its result or to do the checks it said it will do itself, and do not advise about it.\n" +
     "Only a session whose needs_reply is true now (or that you judged as waiting from last_reply_tail) may be " +
     "advised to reply, answer, or check its question or request. A session in state done that does not need a " +
     "reply has finished its turn: if you advise about it, say it finished and its result is ready to check " +
@@ -216,7 +223,8 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "then the developer replied to or jumped to another session while it kept waiting) — bring it back; a " +
     "session whose pending reply also holds up a watching session or its parent; a session waiting longest for a " +
     "reply; two sessions that seem to work on the same file or task.\n" +
-    "Call a session by its name in the advice. Write its id only in session_id, never in the advice.\n" +
+    "Call a session by its name in the advice. Write its id only in session_id, never in the advice. An advice " +
+    "about a session must contain that session's name exactly as given; one without the name is not shown.\n" +
     "Write one short line, about 30 full-width characters (or about 60 Latin characters), plain text, no " +
     "markdown, no quotation marks, no trailing period, in the language given by ui_language. Set session_id to " +
     "the id of the session the advice is about, exactly as given. When nothing needs the developer (no session " +
@@ -252,22 +260,39 @@ export function parseConciergeVerdict(verdict: unknown, sentIds: ReadonlySet<str
   return sentIds.has(id) ? { line, targetId: id } : { line };
 }
 
+const normalizeName = (text: string) => text.normalize("NFKC").toLowerCase();
+
+/**
+ * Whether the advice names the session it is about. The name is compared after NFKC and lower case, and a name cut
+ * for the request is compared without its cut mark (Claude's own decision, docs/design.md "Concierge")
+ */
+export function adviceNamesTarget(line: string, name: string): boolean {
+  const n = normalizeName(name.endsWith("…") ? name.slice(0, -1) : name);
+  return n.length > 0 && normalizeName(line).includes(n);
+}
+
 type Run = <V>(task: JudgeTaskDefinition, payload: unknown) => Promise<JudgeResult<V>>;
 
 /**
  * Asks the concierge once. Errors are returned as a JudgeResult, not thrown. answer is the verdict as the AI gave it
- * (including an id that is ignored), for the debug log screen. run is swapped in tests
+ * (including an id that is ignored), for the debug log screen. An advice about a session that doesn't contain its
+ * name is not shown: the verdict is null and the advice goes in dropped, for the debug log screen (the prompt alone
+ * didn't hold). run is swapped in tests
  */
 export async function askConcierge(
   provider: AiProvider,
   payload: ConciergePayload,
   run: Run = provider === "openai" ? runOpenAiJudge : runJudge,
-): Promise<JudgeResult<ConciergeAdvice | null> & { answer?: unknown }> {
+): Promise<JudgeResult<ConciergeAdvice | null> & { answer?: unknown; dropped?: ConciergeAdvice }> {
   const result = await run<ConciergeVerdict>(CONCIERGE_TASK, payload);
   if (!result.ok) return result;
+  const names = new Map(payload.sessions.map((s) => [s.id, s.name]));
+  const parsed = parseConciergeVerdict(result.verdict, new Set(names.keys()));
+  const unnamed = parsed?.targetId !== undefined && !adviceNamesTarget(parsed.line, names.get(parsed.targetId)!);
   return {
     ok: true,
-    verdict: parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id))),
+    verdict: unnamed ? null : parsed,
+    ...(unnamed && { dropped: parsed! }),
     answer: result.verdict,
     ...(result.usage && { usage: result.usage }),
   };
@@ -476,7 +501,8 @@ export function recentJumps(): ConciergeJump[] {
 
 export interface ConciergeLogEntry {
   at: number;
-  kind: "request" | "advice" | "none" | "error";
+  /** dropped: an advice that wasn't shown because it doesn't contain its session's name */
+  kind: "request" | "advice" | "none" | "dropped" | "error";
   text: string;
   /** The full input of a request, or the answer as the AI gave it, as JSON. Holds text from the sessions, so it is
    * shown in the debug log screen only and never goes to the app log (docs/design.md "Concierge") */

@@ -103,13 +103,17 @@ export function useConcierge(
       appendConciergeLog({
         ...(next
           ? { at: Date.now(), kind: "advice", text: `${next.line}${next.targetId ? ` → ${next.targetId}` : " (no target)"}${tokens}` }
-          : { at: Date.now(), kind: "none", text: `no advice${tokens}` }),
+          : result.dropped
+            ? { at: Date.now(), kind: "dropped", text: `not shown, no session name: ${result.dropped.line} → ${result.dropped.targetId}${tokens}` }
+            : { at: Date.now(), kind: "none", text: `no advice${tokens}` }),
         ...(detail !== undefined && { detail }),
       });
       void invoke("log", {
         line: next
           ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}${tokens}`
-          : `[concierge] no advice${tokens}`,
+          : result.dropped
+            ? `[concierge] dropped no-name len=${result.dropped.line.length} target=${result.dropped.targetId}${tokens}`
+            : `[concierge] no advice${tokens}`,
       }).catch(() => {});
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;
       shownRef.current = next && { advice: next, targetState: target && conciergeStateOf(target) };

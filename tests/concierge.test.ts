@@ -3,6 +3,7 @@
 import { expect, test } from "bun:test";
 import {
   adviceStillHolds,
+  adviceNamesTarget,
   adviceTargetChanged,
   askConcierge,
   buildConciergePayload,
@@ -96,7 +97,7 @@ test("the ? from Jev carries its probability and the end of the last reply; from
   expect(machine.last_reply_tail).toBeUndefined();
   expect(no.needs_reply).toBe(false);
   expect(no.needs_reply_source).toBeUndefined();
-  expect(no.last_reply_tail).toBeUndefined();
+  expect(no.last_reply_tail).toBe("Done.");
   expect(no.jev).toEqual({ asking: false, probability: 0.1 });
   // A short reply goes whole, without the cut mark
   const [short] = buildConciergePayload(
@@ -104,6 +105,23 @@ test("the ? from Jev carries its probability and the end of the last reply; from
     [], [], NOW, "ja",
   ).sessions;
   expect(short.last_reply_tail).toBe(report);
+});
+
+test("a finished session carries the end of its last reply; a dozing one doesn't", () => {
+  const waiting = "長尺の書き出しを裏で回しています。19:10 ごろ終わる見込みなので、19:13 にログを確かめます";
+  const [done, dozing, working] = buildConciergePayload(
+    [
+      { view: view("d", { state: "done", reply: { at: 1, text: waiting }, ask: { status: "not_asking", probability: 0.2 } }) },
+      { view: view("z", { state: "dozing", reply: { at: 1, text: "Done." }, ask: { status: "not_asking", probability: 0.1 } }) },
+      { view: view("w", { state: "working", reply: { at: 1, text: "Done." } }) },
+    ],
+    [], [], NOW, "ja",
+  ).sessions;
+  expect(done.needs_reply).toBe(false);
+  expect(done.last_reply_tail).toBe(waiting);
+  expect(dozing.last_reply_tail).toBeUndefined();
+  expect(working.last_reply_tail).toBeUndefined();
+  expect(CONCIERGE_TASK.systemPrompt).toContain("the session is still working, waiting on its own work");
 });
 
 test("the system prompt tells the concierge to judge a ? from Jev again and keeps reply tails untrusted", () => {
@@ -197,6 +215,35 @@ test("the answer: empty advice is no advice; an id that wasn't sent leaves no ju
     line: "Look at the sessions",
   });
   expect(parseConciergeVerdict(null, sent)).toBeNull();
+});
+
+test("the name check: compared after NFKC and lower case, a cut name without its cut mark", () => {
+  expect(adviceNamesTarget("yokai-no-senseiが終わりました。結果を確認", "yokai-no-sensei")).toBe(true);
+  expect(adviceNamesTarget("Ｙｏｋａｉ-No-Senseiが終わりました", "yokai-no-sensei")).toBe(true);
+  expect(adviceNamesTarget("完了したセッションの成果物を順に確認してください", "yokai-no-sensei")).toBe(false);
+  expect(adviceNamesTarget("abcdeを確認", "abcde…")).toBe(true);
+  expect(adviceNamesTarget("確認", "")).toBe(false);
+});
+
+test("an advice about a session without its name is not shown, and is kept as dropped for the debug log", async () => {
+  const payload = buildConciergePayload(
+    [{ view: view("y", { project: "yokai-no-sensei", state: "done" }) }, { view: view("a", { state: "waiting" }) }],
+    [], [], NOW, "ja",
+  );
+  const answer = { advice: "完了したセッションの成果物を順に確認してください", session_id: "y" };
+  const unnamed = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: answer as V });
+  expect(await askConcierge("openai", payload, unnamed)).toEqual({
+    ok: true,
+    verdict: null,
+    dropped: { line: answer.advice, targetId: "y" },
+    answer,
+  });
+  // Without a target (none, or an id that wasn't sent) the advice is shown as before
+  const noTarget = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "全体を見直す", session_id: "" } as V });
+  expect(await askConcierge("openai", payload, noTarget)).toMatchObject({ verdict: { line: "全体を見直す" } });
+  const named = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "yokai-no-senseiが終わりました", session_id: "y" } as V });
+  expect(await askConcierge("openai", payload, named)).toMatchObject({ verdict: { line: "yokai-no-senseiが終わりました", targetId: "y" } });
+  expect(CONCIERGE_TASK.systemPrompt).toContain("one without the name is not shown");
 });
 
 test("askConcierge sends one request with the task and payload, and returns the advice", async () => {
