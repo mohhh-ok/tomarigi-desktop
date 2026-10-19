@@ -3,6 +3,7 @@
 import { expect, test } from "bun:test";
 import {
   adviceStillHolds,
+  adviceTargetChanged,
   askConcierge,
   buildConciergePayload,
   CONCIERGE_DEBOUNCE_MS,
@@ -300,10 +301,10 @@ test("asked again every 5 minutes while something needs a reply, not while only 
   expect(counts.requests).toBe(2);
   clock.advance(CONCIERGE_REPEAT_MS);
   expect(counts.requests).toBe(3);
-  // a is answered and its turn finishes right after the repeat: one request for the change a minute after the repeat,
-  // then no repeat
+  // a is answered and its turn finishes right after the repeat: an answer doesn't wait for the 60 seconds, so one
+  // request 3 seconds later, then no repeat
   scheduler.update(classes(view("a", { state: "done" })), true);
-  clock.advance(CONCIERGE_MIN_INTERVAL_MS - 1);
+  clock.advance(CONCIERGE_DEBOUNCE_MS - 1);
   expect(counts.requests).toBe(3);
   clock.advance(1);
   expect(counts.requests).toBe(4);
@@ -364,4 +365,53 @@ test("the advice is cleared when the concierge stops (no session on screen), so 
   scheduler.update(waiting, true);
   clock.advance(CONCIERGE_MIN_INTERVAL_MS);
   expect(counts.requests).toBe(2);
+});
+
+test("answering a session that needed a reply asks after 3 seconds, without waiting for the 60 seconds", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b", { state: "done" }), view("c")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  // 10 seconds later the user answers a
+  clock.advance(10_000);
+  scheduler.update(classes(view("a"), view("b", { state: "done" }), view("c")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS - 1);
+  expect(counts.requests).toBe(1);
+  clock.advance(1);
+  expect(counts.requests).toBe(2);
+  // Other changes still wait for the 60 seconds after that request
+  clock.advance(5_000);
+  scheduler.update(classes(view("a"), view("b", { state: "done" }), view("c", { state: "done" })), true);
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS - 5_000 - 1);
+  expect(counts.requests).toBe(2);
+  clock.advance(1);
+  expect(counts.requests).toBe(3);
+});
+
+test("an answer brings a change already waiting for the 60 seconds forward to 3 seconds after it", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  // b finishes: waits for the 60 seconds
+  clock.advance(5_000);
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b", { state: "done" })), true);
+  clock.advance(5_000);
+  expect(counts.requests).toBe(1);
+  // The user answers a: one request 3 seconds later covers both, and none when the 60 seconds end
+  scheduler.update(classes(view("a"), view("b", { state: "done" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(2);
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS);
+  expect(counts.requests).toBe(2);
+});
+
+test("the advice is hidden on the poll its target changes state, not when it leaves the screen", () => {
+  const advice = { line: "Reply to A", targetId: "a" };
+  expect(adviceTargetChanged(advice, "reply", [view("a", { state: "waiting" })])).toBe(false);
+  // The user replied: A is working again
+  expect(adviceTargetChanged(advice, "reply", [view("a", { state: "working" })])).toBe(true);
+  // A left the screen: the advice stays without a jump target until the next request
+  expect(adviceTargetChanged(advice, "reply", [view("b")])).toBe(false);
+  expect(adviceTargetChanged({ line: "All calm" }, undefined, [view("b")])).toBe(false);
 });

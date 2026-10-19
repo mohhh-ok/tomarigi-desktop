@@ -280,6 +280,17 @@ export function conciergeTriggered(
   return false;
 }
 
+/** Whether a session that needed a reply was answered (or left the screen). That asks without the 60-second wait */
+export function conciergeAnswered(
+  prev: ReadonlyMap<string, ConciergeTriggerClass> | undefined,
+  next: ReadonlyMap<string, ConciergeTriggerClass>,
+): boolean {
+  for (const [id, before] of prev ?? []) {
+    if (before === "reply" && next.get(id) !== "reply") return true;
+  }
+  return false;
+}
+
 /**
  * Whether advice kept after a failed request may stay: its target is still on screen in the state it was in when the
  * advice came (stateAtAdvice). Advice about a session that changed since (e.g. the user already replied) would send
@@ -293,6 +304,21 @@ export function adviceStillHolds(
   if (advice.targetId === undefined) return true;
   const target = views.find((v) => v.id === advice.targetId);
   return target !== undefined && conciergeStateOf(target) === stateAtAdvice;
+}
+
+/**
+ * Whether the advice's target is on screen in a state other than the one it was in when the advice came (e.g. the
+ * user answered it). The advice is hidden on that poll (docs/design.md "Concierge"). A target that left the screen
+ * doesn't count: that advice stays without a jump target until the next request
+ */
+export function adviceTargetChanged(
+  advice: ConciergeAdvice,
+  stateAtAdvice: ConciergeStateClass | undefined,
+  views: SessionView[],
+): boolean {
+  if (advice.targetId === undefined) return false;
+  const target = views.find((v) => v.id === advice.targetId);
+  return target !== undefined && conciergeStateOf(target) !== stateAtAdvice;
 }
 
 interface Timers {
@@ -309,7 +335,8 @@ const realTimers: Timers = {
 
 /**
  * When the concierge is asked (docs/design.md "Concierge"): on the changes conciergeTriggered tells, gathered for
- * CONCIERGE_DEBOUNCE_MS, at most once per CONCIERGE_MIN_INTERVAL_MS (changes inside it make one request when it ends),
+ * CONCIERGE_DEBOUNCE_MS, at most once per CONCIERGE_MIN_INTERVAL_MS (changes inside it make one request when it ends;
+ * an answer to a session that needed a reply doesn't wait for it),
  * and every CONCIERGE_REPEAT_MS while any session needs a reply. While no session needs a reply or is done, nothing is
  * asked and clear() is called so the advice goes away. update() is called on every scan; request() when it is time
  * to ask
@@ -317,6 +344,7 @@ const realTimers: Timers = {
 export class ConciergeScheduler {
   private classes: ReadonlyMap<string, ConciergeTriggerClass> | undefined;
   private pending: unknown;
+  private pendingAt = 0;
   private repeat: unknown;
   private lastAt = Number.NEGATIVE_INFINITY;
   private cleared = false;
@@ -349,12 +377,18 @@ export class ConciergeScheduler {
       }
       return;
     }
-    if (conciergeTriggered(prev, classes) && this.pending === undefined) {
+    if (conciergeTriggered(prev, classes)) {
       // Changes that come after this one join it; the wait isn't restarted, so steady changes can't hold it off
-      // (Claude's own decision)
+      // (Claude's own decision). An answer skips the 60-second wait, bringing a change already waiting forward
       const now = this.timers.now();
-      const at = Math.max(now + CONCIERGE_DEBOUNCE_MS, this.lastAt + CONCIERGE_MIN_INTERVAL_MS);
-      this.pending = this.timers.set(() => this.fire(), at - now);
+      const at = conciergeAnswered(prev, classes)
+        ? now + CONCIERGE_DEBOUNCE_MS
+        : Math.max(now + CONCIERGE_DEBOUNCE_MS, this.lastAt + CONCIERGE_MIN_INTERVAL_MS);
+      if (this.pending === undefined || at < this.pendingAt) {
+        if (this.pending !== undefined) this.timers.clear(this.pending);
+        this.pending = this.timers.set(() => this.fire(), at - now);
+        this.pendingAt = at;
+      }
     }
     if (!waiting && this.repeat !== undefined) {
       this.timers.clear(this.repeat);

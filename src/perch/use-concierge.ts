@@ -6,6 +6,7 @@ import { uiLanguage } from "@/lib/i18n";
 import { loadActiveAiProvider } from "@/lib/api-keys";
 import {
   adviceStillHolds,
+  adviceTargetChanged,
   appendConciergeLog,
   askConcierge,
   buildConciergePayload,
@@ -114,6 +115,14 @@ export function useConcierge(
     schedulerRef.current?.update(conciergeTriggerClasses(sessions), live);
   }, [sessions, live]);
   useEffect(() => () => schedulerRef.current?.stop(), []);
+  // The advice's target changed state (e.g. the user answered it): hidden on this poll, not at the next request. A
+  // request already on its way still shows its advice when it comes
+  useEffect(() => {
+    const shown = shownRef.current;
+    if (!shown || !adviceTargetChanged(shown.advice, shown.targetState, sessions)) return;
+    shownRef.current = null;
+    setAdvice(null);
+  }, [sessions]);
   // Deleting the key clears the advice; one that comes back after that is dropped
   useEffect(() => {
     if (enabled) return;
