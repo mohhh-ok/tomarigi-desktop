@@ -286,6 +286,18 @@ An AI looks at every session together and gives the user one piece of advice abo
 - When the session the advice is about leaves the screen, the advice stays without a jump target until the next request (Claude's own decision)
 - Mock mode: `concierge=<text>` in `TOMARIGI_QUERY` shows the concierge with that advice without calling the API (README) (Claude's own decision)
 
+## Updates
+
+The app updates itself with Tauri's official updater plugin (the user chose it over only telling about a new version: 「aかなぁ」)
+
+- Checked at launch and every 6 hours after that. "Check for updates" in the menu bar menu and in settings checks at once (Claude's own decision)
+- A found update is not installed by itself. The menu bar menu and settings show "Update to v<version>"; clicking it downloads, installs, and relaunches, with progress shown in settings. Nothing is added to the Garden, since it is fully transparent at rest (Claude's own decision)
+- Up to date / check failed are shown in settings only after a manual check; automatic checks stay silent when there is nothing new (Claude's own decision)
+- Where updates come from: `latest.json` on the newest published GitHub Release (`https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/latest.json`), made by tauri-action. Draft releases aren't "latest", so users get a version only once it is published
+- Bundles: macOS `.app.tar.gz` (universal), Windows NSIS, Linux AppImage and .deb (the updater plugin supports .deb from 2.10.0)
+- Signing: update bundles are signed with an updater key pair, separate from Apple's signing (the plugin requires it). The public key is in `tauri.conf.json`. The private key and its password are GitHub secrets for CI, with a backup in Google Secret Manager (the user has no password manager: 「1passwordとかもってないんだよなぁ。google secret managerくらいしかもってない」; the project is the user's personal `mycloud-56789`, which already keeps their other backup secrets, Claude's own decision). Losing the key would leave existing users unable to update, so the backup is required. Names and steps are in docs/release.md
+- Versions before the first one with the updater can't update themselves; their users replace the app by hand once
+
 ## Other
 
 - "Save" in the debug log screen is written by Rust to `~/Downloads/tomarigi-eventlog-<project>.json`. Existing files are not overwritten; " (1)" etc. is appended
