@@ -113,6 +113,30 @@ test("the system prompt tells the concierge to judge a ? from Jev again and keep
   expect(CONCIERGE_TASK.systemPrompt).toContain("Call a session by its name in the advice. Write its id only in session_id, never in the advice.");
 });
 
+test("a finished session whose earlier turn needed a reply is sent as not needing one; the old event stays in the past", () => {
+  const payload = buildConciergePayload(
+    [{ view: view("y", { state: "done", reply: { at: 1, text: "Sources: ..." }, ask: { status: "not_asking", probability: 0.45 } }) }],
+    [
+      event("y", "done", 104, { ask: { status: "asking", probability: 0.82 } }),
+      event("y", "started", 89),
+      event("y", "done", 29, { ask: { status: "not_asking", probability: 0.45 } }),
+    ],
+    [], NOW, "ja",
+  );
+  expect(payload.sessions[0]).toMatchObject({ state: "done", needs_reply: false, jev: { asking: false, probability: 0.45 } });
+  expect(payload.sessions[0].needs_reply_source).toBeUndefined();
+  expect(payload.recent_events.map((e) => e.kind)).toEqual(["needs_reply", "user_replied", "done"]);
+});
+
+test("the system prompt asks for a reply only about a session that needs one now; a finished one is advised as finished", () => {
+  const prompt = CONCIERGE_TASK.systemPrompt;
+  expect(prompt).toContain("Only a session whose needs_reply is true now");
+  expect(prompt).toContain("say it finished and its result is ready to check");
+  expect(prompt).toContain("never ask the developer to reply to it");
+  expect(prompt).toContain("The session facts are the present; recent_events are the past.");
+  expect(prompt).toContain("it does not make that session wait");
+});
+
 test("watch links come from the caller; a watching session is held up by a peer that needs a reply", () => {
   const parent = view("p", {
     state: "done",
