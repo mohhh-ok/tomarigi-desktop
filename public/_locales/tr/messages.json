@@ -303,7 +303,7 @@
     "message": "Tüm oturumlarına bakar ve sırada ne yapacağını söyler. O oturumu açmak için tıkla"
   },
   "conciergeSettingsNote": {
-    "message": "Bir OpenAI veya Anthropic anahtarı kayıtlıyken bahçede görünür. Görünümünü seç"
+    "message": "Tüm oturumlarına bakar ve sırada hangisiyle ilgilenmen gerektiğini söyler. O oturumun paneline gitmek için tıkla. Bir OpenAI veya Anthropic anahtarı kayıtlıyken görünür. Görünümünü seç"
   },
   "conciergeLookOwl": {
     "message": "Baykuş"

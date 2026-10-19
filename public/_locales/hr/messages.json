@@ -303,7 +303,7 @@
     "message": "Pregledava sve sesije i predlaže što dalje. Klikni za otvaranje te sesije"
   },
   "conciergeSettingsNote": {
-    "message": "Pojavljuje se u vrtu dok je spremljen ključ za OpenAI ili Anthropic. Odaberi kako izgleda"
+    "message": "Pregledava sve sesije i govori kojom se pozabaviti sljedeće. Klikni za prelazak na okno te sesije. Pojavljuje se dok je spremljen ključ za OpenAI ili Anthropic. Odaberi kako izgleda"
   },
   "conciergeLookOwl": {
     "message": "Sova"

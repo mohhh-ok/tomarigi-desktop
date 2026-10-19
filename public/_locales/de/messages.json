@@ -303,7 +303,7 @@
     "message": "Sieht sich alle Sitzungen an und schlägt vor, was als Nächstes zu tun ist. Klicken öffnet diese Sitzung"
   },
   "conciergeSettingsNote": {
-    "message": "Erscheint im Garten, solange ein OpenAI- oder Anthropic-Schlüssel gespeichert ist. Wähle sein Aussehen"
+    "message": "Sieht sich alle Sitzungen an und sagt dir, um welche du dich als Nächstes kümmern solltest. Klicken springt zum Bereich dieser Sitzung. Erscheint, solange ein OpenAI- oder Anthropic-Schlüssel gespeichert ist. Wähle sein Aussehen"
   },
   "conciergeLookOwl": {
     "message": "Eule"

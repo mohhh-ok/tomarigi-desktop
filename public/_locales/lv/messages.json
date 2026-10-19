@@ -303,7 +303,7 @@
     "message": "Apskata visas sesijas un iesaka, ko darīt tālāk. Noklikšķiniet, lai atvērtu šo sesiju"
   },
   "conciergeSettingsNote": {
-    "message": "Redzams dārzā, kamēr ir saglabāta OpenAI vai Anthropic atslēga. Izvēlieties tā izskatu"
+    "message": "Apskata visas sesijas un pasaka, ar kuru nodarboties tālāk. Noklikšķiniet, lai pārietu uz šīs sesijas rūti. Redzams, kamēr ir saglabāta OpenAI vai Anthropic atslēga. Izvēlieties tā izskatu"
   },
   "conciergeLookOwl": {
     "message": "Pūce"

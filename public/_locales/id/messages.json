@@ -303,7 +303,7 @@
     "message": "Melihat semua sesimu dan menyarankan langkah berikutnya. Klik untuk membuka sesi itu"
   },
   "conciergeSettingsNote": {
-    "message": "Muncul di taman selama kunci OpenAI atau Anthropic tersimpan. Pilih tampilannya"
+    "message": "Melihat semua sesimu dan memberi tahu mana yang sebaiknya ditangani berikutnya. Klik untuk pindah ke panel sesi itu. Muncul selama kunci OpenAI atau Anthropic tersimpan. Pilih tampilannya"
   },
   "conciergeLookOwl": {
     "message": "Burung hantu"

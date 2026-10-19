@@ -303,7 +303,7 @@
     "message": "Vê todas as suas sessões e sugere o que fazer a seguir. Clique para abrir essa sessão"
   },
   "conciergeSettingsNote": {
-    "message": "Aparece no jardim enquanto houver uma chave da OpenAI ou da Anthropic guardada. Escolha o aspeto"
+    "message": "Vê todas as suas sessões e diz qual tratar a seguir. Clique para ir ao painel dessa sessão. Aparece enquanto houver uma chave da OpenAI ou da Anthropic guardada. Escolha o aspeto"
   },
   "conciergeLookOwl": {
     "message": "Coruja"

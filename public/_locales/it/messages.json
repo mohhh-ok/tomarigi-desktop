@@ -303,7 +303,7 @@
     "message": "Guarda tutte le sessioni e ti suggerisce cosa fare dopo. Clicca per aprire quella sessione"
   },
   "conciergeSettingsNote": {
-    "message": "Compare nel giardino finché è salvata una chiave OpenAI o Anthropic. Scegli il suo aspetto"
+    "message": "Guarda tutte le sessioni e ti dice quale gestire dopo. Clicca per andare al riquadro di quella sessione. Compare finché è salvata una chiave OpenAI o Anthropic. Scegli il suo aspetto"
   },
   "conciergeLookOwl": {
     "message": "Gufo"

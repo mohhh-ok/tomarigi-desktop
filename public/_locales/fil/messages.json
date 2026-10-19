@@ -303,7 +303,7 @@
     "message": "Tinitingnan ang lahat ng session mo at sinasabi kung ano ang susunod na gagawin. I-click para buksan ang session na iyon"
   },
   "conciergeSettingsNote": {
-    "message": "Lumalabas sa hardin habang may naka-save na OpenAI o Anthropic key. Piliin ang itsura nito"
+    "message": "Tinitingnan ang lahat ng session mo at sinasabi kung alin ang susunod mong aasikasuhin. I-click para pumunta sa pane ng session na iyon. Lumalabas habang may naka-save na OpenAI o Anthropic key. Piliin ang itsura nito"
   },
   "conciergeLookOwl": {
     "message": "Kuwago"
