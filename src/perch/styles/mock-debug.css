@@ -172,3 +172,27 @@
   font-size: 12px;
   border-radius: 6px;
 }
+
+/* The concierge's full input or answer (lib/concierge.ts), folded under its row and taking the row's full width */
+.debug-log-detail {
+  flex-basis: 100%;
+  font-size: 11px;
+}
+
+.debug-log-detail summary {
+  cursor: pointer;
+  color: #8d887c;
+}
+
+.debug-log-detail pre {
+  margin: 6px 0 0;
+  padding: 8px;
+  max-height: 360px;
+  overflow: auto;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  font-size: 10px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
