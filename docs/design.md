@@ -245,6 +245,29 @@ Applies to the floating window's Garden tab only.
   - While Claude Code is still showing the options (the tool_use isn't in the transcript yet; waiting comes from `sessions/<pid>.json`), there is no question text, so only the "?" is shown and no bubble. No "waiting" event (chirp) fires in that case either
   - When Jev says asking and there is no summary key, the last sentence of the last reply is shown without AI
 
+## Advisor
+
+An AI looks at every session together and gives the user one piece of advice about what to do next (the user: 「全部をまとめて見て判断するようなのできないかな」「親子かんけいとかもあるから、それもふまえてユーザーにアドバイスして欲しいねん」「aiにあどばいすしてほしいねん」). It is shown, not read aloud (the user: 「よみあげのことはかんがえてなかった」「おれはとりあえず表示の話をしててん」)
+
+- Example the user gave: A needs reply, then B needs reply, and the user answers B while leaving A. The advice should then go back to A (the user: 「Aを無視したままBを対応したとするやん。そうするとまたAが対応待ち、に戻って欲しいねん」). Other advice it should be able to give (Claude's proposals): a chick or linked session waiting on a reply that also holds up its watching parent; a linked session that finished but whose result never reached the parent; two sessions working on the same file or task
+- Garden: an advisor bird whose speech bubble shows the advice. Clicking it jumps to the terminal pane of the session the advice is about (the user: 「そのアドバイザーをクリックすると該当のペインにとべるの」), the same jump as clicking that session's bird (a chick jumps to its parent's pane). With no target session, a click does nothing
+  - The advisor bird's image is generated with an image model (the user: 「アドバイザーのとりは画像生成してね」). It must read as different from the session birds at a glance, in every icon set. Candidates are shown to the user before one is chosen
+  - It is placed, dragged, and counted for the window's automatic growing and shrinking like a session bird, and can be clicked and dragged at rest like one (Claude's own decision)
+  - It is shown only while an OpenAI / Anthropic key is saved (Claude's own decision). With no advice, it stays without a bubble
+- Perch and Recent activity: the advice on one line above the list. Clicking it jumps the same way (Claude's own decision)
+- Model and key: the same BYOK provider and verdict layer as speech bubble summaries (`runJudge` / `runOpenAiJudge`), output pinned to one tool call (Claude's own decision)
+- Input, in one request for all sessions (Claude's own decision):
+  - Per session: id, display name, agent, machine state and elapsed time, the speech bubble line, the question text when waiting, the Jev verdict, the watch link (which session it watches or is watched by), and the number of chicks working. Chicks are counted per parent, not listed one by one, so many subagents don't grow the request
+  - The last 20 events (needs reply, user replied, done, jumps), so the AI can see which waiting session the user skipped
+  - Watch links, chick counts, and what holds up what are computed in code and passed as facts; the AI does not infer them
+  - Reply and question text are untrusted input, the same as the other verdict tasks
+- Output: one line of advice (about 30 full-width characters) and the id of the session it is about, or no advice. An id that isn't one of the sessions sent is ignored and the advice is shown without a jump target (Claude's own decision)
+- When it is asked (Claude's own decision):
+  - When a session's state changes (needs reply, the user replied, done), after waiting 3 seconds so changes that come together make one request
+  - Every 5 minutes while any session needs a reply or has the "?", so a skipped session is brought up again. Not while nothing is waiting
+  - Estimate: about 1,500 input and 100 output tokens per request (Claude's estimate before measuring)
+- Requests and advice are logged in the app log and the debug log screen, like Jev
+
 ## Other
 
 - "Save" in the debug log screen is written by Rust to `~/Downloads/tomarigi-eventlog-<project>.json`. Existing files are not overwritten; " (1)" etc. is appended
