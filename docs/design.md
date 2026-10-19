@@ -245,13 +245,14 @@ Applies to the floating window's Garden tab only.
   - While Claude Code is still showing the options (the tool_use isn't in the transcript yet; waiting comes from `sessions/<pid>.json`), there is no question text, so only the "?" is shown and no bubble. No "waiting" event (chirp) fires in that case either
   - When Jev says asking and there is no summary key, the last sentence of the last reply is shown without AI
 
-## Advisor
+## Concierge
 
 An AI looks at every session together and gives the user one piece of advice about what to do next (the user: 「全部をまとめて見て判断するようなのできないかな」「親子かんけいとかもあるから、それもふまえてユーザーにアドバイスして欲しいねん」「aiにあどばいすしてほしいねん」). It is shown, not read aloud (the user: 「よみあげのことはかんがえてなかった」「おれはとりあえず表示の話をしててん」)
 
+- Name: "Concierge" (ja: コンシェルジュ) in the UI and in code (the user chose it among アドバイザー / コンシェルジュ / マスター: 「こんしぇるじゅにしっようか」). Claude recommended it because the bird guides the user to the next session and takes them there on click; マスター was avoided because it reads like the watching parent session
 - Example the user gave: A needs reply, then B needs reply, and the user answers B while leaving A. The advice should then go back to A (the user: 「Aを無視したままBを対応したとするやん。そうするとまたAが対応待ち、に戻って欲しいねん」). Other advice it should be able to give (Claude's proposals): a chick or linked session waiting on a reply that also holds up its watching parent; a linked session that finished but whose result never reached the parent; two sessions working on the same file or task
-- Garden: an advisor bird whose speech bubble shows the advice. Clicking it jumps to the terminal pane of the session the advice is about (the user: 「そのアドバイザーをクリックすると該当のペインにとべるの」), the same jump as clicking that session's bird (a chick jumps to its parent's pane). With no target session, a click does nothing
-  - The advisor bird's image is generated with an image model (the user: 「アドバイザーのとりは画像生成してね」). It must read as different from the session birds at a glance, in every icon set. Candidates are shown to the user before one is chosen
+- Garden: the concierge bird whose speech bubble shows the advice. Clicking it jumps to the terminal pane of the session the advice is about (the user: 「そのアドバイザーをクリックすると該当のペインにとべるの」), the same jump as clicking that session's bird (a chick jumps to its parent's pane). With no target session, a click does nothing
+  - The concierge bird's image is generated with an image model (the user: 「アドバイザーのとりは画像生成してね」). It must read as different from the session birds at a glance, in every icon set. Candidates are shown to the user before one is chosen
   - It is placed, dragged, and counted for the window's automatic growing and shrinking like a session bird, and can be clicked and dragged at rest like one (Claude's own decision)
   - It is shown only while an OpenAI / Anthropic key is saved (Claude's own decision). With no advice, it stays without a bubble
 - Perch and Recent activity: the advice on one line above the list. Clicking it jumps the same way (Claude's own decision)
