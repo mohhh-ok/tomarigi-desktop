@@ -43,6 +43,13 @@ impl UpdateStatus {
     }
 }
 
+/// Whether a finished check may write its result, given the status at that moment. A check only looks at busy() when it
+/// starts, so a download started meanwhile must not be overwritten by Available (a second click would download again).
+/// A manual check set Checking itself and writes over it
+fn should_apply(now: &UpdateStatus, manual: bool) -> bool {
+    !now.busy() || (manual && *now == UpdateStatus::Checking)
+}
+
 fn current(app: &AppHandle) -> UpdateStatus {
     app.state::<UpdateState>().status.lock().unwrap().clone().unwrap_or(UpdateStatus::Idle)
 }
@@ -77,6 +84,9 @@ async fn check(app: AppHandle, manual: bool) {
         Ok(u) => u.check().await,
         Err(e) => Err(e),
     };
+    if !should_apply(&current(&app), manual) {
+        return;
+    }
     match result {
         Ok(Some(update)) => {
             append_log(&format!("[update] found {} (running {})", update.version, update.current_version));
@@ -187,4 +197,25 @@ pub(crate) fn update_check(app: AppHandle) {
 #[tauri::command]
 pub(crate) fn update_install(app: AppHandle) {
     install_now(&app);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// An automatic check that ends while "Update to v<version>" is downloading or installing leaves the status alone,
+    /// so the update isn't offered (and downloaded) a second time
+    #[test]
+    fn a_check_that_ends_during_an_install_does_not_overwrite_it() {
+        let downloading = UpdateStatus::Downloading { version: "1.2.0".into(), downloaded: 10, total: Some(100) };
+        let installing = UpdateStatus::Installing { version: "1.2.0".into() };
+        assert!(!should_apply(&downloading, false));
+        assert!(!should_apply(&installing, false));
+        // Another check's "Checking" is not ours to overwrite either
+        assert!(!should_apply(&UpdateStatus::Checking, false));
+        // A manual check set "Checking" itself, so it writes its result over it
+        assert!(should_apply(&UpdateStatus::Checking, true));
+        assert!(should_apply(&UpdateStatus::Available { version: "1.2.0".into() }, false));
+        assert!(should_apply(&UpdateStatus::Idle, false));
+    }
 }
