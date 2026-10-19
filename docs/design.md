@@ -256,7 +256,8 @@ An AI looks at every session together and gives the user one piece of advice abo
   - The user picks the look in settings between an owl and a penguin (the user, shown four candidates: 「bcをえらべるようにして」). The default is the owl (Claude's own decision; Claude recommended it). The choice is saved. The same image is used in every icon set (Claude's own decision)
   - It is placed, dragged, and counted for the window's automatic growing and shrinking like a session bird, and can be clicked and dragged at rest like one (Claude's own decision)
   - It is shown only while an OpenAI / Anthropic key is saved (Claude's own decision). With no advice, it stays without a bubble
-- Perch and Recent activity: the advice on one line above the list. Clicking it jumps the same way (Claude's own decision)
+- Perch: the advice above the list. Clicking it jumps the same way (Claude's own decision)
+- Recent activity: no concierge. It is a list of past events, and a row about what to do now at its top was confusing (user-reviewer's finding; the user: 「なおしといて」. Removing it rather than restyling it is Claude's own decision)
 - Model and key: the same BYOK provider and verdict layer as speech bubble summaries (`runJudge` / `runOpenAiJudge`), output pinned to one tool call (Claude's own decision)
 - Input, in one request for all sessions (Claude's own decision):
   - Per session: id, display name, agent, machine state and elapsed time, the speech bubble line, the question text when waiting, the Jev verdict, the watch link (which session it watches or is watched by), and the number of chicks working. Chicks are counted per parent, not listed one by one, so many subagents don't grow the request
@@ -272,7 +273,7 @@ An AI looks at every session together and gives the user one piece of advice abo
   - The debug log screen keeps them in memory only; the app log keeps them across launches (Claude's own decision)
 - With no session on screen, the concierge isn't shown either; the Garden keeps its empty message (Claude's own decision)
 - The concierge's speech bubble in the Garden wraps to two lines, because its advice is about twice as long as a session bird's bubble. It has no status lines, so the second line stays inside its own footprint (Claude's own decision)
-- Perch and Recent activity lay the advice out like a Perch row: the concierge and its name on the first line, the advice on the second. With no advice, nothing is shown above the list (Claude's own decision)
+- Perch lays the advice out like a Perch row: the concierge and its name on the first line, the advice on the second. With no advice, nothing is shown above the list (Claude's own decision)
 - Names, bubble lines, and question text are cut at 120 characters in the request (Claude's own decision)
 - When a request fails, the advice shown stays until the next one, unless the session it is about has changed state since the advice came (needs reply, working, or stopped; e.g. the user already replied), or has left the screen. Then the advice is cleared, so it doesn't send the user to a session that no longer needs them (Claude's own decision; the clearing was added by the parent session)
 - When the session the advice is about leaves the screen, the advice stays without a jump target until the next request (Claude's own decision)
