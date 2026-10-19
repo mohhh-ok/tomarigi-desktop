@@ -282,6 +282,7 @@ An AI looks at every session together and gives the user one piece of advice abo
   - The token counts the API returns (input, cached input, output) are logged per request, so cost is measured rather than estimated. Input is the whole input including the cached part; for Anthropic it is input_tokens plus the cache reads and writes (Claude's own decision)
 - Requests and advice are logged in the app log and the debug log screen, like Jev
   - The debug log screen keeps them in memory only; the app log keeps them across launches (Claude's own decision)
+  - The debug log screen also shows the full input of each request and the answer, so a wrong advice can be traced to what the AI was given. It stays in memory only and never goes to the app log, since it holds text from the sessions (a wrong advice could not be reproduced because the input wasn't kept; Claude's own decision)
 - With no session on screen, the concierge isn't shown either; the Garden keeps its empty message (Claude's own decision)
 - The concierge's speech bubble in the Garden wraps to two lines, because its advice is about twice as long as a session bird's bubble. It has no status lines, so the second line stays inside its own footprint (Claude's own decision)
 - Perch lays the advice out like a Perch row: the concierge and its name on the first line, the advice on the second. With no advice, nothing is shown above the list (Claude's own decision)
