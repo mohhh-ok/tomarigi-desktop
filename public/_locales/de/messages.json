@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Vorlesen ist nicht verfügbar, weil dieses System keine Sprachausgabe hat."
+  },
+  "conciergeName": {
+    "message": "Concierge"
+  },
+  "conciergeTitle": {
+    "message": "Sieht sich alle Sitzungen an und schlägt vor, was als Nächstes zu tun ist. Klicken öffnet diese Sitzung"
+  },
+  "conciergeSettingsNote": {
+    "message": "Erscheint im Garten, solange ein OpenAI- oder Anthropic-Schlüssel gespeichert ist. Wähle sein Aussehen"
+  },
+  "conciergeLookOwl": {
+    "message": "Eule"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pinguin"
   }
 }

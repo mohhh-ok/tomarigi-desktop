@@ -5,6 +5,8 @@ import { AGENTS } from "@/lib/agents";
 import { NativeDirectoryHandle } from "@/lib/native-fs";
 import type { RootEntry } from "@/lib/settings-store";
 import { DEFAULT_PRESET, PRESETS } from "./mock-presets";
+import { needsAnswer } from "@/lib/jev";
+import type { ConciergeAdvice } from "@/lib/concierge";
 
 // Presets at launch. Choose with ?preset=<id> (TOMARIGI_QUERY="preset=asking" etc.). For checking screenshots
 const INITIAL_PRESET =
@@ -49,6 +51,21 @@ function withExtraBirds(data: MockData): MockData {
   return { ...data, sessions: [...data.sessions, ...extra] };
 }
 
+/**
+ * ?concierge=<text> shows the concierge with that advice (empty: a default line) about the first bird that needs a
+ * reply, or the first bird; ?concierge=none shows it without advice. Without the parameter the real concierge is asked
+ * (only with a saved key). For checking the concierge's look without calling the API (docs/design.md "Concierge")
+ */
+const MOCK_CONCIERGE = new URLSearchParams(location.search).get("concierge");
+
+function mockConciergeAdvice(sessions: SessionView[]): ConciergeAdvice | null | undefined {
+  if (MOCK_CONCIERGE === null) return undefined;
+  if (MOCK_CONCIERGE === "none") return null;
+  const target = sessions.find((s) => needsAnswer(s.state, s.ask)) ?? sessions[0];
+  if (!target) return null;
+  return { line: MOCK_CONCIERGE || `Reply to ${target.project} first — it has waited longest`, targetId: target.id };
+}
+
 export function createMockSource(): MockSource {
   let data: MockData = withExtraBirds(INITIAL_PRESET.build());
   const listeners = new Set<() => void>();
@@ -73,6 +90,7 @@ export function createMockSource(): MockSource {
     getData() {
       return data;
     },
+    conciergeAdvice: mockConciergeAdvice,
     setData,
   };
 }

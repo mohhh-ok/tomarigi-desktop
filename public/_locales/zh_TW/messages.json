@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "此系統沒有語音合成功能，因此無法朗讀。"
+  },
+  "conciergeName": {
+    "message": "禮賓員"
+  },
+  "conciergeTitle": {
+    "message": "查看所有工作階段，告訴你下一步該做什麼。點擊開啟那個工作階段"
+  },
+  "conciergeSettingsNote": {
+    "message": "儲存了 OpenAI 或 Anthropic 金鑰時會出現在花園裡。可以選擇它的樣子"
+  },
+  "conciergeLookOwl": {
+    "message": "貓頭鷹"
+  },
+  "conciergeLookPenguin": {
+    "message": "企鵝"
   }
 }

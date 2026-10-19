@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Ääneen lukeminen ei ole käytettävissä, koska järjestelmässä ei ole puhesyntetisaattoria."
+  },
+  "conciergeName": {
+    "message": "Concierge"
+  },
+  "conciergeTitle": {
+    "message": "Katsoo kaikki istuntosi ja ehdottaa, mitä tehdä seuraavaksi. Avaa istunto napsauttamalla"
+  },
+  "conciergeSettingsNote": {
+    "message": "Näkyy puutarhassa, kun OpenAI- tai Anthropic-avain on tallennettu. Valitse sen ulkonäkö"
+  },
+  "conciergeLookOwl": {
+    "message": "Pöllö"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pingviini"
   }
 }

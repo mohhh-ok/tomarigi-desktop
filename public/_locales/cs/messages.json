@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Čtení nahlas není k dispozici, protože tento systém nemá řečový modul."
+  },
+  "conciergeName": {
+    "message": "Concierge"
+  },
+  "conciergeTitle": {
+    "message": "Prohlíží všechny relace a radí, co dělat dál. Kliknutím tu relaci otevřete"
+  },
+  "conciergeSettingsNote": {
+    "message": "Zobrazí se na zahradě, dokud je uložen klíč OpenAI nebo Anthropic. Vyberte jeho vzhled"
+  },
+  "conciergeLookOwl": {
+    "message": "Sova"
+  },
+  "conciergeLookPenguin": {
+    "message": "Tučňák"
   }
 }

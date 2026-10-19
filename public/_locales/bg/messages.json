@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Четенето на глас не е налично, защото системата няма синтезатор на реч."
+  },
+  "conciergeName": {
+    "message": "Консиерж"
+  },
+  "conciergeTitle": {
+    "message": "Преглежда всички сесии и подсказва какво да направиш след това. Щракни, за да отвориш тази сесия"
+  },
+  "conciergeSettingsNote": {
+    "message": "Появява се в градината, докато е запазен ключ за OpenAI или Anthropic. Избери как да изглежда"
+  },
+  "conciergeLookOwl": {
+    "message": "Сова"
+  },
+  "conciergeLookPenguin": {
+    "message": "Пингвин"
   }
 }

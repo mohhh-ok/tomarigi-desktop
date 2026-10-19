@@ -33,6 +33,9 @@ import { RootAddDialog } from "./settings/root-add-dialog";
 import { RootManager, type Editing } from "./settings/root-manager";
 import { useSettings } from "./use-settings";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
+import { useConcierge } from "./use-concierge";
+import { ConciergeLine, ConciergeSettings } from "./concierge";
+import { recordJump } from "@/lib/concierge";
 
 const POLL_MS = 3_000;
 
@@ -112,6 +115,8 @@ export default function App({
     selectAiProvider,
     runAiKeyTest,
     assignIconSet,
+    conciergeLook,
+    changeConciergeLook,
   } = useSettings();
   const { requestJudgements, displaySessions } = useTurnJudgements(sessions, aiKeySet);
   // Readout is off where the WebView can't speak (some Linux builds; docs/design.md "Platforms")
@@ -351,59 +356,16 @@ export default function App({
     chirp();
   }, []);
 
-  // Clicking a bird or row jumps to its terminal pane. mock doesn't use roots, so it can't be matched and does nothing
+  // Clicking a bird or row jumps to its terminal pane. mock doesn't use roots, so it can't be matched and does nothing.
+  // Jumps are an input of the concierge (which waiting session the user skipped)
   const onFocusSession = useCallback(
     (id: string) => {
+      recordJump(id);
       void focusSession(id, roots).catch((e) => console.warn("[tomarigi] focus failed", e));
     },
     [roots],
   );
   const canFocus = useCallback((id: string) => focusTargetOf(id, roots) !== null, [roots]);
-
-  const grantedCount = roots.filter((r) => perms[r.id] === "granted").length;
-  // The mock source doesn't use roots/perms, so grantedCount is always 0, but that isn't the
-  // "no access" state, so it isn't used for the empty-state branch of Perch/Garden
-  const hasGranted = !source.usesRoots || grantedCount > 0;
-
-  const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
-  // Fade until hovered (garden-fade.ts). Not while settings, the debug log, or the folder dialog are open over the Garden
-  useGardenFade(
-    windowMode === "floating" &&
-      showTabs &&
-      tab === "garden" &&
-      !settingsOpen &&
-      !showDebug &&
-      !rootDialogOpen,
-  );
-  // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
-  // Garden, so it doesn't count
-  const onGardenFit = useGardenGrow(
-    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
-    displaySessions.length,
-  );
-
-  // Rows shown in the icon set settings = "projects in the current sessions (deduplicated by slug)"
-  // ∪ "projects with only a saved assignment left". Running ones form the first group to prioritize
-  // current usage, and within each group the order is fixed by label ascending. sessions is sorted by
-  // sinceMs (time since the latest write), which goes back to 0 on every write, so keeping the order of
-  // appearance would reorder the rows' <select> on every poll (3 seconds)
-  // (the DOM node of an open <select> gets moved, and in Chrome an open dropdown actually closes).
-  // Label ascending order is stable regardless of the order of sessions
-  const iconSetRows = useMemo<IconSetRow[]>(() => {
-    const seen = new Set<string>();
-    const running: IconSetRow[] = [];
-    for (const s of sessions) {
-      if (seen.has(s.slug)) continue;
-      seen.add(s.slug);
-      running.push({ slug: s.slug, label: s.project, running: true });
-    }
-    running.sort((a, b) => a.label.localeCompare(b.label));
-    const savedOnly = Object.entries(iconSetAssignments)
-      .filter(([slug]) => !seen.has(slug))
-      .map(([slug, a]) => ({ slug, label: a.label, running: false }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-    return [...running, ...savedOnly];
-  }, [sessions, iconSetAssignments]);
 
   // So that Recent activity and the garden markers also show a done as needs reply when the Jev verdict for that
   // turn is needs reply, attach the verdict to the done event of the same turn (sessionId + time of the last response)
@@ -447,6 +409,65 @@ export default function App({
       return { ...e, ...(ask && { ask }), ...(line && { line }), ...(angry && { angry }) };
     });
   }, [events, displaySessions]);
+
+  // The concierge (docs/design.md "Concierge"): shown while an OpenAI / Anthropic key is saved. It reads the same
+  // sessions and events as the screens, so it sees the Jev verdicts and bubble lines they show
+  const agentOfSession = useCallback(
+    (id: string) => roots.find((r) => id.startsWith(`${r.id}/`))?.kind,
+    [roots],
+  );
+  const concierge = useConcierge(
+    displaySessions,
+    displayEvents,
+    aiKeySet.anthropic || aiKeySet.openai,
+    agentOfSession,
+    source.conciergeAdvice?.(displaySessions),
+  );
+
+  const grantedCount = roots.filter((r) => perms[r.id] === "granted").length;
+  // The mock source doesn't use roots/perms, so grantedCount is always 0, but that isn't the
+  // "no access" state, so it isn't used for the empty-state branch of Perch/Garden
+  const hasGranted = !source.usesRoots || grantedCount > 0;
+
+  const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
+  // Fade until hovered (garden-fade.ts). Not while settings, the debug log, or the folder dialog are open over the Garden
+  useGardenFade(
+    windowMode === "floating" &&
+      showTabs &&
+      tab === "garden" &&
+      !settingsOpen &&
+      !showDebug &&
+      !rootDialogOpen,
+  );
+  // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
+  // Garden, so it doesn't count
+  const onGardenFit = useGardenGrow(
+    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
+    displaySessions.length + (concierge.shown ? 1 : 0),
+  );
+
+  // Rows shown in the icon set settings = "projects in the current sessions (deduplicated by slug)"
+  // ∪ "projects with only a saved assignment left". Running ones form the first group to prioritize
+  // current usage, and within each group the order is fixed by label ascending. sessions is sorted by
+  // sinceMs (time since the latest write), which goes back to 0 on every write, so keeping the order of
+  // appearance would reorder the rows' <select> on every poll (3 seconds)
+  // (the DOM node of an open <select> gets moved, and in Chrome an open dropdown actually closes).
+  // Label ascending order is stable regardless of the order of sessions
+  const iconSetRows = useMemo<IconSetRow[]>(() => {
+    const seen = new Set<string>();
+    const running: IconSetRow[] = [];
+    for (const s of sessions) {
+      if (seen.has(s.slug)) continue;
+      seen.add(s.slug);
+      running.push({ slug: s.slug, label: s.project, running: true });
+    }
+    running.sort((a, b) => a.label.localeCompare(b.label));
+    const savedOnly = Object.entries(iconSetAssignments)
+      .filter(([slug]) => !seen.has(slug))
+      .map(([slug, a]) => ({ slug, label: a.label, running: false }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    return [...running, ...savedOnly];
+  }, [sessions, iconSetAssignments]);
 
   return (
     <main className="page">
@@ -575,6 +596,7 @@ export default function App({
             hidden={settingsOpen || showDebug || tab !== "events"}
           >
             <div className="stage stage-events">
+              <ConciergeLine advice={concierge.advice} look={conciergeLook} onFocus={onFocusSession} canFocus={canFocus} />
               <EventFeed
                 events={displayEvents}
                 showHeading={false}
@@ -590,6 +612,7 @@ export default function App({
             hidden={settingsOpen || showDebug || tab !== "perch"}
           >
             <div className="stage stage-perch">
+              <ConciergeLine advice={concierge.advice} look={conciergeLook} onFocus={onFocusSession} canFocus={canFocus} />
               <Perch
                 sessions={displaySessions}
                 hasGranted={hasGranted}
@@ -608,6 +631,7 @@ export default function App({
             <div className="stage stage-garden">
               <Garden
                 sessions={displaySessions}
+                concierge={concierge.shown ? { advice: concierge.advice, look: conciergeLook } : undefined}
                 events={displayEvents}
                 hasGranted={hasGranted}
                 iconSetAssignments={iconSetAssignments}
@@ -647,6 +671,7 @@ export default function App({
               onTest={(provider) => void runAiKeyTest(provider)}
               onSelect={(provider) => void selectAiProvider(provider)}
             />
+            <ConciergeSettings look={conciergeLook} onChange={changeConciergeLook} />
             <IconSetSettings
               rows={iconSetRows}
               assignments={iconSetAssignments}

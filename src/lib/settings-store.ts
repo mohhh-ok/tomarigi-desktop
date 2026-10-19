@@ -4,6 +4,7 @@ import { openDB, type IDBPDatabase } from "idb";
 import { isReadableDir, NativeDirectoryHandle } from "./native-fs";
 import { AGENTS, agentOf, type AgentKind } from "./agents";
 import { pathKey, samePath } from "./paths";
+import { CONCIERGE_LOOKS, DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "./concierge";
 
 const DB_NAME = "tomarigi";
 const STORE = "kv";
@@ -12,6 +13,7 @@ const KEY_MUTED = "muted";
 const KEY_VOICE_ENABLED = "voiceEnabled";
 const KEY_VOICE_VOLUME = "voiceVolume";
 const KEY_CHIRP_VOLUME = "chirpVolume";
+const KEY_CONCIERGE_LOOK = "conciergeLook";
 
 function db(): Promise<IDBPDatabase> {
   return openDB(DB_NAME, 1, {
@@ -161,6 +163,16 @@ export async function loadVoiceEnabled(): Promise<boolean> {
 
 export async function saveVoiceEnabled(enabled: boolean): Promise<void> {
   await kvPut(KEY_VOICE_ENABLED, enabled);
+}
+
+/** The concierge's look (docs/design.md "Concierge"). A saved value that isn't one of the looks falls back to the default */
+export async function loadConciergeLook(): Promise<ConciergeLook> {
+  const saved = await kvGet(KEY_CONCIERGE_LOOK);
+  return CONCIERGE_LOOKS.includes(saved as ConciergeLook) ? (saved as ConciergeLook) : DEFAULT_CONCIERGE_LOOK;
+}
+
+export async function saveConciergeLook(look: ConciergeLook): Promise<void> {
+  await kvPut(KEY_CONCIERGE_LOOK, look);
 }
 
 /**

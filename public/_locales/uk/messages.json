@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Читання вголос недоступне: у цій системі немає синтезатора мовлення."
+  },
+  "conciergeName": {
+    "message": "Консьєрж"
+  },
+  "conciergeTitle": {
+    "message": "Переглядає всі сеанси й підказує, що робити далі. Натисніть, щоб відкрити цей сеанс"
+  },
+  "conciergeSettingsNote": {
+    "message": "З'являється в саду, поки збережено ключ OpenAI або Anthropic. Виберіть, як він виглядає"
+  },
+  "conciergeLookOwl": {
+    "message": "Сова"
+  },
+  "conciergeLookPenguin": {
+    "message": "Пінгвін"
   }
 }

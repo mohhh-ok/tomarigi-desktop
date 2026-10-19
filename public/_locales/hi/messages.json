@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "आवाज़ से पढ़ना उपलब्ध नहीं है, क्योंकि इस सिस्टम में स्पीच इंजन नहीं है।"
+  },
+  "conciergeName": {
+    "message": "कंसीयर्ज"
+  },
+  "conciergeTitle": {
+    "message": "आपके सभी सेशन देखकर बताता है कि आगे क्या करना है। उस सेशन को खोलने के लिए क्लिक करें"
+  },
+  "conciergeSettingsNote": {
+    "message": "OpenAI या Anthropic की कुंजी सहेजी रहने तक बगीचे में दिखता है। इसका रूप चुनें"
+  },
+  "conciergeLookOwl": {
+    "message": "उल्लू"
+  },
+  "conciergeLookPenguin": {
+    "message": "पेंगुइन"
   }
 }

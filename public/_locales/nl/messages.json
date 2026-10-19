@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Voorlezen is niet beschikbaar omdat dit systeem geen spraakengine heeft."
+  },
+  "conciergeName": {
+    "message": "Conciërge"
+  },
+  "conciergeTitle": {
+    "message": "Bekijkt al je sessies en zegt wat je hierna kunt doen. Klik om die sessie te openen"
+  },
+  "conciergeSettingsNote": {
+    "message": "Verschijnt in de tuin zolang er een OpenAI- of Anthropic-sleutel is opgeslagen. Kies hoe hij eruitziet"
+  },
+  "conciergeLookOwl": {
+    "message": "Uil"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pinguïn"
   }
 }

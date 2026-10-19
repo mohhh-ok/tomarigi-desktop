@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { loadPersistedEvents, type SessionEvent } from "@/lib/sessions";
+import { conciergeLogEntries, type ConciergeLogEntry } from "@/lib/concierge";
 
 type SaveStatus = "idle" | "saved";
 
@@ -40,6 +41,8 @@ function sanitizeFilename(name: string): string {
 export default function DebugApp({ onClose }: { onClose: () => void }) {
   const [events, setEvents] = useState<SessionEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Concierge requests and advice (lib/concierge.ts; kept in memory, newest first)
+  const [conciergeLog, setConciergeLog] = useState<ConciergeLogEntry[]>(() => conciergeLogEntries());
   // Save result per project name (for the button's temporary feedback)
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
   const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -52,6 +55,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
+      setConciergeLog(conciergeLogEntries());
       try {
         const next = await loadPersistedEvents();
         if (cancelled) return;
@@ -120,6 +124,17 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
         <p className="note">
           Persistent history of events fired by lib/sessions.ts (up to 500 entries, no TTL).
         </p>
+        {conciergeLog.length > 0 && (
+          <ul className="debug-log-list">
+            {conciergeLog.map((c, i) => (
+              <li key={`${c.at}-${i}`} className="debug-log-row">
+                <span className="debug-log-time">{new Date(c.at).toLocaleString()}</span>
+                <span className="debug-log-type">concierge {c.kind}</span>
+                <span className="debug-log-project">{c.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         {error && <p className="note debug-log-error">{error}</p>}
         {!error && events === null && <p className="note">Loading…</p>}
         {!error && events !== null && sorted.length === 0 && (

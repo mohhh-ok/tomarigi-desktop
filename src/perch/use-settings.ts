@@ -10,7 +10,10 @@ import {
   saveMuted,
   saveVoiceEnabled,
   saveVoiceVolume,
+  loadConciergeLook,
+  saveConciergeLook,
 } from "@/lib/settings-store";
+import { DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "@/lib/concierge";
 import {
   deleteAiProvider,
   deleteApiKey,
@@ -62,6 +65,8 @@ export function useSettings() {
   // Perch/Garden/IconSetSettings look up this map via resolveIconSet (lib/icon-set-store.ts)
   // and fall back to DEFAULT_ICON_SET when there is no assignment
   const [iconSetAssignments, setIconSetAssignments] = useState<IconSetAssignments>({});
+  // The concierge's look (docs/design.md "Concierge"), the same in every icon set
+  const [conciergeLook, setConciergeLook] = useState<ConciergeLook>(DEFAULT_CONCIERGE_LOOK);
   const mutedRef = useRef(muted);
   const voiceEnabledRef = useRef(voiceEnabled);
 
@@ -107,6 +112,7 @@ export function useSettings() {
       await saveAiProvider(resolvedProvider);
     }
     setIconSetAssignments(await loadIconSetAssignments());
+    setConciergeLook(await loadConciergeLook());
   }, []);
 
   const toggleMuted = useCallback(() => {
@@ -220,6 +226,11 @@ export function useSettings() {
     [iconSetAssignments],
   );
 
+  const changeConciergeLook = useCallback((next: ConciergeLook) => {
+    setConciergeLook(next);
+    void saveConciergeLook(next);
+  }, []);
+
   return {
     muted,
     mutedRef,
@@ -242,5 +253,7 @@ export function useSettings() {
     selectAiProvider,
     runAiKeyTest,
     assignIconSet,
+    conciergeLook,
+    changeConciergeLook,
   };
 }

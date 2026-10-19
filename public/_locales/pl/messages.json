@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Czytanie na głos jest niedostępne, ponieważ ten system nie ma syntezatora mowy."
+  },
+  "conciergeName": {
+    "message": "Konsjerż"
+  },
+  "conciergeTitle": {
+    "message": "Przegląda wszystkie sesje i podpowiada, co zrobić dalej. Kliknij, aby otworzyć tę sesję"
+  },
+  "conciergeSettingsNote": {
+    "message": "Pojawia się w ogrodzie, gdy zapisany jest klucz OpenAI lub Anthropic. Wybierz jego wygląd"
+  },
+  "conciergeLookOwl": {
+    "message": "Sowa"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pingwin"
   }
 }

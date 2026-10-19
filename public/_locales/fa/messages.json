@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "خواندن با صدا در دسترس نیست، چون این سیستم موتور گفتار ندارد."
+  },
+  "conciergeName": {
+    "message": "کانسیرژ"
+  },
+  "conciergeTitle": {
+    "message": "همه نشست‌ها را می‌بیند و پیشنهاد می‌کند قدم بعدی چیست. برای باز کردن آن نشست کلیک کنید"
+  },
+  "conciergeSettingsNote": {
+    "message": "تا وقتی کلید OpenAI یا Anthropic ذخیره شده باشد در باغ دیده می‌شود. ظاهرش را انتخاب کنید"
+  },
+  "conciergeLookOwl": {
+    "message": "جغد"
+  },
+  "conciergeLookPenguin": {
+    "message": "پنگوئن"
   }
 }

@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "La lectura en voz alta no está disponible porque este sistema no tiene motor de voz."
+  },
+  "conciergeName": {
+    "message": "Conserje"
+  },
+  "conciergeTitle": {
+    "message": "Mira todas tus sesiones y te dice qué hacer a continuación. Haz clic para abrir esa sesión"
+  },
+  "conciergeSettingsNote": {
+    "message": "Aparece en el jardín mientras haya guardada una clave de OpenAI o Anthropic. Elige su aspecto"
+  },
+  "conciergeLookOwl": {
+    "message": "Búho"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pingüino"
   }
 }

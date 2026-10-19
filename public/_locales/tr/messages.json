@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Bu sistemde konuşma motoru olmadığı için sesli okuma kullanılamıyor."
+  },
+  "conciergeName": {
+    "message": "Konsiyerj"
+  },
+  "conciergeTitle": {
+    "message": "Tüm oturumlarına bakar ve sırada ne yapacağını söyler. O oturumu açmak için tıkla"
+  },
+  "conciergeSettingsNote": {
+    "message": "Bir OpenAI veya Anthropic anahtarı kayıtlıyken bahçede görünür. Görünümünü seç"
+  },
+  "conciergeLookOwl": {
+    "message": "Baykuş"
+  },
+  "conciergeLookPenguin": {
+    "message": "Penguen"
   }
 }

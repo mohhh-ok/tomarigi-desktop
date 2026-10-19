@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Bacaan dengan suara tidak tersedia kerana sistem ini tiada enjin pertuturan."
+  },
+  "conciergeName": {
+    "message": "Concierge"
+  },
+  "conciergeTitle": {
+    "message": "Melihat semua sesi anda dan mencadangkan langkah seterusnya. Klik untuk membuka sesi itu"
+  },
+  "conciergeSettingsNote": {
+    "message": "Muncul di taman selagi kunci OpenAI atau Anthropic disimpan. Pilih rupanya"
+  },
+  "conciergeLookOwl": {
+    "message": "Burung hantu"
+  },
+  "conciergeLookPenguin": {
+    "message": "Penguin"
   }
 }

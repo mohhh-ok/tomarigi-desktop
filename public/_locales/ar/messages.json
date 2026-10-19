@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "القراءة بصوت عالٍ غير متاحة لأن هذا النظام لا يحتوي على محرك نطق."
+  },
+  "conciergeName": {
+    "message": "الكونسيرج"
+  },
+  "conciergeTitle": {
+    "message": "يطّلع على كل جلساتك ويقترح ما تفعله بعد ذلك. انقر لفتح تلك الجلسة"
+  },
+  "conciergeSettingsNote": {
+    "message": "يظهر في الحديقة ما دام مفتاح OpenAI أو Anthropic محفوظًا. اختر شكله"
+  },
+  "conciergeLookOwl": {
+    "message": "بومة"
+  },
+  "conciergeLookPenguin": {
+    "message": "بطريق"
   }
 }

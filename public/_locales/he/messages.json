@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "הקראה בקול אינה זמינה כי אין במערכת הזו מנוע דיבור."
+  },
+  "conciergeName": {
+    "message": "קונסיירז׳"
+  },
+  "conciergeTitle": {
+    "message": "מסתכל על כל הסשנים שלך ומציע מה לעשות עכשיו. לחץ כדי לפתוח את הסשן הזה"
+  },
+  "conciergeSettingsNote": {
+    "message": "מופיע בגן כל עוד שמור מפתח של OpenAI או Anthropic. בחר את המראה שלו"
+  },
+  "conciergeLookOwl": {
+    "message": "ינשוף"
+  },
+  "conciergeLookPenguin": {
+    "message": "פינגווין"
   }
 }

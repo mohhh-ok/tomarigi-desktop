@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Skaitymas balsu negalimas, nes šioje sistemoje nėra kalbos sintezatoriaus."
+  },
+  "conciergeName": {
+    "message": "Konsjeržas"
+  },
+  "conciergeTitle": {
+    "message": "Peržiūri visas sesijas ir pasiūlo, ką daryti toliau. Spustelėkite, kad atidarytumėte tą sesiją"
+  },
+  "conciergeSettingsNote": {
+    "message": "Rodomas sode, kol išsaugotas OpenAI arba Anthropic raktas. Pasirinkite jo išvaizdą"
+  },
+  "conciergeLookOwl": {
+    "message": "Pelėda"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pingvinas"
   }
 }

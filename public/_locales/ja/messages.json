@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "このシステムには音声合成の機能が無いため、読み上げは使えません。"
+  },
+  "conciergeName": {
+    "message": "コンシェルジュ"
+  },
+  "conciergeTitle": {
+    "message": "全部のセッションを見て、次にやることを教えます。押すとそのセッションを開きます"
+  },
+  "conciergeSettingsNote": {
+    "message": "OpenAI か Anthropic のキーを保存している間、にわに出ます。見た目を選べます"
+  },
+  "conciergeLookOwl": {
+    "message": "フクロウ"
+  },
+  "conciergeLookPenguin": {
+    "message": "ペンギン"
   }
 }

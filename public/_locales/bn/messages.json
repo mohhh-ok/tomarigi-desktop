@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "এই সিস্টেমে কোনো স্পিচ ইঞ্জিন নেই, তাই কণ্ঠে পড়ে শোনানো যাবে না।"
+  },
+  "conciergeName": {
+    "message": "কনসিয়ার্জ"
+  },
+  "conciergeTitle": {
+    "message": "আপনার সব সেশন দেখে পরের কাজ কী তা জানায়। সেই সেশন খুলতে ক্লিক করুন"
+  },
+  "conciergeSettingsNote": {
+    "message": "OpenAI বা Anthropic কী সংরক্ষিত থাকলে বাগানে দেখা যায়। এর চেহারা বেছে নিন"
+  },
+  "conciergeLookOwl": {
+    "message": "পেঁচা"
+  },
+  "conciergeLookPenguin": {
+    "message": "পেঙ্গুইন"
   }
 }

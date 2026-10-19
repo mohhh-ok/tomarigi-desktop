@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Oplæsning er ikke tilgængelig, fordi systemet ikke har talesyntese."
+  },
+  "conciergeName": {
+    "message": "Concierge"
+  },
+  "conciergeTitle": {
+    "message": "Ser på alle dine sessioner og foreslår, hvad du skal gøre nu. Klik for at åbne den session"
+  },
+  "conciergeSettingsNote": {
+    "message": "Vises i haven, så længe en OpenAI- eller Anthropic-nøgle er gemt. Vælg, hvordan den ser ud"
+  },
+  "conciergeLookOwl": {
+    "message": "Ugle"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pingvin"
   }
 }

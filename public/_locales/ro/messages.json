@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Citirea cu voce nu este disponibilă, deoarece acest sistem nu are motor de vorbire."
+  },
+  "conciergeName": {
+    "message": "Concierge"
+  },
+  "conciergeTitle": {
+    "message": "Se uită la toate sesiunile și îți sugerează ce să faci mai departe. Fă clic pentru a deschide acea sesiune"
+  },
+  "conciergeSettingsNote": {
+    "message": "Apare în grădină cât timp este salvată o cheie OpenAI sau Anthropic. Alege-i aspectul"
+  },
+  "conciergeLookOwl": {
+    "message": "Bufniță"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pinguin"
   }
 }

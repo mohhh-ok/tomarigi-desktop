@@ -1,0 +1,78 @@
+/* The concierge (docs/design.md "Concierge"). Perch and Recent activity: its advice above the list, laid out like a
+   Perch row and set apart from the session rows below by a panel so it doesn't read as one more session */
+.concierge-line {
+  display: block;
+  min-width: 0;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.concierge-line.focusable:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.concierge-line-name {
+  min-width: 0;
+}
+
+/* Garden: the advice is about twice as long as a session bird's bubble (about 30 full-width characters), so the
+   concierge's bubble wraps to two lines instead of cutting at one. It has no status lines, so the second line stays
+   inside its own footprint */
+/* A wrapping bubble would otherwise shrink to the room right of the anchor's center (half of the 120px node), so it
+   takes its text's width up to the bubble's max-width */
+.garden-bubble-anchor.concierge .speech-bubble-below {
+  width: max-content;
+}
+
+.garden-bubble-anchor.concierge .speech-bubble {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Settings: the two looks side by side, each the picture with its name under it. The chosen one is framed */
+.concierge-look-choices {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.concierge-look {
+  /* Keeps the hidden radio inside the card: placed anywhere else, focusing it on click scrolled the window away */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 88px;
+  padding: 8px 6px 6px;
+  border: 1px solid #2f2d26;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #a49f92;
+  cursor: pointer;
+}
+
+.concierge-look.selected {
+  border-color: #d9b06a;
+  color: #ece6d6;
+  background: rgba(217, 176, 106, 0.08);
+}
+
+/* The radio stays for the keyboard and screen readers; the frame shows the choice */
+.concierge-look input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.concierge-look:has(input:focus-visible) {
+  outline: 2px solid #d9b06a;
+  outline-offset: 2px;
+}

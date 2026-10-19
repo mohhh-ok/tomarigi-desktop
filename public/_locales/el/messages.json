@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Η ανάγνωση με φωνή δεν είναι διαθέσιμη, επειδή το σύστημα δεν διαθέτει μηχανή ομιλίας."
+  },
+  "conciergeName": {
+    "message": "Κονσιέρζ"
+  },
+  "conciergeTitle": {
+    "message": "Βλέπει όλες τις συνεδρίες σου και προτείνει τι να κάνεις μετά. Κάνε κλικ για να ανοίξεις αυτή τη συνεδρία"
+  },
+  "conciergeSettingsNote": {
+    "message": "Εμφανίζεται στον κήπο όσο είναι αποθηκευμένο κλειδί OpenAI ή Anthropic. Διάλεξε την εμφάνισή του"
+  },
+  "conciergeLookOwl": {
+    "message": "Κουκουβάγια"
+  },
+  "conciergeLookPenguin": {
+    "message": "Πιγκουίνος"
   }
 }

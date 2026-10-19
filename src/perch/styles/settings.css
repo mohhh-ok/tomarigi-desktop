@@ -403,6 +403,7 @@ button.remove {
 
 /* Per-project icon set assignments (issue #14). Same separator tone as .roots/.ai-keys */
 .icon-sets,
+.concierge-settings,
 .window-mode {
   margin-top: 28px;
   padding-top: 16px;
@@ -410,6 +411,7 @@ button.remove {
 }
 
 .icon-sets h2,
+.concierge-settings h2,
 .window-mode h2 {
   margin: 0 0 10px;
   font-size: 13px;

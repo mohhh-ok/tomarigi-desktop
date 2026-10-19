@@ -295,5 +295,20 @@
   },
   "voiceUnavailable": {
     "message": "Lasīšana ar balsi nav pieejama, jo šai sistēmai nav runas sintēzes."
+  },
+  "conciergeName": {
+    "message": "Konsjeržs"
+  },
+  "conciergeTitle": {
+    "message": "Apskata visas sesijas un iesaka, ko darīt tālāk. Noklikšķiniet, lai atvērtu šo sesiju"
+  },
+  "conciergeSettingsNote": {
+    "message": "Redzams dārzā, kamēr ir saglabāta OpenAI vai Anthropic atslēga. Izvēlieties tā izskatu"
+  },
+  "conciergeLookOwl": {
+    "message": "Pūce"
+  },
+  "conciergeLookPenguin": {
+    "message": "Pingvīns"
   }
 }

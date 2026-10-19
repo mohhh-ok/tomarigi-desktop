@@ -1,5 +1,6 @@
 import { type RootEntry } from "@/lib/settings-store";
-import { scanSessions, type ScanResult } from "@/lib/sessions";
+import { scanSessions, type ScanResult, type SessionView } from "@/lib/sessions";
+import type { ConciergeAdvice } from "@/lib/concierge";
 
 /**
  * Abstraction of the data source App.tsx uses. The boundary for injecting real data (scanning roots via FileSystemAccess) and
@@ -18,6 +19,9 @@ export interface PerchSource {
   /** For sources that want data changes reflected immediately (mock). Call it to rescan without waiting for
    * App.tsx's polling (3 seconds). Returns unsubscribe. Left undefined because real doesn't use it */
   subscribe?(onChange: () => void): () => void;
+  /** For a source that doesn't call the API (mock): the concierge's advice for these sessions, or undefined to ask the
+   * real concierge. Left undefined because real doesn't use it */
+  conciergeAdvice?(sessions: SessionView[]): ConciergeAdvice | null | undefined;
 }
 
 export const realSource: PerchSource = {

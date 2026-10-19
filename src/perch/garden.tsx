@@ -34,6 +34,8 @@ import { MdLink } from "react-icons/md";
 import { bubbleText, SpeechBubble } from "./bubble";
 import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
+import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
+import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
 import { EVENT, EventIcon, eventKind } from "./event-kind";
 import { formatEventTime } from "./format-time";
 import {
@@ -144,7 +146,8 @@ interface Kept {
 }
 
 export function Garden({
-  sessions,
+  sessions: sessionViews,
+  concierge,
   events,
   hasGranted,
   iconSetAssignments = {},
@@ -153,6 +156,8 @@ export function Garden({
   onFit,
 }: {
   sessions: SessionView[];
+  // The concierge bird (docs/design.md "Concierge"): absent when it isn't shown, advice null when it has none
+  concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook };
   events: SessionEvent[];
   hasGranted: boolean;
   // slug → assignment map (same meaning as in Perch in perch-list.tsx; passed from App.tsx)
@@ -163,6 +168,28 @@ export function Garden({
   // garden isn't measured (no birds, tab hidden)
   onFit?: (fit: GardenFit | null) => void;
 }) {
+  // The concierge is placed, dragged, and counted for growing and shrinking like a session bird, so it joins the
+  // sessions as one more node. Its advice is its speech bubble (a stopped bird's summary). Only beside other birds
+  const conciergeAdvice = concierge?.advice;
+  const sessions: SessionView[] =
+    concierge && sessionViews.length > 0
+      ? [
+          ...sessionViews,
+          {
+            id: CONCIERGE_ID,
+            project: t("conciergeName"),
+            slug: CONCIERGE_ID,
+            state: "done",
+            // Its bubble is stacked above the session birds' bubbles (bubbleOrder)
+            sinceMs: -1,
+            summary: conciergeAdvice?.line,
+          },
+        ]
+      : sessionViews;
+  const conciergeTarget = conciergeAdvice?.targetId;
+  // The look it had while shown, for its fade-out after it is hidden (the key was deleted)
+  const conciergeLookRef = useRef<ConciergeLook | undefined>(undefined);
+  if (concierge) conciergeLookRef.current = concierge.look;
   const containerRef = useRef<HTMLDivElement>(null);
   // Saved (dragged) positions, only used for birds that aren't on screen yet (e.g. after a relaunch). null until loaded,
   // so birds aren't placed once without them and then moved
@@ -664,6 +691,9 @@ export function Garden({
         const recent = events.filter((e) => e.sessionId === s.id).slice(0, HISTORY_LIMIT);
         // On first display, static without flying; new sessions come from the sky
         const entryOrigin: "none" | "sky" = animateEntry ? "sky" : "none";
+        const isConcierge = s.id === CONCIERGE_ID;
+        // The concierge jumps to the session its advice is about; with no target a click does nothing
+        const focusId = isConcierge ? conciergeTarget : s.id;
         return (
           <GardenNode
             key={s.id}
@@ -695,8 +725,9 @@ export function Garden({
               const cell = dropShape.cells.get(drag.rootId)!;
               saveDrop(drag.rootId, toSaved({ x: to.x + cell.dx, y: to.y + cell.dy }), liveIds);
             }}
-            focusable={Boolean(onFocus && canFocus?.(s.id))}
-            onClick={() => onFocus?.(s.id)}
+            focusable={Boolean(onFocus && focusId && canFocus?.(focusId))}
+            onClick={() => focusId && onFocus?.(focusId)}
+            concierge={isConcierge ? concierge?.look : undefined}
           />
         );
       })}
@@ -712,6 +743,7 @@ export function Garden({
           glyphSize={glyphSize}
           iconSet={resolveIconSet(iconSetAssignments, entry.session.slug)}
           onDragEnd={() => {}}
+          concierge={id === CONCIERGE_ID ? conciergeLookRef.current : undefined}
           exiting
           onExited={handleExited}
         />
@@ -740,6 +772,7 @@ function GardenNode({
   groupRootId,
   onGroupMove,
   onGroupDrop,
+  concierge,
 }: {
   session: SessionView;
   // px: the bird's center and top edge
@@ -766,6 +799,8 @@ function GardenNode({
   groupRootId?: string;
   onGroupMove?: (drag: GroupDrag) => void;
   onGroupDrop?: (drag: GroupDrag) => void;
+  // The concierge's node: its own image, no status lines or event marks (docs/design.md "Concierge")
+  concierge?: ConciergeLook;
 }) {
   // Whether this bird needs a reply (switches the state word / tool name) and whether to show the "?" (only birds
   // actually asking)
@@ -927,7 +962,7 @@ function GardenNode({
 
   // Bird facing. About half are mirrored deterministically based on the id (all facing the same way looks stuffed).
   // Sprites are assumed to face left by default → flip = facing right
-  const flip = hashId(session.id) % 2 === 1;
+  const flip = !concierge && hashId(session.id) % 2 === 1;
 
   // The starting point of the sky entry is randomized once at mount (it's a state initializer, so
   // it stays fixed afterwards = the path doesn't change on re-render). The horizontal direction follows the facing:
@@ -997,13 +1032,14 @@ function GardenNode({
     <div
       ref={nodeRef}
       data-session-id={session.id}
-      className={`garden-node ${session.state}${question ? " asking" : ""}${live ? " dragging" : ""}${exiting ? " leaving" : ""}${focusable ? " focusable" : ""}${inBlock ? " in-watch-block" : ""}`}
+      className={`garden-node ${concierge ? "concierge" : session.state}${question ? " asking" : ""}${live ? " dragging" : ""}${exiting ? " leaving" : ""}${focusable ? " focusable" : ""}${inBlock ? " in-watch-block" : ""}`}
       style={{
         left,
         top,
         // While dragging, show above the speech bubble order (the z-index of .garden-node.dragging loses to the inline style)
         zIndex: live ? BUBBLE_Z_DRAGGING : stackOrder,
       }}
+      title={concierge ? t("conciergeTitle") : undefined}
     >
       {/* Positioning (left/top px + horizontal translate centering), dragging, and the hover/dragging
           transforms are handled by the plain outer div. WAAPI overwrites transform entirely, so it isn't
@@ -1021,22 +1057,28 @@ function GardenNode({
           grouped.nameRoom && <span className="garden-name" aria-hidden>{"\u00a0"}</span>
         )}
         <span className="garden-glyph" ref={glyphRef}>
-          <BirdGlyph
-            state={session.state}
-            size={glyphSize}
-            flip={flip}
-            set={iconSet}
-            asking={question}
-            angry={isAngry(session)}
-          />
+          {concierge ? (
+            <ConciergeGlyph look={concierge} size={glyphSize} />
+          ) : (
+            <BirdGlyph
+              state={session.state}
+              size={glyphSize}
+              flip={flip}
+              set={iconSet}
+              asking={question}
+              angry={isAngry(session)}
+            />
+          )}
         </span>
         {/* Speech bubble slot. The bubble itself is rendered in the bubble layer (to stack above other birds); this is
             only the space that pushes the status row down */}
         {bubbleRoom && <span className="garden-bubble-room" aria-hidden />}
         {/* Same component as the Perch rows. Line 1 has the state word and elapsed time; the tool name goes on the line below */}
-        <span className="garden-status">
-          <StatusParts session={session} asking={asking} toolOnOwnLine stacked={inBlock} />
-        </span>
+        {!concierge && (
+          <span className="garden-status">
+            <StatusParts session={session} asking={asking} toolOnOwnLine stacked={inBlock} />
+          </span>
+        )}
         {/* Watching: the number of active peers under the bird */}
         {/* Counts only peers active right now. Not shown during the grace period (0) */}
         {session.watching !== undefined && session.watching > 0 && (
@@ -1072,7 +1114,7 @@ function GardenNode({
         !exiting &&
         createPortal(
           <div
-            className={`garden-bubble-anchor${inBlock ? " in-watch-block" : ""}`}
+            className={`garden-bubble-anchor${inBlock ? " in-watch-block" : ""}${concierge ? " concierge" : ""}`}
             style={
               {
                 left,
