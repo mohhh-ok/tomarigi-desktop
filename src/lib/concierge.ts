@@ -208,7 +208,8 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "Good advice, most important first: a session that needs a reply and that the developer skipped (it asked, " +
     "then the developer replied to or jumped to another session while it kept waiting) — bring it back; a " +
     "session whose pending reply also holds up a watching session or its parent; a session waiting longest for a " +
-    "reply; two sessions that seem to work on the same file or task. Name the session in the advice.\n" +
+    "reply; two sessions that seem to work on the same file or task.\n" +
+    "Call a session by its name in the advice. Write its id only in session_id, never in the advice.\n" +
     "Write one short line, about 30 full-width characters (or about 60 Latin characters), plain text, no " +
     "markdown, no quotation marks, no trailing period, in the language given by ui_language. Set session_id to " +
     "the id of the session the advice is about, exactly as given. When nothing needs the developer (no session " +
