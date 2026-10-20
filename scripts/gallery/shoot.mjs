@@ -19,8 +19,8 @@ const only = process.argv.slice(2);
 const SCENES = [
   { id: "1-on-top", preset: "gallery-on-top", win: { w: 480, h: 284, left: 262, top: 172 }, fade: true },
   { id: "2-garden", preset: "gallery", win: { w: 480, h: 420 } },
-  { id: "3-needs-reply", preset: "gallery-asking", win: { w: 480, h: 380 } },
-  { id: "4-bubble", preset: "gallery-bubble", win: { w: 480, h: 380 } },
+  { id: "3-needs-reply", preset: "gallery-asking", win: { w: 480, h: 420 } },
+  { id: "4-bubble", preset: "gallery-bubble", win: { w: 480, h: 420 } },
 ];
 const STAGE_URL = "http://localhost:4842/__stage.html";
 const work = mkdtempSync(join(tmpdir(), "tomarigi-gallery-"));

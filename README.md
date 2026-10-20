@@ -6,7 +6,7 @@ A desktop app for macOS, Windows, and Linux (the Windows and Linux builds haven'
 
 | | |
 |---|---|
-| <img src="docs/images/gallery-1-on-top-en.webp" alt="Stays on top of your other windows, and you can see through it" /><br>Stays on top of your other windows, and you can see through it | <img src="docs/images/gallery-2-garden-en.webp" alt="One bird for each agent session" /><br>One bird for each agent session |
+| <img src="docs/images/gallery-1-on-top-en.webp" alt="Stays on top of your other windows. While you're not using it, the window turns clear, leaving only the birds and the “tomarigi” tag over the terminal behind (click the tag to bring the window back)" /><br>Stays on top of your other windows. While you're not using it, the window turns clear, leaving only the birds and the “tomarigi” tag over the terminal behind (click the tag to bring the window back) | <img src="docs/images/gallery-2-garden-en.webp" alt="One bird for each agent session" /><br>One bird for each agent session |
 | <img src="docs/images/gallery-3-needs-reply-en.webp" alt="A question mark shows up when the agent is waiting on you" /><br>A question mark shows up when the agent is waiting on you | <img src="docs/images/gallery-4-bubble-en.webp" alt="When a turn ends, the bubble sums it up" /><br>When a turn ends, the bubble sums it up |
 
 > [!IMPORTANT]
