@@ -20,14 +20,15 @@ import type { TailEvent } from "../src/lib/transcript.ts";
 
 const PROVIDERS = ["openai", "anthropic", "local"] as const;
 
-test("the schema is a line and two booleans, all required, the same for every provider", () => {
+test("the schema is a line and three booleans, all required, the same for every provider", () => {
   const expected = {
     properties: {
       line: { type: "string", description: SUMMARIZE_TURN_TASK.outputFields.line.description },
       asking: { type: "boolean", description: SUMMARIZE_TURN_TASK.outputFields.asking.description },
       abusive: { type: "boolean", description: SUMMARIZE_TURN_TASK.outputFields.abusive.description },
+      continuing: { type: "boolean", description: SUMMARIZE_TURN_TASK.outputFields.continuing.description },
     },
-    required: ["line", "asking", "abusive"],
+    required: ["line", "asking", "abusive", "continuing"],
   };
   // Anthropic's tool input_schema and OpenAI's Structured Outputs schema are both verdictSchema (lib/judge.ts)
   expect(verdictSchema(SUMMARIZE_TURN_TASK)).toEqual(expected);
@@ -40,6 +41,9 @@ test("the prompt treats the reply and the user's messages as untrusted input", (
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("user_messages");
   // A reply that only promises to ask later doesn't wait on the user
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("says it will report or ask later");
+  // Work that goes on after the turn, to be reported later, is continuing
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("still running in the background");
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("report when it's done");
 });
 
 test("the request keeps the end of the reply and the start of each user message", () => {
@@ -60,25 +64,46 @@ test("an answer matching the schema gives the line, the ? and the anger mark, fo
     const calls: { task: JudgeTaskDefinition; payload: unknown }[] = [];
     const run = async <V>(task: JudgeTaskDefinition, payload: unknown): Promise<JudgeResult<V>> => {
       calls.push({ task, payload });
-      return { ok: true, verdict: { line: " Which layout? ", asking: true, abusive: true } as V };
+      return { ok: true, verdict: { line: " Which layout? ", asking: true, abusive: true, continuing: false } as V };
     };
     const payload = turnPayload("en", "A or B?", ["you idiot"]);
     const result = await summarizeTurn(provider, payload, run);
     expect(calls).toEqual([{ task: SUMMARIZE_TURN_TASK, payload }]);
-    expect(result).toEqual({ ok: true, verdict: { line: "Which layout?", asking: true, abusive: true } });
-    expect(turnOutcome(result)).toEqual({ line: "Which layout?", ask: { status: "asking" }, abusive: true });
+    expect(result).toEqual({ ok: true, verdict: { line: "Which layout?", asking: true, abusive: true, continuing: false } });
+    expect(turnOutcome(result)).toEqual({
+      line: "Which layout?",
+      ask: { status: "asking" },
+      abusive: true,
+      continuing: false,
+    });
     expect(nextAngry(false, turnOutcome(result))).toBe(true);
-    const calm = turnOutcome(await summarizeTurn(provider, payload, answering({ line: "Fixed", asking: false, abusive: false })));
-    expect(calm).toEqual({ line: "Fixed", ask: { status: "not_asking" }, abusive: false });
+    const calm = turnOutcome(
+      await summarizeTurn(provider, payload, answering({ line: "Fixed", asking: false, abusive: false, continuing: false })),
+    );
+    expect(calm).toEqual({ line: "Fixed", ask: { status: "not_asking" }, abusive: false, continuing: false });
     // The next turn's verdict clears the mark
     expect(nextAngry(true, calm)).toBe(false);
   }
 });
 
+test("a turn whose work goes on in the background is continuing, for every provider; the ? doesn't change", async () => {
+  const measuring = "計測を回しています（7 段階 × 40 秒、18:47 ごろ終了）。終わったら結果を報告します";
+  for (const provider of PROVIDERS) {
+    const answer = { line: "計測を回し中", asking: false, abusive: false, continuing: true };
+    const result = await summarizeTurn(provider, turnPayload("ja", measuring, []), answering(answer));
+    expect(result).toEqual({ ok: true, verdict: answer });
+    const outcome = turnOutcome(result);
+    expect(outcome).toEqual({ line: "計測を回し中", ask: { status: "not_asking" }, abusive: false, continuing: true });
+    expect(needsAnswer("done", outcome.ask)).toBe(false);
+  }
+});
+
 test("a failure or an answer that doesn't match the schema changes neither the ? nor the anger mark", async () => {
   const failures = [
-    answering({ line: "Which?", asking: "yes", abusive: false }),
-    answering({ line: "Which?", asking: true }),
+    answering({ line: "Which?", asking: "yes", abusive: false, continuing: false }),
+    answering({ line: "Which?", asking: true, continuing: false }),
+    answering({ line: "Which?", asking: true, abusive: false }),
+    answering({ line: "Which?", asking: true, abusive: false, continuing: "no" }),
     answering({ summary: "Which?" }),
     answering(null),
     async <V>(): Promise<JudgeResult<V>> => ({ ok: false, kind: "rate_limit", status: 429 }),
@@ -94,19 +119,26 @@ test("a failure or an answer that doesn't match the schema changes neither the ?
       expect(outcome.ask.status).toBe("error");
       expect(needsAnswer("done", outcome.ask)).toBe(false);
       expect(outcome.abusive).toBeUndefined();
+      expect(outcome.continuing).toBeUndefined();
       expect(nextAngry(true, outcome)).toBe(true);
       expect(nextAngry(false, outcome)).toBe(false);
     }
   }
-  const noJson = await summarizeTurn("local", turnPayload("en", "x", []), failures[5]);
+  const noJson = await summarizeTurn("local", turnPayload("en", "x", []), failures.at(-1)!);
   expect(turnOutcome(noJson).ask).toEqual({ status: "error", errorKind: "no-matching-json" });
 });
 
 test("an empty line is no bubble but still a verdict", () => {
-  expect(parseTurnVerdict({ line: "  ", asking: false, abusive: false })).toEqual({ line: "", asking: false, abusive: false });
-  expect(turnOutcome({ ok: true, verdict: { line: "", asking: false, abusive: true } })).toEqual({
+  expect(parseTurnVerdict({ line: "  ", asking: false, abusive: false, continuing: false })).toEqual({
+    line: "",
+    asking: false,
+    abusive: false,
+    continuing: false,
+  });
+  expect(turnOutcome({ ok: true, verdict: { line: "", asking: false, abusive: true, continuing: false } })).toEqual({
     ask: { status: "not_asking" },
     abusive: true,
+    continuing: false,
   });
 });
 

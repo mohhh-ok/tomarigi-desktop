@@ -185,11 +185,13 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                     Stays in the log but doesn't sound (see deriveDoneEvent in lib/session-events.ts) */}
                 {e.muted && <span className="debug-log-muted-badge">muted</span>}
                 {/* The turn verdict that came with the speech bubble summary (docs/design.md "Turn verdicts"): whether the
-                    reply waits on the user, and whether a message of that turn was abusive (absent when the request failed) */}
+                    reply waits on the user, whether a message of that turn was abusive, and whether its work goes on in the
+                    background (both absent when the request failed) */}
                 {e.ask && (
                   <span className="debug-log-ask">
                     verdict {e.ask.status}
                     {e.abusive !== undefined && ` abusive=${e.abusive}`}
+                    {e.continuing !== undefined && ` continuing=${e.continuing}`}
                     {e.ask.errorKind && ` (${e.ask.errorKind})`}
                   </span>
                 )}

@@ -115,16 +115,24 @@ export function saveEventLogIfDirty(): void {
 
 /**
  * Writes the turn verdict to the persistent log entry of the same turn's done event (key = sessionId:at:done), to see it
- * in the debug log screen (docs/design.md "Turn verdicts"). abusive is absent when the request failed. Not written when
- * the done isn't in the log yet (e.g. suppressed)
+ * in the debug log screen (docs/design.md "Turn verdicts"). abusive and continuing are absent when the request failed.
+ * Not written when the done isn't in the log yet (e.g. suppressed)
  */
-export function recordTurnVerdict(sessionId: string, at: number, ask: AskJudgement, abusive?: boolean): void {
+export function recordTurnVerdict(
+  sessionId: string,
+  at: number,
+  ask: AskJudgement,
+  abusive?: boolean,
+  continuing?: boolean,
+): void {
   const key = `${sessionId}:${at}:done`;
   const logged = eventLogState.entries.find((e) => e.key === key);
   if (!logged) return;
   logged.ask = ask;
   if (abusive === undefined) delete logged.abusive;
   else logged.abusive = abusive;
+  if (continuing === undefined) delete logged.continuing;
+  else logged.continuing = continuing;
   eventLogState.dirty = true;
 }
 

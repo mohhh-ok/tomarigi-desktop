@@ -519,8 +519,8 @@ export const PRESETS: Preset[] = [
   },
   {
     // Actually sends the turn verdict request (ask, summary, and angry aren't given as data), with the summary provider
-    // set up in settings (docs/design.md "Turn verdicts"). Results appear in the log ([bubble] with asking and abusive in
-    // ~/Library/Logs/tomarigi-desktop/app-log.txt) and as the bird's bubble, "?", and anger mark
+    // set up in settings (docs/design.md "Turn verdicts"). Results appear in the log ([bubble] with asking, abusive, and
+    // continuing in ~/Library/Logs/tomarigi-desktop/app-log.txt) and as the bird's bubble, "?", and anger mark
     id: "verdict-live",
     label: "Real turn verdict",
     build: () => ({
