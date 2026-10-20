@@ -8,8 +8,8 @@
   line-height: 0;
 }
 
-/* Marks drawn over the bird, shared by all icon sets: "?" for birds that need a reply (needsAnswer in lib/jev.ts) at
-   the top right, and the anger mark (isAngry in lib/jev.ts) at the top left. The diameter follows the bird size
+/* Marks drawn over the bird, shared by all icon sets: "?" for birds that need a reply (needsAnswer in lib/turn-verdict.ts) at
+   the top right, and the anger mark (isAngry in lib/turn-verdict.ts) at the top left. The diameter follows the bird size
    (--glyph-size is passed by BirdGlyph), with a minimum that stays readable in the small Perch rows */
 .bird-badge {
   --badge-size: max(10px, calc(var(--glyph-size, 18px) * 0.42));

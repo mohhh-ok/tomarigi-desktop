@@ -19,11 +19,13 @@ import {
   deleteAiProvider,
   deleteApiKey,
   deleteLocalAiConfig,
+  deleteRetiredKey,
   initApiKeys,
   loadAiProvider,
   loadApiKeyBackend,
   loadApiKeyStatus,
   loadLocalAiConfig,
+  loadRetiredKeysSaved,
   resolveAiProvider,
   saveAiProvider,
   saveApiKey,
@@ -32,6 +34,7 @@ import {
   type AiSettingsProvider,
   type ApiKeyProvider,
   type LocalAiConfig,
+  type RetiredKeyProvider,
 } from "@/lib/api-keys";
 import {
   loadIconSetAssignments,
@@ -42,7 +45,6 @@ import {
 import { testJudgeConnection } from "@/lib/judge";
 import { testOpenAiConnection } from "@/lib/openai-judge";
 import { testLocalConnection } from "@/lib/local-judge";
-import { testTypeSafeConnection } from "@/lib/jev";
 import { cancelSpeech, setVoiceVolume } from "@/lib/voice";
 import { DEFAULT_ICON_SET } from "./icon-sets";
 import type { ApiKeyTestState } from "./settings/ai-key-settings";
@@ -60,14 +62,14 @@ export function useSettings() {
   const [aiKeySet, setAiKeySet] = useState<Record<ApiKeyProvider, boolean>>({
     anthropic: false,
     openai: false,
-    typesafe: false,
   });
+  // Retired providers (TypeSafe) whose key is still saved; the settings show a row with only Delete for each
+  const [retiredKeys, setRetiredKeys] = useState<RetiredKeyProvider[]>([]);
   // Local AI's base URL and model (docs/design.md "BYOK API keys", Local AI); null while not set up
   const [localAi, setLocalAi] = useState<LocalAiConfig | null>(null);
   const [aiKeyTestState, setAiKeyTestState] = useState<Record<AiSettingsProvider, ApiKeyTestState>>({
     anthropic: { phase: "idle" },
     openai: { phase: "idle" },
-    typesafe: { phase: "idle" },
     local: { phase: "idle" },
   });
   const [aiProvider, setAiProvider] = useState<AiProvider | null>(null);
@@ -115,8 +117,9 @@ export function useSettings() {
         line: `[keys] imported local model=${model} test=${test.ok ? "ok" : `${test.kind} ${test.message ?? ""}`}`,
       }).catch(() => {});
     }
-    const [keyStatus, preferredProvider, keyBackend, local] = await Promise.all([
+    const [keyStatus, retired, preferredProvider, keyBackend, local] = await Promise.all([
       loadApiKeyStatus(),
+      loadRetiredKeysSaved(),
       loadAiProvider(),
       loadApiKeyBackend(),
       loadLocalAiConfig(),
@@ -124,7 +127,7 @@ export function useSettings() {
     setKeyStoreAvailable(keyBackend !== "unavailable");
     // Log whether each key is saved (a boolean only). Key values are never received or printed
     void invoke("log", {
-      line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} typesafe=${keyStatus.typesafe} local=${local !== undefined}`,
+      line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} local=${local !== undefined} retired=${retired.join(",") || "-"}`,
     });
     const resolvedProvider = resolveAiProvider(preferredProvider, {
       anthropic: keyStatus.anthropic,
@@ -132,6 +135,7 @@ export function useSettings() {
       local: local !== undefined,
     });
     setAiKeySet(keyStatus);
+    setRetiredKeys(retired);
     setLocalAi(local ?? null);
     setAiProvider(resolvedProvider ?? null);
     // Inconsistencies from old data or from deleting the key in use are normalized once to the available side.
@@ -187,9 +191,8 @@ export function useSettings() {
     }
     setAiKeySet((current) => ({ ...current, [provider]: true }));
     setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "idle" } }));
-    // The summary provider auto-selects the first one set up. If one is already selected, saving a second doesn't switch it.
-    // TypeSafe isn't used for summaries, so it is excluded
-    if (provider !== "typesafe" && !aiProvider) {
+    // The summary provider auto-selects the first one set up. If one is already selected, saving a second doesn't switch it
+    if (!aiProvider) {
       await saveAiProvider(provider);
       setAiProvider(provider);
     }
@@ -212,6 +215,12 @@ export function useSettings() {
       else await deleteAiProvider();
     }
   }, [aiKeySet, aiProvider, localAi]);
+
+  /** Deletes a retired provider's key (docs/design.md "BYOK API keys": TypeSafe (Jev) is no longer used) */
+  const removeRetiredKey = useCallback(async (provider: RetiredKeyProvider) => {
+    await deleteRetiredKey(provider);
+    setRetiredKeys(await loadRetiredKeysSaved());
+  }, []);
 
   /** Saves Local's base URL and model (replacing works the same way) */
   const saveLocalAi = useCallback(async (config: LocalAiConfig) => {
@@ -264,11 +273,7 @@ export function useSettings() {
       return;
     }
     setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "testing" } }));
-    const result = await (provider === "typesafe"
-      ? testTypeSafeConnection()
-      : provider === "openai"
-        ? testOpenAiConnection()
-        : testJudgeConnection());
+    const result = await (provider === "openai" ? testOpenAiConnection() : testJudgeConnection());
     setAiKeyTestState((current) => ({
       ...current,
       [provider]: result.ok ? { phase: "success" } : { phase: "failure", reason: result.kind },
@@ -306,6 +311,7 @@ export function useSettings() {
     voiceEnabledRef,
     voiceVolume,
     aiKeySet,
+    retiredKeys,
     keyStoreAvailable,
     aiKeyTestState,
     aiProvider,
@@ -320,6 +326,7 @@ export function useSettings() {
     changeChirpVolume,
     saveAiKey,
     removeAiKey,
+    removeRetiredKey,
     saveLocalAi,
     removeLocalAi,
     selectAiProvider,

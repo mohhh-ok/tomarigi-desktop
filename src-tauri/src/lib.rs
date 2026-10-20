@@ -316,7 +316,6 @@ pub fn run() {
             garden_grow::garden_grow_anchor,
             garden_grow::window_user_size,
             fs::save_download,
-            keys::typesafe_systemone,
             keys::anthropic_messages,
             keys::openai_responses,
             keys::local_chat,

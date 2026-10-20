@@ -1,76 +1,71 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { uiLanguage } from "@/lib/i18n";
-import { summarizeTurnLine } from "@/lib/summarize";
-import { lastSentence } from "@/lib/last-sentence";
-import { loadActiveAiProvider, type ApiKeyProvider } from "@/lib/api-keys";
+import { nextAngry, summarizeTurn, turnOutcome, turnPayload, type TurnOutcome } from "@/lib/summarize";
+import { loadActiveAiProvider } from "@/lib/api-keys";
 import { appendConciergeLog } from "@/lib/concierge";
-import { LOCAL_NO_MATCHING_JSON } from "@/lib/local-judge";
-import { judgeAbuse, judgeAsking, type AngerJudgement, type AskJudgement } from "@/lib/jev";
-import { recordAngerJudgement, recordAskJudgement, type SessionView } from "@/lib/sessions";
+import { recordTurnVerdict, type SessionView } from "@/lib/sessions";
 
-/** Identifies a turn for the Jev verdict. Same basis as the done event key (sessionId + time of the last response) */
+/** Identifies a turn for the turn verdict. Same basis as the done event key (sessionId + time of the last response) */
 export function turnKey(sessionId: string, at: number): string {
   return `${sessionId}:${at}`;
 }
 
-/** Per-turn requests made from each scan (the Jev "?" verdict, the Jev anger verdict, and the speech bubble summary),
- * and the sessions with those results attached for display. summarySetUp: an OpenAI / Anthropic key is saved, or
- * Local is set up */
-export function useTurnJudgements(
-  sessions: SessionView[],
-  aiKeySet: Record<ApiKeyProvider, boolean>,
-  summarySetUp: boolean,
-) {
-  // Jev verdict for needs reply (lib/jev.ts). Keyed by turn (turnKey). Turns whose check has started go into
-  // askRequestedRef and aren't re-requested on every poll. Turns that leave the screen are dropped
-  const [askJudgements, setAskJudgements] = useState<Record<string, AskJudgement>>({});
-  const askRequestedRef = useRef(new Set<string>());
-  const typeSafeKeySetRef = useRef(false);
-  // Jev abuse verdict for the anger mark (docs/design.md "Anger mark for abuse toward the AI"). Keyed by session id,
-  // holding the verdict of the latest judged user message, so the mark stays until the next message is judged.
-  // angerRequestedRef remembers the time of the message last sent per session
-  const [angerJudgements, setAngerJudgements] = useState<
-    Record<string, { at: number; anger: AngerJudgement }>
-  >({});
-  const angerRequestedRef = useRef(new Map<string, number>());
+/** Per-turn requests made from each scan (docs/design.md "Turn verdicts": one request per finished turn gives the
+ * speech bubble line, the "?", and the anger mark), and the sessions with those results attached for display.
+ * summarySetUp: an OpenAI / Anthropic key is saved, or Local is set up */
+export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean) {
+  // Results keyed by turn (turnKey). Turns whose request has started go into requestedRef and aren't re-requested on
+  // every poll; the "?" is pending until the answer comes. Turns that leave the screen are dropped. Once working,
+  // reply is gone and the bubble and the "?" go with it
+  const [turns, setTurns] = useState<Record<string, TurnOutcome>>({});
+  const requestedRef = useRef(new Set<string>());
+  // The anger mark, keyed by session id: whether the latest judged turn had an abusive message, with that turn's reply
+  // time. It stays until the next turn's verdict, also while the next turn is working, and isn't changed by a failed
+  // request (docs/design.md "Anger mark for abuse toward the AI")
+  const [anger, setAnger] = useState<Record<string, { at: number; angry: boolean }>>({});
+  const setUpRef = useRef(false);
   useEffect(() => {
-    typeSafeKeySetRef.current = aiKeySet.typesafe;
-  }, [aiKeySet.typesafe]);
-
-  // Summarize the last response of a stopped turn into speech bubble text once, with OpenAI / Anthropic / Local
-  // (docs/design.md "Speech bubbles"). Nothing is shown without a key.
-  // The result goes into turnLines and is attached as SessionView.summary at render. Once working, reply is gone and it disappears
-  const [turnLines, setTurnLines] = useState<Record<string, string>>({});
-  const turnLineRequestedRef = useRef(new Set<string>());
-  const summaryKeySetRef = useRef(false);
-  useEffect(() => {
-    summaryKeySetRef.current = summarySetUp;
+    setUpRef.current = summarySetUp;
   }, [summarySetUp]);
-  const requestTurnLines = useCallback((views: SessionView[]) => {
-    const live = new Set<string>();
+
+  // Ask once about a stopped turn (done / dozing with a reply), including those on screen at launch. The done chirp
+  // and readout don't wait for it
+  const requestJudgements = useCallback((views: SessionView[]) => {
+    const liveTurns = new Set<string>();
+    const liveSessions = new Set<string>();
     for (const view of views) {
-      // Views that already have a summary (mock) aren't summarized
-      if (!view.reply || view.summary) continue;
+      liveSessions.add(view.id);
+      // Views that already have a summary or a verdict (mock) aren't sent
+      if (!view.reply || view.summary || view.ask) continue;
       const key = turnKey(view.id, view.reply.at);
-      live.add(key);
-      if (!summaryKeySetRef.current || turnLineRequestedRef.current.has(key)) continue;
-      turnLineRequestedRef.current.add(key);
-      const { project, reply } = view;
+      liveTurns.add(key);
+      if (!setUpRef.current || requestedRef.current.has(key)) continue;
+      requestedRef.current.add(key);
+      const { id, project, reply, userMessages = [] } = view;
+      setTurns((current) => ({ ...current, [key]: { ask: { status: "pending" } } }));
       void (async () => {
         const provider = await loadActiveAiProvider();
-        if (!provider) return;
-        const result = await summarizeTurnLine(provider, {
-          ui_language: uiLanguage(),
-          assistant_text: reply.text,
-        });
-        const line = result.ok && typeof result.verdict.line === "string" ? result.verdict.line.trim() : "";
+        if (!provider) {
+          setTurns((current) => {
+            const next = { ...current };
+            delete next[key];
+            return next;
+          });
+          return;
+        }
+        const payload = turnPayload(uiLanguage(), reply.text, userMessages.map((m) => m.text));
+        const result = await summarizeTurn(provider, payload);
+        const outcome = turnOutcome(result);
         // A local model's answer that isn't JSON matching the schema is no summary (docs/design.md "BYOK API keys",
         // Local AI), recorded as such in the app log and the debug log screen
-        const noMatchingJson = !result.ok && result.message === LOCAL_NO_MATCHING_JSON;
-        void invoke("log", {
-          line: `[bubble] ${result.ok ? `ok len=${line.length}` : noMatchingJson ? "no summary no-matching-json" : `error=${result.kind}`} ${project}`,
-        });
+        const noMatchingJson = !result.ok && result.noMatchingJson === true;
+        const head = result.ok
+          ? `ok len=${outcome.line?.length ?? 0} asking=${result.verdict.asking} abusive=${result.verdict.abusive}`
+          : noMatchingJson
+            ? "no summary no-matching-json"
+            : `error=${result.kind}`;
+        void invoke("log", { line: `[bubble] ${head} user_messages=${userMessages.length} ${project}` });
         if (noMatchingJson) {
           appendConciergeLog({
             at: Date.now(),
@@ -79,85 +74,29 @@ export function useTurnJudgements(
             text: `no summary (answer didn't match the schema) ${project}`,
           });
         }
-        if (!line) return;
-        setTurnLines((current) =>
-          turnLineRequestedRef.current.has(key) ? { ...current, [key]: line } : current,
-        );
+        recordTurnVerdict(id, reply.at, outcome.ask, outcome.abusive);
+        setTurns((current) => (requestedRef.current.has(key) ? { ...current, [key]: outcome } : current));
+        if (outcome.abusive === undefined) return;
+        setAnger((current) => {
+          const before = current[id];
+          // An answer for an older turn that comes after a newer one doesn't overwrite it
+          if (before && before.at > reply.at) return current;
+          return { ...current, [id]: { at: reply.at, angry: nextAngry(before?.angry ?? false, outcome) } };
+        });
       })();
     }
-    for (const key of turnLineRequestedRef.current) {
-      if (!live.has(key)) turnLineRequestedRef.current.delete(key);
+    for (const key of requestedRef.current) {
+      if (!liveTurns.has(key)) requestedRef.current.delete(key);
     }
-    setTurnLines((current) => {
-      const stale = Object.keys(current).filter((key) => !live.has(key));
+    setTurns((current) => {
+      const stale = Object.keys(current).filter((key) => !liveTurns.has(key));
       if (stale.length === 0) return current;
       const next = { ...current };
       for (const key of stale) delete next[key];
       return next;
     });
-  }, []);
-
-  // Ask Jev once about a stopped turn (done / dozing with a reply). The done chirp and readout don't wait
-  // for it. The result goes into askJudgements and is attached as SessionView.ask at render
-  const requestAskJudgements = useCallback((views: SessionView[]) => {
-    const live = new Set<string>();
-    for (const view of views) {
-      // Views that already have ask (mock) aren't sent to Jev
-      if (!view.reply || view.ask) continue;
-      const key = turnKey(view.id, view.reply.at);
-      live.add(key);
-      if (!typeSafeKeySetRef.current || askRequestedRef.current.has(key)) continue;
-      askRequestedRef.current.add(key);
-      const { id, project, reply } = view;
-      setAskJudgements((current) => ({ ...current, [key]: { status: "pending" } }));
-      void (async () => {
-        const ask: AskJudgement = await judgeAsking(reply.text);
-        setAskJudgements((current) => (key in current ? { ...current, [key]: ask } : current));
-        recordAskJudgement(id, reply.at, ask);
-        void invoke("log", {
-          line: `[jev] ${ask.status} p=${ask.probability?.toFixed(2) ?? "-"}${ask.errorKind ? ` error=${ask.errorKind}` : ""} ${project}`,
-        });
-      })();
-    }
-    for (const key of askRequestedRef.current) {
-      if (!live.has(key)) askRequestedRef.current.delete(key);
-    }
-    setAskJudgements((current) => {
-      const stale = Object.keys(current).filter((key) => !live.has(key));
-      if (stale.length === 0) return current;
-      const next = { ...current };
-      for (const key of stale) delete next[key];
-      return next;
-    });
-  }, []);
-
-  // Send each new user message to Jev right when it appears (separately from the "?" verdict, which waits for the
-  // turn to stop). The previous verdict stays shown until the new one comes back
-  const requestAngerJudgements = useCallback((views: SessionView[]) => {
-    const live = new Set<string>();
-    for (const view of views) {
-      live.add(view.id);
-      // Views that already have anger (mock) aren't sent to Jev
-      if (!view.userMessage || view.anger) continue;
-      const { id, project, userMessage } = view;
-      if (!typeSafeKeySetRef.current || angerRequestedRef.current.get(id) === userMessage.at) continue;
-      angerRequestedRef.current.set(id, userMessage.at);
-      void (async () => {
-        const anger = await judgeAbuse(userMessage.text);
-        setAngerJudgements((current) =>
-          (current[id]?.at ?? -1) > userMessage.at ? current : { ...current, [id]: { at: userMessage.at, anger } },
-        );
-        recordAngerJudgement(id, userMessage.at, anger);
-        void invoke("log", {
-          line: `[jev] anger ${anger.status} p=${anger.probability?.toFixed(2) ?? "-"}${anger.errorKind ? ` error=${anger.errorKind}` : ""} ${project}`,
-        });
-      })();
-    }
-    for (const id of angerRequestedRef.current.keys()) {
-      if (!live.has(id)) angerRequestedRef.current.delete(id);
-    }
-    setAngerJudgements((current) => {
-      const stale = Object.keys(current).filter((id) => !live.has(id));
+    setAnger((current) => {
+      const stale = Object.keys(current).filter((id) => !liveSessions.has(id));
       if (stale.length === 0) return current;
       const next = { ...current };
       for (const id of stale) delete next[id];
@@ -165,35 +104,20 @@ export function useTurnJudgements(
     });
   }, []);
 
-  const requestJudgements = useCallback(
-    (views: SessionView[]) => {
-      requestAskJudgements(views);
-      requestAngerJudgements(views);
-      requestTurnLines(views);
-    },
-    [requestAskJudgements, requestAngerJudgements, requestTurnLines],
+  // Attach the results only to the bird of the same turn (if the turn changes, turnKey changes and they aren't
+  // attached). mock holds summary / ask / angry directly, so they aren't overwritten
+  const displaySessions = useMemo(
+    () =>
+      sessions.map((s) => {
+        // The anger mark only works while a summary provider is set up, so removing it clears the mark
+        const angry = s.angry ?? (summarySetUp ? anger[s.id]?.angry : undefined);
+        if (angry !== undefined && s.angry === undefined) s = { ...s, angry };
+        if (!s.reply) return s;
+        const turn = turns[turnKey(s.id, s.reply.at)];
+        return { ...s, ask: s.ask ?? turn?.ask, summary: s.summary ?? turn?.line };
+      }),
+    [sessions, turns, anger, summarySetUp],
   );
-
-  // Attach the Jev verdict only to the bird of the same turn (if the turn changes, turnKey changes and it isn't attached).
-  // mock holds ask directly, so it isn't overwritten
-  const displaySessions = useMemo(() => {
-    // Without a summary provider (OpenAI / Anthropic / Local), for a turn where the Jev verdict is needs reply, the last sentence of the
-    // last response goes in the speech bubble (docs/design.md "Speech bubbles"; no AI used)
-    return sessions.map((s) => {
-      // The anger mark only works while a TypeSafe key is saved, so deleting the key clears it
-      const anger = s.anger ?? (aiKeySet.typesafe ? angerJudgements[s.id]?.anger : undefined);
-      if (anger && !s.anger) s = { ...s, anger };
-      if (!s.reply) return s;
-      const key = turnKey(s.id, s.reply.at);
-      const ask = s.ask ?? askJudgements[key];
-      return {
-        ...s,
-        ask,
-        summary: s.summary ?? turnLines[key],
-        replyTail: !summarySetUp && ask?.status === "asking" ? lastSentence(s.reply.text) : undefined,
-      };
-    });
-  }, [sessions, askJudgements, angerJudgements, turnLines, summarySetUp, aiKeySet.typesafe]);
 
   return { requestJudgements, displaySessions };
 }

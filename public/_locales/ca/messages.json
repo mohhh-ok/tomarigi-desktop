@@ -257,16 +257,7 @@
     "message": "Espera la teva resposta per poder continuar"
   },
   "angerBadgeTitle": {
-    "message": "El teu darrer missatge en aquesta sessió s’ha considerat ofensiu cap a la IA"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "Clau API de TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Opcional. TypeSafe és un servei extern d’IA que valora si un agent s’ha aturat per esperar la teva resposta. Amb una clau desada, la darrera resposta d’una sessió aturada s’envia a TypeSafe, i els ocells que es considera que esperen resposta mostren un «?». Sense clau, només els ocells aturats en una eina de pregunta mostren el «?»."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Els teus propis missatges a l’agent també s’envien a TypeSafe. Si el teu darrer missatge es considera ofensiu cap a la IA, aquest ocell mostra una marca d’enuig fins al teu missatge següent."
+    "message": "Un missatge que has enviat en el darrer torn d’aquesta sessió s’ha considerat ofensiu cap a la IA"
   },
   "bubblePlanApproval": {
     "message": "Aproves el pla?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "No s’ha pogut desar la clau. Torna-ho a provar."
-  },
-  "typeSafeSiteLink": {
-    "message": "Lloc web de TypeSafe"
   },
   "quotedSnippet": {
     "message": "«$SNIPPET$»",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Tria o escriu un model per desar-lo i provar la connexió."
+  },
+  "aiUserMessagesNote": {
+    "message": "Cada vegada que acaba un torn, s’envien la darrera resposta de l’agent i els missatges que has enviat durant aquest torn. També decideixen el «?» dels ocells que esperen la teva resposta i la marca d’enuig pels missatges ofensius cap a la IA."
+  },
+  "retiredKeyNote": {
+    "message": "Ja no s’utilitza. Pots eliminar aquesta clau desada."
   }
 }

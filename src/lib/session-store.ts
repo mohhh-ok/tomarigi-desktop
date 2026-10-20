@@ -22,10 +22,16 @@ export const chickMetaCache = new Map<string, ChickMeta>();
 // alone and contain no user message at all (this happened in practice).
 // Remember the last seen snippet and keep showing it after it scrolls out of the window
 export const snippetCache = new Map<string, string>();
-// key: session id. The latest message a person typed (anger mark input). For the same reason as snippetCache,
-// and because a message can even be appended and pushed out of the window between two polls (a large tool
-// result right after it), keep the last one seen so the mark can still be judged and cleared
-export const userMessageCache = new Map<string, { at: number; text: string }>();
+// key: session id. The messages a person typed in the current turn, oldest first (anger mark input; feedTurnMessages
+// in lib/session-tail.ts), read in transcript order. For the same reason as snippetCache, and because a message can even
+// be appended and pushed out of the window between two polls (a large tool result right after it), keep the ones seen
+// so the turn verdict still gets every message of its turn. afterText: the last line that counts was an assistant
+// text line, so a person's message or command line next ends the turn. lastAt / lastKeys: where reading stopped (the window is re-read on
+// every poll)
+export const turnMessageCache = new Map<
+  string,
+  { messages: { at: number; text: string }[]; afterText: boolean; lastAt: number; lastKeys: Set<string> }
+>();
 // key: parent session id. Ledger of background tasks (run_in_background) (key: task-id).
 // Start lines (TailInfo.backgroundTaskStarts) scroll out of the tail window within tens of seconds (measured:
 // already outside the window at the turn end 50 seconds after start), so remember them while visible.
@@ -114,7 +120,7 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   }
   for (const key of chickMetaCache.keys()) if (!liveIds.has(key)) chickMetaCache.delete(key);
   for (const key of snippetCache.keys()) if (!liveIds.has(key)) snippetCache.delete(key);
-  for (const key of userMessageCache.keys()) if (!liveIds.has(key)) userMessageCache.delete(key);
+  for (const key of turnMessageCache.keys()) if (!liveIds.has(key)) turnMessageCache.delete(key);
   for (const key of backgroundTaskCache.keys()) if (!liveIds.has(key)) backgroundTaskCache.delete(key);
   for (const key of chickSignalLedger.keys()) if (!liveIds.has(key)) chickSignalLedger.delete(key);
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);

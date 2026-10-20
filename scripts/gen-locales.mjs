@@ -128,15 +128,11 @@ export const KEYS = [
   "birdWaitingLabel",
   "askingBadgeTitle",
   "angerBadgeTitle",
-  "typeSafeApiKeyHeading",
-  "typeSafeApiKeyDescription",
-  "typeSafeUserMessageNote",
   "bubblePlanApproval",
   "birdWatchingLabel",
   "watchingPeersTitle",
   "byokReplaceButton",
   "byokSaveFailedMessage",
-  "typeSafeSiteLink",
   "quotedSnippet",
   "settingsBackButton",
   "hideWindowButtonLabel",
@@ -170,6 +166,8 @@ export const KEYS = [
   "localAiTestUnreachable",
   "cancelButton",
   "localAiNeedsModel",
+  "aiUserMessagesNote",
+  "retiredKeyNote",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

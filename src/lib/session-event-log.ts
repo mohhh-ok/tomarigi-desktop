@@ -1,7 +1,6 @@
 // Recent activity (sessionEventCache) and the persistent event log for the debug log screen
 import { loadEventLog, saveEventLog } from "./settings-store";
-import type { AngerJudgement, AskJudgement } from "./jev";
-import type { SessionEvent } from "./session-types";
+import type { AskJudgement, SessionEvent } from "./session-types";
 import { eventLogState, knownLogKeys, pendingLogEvents, sessionEventCache } from "./session-store";
 
 // Birds and chicks are shown while their process is alive, regardless of idle time (docs/design.md "Removing birds
@@ -115,22 +114,17 @@ export function saveEventLogIfDirty(): void {
 }
 
 /**
- * Writes the Jev verdict to the persistent log entry of the same turn's done event (key = sessionId:at:done),
- * to see the probability in the debug log screen. Not written when the done isn't in the log yet (e.g. suppressed)
+ * Writes the turn verdict to the persistent log entry of the same turn's done event (key = sessionId:at:done), to see it
+ * in the debug log screen (docs/design.md "Turn verdicts"). abusive is absent when the request failed. Not written when
+ * the done isn't in the log yet (e.g. suppressed)
  */
-export function recordAskJudgement(sessionId: string, at: number, ask: AskJudgement): void {
+export function recordTurnVerdict(sessionId: string, at: number, ask: AskJudgement, abusive?: boolean): void {
   const key = `${sessionId}:${at}:done`;
   const logged = eventLogState.entries.find((e) => e.key === key);
   if (!logged) return;
   logged.ask = ask;
-  eventLogState.dirty = true;
-}
-
-/** Writes the abuse verdict to the persistent log entry of that message's started event (key = sessionId:at:started) */
-export function recordAngerJudgement(sessionId: string, at: number, anger: AngerJudgement): void {
-  const logged = eventLogState.entries.find((e) => e.key === `${sessionId}:${at}:started`);
-  if (!logged) return;
-  logged.anger = anger;
+  if (abusive === undefined) delete logged.abusive;
+  else logged.abusive = abusive;
   eventLogState.dirty = true;
 }
 

@@ -1,8 +1,19 @@
 // Types of the session scan (lib/sessions.ts and the modules it is split into)
 import type { NativeFile } from "./native-fs";
 import type { TailInfo } from "./transcript";
-import type { AngerJudgement, AskJudgement } from "./jev";
+import type { JudgeErrorKind } from "./judge";
 import type { AgentKind } from "./agents";
+
+/**
+ * The turn verdict on whether the last reply waits on the user, one per turn (sessionId + time of the last reply). It
+ * comes with the speech bubble summary (docs/design.md "Turn verdicts"); pending while that request runs, error when
+ * it failed or the answer didn't match the schema
+ */
+export interface AskJudgement {
+  status: "pending" | "asking" | "not_asking" | "error";
+  /** Kind of error (for the debug display). no-matching-json: a local model's answer that isn't JSON matching the schema */
+  errorKind?: JudgeErrorKind | "no-matching-json";
+}
 
 // Transition events reconstructed from the transcript with timestamps (experimental).
 // key is for deduplicating the same event (every poll re-parses the same trailing 64KB)
@@ -29,10 +40,10 @@ export interface SessionEvent {
   // IndexedDB, so appendToEventLog strips it right before saving (it stays in the in-memory
   // sessionEventCache/events, so it can still be used for the readout at the moment App.tsx detects a new done)
   assistantText?: string;
-  // Whether Jev judged the done turn as needs reply (recordAskJudgement). Shown in the debug log screen
+  // The turn verdict of the done turn (recordTurnVerdict): whether it waits on the user, and whether a message the user
+  // sent in that turn was abusive toward the AI (absent when the request failed). Shown in the debug log screen
   ask?: AskJudgement;
-  // Jev's abuse verdict for the user message of a started event (recordAngerJudgement). Shown in the debug log screen
-  anger?: AngerJudgement;
+  abusive?: boolean;
   // Whether this session's bird has the anger mark now. App sets it only for display; it is not written to the
   // persistent log
   angry?: boolean;
@@ -58,24 +69,22 @@ export interface SessionView {
   chicks?: ChickView[]; // subagents (exist only as children of a parent)
   // Snippet of the latest user message (pickSnippet). Always shows "what this session was asked to do"
   snippet?: string;
-  // Last reply of a stopped (done / dozing) turn. Used as the Jev verdict input and to identify the turn
+  // Last reply of a stopped (done / dozing) turn. Used as the turn verdict input and to identify the turn
   // (sessionId + at). at is the same value as the at of the same turn's done event
   reply?: { at: number; text: string };
-  // Jev verdict for the reply's turn. Set by App (mock writes it directly)
+  // The turn verdict for the reply's turn. Set by App (mock writes it directly)
   ask?: AskJudgement;
-  // The latest message a person typed in this session (lastUserMessage). Input for the abuse verdict
-  // (docs/design.md "Anger mark for abuse toward the AI"). Untrusted input; never shown
-  userMessage?: { at: number; text: string };
-  // Jev's abuse verdict for the latest judged user message. Set by App (mock writes it directly)
-  anger?: AngerJudgement;
+  // The messages a person typed in the stopped turn, oldest first (turnUserMessages in lib/session-tail.ts). Input
+  // for the abuse verdict (docs/design.md "Anger mark for abuse toward the AI"). Untrusted input; never shown
+  userMessages?: { at: number; text: string }[];
+  // Whether the bird has the anger mark: the latest turn verdict said a message of that turn was abusive. It stays
+  // until the next turn's verdict. Set by App (mock writes it directly)
+  angry?: boolean;
   // The question text while stopped on a question tool (AskUserQuestion / request_user_input). Taken as-is
   // from the tool input (no AI). Shown in the speech bubble (perch/bubble.tsx)
   question?: string;
   // Speech bubble text summarizing the reply's turn with BYOK. Set by App (mock writes it directly)
   summary?: string;
-  // When Jev judged needs reply but there is no key for summarizing, the last sentence of reply
-  // (lib/last-sentence.ts; no AI). Set by App. The speech bubble shows this when there is no summary
-  replyTail?: string;
   // Peers connected by inter-session messages (Watching in docs/design.md). Claude Code only
   peers?: PeerLink[];
   // Watching: the number of peers currently active while this session's own machine state is done / dozing.

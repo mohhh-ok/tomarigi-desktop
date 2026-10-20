@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import { t } from "@/lib/i18n";
 import {
   DEFAULT_LOCAL_BASE_URL,
@@ -7,13 +6,14 @@ import {
   type AiSettingsProvider,
   type ApiKeyProvider,
   type LocalAiConfig,
+  type RetiredKeyProvider,
 } from "@/lib/api-keys";
 import type { JudgeErrorKind } from "@/lib/judge";
 import { fetchLocalModels, isValidBaseUrl, pickLocalModel } from "@/lib/local-judge";
 import { BusyButton } from "./busy-button";
 
-// TypeSafe's official site (linked from the settings description)
-const TYPESAFE_SITE_URL = "https://typesafe.ai";
+// Product names of the retired providers, shown as is in every locale
+const RETIRED_KEY_NAMES: Record<RetiredKeyProvider, string> = { typesafe: "TypeSafe" };
 
 // Display state of the connection test button. reason picks the failure line (TEST_FAILURE_TEXT); it isn't shown
 // The key isn't only for judging, so the type name isn't limited to Judge either (JudgeErrorKind itself
@@ -30,12 +30,14 @@ export type ApiKeyTestState =
 export function AiKeySettings({
   open,
   keySet,
+  retiredKeys,
   storeAvailable,
   localAi,
   selectedProvider,
   testState,
   onSaveKey,
   onDeleteKey,
+  onDeleteRetiredKey,
   onSaveLocal,
   onDeleteLocal,
   onTest,
@@ -44,6 +46,8 @@ export function AiKeySettings({
   // Whether the settings screen is showing (it stays mounted while hidden); Local reads the model list only then
   open: boolean;
   keySet: Record<ApiKeyProvider, boolean>;
+  // Retired providers that still have a key saved: a row that says so, with only Delete
+  retiredKeys: RetiredKeyProvider[];
   // false on a computer without a key store (Linux without Secret Service): says so instead of the key rows
   storeAvailable: boolean;
   // Local AI's base URL and model; null while not set up (docs/design.md "BYOK API keys", Local AI)
@@ -52,6 +56,7 @@ export function AiKeySettings({
   testState: Record<AiSettingsProvider, ApiKeyTestState>;
   onSaveKey: (provider: ApiKeyProvider, draft: string) => Promise<boolean>;
   onDeleteKey: (provider: ApiKeyProvider) => void;
+  onDeleteRetiredKey: (provider: RetiredKeyProvider) => void;
   onSaveLocal: (config: LocalAiConfig) => void;
   onDeleteLocal: () => void;
   onTest: (provider: AiSettingsProvider, localDraft?: LocalAiConfig) => void;
@@ -74,13 +79,15 @@ export function AiKeySettings({
       onSaveKey={(draft) => onSaveKey(provider, draft)}
       onDeleteKey={() => onDeleteKey(provider)}
       onTest={() => onTest(provider)}
-      onSelect={provider !== "typesafe" && choosable ? () => onSelect(provider) : undefined}
+      onSelect={choosable ? () => onSelect(provider) : undefined}
     />
   );
   return (
     <section className="ai-keys">
       <h2>{t("aiApiKeysHeading")}</h2>
       <p className="judge-description">{t("aiApiKeysDescription")}</p>
+      {/* Its own paragraph, so what is sent isn't lost in the middle of the description */}
+      <p className="judge-description">{t("aiUserMessagesNote")}</p>
       {/* Without a key store there is nothing to save keys into, so a note replaces the key rows. Local has no key and
           stays */}
       {!storeAvailable && <p className="judge-description">{t("byokStoreUnavailable")}</p>}
@@ -97,7 +104,11 @@ export function AiKeySettings({
           onTest={(draft) => onTest("local", draft)}
           onSelect={choosable ? () => onSelect("local") : undefined}
         />
-        {storeAvailable && keyRow("typesafe")}
+        {/* docs/design.md "BYOK API keys": TypeSafe (Jev) is no longer used. Shown only while its key is still saved,
+            so it can be removed. Delete works even without a key store, where the status reads nothing saved */}
+        {retiredKeys.map((provider) => (
+          <RetiredKeySettings key={provider} provider={provider} onDelete={() => onDeleteRetiredKey(provider)} />
+        ))}
       </div>
     </section>
   );
@@ -443,8 +454,7 @@ function ApiKeyProviderSettings({
   onSaveKey: (draft: string) => Promise<boolean>;
   onDeleteKey: () => void;
   onTest: () => void;
-  // Passed only for rows that can be chosen as the summary provider, while more than one is set up (TypeSafe is only for
-  // the needs-reply check, not summaries)
+  // Passed only while more than one is set up, so the provider for summaries and the concierge can be chosen
   onSelect?: () => void;
 }) {
   // Temporary state held only by the key input before saving. Cleared and discarded after saving (no plaintext left behind)
@@ -453,32 +463,11 @@ function ApiKeyProviderSettings({
   const [replacing, setReplacing] = useState(false);
   // Whether the last save failed. On failure the input is kept and the failure is shown on this row
   const [saveFailed, setSaveFailed] = useState(false);
-  const heading =
-    provider === "typesafe"
-      ? t("typeSafeApiKeyHeading")
-      : provider === "openai"
-        ? t("openAiApiKeyHeading")
-        : t("aiApiKeyHeading");
+  const heading = provider === "openai" ? t("openAiApiKeyHeading") : t("aiApiKeyHeading");
 
   return (
     <div className={`ai-key-provider ai-key-provider-${provider}`}>
       <h3>{heading}</h3>
-      {provider === "typesafe" && (
-        <p className="judge-description">
-          {t("typeSafeApiKeyDescription")} {t("typeSafeUserMessageNote")}{" "}
-          {/* Link to the official site so users can see how to get a key. Opens in the external browser, not inside the WebView */}
-          <a
-            href={TYPESAFE_SITE_URL}
-            className="external-link"
-            onClick={(e) => {
-              e.preventDefault();
-              void openUrl(TYPESAFE_SITE_URL).catch(() => window.open(TYPESAFE_SITE_URL, "_blank"));
-            }}
-          >
-            {t("typeSafeSiteLink")}
-          </a>
-        </p>
-      )}
       <div className="judge-key-row">
         {keySet && !replacing ? (
           <>
@@ -536,6 +525,21 @@ function ApiKeyProviderSettings({
       {/* A failed save already says what to do */}
       {!keySet && !saveFailed && <CardNote text={t("byokTestNeedsKey")} />}
       <ConnectionTest enabled={keySet} testState={testState} onTest={onTest} />
+    </div>
+  );
+}
+
+/** A retired provider's key that is still saved: its name, that it is no longer used, and Delete only */
+function RetiredKeySettings({ provider, onDelete }: { provider: RetiredKeyProvider; onDelete: () => void }) {
+  return (
+    <div className={`ai-key-provider ai-key-provider-${provider}`}>
+      <h3>{RETIRED_KEY_NAMES[provider]}</h3>
+      <div className="judge-key-row">
+        <span className="judge-key-set">{t("retiredKeyNote")}</span>
+        <button className="small remove" onClick={onDelete}>
+          {t("byokDeleteButton")}
+        </button>
+      </div>
     </div>
   );
 }

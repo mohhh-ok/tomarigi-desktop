@@ -31,18 +31,12 @@ export function pickSnippet(tail: TailInfo): string | undefined {
 }
 
 /**
- * The latest message a person typed (anger mark input). Skips lines marked as not from a person
- * (task-notification etc.) and machine text that formatSnippet rejects (slash command echoes, bash-input,
- * [Request interrupted, ...). The at is the same as that message's started event
+ * Whether an event is a message a person typed (anger mark input; docs/design.md "Anger mark for abuse toward the AI").
+ * Skips lines marked as not from a person (task-notification etc.) and machine text that formatSnippet rejects (slash
+ * command echoes, bash-input, [Request interrupted, ...)
  */
-export function lastUserMessage(events: TailEvent[]): { at: number; text: string } | undefined {
-  for (let i = events.length - 1; i >= 0; i--) {
-    const event = events[i];
-    if (event.kind !== "user" || event.machine || !event.text) continue;
-    if (!formatSnippet(event.text)) continue;
-    return { at: event.at, text: event.text };
-  }
-  return undefined;
+export function isPersonMessage(event: TailEvent): event is TailEvent & { text: string } {
+  return event.kind === "user" && !event.machine && !!event.text && formatSnippet(event.text) !== undefined;
 }
 
 // Rejects text unusable as a snippet and formats the rest: machine text (slash command <command- tags,

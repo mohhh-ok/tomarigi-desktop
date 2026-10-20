@@ -162,8 +162,8 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // The needs-reply "?" (needsAnswer in lib/jev.ts). Machine state waiting, and done / dozing
-    // that Jev judged as asking. Also shows side by side that not_asking and pending birds don't get one
+    // The needs-reply "?" (needsAnswer in lib/turn-verdict.ts). Machine state waiting, and done / dozing
+    // whose turn verdict is asking. Also shows side by side that not_asking and pending birds don't get one
     id: "asking",
     label: "Waiting for reply (?)",
     build: () => ({
@@ -186,11 +186,10 @@ export const PRESETS: Preset[] = [
           snippet: "Suggest some headlines",
           // at matches aev2 so Recent activity ties the verdict to the done of the same turn (aev2)
           reply: { at: BASE - 90_000, text: "I came up with 3 headline ideas. Which one do you want?" },
-          ask: { status: "asking", probability: 0.95 },
+          ask: { status: "asking" },
         },
         {
-          // A bird Jev judged as needing a reply with no summary key (no summary). Its bubble shows the last sentence
-          // of the last reply (a question after a bullet list and a code block)
+          // A reply whose question comes after a bullet list and a code block
           id: "mock/asking/review",
           project: "review-bot",
           slug: "review-bot",
@@ -201,7 +200,8 @@ export const PRESETS: Preset[] = [
             at: BASE - 45_000,
             text: "I fixed these 3 things.\n- Type error\n- Spacing\n- Wording\n\n```ts\nconst a = 1;\n```\n\n**OK to push?**",
           },
-          ask: { status: "asking", probability: 0.91 },
+          ask: { status: "asking" },
+          summary: "OK to push?",
         },
         {
           id: "mock/asking/finished",
@@ -210,7 +210,7 @@ export const PRESETS: Preset[] = [
           state: "done",
           sinceMs: 2 * 60_000,
           snippet: "Typo in README",
-          ask: { status: "not_asking", probability: 0.06 },
+          ask: { status: "not_asking" },
         },
         {
           id: "mock/asking/pending",
@@ -234,7 +234,7 @@ export const PRESETS: Preset[] = [
           slug: "cloudflare-lab",
           state: "dozing",
           sinceMs: 12 * 60_000,
-          ask: { status: "asking", probability: 0.88 },
+          ask: { status: "asking" },
         },
       ],
       events: [
@@ -248,7 +248,8 @@ export const PRESETS: Preset[] = [
   },
   {
     // The anger mark (docs/design.md "Anger mark for abuse toward the AI"). Anger only, anger with the "?" (both show:
-    // "?" top right, anger top left), and calm / pending birds that get no mark. The dozing one shows the muted mark
+    // "?" top right, anger top left), and birds that get no mark: one whose turn wasn't abusive, and one working on a turn
+    // that hasn't been judged. The dozing one shows the muted mark
     id: "anger",
     label: "Anger mark",
     build: () => ({
@@ -261,7 +262,7 @@ export const PRESETS: Preset[] = [
           sinceMs: 4_000,
           toolName: "Edit",
           snippet: "Fix it already",
-          anger: { status: "angry", probability: 0.96 },
+          angry: true,
         },
         {
           id: "mock/anger/asking",
@@ -271,8 +272,8 @@ export const PRESETS: Preset[] = [
           sinceMs: 50_000,
           snippet: "Suggest some headlines",
           reply: { at: BASE - 50_000, text: "I came up with 3 headline ideas. Which one do you want?" },
-          ask: { status: "asking", probability: 0.94 },
-          anger: { status: "angry", probability: 0.93 },
+          ask: { status: "asking" },
+          angry: true,
           summary: "Which headline?",
         },
         {
@@ -283,7 +284,7 @@ export const PRESETS: Preset[] = [
           sinceMs: 30_000,
           toolName: "AskUserQuestion",
           question: "Push to main or open a PR?",
-          anger: { status: "angry", probability: 0.9 },
+          angry: true,
         },
         {
           id: "mock/anger/calm",
@@ -292,7 +293,7 @@ export const PRESETS: Preset[] = [
           state: "done",
           sinceMs: 2 * 60_000,
           snippet: "This is wrong again",
-          anger: { status: "calm", probability: 0.12 },
+          angry: false,
         },
         {
           id: "mock/anger/pending",
@@ -301,7 +302,6 @@ export const PRESETS: Preset[] = [
           state: "working",
           sinceMs: 2_000,
           toolName: "Read",
-          anger: { status: "pending" },
         },
         {
           id: "mock/anger/dozing",
@@ -309,7 +309,7 @@ export const PRESETS: Preset[] = [
           slug: "cloudflare-lab",
           state: "dozing",
           sinceMs: 11 * 60_000,
-          anger: { status: "angry", probability: 0.97 },
+          angry: true,
         },
       ],
       events: [
@@ -351,7 +351,7 @@ export const PRESETS: Preset[] = [
           state: "done",
           sinceMs: 20_000,
           reply: { at: BASE - 20_000, text: "I came up with 2 headline ideas. Do you want A or B?" },
-          ask: { status: "asking", probability: 0.93 },
+          ask: { status: "asking" },
           summary: "Headline A or B?",
         },
         {
@@ -361,7 +361,7 @@ export const PRESETS: Preset[] = [
           state: "done",
           sinceMs: 2 * 60_000,
           reply: { at: BASE - 2 * 60_000, text: "Fixed the typo in the README." },
-          ask: { status: "not_asking", probability: 0.06 },
+          ask: { status: "not_asking" },
           summary: "Fixed the README typo",
         },
         {
@@ -379,7 +379,7 @@ export const PRESETS: Preset[] = [
           state: "dozing",
           sinceMs: 9 * 60_000,
           reply: { at: BASE - 9 * 60_000, text: "..." },
-          ask: { status: "not_asking", probability: 0.1 },
+          ask: { status: "not_asking" },
           summary: "Updated the Workers build config",
         },
       ],
@@ -518,46 +518,49 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // Actually asks Jev (ask isn't given as data). For checking that verdicts work with the saved TypeSafe key.
-    // Results appear in the log ([jev] in ~/Library/Logs/tomarigi-desktop/app-log.txt) and as the bird's "?"
-    id: "jev-live",
-    label: "Real Jev verdict",
+    // Actually sends the turn verdict request (ask, summary, and angry aren't given as data), with the summary provider
+    // set up in settings (docs/design.md "Turn verdicts"). Results appear in the log ([bubble] with asking and abusive in
+    // ~/Library/Logs/tomarigi-desktop/app-log.txt) and as the bird's bubble, "?", and anger mark
+    id: "verdict-live",
+    label: "Real turn verdict",
     build: () => ({
       sessions: [
         {
-          id: "mock/jev/asking",
-          project: "jev-asking",
-          slug: "jev-asking",
+          id: "mock/verdict/asking",
+          project: "verdict-asking",
+          slug: "verdict-asking",
           state: "done",
           sinceMs: 30_000,
           reply: { at: BASE - 30_000, text: "I prepared 2 layouts for the settings screen. A: group them in the top right. B: split into tabs at the bottom. Which one do you want?" },
+          userMessages: [{ at: BASE - 90_000, text: "Make the settings screen easier to scan." }],
         },
         {
-          id: "mock/jev/finished",
-          project: "jev-finished",
-          slug: "jev-finished",
+          id: "mock/verdict/later",
+          project: "verdict-later",
+          slug: "verdict-later",
           state: "done",
-          sinceMs: 60_000,
-          reply: { at: BASE - 60_000, text: "I fixed the button color and confirmed that the type check and build pass. Done." },
+          sinceMs: 45_000,
+          reply: { at: BASE - 45_000, text: "The export runs in the background. When it finishes I'll check the log and then ask whether to push." },
         },
         {
-          // The anger mark ([jev] anger in the log). The first is abusive, the second only frustrated
-          id: "mock/jev/abusive",
-          project: "jev-abusive",
-          slug: "jev-abusive",
-          state: "working",
+          // An abusive message in the turn: the anger mark
+          id: "mock/verdict/abusive",
+          project: "verdict-abusive",
+          slug: "verdict-abusive",
+          state: "done",
           sinceMs: 5_000,
-          toolName: "Edit",
-          userMessage: { at: BASE - 5_000, text: "You are a useless idiot. Fix it." },
+          reply: { at: BASE - 5_000, text: "I fixed the button color and confirmed that the type check and build pass." },
+          userMessages: [{ at: BASE - 60_000, text: "You are a useless idiot. Fix it." }],
         },
         {
-          id: "mock/jev/frustrated",
-          project: "jev-frustrated",
-          slug: "jev-frustrated",
-          state: "working",
+          // Only frustrated: no anger mark
+          id: "mock/verdict/frustrated",
+          project: "verdict-frustrated",
+          slug: "verdict-frustrated",
+          state: "done",
           sinceMs: 8_000,
-          toolName: "Read",
-          userMessage: { at: BASE - 8_000, text: "This is wrong again. Stop guessing and read the file." },
+          reply: { at: BASE - 8_000, text: "I read the file and fixed the import path. The tests pass now." },
+          userMessages: [{ at: BASE - 70_000, text: "This is wrong again. Stop guessing and read the file." }],
         },
       ],
       events: [],

@@ -37,8 +37,8 @@ export const BIRD: Record<BirdState, { glyph: string; label: string; img: string
  * flip is the horizontal mirror for the garden (if everyone faces the same way it looks stuffed, so it is
  * split half and half based on the id).
  * set is the icon set assigned to the project (DEFAULT_ICON_SET = birds when unspecified).
- * asking means waiting on the user's reply (needsAnswer in lib/jev.ts). Overlays the "?" badge, shared by
- * all icon sets, at the top right. angry overlays the anger mark (isAngry in lib/jev.ts) at the top left; both can
+ * asking means waiting on the user's reply (needsAnswer in lib/turn-verdict.ts). Overlays the "?" badge, shared by
+ * all icon sets, at the top right. angry overlays the anger mark (isAngry in lib/turn-verdict.ts) at the top left; both can
  * show at once. The Garden and the Perch both render through this component */
 export function BirdGlyph({
   state,

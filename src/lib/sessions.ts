@@ -14,23 +14,23 @@ import type {
   ScanResult,
   SessionView,
 } from "./session-types";
-import { lastPeerStates, pruneCaches, scanState, snippetCache, userMessageCache } from "./session-store";
+import { lastPeerStates, pruneCaches, scanState, snippetCache } from "./session-store";
 import { sessionIdOfViewId, settleLiveness } from "./session-liveness";
-import { rememberUserMessage } from "./session-tail";
+import { feedTurnMessages, turnUserMessages } from "./session-tail";
 import { assignSdkChicks, isSdkSession } from "./session-chicks";
 import { AGENTS, type AgentKind, type ScanListing } from "./agents";
 import { loadAgentProcesses, type AgentProcessScan } from "./agent-processes";
 import { deriveSdkChickState, deriveState, escalateWithChicks, STATE_URGENCY } from "./bird-state";
-import { extractQuestion, lastUserMessage, pickSnippet } from "./session-snippet";
+import { extractQuestion, pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
 import { cacheEvent, recentEvents, saveEventLogIfDirty } from "./session-event-log";
 import { rememberPeerStates, resolveWatchLinks, type WatchLinks } from "./session-watch";
 
-export type { BirdState, ChickView, PeerLink, ScanResult, SessionEvent, SessionView } from "./session-types";
+export type { AskJudgement, BirdState, ChickView, PeerLink, ScanResult, SessionEvent, SessionView } from "./session-types";
 export { codexDirOf, configDirOf, predecessorsOf } from "./session-liveness";
 export { codexThreadIdOf } from "./codex-rollout";
 export { jumpPidOf } from "./session-liveness";
-export { loadPersistedEvents, recordAngerJudgement, recordAskJudgement } from "./session-event-log";
+export { loadPersistedEvents, recordTurnVerdict } from "./session-event-log";
 
 export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   const now = Date.now();
@@ -203,8 +203,9 @@ function buildViews(
         : undefined;
     const question =
       displayState === "waiting" && last?.kind === "tool_use" ? extractQuestion(last.text) : undefined;
-    rememberUserMessage(id, lastUserMessage(tail.events));
-    const userMessage = userMessageCache.get(id);
+    feedTurnMessages(id, tail.events);
+    // The messages of the stopped turn go with its turn verdict (docs/design.md "Turn verdicts")
+    const userMessages = reply ? turnUserMessages(id, reply.at) : undefined;
     views.push({
       id,
       project,
@@ -216,7 +217,7 @@ function buildViews(
       snippet,
       reply,
       question,
-      userMessage,
+      userMessages,
       peers: peers.length > 0 ? peers : undefined,
       watching,
       cwd: tail.cwd,

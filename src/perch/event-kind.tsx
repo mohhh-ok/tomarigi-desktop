@@ -20,7 +20,7 @@ export const EVENT: Record<SessionEvent["type"], { label: string; tone: EventTon
   closed: { label: t("eventClosedLabel"), tone: "log", icon: MdStopCircle },
 };
 
-/** The event type as displayed. A done for a turn where the Jev verdict is needs reply is shown as needs reply,
+/** The event type as displayed. A done for a turn whose turn verdict is asking is shown as needs reply,
  * matching the "?" in the Garden and on the Perch (docs/design.md "The "?" for sessions waiting on you") */
 export function eventKind(e: SessionEvent): SessionEvent["type"] {
   return e.type === "done" && e.ask?.status === "asking" ? "waiting" : e.type;

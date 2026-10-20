@@ -257,16 +257,7 @@
     "message": "Čeká na vaši odpověď, aby mohl pokračovat"
   },
   "angerBadgeTitle": {
-    "message": "Vaše poslední zpráva v této relaci byla vyhodnocena jako urážlivá vůči AI"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "API klíč TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Volitelné. TypeSafe je externí služba AI, která posuzuje, zda se agent zastavil a čeká na vaši odpověď. S uloženým klíčem se poslední odpověď zastavené relace odešle do TypeSafe a ptáci, u kterých se usoudí, že čekají na odpověď, dostanou „?“. Bez klíče dostanou „?“ jen ptáci zastavení u nástroje pro dotaz."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Do TypeSafe se odesílají i vaše vlastní zprávy agentovi. Pokud je vaše poslední zpráva vyhodnocena jako urážlivá vůči AI, pták dostane značku hněvu až do vaší další zprávy."
+    "message": "Zpráva, kterou jste poslali v posledním tahu této relace, byla vyhodnocena jako urážlivá vůči AI"
   },
   "bubblePlanApproval": {
     "message": "Schválit plán?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Klíč se nepodařilo uložit. Zkuste to znovu."
-  },
-  "typeSafeSiteLink": {
-    "message": "Web TypeSafe"
   },
   "quotedSnippet": {
     "message": "„$SNIPPET$“",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Vyberte nebo zadejte model, abyste ho mohli uložit a otestovat připojení."
+  },
+  "aiUserMessagesNote": {
+    "message": "Po každém dokončeném tahu se odešle poslední odpověď agenta a zprávy, které jste během něj poslali. Rozhodují také o „?“ u ptáků, kteří čekají na vaši odpověď, a o značce hněvu za urážky vůči AI."
+  },
+  "retiredKeyNote": {
+    "message": "Už se nepoužívá. Uložený klíč můžete smazat."
   }
 }

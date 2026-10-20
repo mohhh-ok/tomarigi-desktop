@@ -257,16 +257,7 @@
     "message": "Aspetta la tua risposta per poter continuare"
   },
   "angerBadgeTitle": {
-    "message": "Il tuo ultimo messaggio in questa sessione è stato giudicato offensivo verso l’IA"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "Chiave API TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Facoltativo. TypeSafe è un servizio di IA esterno che valuta se un agente si è fermato ad aspettare la tua risposta. Con una chiave salvata, l’ultima risposta di una sessione ferma viene inviata a TypeSafe e gli uccelli in attesa di risposta mostrano un “?”. Senza chiave, il “?” compare solo sugli uccelli fermi su uno strumento di domanda."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Anche i tuoi messaggi all’agente vengono inviati a TypeSafe. Se il tuo ultimo messaggio è giudicato offensivo verso l’IA, quell’uccello mostra un segno di rabbia fino al tuo messaggio successivo."
+    "message": "Un messaggio che hai inviato nell’ultimo turno di questa sessione è stato giudicato offensivo verso l’IA"
   },
   "bubblePlanApproval": {
     "message": "Approvi il piano?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Impossibile salvare la chiave. Riprova."
-  },
-  "typeSafeSiteLink": {
-    "message": "Sito di TypeSafe"
   },
   "quotedSnippet": {
     "message": "«$SNIPPET$»",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Scegli o digita un modello per salvare e provare la connessione."
+  },
+  "aiUserMessagesNote": {
+    "message": "Ogni volta che un turno finisce, vengono inviati l’ultima risposta dell’agente e i messaggi che hai inviato durante quel turno. Decidono anche il “?” sugli uccelli che aspettano la tua risposta e il segno di rabbia per i messaggi offensivi verso l’IA."
+  },
+  "retiredKeyNote": {
+    "message": "Non è più usata. Puoi eliminare questa chiave salvata."
   }
 }
