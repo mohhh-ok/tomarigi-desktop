@@ -53,6 +53,14 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 - API calls that use keys (Jev, summaries, connection tests) are made from Rust; keys are never passed to the WebView's JS. JS only asks Rust to save, delete, or check whether a key is saved
 - The settings screen never shows key values; it shows "Key saved" and only allows replace and delete
 - Keys left in IndexedDB are moved to the Keychain and deleted from IndexedDB on the first launch of a Keychain build
+- Local AI: speech bubble summaries and the concierge can also run on a local model (the user: 「ローカルaiにたいおうしたい」, then chose this among summaries/concierge on a local model, watching agents that run on local models, or both: 「1やな」). Jev stays on TypeSafe
+  - One provider, "Local" (ja: ローカル), that speaks the OpenAI-compatible Chat Completions API (`POST <base URL>/chat/completions`), so Ollama, LM Studio, and other OpenAI-compatible servers work through the same path (Claude's own decision)
+  - Settings: a base URL (default `http://localhost:11434/v1`, Ollama's) and a model. The model is picked from `GET <base URL>/models`; when that fails, it can be typed. Any host is accepted, so a model on another machine on the LAN works too. No key (Claude's own decision). Base URL and model are settings, not secrets, and are saved with the other settings, not in the Keychain. It can be connection-tested like the other providers
+  - When more than one of OpenAI / Anthropic / Local is set up, the settings screen has a choice of which one runs summaries and the concierge, listing only the ones set up. Until the user chooses, the provider the app used before this change stays in use (Claude's own decision)
+  - "Shown only while an OpenAI / Anthropic key is saved" (speech bubbles, concierge) also counts a set-up Local
+  - The concierge's one tool call: when the model returns no valid tool call, it is treated as no advice and logged as such in the app log and debug log screen (Claude's own decision; small local models may not follow tools well)
+  - Thinking output (`<think>…</think>`, `reasoning_content`) is dropped before the text is used. The timeout is longer than for the cloud providers, since a local model may have to load first (Claude's own decision; the value is chosen by measuring)
+  - Token counts are logged the same way when the server returns `usage`
 - Jev: TypeSafe's `POST https://api.typesafe.ai/v1/systemone` with `jev-latest` and one Noul question. Text sent to Jev (reply text, user messages) is treated as untrusted input, and only Jev's probability of yes is used
 
 ## Watched folders
