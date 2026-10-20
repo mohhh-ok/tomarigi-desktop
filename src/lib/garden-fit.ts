@@ -69,6 +69,12 @@ export interface PlacedGarden {
   anchor: Readonly<Point>;
   /** Boxes that had no spot now: expected to move to the new room, so they don't count as moved */
   overflowIds: ReadonlySet<string>;
+  /**
+   * Boxes not on screen yet: first placed in this render, which had no spot for something (docs/design.md "Layout":
+   * "On screen"). After the window grows they are placed again like boxes that just appeared, so their `want` / `seed`
+   * is used as is, not shifted to stay at the same place on screen
+   */
+  fresh?: ReadonlySet<string>;
 }
 
 /**
@@ -85,6 +91,7 @@ export function gardenSimulate(placed: PlacedGarden, gw: number, gh: number) {
   const tried = placed.settled.map((b): PlaceBox => {
     const h = placed.heightAt.get(b.id)?.(glyph) ?? b.h;
     if (b.at) return { id: b.id, w: b.w, h, at: move(b.at) };
+    if (placed.fresh?.has(b.id)) return { id: b.id, w: b.w, h, want: b.want, seed: b.seed };
     return { id: b.id, w: b.w, h, want: b.want && move(b.want) };
   });
   const result = placeBoxes(tried, gw, gh);
@@ -173,8 +180,14 @@ export function gardenFitScale(userW: number, userH: number, fit: GardenFit, cur
     };
     const baseStep = Math.round((base - 1) / SCALE_STEP);
     if (fit.overflow) {
-      const placed = first(baseStep + 1, steps, (s) => at(s).overflow === 0);
+      let placed = first(baseStep + 1, steps, (s) => at(s).overflow === 0);
       if (placed === undefined) return MAX_FIT_SCALE;
+      // More room isn't always better for new birds (their grid cells change with the size), so the binary search can
+      // land above a size that fits. A few steps below are tried too, so it grows only by as much as needed (observed:
+      // a block and 8 birds fit at 1.5 and 1.58 but not 1.56; the search gave 1.58)
+      for (let i = placed - 1; i >= Math.max(baseStep + 1, placed - 10); i--) {
+        if (at(scaleAt(i)).overflow === 0) placed = i;
+      }
       // A little more room may also spare the birds on screen from moving
       for (let i = placed; i <= Math.min(steps, placed + 10); i++) {
         const r = at(scaleAt(i));

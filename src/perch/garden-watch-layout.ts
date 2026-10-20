@@ -18,8 +18,10 @@ export const NODE_TEXT_PX = 32;
 export const BUBBLE_MAX_PX = 180;
 
 // Watching groups (docs/design.md "Watching"): connected birds are packed into a small grid and enclosed in a rounded block.
-// Cell width and padding inside the block. A cell is as wide as a bird's footprint plus the gap between footprints
-// (lib/garden-place.ts), so when a block goes away its birds stay where they were without overlapping each other
+// Cell width and padding inside the block. A cell is as wide as a bird's node plus the gap between footprints, narrower
+// than a bird's footprint outside a block (the widest bubble; garden.tsx): a bubble inside a block may overlap the next
+// cell's status line, and widening every cell would make blocks too wide for the display (docs/design.md "Layout").
+// When a block goes away, a bird of it that now overlaps a neighbour moves to the nearest free spot
 const WATCH_CELL_W = NODE_WIDTH_PX + PLACE_GAP_PX;
 const WATCH_PAD = 8;
 // Most columns a block uses (fewer when the garden is too narrow for them; watchColumnLimit)

@@ -43,7 +43,6 @@ import {
   BUBBLE_ROOM_PX,
   birdExtraH,
   NODE_TEXT_PX,
-  NODE_WIDTH_PX,
   watchBubbleRange,
   watchColumnLimit,
   watchShapes,
@@ -77,8 +76,9 @@ function measureGarden(el: HTMLElement): GardenSize {
 
 // Keep speech bubbles this far inside the garden frame
 const BUBBLE_EDGE_PX = 4;
-// A bird's footprint is as wide as its node (.garden-node)
-const FOOT_W = NODE_WIDTH_PX;
+// A bird's footprint is as wide as the widest bubble, wider than its node (.garden-node), so a bubble never reaches a
+// neighbour's status line (docs/design.md "Layout"). The node is centered in it
+const FOOT_W = BUBBLE_MAX_PX;
 
 /** From the bird's horizontal position (px) and the range lo..hi that must contain the speech bubble (px; inside the garden frame or a watching block), the position that keeps the bubble inside. undefined if it fits directly below (centered) */
 function bubbleShift(x: number, lo: number, hi: number): CSSProperties | undefined {
@@ -151,6 +151,12 @@ interface Kept {
   drops: Map<string, Point>;
   // Birds and blocks that had no free spot and overlap others
   overlapping: Set<string>;
+  // Birds and blocks (by their first-started bird) not on screen yet: first placed in a render that had no spot for
+  // something, which asks the window to grow (docs/design.md "Layout": "On screen"). Kept where they are while the
+  // garden keeps that size (unsettledAt); placed again like new ones once it changes, so the places they got in the
+  // small garden don't split the room the window grew for
+  unsettled: Set<string>;
+  unsettledAt?: { w: number; h: number };
   // Garden size at the last placement (to keep things at the same place on screen when it resizes)
   frame?: { w: number; h: number };
 }
@@ -204,7 +210,13 @@ export function Garden({
   // Saved (dragged) positions, only used for birds that aren't on screen yet (e.g. after a relaunch). null until loaded,
   // so birds aren't placed once without them and then moved
   const [positions, setPositions] = useState<Record<string, GardenPosition> | null>(null);
-  const keptRef = useRef<Kept>({ birds: new Map(), blocks: new Map(), drops: new Map(), overlapping: new Set() });
+  const keptRef = useRef<Kept>({
+    birds: new Map(),
+    blocks: new Map(),
+    drops: new Map(),
+    overlapping: new Set(),
+    unsettled: new Set(),
+  });
   // Log lines about the placement, written by render and sent to the log after commit
   const logRef = useRef<string[]>([]);
   // Last "no free spot" line logged. While the same birds overlap at the same size it isn't logged again (every poll
@@ -409,6 +421,10 @@ export function Garden({
       logRef.current.push(`[garden] resized ${frame.w}x${frame.h} -> ${W}x${baseH} shift=${-dx},${-dy}`);
     }
     kept.frame = { w: W, h: baseH };
+    // The garden changed size since the unsettled ones were placed (the window grew for them): place them again
+    const unsettledAt = kept.unsettledAt;
+    const replaceAll = unsettledAt !== undefined && (unsettledAt.w !== W || unsettledAt.h !== baseH);
+    const replace = (id: string) => replaceAll && kept.unsettled.has(id);
     const savedAt = (id: string, w: number): Point | undefined => {
       const saved = positions[id];
       return saved && { x: (saved.x / 100) * W - w / 2, y: (saved.y / 100) * baseH };
@@ -424,6 +440,23 @@ export function Garden({
     const newBirds: PlaceBox[] = [];
     // Footprint height at another icon size (for trying other window sizes, below)
     const heightAt = new Map<string, (glyph: number) => number>();
+    // Birds with no place yet, before this placement (they appear now, or are placed again)
+    const appearing = new Set(sessions.filter((s) => !kept.birds.has(s.id) || replace(s.id)).map((s) => s.id));
+    // A block that just formed goes where its birds were: the spot that moves them the least on average. Where a bird
+    // that isn't settled was is not counted (it has no place on screen yet)
+    const blockWant = (shape: WatchShape, unknown: (id: string) => boolean): Point => {
+      const spots = shape.memberIds.flatMap((id) => {
+        const p = (unknown(id) ? undefined : kept.birds.get(id)) ?? savedAt(id, FOOT_W);
+        const cell = shape.cells.get(id)!;
+        return p ? [{ x: p.x + FOOT_W / 2 - cell.dx, y: p.y - cell.dy }] : [];
+      });
+      return spots.length > 0
+        ? {
+            x: spots.reduce((sum, p) => sum + p.x, 0) / spots.length,
+            y: spots.reduce((sum, p) => sum + p.y, 0) / spots.length,
+          }
+        : { x: PLACE_EDGE_PX, y: PLACE_EDGE_PX };
+    };
     for (const shape of shapes) {
       const box: PlaceBox = { id: shape.rootId, w: shape.width, h: shape.footH };
       heightAt.set(box.id, (g) => shape.footH + shape.rows * (g - glyphSize));
@@ -433,23 +466,8 @@ export function Garden({
         kept.blocks.get(shape.rootId) ??
         [...kept.blocks.values()].find((b) => b.members.some((m) => shape.memberIds.includes(m)));
       if (drop) dropped.push({ ...box, want: drop });
-      else if (before) keptBlocks.push({ ...box, at: before.at });
-      else {
-        // A block that just formed goes where its birds were: the spot that moves them the least on average
-        const spots = shape.memberIds.flatMap((id) => {
-          const p = kept.birds.get(id) ?? savedAt(id, FOOT_W);
-          const cell = shape.cells.get(id)!;
-          return p ? [{ x: p.x + FOOT_W / 2 - cell.dx, y: p.y - cell.dy }] : [];
-        });
-        const want =
-          spots.length > 0
-            ? {
-                x: spots.reduce((sum, p) => sum + p.x, 0) / spots.length,
-                y: spots.reduce((sum, p) => sum + p.y, 0) / spots.length,
-              }
-            : { x: PLACE_EDGE_PX, y: PLACE_EDGE_PX };
-        newBlocks.push({ ...box, want });
-      }
+      else if (before && !replace(shape.rootId)) keptBlocks.push({ ...box, at: before.at });
+      else newBlocks.push({ ...box, want: blockWant(shape, (id) => appearing.has(id)) });
     }
     for (const s of [...sessions].sort((a, b) => a.id.localeCompare(b.id))) {
       if (shapeOf.has(s.id)) continue;
@@ -459,7 +477,7 @@ export function Garden({
       const at = kept.birds.get(s.id);
       const saved = savedAt(s.id, FOOT_W);
       if (drop) dropped.push({ ...box, want: drop });
-      else if (at) keptBirds.push({ ...box, at });
+      else if (at && !replace(s.id)) keptBirds.push({ ...box, at });
       else if (saved) newBirds.push({ ...box, want: saved });
       else newBirds.push({ ...box, seed: hashId(s.id) });
     }
@@ -524,6 +542,35 @@ export function Garden({
     kept.blocks = blocks;
     kept.overlapping = new Set(overflowAtBase);
     kept.drops.clear();
+    // Something had no spot, so the window is asked to grow: what was first placed now (and what still isn't settled
+    // at this size) isn't on screen yet, and is placed again once the size changes. Everything has a spot: all settled
+    if (overflowAtBase.length > 0) {
+      const still = replaceAll ? [] : [...kept.unsettled].filter((id) => liveIds.includes(id));
+      // A bird or block the user dropped has its place
+      const first = [...newBlocks.map((b) => b.id), ...appearing].filter((id) => !dropped.some((b) => b.id === id));
+      kept.unsettled = new Set([...still, ...first]);
+      kept.unsettledAt = { w: W, h: baseH };
+    } else {
+      kept.unsettled = new Set();
+      kept.unsettledAt = undefined;
+    }
+    // For trying other sizes: what isn't settled is tried as it would be placed again, like one that just appeared
+    const fresh = kept.unsettled;
+    const asNew = (b: PlaceBox): PlaceBox => {
+      const shape = shapes.find((sh) => sh.rootId === b.id);
+      if (shape) return { id: b.id, w: b.w, h: b.h, want: blockWant(shape, (id) => fresh.has(id)) };
+      const saved = savedAt(b.id, FOOT_W);
+      return saved ? { id: b.id, w: b.w, h: b.h, want: saved } : { id: b.id, w: b.w, h: b.h, seed: hashId(b.id) };
+    };
+    const isBlock = (b: PlaceBox) => shapes.some((sh) => sh.rootId === b.id);
+    const tried = [
+      ...settled.filter((b) => !fresh.has(b.id)),
+      ...boxes.filter((b) => fresh.has(b.id) && isBlock(b)).map(asNew),
+      ...boxes
+        .filter((b) => fresh.has(b.id) && !isBlock(b))
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map(asNew),
+    ];
     const fitBoxes: FitBox[] = [
       ...shapes.map((sh) => ({ w: sh.width, h0: sh.footH - sh.rows * glyphSize, rows: sh.rows })),
       ...sessions.filter((s) => !shapeOf.has(s.id)).map((s) => ({ w: FOOT_W, h0: birdExtraH(s), rows: 1 })),
@@ -533,7 +580,8 @@ export function Garden({
     // stay at the same place on screen (gardenGrowAnchor), what had no spot or sticks out placed again. For growing
     // only as far as needed and shrinking back as far as everything still gets a spot (garden-grow.ts)
     const placed: PlacedGarden = {
-      settled,
+      settled: tried,
+      fresh,
       heightAt,
       glyph: glyphSize,
       count: sessions.length,

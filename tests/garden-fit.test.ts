@@ -13,6 +13,7 @@ import {
   type PlacedGarden,
 } from "../src/lib/garden-fit.ts";
 import { PLACE_EDGE_PX, PLACE_GAP_PX, placeBoxes, type PlaceBox, type Point } from "../src/lib/garden-place.ts";
+import { hashId } from "../src/lib/garden-layout.ts";
 
 // count birds with no blocks (each 120 wide, 87 + icon tall), header and tabs about 80px tall
 const fit = (count: number, extra: Partial<GardenFit> = {}): GardenFit => ({
@@ -265,5 +266,74 @@ describe("shrinking back when birds leave, with the actual placement (gardenSimu
     const kept = { scale: 1.6, count: 4, userW, userH };
     expect(nextGrowScale(kept, 1, 4, userW, userH)).toBe(1.6);
     expect(nextGrowScale(kept, 1, 3, userW, userH)).toBe(1);
+  });
+});
+
+// docs/design.md "Layout": "On screen" means shown in a settled place. Reproduces what was seen in the verify build: at
+// launch, a watch block and 8 birds were first placed in the user's small garden (375×361, user's window 421×482), the
+// window grew, and they were kept at those places shifted to stay on screen, which split the free space; the window
+// stopped at the display's height (634×726, garden 588×605) with 5 of them overlapping
+describe("birds first placed in a render that asks the window to grow are placed again after it grows", () => {
+  const userW = 421;
+  const userH = 482;
+  const overheadW = 46;
+  const overheadH = 121;
+  const ids = ["concierge", "mock/extra/0", "mock/extra/1", "mock/extra/2", "mock/extra/3", "mock/extra/4", "mock/extra/5", "mock/watch/blog"];
+  // A watch block of 2×2 birds (280×278) and birds with the footprint as wide as the widest bubble (180×113), placed
+  // as new ones: the block from the top-left, the birds in seeded grid cells (the same order as garden.tsx)
+  const asNew = (): PlaceBox[] => [
+    { id: "mock/watch/parent", w: 280, h: 278, want: { x: PLACE_EDGE_PX, y: PLACE_EDGE_PX } },
+    ...ids.map((id) => ({ id, w: 180, h: 113, seed: hashId(id) })),
+  ];
+  const small = { w: userW - overheadW, h: userH - overheadH };
+  const first = placeBoxes(asNew(), small.w, small.h);
+  const overflowIds = new Set(first.overflow);
+  // As the Garden passes it for trying other sizes; the window grows away from the display's top and right edges
+  const placed = (fresh: boolean): PlacedGarden => ({
+    settled: fresh
+      ? asNew()
+      : asNew().map((b) => {
+          const at = first.at.get(b.id)!;
+          return overflowIds.has(b.id) ? { id: b.id, w: b.w, h: b.h, want: at } : { id: b.id, w: b.w, h: b.h, at };
+        }),
+    heightAt: new Map(),
+    glyph: 26,
+    count: 12,
+    w: small.w,
+    h: small.h,
+    anchor: { x: 1, y: 0.5 },
+    overflowIds,
+    fresh: fresh ? new Set(asNew().map((b) => b.id)) : undefined,
+  });
+  const fitOf = (p: PlacedGarden): GardenFit => ({
+    count: 12,
+    boxes: [],
+    overflow: true,
+    overflowW: 180,
+    overflowH: 113,
+    gardenW: small.w,
+    gardenH: small.h,
+    overheadW,
+    overheadH,
+    simulate: (w, h) => gardenSimulate(p, w, h),
+  });
+  // The display's visible height (726) is where the window stops
+  const cap = 726 / userH;
+
+  test("they don't all get a spot in the small garden, which asks the window to grow", () => {
+    expect(first.overflow.length).toBeGreaterThan(0);
+  });
+
+  test("kept at their first places (before): 588×605 leaves some overlapping and the window would need more than the display", () => {
+    expect(gardenSimulate(placed(false), 588, 605).overflow).toBeGreaterThan(0);
+    expect(gardenFitScale(userW, userH, fitOf(placed(false)))).toBeGreaterThan(cap);
+  });
+
+  test("placed again like new ones (after): everything gets a spot at about 632×723, within the display", () => {
+    const s = gardenFitScale(userW, userH, fitOf(placed(true)));
+    expect(s).toBeLessThanOrEqual(cap);
+    expect(Math.round(userW * s)).toBeLessThanOrEqual(634);
+    expect(gardenSimulate(placed(true), userW * s - overheadW - ROUNDING_PX, userH * s - overheadH - ROUNDING_PX).overflow).toBe(0);
+    expect(gardenSimulate(placed(true), 632 - overheadW, 723 - overheadH).overflow).toBe(0);
   });
 });
