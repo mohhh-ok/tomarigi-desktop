@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "サーバーにつながりません。サーバーが起動しているか、URL が正しいかを確かめてください。"
+  },
+  "cancelButton": {
+    "message": "キャンセル"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "サーバーの URL を正しく入力すると接続テストできます。"
+  },
+  "localAiTestNeedsModel": {
+    "message": "モデルを選ぶか入力すると接続テストできます。"
   }
 }

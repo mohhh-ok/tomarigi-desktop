@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "No se puede conectar con el servidor. Comprueba que esté en marcha y que la URL sea correcta."
+  },
+  "cancelButton": {
+    "message": "Cancelar"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Escribe una URL de servidor válida para probar la conexión."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Elige o escribe un modelo para probar la conexión."
   }
 }

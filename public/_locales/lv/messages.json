@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Nevar sazināties ar serveri. Pārbaudiet, vai tas darbojas un vai URL ir pareizs."
+  },
+  "cancelButton": {
+    "message": "Atcelt"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Ievadiet derīgu servera URL, lai pārbaudītu savienojumu."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Izvēlieties vai ievadiet modeli, lai pārbaudītu savienojumu."
   }
 }

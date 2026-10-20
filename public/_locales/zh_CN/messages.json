@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "无法连接到服务器。请确认服务器正在运行且 URL 正确。"
+  },
+  "cancelButton": {
+    "message": "取消"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "输入正确的服务器 URL 后即可测试连接。"
+  },
+  "localAiTestNeedsModel": {
+    "message": "选择或输入模型后即可测试连接。"
   }
 }

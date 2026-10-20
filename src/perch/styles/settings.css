@@ -412,6 +412,16 @@ button.remove {
   margin: 0;
 }
 
+/* The field the error under it is about. Same red as .judge-status-error */
+.judge-key-input[aria-invalid="true"] {
+  border-color: #d97e6a;
+}
+
+/* Why the connection test can't run yet, in the description's tone */
+.ai-test-disabled-reason {
+  color: #8d887c;
+}
+
 /* The model list couldn't be read: a note in the description's tone, with the retry button under it */
 .local-ai-note {
   margin: 0 0 12px;
@@ -559,13 +569,15 @@ button.update-install:hover {
   accent-color: #d9b06a;
 }
 
-/* "Check for updates" while a check runs: visibly not clickable, next to "Checking…" */
-.update-settings button:disabled {
+/* "Check for updates" while a check runs, and a connection test that can't run yet: visibly not clickable */
+.update-settings button:disabled,
+.ai-keys button:disabled {
   opacity: 0.45;
   cursor: default;
 }
 
-.update-settings button:disabled:hover {
+.update-settings button:disabled:hover,
+.ai-keys button:disabled:hover {
   background: #26251f;
 }
 

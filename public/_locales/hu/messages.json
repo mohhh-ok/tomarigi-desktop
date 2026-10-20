@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "A szerver nem érhető el. Ellenőrizze, hogy fut-e, és helyes-e az URL."
+  },
+  "cancelButton": {
+    "message": "Mégse"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Adjon meg érvényes szerver URL-t a kapcsolat teszteléséhez."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Válasszon vagy írjon be egy modellt a kapcsolat teszteléséhez."
   }
 }

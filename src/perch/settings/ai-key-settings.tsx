@@ -113,14 +113,33 @@ function ProviderChoice({ selected, onSelect }: { selected: boolean; onSelect: (
   );
 }
 
+/** Leaves the replace / change input and goes back to the saved state. Shared by the key rows and Local */
+function CancelEditButton({ onCancel }: { onCancel: () => void }) {
+  return (
+    <button
+      className="small"
+      onClick={(e) => {
+        // Inside a label, a click would also focus the field
+        e.preventDefault();
+        onCancel();
+      }}
+    >
+      {t("cancelButton")}
+    </button>
+  );
+}
+
 /** The connection test button and its result. Shared by the key rows and Local */
 function ConnectionTest({
   enabled,
+  disabledReason,
   testState,
   failureText,
   onTest,
 }: {
   enabled: boolean;
+  // Why the button can't be pressed, shown under it while it's disabled
+  disabledReason?: string;
   testState: ApiKeyTestState;
   // Replaces the generic failure line when a row has a clearer one
   failureText?: string;
@@ -132,6 +151,7 @@ function ConnectionTest({
       <button className="small" onClick={onTest} disabled={!enabled}>
         {t("byokTestButton")}
       </button>
+      {!enabled && disabledReason && <p className="judge-status ai-test-disabled-reason">{disabledReason}</p>}
       {testState.phase === "testing" && <p className="judge-status">{t("byokTestingLabel")}</p>}
       {testState.phase === "success" && <p className="judge-status judge-status-ok">{t("byokTestResultSuccess")}</p>}
       {testState.phase === "failure" && (
@@ -141,6 +161,9 @@ function ConnectionTest({
     </>
   );
 }
+
+/** tested's value for a test of the saved settings */
+const SAVED = "saved";
 
 /**
  * Local AI: an OpenAI-compatible server (Ollama, LM Studio, ...). The base URL and model are settings, not secrets, so
@@ -178,10 +201,11 @@ function LocalAiSettings({
   modelRef.current = model;
   const [urlInvalid, setUrlInvalid] = useState(false);
   const showForm = config === null || editing;
-  // The base URL and model the last test ran on: a result for other values than the ones in the form isn't shown
+  // What the last test ran on: the base URL and model in the form, or "saved". A result for anything else (other values
+  // in the form, or the saved ones once the form opens) isn't shown
   const [tested, setTested] = useState<string | null>(null);
   const draftKey = `${baseUrl.trim()}|${model.trim()}`;
-  const shownTest: ApiKeyTestState = showForm && tested !== draftKey ? { phase: "idle" } : testState;
+  const shownTest: ApiKeyTestState = tested === (showForm ? draftKey : SAVED) ? testState : { phase: "idle" };
 
   const loadModels = (url: string) => {
     requestedRef.current = url;
@@ -236,6 +260,7 @@ function LocalAiSettings({
               <span className="local-ai-field-label">{t("localAiBaseUrlLabel")}</span>
               <input
                 className="judge-key-input"
+                aria-invalid={urlInvalid}
                 type="text"
                 inputMode="url"
                 autoComplete="off"
@@ -294,6 +319,15 @@ function LocalAiSettings({
                 >
                   {t("byokSaveButton")}
                 </button>
+                {config !== null && (
+                  <CancelEditButton
+                    onCancel={() => {
+                      setEditing(false);
+                      setUrlInvalid(false);
+                      setTested(null);
+                    }}
+                  />
+                )}
               </span>
             </label>
           </div>
@@ -319,6 +353,8 @@ function LocalAiSettings({
               setBaseUrl(config.baseUrl);
               setModel(config.model);
               setUrlInvalid(false);
+              // The saved values' last result isn't carried into the form
+              setTested(null);
               setEditing(true);
             }}
           >
@@ -329,14 +365,18 @@ function LocalAiSettings({
           </button>
         </div>
       )}
-      {config !== null && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
+      {/* The choice is about the saved settings, so it isn't shown while they're being edited */}
+      {config !== null && !showForm && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
       <ConnectionTest
         enabled={showForm ? isValidBaseUrl(baseUrl) && model.trim() !== "" : true}
+        disabledReason={
+          showForm ? (isValidBaseUrl(baseUrl) ? t("localAiTestNeedsModel") : t("localAiTestNeedsUrl")) : undefined
+        }
         testState={shownTest}
         // A server that can't be reached is the usual failure here (not started, or a wrong URL), so it says what to check
         failureText={shownTest.phase === "failure" && shownTest.reason === "network" ? t("localAiTestUnreachable") : undefined}
         onTest={() => {
-          setTested(draftKey);
+          setTested(showForm ? draftKey : SAVED);
           onTest(showForm ? { baseUrl, model } : undefined);
         }}
       />
@@ -432,6 +472,15 @@ function ApiKeyProviderSettings({
             >
               {t("byokSaveButton")}
             </button>
+            {keySet && (
+              <CancelEditButton
+                onCancel={() => {
+                  setDraft("");
+                  setSaveFailed(false);
+                  setReplacing(false);
+                }}
+              />
+            )}
           </>
         )}
       </div>
@@ -440,7 +489,8 @@ function ApiKeyProviderSettings({
           {t("byokSaveFailedMessage")}
         </p>
       )}
-      {keySet && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
+      {/* Not while a replacement is being typed, the same as Local's change form */}
+      {keySet && !replacing && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
       <ConnectionTest enabled={keySet} testState={testState} onTest={onTest} />
     </div>
   );

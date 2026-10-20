@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Strežnika ni mogoče doseči. Preverite, ali deluje in ali je URL pravilen."
+  },
+  "cancelButton": {
+    "message": "Prekliči"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Vnesite veljaven URL strežnika, da preizkusite povezavo."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Izberite ali vnesite model, da preizkusite povezavo."
   }
 }

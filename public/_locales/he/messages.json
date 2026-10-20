@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "לא ניתן להתחבר לשרת. ודאו שהוא פועל ושהכתובת נכונה."
+  },
+  "cancelButton": {
+    "message": "ביטול"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "הזינו כתובת שרת תקינה כדי לבדוק את החיבור."
+  },
+  "localAiTestNeedsModel": {
+    "message": "בחרו או הקלידו מודל כדי לבדוק את החיבור."
   }
 }

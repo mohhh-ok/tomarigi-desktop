@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Poslužitelj nije dostupan. Provjerite radi li i je li URL ispravan."
+  },
+  "cancelButton": {
+    "message": "Odustani"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Unesite ispravan URL poslužitelja da biste testirali vezu."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Odaberite ili upišite model da biste testirali vezu."
   }
 }

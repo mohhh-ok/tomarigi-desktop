@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Kan de server niet bereiken. Controleer of hij draait en of de URL klopt."
+  },
+  "cancelButton": {
+    "message": "Annuleren"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Voer een geldige server-URL in om de verbinding te testen."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Kies of typ een model om de verbinding te testen."
   }
 }

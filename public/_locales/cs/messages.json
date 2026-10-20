@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Nelze se připojit k serveru. Zkontrolujte, že běží a URL je správná."
+  },
+  "cancelButton": {
+    "message": "Zrušit"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Zadejte platnou URL serveru, abyste mohli otestovat připojení."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Vyberte nebo zadejte model, abyste mohli otestovat připojení."
   }
 }

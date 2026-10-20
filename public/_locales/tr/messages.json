@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Sunucuya ulaşılamıyor. Çalıştığını ve URL'nin doğru olduğunu kontrol edin."
+  },
+  "cancelButton": {
+    "message": "İptal"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Bağlantıyı test etmek için geçerli bir sunucu URL'si girin."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Bağlantıyı test etmek için bir model seçin veya yazın."
   }
 }

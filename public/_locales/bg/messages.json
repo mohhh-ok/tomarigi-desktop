@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Няма връзка със сървъра. Проверете дали работи и дали URL адресът е правилен."
+  },
+  "cancelButton": {
+    "message": "Отказ"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Въведете валиден URL адрес на сървъра, за да тествате връзката."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Изберете или въведете модел, за да тествате връзката."
   }
 }

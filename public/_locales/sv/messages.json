@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Det går inte att nå servern. Kontrollera att den körs och att URL:en stämmer."
+  },
+  "cancelButton": {
+    "message": "Avbryt"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Ange en giltig server-URL för att testa anslutningen."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Välj eller skriv en modell för att testa anslutningen."
   }
 }
