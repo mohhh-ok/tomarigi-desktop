@@ -86,14 +86,16 @@ export function BirdGlyph({
 }
 
 /** The glow of the working aura: two copies of the sprite under it, one with a gold and one with a white drop-shadow,
- * each flickering by opacity on its own rhythm (.bird-aura in styles/perch-rows.css). Animating the filter itself made
+ * each flickering by opacity on its own rhythm (.bird-aura in styles/perch-rows.css). A third, deep amber one under
+ * them shows only in the Garden at rest, where the window is see-through and a light window behind would swallow
+ * the light glow (.bird-aura-edge). Animating the filter itself made
  * WebKit repaint the sprite every frame while any bird was working; the copies are drawn once and only their opacity
  * changes, which the compositor does without repainting. They take the same shake/peck as the sprite (same class, same
  * start), so they move with it. Goes before the sprite inside a positioned frame (.bird-glyph, .chick-glyph) */
 export function WorkingAura({ src, size, style }: { src: string; size: number; style?: CSSProperties }) {
   return (
     <>
-      {(["gold", "white"] as const).map((tone) => (
+      {(["edge", "gold", "white"] as const).map((tone) => (
         <img
           key={tone}
           className={`bird-aura bird-aura-${tone} bird-working-fx`}
