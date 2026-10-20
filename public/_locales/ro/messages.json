@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Conexiune reușită"
   },
-  "byokTestResultFailure": {
-    "message": "Conexiune eșuată ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Cheia a fost respinsă. Verificați dacă este corectă și încă validă."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Prea multe cereri sau credit epuizat. Așteptați puțin sau verificați planul și soldul."
+  },
+  "byokTestFailedServer": {
+    "message": "Serviciul a întâmpinat o problemă. Încercați din nou peste puțin timp."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Serviciul nu poate fi accesat. Verificați conexiunea la internet."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Răspunsul serviciului nu a putut fi citit. Încercați din nou peste puțin timp."
   },
   "byokNoKeyMessage": {
     "message": "Introdu și salvează mai întâi o cheie API"

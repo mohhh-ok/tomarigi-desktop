@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Tilkobling vellykket"
   },
-  "byokTestResultFailure": {
-    "message": "Tilkobling mislyktes ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Nøkkelen ble avvist. Sjekk at den er riktig og fortsatt gyldig."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "For mange forespørsler eller tom for saldo. Vent litt, eller sjekk abonnementet og saldoen din."
+  },
+  "byokTestFailedServer": {
+    "message": "Tjenesten fikk et problem. Prøv igjen om litt."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Får ikke kontakt med tjenesten. Sjekk internettilkoblingen din."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Svaret fra tjenesten kunne ikke leses. Prøv igjen om litt."
   },
   "byokNoKeyMessage": {
     "message": "Skriv inn og lagre en API-nøkkel først"

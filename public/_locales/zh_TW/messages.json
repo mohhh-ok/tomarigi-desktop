@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "連線成功"
   },
-  "byokTestResultFailure": {
-    "message": "連線失敗($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "金鑰遭到拒絕。請確認金鑰正確且仍有效。"
+  },
+  "byokTestFailedRateLimit": {
+    "message": "要求過多或餘額不足。請稍候片刻，或確認你的方案和餘額。"
+  },
+  "byokTestFailedServer": {
+    "message": "服務發生問題。請稍後再試。"
+  },
+  "byokTestFailedNetwork": {
+    "message": "無法連線到服務。請確認網路連線。"
+  },
+  "byokTestFailedMalformed": {
+    "message": "無法讀取服務的回覆。請稍後再試。"
   },
   "byokNoKeyMessage": {
     "message": "請先輸入並儲存 API 金鑰"

@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "接続に成功しました"
   },
-  "byokTestResultFailure": {
-    "message": "接続に失敗しました($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "キーが受け付けられませんでした。キーが正しく、有効かを確かめてください。"
+  },
+  "byokTestFailedRateLimit": {
+    "message": "リクエストが多すぎるか、残高が足りません。少し待つか、プランと残高を確かめてください。"
+  },
+  "byokTestFailedServer": {
+    "message": "サービス側で問題が起きました。しばらくしてから試してください。"
+  },
+  "byokTestFailedNetwork": {
+    "message": "サービスにつながりません。インターネットにつながっているかを確かめてください。"
+  },
+  "byokTestFailedMalformed": {
+    "message": "サービスからの返事を読めませんでした。しばらくしてから試してください。"
   },
   "byokNoKeyMessage": {
     "message": "先にAPIキーを入力して保存してください"

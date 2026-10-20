@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Matagumpay ang koneksyon"
   },
-  "byokTestResultFailure": {
-    "message": "Nabigo ang koneksyon ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Tinanggihan ang key. Tingnan kung tama ito at may bisa pa."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Masyadong maraming request o ubos na ang credit. Maghintay sandali, o tingnan ang plan at balance mo."
+  },
+  "byokTestFailedServer": {
+    "message": "Nagkaproblema ang serbisyo. Subukan ulit mamaya."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Hindi maabot ang serbisyo. Tingnan ang koneksyon mo sa internet."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Hindi mabasa ang sagot ng serbisyo. Subukan ulit mamaya."
   },
   "byokNoKeyMessage": {
     "message": "Maglagay at i-save muna ng API key"

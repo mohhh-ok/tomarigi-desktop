@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Bağlantı başarılı"
   },
-  "byokTestResultFailure": {
-    "message": "Bağlantı başarısız ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Anahtar reddedildi. Doğru ve hâlâ geçerli olduğunu kontrol edin."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Çok fazla istek var veya bakiye kalmadı. Biraz bekleyin ya da planınızı ve bakiyenizi kontrol edin."
+  },
+  "byokTestFailedServer": {
+    "message": "Hizmette bir sorun oluştu. Bir süre sonra tekrar deneyin."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Hizmete ulaşılamıyor. İnternet bağlantınızı kontrol edin."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Hizmetin yanıtı okunamadı. Bir süre sonra tekrar deneyin."
   },
   "byokNoKeyMessage": {
     "message": "Önce bir API anahtarı girip kaydedin"

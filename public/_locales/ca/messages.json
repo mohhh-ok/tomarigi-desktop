@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Connexió correcta"
   },
-  "byokTestResultFailure": {
-    "message": "Connexió fallida ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "S'ha rebutjat la clau. Comprova que sigui correcta i encara vàlida."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Massa sol·licituds o sense saldo. Espera un moment o revisa el pla i el saldo."
+  },
+  "byokTestFailedServer": {
+    "message": "El servei ha tingut un problema. Torna-ho a provar d'aquí a una estona."
+  },
+  "byokTestFailedNetwork": {
+    "message": "No es pot connectar amb el servei. Comprova la connexió a internet."
+  },
+  "byokTestFailedMalformed": {
+    "message": "No s'ha pogut llegir la resposta del servei. Torna-ho a provar d'aquí a una estona."
   },
   "byokNoKeyMessage": {
     "message": "Introdueix i desa primer una clau API"

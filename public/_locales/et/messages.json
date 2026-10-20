@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Ühendus õnnestus"
   },
-  "byokTestResultFailure": {
-    "message": "Ühendus ebaõnnestus ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Võti lükati tagasi. Kontrollige, et see on õige ja endiselt kehtiv."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Liiga palju päringuid või saldo on otsas. Oodake veidi või kontrollige oma paketti ja saldot."
+  },
+  "byokTestFailedServer": {
+    "message": "Teenuses tekkis probleem. Proovige mõne aja pärast uuesti."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Teenusega ei saa ühendust. Kontrollige internetiühendust."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Teenuse vastust ei õnnestunud lugeda. Proovige mõne aja pärast uuesti."
   },
   "byokNoKeyMessage": {
     "message": "Sisestage ja salvestage kõigepealt API võti"

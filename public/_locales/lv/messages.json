@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Savienojums veiksmīgs"
   },
-  "byokTestResultFailure": {
-    "message": "Savienojums neizdevās ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Atslēga tika noraidīta. Pārbaudiet, vai tā ir pareiza un joprojām derīga."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Pārāk daudz pieprasījumu vai beidzies atlikums. Mazliet uzgaidiet vai pārbaudiet plānu un atlikumu."
+  },
+  "byokTestFailedServer": {
+    "message": "Pakalpojumā radās problēma. Mēģiniet vēlreiz pēc brīža."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Nevar sasniegt pakalpojumu. Pārbaudiet interneta savienojumu."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Pakalpojuma atbildi nevarēja nolasīt. Mēģiniet vēlreiz pēc brīža."
   },
   "byokNoKeyMessage": {
     "message": "Vispirms ievadiet un saglabājiet API atslēgu"

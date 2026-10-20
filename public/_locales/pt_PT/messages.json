@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Ligação bem-sucedida"
   },
-  "byokTestResultFailure": {
-    "message": "Falha na ligação ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "A chave foi recusada. Verifique se está correta e ainda é válida."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Demasiados pedidos ou sem saldo. Aguarde um pouco ou verifique o seu plano e saldo."
+  },
+  "byokTestFailedServer": {
+    "message": "O serviço teve um problema. Tente novamente daqui a pouco."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Não foi possível aceder ao serviço. Verifique a sua ligação à internet."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Não foi possível ler a resposta do serviço. Tente novamente daqui a pouco."
   },
   "byokNoKeyMessage": {
     "message": "Introduza e guarde primeiro uma chave de API"

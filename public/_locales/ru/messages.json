@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Соединение установлено"
   },
-  "byokTestResultFailure": {
-    "message": "Ошибка соединения ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Ключ отклонён. Проверьте, что он правильный и всё ещё действует."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Слишком много запросов или закончился баланс. Подождите немного или проверьте тариф и баланс."
+  },
+  "byokTestFailedServer": {
+    "message": "В работе сервиса произошла ошибка. Попробуйте позже."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Не удаётся подключиться к сервису. Проверьте подключение к интернету."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Не удалось прочитать ответ сервиса. Попробуйте позже."
   },
   "byokNoKeyMessage": {
     "message": "Сначала введите и сохраните API-ключ"

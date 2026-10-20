@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Connexion réussie"
   },
-  "byokTestResultFailure": {
-    "message": "Échec de la connexion ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "La clé a été refusée. Vérifiez qu'elle est correcte et toujours valide."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Trop de requêtes ou crédit épuisé. Patientez un instant ou vérifiez votre forfait et votre solde."
+  },
+  "byokTestFailedServer": {
+    "message": "Le service a rencontré un problème. Réessayez dans un moment."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Impossible de joindre le service. Vérifiez votre connexion Internet."
+  },
+  "byokTestFailedMalformed": {
+    "message": "La réponse du service n'a pas pu être lue. Réessayez dans un moment."
   },
   "byokNoKeyMessage": {
     "message": "Saisissez et enregistrez d'abord une clé API"

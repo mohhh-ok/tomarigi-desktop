@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "З'єднання успішне"
   },
-  "byokTestResultFailure": {
-    "message": "Помилка з'єднання ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Ключ відхилено. Перевірте, що він правильний і досі дійсний."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Забагато запитів або закінчився баланс. Зачекайте трохи або перевірте тариф і баланс."
+  },
+  "byokTestFailedServer": {
+    "message": "У роботі сервісу сталася помилка. Спробуйте пізніше."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Не вдається підключитися до сервісу. Перевірте з’єднання з інтернетом."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Не вдалося прочитати відповідь сервісу. Спробуйте пізніше."
   },
   "byokNoKeyMessage": {
     "message": "Спочатку введіть і збережіть API-ключ"

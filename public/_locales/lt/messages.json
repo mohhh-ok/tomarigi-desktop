@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Ryšys sėkmingas"
   },
-  "byokTestResultFailure": {
-    "message": "Ryšys nepavyko ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Raktas atmestas. Patikrinkite, ar jis teisingas ir vis dar galioja."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Per daug užklausų arba baigėsi likutis. Šiek tiek palaukite arba patikrinkite planą ir likutį."
+  },
+  "byokTestFailedServer": {
+    "message": "Paslaugoje kilo problema. Bandykite dar kartą šiek tiek vėliau."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Nepavyksta pasiekti paslaugos. Patikrinkite interneto ryšį."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Nepavyko perskaityti paslaugos atsakymo. Bandykite dar kartą šiek tiek vėliau."
   },
   "byokNoKeyMessage": {
     "message": "Pirmiausia įveskite ir išsaugokite API raktą"

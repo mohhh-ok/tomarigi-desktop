@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "연결 성공"
   },
-  "byokTestResultFailure": {
-    "message": "연결 실패($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "키가 거부되었습니다. 키가 올바르고 아직 유효한지 확인하세요."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "요청이 너무 많거나 잔액이 부족합니다. 잠시 기다리거나 요금제와 잔액을 확인하세요."
+  },
+  "byokTestFailedServer": {
+    "message": "서비스에 문제가 발생했습니다. 잠시 후 다시 시도하세요."
+  },
+  "byokTestFailedNetwork": {
+    "message": "서비스에 연결할 수 없습니다. 인터넷 연결을 확인하세요."
+  },
+  "byokTestFailedMalformed": {
+    "message": "서비스의 응답을 읽을 수 없습니다. 잠시 후 다시 시도하세요."
   },
   "byokNoKeyMessage": {
     "message": "먼저 API 키를 입력하고 저장하세요"
