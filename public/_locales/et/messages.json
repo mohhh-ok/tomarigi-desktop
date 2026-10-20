@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Ühendus õnnestus"
   },
+  "byokTestNeedsKey": {
+    "message": "Ühenduse testimiseks salvestage võti."
+  },
   "byokTestFailedAuth": {
     "message": "Võti lükati tagasi. Kontrollige, et see on õige ja endiselt kehtiv."
   },

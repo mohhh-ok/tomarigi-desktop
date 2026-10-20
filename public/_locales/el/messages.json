@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Επιτυχής σύνδεση"
   },
+  "byokTestNeedsKey": {
+    "message": "Αποθηκεύστε ένα κλειδί για να ελέγξετε τη σύνδεση."
+  },
   "byokTestFailedAuth": {
     "message": "Το κλειδί απορρίφθηκε. Ελέγξτε ότι είναι σωστό και ακόμη έγκυρο."
   },

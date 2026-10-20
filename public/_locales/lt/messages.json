@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Ryšys sėkmingas"
   },
+  "byokTestNeedsKey": {
+    "message": "Išsaugokite raktą, kad galėtumėte patikrinti ryšį."
+  },
   "byokTestFailedAuth": {
     "message": "Raktas atmestas. Patikrinkite, ar jis teisingas ir vis dar galioja."
   },

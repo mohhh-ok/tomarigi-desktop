@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "接続に成功しました"
   },
+  "byokTestNeedsKey": {
+    "message": "キーを保存すると接続テストができます。"
+  },
   "byokTestFailedAuth": {
     "message": "キーが受け付けられませんでした。キーが正しく、有効かを確かめてください。"
   },

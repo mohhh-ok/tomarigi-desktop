@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Forbindelse oprettet"
   },
+  "byokTestNeedsKey": {
+    "message": "Gem en nøgle for at teste forbindelsen."
+  },
   "byokTestFailedAuth": {
     "message": "Nøglen blev afvist. Tjek, at den er korrekt og stadig gyldig."
   },

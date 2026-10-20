@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Conexiune reușită"
   },
+  "byokTestNeedsKey": {
+    "message": "Salvați o cheie pentru a testa conexiunea."
+  },
   "byokTestFailedAuth": {
     "message": "Cheia a fost respinsă. Verificați dacă este corectă și încă validă."
   },

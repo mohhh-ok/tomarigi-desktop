@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Verbinding geslaagd"
   },
+  "byokTestNeedsKey": {
+    "message": "Sla een sleutel op om de verbinding te testen."
+  },
   "byokTestFailedAuth": {
     "message": "De sleutel is geweigerd. Controleer of hij klopt en nog geldig is."
   },

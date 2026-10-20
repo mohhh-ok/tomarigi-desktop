@@ -92,6 +92,7 @@ export const KEYS = [
   "byokTestButton",
   "byokTestingLabel",
   "byokTestResultSuccess",
+  "byokTestNeedsKey",
   "byokTestFailedAuth",
   "byokTestFailedRateLimit",
   "byokTestFailedServer",

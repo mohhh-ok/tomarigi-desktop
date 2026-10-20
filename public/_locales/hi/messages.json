@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "कनेक्शन सफल रहा"
   },
+  "byokTestNeedsKey": {
+    "message": "कनेक्शन जाँचने के लिए एक कुंजी सहेजें।"
+  },
   "byokTestFailedAuth": {
     "message": "कुंजी अस्वीकार कर दी गई। जाँचें कि यह सही है और अभी भी मान्य है।"
   },

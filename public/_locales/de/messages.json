@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Verbindung erfolgreich"
   },
+  "byokTestNeedsKey": {
+    "message": "Speichere einen Schlüssel, um die Verbindung zu testen."
+  },
   "byokTestFailedAuth": {
     "message": "Der Schlüssel wurde abgelehnt. Prüfe, ob er richtig und noch gültig ist."
   },

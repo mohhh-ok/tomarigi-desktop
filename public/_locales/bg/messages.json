@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Връзката е успешна"
   },
+  "byokTestNeedsKey": {
+    "message": "Запазете ключ, за да тествате връзката."
+  },
   "byokTestFailedAuth": {
     "message": "Ключът беше отхвърлен. Проверете дали е правилен и все още валиден."
   },

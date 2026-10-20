@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Kết nối thành công"
   },
+  "byokTestNeedsKey": {
+    "message": "Lưu khóa để kiểm tra kết nối."
+  },
   "byokTestFailedAuth": {
     "message": "Khóa bị từ chối. Hãy kiểm tra khóa có đúng và còn hiệu lực không."
   },

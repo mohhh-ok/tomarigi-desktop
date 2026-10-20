@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "З'єднання успішне"
   },
+  "byokTestNeedsKey": {
+    "message": "Збережіть ключ, щоб перевірити з’єднання."
+  },
   "byokTestFailedAuth": {
     "message": "Ключ відхилено. Перевірте, що він правильний і досі дійсний."
   },

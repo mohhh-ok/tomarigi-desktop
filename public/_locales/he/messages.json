@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "החיבור הצליח"
   },
+  "byokTestNeedsKey": {
+    "message": "שמרו מפתח כדי לבדוק את החיבור."
+  },
   "byokTestFailedAuth": {
     "message": "המפתח נדחה. בדקו שהוא נכון ועדיין בתוקף."
   },

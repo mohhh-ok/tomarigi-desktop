@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Conexión correcta"
   },
+  "byokTestNeedsKey": {
+    "message": "Guarda una clave para probar la conexión."
+  },
   "byokTestFailedAuth": {
     "message": "La clave fue rechazada. Comprueba que sea correcta y siga siendo válida."
   },

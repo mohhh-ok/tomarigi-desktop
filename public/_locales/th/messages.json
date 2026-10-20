@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "เชื่อมต่อสำเร็จ"
   },
+  "byokTestNeedsKey": {
+    "message": "บันทึกคีย์เพื่อทดสอบการเชื่อมต่อ"
+  },
   "byokTestFailedAuth": {
     "message": "คีย์ถูกปฏิเสธ ตรวจสอบว่าคีย์ถูกต้องและยังใช้งานได้"
   },
