@@ -207,6 +207,9 @@ export function Garden({
   const keptRef = useRef<Kept>({ birds: new Map(), blocks: new Map(), drops: new Map(), overlapping: new Set() });
   // Log lines about the placement, written by render and sent to the log after commit
   const logRef = useRef<string[]>([]);
+  // Last "no free spot" line logged. While the same birds overlap at the same size it isn't logged again (every poll
+  // re-rendered and logged the same line, hundreds of lines for one overlap; observed)
+  const overflowLogRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     let alive = true;
@@ -491,7 +494,10 @@ export function Garden({
         );
       }
     }
-    if (overflowAtBase.length > 0) logRef.current.push(`[garden] no free spot at ${W}x${baseH}: ${overflowAtBase.join(" ")}`);
+    const overflowLine =
+      overflowAtBase.length > 0 ? `[garden] no free spot at ${W}x${baseH}: ${overflowAtBase.join(" ")}` : undefined;
+    if (overflowLine && overflowLine !== overflowLogRef.current) logRef.current.push(overflowLine);
+    overflowLogRef.current = overflowLine;
     // Keep what is shown now for the next render. Birds in a block are kept at their spot in it, so they stay put
     // if the block goes
     const birds = new Map<string, Point>();
