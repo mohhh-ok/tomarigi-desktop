@@ -336,6 +336,7 @@ The app updates itself with Tauri's official updater plugin (the user chose it o
 - File reading: `src/lib/native-fs.ts` exposes the subset of FileSystemDirectoryHandle / File methods the app uses, in the same shape, and calls Rust's `fs_list` / `fs_stat` / `fs_read`. `@/` points to `src`
 - Mock mode and other launch options are listed in README.md
 - The app log is `/tmp/tomarigi-desktop/app-log.txt` on macOS, `$XDG_STATE_HOME/tomarigi-desktop/app-log.txt` (`~/.local/state/...` when unset) on Linux, and `%TEMP%\tomarigi-desktop\app-log.txt` on Windows. Linux and Windows use a folder of the user, since another user could plant a link in a shared `/tmp` (Claude's own decision)
+  - The app log doesn't grow without end (the user, when the concierge's advice text and per-session facts were added to it: 「アプリのログはひだいかしないくふうもいれてな」). When a write would take it past 10 MB, the file is renamed to `app-log.1.txt` (replacing an older one) and a new `app-log.txt` is started, so at most about 20 MB is kept and the latest hours stay readable. The size is checked on each write, so builds sharing the file (everyday, dev, verify) each roll it over; a rename that loses a race is ignored. The 10 MB and the single old file are Claude's own decisions: before this, the log had reached 12.5 MB in about two days with no limit
 
 ## Distribution
 
