@@ -1,3 +1,4 @@
+import { uiLanguage } from "@/lib/i18n";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 
 // Mock data presets for ?mock=1 (MockPanel in mock.tsx switches between them)
@@ -566,6 +567,77 @@ export const PRESETS: Preset[] = [
       events: [],
     }),
   },
+  // The gallery images in docs/images/ (docs/design.md "Gallery images"). The text follows the UI language, so the
+  // Japanese set shows no English. No tool names, since they are English identifiers in every language
+  {
+    id: "gallery",
+    label: "Gallery: garden",
+    build: () => ({ sessions: pick(["gallery/working", "gallery/plan", "gallery/done", "gallery/dozing"]), events: [] }),
+  },
+  {
+    id: "gallery-on-top",
+    label: "Gallery: on top",
+    build: () => ({ sessions: pick(["gallery/plan", "gallery/done"]), events: [] }),
+  },
+  {
+    id: "gallery-asking",
+    label: "Gallery: needs reply",
+    build: () => ({ sessions: pick(["gallery/plan", "gallery/question"]), events: [] }),
+  },
+  {
+    id: "gallery-bubble",
+    label: "Gallery: bubbles",
+    build: () => ({ sessions: pick(["gallery/asking", "gallery/done"]), events: [] }),
+  },
 ];
 
 export const DEFAULT_PRESET = PRESETS[1];
+
+function tr(en: string, ja: string): string {
+  return uiLanguage().toLowerCase().startsWith("ja") ? ja : en;
+}
+
+const GALLERY: SessionView[] = [
+  { id: "gallery/plan", project: "blog", slug: "blog", state: "waiting", sinceMs: 70_000, toolName: "ExitPlanMode" },
+  { id: "gallery/working", project: "docs-migration", slug: "docs-migration", state: "working", sinceMs: 3_000 },
+  {
+    id: "gallery/question",
+    project: "tomarigi",
+    slug: "tomarigi",
+    state: "waiting",
+    sinceMs: 30_000,
+    toolName: "AskUserQuestion",
+    question: tr("One panel or tabs?", "設定はタブに分ける？"),
+  },
+  {
+    id: "gallery/asking",
+    project: "figma-adapter",
+    slug: "figma-adapter",
+    state: "done",
+    sinceMs: 20_000,
+    ask: { status: "asking" },
+    summary: tr("Headline A or B?", "見出しは A と B のどっち？"),
+  },
+  {
+    id: "gallery/done",
+    project: "moh-tech-net",
+    slug: "moh-tech-net",
+    state: "done",
+    sinceMs: 2 * 60_000,
+    ask: { status: "not_asking" },
+    summary: tr("Fixed the README typo", "README の誤字を直した"),
+  },
+  {
+    id: "gallery/dozing",
+    project: "cloudflare-lab",
+    slug: "cloudflare-lab",
+    state: "dozing",
+    sinceMs: 9 * 60_000,
+    ask: { status: "not_asking" },
+    summary: tr("Updated the build config", "ビルド設定を更新した"),
+  },
+];
+
+function pick(ids: string[]): SessionView[] {
+  return ids.map((id) => GALLERY.find((s) => s.id === id)!);
+}
