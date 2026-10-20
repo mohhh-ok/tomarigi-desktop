@@ -8,9 +8,30 @@ const TABS = [
   ["moh-tech-net", "opencode"],
 ];
 
+// Short lines that run down the pane, so the first image (window at rest) shows the terminal's text behind the birds
 const LINES = {
-  en: [["u", "Write the v0.4 release post"], ["a", "I'll write it in four parts: what's new, screenshots, how to update, and thanks."], ["q", "Approve this plan?"]],
-  ja: [["u", "v0.4 のお知らせ記事を書いて"], ["a", "4 つの節に分けて書きます: 変わったこと、画面、更新のしかた、お礼。"], ["q", "この計画で進めてよいですか？"]],
+  en: [
+    ["u", "Sum up the changes since v0.3"],
+    ["a", "Three new features and five fixes. They are in CHANGELOG.md."],
+    ["u", "Write the v0.4 release post"],
+    ["a", "I'll write it in four parts:"],
+    ["i", "1. What's new: summaries in the bubbles"],
+    ["i", "2. Screenshots: the garden and the perch"],
+    ["i", "3. How to update: from the app's menu"],
+    ["i", "4. Thanks: to everyone who sent reports"],
+    ["q", "Approve this plan?"],
+  ],
+  ja: [
+    ["u", "v0.3 からの変更をまとめて"],
+    ["a", "新しい機能が 3 つ、直したことが 5 つ。CHANGELOG.md に書きました。"],
+    ["u", "v0.4 のお知らせ記事を書いて"],
+    ["a", "4 つの節に分けて書きます:"],
+    ["i", "1. 変わったこと: 吹き出しに要約が出る"],
+    ["i", "2. 画面: にわと止まり木のスクショ"],
+    ["i", "3. 更新のしかた: アプリのメニューから"],
+    ["i", "4. お礼: 報告をくれた方へ"],
+    ["q", "この計画で進めてよいですか？"],
+  ],
 };
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -36,7 +57,7 @@ export function stage({ lang, url, win, fade }) {
   .tab.on{background:#17191d;color:#d6d9de}
   .pane{padding:14px 16px;font:12px/1.65 "SF Mono",Menlo,"Hiragino Sans",monospace;color:#c9ccd1}
   .cmd{color:#8a9099;margin-bottom:10px}.dir{color:#7fb0d9}.pr{color:#8a9099}
-  .u{color:#e8e9eb;margin:4px 0 8px}.a{color:#b4b9c0;white-space:nowrap}.q{color:#f0c46a;white-space:pre}
+  .u{color:#e8e9eb;margin:4px 0 8px}.a,.i{color:#b4b9c0;white-space:nowrap}.i{padding-left:2ch}.q{color:#f0c46a;white-space:pre}
   .cursor{margin-top:12px}.cursor i{display:inline-block;width:7px;height:14px;background:#c9ccd1;vertical-align:-2px}
   .win{position:absolute;${win.left != null ? `left:${win.left}px` : "right:20px"};top:${win.top ?? Math.round((456 - win.h) / 2)}px;width:${win.w}px;height:${win.h}px}
   .glass{position:absolute;inset:0;border-radius:12px;${fade ? "display:none;" : "backdrop-filter:blur(22px) saturate(1.2);box-shadow:0 22px 50px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.55);"}}

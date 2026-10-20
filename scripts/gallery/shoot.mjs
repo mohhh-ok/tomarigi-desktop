@@ -13,11 +13,12 @@ import { stage } from "./stage.mjs";
 const { chromium } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "index.mjs"));
 const IMAGES = new URL("../../docs/images/", import.meta.url).pathname;
 const only = process.argv.slice(2);
-// Windows are sized so the birds fit without overlapping (the app would grow the window; a browser frame can't). Keep every
-// window inside the right 500 of the 762 width: the download page shows only that part of the images
-// (moh-tech-net, public/tomarigi/desktop/index.html)
+// Windows are sized so the birds fit without overlapping (the app would grow the window; a browser frame can't). The garden
+// windows are all 480x420 at the right: the download page (moh-tech-net, public/tomarigi/desktop/index.html) crops to the
+// window's outline. The first image puts the window at the left, over the terminal's text, and the page crops to the
+// handle, the birds, and the text around them
 const SCENES = [
-  { id: "1-on-top", preset: "gallery-on-top", win: { w: 480, h: 284, left: 262, top: 172 }, fade: true },
+  { id: "1-on-top", preset: "gallery-on-top", win: { w: 480, h: 284, left: 40, top: 70 }, fade: true },
   { id: "2-garden", preset: "gallery", win: { w: 480, h: 420 } },
   { id: "3-needs-reply", preset: "gallery-asking", win: { w: 480, h: 420 } },
   { id: "4-bubble", preset: "gallery-bubble", win: { w: 480, h: 420 } },
