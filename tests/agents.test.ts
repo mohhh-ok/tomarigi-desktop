@@ -9,7 +9,7 @@ import { parseCopilotLines } from "../src/lib/copilot-transcript.ts";
 import { parseGeminiLines } from "../src/lib/gemini-transcript.ts";
 import { parseOpenCodeMessages, type OpenCodeMessage } from "../src/lib/opencode-transcript.ts";
 import { cursorProjectSlug, lineTimesOf, parseCursorLines } from "../src/lib/cursor-transcript.ts";
-import { argvOf, matchSessionsToProcesses, programNamed } from "../src/lib/agent-processes.ts";
+import { argvOf, matchSessionsToProcesses, matchThreadsToProcesses, programNamed, uuidV7Time } from "../src/lib/agent-processes.ts";
 import { extractQuestion } from "../src/lib/session-snippet.ts";
 import type { TailInfo } from "../src/lib/transcript.ts";
 
@@ -249,6 +249,35 @@ describe("Cursor CLI", () => {
     expect(cursorProjectSlug("/Users/me/Dev/yokai-no-sensei")).toBe("Users-me-Dev-yokai-no-sensei");
     expect(cursorProjectSlug("/var/folders/jw/x_y/T/abc.d")).toBe("var-folders-jw-x-y-T-abc-d");
     expect(cursorProjectSlug("/Users/me/.config/my - app_")).toBe("Users-me-config-my-app");
+  });
+});
+
+describe("Codex threads of the shared app-server matched to TUIs", () => {
+  const tui = (pid: number, startedAt: number, alive = true) => ({ pid, startedAt, cwd: "/w/a", key: "/w/a", alive });
+  const thread = (id: string, createdAt: number | undefined, writtenAt: number) => ({ id, key: "/w/a", createdAt, writtenAt });
+  const pids = (m: Map<string, { pid?: number }>) => Object.fromEntries([...m].map(([id, v]) => [id, v.pid]));
+
+  test("two TUIs in one cwd each get the thread created after they started", () => {
+    const m = matchThreadsToProcesses([thread("b", 59_000, 90_000), thread("a", 9_000, 80_000)], [tui(1, 0), tui(2, 50_000)]);
+    expect(pids(m)).toEqual({ a: 1, b: 2 });
+  });
+
+  test("a thread whose TUI exited is not alive, and does not move to an older TUI", () => {
+    const m = matchThreadsToProcesses([thread("a", 9_000, 80_000), thread("b", 59_000, 95_000)], [tui(1, 0), tui(2, 50_000, false)]);
+    expect(pids(m)).toEqual({ a: 1 });
+  });
+
+  test("a TUI that moved to a new thread keeps the one written last; a resumed thread takes a TUI left over", () => {
+    const moved = matchThreadsToProcesses([thread("old", 9_000, 20_000), thread("new", 30_000, 40_000)], [tui(1, 0)]);
+    expect(pids(moved)).toEqual({ new: 1 });
+    const resumed = matchThreadsToProcesses([thread("yesterday", -86_400_000, 70_000), thread("b", 59_000, 60_000)], [tui(1, 0), tui(2, 50_000)]);
+    expect(pids(resumed)).toEqual({ yesterday: 1, b: 2 });
+  });
+
+  test("the creation time of a thread id is its UUIDv7 time", () => {
+    // Measured with codex-cli 0.163.0: thread 01a156c9-cc30-... created 09:50:28.16 JST, 9 s after its TUI started
+    expect(uuidV7Time("01a156c9-cc30-70f3-a3c5-c4c883e914b1")).toBe(0x01a156c9cc30);
+    expect(uuidV7Time("019a3b2c-1d2e-4f00-8000-000000000000")).toBeUndefined();
   });
 });
 

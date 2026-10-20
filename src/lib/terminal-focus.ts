@@ -3,7 +3,8 @@
 // The mapping is done on the Rust side (src-tauri/src/focus): pid → tty and ancestor processes from ps → the terminal
 // app that owns them → that terminal's adapter (Ghostty, iTerm2, Terminal.app, WezTerm, kitty, through tmux).
 // The pid comes from sessionId in <config>/sessions/<pid>.json for Claude Code (focus_session), and from the process
-// that has thread-writer-locks/<threadId>.lock open for Codex (focus_codex); other agents pass their pid to focusPid.
+// that has thread-writer-locks/<threadId>.lock open for Codex (focus_codex), or the TUI matched to the thread when the
+// shared codex app-server holds the lock; other agents pass their pid to focusPid.
 // Anything that can't be mapped (ended sessions, mock) does nothing.
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./settings-store";
@@ -52,6 +53,9 @@ export function focusTargetOf(id: string, roots: RootEntry[]): FocusTarget | nul
   if (root.kind === "codex") {
     const threadId = codexThreadIdOf(parts[parts.length - 1]);
     if (parts[1] !== "codex" || !threadId) return null;
+    // A thread held by the shared app-server has its TUI's pid; the lock's holder has no terminal
+    const pid = jumpPidOf(id);
+    if (pid !== undefined) return { kind: "pid", pid };
     return { kind: "codex", codexDir: codexDirOf(root), threadId };
   }
   const file = parts[2];
