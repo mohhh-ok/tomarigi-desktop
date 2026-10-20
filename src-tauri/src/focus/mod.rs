@@ -282,6 +282,11 @@ pub(crate) async fn focus_codex(codex_dir: String, thread_id: String, fallback_t
             append_log(&format!("[focus] {codex_dir} {thread_id} -> no process has the thread lock open"));
             FocusResult::none("no process has the thread lock open")
         }
+        // The shared app-server has no terminal; the TUI's pid comes from the JS side (jumpPidOf)
+        Some(t) if t.shared => {
+            append_log(&format!("[focus] {codex_dir} {thread_id} -> held by the shared app-server pid {}", t.pid));
+            FocusResult::none("the thread lock is held by the shared app-server")
+        }
         Some(t) => {
             append_log(&format!("[focus] {codex_dir} {thread_id} -> pid {}", t.pid));
             focus_pid(t.pid, fallback_to_app).await

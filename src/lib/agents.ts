@@ -14,6 +14,8 @@ import { scanChicks } from "./session-chicks";
 import {
   earliestStart,
   matchSessionsToProcesses,
+  matchThreadsToProcesses,
+  uuidV7Time,
   programNamed,
   programOf,
   basenameOf,
@@ -157,21 +159,29 @@ const claude: AgentAdapter = {
 // ---- Codex ----
 
 interface CodexPrepared {
-  threadsByCodexDir: Map<string, Map<string, number>>; // threadId → pid
+  threadsByCodexDir: Map<string, Map<string, CodexLock>>; // threadId → who holds its lock
   unreliableCodexDirs: Set<string>;
+}
+
+// shared: the holder is the codex app-server that TUIs share (live_codex_threads in Rust), not the TUI itself
+interface CodexLock {
+  pid: number;
+  shared: boolean;
 }
 
 const codex: AgentAdapter = {
   kind: "codex",
   label: "Codex",
   home: ".codex/sessions",
+  // The TUIs (and `codex exec`); the shared `codex app-server` has no tty and isn't one of them
+  matchesProcess: (argv) => programNamed("codex")(argv) && !argv.includes("app-server"),
   // Codex threads whose process is alive, per <codex dir> (live_codex_threads in Rust: which
   // thread-writer-locks/<threadId>.lock files some process has open). unreliableCodexDirs are reads where lsof failed
   async prepare(roots): Promise<CodexPrepared> {
     const codexDirs = new Set(roots.map(codexDirOf));
     const scans = await Promise.all(
       [...codexDirs].map(async (codexDir) => {
-        const scan = await invoke<{ threads: { threadId: string; pid: number }[]; reliable: boolean }>(
+        const scan = await invoke<{ threads: ({ threadId: string } & CodexLock)[]; reliable: boolean }>(
           "live_codex_threads",
           { codexDir },
         ).catch(() => ({ threads: [], reliable: false }));
@@ -179,15 +189,18 @@ const codex: AgentAdapter = {
       }),
     );
     return {
-      threadsByCodexDir: new Map(scans.map((s) => [s.codexDir, new Map(s.threads.map((t) => [t.threadId, t.pid]))])),
+      threadsByCodexDir: new Map(
+        scans.map((s) => [s.codexDir, new Map(s.threads.map((t) => [t.threadId, { pid: t.pid, shared: t.shared }]))]),
+      ),
       unreliableCodexDirs: new Set(scans.filter((s) => !s.reliable).map((s) => s.codexDir)),
     };
   },
   /** Lists the rollouts of live (or already shown) threads of a Codex watched folder */
-  async list(root, { found, skippedIds }, prepared) {
+  async list(root, listing, prepared) {
+    const { found, skippedIds } = listing;
     const { threadsByCodexDir, unreliableCodexDirs } = prepared as CodexPrepared;
     const codexDir = codexDirOf(root);
-    const threads = threadsByCodexDir.get(codexDir) ?? new Map<string, number>();
+    const threads = threadsByCodexDir.get(codexDir) ?? new Map<string, CodexLock>();
     const sessionsDir = await codexSessionsDir(root.handle);
     if (!sessionsDir) return;
     // Rollouts of live threads (however old), plus birds already shown so they go through the miss count
@@ -204,6 +217,7 @@ const codex: AgentAdapter = {
       const file = await fileAt(sessionsDir, path);
       if (file) rollouts.set(path, { file, path });
     }
+    const rows: { id: string; file: NativeFile; tail: TailInfo; threadId: string; lock: CodexLock | undefined }[] = [];
     for (const { file, path } of rollouts.values()) {
       const threadId = codexThreadIdOf(file.name);
       if (!threadId) continue;
@@ -218,8 +232,41 @@ const codex: AgentAdapter = {
         skippedIds.add(id);
         continue;
       }
+      rows.push({ id, file, tail, threadId, lock: threads.get(threadId) });
+    }
+    // Locks held by the shared app-server stay held after their TUI exits: those threads are alive only while a TUI
+    // in their cwd is (matchThreadsToProcesses), and the TUI is where a click jumps to
+    const shared = rows.filter((r) => r.lock?.shared);
+    const tuis = shared.length > 0 ? await listing.processes("codex") : { processes: [], reliable: true };
+    const ownLocks = new Set([...threads.values()].filter((l) => !l.shared).map((l) => l.pid));
+    const live = tuis.processes.filter((p) => !ownLocks.has(p.pid));
+    if (tuis.reliable) rememberCodexTuis(live);
+    const matches = matchThreadsToProcesses(
+      shared.map((r) => ({ id: r.id, key: r.tail.cwd, writtenAt: r.file.lastModified, createdAt: uuidV7Time(r.threadId) })),
+      [
+        ...live.map((p) => ({ ...p, key: p.cwd, alive: true })),
+        ...[...seenCodexTuis.values()]
+          .filter((p) => !live.some((l) => l.pid === p.pid))
+          .map((p) => ({ ...p, key: p.cwd, alive: false })),
+      ],
+    );
+    const unreliable = unreliableCodexDirs.has(codexDir);
+    for (const { id, file, tail, lock } of rows) {
       const cwd = tail.cwd;
-      const pid = threads.get(threadId);
+      const match = lock?.shared ? matches.get(id) : undefined;
+      // The app-server keeps an ended thread's lock: like a lock nobody holds, it only goes on for a bird on screen
+      if (lock?.shared && !match && !scanState.trackedIds.has(id)) continue;
+      const alive = lock?.shared
+        ? match
+          ? true
+          : tuis.reliable
+            ? false
+            : undefined
+        : lock !== undefined
+          ? true
+          : unreliable
+            ? undefined
+            : false;
       found.push({
         agent: "codex",
         rootId: root.id,
@@ -229,8 +276,8 @@ const codex: AgentAdapter = {
         id,
         tail,
         chicks: [],
-        live: pid !== undefined ? true : unreliableCodexDirs.has(codexDir) ? undefined : false,
-        pid,
+        live: alive,
+        pid: lock?.shared ? match?.pid : lock?.pid,
       });
     }
   },
@@ -242,6 +289,21 @@ const codex: AgentAdapter = {
     );
   },
 };
+
+// Codex TUIs seen alive (pid → start and cwd), kept after they exit so a thread created after a TUI started ends
+// with that TUI instead of moving to an older one in the same cwd
+const seenCodexTuis = new Map<number, AgentProcess>();
+const MAX_SEEN_CODEX_TUIS = 64;
+
+function rememberCodexTuis(processes: AgentProcess[]): void {
+  for (const p of processes) {
+    seenCodexTuis.delete(p.pid);
+    seenCodexTuis.set(p.pid, p);
+  }
+  for (const pid of [...seenCodexTuis.keys()].slice(0, Math.max(0, seenCodexTuis.size - MAX_SEEN_CODEX_TUIS))) {
+    seenCodexTuis.delete(pid);
+  }
+}
 
 // ---- Qwen Code: pid from <sessionId>.runtime.json ----
 

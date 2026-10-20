@@ -39,6 +39,8 @@ const liveOverride = new Map<string, { sessions: object[]; reliable: boolean }>(
 // Agents without a pid file (docs/design.md "Agents"): stand-in processes and the command line ps shows for each.
 // tty_processes answers with the ones still alive; process_cwds runs the real lsof on them
 const agentCommands = new Map<number, { command: string; startedAtMs: number }>();
+// Lock holders that live_codex_threads reports as the shared codex app-server (Rust reads their command line)
+const appServerPids = new Set<number>();
 let psFails = false;
 // OpenCode's database as the Rust side returns it (src-tauri/src/opencode.rs), by dbPath
 const openCodeDbs = new Map<string, { sessions: object[]; tails: Map<string, object[]> }>();
@@ -80,12 +82,14 @@ mock.module("@tauri-apps/api/core", () => ({
         } catch (e) {
           out = String((e as { stdout?: Buffer }).stdout ?? ""); // exits with 1 even when files are found
         }
-        const threads: { threadId: string; pid: number }[] = [];
+        const threads: { threadId: string; pid: number; shared: boolean }[] = [];
         let pid = 0;
         for (const line of out.split("\n")) {
           if (line.startsWith("p")) pid = Number(line.slice(1));
           const file = line.startsWith("n") ? path.basename(line.slice(1)) : "";
-          if (file.endsWith(".lock") && !file.startsWith(".")) threads.push({ threadId: file.slice(0, -5), pid });
+          if (file.endsWith(".lock") && !file.startsWith(".")) {
+            threads.push({ threadId: file.slice(0, -5), pid, shared: appServerPids.has(pid) });
+          }
         }
         return { threads, reliable: true };
       }
@@ -373,13 +377,13 @@ describe("Codex", () => {
     const h = (Date.now() - msAgo).toString(16).padStart(12, "0");
     return `${h.slice(0, 8)}-${h.slice(8, 12)}-7abc-8def-${tail}`;
   };
-  const addThread = (threadId: string, msAgo: number) => {
+  const addThread = (threadId: string, msAgo: number, cwd = "/tmp/codex-fixture") => {
     const dir = path.join(codexDir, "sessions", dayPath(new Date(Date.now() - msAgo)));
     fs.mkdirSync(dir, { recursive: true });
     const file = path.join(dir, `rollout-x-${threadId}.jsonl`);
     fs.writeFileSync(
       file,
-      line({ timestamp: iso(msAgo), type: "session_meta", payload: { id: threadId, cwd: "/tmp/codex-fixture", source: "cli", thread_source: "user" } }) +
+      line({ timestamp: iso(msAgo), type: "session_meta", payload: { id: threadId, cwd, source: "cli", thread_source: "user" } }) +
         line({ timestamp: iso(msAgo), type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text: "hi" }] } }),
     );
     setMtime(file, msAgo);
@@ -400,11 +404,58 @@ describe("Codex", () => {
 
     const alive = await scanTwice(roots);
     expect(alive.views.map((v) => v.id)).toEqual([expect.stringContaining(oldId)]);
-    expect(focusTargetOf(alive.views[0].id, roots)).toEqual({ kind: "codex", codexDir, threadId: oldId });
+    // The codex holding the lock is the one to jump to
+    expect(focusTargetOf(alive.views[0].id, roots)).toEqual({ kind: "pid", pid: proc.pid });
 
     await stop(proc);
     expect(fs.existsSync(lock)).toBe(true);
     expect((await scanTwice(roots)).views).toEqual([]);
+  });
+
+  test("0.163.0: locks held by the shared app-server; each thread is alive while its TUI is, and jumps to that TUI", async () => {
+    const cwd = path.join(fs.realpathSync(base), "work", "codex-shared");
+    fs.mkdirSync(cwd, { recursive: true });
+    /** A codex TUI in cwd, started `msAgo` ago */
+    const startTui = (msAgo: number) => {
+      const child = spawn("sh", ["-c", "exec sleep 600"], { stdio: "ignore", cwd });
+      children.push(child);
+      agentCommands.set(child.pid!, { command: "codex", startedAtMs: Date.now() - msAgo });
+      return child;
+    };
+    // Two TUIs in one cwd; each thread is created ~9 s after its TUI started (measured)
+    const tui1 = startTui(60_000);
+    const tui2 = startTui(20_000);
+    const first = threadIdAt(51_000, "00000000000a");
+    const second = threadIdAt(11_000, "00000000000b");
+    const exited = threadIdAt(120_000, "00000000000c"); // its TUI exited; the app-server still holds the lock
+    const locks = [addThread(first, 8_000, cwd), addThread(second, 4_000, cwd), addThread(exited, 100_000, cwd)];
+    const server = startProcess(`exec 3<"${locks[0]}" 4<"${locks[1]}" 5<"${locks[2]}"; exec sleep 600`);
+    appServerPids.add(server.pid!);
+    await Bun.sleep(200);
+
+    const shown = await scanTwice(roots);
+    const byThread = (views: { id: string }[], threadId: string) => views.find((v) => v.id.includes(threadId));
+    expect(byThread(shown.views, first)).toBeDefined();
+    expect(byThread(shown.views, second)).toBeDefined();
+    expect(byThread(shown.views, exited)).toBeUndefined();
+    expect(focusTargetOf(byThread(shown.views, first)!.id, roots)).toEqual({ kind: "pid", pid: tui1.pid });
+    expect(focusTargetOf(byThread(shown.views, second)!.id, roots)).toEqual({ kind: "pid", pid: tui2.pid });
+
+    // Quitting a TUI ends its bird although the app-server keeps the lock
+    await stop(tui2);
+    const afterQuit = await scanTwice(roots);
+    expect(byThread(afterQuit.views, second)).toBeUndefined();
+    // and stays gone while the app-server still holds its lock
+    expect(byThread((await scanSessions(roots)).views, second)).toBeUndefined();
+    expect(focusTargetOf(byThread(afterQuit.views, first)!.id, roots)).toEqual({ kind: "pid", pid: tui1.pid });
+    await stop(tui1);
+    const none = (await scanTwice(roots)).views;
+    expect([first, second, exited].map((t) => byThread(none, t))).toEqual([undefined, undefined, undefined]);
+    const later = (await scanSessions(roots)).views;
+    expect([first, second, exited].map((t) => byThread(later, t))).toEqual([undefined, undefined, undefined]);
+
+    await stop(server);
+    appServerPids.delete(server.pid!);
   });
 });
 

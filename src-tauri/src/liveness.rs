@@ -284,6 +284,9 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
 pub(crate) struct CodexThread {
     pub(crate) thread_id: String,
     pub(crate) pid: u32,
+    /// The lock is held by the `codex app-server` that codex TUIs share (from codex-cli 0.162.1 or earlier, measured
+    /// with 0.163.0): pid is that server's, not the TUI's, and the lock stays held after the TUI exits
+    pub(crate) shared: bool,
 }
 
 /// Result of live_codex_threads. reliable is false when lsof couldn't be run or reported an error; birds are
@@ -296,7 +299,9 @@ pub(crate) struct CodexLiveScan {
 
 /// Codex threads whose process is alive. A running codex keeps `<codex_dir>/thread-writer-locks/<threadId>.lock`
 /// open; the lock file stays after codex exits, so only files some process has open count (measured with
-/// codex-cli 0.156.1; not a public Codex spec)
+/// codex-cli 0.156.1; not a public Codex spec). When TUIs share a `codex app-server` (measured with 0.163.0), that
+/// server holds the locks, also of threads whose TUI has exited; those are marked shared and the JS side matches
+/// them to TUI processes instead
 /// Runs off the main thread (it is polled every few seconds)
 #[tauri::command]
 pub(crate) async fn live_codex_threads(codex_dir: String) -> CodexLiveScan {
@@ -317,11 +322,15 @@ fn live_codex_threads_blocking(codex_dir: &str) -> CodexLiveScan {
     }
     match lock_holders(&dir) {
         Some(held) => {
+            let mut pids: Vec<u32> = held.iter().map(|(_, pid)| *pid).collect();
+            pids.sort_unstable();
+            pids.dedup();
+            let servers = app_server_pids(&pids);
             let mut threads: Vec<CodexThread> = Vec::new();
             for (file, pid) in held {
                 if let Some(thread_id) = thread_of_lock(&file) {
                     if !threads.iter().any(|t| t.thread_id == thread_id) {
-                        threads.push(CodexThread { thread_id: thread_id.to_string(), pid });
+                        threads.push(CodexThread { thread_id: thread_id.to_string(), pid, shared: servers.contains(&pid) });
                     }
                 }
             }
@@ -329,6 +338,49 @@ fn live_codex_threads_blocking(codex_dir: &str) -> CodexLiveScan {
         }
         None => CodexLiveScan { threads: Vec::new(), reliable: false },
     }
+}
+
+/// Whether a command line runs `codex app-server` (an `app-server` argument; argv[0] may hold spaces when renamed)
+fn is_app_server(command: &str) -> bool {
+    command.split_whitespace().any(|arg| arg == "app-server")
+}
+
+/// The pids among pids whose command line is a `codex app-server`. A pid whose command line can't be read counts as
+/// not one (the lock is then read as before: its holder is the codex that has the thread open)
+#[cfg(target_os = "macos")]
+fn app_server_pids(pids: &[u32]) -> Vec<u32> {
+    if pids.is_empty() {
+        return Vec::new();
+    }
+    let list = pids.iter().map(u32::to_string).collect::<Vec<_>>().join(",");
+    let Some(out) = output_with_timeout(Command::new("ps").args(["-ww", "-o", "pid=,command=", "-p", &list]), LIVENESS_CMD_TIMEOUT) else {
+        return Vec::new();
+    };
+    String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .filter_map(|line| {
+            let (pid, command) = line.trim_start().split_once(char::is_whitespace)?;
+            is_app_server(command).then(|| pid.parse().ok()).flatten()
+        })
+        .collect()
+}
+
+#[cfg(target_os = "linux")]
+fn app_server_pids(pids: &[u32]) -> Vec<u32> {
+    pids.iter()
+        .copied()
+        .filter(|pid| {
+            std::fs::read(format!("/proc/{pid}/cmdline"))
+                .map(|raw| is_app_server(&String::from_utf8_lossy(&raw).replace('\0', " ")))
+                .unwrap_or(false)
+        })
+        .collect()
+}
+
+/// Windows: the holder's command line isn't read; locks are read as before
+#[cfg(windows)]
+fn app_server_pids(_pids: &[u32]) -> Vec<u32> {
+    Vec::new()
 }
 
 /// The thread id of a lock file name: only `<threadId>.lock` (not .coordination.lock etc.)
@@ -727,6 +779,7 @@ mod tests {
         assert!(scan.reliable);
         let found: Vec<(&str, u32)> = scan.threads.iter().map(|t| (t.thread_id.as_str(), t.pid)).collect();
         assert_eq!(found, vec![(held, holder.id())]);
+        assert!(!scan.threads[0].shared);
 
         holder.kill().unwrap();
         holder.wait().unwrap();
@@ -736,6 +789,41 @@ mod tests {
         assert!(locks.join(format!("{held}.lock")).exists());
 
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// codex 0.163.0 TUIs share one `codex app-server`, which holds every thread's lock
+    #[test]
+    #[cfg(unix)]
+    fn live_codex_threads_marks_locks_held_by_the_shared_app_server() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-codex-server-test-{}", std::process::id()));
+        let locks = dir.join("thread-writer-locks");
+        std::fs::create_dir_all(&locks).unwrap();
+        let held = "01a156c9-cc30-70f3-a3c5-c4c883e914b1";
+        std::fs::write(locks.join(format!("{held}.lock")), "").unwrap();
+        let mut server = Command::new("bash")
+            .arg("-c")
+            .arg(format!(
+                "exec 3<\"{}\"; exec -a 'codex app-server --listen unix:// --managed-daemon' sleep 600",
+                locks.join(format!("{held}.lock")).display()
+            ))
+            .spawn()
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(200));
+
+        let scan = live_codex_threads_blocking(dir.to_str().unwrap());
+        server.kill().unwrap();
+        server.wait().unwrap();
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert!(scan.reliable);
+        let found: Vec<(&str, u32, bool)> = scan.threads.iter().map(|t| (t.thread_id.as_str(), t.pid, t.shared)).collect();
+        assert_eq!(found, vec![(held, server.id(), true)]);
+    }
+
+    #[test]
+    fn app_server_is_an_argument_not_a_substring() {
+        assert!(is_app_server("/Users/me/.codex/packages/app-server-daemon/releases/0.163.0/bin/codex app-server --listen unix://"));
+        assert!(!is_app_server("/Users/me/.codex/packages/app-server-daemon/releases/0.163.0/bin/codex"));
+        assert!(!is_app_server("codex resume"));
     }
 
     #[test]

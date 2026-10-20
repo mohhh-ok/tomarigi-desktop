@@ -134,3 +134,60 @@ export function matchSessionsToProcesses(
   }
   return result;
 }
+
+export interface ThreadCandidate extends SessionCandidate {
+  createdAt: number | undefined; // epoch ms the thread was created (Codex: the time in its UUIDv7 id)
+}
+
+/**
+ * Codex threads held open by the shared app-server, matched one to one to the TUI processes in their cwd
+ * (docs/design.md "Agents"). processes also holds TUIs seen before that have exited (alive: false). A thread
+ * belongs to the TUI that started last before it was created, and ends with it; of two threads for one live TUI,
+ * the one written last is the one it is on. The others (resumed threads created before every known TUI there,
+ * threads it left) take the live TUIs left over, written last to started last. A thread left without one is not
+ * alive
+ */
+export function matchThreadsToProcesses(
+  threads: ThreadCandidate[],
+  processes: { pid: number; startedAt: number; cwd: string; key: string; alive: boolean }[],
+): Map<string, ProcessMatch> {
+  const result = new Map<string, ProcessMatch>();
+  const byKey = new Map<string, typeof processes>();
+  for (const p of processes) byKey.set(p.key, [...(byKey.get(p.key) ?? []), p]);
+  for (const [key, group] of byKey) {
+    const byProcess = new Map<number, ThreadCandidate>();
+    const leftover: ThreadCandidate[] = [];
+    for (const t of threads.filter((t) => t.key === key)) {
+      const created = t.createdAt;
+      const owner =
+        created === undefined
+          ? undefined
+          : group.filter((p) => p.startedAt - START_SLACK_MS <= created).sort((a, b) => b.startedAt - a.startedAt)[0];
+      if (!owner) {
+        leftover.push(t);
+        continue;
+      }
+      if (!owner.alive) continue;
+      const before = byProcess.get(owner.pid);
+      if (before && before.writtenAt >= t.writtenAt) {
+        leftover.push(t);
+        continue;
+      }
+      if (before) leftover.push(before);
+      byProcess.set(owner.pid, t);
+    }
+    const free = group.filter((p) => p.alive && !byProcess.has(p.pid)).sort((a, b) => b.startedAt - a.startedAt);
+    leftover.sort((a, b) => b.writtenAt - a.writtenAt).slice(0, free.length).forEach((t, i) => byProcess.set(free[i].pid, t));
+    for (const p of group) {
+      const t = byProcess.get(p.pid);
+      if (t) result.set(t.id, { pid: p.pid, cwd: p.cwd });
+    }
+  }
+  return result;
+}
+
+/** The creation time in a UUIDv7 (its first 48 bits, epoch ms); undefined for other ids */
+export function uuidV7Time(id: string): number | undefined {
+  const m = /^([0-9a-f]{8})-([0-9a-f]{4})-7[0-9a-f]{3}-/i.exec(id);
+  return m ? parseInt(m[1] + m[2], 16) : undefined;
+}
