@@ -14,7 +14,10 @@ use crate::append_log;
 // in IndexedDB and passes them to Rust at startup and on save (Rust keeps them only in memory). API calls that
 // use keys are made from Rust with either store
 
-const KEY_PROVIDERS: [&str; 3] = ["anthropic", "openai", "typesafe"];
+const KEY_PROVIDERS: [&str; 2] = ["anthropic", "openai"];
+/// Providers no longer used whose saved key can still be seen and deleted, never saved or sent (docs/design.md "BYOK
+/// API keys": TypeSafe (Jev) is no longer used)
+const RETIRED_KEY_PROVIDERS: [&str; 1] = ["typesafe"];
 
 enum KeyStore {
     /// OS store (Keychain generic password on macOS). service is `<identifier>.byok`, account is the provider name
@@ -114,6 +117,15 @@ fn check_provider(provider: &str) -> Result<(), String> {
     }
 }
 
+/// A provider whose key can be checked and deleted: the ones in use and the retired ones
+fn check_known_provider(provider: &str) -> Result<(), String> {
+    if KEY_PROVIDERS.contains(&provider) || RETIRED_KEY_PROVIDERS.contains(&provider) {
+        Ok(())
+    } else {
+        Err(format!("unknown provider {provider}"))
+    }
+}
+
 fn cache_get(provider: &str) -> Option<String> {
     KEY_CACHE.lock().unwrap().as_ref().and_then(|m| m.get(provider).cloned())
 }
@@ -172,10 +184,11 @@ pub(crate) fn key_backend() -> &'static str {
     }
 }
 
-/// Whether a key is saved, per provider. Values are not returned
+/// Whether a key is saved, per provider (retired ones included, so a key left saved can be deleted). Values are not
+/// returned
 #[tauri::command]
 pub(crate) fn key_status() -> std::collections::HashMap<String, bool> {
-    KEY_PROVIDERS.iter().map(|p| (p.to_string(), key_of(p).is_some())).collect()
+    KEY_PROVIDERS.iter().chain(RETIRED_KEY_PROVIDERS.iter()).map(|p| (p.to_string(), key_of(p).is_some())).collect()
 }
 
 /// Saves a key (replacing works the same way). The value is only received from JS, never returned
@@ -188,7 +201,7 @@ pub(crate) fn key_set(provider: String, value: String) -> Result<(), String> {
 
 #[tauri::command]
 pub(crate) fn key_delete(provider: String) -> Result<(), String> {
-    check_provider(&provider)?;
+    check_known_provider(&provider)?;
     if let KeyStore::Keychain { service } = key_store() {
         // Deleting something that doesn't exist counts as success
         os_store::delete(service, &provider);
@@ -236,35 +249,6 @@ async fn post_json_with_timeout(
     let status = res.status().as_u16();
     let body = res.text().await.map_err(|e| e.to_string())?;
     Ok(HttpReply { status, body })
-}
-
-/// TypeSafe evaluation API (docs/design.md "The "?" for sessions waiting on you"). api.typesafe.ai rejects the
-/// WKWebView origin (tauri://localhost) via CORS, and keys are not passed to JS, so it is called here.
-/// body is the JSON built by the JS side, sent as is; the reply's status and body are also returned as is
-/// (interpreted in lib/jev.ts)
-#[tauri::command]
-pub(crate) async fn typesafe_systemone(body: String) -> Result<HttpReply, String> {
-    let key = key_of("typesafe").ok_or_else(|| {
-        append_log("[keys] send typesafe: no key");
-        NO_KEY.to_string()
-    })?;
-    let diag = key_diag(&key);
-    let reply =
-        post_json("https://api.typesafe.ai/v1/systemone", vec![("authorization", format!("Bearer {key}"))], body).await;
-    match &reply {
-        Ok(r) => append_log(&format!("[keys] send typesafe {diag} status={}", r.status)),
-        Err(e) => append_log(&format!("[keys] send typesafe {diag} error={e}")),
-    }
-    reply
-}
-
-/// Non-secret diagnostics for investigating auth failures (length, first 4 characters, presence of surrounding
-/// whitespace or quotes)
-fn key_diag(key: &str) -> String {
-    let prefix: String = key.chars().take(4).collect();
-    let quoted = key.starts_with('"') || key.starts_with('\'') || key.ends_with('"') || key.ends_with('\'');
-    let ascii = key.chars().all(|c| c.is_ascii_graphic());
-    format!("len={} prefix={prefix} quoted={quoted} ascii_graphic={ascii}", key.len())
 }
 
 /// Anthropic Messages API (summary and connection test; lib/judge.ts)
@@ -404,7 +388,15 @@ pub(crate) fn import_key_from_stdin(app: &AppHandle) {
 
 #[cfg(test)]
 mod tests {
-    use super::local_url;
+    use super::{check_known_provider, check_provider, local_url};
+
+    #[test]
+    fn a_retired_provider_can_be_deleted_but_not_saved() {
+        assert!(check_provider("openai").is_ok());
+        assert!(check_provider("typesafe").is_err());
+        assert!(check_known_provider("typesafe").is_ok());
+        assert!(check_known_provider("other").is_err());
+    }
 
     #[test]
     fn local_url_joins_and_checks_the_scheme() {

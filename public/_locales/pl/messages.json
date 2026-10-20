@@ -257,16 +257,7 @@
     "message": "Czeka na twoją odpowiedź, aby móc kontynuować"
   },
   "angerBadgeTitle": {
-    "message": "Twoja ostatnia wiadomość w tej sesji została uznana za obraźliwą wobec AI"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "Klucz API TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Opcjonalne. TypeSafe to zewnętrzna usługa AI, która ocenia, czy agent zatrzymał się, czekając na twoją odpowiedź. Po zapisaniu klucza ostatnia odpowiedź zatrzymanej sesji trafia do TypeSafe, a ptaki czekające na odpowiedź dostają „?”. Bez klucza „?” dostają tylko ptaki zatrzymane na narzędziu pytań."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Twoje własne wiadomości do agenta też są wysyłane do TypeSafe. Jeśli ostatnia wiadomość zostanie uznana za obraźliwą wobec AI, ten ptak dostaje znak złości do twojej następnej wiadomości."
+    "message": "Wiadomość wysłana przez ciebie w ostatniej turze tej sesji została uznana za obraźliwą wobec AI"
   },
   "bubblePlanApproval": {
     "message": "Zatwierdzić plan?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Nie udało się zapisać klucza. Spróbuj ponownie."
-  },
-  "typeSafeSiteLink": {
-    "message": "Strona TypeSafe"
   },
   "quotedSnippet": {
     "message": "„$SNIPPET$”",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Wybierz lub wpisz model, aby zapisać i przetestować połączenie."
+  },
+  "aiUserMessagesNote": {
+    "message": "Po każdej zakończonej turze wysyłana jest ostatnia odpowiedź agenta i wiadomości, które wysłałeś w tej turze. Decydują one też o „?” przy ptakach czekających na twoją odpowiedź i o znaku złości za obraźliwe wiadomości wobec AI."
+  },
+  "retiredKeyNote": {
+    "message": "Nie jest już używany. Możesz usunąć ten zapisany klucz."
   }
 }

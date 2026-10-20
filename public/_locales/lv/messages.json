@@ -257,16 +257,7 @@
     "message": "Gaida jūsu atbildi, lai varētu turpināt"
   },
   "angerBadgeTitle": {
-    "message": "Jūsu pēdējā ziņa šajā sesijā novērtēta kā aizskaroša pret MI"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe API atslēga"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Neobligāti. TypeSafe ir ārējs MI pakalpojums, kas novērtē, vai aģents ir apstājies, lai gaidītu jūsu atbildi. Ja atslēga ir saglabāta, apstājušās sesijas pēdējā atbilde tiek nosūtīta uz TypeSafe, un putni, kas novērtēti kā atbildi gaidoši, saņem “?”. Bez atslēgas “?” saņem tikai putni, kas apstājušies pie jautājuma rīka."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Uz TypeSafe tiek sūtītas arī jūsu pašu ziņas aģentam. Ja jūsu pēdējā ziņa tiek novērtēta kā aizskaroša pret MI, putns saņem dusmu zīmi līdz jūsu nākamajai ziņai."
+    "message": "Ziņa, ko nosūtījāt šīs sesijas pēdējā gājienā, novērtēta kā aizskaroša pret MI"
   },
   "bubblePlanApproval": {
     "message": "Apstiprināt plānu?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Neizdevās saglabāt atslēgu. Mēģiniet vēlreiz."
-  },
-  "typeSafeSiteLink": {
-    "message": "TypeSafe vietne"
   },
   "quotedSnippet": {
     "message": "“$SNIPPET$”",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Izvēlieties vai ievadiet modeli, lai saglabātu un pārbaudītu savienojumu."
+  },
+  "aiUserMessagesNote": {
+    "message": "Katru reizi, kad gājiens beidzas, tiek nosūtīta aģenta pēdējā atbilde un ziņas, ko nosūtījāt šajā gājienā. Pēc tām nosaka arī “?” pie putniem, kas gaida jūsu atbildi, un dusmu zīmi par aizskaršanu pret MI."
+  },
+  "retiredKeyNote": {
+    "message": "Vairs netiek izmantota. Šo saglabāto atslēgu varat izdzēst."
   }
 }

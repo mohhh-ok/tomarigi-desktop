@@ -9,7 +9,7 @@
 import type { JudgeResult, JudgeTaskDefinition } from "./judge";
 import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
-import { needsAnswer } from "./jev";
+import { needsAnswer } from "./turn-verdict";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView } from "./session-types";
 
@@ -29,8 +29,8 @@ export const CONCIERGE_REPEAT_MS = 5 * 60_000;
 export const CONCIERGE_EVENT_LIMIT = 20;
 /** Cap on each free text field sent (bubble line, question), so a long question doesn't grow the request */
 const MAX_TEXT_CHARS = 120;
-/** The end of the last reply sent with a "?" from Jev or with a finished turn, so the concierge can judge it from the
- * text (a "?" that only reports, a finished session that only waits on its own background work) */
+/** The end of the last reply sent with a finished turn, so the concierge can tell a finished session that only waits on
+ * its own background work */
 export const CONCIERGE_REPLY_TAIL_CHARS = 300;
 
 /** One session as the caller sees it: the view plus what only the display layer knows */
@@ -58,13 +58,15 @@ interface PayloadSession {
   agent?: string;
   state: SessionView["state"];
   needs_reply: boolean;
-  /** Where needs_reply came from: the machine state (certain) or Jev's guess from the last reply */
-  needs_reply_source?: "machine" | "jev";
+  /** Where needs_reply came from: the machine state (a question tool, a permission prompt) or the turn verdict asking.
+   * Both are facts; the concierge doesn't judge them again */
+  needs_reply_source?: "machine" | "verdict";
   seconds_since_last_activity: number;
   line?: string;
   question?: string;
-  jev?: { asking: boolean; probability?: number };
-  /** The last CONCIERGE_REPLY_TAIL_CHARS of the last reply, when needs_reply comes from Jev or the session is done */
+  /** The turn verdict of a stopped turn: whether its last reply waits on the developer (docs/design.md "Turn verdicts") */
+  asking?: boolean;
+  /** The last CONCIERGE_REPLY_TAIL_CHARS of the last reply, when the session is done */
   last_reply_tail?: string;
   watch_parent?: string;
   watch_children?: string[];
@@ -96,7 +98,7 @@ const tail = (text: string) =>
 const clip = (text: string | undefined) =>
   text === undefined ? undefined : text.length > MAX_TEXT_CHARS ? `${text.slice(0, MAX_TEXT_CHARS)}…` : text;
 
-/** Kind of an event as the concierge sees it. A done whose turn Jev judged as asking counts as needs reply */
+/** Kind of an event as the concierge sees it. A done whose turn verdict is asking counts as needs reply */
 function eventKindOf(e: SessionEvent): EventKind | undefined {
   if (e.type === "waiting") return "needs_reply";
   if (e.type === "started") return "user_replied";
@@ -127,9 +129,9 @@ export function buildConciergePayload(
     const chicksWorking = (view.chicks ?? []).filter((c) => c.state === "working").length;
     const ask = view.ask;
     const needsReply = needsAnswer(view.state, ask);
-    // The "?" from the machine state (a question tool, a permission prompt) is certain; from Jev it is a guess, so
-    // the end of the reply goes with it and the concierge judges again (docs/design.md "Concierge")
-    const source = !needsReply ? undefined : view.state === "waiting" ? "machine" : "jev";
+    // The "?" comes from the machine state (a question tool, a permission prompt) or the turn verdict; both are facts
+    // (docs/design.md "Concierge")
+    const source = !needsReply ? undefined : view.state === "waiting" ? "machine" : "verdict";
     return {
       id: view.id,
       name: clip(view.project)!,
@@ -140,13 +142,10 @@ export function buildConciergePayload(
       seconds_since_last_activity: Math.round(view.sinceMs / 1000),
       ...(line && { line: clip(line) }),
       ...(view.state === "waiting" && view.question && { question: clip(view.question) }),
-      ...(ask &&
-        (ask.status === "asking" || ask.status === "not_asking") && {
-          jev: { asking: ask.status === "asking", probability: ask.probability },
-        }),
-      // A finished session gets it too, so one that only waits on its own background work isn't taken as finished.
+      ...(ask && (ask.status === "asking" || ask.status === "not_asking") && { asking: ask.status === "asking" }),
+      // A finished session gets it, so one that only waits on its own background work isn't taken as finished.
       // Dozing doesn't: it has been stopped long enough not to be news (docs/design.md "Concierge")
-      ...((source === "jev" || view.state === "done") && view.reply && { last_reply_tail: tail(view.reply.text) }),
+      ...(view.state === "done" && view.reply && { last_reply_tail: tail(view.reply.text) }),
       ...(parentId && ids.has(parentId) && { watch_parent: parentId }),
       ...(children.has(view.id) && { watch_children: children.get(view.id) }),
       ...(chicksWorking > 0 && { chicks_working: chicksWorking }),
@@ -208,19 +207,17 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "question when it waits, watch links between sessions, chicks (subagents) working), the facts about which " +
     "session is held up by which (computed for you; trust them), and the recent events oldest first " +
     "(needs_reply, user_replied, done, and jump = the developer opened that session's terminal). " +
-    "needs_reply_source tells where needs_reply came from. machine means a question tool or a permission prompt " +
-    "is open: the session certainly waits on the developer. jev means a classifier guessed it from the last " +
-    "reply, with jev.probability as its confidence; judge again from last_reply_tail (the end of that reply). " +
-    "A reply that ends with a report of what was done, or with a promise to ask or check later, does not wait on " +
-    "the developer: treat that session as not needing a reply.\n" +
+    "needs_reply_source tells where needs_reply came from: machine means a question tool or a permission prompt " +
+    "is open; verdict means the session's last reply was judged as waiting on the developer (asking). Both are " +
+    "facts: trust needs_reply as given.\n" +
     "A session in state done also has last_reply_tail. When it says the work goes on in the background and the " +
     "session will check it later (e.g. an export or a build is running and it will look at the log at some time), " +
     "the session is still working, waiting on its own work: do not call it finished, do not tell the developer " +
     "to check its result or to do the checks it said it will do itself, and do not advise about it.\n" +
     "While any session needs a reply now, advise about one of those, never about a finished or working session; " +
     "an advice about another session is not shown then.\n" +
-    "Only a session whose needs_reply is true now (or that you judged as waiting from last_reply_tail) may be " +
-    "advised to reply, answer, or check its question or request. A session in state done that does not need a " +
+    "Only a session whose needs_reply is true now may be advised to reply, answer, or check its question or " +
+    "request. A session in state done that does not need a " +
     "reply has finished its turn: if you advise about it, say it finished and its result is ready to check " +
     "(e.g. in Japanese: <name>が終わりました。結果を確認), never ask the developer to reply to it. Its line " +
     "describes what it did; a line that mentions a request or a question it passed on does not mean it waits.\n" +
@@ -320,12 +317,10 @@ function dropReason(
   // A session done but waiting on its own background work is answered with none above; this is the one the facts
   // say is working
   if (target.state === "working") return "working";
-  // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or a "?" from Jev
-  // (the prompt alone didn't hold)
+  // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or the turn
+  // verdict asking (the prompt alone didn't hold)
   if (action === "reply" && !target.needs_reply) return "no_reply_needed";
   if (!adviceNamesTarget(advice.line, target.name)) return "no_name";
-  // A "?" from Jev counts too, even if the concierge judged it as not waiting from the reply: then no advice is
-  // shown rather than one about another session (Claude's own decision)
   if (!target.needs_reply && sessions.some((s) => s.needs_reply)) return "not_waiting";
   return undefined;
 }
@@ -351,7 +346,8 @@ const logHead = (kind: string, c: ConciergeLogContext) =>
 /**
  * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
  * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
- * form to grep. source: machine is a question tool or a permission prompt; jev is Jev's "?" with its probability
+ * form to grep. source: machine is a question tool or a permission prompt, verdict is the turn verdict asking; verdict
+ * is the turn verdict of a stopped turn (asking / not_asking)
  */
 export function conciergeRequestLogLines(c: ConciergeLogContext, payload: ConciergePayload): string[] {
   const head = `${logHead("request", c)} sessions=${payload.sessions.length} holds=${payload.holds.length} events=${payload.recent_events.length} chars=${JSON.stringify(payload).length}`;
@@ -365,7 +361,7 @@ export function conciergeRequestLogLines(c: ConciergeLogContext, payload: Concie
         `since=${s.seconds_since_last_activity}s`,
         `needs_reply=${s.needs_reply}`,
         `source=${s.needs_reply_source ?? "-"}`,
-        `jev=${s.jev ? `${s.jev.asking ? "asking" : "not_asking"}${s.jev.probability === undefined ? "" : `:${s.jev.probability.toFixed(2)}`}` : "-"}`,
+        `verdict=${s.asking === undefined ? "-" : s.asking ? "asking" : "not_asking"}`,
         `watch_parent=${s.watch_parent ?? "-"}`,
         `watch_children=${s.watch_children?.join(",") ?? "-"}`,
         `chicks_working=${s.chicks_working ?? 0}`,
@@ -624,7 +620,7 @@ export function recentJumps(): ConciergeJump[] {
   return [...jumps];
 }
 
-// ---- Requests and advice for the debug log screen (docs/design.md "Concierge": logged like Jev), plus speech bubble
+// ---- Requests and advice for the debug log screen (docs/design.md "Concierge"), plus speech bubble
 // summaries a local model didn't give (docs/design.md "BYOK API keys", Local AI) ----
 // In memory only (the debug log screen runs in the same WebView); the app log keeps them across launches
 

@@ -7,14 +7,14 @@ import type { SessionView } from "@/lib/sessions";
 /**
  * Text shown in the bubble. Not shown while working.
  * - Needs reply (question tool): the question text from the tool input. ExitPlanMode has no question text, so a fixed sentence
- * - Stopped turn (done / dozing): the line summarized with BYOK. If it needs a reply, what is being asked. When there's no summary key
- *   and Jev judged it as needing a reply, the last sentence of the last reply (replyTail; no AI)
+ * - Stopped turn (done / dozing): the line summarized with BYOK (docs/design.md "Turn verdicts"). If it needs a reply, what is
+ *   being asked. Without a summary provider, no bubble
  */
 export function bubbleText(s: SessionView): string | undefined {
   if (s.state === "waiting") {
     return s.question ?? (s.toolName === "ExitPlanMode" ? t("bubblePlanApproval") : undefined);
   }
-  if (s.state === "done" || s.state === "dozing") return s.summary ?? s.replyTail;
+  if (s.state === "done" || s.state === "dozing") return s.summary;
   return undefined;
 }
 

@@ -14,8 +14,8 @@ import {
   type RootKind,
 } from "@/lib/settings-store";
 import { focusSession, focusTargetOf } from "@/lib/terminal-focus";
-import { isAngry, type AskJudgement } from "@/lib/jev";
-import type { SessionEvent, SessionView } from "@/lib/sessions";
+import { isAngry } from "@/lib/turn-verdict";
+import type { AskJudgement, SessionEvent, SessionView } from "@/lib/sessions";
 import { speakDoneEvent, speakEvent, speechAvailable } from "@/lib/voice";
 import DebugApp from "./DebugApp";
 import { Garden } from "./garden";
@@ -105,6 +105,7 @@ export default function App({
     voiceEnabledRef,
     voiceVolume,
     aiKeySet,
+    retiredKeys,
     keyStoreAvailable,
     aiKeyTestState,
     aiProvider,
@@ -118,6 +119,7 @@ export default function App({
     changeChirpVolume,
     saveAiKey,
     removeAiKey,
+    removeRetiredKey,
     saveLocalAi,
     removeLocalAi,
     selectAiProvider,
@@ -126,7 +128,7 @@ export default function App({
     conciergeLook,
     changeConciergeLook,
   } = useSettings();
-  const { requestJudgements, displaySessions } = useTurnJudgements(sessions, aiKeySet, summarySetUp);
+  const { requestJudgements, displaySessions } = useTurnJudgements(sessions, summarySetUp);
   // Readout is off where the WebView can't speak (some Linux builds; docs/design.md "Platforms")
   const canSpeak = speechAvailable();
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
@@ -386,8 +388,8 @@ export default function App({
   );
   const canFocus = useCallback((id: string) => focusTargetOf(id, roots) !== null, [roots]);
 
-  // So that Recent activity and the garden markers also show a done as needs reply when the Jev verdict for that
-  // turn is needs reply, attach the verdict to the done event of the same turn (sessionId + time of the last response)
+  // So that Recent activity and the garden markers also show a done as needs reply when the turn verdict for that
+  // turn is asking, attach the verdict to the done event of the same turn (sessionId + time of the last response)
   // Recent activity rows get the same text as that turn's speech bubble (bubbleText). No extra summary is requested;
   // only the current turn of birds on screen is used (it isn't put into the persistent event log)
   const displayEvents = useMemo(() => {
@@ -430,7 +432,7 @@ export default function App({
   }, [events, displaySessions]);
 
   // The concierge (docs/design.md "Concierge"): shown while an OpenAI / Anthropic key is saved or Local is set up. It reads the same
-  // sessions and events as the screens, so it sees the Jev verdicts and bubble lines they show
+  // sessions and events as the screens, so it sees the turn verdicts and bubble lines they show
   const agentOfSession = useCallback(
     (id: string) => roots.find((r) => id.startsWith(`${r.id}/`))?.kind,
     [roots],
@@ -682,6 +684,7 @@ export default function App({
             <AiKeySettings
               open={settingsOpen && !showDebug}
               keySet={aiKeySet}
+              retiredKeys={retiredKeys}
               storeAvailable={keyStoreAvailable}
               localAi={localAi}
               onSaveLocal={(config) => void saveLocalAi(config)}
@@ -690,6 +693,7 @@ export default function App({
               testState={aiKeyTestState}
               onSaveKey={saveAiKey}
               onDeleteKey={(provider) => void removeAiKey(provider)}
+              onDeleteRetiredKey={(provider) => void removeRetiredKey(provider)}
               onTest={(provider, localDraft) => void runAiKeyTest(provider, localDraft)}
               onSelect={(provider) => void selectAiProvider(provider)}
             />

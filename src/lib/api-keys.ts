@@ -12,8 +12,12 @@ const KEY_LOCAL_AI = "localAi";
 
 // Providers that run summaries and the concierge. local is an OpenAI-compatible server and has no key (lib/local-judge.ts)
 export type AiProvider = "anthropic" | "openai" | "local";
-// Providers with a key. typesafe is not used for summaries; it is only for the needs-reply verdict (lib/jev.ts)
-export type ApiKeyProvider = "anthropic" | "openai" | "typesafe";
+// Providers with a key
+export type ApiKeyProvider = "anthropic" | "openai";
+// Providers no longer used. A key still saved for one can only be seen and deleted (docs/design.md "BYOK API keys":
+// TypeSafe (Jev) is no longer used); nothing is sent to it
+export const RETIRED_KEY_PROVIDERS = ["typesafe"] as const;
+export type RetiredKeyProvider = (typeof RETIRED_KEY_PROVIDERS)[number];
 // The rows of the AI settings: the providers with a key, and Local
 export type AiSettingsProvider = ApiKeyProvider | "local";
 
@@ -24,6 +28,8 @@ export type AiSettingsProvider = ApiKeyProvider | "local";
 const API_KEY_IDB_KEYS: Record<ApiKeyProvider, string> = {
   anthropic: KEY_AI_API_KEY,
   openai: KEY_OPENAI_API_KEY,
+};
+const RETIRED_KEY_IDB_KEYS: Record<RetiredKeyProvider, string> = {
   typesafe: KEY_TYPESAFE_API_KEY,
 };
 const API_KEY_PROVIDERS = Object.keys(API_KEY_IDB_KEYS) as ApiKeyProvider[];
@@ -79,8 +85,26 @@ export async function loadApiKeyStatus(): Promise<Record<ApiKeyProvider, boolean
   return {
     anthropic: status.anthropic === true,
     openai: status.openai === true,
-    typesafe: status.typesafe === true,
   };
+}
+
+/** The retired providers that still have a key saved, in the OS store or (dev, or left by an older version) in
+ * IndexedDB. Values are not received */
+export async function loadRetiredKeysSaved(): Promise<RetiredKeyProvider[]> {
+  const status = await invoke<Partial<Record<RetiredKeyProvider, boolean>>>("key_status").catch(
+    () => ({}) as Partial<Record<RetiredKeyProvider, boolean>>,
+  );
+  const saved: RetiredKeyProvider[] = [];
+  for (const provider of RETIRED_KEY_PROVIDERS) {
+    if (status[provider] === true || Boolean(await kvGet(RETIRED_KEY_IDB_KEYS[provider]))) saved.push(provider);
+  }
+  return saved;
+}
+
+/** Deletes a retired provider's key from the OS store and IndexedDB */
+export async function deleteRetiredKey(provider: RetiredKeyProvider): Promise<void> {
+  await invoke("key_delete", { provider });
+  await kvDelete(RETIRED_KEY_IDB_KEYS[provider]);
 }
 
 /** Saves a key (replacing works the same way). dev also writes to IndexedDB */

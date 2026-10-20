@@ -16,11 +16,11 @@ interface HttpReply {
 }
 
 /**
- * Has Rust call the APIs that use keys (anthropic_messages / openai_responses / typesafe_systemone).
+ * Has Rust call the APIs that use keys (anthropic_messages / openai_responses).
  * If no key is saved, Rust refuses with "no-key", which is returned as an auth failure, the same as a 401
  */
 export async function invokeKeyedApi(
-  command: "anthropic_messages" | "openai_responses" | "typesafe_systemone",
+  command: "anthropic_messages" | "openai_responses",
   body: unknown,
 ): Promise<{ ok: true; reply: HttpReply } | { ok: false; kind: JudgeErrorKind; message?: string }> {
   try {
@@ -31,7 +31,7 @@ export async function invokeKeyedApi(
   }
 }
 
-/** Kinds of HTTP failure. Shared by Anthropic, OpenAI, and TypeSafe */
+/** Kinds of HTTP failure. Shared by Anthropic and OpenAI */
 export function httpFailure(
   status: number,
   message?: string,

@@ -5,7 +5,7 @@ import { AGENTS } from "@/lib/agents";
 import { NativeDirectoryHandle } from "@/lib/native-fs";
 import type { RootEntry } from "@/lib/settings-store";
 import { DEFAULT_PRESET, PRESETS } from "./mock-presets";
-import { needsAnswer } from "@/lib/jev";
+import { needsAnswer } from "@/lib/turn-verdict";
 import type { ConciergeAdvice } from "@/lib/concierge";
 
 // Presets at launch. Choose with ?preset=<id> (TOMARIGI_QUERY="preset=asking" etc.). For checking screenshots
@@ -227,8 +227,8 @@ export function MockPanel({ source }: { source: MockSource }) {
 
   const hint =
     "sessions[].state: working | waiting | done | dozing\n" +
-    "sessions[].ask: { status: pending | asking | not_asking | error, probability? }\n" +
-    "sessions[].anger: { status: pending | angry | calm | error, probability? }\n" +
+    "sessions[].ask: { status: pending | asking | not_asking | error }\n" +
+    "sessions[].angry: boolean (the anger mark)\n" +
     "sessions[].question / summary: speech bubble text\n" +
     "sessions[].peers / watching: linked sessions and how many are working\n" +
     "events[].type: started | done | waiting | closed";

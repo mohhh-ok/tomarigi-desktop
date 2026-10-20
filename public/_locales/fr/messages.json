@@ -257,16 +257,7 @@
     "message": "Attend ta réponse pour pouvoir continuer"
   },
   "angerBadgeTitle": {
-    "message": "Ton dernier message dans cette session a été jugé insultant envers l’IA"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "Clé API TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Facultatif. TypeSafe est un service d’IA externe qui juge si un agent s’est arrêté pour attendre ta réponse. Avec une clé enregistrée, la dernière réponse d’une session arrêtée est envoyée à TypeSafe, et les oiseaux jugés en attente affichent un « ? ». Sans clé, seuls les oiseaux arrêtés sur un outil de question affichent le « ? »."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Tes propres messages à l’agent sont aussi envoyés à TypeSafe. Si ton dernier message est jugé insultant envers l’IA, cet oiseau affiche une marque de colère jusqu’à ton message suivant."
+    "message": "Un message que tu as envoyé au dernier tour de cette session a été jugé insultant envers l’IA"
   },
   "bubblePlanApproval": {
     "message": "Approuver le plan ?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Impossible d’enregistrer la clé. Réessaie."
-  },
-  "typeSafeSiteLink": {
-    "message": "Site de TypeSafe"
   },
   "quotedSnippet": {
     "message": "« $SNIPPET$ »",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Choisissez ou saisissez un modèle pour enregistrer et tester la connexion."
+  },
+  "aiUserMessagesNote": {
+    "message": "À la fin de chaque tour, la dernière réponse de l’agent et les messages que tu as envoyés pendant ce tour sont envoyés. Ils décident aussi du « ? » des oiseaux qui attendent ta réponse et de la marque de colère pour les insultes envers l’IA."
+  },
+  "retiredKeyNote": {
+    "message": "N’est plus utilisée. Tu peux supprimer cette clé enregistrée."
   }
 }

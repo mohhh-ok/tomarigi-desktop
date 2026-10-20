@@ -257,16 +257,7 @@
     "message": "あなたの返事を待って止まっています"
   },
   "angerBadgeTitle": {
-    "message": "このセッションでの直前の発言が、AI への暴言と判定されました"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe APIキー"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "任意設定です。TypeSafe は、エージェントがあなたの返事を待って止まっているかを判定する外部の AI サービスです。キーを保存すると、止まったセッションの最後の応答文を TypeSafe に送り、返事待ちと判定された鳥に「?」を付けます。キーが無くても、質問ツールで止まっている鳥には「?」が付きます。"
-  },
-  "typeSafeUserMessageNote": {
-    "message": "あなたがエージェントに送った発言も TypeSafe に送信されます。直前の発言が AI への暴言と判定されると、次に発言するまでその鳥に怒りマークが付きます。"
+    "message": "このセッションの直前のターンでの発言が、AI への暴言と判定されました"
   },
   "bubblePlanApproval": {
     "message": "計画を承認しますか？"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "キーを保存できませんでした。もう一度お試しください。"
-  },
-  "typeSafeSiteLink": {
-    "message": "TypeSafe の公式サイト"
   },
   "quotedSnippet": {
     "message": "「$SNIPPET$」",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "モデルを選ぶか入力すると、保存と接続テストができます。"
+  },
+  "aiUserMessagesNote": {
+    "message": "ターンが終わるたびに、エージェントの最後の応答と、そのターンにあなたが送った発言を送信します。返事待ちの鳥の「?」と、AI への暴言に付く怒りマークの判定にも使います。"
+  },
+  "retiredKeyNote": {
+    "message": "使われなくなりました。保存済みのキーは削除できます。"
   }
 }

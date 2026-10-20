@@ -28,7 +28,7 @@ import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
 import { gardenGrowAnchor } from "./garden-grow";
 import { onFadeHandlePointerDown } from "./garden-fade";
-import { hasQuestion, isAngry, needsAnswer } from "@/lib/jev";
+import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
 import { createPortal } from "react-dom";
 import { MdLink } from "react-icons/md";
 import { bubbleText, SpeechBubble } from "./bubble";

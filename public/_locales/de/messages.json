@@ -257,16 +257,7 @@
     "message": "Wartet auf deine Antwort, um weiterzumachen"
   },
   "angerBadgeTitle": {
-    "message": "Deine letzte Nachricht in dieser Sitzung wurde als beleidigend gegenüber der KI eingestuft"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe-API-Schlüssel"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Optional. TypeSafe ist ein externer KI-Dienst, der beurteilt, ob ein Agent angehalten hat, um auf deine Antwort zu warten. Mit gespeichertem Schlüssel wird die letzte Antwort einer angehaltenen Sitzung an TypeSafe gesendet, und Vögel, die auf eine Antwort warten, bekommen ein „?“. Ohne Schlüssel bekommen nur Vögel, die bei einem Frage-Tool stehen, das „?“."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Deine eigenen Nachrichten an den Agenten werden ebenfalls an TypeSafe gesendet. Wird deine letzte Nachricht als beleidigend gegenüber der KI eingestuft, bekommt dieser Vogel bis zu deiner nächsten Nachricht ein Wutzeichen."
+    "message": "Eine Nachricht, die du in der letzten Runde dieser Sitzung geschickt hast, wurde als beleidigend gegenüber der KI eingestuft"
   },
   "bubblePlanApproval": {
     "message": "Plan freigeben?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Der Schlüssel konnte nicht gespeichert werden. Bitte versuche es erneut."
-  },
-  "typeSafeSiteLink": {
-    "message": "Website von TypeSafe"
   },
   "quotedSnippet": {
     "message": "„$SNIPPET$“",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Wähle oder gib ein Modell ein, um zu speichern und die Verbindung zu testen."
+  },
+  "aiUserMessagesNote": {
+    "message": "Nach jeder abgeschlossenen Runde werden die letzte Antwort des Agenten und die Nachrichten gesendet, die du in dieser Runde geschickt hast. Sie entscheiden auch über das „?“ bei Vögeln, die auf deine Antwort warten, und über die Wutmarke bei Beleidigungen gegenüber der KI."
+  },
+  "retiredKeyNote": {
+    "message": "Wird nicht mehr verwendet. Du kannst diesen gespeicherten Schlüssel löschen."
   }
 }

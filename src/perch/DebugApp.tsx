@@ -184,20 +184,13 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
                 {/* muted: a done held back while waiting for chicks that was canceled by the parent restarting.
                     Stays in the log but doesn't sound (see deriveDoneEvent in lib/session-events.ts) */}
                 {e.muted && <span className="debug-log-muted-badge">muted</span>}
-                {/* Jev's needs-reply verdict (lib/jev.ts). The probability is that of yes (needs reply) */}
+                {/* The turn verdict that came with the speech bubble summary (docs/design.md "Turn verdicts"): whether the
+                    reply waits on the user, and whether a message of that turn was abusive (absent when the request failed) */}
                 {e.ask && (
                   <span className="debug-log-ask">
-                    jev {e.ask.status}
-                    {e.ask.probability !== undefined && ` ${e.ask.probability.toFixed(2)}`}
+                    verdict {e.ask.status}
+                    {e.abusive !== undefined && ` abusive=${e.abusive}`}
                     {e.ask.errorKind && ` (${e.ask.errorKind})`}
-                  </span>
-                )}
-                {/* Jev's abuse verdict for the user message of a started event. The probability is that of yes (abusive) */}
-                {e.anger && (
-                  <span className="debug-log-ask">
-                    anger {e.anger.status}
-                    {e.anger.probability !== undefined && ` ${e.anger.probability.toFixed(2)}`}
-                    {e.anger.errorKind && ` (${e.anger.errorKind})`}
                   </span>
                 )}
                 <span className="debug-log-project">{e.project}</span>

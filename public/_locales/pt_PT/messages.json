@@ -257,16 +257,7 @@
     "message": "À espera da sua resposta para continuar"
   },
   "angerBadgeTitle": {
-    "message": "A sua última mensagem nesta sessão foi considerada ofensiva para a IA"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "Chave da API da TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Opcional. A TypeSafe é um serviço externo de IA que avalia se um agente parou para esperar pela sua resposta. Com uma chave guardada, a última resposta de uma sessão parada é enviada à TypeSafe, e os pássaros que esperam resposta recebem um «?». Sem chave, só os pássaros parados numa ferramenta de pergunta recebem o «?»."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "As suas próprias mensagens ao agente também são enviadas à TypeSafe. Se a sua última mensagem for considerada ofensiva para a IA, esse pássaro recebe uma marca de zanga até à sua próxima mensagem."
+    "message": "Uma mensagem que enviou no último turno desta sessão foi considerada ofensiva para a IA"
   },
   "bubblePlanApproval": {
     "message": "Aprova o plano?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Não foi possível guardar a chave. Tente novamente."
-  },
-  "typeSafeSiteLink": {
-    "message": "Site da TypeSafe"
   },
   "quotedSnippet": {
     "message": "«$SNIPPET$»",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Escolha ou escreva um modelo para guardar e testar a ligação."
+  },
+  "aiUserMessagesNote": {
+    "message": "Sempre que um turno termina, são enviadas a última resposta do agente e as mensagens que enviou durante esse turno. Também decidem o «?» dos pássaros que esperam pela sua resposta e a marca de zanga por mensagens ofensivas para a IA."
+  },
+  "retiredKeyNote": {
+    "message": "Já não é usada. Pode eliminar esta chave guardada."
   }
 }

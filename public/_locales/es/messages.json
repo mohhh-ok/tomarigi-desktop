@@ -257,16 +257,7 @@
     "message": "Espera tu respuesta para poder continuar"
   },
   "angerBadgeTitle": {
-    "message": "Tu último mensaje en esta sesión se consideró ofensivo hacia la IA"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "Clave de API de TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Opcional. TypeSafe es un servicio externo de IA que determina si un agente se ha detenido a esperar tu respuesta. Con una clave guardada, la última respuesta de una sesión detenida se envía a TypeSafe y los pájaros que esperan respuesta muestran un «?». Sin clave, solo los pájaros detenidos en una herramienta de pregunta muestran el «?»."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Tus propios mensajes al agente también se envían a TypeSafe. Si tu último mensaje se considera ofensivo hacia la IA, ese pájaro muestra una marca de enfado hasta tu siguiente mensaje."
+    "message": "Un mensaje que enviaste en el último turno de esta sesión se consideró ofensivo hacia la IA"
   },
   "bubblePlanApproval": {
     "message": "¿Apruebas el plan?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "No se pudo guardar la clave. Inténtalo de nuevo."
-  },
-  "typeSafeSiteLink": {
-    "message": "Sitio web de TypeSafe"
   },
   "quotedSnippet": {
     "message": "«$SNIPPET$»",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Elige o escribe un modelo para guardar y probar la conexión."
+  },
+  "aiUserMessagesNote": {
+    "message": "Cada vez que termina un turno, se envían la última respuesta del agente y los mensajes que enviaste durante ese turno. También deciden el «?» de los pájaros que esperan tu respuesta y la marca de enfado por mensajes ofensivos hacia la IA."
+  },
+  "retiredKeyNote": {
+    "message": "Ya no se usa. Puedes eliminar esta clave guardada."
   }
 }

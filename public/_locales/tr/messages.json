@@ -257,16 +257,7 @@
     "message": "Devam edebilmek için yanıtını bekliyor"
   },
   "angerBadgeTitle": {
-    "message": "Bu oturumdaki son mesajın yapay zekâya karşı hakaret olarak değerlendirildi"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe API anahtarı"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "İsteğe bağlı. TypeSafe, bir ajanın yanıtını beklemek için durup durmadığını değerlendiren harici bir yapay zekâ hizmetidir. Anahtar kaydedildiğinde duran oturumun son yanıtı TypeSafe’e gönderilir ve yanıt beklediği değerlendirilen kuşlara “?” eklenir. Anahtar yoksa yalnızca soru aracında duran kuşlara “?” eklenir."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Ajana gönderdiğin kendi mesajların da TypeSafe’e gönderilir. Son mesajın yapay zekâya karşı hakaret olarak değerlendirilirse, bir sonraki mesajına kadar o kuşa öfke işareti eklenir."
+    "message": "Bu oturumun son turunda gönderdiğin bir mesaj yapay zekâya karşı hakaret olarak değerlendirildi"
   },
   "bubblePlanApproval": {
     "message": "Plan onaylansın mı?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Anahtar kaydedilemedi. Lütfen tekrar deneyin."
-  },
-  "typeSafeSiteLink": {
-    "message": "TypeSafe web sitesi"
   },
   "quotedSnippet": {
     "message": "“$SNIPPET$”",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Kaydetmek ve bağlantıyı test etmek için bir model seçin veya yazın."
+  },
+  "aiUserMessagesNote": {
+    "message": "Her tur bittiğinde ajanın son yanıtı ve o turda gönderdiğin mesajlar gönderilir. Yanıtını bekleyen kuşlardaki “?” ve yapay zekâya hakaret için öfke işareti de bunlarla belirlenir."
+  },
+  "retiredKeyNote": {
+    "message": "Artık kullanılmıyor. Kayıtlı bu anahtarı silebilirsin."
   }
 }

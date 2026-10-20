@@ -257,16 +257,7 @@
     "message": "Menunggu jawapan anda untuk meneruskan"
   },
   "angerBadgeTitle": {
-    "message": "Mesej terakhir anda dalam sesi ini dinilai kasar terhadap AI"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "Kunci API TypeSafe"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Pilihan. TypeSafe ialah perkhidmatan AI luaran yang menilai sama ada ejen berhenti untuk menunggu balasan anda. Dengan kunci disimpan, balasan terakhir sesi yang berhenti dihantar kepada TypeSafe, dan burung yang dinilai menunggu balasan diberi “?”. Tanpa kunci, hanya burung yang berhenti pada alat soalan diberi “?”."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Mesej anda sendiri kepada ejen juga dihantar kepada TypeSafe. Jika mesej terakhir anda dinilai kasar terhadap AI, burung itu diberi tanda marah sehingga mesej anda yang seterusnya."
+    "message": "Mesej yang anda hantar dalam giliran terakhir sesi ini dinilai kasar terhadap AI"
   },
   "bubblePlanApproval": {
     "message": "Luluskan rancangan?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Kunci tidak dapat disimpan. Sila cuba lagi."
-  },
-  "typeSafeSiteLink": {
-    "message": "Laman web TypeSafe"
   },
   "quotedSnippet": {
     "message": "“$SNIPPET$”",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Pilih atau taip model untuk menyimpan dan menguji sambungan."
+  },
+  "aiUserMessagesNote": {
+    "message": "Setiap kali satu giliran selesai, balasan terakhir ejen dan mesej yang anda hantar sepanjang giliran itu dihantar. Ia juga menentukan “?” pada burung yang menunggu balasan anda dan tanda marah untuk mesej kasar terhadap AI."
+  },
+  "retiredKeyNote": {
+    "message": "Tidak digunakan lagi. Anda boleh memadam kunci yang disimpan ini."
   }
 }

@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef } from "react";
 import { t } from "@/lib/i18n";
-import { hasQuestion, isAngry, needsAnswer } from "@/lib/jev";
+import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
 import type { SessionView } from "@/lib/sessions";
 import type { IconSetAssignments } from "@/lib/icon-set-store";
 import { bubbleText, SpeechBubble } from "./bubble";

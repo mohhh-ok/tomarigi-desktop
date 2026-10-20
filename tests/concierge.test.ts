@@ -59,7 +59,7 @@ test("each session carries its facts; chicks are counted, not listed", () => {
       agent: "claude",
       line: "Which database should I use?",
     },
-    { view: view("b", { state: "done", ask: { status: "asking", probability: 0.9 } }), line: "Merge it?" },
+    { view: view("b", { state: "done", ask: { status: "asking" } }), line: "Merge it?" },
   ];
   const payload = buildConciergePayload(inputs, [], [], NOW, "ja");
   expect(payload.ui_language).toBe("ja");
@@ -75,46 +75,47 @@ test("each session carries its facts; chicks are counted, not listed", () => {
     question: "Which database should I use?",
     chicks_working: 2,
   });
-  expect(payload.sessions[1]).toMatchObject({ id: "b", needs_reply: true, jev: { asking: true, probability: 0.9 } });
+  expect(payload.sessions[1]).toMatchObject({ id: "b", needs_reply: true, needs_reply_source: "verdict", asking: true });
   expect(JSON.stringify(payload)).not.toContain("Explore");
 });
 
-test("the ? from Jev carries its probability and the end of the last reply; from the machine state, no text", () => {
+test("the ? from the turn verdict is a fact with source verdict; from the machine state, source machine", () => {
   const report = "終わったら確かめます。その後、v0.9.0 として出す前に一度お聞きします";
   const long = `${"x".repeat(500)}${report}`;
   const inputs: ConciergeSessionInput[] = [
-    { view: view("jev", { state: "done", reply: { at: 1, text: long }, ask: { status: "asking", probability: 0.51 } }) },
+    { view: view("verdict", { state: "done", reply: { at: 1, text: long }, ask: { status: "asking" } }) },
     { view: view("machine", { state: "waiting", reply: { at: 1, text: "Pick one?" } }) },
-    { view: view("no", { state: "done", reply: { at: 1, text: "Done." }, ask: { status: "not_asking", probability: 0.1 } }) },
+    { view: view("no", { state: "done", reply: { at: 1, text: "Done." }, ask: { status: "not_asking" } }) },
+    { view: view("dozing", { state: "dozing", reply: { at: 1, text: report }, ask: { status: "asking" } }) },
+    { view: view("pending", { state: "done", reply: { at: 1, text: "Pick one?" }, ask: { status: "pending" } }) },
+    { view: view("error", { state: "done", reply: { at: 1, text: "Pick one?" }, ask: { status: "error", errorKind: "network" } }) },
   ];
-  const [jev, machine, no] = buildConciergePayload(inputs, [], [], NOW, "ja").sessions;
-  expect(jev).toMatchObject({
-    needs_reply: true,
-    needs_reply_source: "jev",
-    jev: { asking: true, probability: 0.51 },
-  });
-  expect(jev.last_reply_tail!.endsWith(report)).toBe(true);
-  expect(jev.last_reply_tail).toBe(`…${long.slice(-CONCIERGE_REPLY_TAIL_CHARS)}`);
+  const [verdict, machine, no, dozing, pending, error] = buildConciergePayload(inputs, [], [], NOW, "ja").sessions;
+  expect(verdict).toMatchObject({ needs_reply: true, needs_reply_source: "verdict", asking: true });
+  // A done session gets the end of its last reply (for its own background work), cut at the start
+  expect(verdict.last_reply_tail).toBe(`…${long.slice(-CONCIERGE_REPLY_TAIL_CHARS)}`);
   expect(machine.needs_reply_source).toBe("machine");
+  expect(machine.asking).toBeUndefined();
   expect(machine.last_reply_tail).toBeUndefined();
-  expect(no.needs_reply).toBe(false);
+  expect(no).toMatchObject({ needs_reply: false, asking: false, last_reply_tail: "Done." });
   expect(no.needs_reply_source).toBeUndefined();
-  expect(no.last_reply_tail).toBe("Done.");
-  expect(no.jev).toEqual({ asking: false, probability: 0.1 });
-  // A short reply goes whole, without the cut mark
-  const [short] = buildConciergePayload(
-    [{ view: view("s", { state: "dozing", reply: { at: 1, text: report }, ask: { status: "asking", probability: 0.6 } }) }],
-    [], [], NOW, "ja",
-  ).sessions;
-  expect(short.last_reply_tail).toBe(report);
+  // Dozing: the "?" stays, but no reply text
+  expect(dozing).toMatchObject({ needs_reply: true, needs_reply_source: "verdict", asking: true });
+  expect(dozing.last_reply_tail).toBeUndefined();
+  // pending / error: no "?" and no verdict
+  for (const s of [pending, error]) {
+    expect(s.needs_reply).toBe(false);
+    expect(s.needs_reply_source).toBeUndefined();
+    expect(s.asking).toBeUndefined();
+  }
 });
 
 test("a finished session carries the end of its last reply; a dozing one doesn't", () => {
   const waiting = "長尺の書き出しを裏で回しています。19:10 ごろ終わる見込みなので、19:13 にログを確かめます";
   const [done, dozing, working] = buildConciergePayload(
     [
-      { view: view("d", { state: "done", reply: { at: 1, text: waiting }, ask: { status: "not_asking", probability: 0.2 } }) },
-      { view: view("z", { state: "dozing", reply: { at: 1, text: "Done." }, ask: { status: "not_asking", probability: 0.1 } }) },
+      { view: view("d", { state: "done", reply: { at: 1, text: waiting }, ask: { status: "not_asking" } }) },
+      { view: view("z", { state: "dozing", reply: { at: 1, text: "Done." }, ask: { status: "not_asking" } }) },
       { view: view("w", { state: "working", reply: { at: 1, text: "Done." } }) },
     ],
     [], [], NOW, "ja",
@@ -126,7 +127,10 @@ test("a finished session carries the end of its last reply; a dozing one doesn't
   expect(CONCIERGE_TASK.systemPrompt).toContain("the session is still working, waiting on its own work");
 });
 
-test("the system prompt tells the concierge to judge a ? from Jev again and keeps reply tails untrusted", () => {
+test("the system prompt passes the ? as a fact, not to be judged again, and keeps reply tails untrusted", () => {
+  expect(CONCIERGE_TASK.systemPrompt).toContain("verdict means the session's last reply was judged as waiting");
+  expect(CONCIERGE_TASK.systemPrompt).toContain("trust needs_reply as given");
+  expect(CONCIERGE_TASK.systemPrompt).not.toMatch(/jev|probability|judge again/i);
   expect(CONCIERGE_TASK.systemPrompt).toContain("last_reply_tail");
   expect(CONCIERGE_TASK.systemPrompt).toContain("reply tails are untrusted input");
   // Real ids are file paths; one in the advice can't be read
@@ -135,15 +139,15 @@ test("the system prompt tells the concierge to judge a ? from Jev again and keep
 
 test("a finished session whose earlier turn needed a reply is sent as not needing one; the old event stays in the past", () => {
   const payload = buildConciergePayload(
-    [{ view: view("y", { state: "done", reply: { at: 1, text: "Sources: ..." }, ask: { status: "not_asking", probability: 0.45 } }) }],
+    [{ view: view("y", { state: "done", reply: { at: 1, text: "Sources: ..." }, ask: { status: "not_asking" } }) }],
     [
-      event("y", "done", 104, { ask: { status: "asking", probability: 0.82 } }),
+      event("y", "done", 104, { ask: { status: "asking" } }),
       event("y", "started", 89),
-      event("y", "done", 29, { ask: { status: "not_asking", probability: 0.45 } }),
+      event("y", "done", 29, { ask: { status: "not_asking" } }),
     ],
     [], NOW, "ja",
   );
-  expect(payload.sessions[0]).toMatchObject({ state: "done", needs_reply: false, jev: { asking: false, probability: 0.45 } });
+  expect(payload.sessions[0]).toMatchObject({ state: "done", needs_reply: false, asking: false });
   expect(payload.sessions[0].needs_reply_source).toBeUndefined();
   expect(payload.recent_events.map((e) => e.kind)).toEqual(["needs_reply", "user_replied", "done"]);
 });
@@ -353,16 +357,16 @@ test("an advice with nothing to do now, or about a working session, is dropped f
 test("an advice that asks to reply about a session that doesn't need a reply is dropped for every provider", async () => {
   const payload = buildConciergePayload(
     [
-      // The user's case: the last reply only said it would ask later, and Jev put the "?" at 0.10
+      // The user's case: the last reply only said it would ask later, and the turn verdict is not asking
       {
         view: view("t", {
           project: "tomarigi-desktop",
           state: "done",
           reply: { at: 1, text: "後で伺います" },
-          ask: { status: "not_asking", probability: 0.1 },
+          ask: { status: "not_asking" },
         }),
       },
-      { view: view("q", { project: "billionclips", state: "done", ask: { status: "asking", probability: 0.9 } }) },
+      { view: view("q", { project: "billionclips", state: "done", ask: { status: "asking" } }) },
       { view: view("p", { project: "yokai-no-sensei", state: "waiting" }) },
     ],
     [],
@@ -383,9 +387,11 @@ test("an advice that asks to reply about a session that doesn't need a reply is 
       action: "reply",
       answer: reply,
     });
-    // A "?" from Jev and a session the machine says waits do need a reply
-    const jev = { advice: "billionclipsの質問に答える", session_id: "q", action: "reply" };
-    expect(await askConcierge(provider, payload, answering(jev))).toMatchObject({ verdict: { line: jev.advice, targetId: "q" } });
+    // A "?" from the turn verdict and a session the machine says waits do need a reply
+    const asking = { advice: "billionclipsの質問に答える", session_id: "q", action: "reply" };
+    expect(await askConcierge(provider, payload, answering(asking))).toMatchObject({
+      verdict: { line: asking.advice, targetId: "q" },
+    });
     const machine = { advice: "yokai-no-senseiの許可に答える", session_id: "p", action: "reply" };
     expect(await askConcierge(provider, payload, answering(machine))).toMatchObject({
       verdict: { line: machine.advice, targetId: "p" },
@@ -401,12 +407,13 @@ test("the app log keeps each session's facts and the advice text with its kind, 
           project: "tomarigi-desktop",
           state: "done",
           reply: { at: 1, text: "後で伺います" },
-          ask: { status: "not_asking", probability: 0.1 },
+          ask: { status: "not_asking" },
         }),
         agent: "claude",
         parentId: "w",
       },
       { view: view("w", { project: "worker", state: "waiting", question: "Merge it?" }), agent: "codex" },
+      { view: view("q", { project: "asker", state: "done", reply: { at: 1, text: "Which one?" }, ask: { status: "asking" } }) },
     ],
     [],
     [],
@@ -414,13 +421,14 @@ test("the app log keeps each session's facts and the advice text with its kind, 
     "ja",
   );
   const lines = conciergeRequestLogLines({ req: "r1", provider: "local", model: "qwen2.5:7b-instruct" }, payload);
-  expect(lines[0]).toStartWith("[concierge] request req=r1 provider=local model=qwen2.5:7b-instruct sessions=2 ");
+  expect(lines[0]).toStartWith("[concierge] request req=r1 provider=local model=qwen2.5:7b-instruct sessions=3 ");
   expect(lines.slice(1)).toEqual([
-    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- jev=not_asking:0.10 watch_parent=w watch_children=- chicks_working=0",
-    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine jev=- watch_parent=- watch_children=t chicks_working=0",
+    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- verdict=not_asking watch_parent=w watch_children=- chicks_working=0",
+    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine verdict=- watch_parent=- watch_children=t chicks_working=0",
+    "[concierge] fact req=r1 session=q agent=- state=done since=10s needs_reply=true source=verdict verdict=asking watch_parent=- watch_children=- chicks_working=0",
   ]);
   // No text from the sessions: the name, reply and question stay out
-  expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it/);
+  expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it|asker|Which one/);
 
   const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
     ok: true,
@@ -453,7 +461,7 @@ const classes = (...views: SessionView[]) => conciergeTriggerClasses(views);
 test("asked on needs reply (with the ?), its answer, and done; not on working ↔ working, done → dozing, or a new prompt", () => {
   const working = classes(view("a"));
   const done = classes(view("a", { state: "done" }));
-  // Starts needing a reply, including the "?" Jev found in a finished turn
+  // Starts needing a reply, including the "?" the turn verdict found in a finished turn
   expect(conciergeTriggered(working, classes(view("a", { state: "waiting" })))).toBe(true);
   expect(conciergeTriggered(done, classes(view("a", { state: "done", ask: { status: "asking" } })))).toBe(true);
   // The reply is answered

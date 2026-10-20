@@ -10,15 +10,15 @@ A desktop app for macOS, Windows, and Linux (the Windows and Linux builds haven'
 | <img src="docs/images/gallery-3-needs-reply.webp" alt="A question mark shows up when the agent is waiting on you" /> | <img src="docs/images/gallery-4-bubble.webp" alt="When a turn ends, the bubble sums it up" /> |
 
 > [!IMPORTANT]
-> **The anger mark: a heads-up when you're harsh to the AI.** With a TypeSafe key, every message you send is checked by Jev for abuse toward the AI, and the session's bird gets an anger mark when it looks abusive.
-> Anthropic's [2026 Usage Policy update](https://www.anthropic.com/news/2026-usage-policy-update) (effective November 12, 2026) prohibits sustained and needless abusive or cruel behavior toward Claude, and Claude can end conversations with persistently abusive users on Claude.ai and Claude Code. The anger mark judges one message at a time and is not a judgment of whether you violated that policy.
+> **The anger mark: a heads-up when you're harsh to the AI.** With a summary provider set up (OpenAI, Anthropic, or a local model), each time a turn ends, the messages you sent during that turn are checked for abuse toward the AI in the same request that writes the speech bubble, and the session's bird gets an anger mark when one looks abusive. The mark stays until the next turn is checked.
+> Anthropic's [2026 Usage Policy update](https://www.anthropic.com/news/2026-usage-policy-update) (effective November 12, 2026) prohibits sustained and needless abusive or cruel behavior toward Claude, and Claude can end conversations with persistently abusive users on Claude.ai and Claude Code. The anger mark judges one turn at a time and is not a judgment of whether you violated that policy.
 
 ## Features
 
 - In the floating window's Garden, only the birds, their bubbles, and the "tomarigi" handle are shown, and clicks go through to the window below. Click the handle to show the whole window; drag it to move the window
 - Icon sets: Birds, Gnome, Cat, Robot, and Frog, assigned per project
 - No hooks or config changes on the agent side. It only reads each agent's session files (`~/.claude/projects`, `~/.codex/sessions`, `~/.qwen/projects`, `~/.copilot/session-state`, `~/.gemini/tmp`, `~/.local/share/opencode`, `~/.cursor/projects`)
-- Optional BYOK keys: OpenAI or Anthropic for the speech bubble that summarizes each finished turn (or, without a key, a local model on an OpenAI-compatible server such as Ollama or LM Studio), and TypeSafe for spotting questions asked in plain text (the "?") and abuse toward the AI (the anger mark). Voice readout uses the system speech synthesizer and needs no key
+- Optional BYOK keys: OpenAI or Anthropic (or, without a key, a local model on an OpenAI-compatible server such as Ollama or LM Studio). One request per finished turn writes the speech bubble that summarizes it, spots a question asked in plain text (the "?"), and spots abuse toward the AI in your messages of that turn (the anger mark); the last reply and your own messages of that turn are sent. TypeSafe (Jev) is no longer used: a TypeSafe key still saved shows in settings with only Delete. Voice readout uses the system speech synthesizer and needs no key
 
 ## Install
 
@@ -89,7 +89,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly.
 - `TOMARIGI_FOCUS_TEST="<config_dir>|<sessionId>|<return tty>"` (or `"pid=<pid>|<return tty>"` for a process of any agent): 3 seconds after launch, jumps to that session's terminal pane, then 1.5 seconds later jumps back to the return pane (logs `[focus-test] -> Pane ...` with the terminal and how it was found)
 - `TOMARIGI_FADE_TEST=1`: "Fade until hovered" self-test. 4 seconds after launch, shows the faded Garden as clicking the window handle would, keeps it shown for 6 seconds as if the cursor were in the window, then lets it fade again (logs `[fade-test] reveal` and `[fade] revealed=...`)
 - `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window
-- `TOMARIGI_IMPORT_KEY=<anthropic|openai|typesafe>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)
+- `TOMARIGI_IMPORT_KEY=<anthropic|openai>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)
 - `TOMARIGI_LOCAL_AI="<base URL>|<model>"`: sets up Local AI with that server and model, chooses it for summaries and the concierge, and logs the connection test result (`[keys] imported local ...`)
 - `TOMARIGI_KEY_BACKEND=webview`: stores keys in IndexedDB instead of the Keychain (for testing the IndexedDB → Keychain migration)
 

@@ -257,16 +257,7 @@
     "message": "Waiting for your answer before it can continue"
   },
   "angerBadgeTitle": {
-    "message": "Your last message in this session was judged abusive toward the AI"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe API Key"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Optional. TypeSafe is an external AI service that judges whether an agent has stopped to wait for your reply. With a key saved, the last reply of a stopped session is sent to TypeSafe, and birds judged to be waiting get a “?”. Without a key, only birds stopped on a question tool get the “?”."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Your own messages to the agent are also sent to TypeSafe. If your latest message is judged abusive toward the AI, that bird gets an anger mark until your next message."
+    "message": "A message you sent in this session’s last turn was judged abusive toward the AI"
   },
   "bubblePlanApproval": {
     "message": "Approve the plan?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Couldn't save the key. Please try again."
-  },
-  "typeSafeSiteLink": {
-    "message": "TypeSafe website"
   },
   "quotedSnippet": {
     "message": "“$SNIPPET$”",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Choose or type a model to save and test the connection."
+  },
+  "aiUserMessagesNote": {
+    "message": "Each time a turn finishes, the agent’s last reply and the messages you sent during that turn are sent. They also decide the “?” on birds waiting for your reply and the anger mark for abuse toward the AI."
+  },
+  "retiredKeyNote": {
+    "message": "No longer used. You can delete this saved key."
   }
 }

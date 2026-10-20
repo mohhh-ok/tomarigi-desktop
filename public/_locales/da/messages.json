@@ -257,16 +257,7 @@
     "message": "Venter på dit svar for at kunne fortsætte"
   },
   "angerBadgeTitle": {
-    "message": "Din seneste besked i denne session blev vurderet som krænkende over for AI’en"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe API-nøgle"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Valgfrit. TypeSafe er en ekstern AI-tjeneste, der vurderer, om en agent er stoppet for at vente på dit svar. Med en gemt nøgle sendes det sidste svar fra en stoppet session til TypeSafe, og fugle, der vurderes at vente på svar, får et »?«. Uden nøgle får kun fugle, der er stoppet ved et spørgeværktøj, »?«."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Dine egne beskeder til agenten sendes også til TypeSafe. Hvis din seneste besked vurderes som krænkende over for AI’en, får den fugl et vredesmærke indtil din næste besked."
+    "message": "En besked, du sendte i sessionens seneste tur, blev vurderet som krænkende over for AI’en"
   },
   "bubblePlanApproval": {
     "message": "Godkend planen?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Nøglen kunne ikke gemmes. Prøv igen."
-  },
-  "typeSafeSiteLink": {
-    "message": "TypeSafes websted"
   },
   "quotedSnippet": {
     "message": "»$SNIPPET$«",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Vælg eller skriv en model for at gemme og teste forbindelsen."
+  },
+  "aiUserMessagesNote": {
+    "message": "Hver gang en tur er færdig, sendes agentens sidste svar og de beskeder, du sendte i turen. De afgør også »?« på fugle, der venter på dit svar, og vredesmærket ved krænkelser af AI’en."
+  },
+  "retiredKeyNote": {
+    "message": "Bruges ikke længere. Du kan slette den gemte nøgle."
   }
 }

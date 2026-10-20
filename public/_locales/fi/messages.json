@@ -257,16 +257,7 @@
     "message": "Odottaa vastaustasi voidakseen jatkaa"
   },
   "angerBadgeTitle": {
-    "message": "Viimeisin viestisi tässä istunnossa arvioitiin tekoälyä loukkaavaksi"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe API -avain"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Valinnainen. TypeSafe on ulkoinen tekoälypalvelu, joka arvioi, onko agentti pysähtynyt odottamaan vastaustasi. Kun avain on tallennettu, pysähtyneen istunnon viimeinen vastaus lähetetään TypeSafelle, ja vastausta odottaviksi arvioidut linnut saavat ”?”-merkin. Ilman avainta ”?” näkyy vain linnuilla, jotka ovat pysähtyneet kysymystyökaluun."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "Myös omat viestisi agentille lähetetään TypeSafelle. Jos viimeisin viestisi arvioidaan tekoälyä loukkaavaksi, lintu saa vihamerkin seuraavaan viestiisi asti."
+    "message": "Tämän istunnon viimeisimmällä vuorolla lähettämäsi viesti arvioitiin tekoälyä loukkaavaksi"
   },
   "bubblePlanApproval": {
     "message": "Hyväksytäänkö suunnitelma?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Avainta ei voitu tallentaa. Yritä uudelleen."
-  },
-  "typeSafeSiteLink": {
-    "message": "TypeSafen verkkosivusto"
   },
   "quotedSnippet": {
     "message": "”$SNIPPET$”",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Valitse tai kirjoita malli, niin voit tallentaa ja testata yhteyden."
+  },
+  "aiUserMessagesNote": {
+    "message": "Aina kun vuoro päättyy, agentin viimeinen vastaus ja vuoron aikana lähettämäsi viestit lähetetään. Niiden perusteella päätetään myös vastaustasi odottavien lintujen ”?” ja tekoälyn loukkaamisesta tuleva vihamerkki."
+  },
+  "retiredKeyNote": {
+    "message": "Ei ole enää käytössä. Voit poistaa tallennetun avaimen."
   }
 }

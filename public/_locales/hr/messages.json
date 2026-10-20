@@ -257,16 +257,7 @@
     "message": "Čeka tvoj odgovor kako bi mogao nastaviti"
   },
   "angerBadgeTitle": {
-    "message": "Tvoja posljednja poruka u ovoj sesiji procijenjena je kao uvredljiva prema umjetnoj inteligenciji"
-  },
-  "typeSafeApiKeyHeading": {
-    "message": "TypeSafe API ključ"
-  },
-  "typeSafeApiKeyDescription": {
-    "message": "Neobavezno. TypeSafe je vanjska usluga umjetne inteligencije koja procjenjuje je li se agent zaustavio kako bi čekao tvoj odgovor. Uz spremljeni ključ posljednji odgovor zaustavljene sesije šalje se TypeSafeu, a ptice za koje se procijeni da čekaju odgovor dobivaju „?”. Bez ključa „?” dobivaju samo ptice zaustavljene na alatu za pitanje."
-  },
-  "typeSafeUserMessageNote": {
-    "message": "TypeSafeu se šalju i tvoje vlastite poruke agentu. Ako se tvoja posljednja poruka procijeni kao uvredljiva prema umjetnoj inteligenciji, ta ptica dobiva znak ljutnje do tvoje sljedeće poruke."
+    "message": "Poruka koju si poslao u posljednjem potezu ove sesije procijenjena je kao uvredljiva prema umjetnoj inteligenciji"
   },
   "bubblePlanApproval": {
     "message": "Odobriti plan?"
@@ -282,9 +273,6 @@
   },
   "byokSaveFailedMessage": {
     "message": "Ključ nije moguće spremiti. Pokušaj ponovno."
-  },
-  "typeSafeSiteLink": {
-    "message": "Web-stranica TypeSafe"
   },
   "quotedSnippet": {
     "message": "„$SNIPPET$“",
@@ -399,5 +387,11 @@
   },
   "localAiNeedsModel": {
     "message": "Odaberite ili upišite model da biste ga spremili i testirali vezu."
+  },
+  "aiUserMessagesNote": {
+    "message": "Svaki put kad završi potez, šalju se posljednji odgovor agenta i poruke koje si poslao tijekom tog poteza. Po njima se određuju i „?” na pticama koje čekaju tvoj odgovor te oznaka ljutnje za uvrede prema umjetnoj inteligenciji."
+  },
+  "retiredKeyNote": {
+    "message": "Više se ne koristi. Spremljeni ključ možeš izbrisati."
   }
 }
