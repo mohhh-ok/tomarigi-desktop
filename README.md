@@ -6,8 +6,8 @@ A desktop app for macOS, Windows, and Linux (the Windows and Linux builds haven'
 
 | | |
 |---|---|
-| <img src="docs/images/gallery-1-on-top.webp" alt="Stays on top anywhere on your screen, and you can see through it" /> | <img src="docs/images/gallery-2-garden.webp" alt="One bird for each agent session" /> |
-| <img src="docs/images/gallery-3-needs-reply.webp" alt="A question mark shows up when the agent is waiting on you" /> | <img src="docs/images/gallery-4-bubble.webp" alt="When a turn ends, the bubble sums it up" /> |
+| <img src="docs/images/gallery-1-on-top-en.webp" alt="Stays on top of your other windows, and you can see through it" /><br>Stays on top of your other windows, and you can see through it | <img src="docs/images/gallery-2-garden-en.webp" alt="One bird for each agent session" /><br>One bird for each agent session |
+| <img src="docs/images/gallery-3-needs-reply-en.webp" alt="A question mark shows up when the agent is waiting on you" /><br>A question mark shows up when the agent is waiting on you | <img src="docs/images/gallery-4-bubble-en.webp" alt="When a turn ends, the bubble sums it up" /><br>When a turn ends, the bubble sums it up |
 
 > [!IMPORTANT]
 > **The anger mark: a heads-up when you're harsh to the AI.** With a summary provider set up (OpenAI, Anthropic, or a local model), each time a turn ends, the messages you sent during that turn are checked for abuse toward the AI in the same request that writes the speech bubble, and the session's bird gets an anger mark when one looks abusive. The mark stays until the next turn is checked.

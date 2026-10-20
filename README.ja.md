@@ -4,8 +4,8 @@ AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitH
 
 | | |
 |---|---|
-| <img src="docs/images/gallery-1-on-top.webp" alt="画面のどこでも最前面に出て、下が透けて見える" /> | <img src="docs/images/gallery-2-garden.webp" alt="エージェントのセッションごとに 1 羽の鳥" /> |
-| <img src="docs/images/gallery-3-needs-reply.webp" alt="エージェントが返事を待っていると「?」が出る" /> | <img src="docs/images/gallery-4-bubble.webp" alt="ターンが終わると吹き出しが要約する" /> |
+| <img src="docs/images/gallery-1-on-top-ja.webp" alt="ほかのウィンドウより手前に出て、後ろが透けて見える" /><br>ほかのウィンドウより手前に出て、後ろが透けて見える | <img src="docs/images/gallery-2-garden-ja.webp" alt="セッション 1 つに鳥が 1 羽" /><br>セッション 1 つに鳥が 1 羽 |
+| <img src="docs/images/gallery-3-needs-reply-ja.webp" alt="エージェントが返事を待っていると「?」が出る" /><br>エージェントが返事を待っていると「?」が出る | <img src="docs/images/gallery-4-bubble-ja.webp" alt="エージェントの応答が終わると、吹き出しに中身の要約が出る" /><br>エージェントの応答が終わると、吹き出しに中身の要約が出る |
 
 > [!IMPORTANT]
 > **怒りマーク: AI にきつく当たったら知らせます。** 要約に使う AI（OpenAI、Anthropic、ローカルのモデル）を設定していると、ターンが終わるたびに、そのターンに送ったメッセージが AI への暴言かどうかを吹き出しの要約と同じ 1 回の問い合わせで判定し、暴言らしいときはそのセッションの鳥に怒りマークが付きます。マークは次のターンの判定まで残ります。
