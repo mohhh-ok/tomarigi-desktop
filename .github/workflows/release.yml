@@ -90,6 +90,22 @@ jobs:
           xcrun stapler staple "$dmg"
           gh release upload "$GITHUB_REF_NAME" "$dmg" --clobber
 
+      # A copy under a name without the version (Tomarigi-macOS.dmg here; the other jobs do the same for theirs), so
+      # moh-tech.net/tomarigi/desktop/ can link to releases/latest/download/<name> for every release (docs/design.md
+      # "Download page")
+      - name: Attach the .dmg under a fixed name
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          files=(src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg)
+          if [ "${#files[@]}" -ne 1 ] || [ ! -f "${files[0]}" ]; then
+            echo "::error::expected one file for Tomarigi-macOS.dmg, found: ${files[*]}"
+            exit 1
+          fi
+          cp "${files[0]}" "$RUNNER_TEMP/Tomarigi-macOS.dmg"
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/Tomarigi-macOS.dmg" --clobber
+
       # A manual run: no tagName, so tauri-action makes no release; unsigned, since no Apple secrets are passed. No updater
       # bundles either, since they can't be made without the updater key (same in the Windows and Linux jobs)
       - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
@@ -148,6 +164,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "$GITHUB_REF_NAME" "tomarigi-${GITHUB_REF_NAME}.vsix" --clobber
 
+      - name: Attach the .vsix under a fixed name
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp "tomarigi-${GITHUB_REF_NAME}.vsix" "$RUNNER_TEMP/Tomarigi-VSCode.vsix"
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/Tomarigi-VSCode.vsix" --clobber
+
       - name: Build the .vsix (manual run)
         if: github.event_name == 'workflow_dispatch'
         run: bun run package
@@ -197,6 +221,20 @@ jobs:
           releaseName: tomarigi-desktop ${{ github.ref_name }}
           releaseDraft: true
 
+      - name: Attach the installer under a fixed name
+        if: github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          files=(src-tauri/target/release/bundle/nsis/*-setup.exe)
+          if [ "${#files[@]}" -ne 1 ] || [ ! -f "${files[0]}" ]; then
+            echo "::error::expected one file for Tomarigi-Windows-setup.exe, found: ${files[*]}"
+            exit 1
+          fi
+          cp "${files[0]}" "$RUNNER_TEMP/Tomarigi-Windows-setup.exe"
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/Tomarigi-Windows-setup.exe" --clobber
+
       - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         if: github.event_name == 'workflow_dispatch'
         with:
@@ -243,6 +281,32 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: tomarigi-desktop ${{ github.ref_name }}
           releaseDraft: true
+
+      - name: Attach the .deb under a fixed name
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          files=(src-tauri/target/release/bundle/deb/*.deb)
+          if [ "${#files[@]}" -ne 1 ] || [ ! -f "${files[0]}" ]; then
+            echo "::error::expected one file for Tomarigi-Linux.deb, found: ${files[*]}"
+            exit 1
+          fi
+          cp "${files[0]}" "$RUNNER_TEMP/Tomarigi-Linux.deb"
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/Tomarigi-Linux.deb" --clobber
+
+      - name: Attach the AppImage under a fixed name
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          files=(src-tauri/target/release/bundle/appimage/*.AppImage)
+          if [ "${#files[@]}" -ne 1 ] || [ ! -f "${files[0]}" ]; then
+            echo "::error::expected one file for Tomarigi-Linux.AppImage, found: ${files[*]}"
+            exit 1
+          fi
+          cp "${files[0]}" "$RUNNER_TEMP/Tomarigi-Linux.AppImage"
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/Tomarigi-Linux.AppImage" --clobber
 
       - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         if: github.event_name == 'workflow_dispatch'

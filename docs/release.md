@@ -1,12 +1,13 @@
 # Release
 
-Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. After that job, the Windows installer (NSIS `.exe`, unsigned) and then the Linux packages (`.deb`, `.AppImage`) are built and attached to the same draft. Each job also attaches the updater bundles with their signatures and adds its platforms to `latest.json` on the draft (the Linux job waits for the Windows job so they don't overwrite each other's `latest.json`). Publish the draft by hand after checking it; the app's updater only sees a release once it is published (docs/design.md "Updates").
+Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. After that job, the Windows installer (NSIS `.exe`, unsigned) and then the Linux packages (`.deb`, `.AppImage`) are built and attached to the same draft. Each job also attaches the updater bundles with their signatures and adds its platforms to `latest.json` on the draft (the Linux job waits for the Windows job so they don't overwrite each other's `latest.json`), and a copy of its download under a name without the version (`Tomarigi-macOS.dmg`, `Tomarigi-Windows-setup.exe`, `Tomarigi-Linux.deb`, `Tomarigi-Linux.AppImage`, `Tomarigi-VSCode.vsix`), which the download page links to (docs/design.md "Download page"). Publish the draft by hand after checking it; the app's updater only sees a release once it is published (docs/design.md "Updates").
 
 ## Cutting a release
 
 1. Set the same version in `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `vscode-extension/package.json` (the workflow stops if any of them differ from the tag). Run `cargo metadata --manifest-path src-tauri/Cargo.toml --format-version 1 > /dev/null` so `src-tauri/Cargo.lock` picks up the new version, and commit it too
 2. Commit, then `git tag v<version>` and `git push origin v<version>`
-3. When the workflow finishes (about 8–13 minutes), verify the .dmg as below, write release notes on the draft, and publish
+3. When the workflow finishes (about 8–13 minutes), verify the .dmg and the fixed-name copies as below, write release notes on the draft, and publish
+4. After publishing, check that the fixed-name links download (below)
 
 ## Building without a release
 
@@ -36,6 +37,25 @@ codesign -d --entitlements - "$M/tomarigi-desktop.app" 2>&1 | grep apple-events
 lipo -archs "$M/tomarigi-desktop.app/Contents/MacOS/tomarigi-desktop"   # x86_64 arm64
 hdiutil detach "$M"
 ```
+
+## Verifying the fixed-name copies
+
+The download page (https://moh-tech.net/tomarigi/desktop/) links to `releases/latest/download/<name>` with the names below, so every release must carry all five. On the draft:
+
+```sh
+gh release view v<version> -R mohhh-ok/tomarigi-desktop --json assets --jq '.assets[].name' | grep '^Tomarigi-'
+# Tomarigi-Linux.AppImage, Tomarigi-Linux.deb, Tomarigi-VSCode.vsix, Tomarigi-Windows-setup.exe, Tomarigi-macOS.dmg
+```
+
+After publishing, each link redirects (302) to the file of the new release and the file answers 200. `-I` reads only the headers, so the files aren't downloaded:
+
+```sh
+for n in Tomarigi-macOS.dmg Tomarigi-Windows-setup.exe Tomarigi-Linux.deb Tomarigi-Linux.AppImage Tomarigi-VSCode.vsix; do
+  echo "== $n"; curl -sIL "https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/$n" | grep -iE '^(HTTP|location)'
+done
+```
+
+The `location` of the first redirect has the new tag (`/releases/download/v<version>/<name>`).
 
 ## Repository secrets
 
