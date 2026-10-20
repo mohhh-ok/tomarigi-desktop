@@ -229,3 +229,17 @@ export function nextGrowScale(
   if (needed >= kept.scale || count < kept.count) return needed;
   return kept.scale;
 }
+
+// Ids not yet settled after a placement that left something without a free spot (docs/design.md "Layout"): what was
+// unsettled and is still shown (none when the garden changed size, as all of it was placed again), and what was first
+// placed in this render. A bird or block the user dropped in this render has its place, so it is neither
+export function nextUnsettled(
+  previous: Iterable<string>,
+  liveIds: readonly string[],
+  firstIds: Iterable<string>,
+  droppedIds: ReadonlySet<string>,
+  replaceAll: boolean,
+): Set<string> {
+  const still = replaceAll ? [] : [...previous].filter((id) => liveIds.includes(id));
+  return new Set([...still, ...firstIds].filter((id) => !droppedIds.has(id)));
+}

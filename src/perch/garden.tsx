@@ -18,6 +18,7 @@ import {
 import {
   gardenGlyphSize,
   gardenSimulate,
+  nextUnsettled,
   type FitBox,
   type GardenFit,
   type PlacedGarden,
@@ -545,10 +546,14 @@ export function Garden({
     // Something had no spot, so the window is asked to grow: what was first placed now (and what still isn't settled
     // at this size) isn't on screen yet, and is placed again once the size changes. Everything has a spot: all settled
     if (overflowAtBase.length > 0) {
-      const still = replaceAll ? [] : [...kept.unsettled].filter((id) => liveIds.includes(id));
       // A bird or block the user dropped has its place
-      const first = [...newBlocks.map((b) => b.id), ...appearing].filter((id) => !dropped.some((b) => b.id === id));
-      kept.unsettled = new Set([...still, ...first]);
+      kept.unsettled = nextUnsettled(
+        kept.unsettled,
+        liveIds,
+        [...newBlocks.map((b) => b.id), ...appearing],
+        new Set(dropped.map((b) => b.id)),
+        replaceAll,
+      );
       kept.unsettledAt = { w: W, h: baseH };
     } else {
       kept.unsettled = new Set();
