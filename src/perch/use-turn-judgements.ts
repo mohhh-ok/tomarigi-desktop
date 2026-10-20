@@ -4,6 +4,8 @@ import { uiLanguage } from "@/lib/i18n";
 import { summarizeTurnLine } from "@/lib/summarize";
 import { lastSentence } from "@/lib/last-sentence";
 import { loadActiveAiProvider, type ApiKeyProvider } from "@/lib/api-keys";
+import { appendConciergeLog } from "@/lib/concierge";
+import { LOCAL_NO_MATCHING_JSON } from "@/lib/local-judge";
 import { judgeAbuse, judgeAsking, type AngerJudgement, type AskJudgement } from "@/lib/jev";
 import { recordAngerJudgement, recordAskJudgement, type SessionView } from "@/lib/sessions";
 
@@ -13,8 +15,13 @@ export function turnKey(sessionId: string, at: number): string {
 }
 
 /** Per-turn requests made from each scan (the Jev "?" verdict, the Jev anger verdict, and the speech bubble summary),
- * and the sessions with those results attached for display */
-export function useTurnJudgements(sessions: SessionView[], aiKeySet: Record<ApiKeyProvider, boolean>) {
+ * and the sessions with those results attached for display. summarySetUp: an OpenAI / Anthropic key is saved, or
+ * Local is set up */
+export function useTurnJudgements(
+  sessions: SessionView[],
+  aiKeySet: Record<ApiKeyProvider, boolean>,
+  summarySetUp: boolean,
+) {
   // Jev verdict for needs reply (lib/jev.ts). Keyed by turn (turnKey). Turns whose check has started go into
   // askRequestedRef and aren't re-requested on every poll. Turns that leave the screen are dropped
   const [askJudgements, setAskJudgements] = useState<Record<string, AskJudgement>>({});
@@ -31,15 +38,15 @@ export function useTurnJudgements(sessions: SessionView[], aiKeySet: Record<ApiK
     typeSafeKeySetRef.current = aiKeySet.typesafe;
   }, [aiKeySet.typesafe]);
 
-  // Summarize the last response of a stopped turn into speech bubble text once, with BYOK (OpenAI / Anthropic)
+  // Summarize the last response of a stopped turn into speech bubble text once, with OpenAI / Anthropic / Local
   // (docs/design.md "Speech bubbles"). Nothing is shown without a key.
   // The result goes into turnLines and is attached as SessionView.summary at render. Once working, reply is gone and it disappears
   const [turnLines, setTurnLines] = useState<Record<string, string>>({});
   const turnLineRequestedRef = useRef(new Set<string>());
   const summaryKeySetRef = useRef(false);
   useEffect(() => {
-    summaryKeySetRef.current = aiKeySet.anthropic || aiKeySet.openai;
-  }, [aiKeySet.anthropic, aiKeySet.openai]);
+    summaryKeySetRef.current = summarySetUp;
+  }, [summarySetUp]);
   const requestTurnLines = useCallback((views: SessionView[]) => {
     const live = new Set<string>();
     for (const view of views) {
@@ -58,9 +65,20 @@ export function useTurnJudgements(sessions: SessionView[], aiKeySet: Record<ApiK
           assistant_text: reply.text,
         });
         const line = result.ok && typeof result.verdict.line === "string" ? result.verdict.line.trim() : "";
+        // A local model's answer that isn't JSON matching the schema is no summary (docs/design.md "BYOK API keys",
+        // Local AI), recorded as such in the app log and the debug log screen
+        const noMatchingJson = !result.ok && result.message === LOCAL_NO_MATCHING_JSON;
         void invoke("log", {
-          line: `[bubble] ${result.ok ? `ok len=${line.length}` : `error=${result.kind}`} ${project}`,
+          line: `[bubble] ${result.ok ? `ok len=${line.length}` : noMatchingJson ? "no summary no-matching-json" : `error=${result.kind}`} ${project}`,
         });
+        if (noMatchingJson) {
+          appendConciergeLog({
+            at: Date.now(),
+            kind: "none",
+            source: "bubble",
+            text: `no summary (answer didn't match the schema) ${project}`,
+          });
+        }
         if (!line) return;
         setTurnLines((current) =>
           turnLineRequestedRef.current.has(key) ? { ...current, [key]: line } : current,
@@ -159,9 +177,8 @@ export function useTurnJudgements(sessions: SessionView[], aiKeySet: Record<ApiK
   // Attach the Jev verdict only to the bird of the same turn (if the turn changes, turnKey changes and it isn't attached).
   // mock holds ask directly, so it isn't overwritten
   const displaySessions = useMemo(() => {
-    // Without a summary key (OpenAI / Anthropic), for a turn where the Jev verdict is needs reply, the last sentence of the
+    // Without a summary provider (OpenAI / Anthropic / Local), for a turn where the Jev verdict is needs reply, the last sentence of the
     // last response goes in the speech bubble (docs/design.md "Speech bubbles"; no AI used)
-    const hasSummaryKey = aiKeySet.anthropic || aiKeySet.openai;
     return sessions.map((s) => {
       // The anger mark only works while a TypeSafe key is saved, so deleting the key clears it
       const anger = s.anger ?? (aiKeySet.typesafe ? angerJudgements[s.id]?.anger : undefined);
@@ -173,10 +190,10 @@ export function useTurnJudgements(sessions: SessionView[], aiKeySet: Record<ApiK
         ...s,
         ask,
         summary: s.summary ?? turnLines[key],
-        replyTail: !hasSummaryKey && ask?.status === "asking" ? lastSentence(s.reply.text) : undefined,
+        replyTail: !summarySetUp && ask?.status === "asking" ? lastSentence(s.reply.text) : undefined,
       };
     });
-  }, [sessions, askJudgements, angerJudgements, turnLines, aiKeySet.anthropic, aiKeySet.openai, aiKeySet.typesafe]);
+  }, [sessions, askJudgements, angerJudgements, turnLines, summarySetUp, aiKeySet.typesafe]);
 
   return { requestJudgements, displaySessions };
 }

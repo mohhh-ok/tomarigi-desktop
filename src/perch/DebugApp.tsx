@@ -41,7 +41,8 @@ function sanitizeFilename(name: string): string {
 export default function DebugApp({ onClose }: { onClose: () => void }) {
   const [events, setEvents] = useState<SessionEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Concierge requests and advice (lib/concierge.ts; kept in memory, newest first)
+  // Concierge requests and advice, and bubble summaries a local model didn't give (lib/concierge.ts; kept in memory,
+  // newest first)
   const [conciergeLog, setConciergeLog] = useState<ConciergeLogEntry[]>(() => conciergeLogEntries());
   // Save result per project name (for the button's temporary feedback)
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
@@ -130,7 +131,7 @@ export default function DebugApp({ onClose }: { onClose: () => void }) {
             {conciergeLog.map((c) => (
               <li key={`${c.at}-${c.kind}`} className="debug-log-row">
                 <span className="debug-log-time">{new Date(c.at).toLocaleString()}</span>
-                <span className="debug-log-type">concierge {c.kind}</span>
+                <span className="debug-log-type">{c.source ?? "concierge"} {c.kind}</span>
                 <span className="debug-log-project">{c.text}</span>
                 {/* The full input or the AI's answer (in memory only), folded so the list stays scannable */}
                 {c.detail !== undefined && (

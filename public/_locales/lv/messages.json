@@ -220,13 +220,13 @@
     "message": "OpenAI API atslēga"
   },
   "byokUseForSummaryLabel": {
-    "message": "Izmantot kopsavilkumiem"
+    "message": "Izmantot kopsavilkumiem un konsjeržam"
   },
   "aiApiKeysHeading": {
-    "message": "MI API atslēgas"
+    "message": "MI"
   },
   "aiApiKeysDescription": {
-    "message": "Neobligāti. Tiek izmantota pabeigtu notikumu balss kopsavilkumiem un savienojuma pārbaudēm. Saglabājot abas atslēgas, varat izvēlēties kopsavilkumu nodrošinātāju."
+    "message": "Neobligāti. Izmanto runas burbuļu kopsavilkumiem, konsjeržam un pabeigtu notikumu balss kopsavilkumiem. Ja iestatīti vairāki, izvēlieties, kuru izmantot."
   },
   "rootDefaultBadge": {
     "message": "Noklusējuma"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Atjaunināšana netika pabeigta. tomarigi paliek pašreizējā versijā; mēģiniet vēlreiz"
+  },
+  "localAiHeading": {
+    "message": "Lokāli"
+  },
+  "localAiDescription": {
+    "message": "Izmanto modeli ar OpenAI saderīgā serverī, piemēram, Ollama vai LM Studio. Atslēga nav vajadzīga."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Servera URL"
+  },
+  "localAiModelLabel": {
+    "message": "Modelis"
+  },
+  "localAiModelsLoading": {
+    "message": "Ielādē modeļus…"
+  },
+  "localAiModelsFailed": {
+    "message": "Neizdevās iegūt modeļu sarakstu no šī servera. Ievadiet modeļa nosaukumu."
+  },
+  "localAiReloadModels": {
+    "message": "Ielādēt sarakstu vēlreiz"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL jāsākas ar http:// vai https://."
+  },
+  "localAiChangeButton": {
+    "message": "Mainīt"
+  },
+  "localAiTestUnreachable": {
+    "message": "Nevar sazināties ar serveri. Pārbaudiet, vai tas darbojas un vai URL ir pareizs."
   }
 }

@@ -16,7 +16,7 @@ AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitH
 - 浮遊窓の「にわ」では、鳥と吹き出しと「tomarigi」のハンドルだけが見え、それ以外の場所のクリックは下の窓に届きます。ハンドルを押すと窓全体が出て、ドラッグすると窓が動きます
 - アイコンセット: 鳥・小人・ネコ・ロボット・カエルから、プロジェクトごとに選べます
 - エージェント側のフックや設定の変更は要りません。各エージェントのセッションのファイル（`~/.claude/projects`・`~/.codex/sessions`・`~/.qwen/projects`・`~/.copilot/session-state`・`~/.gemini/tmp`・`~/.local/share/opencode`・`~/.cursor/projects`）を読むだけです
-- API キーは任意（BYOK）です。OpenAI か Anthropic のキーで、終わったターンを要約する吹き出しが出ます。TypeSafe のキーで、文章で聞かれた質問（「?」）と AI への暴言（怒りマーク）を見分けます。読み上げは OS の音声合成を使うので、キーは要りません
+- API キーは任意（BYOK）です。OpenAI か Anthropic のキーで、終わったターンを要約する吹き出しが出ます。キーの代わりに、Ollama や LM Studio など OpenAI 互換のサーバーで動くローカルのモデルも使えます。TypeSafe のキーで、文章で聞かれた質問（「?」）と AI への暴言（怒りマーク）を見分けます。読み上げは OS の音声合成を使うので、キーは要りません
 
 ## インストール
 

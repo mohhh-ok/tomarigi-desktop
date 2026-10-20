@@ -207,16 +207,28 @@ pub(crate) struct HttpReply {
 /// A call without a key is treated the same as a 401 (JS shows it as an auth failure)
 const NO_KEY: &str = "no-key";
 
+/// Timeout for the cloud providers
+const CLOUD_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+
 async fn post_json(
     url: &str,
     headers: Vec<(&'static str, String)>,
     body: String,
 ) -> Result<HttpReply, String> {
+    post_json_with_timeout(url, headers, body, CLOUD_TIMEOUT).await
+}
+
+async fn post_json_with_timeout(
+    url: &str,
+    headers: Vec<(&'static str, String)>,
+    body: String,
+    timeout: std::time::Duration,
+) -> Result<HttpReply, String> {
     let mut req = reqwest::Client::new()
         .post(url)
         .header("content-type", "application/json")
         .body(body)
-        .timeout(std::time::Duration::from_secs(30));
+        .timeout(timeout);
     for (name, value) in headers {
         req = req.header(name, value);
     }
@@ -274,6 +286,63 @@ pub(crate) async fn openai_responses(body: String) -> Result<HttpReply, String> 
     post_json("https://api.openai.com/v1/responses", vec![("authorization", format!("Bearer {key}"))], body).await
 }
 
+// ---- Local AI (docs/design.md "BYOK API keys", Local AI) ----
+// An OpenAI-compatible server (Ollama, LM Studio, ...). No key; the base URL and model are settings JS keeps and
+// passes here. Called from Rust like the other providers (the WebView's origin would also hit CORS on servers that
+// don't allow it)
+
+/// Longer than the cloud: the server may have to load the model first. LOCAL_TIMEOUT_MEASURED
+const LOCAL_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(90);
+const LOCAL_MODELS_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+
+/// `<base URL>/<path>`. Only http(s) URLs are accepted; a trailing slash on the base URL is allowed
+fn local_url(base_url: &str, path: &str) -> Result<String, String> {
+    let base = base_url.trim().trim_end_matches('/');
+    let parsed = reqwest::Url::parse(base).map_err(|e| format!("invalid base url: {e}"))?;
+    if !matches!(parsed.scheme(), "http" | "https") {
+        return Err("invalid base url: not http(s)".into());
+    }
+    Ok(format!("{base}/{path}"))
+}
+
+/// Chat Completions (summaries, the concierge, and the connection test; lib/local-judge.ts)
+#[tauri::command]
+pub(crate) async fn local_chat(base_url: String, body: String) -> Result<HttpReply, String> {
+    let url = local_url(&base_url, "chat/completions")?;
+    let started = std::time::Instant::now();
+    let reply = post_json_with_timeout(&url, vec![], body, LOCAL_TIMEOUT).await;
+    let ms = started.elapsed().as_millis();
+    match &reply {
+        Ok(r) => append_log(&format!("[keys] send local status={} ms={ms}", r.status)),
+        Err(e) => append_log(&format!("[keys] send local ms={ms} error={e}")),
+    }
+    reply
+}
+
+/// The server's model list (`GET <base URL>/models`), for picking the model in the settings
+#[tauri::command]
+pub(crate) async fn local_models(base_url: String) -> Result<HttpReply, String> {
+    let url = local_url(&base_url, "models")?;
+    let res = reqwest::Client::new()
+        .get(&url)
+        .timeout(LOCAL_MODELS_TIMEOUT)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    let status = res.status().as_u16();
+    let body = res.text().await.map_err(|e| e.to_string())?;
+    Ok(HttpReply { status, body })
+}
+
+/// For verification: TOMARIGI_LOCAL_AI="<base URL>|<model>" sets up Local at launch, chooses it, and runs the
+/// connection test (JS does the saving, since Local's settings live with the others in IndexedDB; lib/api-keys.ts)
+#[tauri::command]
+pub(crate) fn local_ai_import() -> Option<(String, String)> {
+    let value = std::env::var("TOMARIGI_LOCAL_AI").ok()?;
+    let (base_url, model) = value.split_once('|')?;
+    Some((base_url.trim().to_string(), model.trim().to_string()))
+}
+
 /// For verification: when launched with TOMARIGI_IMPORT_KEY=<provider>, saves the first line of stdin as that
 /// provider's key (to verify saving, restarting, and migration in environments where settings can't be operated
 /// by hand. The value is not logged, only its length).
@@ -298,5 +367,21 @@ pub(crate) fn import_key_from_stdin(app: &AppHandle) {
             }
         }
         Err(e) => append_log(&format!("[keys] import failed {provider}: {e}")),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::local_url;
+
+    #[test]
+    fn local_url_joins_and_checks_the_scheme() {
+        assert_eq!(local_url("http://localhost:11434/v1", "models").unwrap(), "http://localhost:11434/v1/models");
+        assert_eq!(
+            local_url(" http://192.168.1.5:1234/v1/ ", "chat/completions").unwrap(),
+            "http://192.168.1.5:1234/v1/chat/completions"
+        );
+        assert!(local_url("file:///etc/passwd", "models").is_err());
+        assert!(local_url("localhost:11434", "models").is_err());
     }
 }

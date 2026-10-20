@@ -220,13 +220,13 @@
     "message": "OpenAI API 金鑰"
   },
   "byokUseForSummaryLabel": {
-    "message": "用於摘要"
+    "message": "用於摘要和禮賓員"
   },
   "aiApiKeysHeading": {
-    "message": "AI API 金鑰"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "選用。用於完成事件的語音摘要和連線測試。如果儲存了兩個金鑰，可選擇用於摘要的供應商。"
+    "message": "選用。用於氣泡摘要、禮賓員和完成事件的語音摘要。如果設定了多個，可選擇要使用的一個。"
   },
   "rootDefaultBadge": {
     "message": "預設"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "更新未能完成。tomarigi 仍是目前的版本，請再試一次"
+  },
+  "localAiHeading": {
+    "message": "本機"
+  },
+  "localAiDescription": {
+    "message": "使用在 Ollama、LM Studio 等 OpenAI 相容伺服器上執行的模型。不需要金鑰。"
+  },
+  "localAiBaseUrlLabel": {
+    "message": "伺服器 URL"
+  },
+  "localAiModelLabel": {
+    "message": "模型"
+  },
+  "localAiModelsLoading": {
+    "message": "正在取得模型…"
+  },
+  "localAiModelsFailed": {
+    "message": "無法從此伺服器取得模型清單。請輸入模型名稱。"
+  },
+  "localAiReloadModels": {
+    "message": "重新取得清單"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL 必須以 http:// 或 https:// 開頭。"
+  },
+  "localAiChangeButton": {
+    "message": "變更"
+  },
+  "localAiTestUnreachable": {
+    "message": "無法連線到伺服器。請確認伺服器正在執行且 URL 正確。"
   }
 }

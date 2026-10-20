@@ -22,14 +22,14 @@ import { bubbleText } from "./bubble";
 import { orderByWatchLinks } from "./watch-links";
 
 export interface ConciergeState {
-  /** Whether the concierge is shown at all (an OpenAI / Anthropic key is saved) */
+  /** Whether the concierge is shown at all (an OpenAI / Anthropic key is saved, or Local is set up) */
   shown: boolean;
   /** The current advice, with its target only while that session is still on screen */
   advice: ConciergeAdvice | null;
 }
 
 /**
- * enabled: an OpenAI / Anthropic key is saved. agentOf: the agent kind of a session id, when known.
+ * enabled: an OpenAI / Anthropic key is saved, or Local is set up. agentOf: the agent kind of a session id, when known.
  * mockAdvice: a source that doesn't call the API (mock) gives the advice itself; then nothing is requested
  */
 export function useConcierge(
@@ -105,7 +105,7 @@ export function useConcierge(
           ? { at: Date.now(), kind: "advice", text: `${next.line}${next.targetId ? ` → ${next.targetId}` : " (no target)"}${tokens}` }
           : result.dropped
             ? { at: Date.now(), kind: "dropped", text: `not shown, ${result.dropped.reason === "no_name" ? "no session name" : "another session needs a reply"}: ${result.dropped.line} → ${result.dropped.targetId}${tokens}` }
-            : { at: Date.now(), kind: "none", text: `no advice${tokens}` }),
+            : { at: Date.now(), kind: "none", text: `no advice${result.noMatchingJson ? " (answer didn't match the schema)" : ""}${tokens}` }),
         ...(detail !== undefined && { detail }),
       });
       void invoke("log", {
@@ -113,7 +113,7 @@ export function useConcierge(
           ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}${tokens}`
           : result.dropped
             ? `[concierge] dropped ${result.dropped.reason} len=${result.dropped.line.length} target=${result.dropped.targetId}${tokens}`
-            : `[concierge] no advice${tokens}`,
+            : `[concierge] no advice${result.noMatchingJson ? " no-matching-json" : ""}${tokens}`,
       }).catch(() => {});
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;
       shownRef.current = next && { advice: next, targetState: target && conciergeStateOf(target) };

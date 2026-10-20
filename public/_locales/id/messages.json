@@ -220,13 +220,13 @@
     "message": "Kunci API OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Gunakan untuk ringkasan"
+    "message": "Pakai untuk ringkasan dan concierge"
   },
   "aiApiKeysHeading": {
-    "message": "Kunci API AI"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Opsional. Digunakan untuk ringkasan suara peristiwa selesai dan uji koneksi. Jika kedua kunci disimpan, Anda dapat memilih penyedia ringkasan."
+    "message": "Opsional. Dipakai untuk ringkasan balon ucapan, concierge, dan ringkasan suara peristiwa selesai. Jika lebih dari satu diatur, pilih yang dipakai."
   },
   "rootDefaultBadge": {
     "message": "Bawaan"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Pembaruan tidak selesai. tomarigi tetap di versi saat ini; coba lagi"
+  },
+  "localAiHeading": {
+    "message": "Lokal"
+  },
+  "localAiDescription": {
+    "message": "Menggunakan model di server yang kompatibel dengan OpenAI, seperti Ollama atau LM Studio. Tidak perlu kunci."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL server"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Memuat model…"
+  },
+  "localAiModelsFailed": {
+    "message": "Tidak bisa mengambil daftar model dari server ini. Ketik nama model."
+  },
+  "localAiReloadModels": {
+    "message": "Muat ulang daftar"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL harus diawali http:// atau https://."
+  },
+  "localAiChangeButton": {
+    "message": "Ubah"
+  },
+  "localAiTestUnreachable": {
+    "message": "Tidak bisa terhubung ke server. Pastikan server berjalan dan URL-nya benar."
   }
 }

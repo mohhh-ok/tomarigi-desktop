@@ -220,13 +220,13 @@
     "message": "OpenAI API-sleutel"
   },
   "byokUseForSummaryLabel": {
-    "message": "Gebruiken voor samenvattingen"
+    "message": "Gebruiken voor samenvattingen en de conciërge"
   },
   "aiApiKeysHeading": {
-    "message": "AI API-sleutels"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Optioneel. Gebruikt voor gesproken samenvattingen van voltooide gebeurtenissen en verbindingstests. Als beide sleutels zijn opgeslagen, kun je de provider voor samenvattingen kiezen."
+    "message": "Optioneel. Gebruikt voor samenvattingen in tekstballonnen, de conciërge en gesproken samenvattingen van voltooide gebeurtenissen. Is er meer dan één ingesteld, kies dan welke je gebruikt."
   },
   "rootDefaultBadge": {
     "message": "Standaard"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "De update is niet voltooid. tomarigi blijft op de huidige versie; probeer het opnieuw"
+  },
+  "localAiHeading": {
+    "message": "Lokaal"
+  },
+  "localAiDescription": {
+    "message": "Gebruikt een model op een OpenAI-compatibele server zoals Ollama of LM Studio. Geen sleutel nodig."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Server-URL"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Modellen laden…"
+  },
+  "localAiModelsFailed": {
+    "message": "Kan de modellenlijst van deze server niet ophalen. Typ de modelnaam."
+  },
+  "localAiReloadModels": {
+    "message": "Lijst opnieuw laden"
+  },
+  "localAiUrlInvalid": {
+    "message": "De URL moet beginnen met http:// of https://."
+  },
+  "localAiChangeButton": {
+    "message": "Wijzigen"
+  },
+  "localAiTestUnreachable": {
+    "message": "Kan de server niet bereiken. Controleer of hij draait en of de URL klopt."
   }
 }

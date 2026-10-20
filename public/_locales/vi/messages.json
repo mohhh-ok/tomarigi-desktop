@@ -220,13 +220,13 @@
     "message": "Khóa API OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Dùng cho bản tóm tắt"
+    "message": "Dùng cho tóm tắt và concierge"
   },
   "aiApiKeysHeading": {
-    "message": "Khóa API AI"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Không bắt buộc. Dùng cho bản tóm tắt bằng giọng nói của sự kiện đã hoàn tất và kiểm tra kết nối. Nếu lưu cả hai khóa, bạn có thể chọn nhà cung cấp cho phần tóm tắt."
+    "message": "Tùy chọn. Dùng cho tóm tắt trong bong bóng thoại, concierge và tóm tắt giọng nói của sự kiện hoàn tất. Nếu thiết lập nhiều hơn một, hãy chọn cái để dùng."
   },
   "rootDefaultBadge": {
     "message": "Mặc định"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Cập nhật chưa hoàn tất. tomarigi vẫn ở phiên bản hiện tại; hãy thử lại"
+  },
+  "localAiHeading": {
+    "message": "Cục bộ"
+  },
+  "localAiDescription": {
+    "message": "Dùng mô hình trên máy chủ tương thích OpenAI như Ollama hoặc LM Studio. Không cần khóa."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL máy chủ"
+  },
+  "localAiModelLabel": {
+    "message": "Mô hình"
+  },
+  "localAiModelsLoading": {
+    "message": "Đang tải mô hình…"
+  },
+  "localAiModelsFailed": {
+    "message": "Không lấy được danh sách mô hình từ máy chủ này. Hãy nhập tên mô hình."
+  },
+  "localAiReloadModels": {
+    "message": "Tải lại danh sách"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL phải bắt đầu bằng http:// hoặc https://."
+  },
+  "localAiChangeButton": {
+    "message": "Thay đổi"
+  },
+  "localAiTestUnreachable": {
+    "message": "Không kết nối được máy chủ. Hãy kiểm tra máy chủ đang chạy và URL đúng."
   }
 }

@@ -28,12 +28,13 @@ import window from "./locales/window.mjs";
 import ask from "./locales/ask.mjs";
 import concierge from "./locales/concierge.mjs";
 import update from "./locales/update.mjs";
+import localAi from "./locales/local-ai.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "..", "public", "_locales");
 
 // Merge the groups into one table. The same key appearing in two groups is an accident, so fail.
-const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge, update };
+const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge, update, localAi };
 
 const MERGED = {};
 for (const [groupName, table] of Object.entries(GROUPS)) {
@@ -152,6 +153,16 @@ export const KEYS = [
   "updatesDownloading",
   "updatesInstalling",
   "updatesInstallFailed",
+  "localAiHeading",
+  "localAiDescription",
+  "localAiBaseUrlLabel",
+  "localAiModelLabel",
+  "localAiModelsLoading",
+  "localAiModelsFailed",
+  "localAiReloadModels",
+  "localAiUrlInvalid",
+  "localAiChangeButton",
+  "localAiTestUnreachable",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

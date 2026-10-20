@@ -220,13 +220,13 @@
     "message": "OpenAI APIキー"
   },
   "byokUseForSummaryLabel": {
-    "message": "要約に使用"
+    "message": "要約とコンシェルジュに使う"
   },
   "aiApiKeysHeading": {
-    "message": "AI APIキー"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "任意設定です。完了イベントの読み上げ要約と接続テストに使います。両方のキーを保存した場合は、要約に使うプロバイダーを選べます。"
+    "message": "任意設定です。吹き出しの要約、コンシェルジュ、完了の読み上げ要約に使います。複数を設定した場合は、使うものを選べます。"
   },
   "rootDefaultBadge": {
     "message": "既定"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "更新を終えられませんでした。tomarigi は今のバージョンのままです。もう一度お試しください"
+  },
+  "localAiHeading": {
+    "message": "ローカル"
+  },
+  "localAiDescription": {
+    "message": "Ollama や LM Studio など、OpenAI 互換のサーバーで動くモデルを使います。キーは要りません。"
+  },
+  "localAiBaseUrlLabel": {
+    "message": "サーバーの URL"
+  },
+  "localAiModelLabel": {
+    "message": "モデル"
+  },
+  "localAiModelsLoading": {
+    "message": "モデルを取得中…"
+  },
+  "localAiModelsFailed": {
+    "message": "このサーバーからモデルの一覧を取得できませんでした。モデル名を入力してください。"
+  },
+  "localAiReloadModels": {
+    "message": "一覧を再取得"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL は http:// か https:// で始めてください。"
+  },
+  "localAiChangeButton": {
+    "message": "変更"
+  },
+  "localAiTestUnreachable": {
+    "message": "サーバーにつながりません。サーバーが起動しているか、URL が正しいかを確かめてください。"
   }
 }

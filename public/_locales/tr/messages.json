@@ -220,13 +220,13 @@
     "message": "OpenAI API anahtarı"
   },
   "byokUseForSummaryLabel": {
-    "message": "Özetler için kullan"
+    "message": "Özetler ve konsiyerj için kullan"
   },
   "aiApiKeysHeading": {
-    "message": "Yapay zekâ API anahtarları"
+    "message": "Yapay zekâ"
   },
   "aiApiKeysDescription": {
-    "message": "İsteğe bağlıdır. Tamamlanan etkinliklerin sesli özetleri ve bağlantı testleri için kullanılır. İki anahtar da kayıtlıysa özet sağlayıcısını seçebilirsiniz."
+    "message": "İsteğe bağlı. Konuşma balonu özetleri, konsiyerj ve tamamlanan olayların sesli özetleri için kullanılır. Birden fazla ayarlanırsa hangisinin kullanılacağını seçin."
   },
   "rootDefaultBadge": {
     "message": "Varsayılan"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Güncelleme tamamlanamadı. tomarigi mevcut sürümde kalıyor; yeniden deneyin"
+  },
+  "localAiHeading": {
+    "message": "Yerel"
+  },
+  "localAiDescription": {
+    "message": "Ollama veya LM Studio gibi OpenAI uyumlu bir sunucudaki modeli kullanır. Anahtar gerekmez."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Sunucu URL'si"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Modeller yükleniyor…"
+  },
+  "localAiModelsFailed": {
+    "message": "Bu sunucudan model listesi alınamadı. Model adını yazın."
+  },
+  "localAiReloadModels": {
+    "message": "Listeyi yeniden yükle"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL http:// veya https:// ile başlamalıdır."
+  },
+  "localAiChangeButton": {
+    "message": "Değiştir"
+  },
+  "localAiTestUnreachable": {
+    "message": "Sunucuya ulaşılamıyor. Çalıştığını ve URL'nin doğru olduğunu kontrol edin."
   }
 }

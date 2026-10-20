@@ -220,13 +220,13 @@
     "message": "OpenAI API key"
   },
   "byokUseForSummaryLabel": {
-    "message": "Gamitin para sa summary"
+    "message": "Gamitin para sa mga buod at sa concierge"
   },
   "aiApiKeysHeading": {
-    "message": "Mga AI API key"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Opsyonal. Ginagamit para sa voice summary ng mga natapos na event at connection test. Kapag naka-save ang parehong key, mapipili mo ang provider para sa summary."
+    "message": "Opsyonal. Ginagamit para sa mga buod sa speech bubble, sa concierge, at sa mga buod na binabasa nang malakas ng mga natapos na event. Kung higit sa isa ang naka-set up, piliin kung alin ang gagamitin."
   },
   "rootDefaultBadge": {
     "message": "Default"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Hindi natapos ang update. Nasa kasalukuyang bersyon pa rin ang tomarigi; subukang muli"
+  },
+  "localAiHeading": {
+    "message": "Lokal"
+  },
+  "localAiDescription": {
+    "message": "Gumagamit ng model sa server na compatible sa OpenAI, gaya ng Ollama o LM Studio. Hindi kailangan ng key."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL ng server"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Nilo-load ang mga model…"
+  },
+  "localAiModelsFailed": {
+    "message": "Hindi makuha ang listahan ng mga model mula sa server na ito. I-type ang pangalan ng model."
+  },
+  "localAiReloadModels": {
+    "message": "I-reload ang listahan"
+  },
+  "localAiUrlInvalid": {
+    "message": "Dapat magsimula ang URL sa http:// o https://."
+  },
+  "localAiChangeButton": {
+    "message": "Baguhin"
+  },
+  "localAiTestUnreachable": {
+    "message": "Hindi maabot ang server. Tiyaking tumatakbo ito at tama ang URL."
   }
 }

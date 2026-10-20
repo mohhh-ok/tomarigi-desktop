@@ -1,13 +1,14 @@
 // Concierge: an AI looks at every session together and gives one piece of advice about what to do next
-// (docs/design.md "Concierge"). A consumer of the BYOK verdict layer (runJudge / runOpenAiJudge), like the speech
+// (docs/design.md "Concierge"). A consumer of the verdict layer (runJudge / runOpenAiJudge / runLocalJudge), like the speech
 // bubble summaries.
 //
 // Watch links, chick counts, and what holds up what are computed here and passed as facts; the AI does not infer
 // them. Reply and question text are untrusted input, the same as the other verdict tasks: the output is pinned to
 // one tool call (two short strings), so injected text can at worst make one piece of advice wrong.
 
-import { runJudge, type JudgeResult, type JudgeTaskDefinition } from "./judge";
-import { runOpenAiJudge } from "./openai-judge";
+import type { JudgeResult, JudgeTaskDefinition } from "./judge";
+import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
+import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
 import { needsAnswer } from "./jev";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView } from "./session-types";
@@ -273,7 +274,6 @@ export function adviceNamesTarget(line: string, name: string): boolean {
   return n.length > 0 && normalizeName(line).includes(n);
 }
 
-type Run = <V>(task: JudgeTaskDefinition, payload: unknown) => Promise<JudgeResult<V>>;
 
 /** An advice that isn't shown, and why: it doesn't contain its session's name, or it is about a session that doesn't
  * need a reply while another does */
@@ -303,9 +303,16 @@ function dropReason(advice: ConciergeAdvice, sessions: PayloadSession[]): Droppe
 export async function askConcierge(
   provider: AiProvider,
   payload: ConciergePayload,
-  run: Run = provider === "openai" ? runOpenAiJudge : runJudge,
-): Promise<JudgeResult<ConciergeAdvice | null> & { answer?: unknown; dropped?: DroppedConciergeAdvice }> {
+  run: JudgeRunner = judgeRunnerFor(provider),
+): Promise<
+  JudgeResult<ConciergeAdvice | null> & { answer?: unknown; dropped?: DroppedConciergeAdvice; noMatchingJson?: true }
+> {
   const result = await run<ConciergeVerdict>(CONCIERGE_TASK, payload);
+  // A local model's answer that isn't JSON matching the schema is no advice, not an error (docs/design.md "BYOK API
+  // keys", Local AI)
+  if (!result.ok && result.kind === "malformed" && result.message === LOCAL_NO_MATCHING_JSON) {
+    return { ok: true, verdict: null, noMatchingJson: true };
+  }
   if (!result.ok) return result;
   const parsed = parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id)));
   const reason = parsed && dropReason(parsed, payload.sessions);
@@ -516,13 +523,16 @@ export function recentJumps(): ConciergeJump[] {
   return [...jumps];
 }
 
-// ---- Requests and advice for the debug log screen (docs/design.md "Concierge": logged like Jev) ----
+// ---- Requests and advice for the debug log screen (docs/design.md "Concierge": logged like Jev), plus speech bubble
+// summaries a local model didn't give (docs/design.md "BYOK API keys", Local AI) ----
 // In memory only (the debug log screen runs in the same WebView); the app log keeps them across launches
 
 export interface ConciergeLogEntry {
   at: number;
   /** dropped: an advice that wasn't shown (no session name, or not about a session that needs a reply while one does) */
   kind: "request" | "advice" | "none" | "dropped" | "error";
+  /** What the entry is about. Speech bubble summaries also log here when a local model gave no summary */
+  source?: "concierge" | "bubble";
   text: string;
   /** The full input of a request, or the answer as the AI gave it, as JSON. Holds text from the sessions, so it is
    * shown in the debug log screen only and never goes to the app log (docs/design.md "Concierge") */

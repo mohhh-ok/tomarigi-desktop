@@ -220,13 +220,13 @@
     "message": "OpenAI API कुंजी"
   },
   "byokUseForSummaryLabel": {
-    "message": "सारांश के लिए उपयोग करें"
+    "message": "सारांश और कंसीयर्ज के लिए उपयोग करें"
   },
   "aiApiKeysHeading": {
-    "message": "AI API कुंजियाँ"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "वैकल्पिक। पूर्ण हुए इवेंट के वॉइस सारांश और कनेक्शन टेस्ट के लिए उपयोग होता है। दोनों कुंजियाँ सहेजने पर सारांश के लिए प्रदाता चुन सकते हैं।"
+    "message": "वैकल्पिक। स्पीच बबल सारांश, कंसीयर्ज और पूरे हुए इवेंट के आवाज़ सारांश के लिए उपयोग होता है। एक से अधिक सेट हों तो चुनें कि किसका उपयोग करना है।"
   },
   "rootDefaultBadge": {
     "message": "डिफ़ॉल्ट"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "अपडेट पूरा नहीं हुआ। tomarigi मौजूदा संस्करण पर ही है; फिर से कोशिश करें"
+  },
+  "localAiHeading": {
+    "message": "लोकल"
+  },
+  "localAiDescription": {
+    "message": "Ollama या LM Studio जैसे OpenAI-संगत सर्वर पर चलने वाले मॉडल का उपयोग करता है। कुंजी की ज़रूरत नहीं।"
+  },
+  "localAiBaseUrlLabel": {
+    "message": "सर्वर URL"
+  },
+  "localAiModelLabel": {
+    "message": "मॉडल"
+  },
+  "localAiModelsLoading": {
+    "message": "मॉडल लोड हो रहे हैं…"
+  },
+  "localAiModelsFailed": {
+    "message": "इस सर्वर से मॉडल सूची नहीं मिल सकी। मॉडल का नाम लिखें।"
+  },
+  "localAiReloadModels": {
+    "message": "सूची फिर से लोड करें"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL http:// या https:// से शुरू होना चाहिए।"
+  },
+  "localAiChangeButton": {
+    "message": "बदलें"
+  },
+  "localAiTestUnreachable": {
+    "message": "सर्वर से कनेक्ट नहीं हो सका। जाँचें कि वह चल रहा है और URL सही है।"
   }
 }

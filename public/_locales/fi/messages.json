@@ -220,13 +220,13 @@
     "message": "OpenAI API -avain"
   },
   "byokUseForSummaryLabel": {
-    "message": "Käytä yhteenvetoihin"
+    "message": "Käytä tiivistelmiin ja conciergeen"
   },
   "aiApiKeysHeading": {
-    "message": "AI API -avaimet"
+    "message": "Tekoäly"
   },
   "aiApiKeysDescription": {
-    "message": "Valinnainen. Käytetään valmistuneiden tapahtumien puhuttuihin yhteenvetoihin ja yhteystesteihin. Jos molemmat avaimet tallennetaan, voit valita yhteenvetojen palveluntarjoajan."
+    "message": "Valinnainen. Käytetään puhekuplien tiivistelmiin, conciergeen ja valmiiden tapahtumien äänitiivistelmiin. Jos useampi on määritetty, valitse käytettävä."
   },
   "rootDefaultBadge": {
     "message": "Oletus"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Päivitys ei valmistunut. tomarigi on yhä nykyisessä versiossa; yritä uudelleen"
+  },
+  "localAiHeading": {
+    "message": "Paikallinen"
+  },
+  "localAiDescription": {
+    "message": "Käyttää mallia OpenAI-yhteensopivalla palvelimella, kuten Ollamassa tai LM Studiossa. Avainta ei tarvita."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Palvelimen URL"
+  },
+  "localAiModelLabel": {
+    "message": "Malli"
+  },
+  "localAiModelsLoading": {
+    "message": "Ladataan malleja…"
+  },
+  "localAiModelsFailed": {
+    "message": "Mallilistaa ei saatu tältä palvelimelta. Kirjoita mallin nimi."
+  },
+  "localAiReloadModels": {
+    "message": "Lataa lista uudelleen"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL-osoitteen on alettava http:// tai https://."
+  },
+  "localAiChangeButton": {
+    "message": "Muuta"
+  },
+  "localAiTestUnreachable": {
+    "message": "Palvelimeen ei saada yhteyttä. Tarkista, että se on käynnissä ja URL-osoite on oikein."
   }
 }

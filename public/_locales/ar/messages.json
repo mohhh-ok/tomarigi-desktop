@@ -220,13 +220,13 @@
     "message": "مفتاح واجهة برمجة تطبيقات OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "استخدامه للملخصات"
+    "message": "استخدامه للملخصات والكونسيرج"
   },
   "aiApiKeysHeading": {
-    "message": "مفاتيح API للذكاء الاصطناعي"
+    "message": "الذكاء الاصطناعي"
   },
   "aiApiKeysDescription": {
-    "message": "اختياري. يُستخدم للملخصات الصوتية للأحداث المكتملة واختبارات الاتصال. عند حفظ المفتاحين يمكنك اختيار مزود الملخصات."
+    "message": "اختياري. يُستخدم لملخصات فقاعات الكلام والكونسيرج والملخصات الصوتية للأحداث المكتملة. إذا أعددت أكثر من واحد، فاختر أيها تستخدم."
   },
   "rootDefaultBadge": {
     "message": "افتراضي"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "لم يكتمل التحديث. يبقى tomarigi على الإصدار الحالي؛ حاول مرة أخرى"
+  },
+  "localAiHeading": {
+    "message": "محلي"
+  },
+  "localAiDescription": {
+    "message": "يستخدم نموذجًا على خادم متوافق مع OpenAI مثل Ollama أو LM Studio. لا حاجة إلى مفتاح."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "عنوان URL للخادم"
+  },
+  "localAiModelLabel": {
+    "message": "النموذج"
+  },
+  "localAiModelsLoading": {
+    "message": "جارٍ تحميل النماذج…"
+  },
+  "localAiModelsFailed": {
+    "message": "تعذّر الحصول على قائمة النماذج من هذا الخادم. اكتب اسم النموذج."
+  },
+  "localAiReloadModels": {
+    "message": "إعادة تحميل القائمة"
+  },
+  "localAiUrlInvalid": {
+    "message": "يجب أن يبدأ عنوان URL بـ http:// أو https://."
+  },
+  "localAiChangeButton": {
+    "message": "تغيير"
+  },
+  "localAiTestUnreachable": {
+    "message": "تعذّر الوصول إلى الخادم. تحقّق من أنه يعمل وأن عنوان URL صحيح."
   }
 }

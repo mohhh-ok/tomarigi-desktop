@@ -220,13 +220,13 @@
     "message": "OpenAI API কী"
   },
   "byokUseForSummaryLabel": {
-    "message": "সারাংশের জন্য ব্যবহার করুন"
+    "message": "সারাংশ ও কনসিয়ার্জের জন্য ব্যবহার করুন"
   },
   "aiApiKeysHeading": {
-    "message": "AI API কীসমূহ"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "ঐচ্ছিক। সম্পন্ন ইভেন্টের ভয়েস সারাংশ ও সংযোগ পরীক্ষায় ব্যবহৃত হয়। উভয় কী সংরক্ষণ করলে সারাংশের প্রদানকারী বেছে নিতে পারবেন।"
+    "message": "ঐচ্ছিক। স্পিচ বাবলের সারাংশ, কনসিয়ার্জ এবং সম্পন্ন ইভেন্টের ভয়েস সারাংশে ব্যবহৃত হয়। একাধিক সেট করা থাকলে কোনটি ব্যবহার করবেন তা বেছে নিন।"
   },
   "rootDefaultBadge": {
     "message": "ডিফল্ট"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "আপডেট শেষ হয়নি। tomarigi বর্তমান সংস্করণেই আছে; আবার চেষ্টা করুন"
+  },
+  "localAiHeading": {
+    "message": "লোকাল"
+  },
+  "localAiDescription": {
+    "message": "Ollama বা LM Studio-এর মতো OpenAI-সামঞ্জস্যপূর্ণ সার্ভারে চলা মডেল ব্যবহার করে। কী লাগে না।"
+  },
+  "localAiBaseUrlLabel": {
+    "message": "সার্ভার URL"
+  },
+  "localAiModelLabel": {
+    "message": "মডেল"
+  },
+  "localAiModelsLoading": {
+    "message": "মডেল লোড হচ্ছে…"
+  },
+  "localAiModelsFailed": {
+    "message": "এই সার্ভার থেকে মডেলের তালিকা পাওয়া যায়নি। মডেলের নাম লিখুন।"
+  },
+  "localAiReloadModels": {
+    "message": "তালিকা আবার লোড করুন"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL অবশ্যই http:// বা https:// দিয়ে শুরু হতে হবে।"
+  },
+  "localAiChangeButton": {
+    "message": "পরিবর্তন"
+  },
+  "localAiTestUnreachable": {
+    "message": "সার্ভারে সংযোগ করা যাচ্ছে না। সার্ভার চালু আছে কি না এবং URL ঠিক আছে কি না দেখুন।"
   }
 }

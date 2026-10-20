@@ -220,13 +220,13 @@
     "message": "Kunci API OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Gunakan untuk ringkasan"
+    "message": "Guna untuk ringkasan dan concierge"
   },
   "aiApiKeysHeading": {
-    "message": "Kunci API AI"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Pilihan. Digunakan untuk ringkasan suara peristiwa selesai dan ujian sambungan. Jika kedua-dua kunci disimpan, anda boleh memilih penyedia ringkasan."
+    "message": "Pilihan. Digunakan untuk ringkasan belon ucapan, concierge dan ringkasan suara peristiwa selesai. Jika lebih daripada satu ditetapkan, pilih yang digunakan."
   },
   "rootDefaultBadge": {
     "message": "Lalai"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Kemas kini tidak selesai. tomarigi kekal pada versi semasa; cuba lagi"
+  },
+  "localAiHeading": {
+    "message": "Tempatan"
+  },
+  "localAiDescription": {
+    "message": "Menggunakan model pada pelayan yang serasi dengan OpenAI, seperti Ollama atau LM Studio. Tiada kunci diperlukan."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL pelayan"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Memuatkan model…"
+  },
+  "localAiModelsFailed": {
+    "message": "Tidak dapat mendapatkan senarai model daripada pelayan ini. Taip nama model."
+  },
+  "localAiReloadModels": {
+    "message": "Muat semula senarai"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL mesti bermula dengan http:// atau https://."
+  },
+  "localAiChangeButton": {
+    "message": "Tukar"
+  },
+  "localAiTestUnreachable": {
+    "message": "Tidak dapat menghubungi pelayan. Pastikan pelayan sedang berjalan dan URL betul."
   }
 }

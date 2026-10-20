@@ -220,13 +220,13 @@
     "message": "„OpenAI“ API raktas"
   },
   "byokUseForSummaryLabel": {
-    "message": "Naudoti santraukoms"
+    "message": "Naudoti santraukoms ir konsjeržui"
   },
   "aiApiKeysHeading": {
-    "message": "DI API raktai"
+    "message": "DI"
   },
   "aiApiKeysDescription": {
-    "message": "Pasirenkama. Naudojama užbaigtų įvykių balso santraukoms ir ryšio testams. Išsaugoję abu raktus galite pasirinkti santraukų teikėją."
+    "message": "Neprivaloma. Naudojama kalbos debesėlių santraukoms, konsjeržui ir baigtų įvykių balso santraukoms. Jei nustatyta daugiau nei viena, pasirinkite, kurią naudoti."
   },
   "rootDefaultBadge": {
     "message": "Numatytasis"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Naujinimas nebaigtas. tomarigi lieka dabartinės versijos; bandykite dar kartą"
+  },
+  "localAiHeading": {
+    "message": "Vietinis"
+  },
+  "localAiDescription": {
+    "message": "Naudoja modelį su OpenAI suderinamame serveryje, pvz., Ollama ar LM Studio. Rakto nereikia."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Serverio URL"
+  },
+  "localAiModelLabel": {
+    "message": "Modelis"
+  },
+  "localAiModelsLoading": {
+    "message": "Įkeliami modeliai…"
+  },
+  "localAiModelsFailed": {
+    "message": "Nepavyko gauti modelių sąrašo iš šio serverio. Įveskite modelio pavadinimą."
+  },
+  "localAiReloadModels": {
+    "message": "Įkelti sąrašą iš naujo"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL turi prasidėti http:// arba https://."
+  },
+  "localAiChangeButton": {
+    "message": "Keisti"
+  },
+  "localAiTestUnreachable": {
+    "message": "Nepavyksta prisijungti prie serverio. Patikrinkite, ar jis veikia ir ar URL teisingas."
   }
 }
