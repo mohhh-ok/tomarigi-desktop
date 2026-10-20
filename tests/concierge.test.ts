@@ -409,6 +409,85 @@ test("an advice to check the result of a session whose work goes on in the backg
   expect(CONCIERGE_TASK.systemPrompt).toContain("A session with continuing true is still working");
 });
 
+test("an advice to check the result of a watched child, or of a parent watching a working child, is dropped for every provider", async () => {
+  // The user's cases: idle-render finished and its watching parent was already working on its report; billionclips
+  // finished its turn while the child it watches was still deploying
+  const payload = buildConciergePayload(
+    [
+      { view: view("1611c5c4", { project: "tomarigi-desktop", state: "working", sinceMs: 0 }) },
+      {
+        view: view("idle", { project: "idle-render", state: "done", sinceMs: 30_000, ask: { status: "not_asking" } }),
+        parentId: "1611c5c4",
+      },
+      { view: view("2e080ac8", { project: "billionclips", state: "done", sinceMs: 60_000, ask: { status: "not_asking" } }) },
+      { view: view("2cff8604", { project: "billionclips-deploy", state: "working", sinceMs: 5_000 }), parentId: "2e080ac8" },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  expect(payload.sessions[1]).toMatchObject({ id: "idle", watch_parent: "1611c5c4", result_reached_parent: true });
+  expect(payload.sessions[2]).toMatchObject({ id: "2e080ac8", watch_children: ["2cff8604"] });
+  // A working child has no result yet
+  expect(payload.sessions[3].result_reached_parent).toBeUndefined();
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  for (const provider of ["openai", "anthropic", "local"] as const) {
+    const child = { advice: "idle-renderが完了しました。結果を確認してください", session_id: "idle", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(child))).toEqual({
+      ok: true,
+      verdict: null,
+      dropped: { line: child.advice, targetId: "idle", reason: "watched" },
+      action: "check_result",
+      answer: child,
+    });
+    const parent = { advice: "billionclipsのstagingデプロイ結果を確認してください", session_id: "2e080ac8", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(parent))).toEqual({
+      ok: true,
+      verdict: null,
+      dropped: { line: parent.advice, targetId: "2e080ac8", reason: "child_working" },
+      action: "check_result",
+      answer: parent,
+    });
+  }
+  expect(CONCIERGE_TASK.systemPrompt).toContain("never advise checking its result");
+});
+
+test("when a child's result hasn't reached its parent, the advice about the parent is shown for every provider", async () => {
+  // The parent stopped before the child finished and hasn't worked since
+  const payload = buildConciergePayload(
+    [
+      { view: view("p", { project: "parent", state: "done", sinceMs: 120_000, ask: { status: "not_asking" } }) },
+      { view: view("c", { project: "child", state: "done", sinceMs: 20_000, ask: { status: "not_asking" } }), parentId: "p" },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  expect(payload.sessions[1]).toMatchObject({ watch_parent: "p", result_reached_parent: false });
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  for (const provider of ["openai", "anthropic", "local"] as const) {
+    const toParent = { advice: "parentにchildの結果がまだ届いていません", session_id: "p", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(toParent))).toMatchObject({
+      verdict: { line: toParent.advice, targetId: "p" },
+    });
+    // The child is still not the target
+    const toChild = { advice: "childが終わりました。結果を確認", session_id: "c", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(toChild))).toMatchObject({
+      verdict: null,
+      dropped: { targetId: "c", reason: "watched" },
+    });
+  }
+  expect(CONCIERGE_TASK.systemPrompt).toContain("result_reached_parent is false");
+});
+
 test("an advice that asks to reply about a session that doesn't need a reply is dropped for every provider", async () => {
   const payload = buildConciergePayload(
     [
