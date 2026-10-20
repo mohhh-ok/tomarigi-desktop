@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Bağlantı başarılı"
   },
+  "byokTestNeedsKey": {
+    "message": "Bağlantıyı test etmek için bir anahtar kaydedin."
+  },
   "byokTestFailedAuth": {
     "message": "Anahtar reddedildi. Doğru ve hâlâ geçerli olduğunu kontrol edin."
   },

@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "连接成功"
   },
+  "byokTestNeedsKey": {
+    "message": "保存密钥后即可测试连接。"
+  },
   "byokTestFailedAuth": {
     "message": "密钥被拒绝。请检查密钥是否正确且仍然有效。"
   },

@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "連線成功"
   },
+  "byokTestNeedsKey": {
+    "message": "儲存金鑰後即可測試連線。"
+  },
   "byokTestFailedAuth": {
     "message": "金鑰遭到拒絕。請確認金鑰正確且仍有效。"
   },

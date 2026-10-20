@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Yhteys onnistui"
   },
+  "byokTestNeedsKey": {
+    "message": "Tallenna avain, niin voit testata yhteyden."
+  },
   "byokTestFailedAuth": {
     "message": "Avain hylättiin. Tarkista, että se on oikein ja yhä voimassa."
   },

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { t } from "@/lib/i18n";
 import {
@@ -137,6 +137,17 @@ const TEST_FAILURE_TEXT: Record<JudgeErrorKind, Parameters<typeof t>[0]> = {
   network: "byokTestFailedNetwork",
   malformed: "byokTestFailedMalformed",
 };
+
+/** Why Save or the connection test can't be pressed yet: the one place of a card that says it, under its fields
+ * (docs/design.md, Local AI). Shared by the key rows and Local */
+function CardNote({ text, children }: { text: string; children?: ReactNode }) {
+  return (
+    <div className="ai-card-note">
+      <p>{text}</p>
+      {children}
+    </div>
+  );
+}
 
 /** The connection test button and its result. Shared by the key rows and Local */
 function ConnectionTest({
@@ -359,18 +370,15 @@ function LocalAiSettings({
               it). A list that couldn't be read already asks for the model to be typed. While the list loads, the
               model field says so */}
           {urlInvalid ? null : ids === "failed" && models?.baseUrl === baseUrl ? (
-            <div className="local-ai-note">
-              <p>{t("localAiModelsFailed")}</p>
+            <CardNote text={t("localAiModelsFailed")}>
               <button className="small" onClick={() => loadModels(baseUrl)}>
                 {t("localAiReloadModels")}
               </button>
-            </div>
+            </CardNote>
           ) : (
             ids !== "loading" &&
             !model.trim() && (
-              <div className="local-ai-note">
-                <p>{t("localAiNeedsModel")}</p>
-              </div>
+              <CardNote text={t("localAiNeedsModel")} />
             )
           )}
         </>
@@ -525,6 +533,8 @@ function ApiKeyProviderSettings({
       )}
       {/* Not while a replacement is being typed, the same as Local's change form */}
       {keySet && !replacing && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
+      {/* A failed save already says what to do */}
+      {!keySet && !saveFailed && <CardNote text={t("byokTestNeedsKey")} />}
       <ConnectionTest enabled={keySet} testState={testState} onTest={onTest} />
     </div>
   );

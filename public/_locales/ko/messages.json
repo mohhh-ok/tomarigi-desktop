@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "연결 성공"
   },
+  "byokTestNeedsKey": {
+    "message": "키를 저장하면 연결을 테스트할 수 있습니다."
+  },
   "byokTestFailedAuth": {
     "message": "키가 거부되었습니다. 키가 올바르고 아직 유효한지 확인하세요."
   },

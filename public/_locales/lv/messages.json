@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Savienojums veiksmīgs"
   },
+  "byokTestNeedsKey": {
+    "message": "Saglabājiet atslēgu, lai pārbaudītu savienojumu."
+  },
   "byokTestFailedAuth": {
     "message": "Atslēga tika noraidīta. Pārbaudiet, vai tā ir pareiza un joprojām derīga."
   },

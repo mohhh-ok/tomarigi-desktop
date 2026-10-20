@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Matagumpay ang koneksyon"
   },
+  "byokTestNeedsKey": {
+    "message": "Mag-save ng key para masubok ang koneksyon."
+  },
   "byokTestFailedAuth": {
     "message": "Tinanggihan ang key. Tingnan kung tama ito at may bisa pa."
   },

@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Sambungan berjaya"
   },
+  "byokTestNeedsKey": {
+    "message": "Simpan kunci untuk menguji sambungan."
+  },
   "byokTestFailedAuth": {
     "message": "Kunci ditolak. Semak sama ada kunci betul dan masih sah."
   },

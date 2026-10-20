@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Sikeres kapcsolat"
   },
+  "byokTestNeedsKey": {
+    "message": "Mentsen el egy kulcsot a kapcsolat teszteléséhez."
+  },
   "byokTestFailedAuth": {
     "message": "A kulcsot elutasították. Ellenőrizze, hogy helyes-e és érvényes-e még."
   },

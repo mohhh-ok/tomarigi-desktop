@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "সংযোগ সফল হয়েছে"
   },
+  "byokTestNeedsKey": {
+    "message": "সংযোগ পরীক্ষা করতে একটি কী সংরক্ষণ করুন।"
+  },
   "byokTestFailedAuth": {
     "message": "কী গ্রহণ করা হয়নি। কী-টি সঠিক এবং এখনও বৈধ কিনা দেখে নিন।"
   },

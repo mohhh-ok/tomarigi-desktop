@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Připojení úspěšné"
   },
+  "byokTestNeedsKey": {
+    "message": "Uložte klíč, abyste mohli otestovat připojení."
+  },
   "byokTestFailedAuth": {
     "message": "Klíč byl odmítnut. Zkontrolujte, že je správný a stále platný."
   },

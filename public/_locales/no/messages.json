@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Tilkobling vellykket"
   },
+  "byokTestNeedsKey": {
+    "message": "Lagre en nøkkel for å teste tilkoblingen."
+  },
   "byokTestFailedAuth": {
     "message": "Nøkkelen ble avvist. Sjekk at den er riktig og fortsatt gyldig."
   },

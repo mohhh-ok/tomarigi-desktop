@@ -417,16 +417,16 @@ button.remove {
   border-color: #d97e6a;
 }
 
-/* Why Save and the test can't be pressed yet (the model list couldn't be read, with the retry button under it, or no
-   model): a note in the description's tone */
-.local-ai-note {
+/* Why Save or the test can't be pressed yet (CardNote: no key saved; for Local, the model list couldn't be read, with
+   the retry button under it, or no model): a note in the description's tone */
+.ai-card-note {
   margin: 0 0 12px;
   font-size: 12px;
   color: #8d887c;
   line-height: 1.6;
 }
 
-.local-ai-note p {
+.ai-card-note p {
   margin: 0 0 6px;
 }
 

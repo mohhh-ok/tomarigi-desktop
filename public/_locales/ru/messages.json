@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Соединение установлено"
   },
+  "byokTestNeedsKey": {
+    "message": "Сохраните ключ, чтобы проверить подключение."
+  },
   "byokTestFailedAuth": {
     "message": "Ключ отклонён. Проверьте, что он правильный и всё ещё действует."
   },

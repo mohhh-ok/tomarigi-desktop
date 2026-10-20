@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "اتصال موفق بود"
   },
+  "byokTestNeedsKey": {
+    "message": "برای آزمایش اتصال، یک کلید ذخیره کنید."
+  },
   "byokTestFailedAuth": {
     "message": "کلید پذیرفته نشد. بررسی کنید که درست و هنوز معتبر باشد."
   },

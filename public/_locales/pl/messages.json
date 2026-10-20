@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Połączenie udane"
   },
+  "byokTestNeedsKey": {
+    "message": "Zapisz klucz, aby przetestować połączenie."
+  },
   "byokTestFailedAuth": {
     "message": "Klucz został odrzucony. Sprawdź, czy jest poprawny i nadal ważny."
   },

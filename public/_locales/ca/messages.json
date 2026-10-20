@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Connexió correcta"
   },
+  "byokTestNeedsKey": {
+    "message": "Desa una clau per provar la connexió."
+  },
   "byokTestFailedAuth": {
     "message": "S'ha rebutjat la clau. Comprova que sigui correcta i encara vàlida."
   },

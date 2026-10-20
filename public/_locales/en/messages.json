@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Connected successfully"
   },
+  "byokTestNeedsKey": {
+    "message": "Save a key to test the connection."
+  },
   "byokTestFailedAuth": {
     "message": "The key was rejected. Check that it's correct and still valid."
   },

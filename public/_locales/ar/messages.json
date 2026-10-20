@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "تم الاتصال بنجاح"
   },
+  "byokTestNeedsKey": {
+    "message": "احفظ مفتاحًا لاختبار الاتصال."
+  },
   "byokTestFailedAuth": {
     "message": "تم رفض المفتاح. تحقق من أنه صحيح ولا يزال صالحًا."
   },

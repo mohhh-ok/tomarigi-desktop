@@ -146,6 +146,9 @@
   "byokTestResultSuccess": {
     "message": "Povezava uspešna"
   },
+  "byokTestNeedsKey": {
+    "message": "Shranite ključ, da preizkusite povezavo."
+  },
   "byokTestFailedAuth": {
     "message": "Ključ je bil zavrnjen. Preverite, ali je pravilen in še veljaven."
   },
