@@ -347,6 +347,48 @@ test("an advice with nothing to do now, or about a working session, is dropped f
   }
 });
 
+test("an advice that asks to reply about a session that doesn't need a reply is dropped for every provider", async () => {
+  const payload = buildConciergePayload(
+    [
+      // The user's case: the last reply only said it would ask later, and Jev put the "?" at 0.10
+      {
+        view: view("t", {
+          project: "tomarigi-desktop",
+          state: "done",
+          reply: { at: 1, text: "後で伺います" },
+          ask: { status: "not_asking", probability: 0.1 },
+        }),
+      },
+      { view: view("q", { project: "billionclips", state: "done", ask: { status: "asking", probability: 0.9 } }) },
+      { view: view("p", { project: "yokai-no-sensei", state: "waiting" }) },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  for (const provider of ["openai", "anthropic", "local"] as const) {
+    const reply = { advice: "tomarigi-desktopの確認依頼に返信し、push可否を判断", session_id: "t", action: "reply" };
+    expect(await askConcierge(provider, payload, answering(reply))).toEqual({
+      ok: true,
+      verdict: null,
+      dropped: { line: reply.advice, targetId: "t", reason: "no_reply_needed" },
+      answer: reply,
+    });
+    // A "?" from Jev and a session the machine says waits do need a reply
+    const jev = { advice: "billionclipsの質問に答える", session_id: "q", action: "reply" };
+    expect(await askConcierge(provider, payload, answering(jev))).toMatchObject({ verdict: { line: jev.advice, targetId: "q" } });
+    const machine = { advice: "yokai-no-senseiの許可に答える", session_id: "p", action: "reply" };
+    expect(await askConcierge(provider, payload, answering(machine))).toMatchObject({
+      verdict: { line: machine.advice, targetId: "p" },
+    });
+  }
+});
+
 const classes = (...views: SessionView[]) => conciergeTriggerClasses(views);
 
 test("asked on needs reply (with the ?), its answer, and done; not on working ↔ working, done → dozing, or a new prompt", () => {

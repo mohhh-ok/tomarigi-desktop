@@ -26,6 +26,7 @@ import { orderByWatchLinks } from "./watch-links";
 const DROP_REASON_TEXT: Record<DroppedConciergeAdvice["reason"], string> = {
   nothing_to_do: "nothing to do now",
   working: "the session is working",
+  no_reply_needed: "the session doesn't need a reply",
   no_name: "no session name",
   not_waiting: "another session needs a reply",
 };
