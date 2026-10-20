@@ -63,21 +63,55 @@ pub(crate) fn append_log(line: &str) {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis())
         .unwrap_or(0);
-    append_log_in(&log_dir(), &format!("{ts} {line}\n"), LOG_LIMIT);
+    let dir = log_dir();
+    // Once per run, before the first line: logs written by older builds were readable by others
+    static TIGHTEN: std::sync::Once = std::sync::Once::new();
+    TIGHTEN.call_once(|| tighten_log_permissions(&dir));
+    append_log_in(&dir, &format!("{ts} {line}\n"), LOG_LIMIT);
 }
 
 /// Appends text to app-log.txt in dir. When the text would take the file past limit, the file is first renamed to
 /// app-log.1.txt (replacing an older one). The size is checked on each write, so every build sharing the file rolls it
-/// over; a rename that loses a race to another build is ignored
+/// over; a rename that loses a race to another build is ignored. The folder and files are the user's only (0700 and
+/// 0600; docs/design.md), since the log holds advice text. Windows: %TEMP% is already the user's own folder
 fn append_log_in(dir: &Path, text: &str, limit: u64) {
-    let _ = std::fs::create_dir_all(dir);
+    let mut folder = std::fs::DirBuilder::new();
+    folder.recursive(true);
+    #[cfg(unix)]
+    std::os::unix::fs::DirBuilderExt::mode(&mut folder, 0o700);
+    let _ = folder.create(dir);
     let path = dir.join("app-log.txt");
     if std::fs::metadata(&path).is_ok_and(|m| m.len() > 0 && m.len() + text.len() as u64 > limit) {
         let _ = std::fs::rename(&path, dir.join("app-log.1.txt"));
     }
-    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+    let mut options = std::fs::OpenOptions::new();
+    options.create(true).append(true);
+    #[cfg(unix)]
+    std::os::unix::fs::OpenOptionsExt::mode(&mut options, 0o600);
+    if let Ok(mut f) = options.open(&path) {
         let _ = f.write_all(text.as_bytes());
     }
+}
+
+/// Makes a log folder and files that others can read the user's only. A link in their place is left alone, so a link
+/// planted in a shared folder can't point this at another file
+fn tighten_log_permissions(dir: &Path) {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        for (path, mode) in [
+            (dir.to_path_buf(), 0o700),
+            (dir.join("app-log.txt"), 0o600),
+            (dir.join("app-log.1.txt"), 0o600),
+        ] {
+            let Ok(meta) = std::fs::symlink_metadata(&path) else { continue };
+            if !meta.file_type().is_symlink() && meta.permissions().mode() & 0o077 != 0 {
+                let _ = std::fs::set_permissions(&path, std::fs::Permissions::from_mode(mode));
+            }
+        }
+    }
+    #[cfg(not(unix))]
+    let _ = dir;
 }
 
 #[tauri::command]
@@ -332,6 +366,42 @@ mod tests {
         // A single line longer than the limit is still written, to a file of its own
         append_log_in(&dir, "0123456789abc\n", 10);
         assert_eq!(read("app-log.txt"), "0123456789abc\n");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn app_log_is_the_users_only() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = std::env::temp_dir().join(format!("tomarigi-app-log-perm-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let mode = |name: &str| std::fs::metadata(dir.join(name)).unwrap().permissions().mode() & 0o777;
+        // New folder and file
+        append_log_in(&dir, "aaaa\n", 10);
+        assert_eq!(std::fs::metadata(&dir).unwrap().permissions().mode() & 0o777, 0o700);
+        assert_eq!(mode("app-log.txt"), 0o600);
+        // The file started after a roll-over too
+        append_log_in(&dir, "bbbbbbbb\n", 10);
+        assert_eq!(mode("app-log.txt"), 0o600);
+        assert_eq!(mode("app-log.1.txt"), 0o600);
+        // Files and a folder left readable by an older build are tightened
+        let loose = std::fs::Permissions::from_mode;
+        std::fs::set_permissions(&dir, loose(0o755)).unwrap();
+        std::fs::set_permissions(dir.join("app-log.txt"), loose(0o644)).unwrap();
+        std::fs::set_permissions(dir.join("app-log.1.txt"), loose(0o644)).unwrap();
+        tighten_log_permissions(&dir);
+        assert_eq!(std::fs::metadata(&dir).unwrap().permissions().mode() & 0o777, 0o700);
+        assert_eq!(mode("app-log.txt"), 0o600);
+        assert_eq!(mode("app-log.1.txt"), 0o600);
+        // A link in a file's place is left alone
+        let other = std::env::temp_dir().join(format!("tomarigi-app-log-perm-other-{}", std::process::id()));
+        std::fs::write(&other, "x").unwrap();
+        std::fs::set_permissions(&other, loose(0o644)).unwrap();
+        std::fs::remove_file(dir.join("app-log.1.txt")).unwrap();
+        std::os::unix::fs::symlink(&other, dir.join("app-log.1.txt")).unwrap();
+        tighten_log_permissions(&dir);
+        assert_eq!(std::fs::metadata(&other).unwrap().permissions().mode() & 0o777, 0o644);
+        let _ = std::fs::remove_file(&other);
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
