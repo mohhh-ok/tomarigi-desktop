@@ -225,7 +225,8 @@ function LocalAiSettings({
         setModel(saved ?? "");
         return;
       }
-      const picked = pickLocalModel(ids, modelRef.current, saved);
+      // Back on the saved URL after its model was cleared, the saved model comes back
+      const picked = pickLocalModel(ids, modelRef.current || (saved ?? ""), saved);
       setModels({ baseUrl: url, ids: picked.options });
       setModel(picked.model);
     });
@@ -237,6 +238,16 @@ function LocalAiSettings({
     if (open && showForm) loadModels(baseUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, showForm]);
+
+  /** Puts the form back to the saved values (or the defaults), dropping what was typed and any list on its way */
+  const resetDraft = (to: LocalAiConfig | null) => {
+    requestedRef.current = null;
+    setBaseUrl(to?.baseUrl ?? DEFAULT_LOCAL_BASE_URL);
+    setModel(to?.model ?? "");
+    setModels(null);
+    setUrlInvalid(false);
+    setTested(null);
+  };
 
   const save = () => {
     if (!isValidBaseUrl(baseUrl)) {
@@ -270,6 +281,13 @@ function LocalAiSettings({
                 onChange={(e) => {
                   setBaseUrl(e.target.value);
                   setUrlInvalid(false);
+                  // Another server's list and model aren't kept: both are read again from the new URL when the field
+                  // loses focus, so only a model of that server can be saved. An answer still on its way is dropped
+                  if (models !== null) {
+                    requestedRef.current = null;
+                    setModels(null);
+                    setModel("");
+                  }
                 }}
                 onBlur={() => {
                   if (models?.baseUrl !== baseUrl) loadModels(baseUrl);
@@ -323,8 +341,7 @@ function LocalAiSettings({
                   <CancelEditButton
                     onCancel={() => {
                       setEditing(false);
-                      setUrlInvalid(false);
-                      setTested(null);
+                      resetDraft(config);
                     }}
                   />
                 )}
@@ -350,17 +367,21 @@ function LocalAiSettings({
           <button
             className="small"
             onClick={() => {
-              setBaseUrl(config.baseUrl);
-              setModel(config.model);
-              setUrlInvalid(false);
-              // The saved values' last result isn't carried into the form
-              setTested(null);
+              // Opens on the saved values; their last test result isn't carried into the form
+              resetDraft(config);
               setEditing(true);
             }}
           >
             {t("localAiChangeButton")}
           </button>
-          <button className="small remove" onClick={onDelete}>
+          <button
+            className="small remove"
+            onClick={() => {
+              // The form that opens after deleting starts from the defaults, not from an edit that was cancelled
+              resetDraft(null);
+              onDelete();
+            }}
+          >
             {t("byokDeleteButton")}
           </button>
         </div>
