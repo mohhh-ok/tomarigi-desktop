@@ -2,6 +2,7 @@
 // newer version is found, "Update to v<version>" with the download progress. Up to date / check failed only come
 // from a manual check (src-tauri/src/updater.rs)
 import { t } from "@/lib/i18n";
+import { BusyButton } from "./busy-button";
 import type { UpdateStatus } from "../use-updates";
 
 type Props = {
@@ -63,10 +64,12 @@ function UpdateBody({ status, onCheck, onInstall }: Omit<Props, "version">) {
     default:
       return (
         <>
-          <button className="small" onClick={onCheck} disabled={status.kind === "checking"}>
-            {t("updatesCheckButton")}
-          </button>
-          {status.kind === "checking" && <p className="judge-status judge-status-pending">{t("updatesChecking")}</p>}
+          <BusyButton
+            label={t("updatesCheckButton")}
+            busyLabel={t("updatesChecking")}
+            busy={status.kind === "checking"}
+            onClick={onCheck}
+          />
           {status.kind === "upToDate" && <p className="judge-status judge-status-ok">{t("updatesUpToDate")}</p>}
           {status.kind === "checkFailed" && (
             <p className="judge-status judge-status-error" role="alert">
