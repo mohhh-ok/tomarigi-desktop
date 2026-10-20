@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Скасувати"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Введіть правильний URL сервера, щоб перевірити з’єднання."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Виберіть або введіть модель, щоб перевірити з’єднання."
+  "localAiNeedsModel": {
+    "message": "Виберіть або введіть модель, щоб зберегти й перевірити з’єднання."
   }
 }

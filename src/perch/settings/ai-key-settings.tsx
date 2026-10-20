@@ -132,14 +132,12 @@ function CancelEditButton({ onCancel }: { onCancel: () => void }) {
 /** The connection test button and its result. Shared by the key rows and Local */
 function ConnectionTest({
   enabled,
-  disabledReason,
   testState,
   failureText,
   onTest,
 }: {
+  // Why it can't be pressed is said by the card, not here
   enabled: boolean;
-  // Why the button can't be pressed, shown under it while it's disabled
-  disabledReason?: string;
   testState: ApiKeyTestState;
   // Replaces the generic failure line when a row has a clearer one
   failureText?: string;
@@ -147,11 +145,11 @@ function ConnectionTest({
 }) {
   return (
     <>
-      {/* Disabled when nothing is set up, to prevent an action that would only produce a no-key result */}
-      <button className="small" onClick={onTest} disabled={!enabled}>
+      {/* Disabled when nothing is set up, to prevent an action that would only produce a no-key result, and while a
+          test runs ("Testing…" under it says why) */}
+      <button className="small" onClick={onTest} disabled={!enabled || testState.phase === "testing"}>
         {t("byokTestButton")}
       </button>
-      {!enabled && disabledReason && <p className="judge-status ai-test-disabled-reason">{disabledReason}</p>}
       {testState.phase === "testing" && <p className="judge-status">{t("byokTestingLabel")}</p>}
       {testState.phase === "success" && <p className="judge-status judge-status-ok">{t("byokTestResultSuccess")}</p>}
       {testState.phase === "failure" && (
@@ -199,7 +197,10 @@ function LocalAiSettings({
   // The model in the field when an answer comes back
   const modelRef = useRef(model);
   modelRef.current = model;
-  const [urlInvalid, setUrlInvalid] = useState(false);
+  // Said under the URL field as soon as the URL is wrong; it's also why Save and the test can't be pressed
+  const urlInvalid = !isValidBaseUrl(baseUrl);
+  // One rule for Save and the connection test (docs/design.md, Local AI)
+  const canRun = !urlInvalid && model.trim() !== "";
   const showForm = config === null || editing;
   // What the last test ran on: the base URL and model in the form, or "saved". A result for anything else (other values
   // in the form, or the saved ones once the form opens) isn't shown
@@ -245,16 +246,11 @@ function LocalAiSettings({
     setBaseUrl(to?.baseUrl ?? DEFAULT_LOCAL_BASE_URL);
     setModel(to?.model ?? "");
     setModels(null);
-    setUrlInvalid(false);
     setTested(null);
   };
 
   const save = () => {
-    if (!isValidBaseUrl(baseUrl)) {
-      setUrlInvalid(true);
-      return;
-    }
-    if (!model.trim()) return;
+    if (!canRun) return;
     onSave({ baseUrl, model });
     setEditing(false);
   };
@@ -280,7 +276,6 @@ function LocalAiSettings({
                 placeholder={DEFAULT_LOCAL_BASE_URL}
                 onChange={(e) => {
                   setBaseUrl(e.target.value);
-                  setUrlInvalid(false);
                   // Another server's list and model aren't kept: both are read again from the new URL when the field
                   // loses focus, so only a model of that server can be saved. An answer still on its way is dropped
                   if (models !== null) {
@@ -333,7 +328,7 @@ function LocalAiSettings({
                     e.preventDefault();
                     save();
                   }}
-                  disabled={!model.trim() || !baseUrl.trim()}
+                  disabled={!canRun}
                 >
                   {t("byokSaveButton")}
                 </button>
@@ -348,14 +343,23 @@ function LocalAiSettings({
               </span>
             </label>
           </div>
-          {/* Only about the URL in the field, and not while that URL is invalid */}
-          {ids === "failed" && models?.baseUrl === baseUrl && !urlInvalid && (
+          {/* The one place that says why Save and the test can't be pressed, besides the URL error (which already says
+              it). A list that couldn't be read already asks for the model to be typed. While the list loads, the
+              model field says so */}
+          {urlInvalid ? null : ids === "failed" && models?.baseUrl === baseUrl ? (
             <div className="local-ai-note">
               <p>{t("localAiModelsFailed")}</p>
               <button className="small" onClick={() => loadModels(baseUrl)}>
                 {t("localAiReloadModels")}
               </button>
             </div>
+          ) : (
+            ids !== "loading" &&
+            !model.trim() && (
+              <div className="local-ai-note">
+                <p>{t("localAiNeedsModel")}</p>
+              </div>
+            )
           )}
         </>
       ) : (
@@ -389,10 +393,7 @@ function LocalAiSettings({
       {/* The choice is about the saved settings, so it isn't shown while they're being edited */}
       {config !== null && !showForm && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
       <ConnectionTest
-        enabled={showForm ? isValidBaseUrl(baseUrl) && model.trim() !== "" : true}
-        disabledReason={
-          showForm ? (isValidBaseUrl(baseUrl) ? t("localAiTestNeedsModel") : t("localAiTestNeedsUrl")) : undefined
-        }
+        enabled={showForm ? canRun : true}
         testState={shownTest}
         // A server that can't be reached is the usual failure here (not started, or a wrong URL), so it says what to check
         failureText={shownTest.phase === "failure" && shownTest.reason === "network" ? t("localAiTestUnreachable") : undefined}

@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Batal"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Masukkan URL pelayan yang sah untuk menguji sambungan."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Pilih atau taip model untuk menguji sambungan."
+  "localAiNeedsModel": {
+    "message": "Pilih atau taip model untuk menyimpan dan menguji sambungan."
   }
 }

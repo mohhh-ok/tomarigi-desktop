@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Atcelt"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Ievadiet derīgu servera URL, lai pārbaudītu savienojumu."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Izvēlieties vai ievadiet modeli, lai pārbaudītu savienojumu."
+  "localAiNeedsModel": {
+    "message": "Izvēlieties vai ievadiet modeli, lai saglabātu un pārbaudītu savienojumu."
   }
 }

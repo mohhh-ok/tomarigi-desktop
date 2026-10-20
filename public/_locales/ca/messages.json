@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Cancel·la"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Escriu un URL de servidor vàlid per provar la connexió."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Tria o escriu un model per provar la connexió."
+  "localAiNeedsModel": {
+    "message": "Tria o escriu un model per desar-lo i provar la connexió."
   }
 }

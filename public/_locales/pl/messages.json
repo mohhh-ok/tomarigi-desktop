@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Anuluj"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Wpisz poprawny adres URL serwera, aby przetestować połączenie."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Wybierz lub wpisz model, aby przetestować połączenie."
+  "localAiNeedsModel": {
+    "message": "Wybierz lub wpisz model, aby zapisać i przetestować połączenie."
   }
 }

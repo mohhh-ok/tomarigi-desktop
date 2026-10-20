@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Отказ"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Въведете валиден URL адрес на сървъра, за да тествате връзката."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Изберете или въведете модел, за да тествате връзката."
+  "localAiNeedsModel": {
+    "message": "Изберете или въведете модел, за да запазите и тествате връзката."
   }
 }

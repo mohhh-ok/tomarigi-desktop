@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "取消"
   },
-  "localAiTestNeedsUrl": {
-    "message": "輸入正確的伺服器 URL 後即可測試連線。"
-  },
-  "localAiTestNeedsModel": {
-    "message": "選擇或輸入模型後即可測試連線。"
+  "localAiNeedsModel": {
+    "message": "選擇或輸入模型後，即可儲存並測試連線。"
   }
 }

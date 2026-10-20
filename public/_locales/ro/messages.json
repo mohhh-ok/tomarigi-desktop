@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Anulează"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Introduceți un URL de server valid pentru a testa conexiunea."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Alegeți sau introduceți un model pentru a testa conexiunea."
+  "localAiNeedsModel": {
+    "message": "Alegeți sau introduceți un model pentru a salva și a testa conexiunea."
   }
 }

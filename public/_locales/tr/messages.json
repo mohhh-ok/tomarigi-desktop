@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "İptal"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Bağlantıyı test etmek için geçerli bir sunucu URL'si girin."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Bağlantıyı test etmek için bir model seçin veya yazın."
+  "localAiNeedsModel": {
+    "message": "Kaydetmek ve bağlantıyı test etmek için bir model seçin veya yazın."
   }
 }

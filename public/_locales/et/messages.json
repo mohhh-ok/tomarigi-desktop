@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Tühista"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Ühenduse testimiseks sisestage kehtiv serveri URL."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Ühenduse testimiseks valige või sisestage mudel."
+  "localAiNeedsModel": {
+    "message": "Salvestamiseks ja ühenduse testimiseks valige või sisestage mudel."
   }
 }

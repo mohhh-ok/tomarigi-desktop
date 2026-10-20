@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "إلغاء"
   },
-  "localAiTestNeedsUrl": {
-    "message": "أدخل عنوان URL صالحًا للخادم لاختبار الاتصال."
-  },
-  "localAiTestNeedsModel": {
-    "message": "اختر نموذجًا أو اكتبه لاختبار الاتصال."
+  "localAiNeedsModel": {
+    "message": "اختر نموذجًا أو اكتبه للحفظ واختبار الاتصال."
   }
 }

@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "ยกเลิก"
   },
-  "localAiTestNeedsUrl": {
-    "message": "ป้อน URL ของเซิร์ฟเวอร์ที่ถูกต้องเพื่อทดสอบการเชื่อมต่อ"
-  },
-  "localAiTestNeedsModel": {
-    "message": "เลือกหรือพิมพ์โมเดลเพื่อทดสอบการเชื่อมต่อ"
+  "localAiNeedsModel": {
+    "message": "เลือกหรือพิมพ์โมเดลเพื่อบันทึกและทดสอบการเชื่อมต่อ"
   }
 }

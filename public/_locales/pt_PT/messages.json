@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Cancelar"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Introduza um URL de servidor válido para testar a ligação."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Escolha ou escreva um modelo para testar a ligação."
+  "localAiNeedsModel": {
+    "message": "Escolha ou escreva um modelo para guardar e testar a ligação."
   }
 }

@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Kanselahin"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Maglagay ng tamang URL ng server para masubok ang koneksyon."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Pumili o mag-type ng model para masubok ang koneksyon."
+  "localAiNeedsModel": {
+    "message": "Pumili o mag-type ng model para ma-save at masubok ang koneksyon."
   }
 }

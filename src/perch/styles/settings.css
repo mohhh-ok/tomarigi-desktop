@@ -417,12 +417,8 @@ button.remove {
   border-color: #d97e6a;
 }
 
-/* Why the connection test can't run yet, in the description's tone */
-.ai-test-disabled-reason {
-  color: #8d887c;
-}
-
-/* The model list couldn't be read: a note in the description's tone, with the retry button under it */
+/* Why Save and the test can't be pressed yet (the model list couldn't be read, with the retry button under it, or no
+   model): a note in the description's tone */
 .local-ai-note {
   margin: 0 0 12px;
   font-size: 12px;
@@ -569,7 +565,7 @@ button.update-install:hover {
   accent-color: #d9b06a;
 }
 
-/* "Check for updates" while a check runs, and a connection test that can't run yet: visibly not clickable */
+/* "Check for updates" while a check runs, and Save or a connection test that can't run yet: visibly not clickable */
 .update-settings button:disabled,
 .ai-keys button:disabled {
   opacity: 0.45;
