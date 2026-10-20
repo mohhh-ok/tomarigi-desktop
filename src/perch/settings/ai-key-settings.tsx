@@ -10,6 +10,7 @@ import {
 } from "@/lib/api-keys";
 import type { JudgeErrorKind } from "@/lib/judge";
 import { fetchLocalModels, isValidBaseUrl, pickLocalModel } from "@/lib/local-judge";
+import { BusyButton } from "./busy-button";
 
 // TypeSafe's official site (linked from the settings description)
 const TYPESAFE_SITE_URL = "https://typesafe.ai";
@@ -153,12 +154,15 @@ function ConnectionTest({
 }) {
   return (
     <>
-      {/* Disabled when nothing is set up, to prevent an action that would only produce a no-key result, and while a
-          test runs ("Testing…" under it says why) */}
-      <button className="small" onClick={onTest} disabled={!enabled || testState.phase === "testing"}>
-        {t("byokTestButton")}
-      </button>
-      {testState.phase === "testing" && <p className="judge-status judge-status-pending">{t("byokTestingLabel")}</p>}
+      {/* Disabled when nothing is set up, to prevent an action that would only produce a no-key result. While a test
+          runs the button itself says so */}
+      <BusyButton
+        label={t("byokTestButton")}
+        busyLabel={t("byokTestingLabel")}
+        busy={testState.phase === "testing"}
+        disabled={!enabled}
+        onClick={onTest}
+      />
       {testState.phase === "success" && <p className="judge-status judge-status-ok">{t("byokTestResultSuccess")}</p>}
       {testState.phase === "failure" && (
         <p className="judge-status judge-status-error">{failureText ?? t(TEST_FAILURE_TEXT[testState.reason])}</p>
