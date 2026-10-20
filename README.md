@@ -97,7 +97,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly.
 
 Where BYOK API keys are stored depends on the identifier (KeyStore in src-tauri/src/keys.rs); see "BYOK API keys" in docs/design.md.
 
-Logs are appended to `/tmp/tomarigi-desktop/app-log.txt` (`~/.local/state/tomarigi-desktop/app-log.txt` on Linux, `%TEMP%\tomarigi-desktop\app-log.txt` on Windows).
+Logs are appended to `~/Library/Logs/tomarigi-desktop/app-log.txt` (`~/.local/state/tomarigi-desktop/app-log.txt` on Linux, `%TEMP%\tomarigi-desktop\app-log.txt` on Windows). Past 10 MB the file becomes `app-log.1.txt` and a new one starts.
 
 The Rust tauri crates are pinned to match `@tauri-apps/api` on the npm side; see the comment in `src-tauri/Cargo.toml`.
 
