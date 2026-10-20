@@ -29,7 +29,7 @@ mod window;
 mod xconn;
 
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 use tauri::{AppHandle, Manager, WindowEvent};
 
@@ -55,15 +55,28 @@ fn log_dir() -> PathBuf {
     PathBuf::from("/tmp/tomarigi-desktop")
 }
 
+/// The app log's size limit: past it the file becomes app-log.1.txt, so about twice this is kept (docs/design.md)
+const LOG_LIMIT: u64 = 10 * 1024 * 1024;
+
 pub(crate) fn append_log(line: &str) {
-    let dir = log_dir();
-    let _ = std::fs::create_dir_all(&dir);
-    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(dir.join("app-log.txt")) {
-        let ts = std::time::SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map(|d| d.as_millis())
-            .unwrap_or(0);
-        let _ = writeln!(f, "{ts} {line}");
+    let ts = std::time::SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or(0);
+    append_log_in(&log_dir(), &format!("{ts} {line}\n"), LOG_LIMIT);
+}
+
+/// Appends text to app-log.txt in dir. When the text would take the file past limit, the file is first renamed to
+/// app-log.1.txt (replacing an older one). The size is checked on each write, so every build sharing the file rolls it
+/// over; a rename that loses a race to another build is ignored
+fn append_log_in(dir: &Path, text: &str, limit: u64) {
+    let _ = std::fs::create_dir_all(dir);
+    let path = dir.join("app-log.txt");
+    if std::fs::metadata(&path).is_ok_and(|m| m.len() > 0 && m.len() + text.len() as u64 > limit) {
+        let _ = std::fs::rename(&path, dir.join("app-log.1.txt"));
+    }
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+        let _ = f.write_all(text.as_bytes());
     }
 }
 
@@ -291,4 +304,34 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn app_log_rolls_over_past_its_limit() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-app-log-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let read = |name: &str| std::fs::read_to_string(dir.join(name)).unwrap_or_default();
+        append_log_in(&dir, "aaaa\n", 10);
+        append_log_in(&dir, "bbbb\n", 10);
+        // Within the limit the lines stay in one file
+        assert_eq!(read("app-log.txt"), "aaaa\nbbbb\n");
+        assert!(!dir.join("app-log.1.txt").exists());
+        // A line that would go past it starts a new file; the old one is kept as app-log.1.txt
+        append_log_in(&dir, "cccc\n", 10);
+        assert_eq!(read("app-log.txt"), "cccc\n");
+        assert_eq!(read("app-log.1.txt"), "aaaa\nbbbb\n");
+        // The next roll replaces the older app-log.1.txt
+        append_log_in(&dir, "dddd\n", 10);
+        append_log_in(&dir, "eeee\n", 10);
+        assert_eq!(read("app-log.txt"), "eeee\n");
+        assert_eq!(read("app-log.1.txt"), "cccc\ndddd\n");
+        // A single line longer than the limit is still written, to a file of its own
+        append_log_in(&dir, "0123456789abc\n", 10);
+        assert_eq!(read("app-log.txt"), "0123456789abc\n");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }
