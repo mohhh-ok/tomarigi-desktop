@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { t } from "@/lib/i18n";
-import type { AiProvider, ApiKeyProvider } from "@/lib/api-keys";
+import {
+  DEFAULT_LOCAL_BASE_URL,
+  type AiProvider,
+  type AiSettingsProvider,
+  type ApiKeyProvider,
+  type LocalAiConfig,
+} from "@/lib/api-keys";
 import type { JudgeErrorKind } from "@/lib/judge";
+import { fetchLocalModels } from "@/lib/local-judge";
 
 // TypeSafe's official site (linked from the settings description)
 const TYPESAFE_SITE_URL = "https://typesafe.ai";
@@ -18,51 +25,315 @@ export type ApiKeyTestState =
   | { phase: "failure"; reason: JudgeErrorKind }
   | { phase: "no-key" };
 
-/** All API key settings. The shared description is shown once here; per-provider differences stay inside each row. */
+/** All AI settings: the API keys and Local AI. The shared description is shown once here; per-provider differences
+ * stay inside each row. */
 export function AiKeySettings({
+  open,
   keySet,
   storeAvailable,
+  localAi,
   selectedProvider,
   testState,
   onSaveKey,
   onDeleteKey,
+  onSaveLocal,
+  onDeleteLocal,
   onTest,
   onSelect,
 }: {
+  // Whether the settings screen is showing (it stays mounted while hidden); Local reads the model list only then
+  open: boolean;
   keySet: Record<ApiKeyProvider, boolean>;
-  // false on a computer without a key store (Linux without Secret Service): says so instead of the provider rows
+  // false on a computer without a key store (Linux without Secret Service): says so instead of the key rows
   storeAvailable: boolean;
+  // Local AI's base URL and model; null while not set up (docs/design.md "BYOK API keys", Local AI)
+  localAi: LocalAiConfig | null;
   selectedProvider: AiProvider | null;
-  testState: Record<ApiKeyProvider, ApiKeyTestState>;
+  testState: Record<AiSettingsProvider, ApiKeyTestState>;
   onSaveKey: (provider: ApiKeyProvider, draft: string) => Promise<boolean>;
   onDeleteKey: (provider: ApiKeyProvider) => void;
-  onTest: (provider: ApiKeyProvider) => void;
+  onSaveLocal: (config: LocalAiConfig) => void;
+  onDeleteLocal: () => void;
+  onTest: (provider: AiSettingsProvider, localDraft?: LocalAiConfig) => void;
   onSelect: (provider: AiProvider) => void;
 }) {
+  // The choice of which one runs summaries and the concierge is shown only when more than one is set up
+  const setUp: Record<AiProvider, boolean> = {
+    anthropic: storeAvailable && keySet.anthropic,
+    openai: storeAvailable && keySet.openai,
+    local: localAi !== null,
+  };
+  const choosable = Object.values(setUp).filter(Boolean).length > 1;
+  const keyRow = (provider: ApiKeyProvider) => (
+    <ApiKeyProviderSettings
+      key={provider}
+      provider={provider}
+      keySet={keySet[provider]}
+      selected={selectedProvider === provider}
+      testState={testState[provider]}
+      onSaveKey={(draft) => onSaveKey(provider, draft)}
+      onDeleteKey={() => onDeleteKey(provider)}
+      onTest={() => onTest(provider)}
+      onSelect={provider !== "typesafe" && choosable ? () => onSelect(provider) : undefined}
+    />
+  );
   return (
     <section className="ai-keys">
       <h2>{t("aiApiKeysHeading")}</h2>
-      {/* Without a key store there is nothing to save into, so the note replaces the description (which talks about
-          saving keys) and the provider rows aren't shown */}
-      <p className="judge-description">{t(storeAvailable ? "aiApiKeysDescription" : "byokStoreUnavailable")}</p>
-      {storeAvailable && (
-        <div className="ai-key-provider-list">
-          {(["anthropic", "openai", "typesafe"] as const).map((provider) => (
-            <ApiKeyProviderSettings
-              key={provider}
-              provider={provider}
-              keySet={keySet[provider]}
-              selected={selectedProvider === provider}
-              testState={testState[provider]}
-              onSaveKey={(draft) => onSaveKey(provider, draft)}
-              onDeleteKey={() => onDeleteKey(provider)}
-              onTest={() => onTest(provider)}
-              onSelect={provider === "typesafe" ? undefined : () => onSelect(provider)}
-            />
-          ))}
+      <p className="judge-description">{t("aiApiKeysDescription")}</p>
+      {/* Without a key store there is nothing to save keys into, so a note replaces the key rows. Local has no key and
+          stays */}
+      {!storeAvailable && <p className="judge-description">{t("byokStoreUnavailable")}</p>}
+      <div className="ai-key-provider-list">
+        {storeAvailable && keyRow("anthropic")}
+        {storeAvailable && keyRow("openai")}
+        <LocalAiSettings
+          open={open}
+          config={localAi}
+          selected={selectedProvider === "local"}
+          testState={testState.local}
+          onSave={onSaveLocal}
+          onDelete={onDeleteLocal}
+          onTest={(draft) => onTest("local", draft)}
+          onSelect={choosable ? () => onSelect("local") : undefined}
+        />
+        {storeAvailable && keyRow("typesafe")}
+      </div>
+    </section>
+  );
+}
+
+/** The radio that picks the provider for summaries and the concierge. Shared by the key rows and Local */
+function ProviderChoice({ selected, onSelect }: { selected: boolean; onSelect: () => void }) {
+  return (
+    <label className="ai-provider-choice">
+      <input type="radio" name="summary-provider" checked={selected} onChange={onSelect} />
+      {t("byokUseForSummaryLabel")}
+    </label>
+  );
+}
+
+/** The connection test button and its result. Shared by the key rows and Local */
+function ConnectionTest({
+  enabled,
+  testState,
+  failureText,
+  onTest,
+}: {
+  enabled: boolean;
+  testState: ApiKeyTestState;
+  // Replaces the generic failure line when a row has a clearer one
+  failureText?: string;
+  onTest: () => void;
+}) {
+  return (
+    <>
+      {/* Disabled when nothing is set up, to prevent an action that would only produce a no-key result */}
+      <button className="small" onClick={onTest} disabled={!enabled}>
+        {t("byokTestButton")}
+      </button>
+      {testState.phase === "testing" && <p className="judge-status">{t("byokTestingLabel")}</p>}
+      {testState.phase === "success" && <p className="judge-status judge-status-ok">{t("byokTestResultSuccess")}</p>}
+      {testState.phase === "failure" && (
+        <p className="judge-status judge-status-error">{failureText ?? t("byokTestResultFailure", testState.reason)}</p>
+      )}
+      {testState.phase === "no-key" && <p className="judge-status judge-status-error">{t("byokNoKeyMessage")}</p>}
+    </>
+  );
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    return ["http:", "https:"].includes(new URL(value.trim()).protocol);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Local AI: an OpenAI-compatible server (Ollama, LM Studio, ...). The base URL and model are settings, not secrets, so
+ * the saved values are shown. The model is picked from the server's list; when the list can't be read it is typed
+ */
+function LocalAiSettings({
+  open,
+  config,
+  selected,
+  testState,
+  onSave,
+  onDelete,
+  onTest,
+  onSelect,
+}: {
+  open: boolean;
+  config: LocalAiConfig | null;
+  selected: boolean;
+  testState: ApiKeyTestState;
+  onSave: (config: LocalAiConfig) => void;
+  onDelete: () => void;
+  // With the form open, the values typed so far are tested (before saving); otherwise the saved ones
+  onTest: (draft?: LocalAiConfig) => void;
+  onSelect?: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [baseUrl, setBaseUrl] = useState(config?.baseUrl ?? DEFAULT_LOCAL_BASE_URL);
+  const [model, setModel] = useState(config?.model ?? "");
+  // The model list of the base URL it was read from: loading, the ids, or failed (then the model is typed)
+  const [models, setModels] = useState<{ baseUrl: string; ids: string[] | "loading" | "failed" } | null>(null);
+  const [urlInvalid, setUrlInvalid] = useState(false);
+  const showForm = config === null || editing;
+  // The base URL and model the last test ran on: a result for other values than the ones in the form isn't shown
+  const [tested, setTested] = useState<string | null>(null);
+  const draftKey = `${baseUrl.trim()}|${model.trim()}`;
+  const shownTest: ApiKeyTestState = showForm && tested !== draftKey ? { phase: "idle" } : testState;
+
+  const loadModels = (url: string) => {
+    if (!isHttpUrl(url)) {
+      setModels({ baseUrl: url, ids: "failed" });
+      return;
+    }
+    setModels({ baseUrl: url, ids: "loading" });
+    void fetchLocalModels(url).then((ids) => {
+      // Only the answer for the URL still in the field counts
+      setModels((current) =>
+        current?.baseUrl === url ? { baseUrl: url, ids: ids && ids.length > 0 ? ids : "failed" } : current,
+      );
+      if (ids && ids.length > 0) setModel((current) => (ids.includes(current) ? current : ids[0]));
+    });
+  };
+
+  // The list is read when the form shows on the open settings screen; after that, when the URL field loses focus with a
+  // new URL
+  useEffect(() => {
+    if (open && showForm) loadModels(baseUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, showForm]);
+
+  const save = () => {
+    if (!isHttpUrl(baseUrl)) {
+      setUrlInvalid(true);
+      return;
+    }
+    if (!model.trim()) return;
+    onSave({ baseUrl, model });
+    setEditing(false);
+  };
+
+  const ids = models?.ids;
+  return (
+    <div className="ai-key-provider ai-key-provider-local">
+      <h3>{t("localAiHeading")}</h3>
+      <p className="judge-description">{t("localAiDescription")}</p>
+      {showForm ? (
+        <>
+          <div className="local-ai-fields">
+            <label className="local-ai-field">
+              <span className="local-ai-field-label">{t("localAiBaseUrlLabel")}</span>
+              <input
+                className="judge-key-input"
+                type="text"
+                inputMode="url"
+                autoComplete="off"
+                spellCheck={false}
+                value={baseUrl}
+                placeholder={DEFAULT_LOCAL_BASE_URL}
+                onChange={(e) => {
+                  setBaseUrl(e.target.value);
+                  setUrlInvalid(false);
+                }}
+                onBlur={() => {
+                  if (models?.baseUrl !== baseUrl) loadModels(baseUrl);
+                }}
+              />
+              {urlInvalid && (
+                <span className="judge-status judge-status-error local-ai-field-error" role="alert">
+                  {t("localAiUrlInvalid")}
+                </span>
+              )}
+            </label>
+            <label className="local-ai-field">
+              <span className="local-ai-field-label">{t("localAiModelLabel")}</span>
+              {/* Save sits right of the model field, like the key rows' input and Save */}
+              <span className="judge-key-row local-ai-model-row">
+                {Array.isArray(ids) ? (
+                  <select className="judge-key-input" value={model} onChange={(e) => setModel(e.target.value)}>
+                    {ids.map((id) => (
+                      <option key={id} value={id}>
+                        {id}
+                      </option>
+                    ))}
+                  </select>
+                ) : ids === "loading" ? (
+                  <select className="judge-key-input" disabled>
+                    <option>{t("localAiModelsLoading")}</option>
+                  </select>
+                ) : (
+                  <input
+                    className="judge-key-input"
+                    type="text"
+                    autoComplete="off"
+                    spellCheck={false}
+                    value={model}
+                    placeholder={t("localAiModelLabel")}
+                    onChange={(e) => setModel(e.target.value)}
+                  />
+                )}
+                <button
+                  className="small"
+                  onClick={(e) => {
+                    // Inside the label, a click would also focus the field
+                    e.preventDefault();
+                    save();
+                  }}
+                  disabled={!model.trim() || !baseUrl.trim()}
+                >
+                  {t("byokSaveButton")}
+                </button>
+              </span>
+            </label>
+          </div>
+          {ids === "failed" && (
+            <div className="local-ai-note">
+              <p>{t("localAiModelsFailed")}</p>
+              <button className="small" onClick={() => loadModels(baseUrl)}>
+                {t("localAiReloadModels")}
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="judge-key-row">
+          <span className="judge-key-set local-ai-current">
+            <span className="local-ai-current-model">{config.model}</span>
+            <span className="local-ai-current-url">{config.baseUrl}</span>
+          </span>
+          <button
+            className="small"
+            onClick={() => {
+              setBaseUrl(config.baseUrl);
+              setModel(config.model);
+              setUrlInvalid(false);
+              setEditing(true);
+            }}
+          >
+            {t("localAiChangeButton")}
+          </button>
+          <button className="small remove" onClick={onDelete}>
+            {t("byokDeleteButton")}
+          </button>
         </div>
       )}
-    </section>
+      {config !== null && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
+      <ConnectionTest
+        enabled={showForm ? isHttpUrl(baseUrl) && model.trim() !== "" : true}
+        testState={shownTest}
+        // A server that can't be reached is the usual failure here (not started, or a wrong URL), so it says what to check
+        failureText={shownTest.phase === "failure" && shownTest.reason === "network" ? t("localAiTestUnreachable") : undefined}
+        onTest={() => {
+          setTested(draftKey);
+          onTest(showForm ? { baseUrl, model } : undefined);
+        }}
+      />
+    </div>
   );
 }
 
@@ -83,7 +354,8 @@ function ApiKeyProviderSettings({
   onSaveKey: (draft: string) => Promise<boolean>;
   onDeleteKey: () => void;
   onTest: () => void;
-  // Passed only for rows that can be chosen as the summary provider (TypeSafe is only for the needs-reply check, not summaries)
+  // Passed only for rows that can be chosen as the summary provider, while more than one is set up (TypeSafe is only for
+  // the needs-reply check, not summaries)
   onSelect?: () => void;
 }) {
   // Temporary state held only by the key input before saving. Cleared and discarded after saving (no plaintext left behind)
@@ -161,39 +433,8 @@ function ApiKeyProviderSettings({
           {t("byokSaveFailedMessage")}
         </p>
       )}
-      {keySet && onSelect && (
-        <label className="ai-provider-choice">
-          <input
-            type="radio"
-            name="summary-provider"
-            checked={selected}
-            onChange={onSelect}
-          />
-          {t("byokUseForSummaryLabel")}
-        </label>
-      )}
-      {/* Disabled when no key is set, to prevent an action that would only produce a no-key result */}
-      <button className="small" onClick={onTest} disabled={!keySet}>
-        {t("byokTestButton")}
-      </button>
-      {testState.phase === "testing" && (
-        <p className="judge-status">{t("byokTestingLabel")}</p>
-      )}
-      {testState.phase === "success" && (
-        <p className="judge-status judge-status-ok">
-          {t("byokTestResultSuccess")}
-        </p>
-      )}
-      {testState.phase === "failure" && (
-        <p className="judge-status judge-status-error">
-          {t("byokTestResultFailure", testState.reason)}
-        </p>
-      )}
-      {testState.phase === "no-key" && (
-        <p className="judge-status judge-status-error">
-          {t("byokNoKeyMessage")}
-        </p>
-      )}
+      {keySet && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
+      <ConnectionTest enabled={keySet} testState={testState} onTest={onTest} />
     </div>
   );
 }

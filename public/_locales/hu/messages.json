@@ -220,13 +220,13 @@
     "message": "OpenAI API-kulcs"
   },
   "byokUseForSummaryLabel": {
-    "message": "Használat összefoglalókhoz"
+    "message": "Összefoglalókhoz és a concierge-hez"
   },
   "aiApiKeysHeading": {
-    "message": "AI API-kulcsok"
+    "message": "MI"
   },
   "aiApiKeysDescription": {
-    "message": "Opcionális. A befejezett események hangos összefoglalóihoz és kapcsolati tesztekhez használatos. Mindkét kulcs mentésekor kiválasztható az összefoglalók szolgáltatója."
+    "message": "Nem kötelező. A szövegbuborékok összefoglalóihoz, a concierge-hez és a befejezett események felolvasott összefoglalóihoz használatos. Ha több is be van állítva, válassza ki, melyiket használja."
   },
   "rootDefaultBadge": {
     "message": "Alapértelmezett"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "A frissítés nem fejeződött be. A tomarigi a jelenlegi verzión maradt; próbáld újra"
+  },
+  "localAiHeading": {
+    "message": "Helyi"
+  },
+  "localAiDescription": {
+    "message": "OpenAI-kompatibilis szerveren (például Ollama vagy LM Studio) futó modellt használ. Nem kell kulcs."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Szerver URL-je"
+  },
+  "localAiModelLabel": {
+    "message": "Modell"
+  },
+  "localAiModelsLoading": {
+    "message": "Modellek betöltése…"
+  },
+  "localAiModelsFailed": {
+    "message": "Nem sikerült lekérni a modellek listáját erről a szerverről. Írja be a modell nevét."
+  },
+  "localAiReloadModels": {
+    "message": "Lista újratöltése"
+  },
+  "localAiUrlInvalid": {
+    "message": "Az URL-nek http:// vagy https:// előtaggal kell kezdődnie."
+  },
+  "localAiChangeButton": {
+    "message": "Módosítás"
+  },
+  "localAiTestUnreachable": {
+    "message": "A szerver nem érhető el. Ellenőrizze, hogy fut-e, és helyes-e az URL."
   }
 }

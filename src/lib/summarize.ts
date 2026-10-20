@@ -5,8 +5,8 @@
 // prevents reprocessing the same event in the first place). So there is no module-level
 // verdict cache or pending tracking; this is just a thin wrapper around runJudge.
 
-import { runJudge, type JudgeResult, type JudgeTaskDefinition } from "./judge";
-import { runOpenAiJudge } from "./openai-judge";
+import type { JudgeResult, JudgeTaskDefinition } from "./judge";
+import { judgeRunnerFor } from "./ai-judge";
 import type { AiProvider } from "./api-keys";
 
 interface SummarizeVerdict {
@@ -47,8 +47,7 @@ export async function summarizeDoneEvent(
   provider: AiProvider,
   payload: SummarizePayload,
 ): Promise<JudgeResult<SummarizeVerdict>> {
-  const run = provider === "openai" ? runOpenAiJudge : runJudge;
-  return run<SummarizeVerdict>(SUMMARIZE_DONE_TASK, payload);
+  return judgeRunnerFor(provider)<SummarizeVerdict>(SUMMARIZE_DONE_TASK, payload);
 }
 
 // ---- Summaries for birds' speech bubbles (docs/design.md "Speech bubbles") ----
@@ -91,6 +90,5 @@ export async function summarizeTurnLine(
   provider: AiProvider,
   payload: TurnLinePayload,
 ): Promise<JudgeResult<TurnLineVerdict>> {
-  const run = provider === "openai" ? runOpenAiJudge : runJudge;
-  return run<TurnLineVerdict>(SUMMARIZE_TURN_TASK, payload);
+  return judgeRunnerFor(provider)<TurnLineVerdict>(SUMMARIZE_TURN_TASK, payload);
 }

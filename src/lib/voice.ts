@@ -177,7 +177,9 @@ function speakDoneFallback(event: SessionEvent, lang: string): void {
 }
 
 // Timeout for fetching the summary. To keep a stuck BYOK call from delaying or dropping the done
-// readout itself, give up once exceeded and fall back to the legacy behavior
+// readout itself, give up once exceeded and fall back to the legacy behavior. Local uses the same wait, though its
+// first request may take longer while the model loads: the readout is the done signal, so it is read without the
+// summary rather than late (docs/design.md "BYOK API keys", Local AI)
 const SUMMARY_TIMEOUT_MS = 5_000;
 
 /** Internal marker for withTimeout only. A unique symbol so it can't collide with the verdict type */
@@ -202,7 +204,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIM
 }
 
 /**
- * Reads a done event aloud. Only when there is an OpenAI or Anthropic API key and the assistant's
+ * Reads a done event aloud. Only when OpenAI / Anthropic / Local is set up and the assistant's
  * reply body for this turn (event.assistantText) is available does it read the AI summary
  * (lib/summarize.ts), in the order "project name → summary". Otherwise (no key, API error, timeout,
  * empty verdict) it falls back to speakDoneFallback — which reads project name + last sentence if the

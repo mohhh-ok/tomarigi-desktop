@@ -15,17 +15,23 @@ import {
 } from "@/lib/settings-store";
 import { DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "@/lib/concierge";
 import {
+  anyAiProviderSetUp,
   deleteAiProvider,
   deleteApiKey,
+  deleteLocalAiConfig,
   initApiKeys,
   loadAiProvider,
   loadApiKeyBackend,
   loadApiKeyStatus,
+  loadLocalAiConfig,
   resolveAiProvider,
   saveAiProvider,
   saveApiKey,
+  saveLocalAiConfig,
   type AiProvider,
+  type AiSettingsProvider,
   type ApiKeyProvider,
+  type LocalAiConfig,
 } from "@/lib/api-keys";
 import {
   loadIconSetAssignments,
@@ -35,6 +41,7 @@ import {
 } from "@/lib/icon-set-store";
 import { testJudgeConnection } from "@/lib/judge";
 import { testOpenAiConnection } from "@/lib/openai-judge";
+import { testLocalConnection } from "@/lib/local-judge";
 import { testTypeSafeConnection } from "@/lib/jev";
 import { cancelSpeech, setVoiceVolume } from "@/lib/voice";
 import { DEFAULT_ICON_SET } from "./icon-sets";
@@ -55,10 +62,13 @@ export function useSettings() {
     openai: false,
     typesafe: false,
   });
-  const [aiKeyTestState, setAiKeyTestState] = useState<Record<ApiKeyProvider, ApiKeyTestState>>({
+  // Local AI's base URL and model (docs/design.md "BYOK API keys", Local AI); null while not set up
+  const [localAi, setLocalAi] = useState<LocalAiConfig | null>(null);
+  const [aiKeyTestState, setAiKeyTestState] = useState<Record<AiSettingsProvider, ApiKeyTestState>>({
     anthropic: { phase: "idle" },
     openai: { phase: "idle" },
     typesafe: { phase: "idle" },
+    local: { phase: "idle" },
   });
   const [aiProvider, setAiProvider] = useState<AiProvider | null>(null);
   // Per-project icon set assignments (issue #14). A slug → {set, label} map.
@@ -94,18 +104,35 @@ export function useSettings() {
     } catch (e) {
       console.warn("[tomarigi] failed to initialize API keys", e);
     }
-    const [keyStatus, preferredProvider, keyBackend] = await Promise.all([
+    // For verification: TOMARIGI_LOCAL_AI sets up Local and chooses it, then logs the connection test (README)
+    const imported = await invoke<[string, string] | null>("local_ai_import").catch(() => null);
+    if (imported) {
+      const [baseUrl, model] = imported;
+      await saveLocalAiConfig({ baseUrl, model });
+      await saveAiProvider("local");
+      const test = await testLocalConnection();
+      void invoke("log", {
+        line: `[keys] imported local model=${model} test=${test.ok ? "ok" : `${test.kind} ${test.message ?? ""}`}`,
+      }).catch(() => {});
+    }
+    const [keyStatus, preferredProvider, keyBackend, local] = await Promise.all([
       loadApiKeyStatus(),
       loadAiProvider(),
       loadApiKeyBackend(),
+      loadLocalAiConfig(),
     ]);
     setKeyStoreAvailable(keyBackend !== "unavailable");
     // Log whether each key is saved (a boolean only). Key values are never received or printed
     void invoke("log", {
-      line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} typesafe=${keyStatus.typesafe}`,
+      line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} typesafe=${keyStatus.typesafe} local=${local !== undefined}`,
     });
-    const resolvedProvider = resolveAiProvider(preferredProvider, keyStatus.anthropic, keyStatus.openai);
+    const resolvedProvider = resolveAiProvider(preferredProvider, {
+      anthropic: keyStatus.anthropic,
+      openai: keyStatus.openai,
+      local: local !== undefined,
+    });
     setAiKeySet(keyStatus);
+    setLocalAi(local ?? null);
     setAiProvider(resolvedProvider ?? null);
     // Inconsistencies from old data or from deleting the key in use are normalized once to the available side.
     if (resolvedProvider && resolvedProvider !== preferredProvider) {
@@ -160,7 +187,7 @@ export function useSettings() {
     }
     setAiKeySet((current) => ({ ...current, [provider]: true }));
     setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "idle" } }));
-    // The summary provider auto-selects the first key saved. If one is already selected, saving a second doesn't switch it.
+    // The summary provider auto-selects the first one set up. If one is already selected, saving a second doesn't switch it.
     // TypeSafe isn't used for summaries, so it is excluded
     if (provider !== "typesafe" && !aiProvider) {
       await saveAiProvider(provider);
@@ -175,11 +202,40 @@ export function useSettings() {
     setAiKeySet(nextKeySet);
     setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "idle" } }));
     if (aiProvider === provider) {
-      const nextProvider = resolveAiProvider(
-        undefined,
-        nextKeySet.anthropic,
-        nextKeySet.openai,
-      );
+      const nextProvider = resolveAiProvider(undefined, {
+        anthropic: nextKeySet.anthropic,
+        openai: nextKeySet.openai,
+        local: localAi !== null,
+      });
+      setAiProvider(nextProvider ?? null);
+      if (nextProvider) await saveAiProvider(nextProvider);
+      else await deleteAiProvider();
+    }
+  }, [aiKeySet, aiProvider, localAi]);
+
+  /** Saves Local's base URL and model (replacing works the same way) */
+  const saveLocalAi = useCallback(async (config: LocalAiConfig) => {
+    await saveLocalAiConfig(config);
+    setLocalAi({ baseUrl: config.baseUrl.trim(), model: config.model.trim() });
+    setAiKeyTestState((current) => ({ ...current, local: { phase: "idle" } }));
+    void invoke("log", { line: `[keys] saved local model=${config.model.trim()}` }).catch(() => {});
+    if (!aiProvider) {
+      await saveAiProvider("local");
+      setAiProvider("local");
+    }
+  }, [aiProvider]);
+
+  const removeLocalAi = useCallback(async () => {
+    await deleteLocalAiConfig();
+    setLocalAi(null);
+    setAiKeyTestState((current) => ({ ...current, local: { phase: "idle" } }));
+    void invoke("log", { line: "[keys] deleted local" }).catch(() => {});
+    if (aiProvider === "local") {
+      const nextProvider = resolveAiProvider(undefined, {
+        anthropic: aiKeySet.anthropic,
+        openai: aiKeySet.openai,
+        local: false,
+      });
       setAiProvider(nextProvider ?? null);
       if (nextProvider) await saveAiProvider(nextProvider);
       else await deleteAiProvider();
@@ -191,7 +247,18 @@ export function useSettings() {
     setAiProvider(provider);
   }, []);
 
-  const runAiKeyTest = useCallback(async (provider: ApiKeyProvider) => {
+  // localDraft: Local's base URL and model as typed, tested before saving
+  const runAiKeyTest = useCallback(async (provider: AiSettingsProvider, localDraft?: LocalAiConfig) => {
+    if (provider === "local") {
+      setAiKeyTestState((current) => ({ ...current, local: { phase: "testing" } }));
+      const result = await testLocalConnection(localDraft);
+      void invoke("log", { line: `[keys] test local ${result.ok ? "ok" : `error=${result.kind}`}` }).catch(() => {});
+      setAiKeyTestState((current) => ({
+        ...current,
+        local: result.ok ? { phase: "success" } : { phase: "failure", reason: result.kind },
+      }));
+      return;
+    }
     if (!(await loadApiKeyStatus())[provider]) {
       setAiKeyTestState((current) => ({ ...current, [provider]: { phase: "no-key" } }));
       return;
@@ -242,6 +309,9 @@ export function useSettings() {
     keyStoreAvailable,
     aiKeyTestState,
     aiProvider,
+    localAi,
+    // Speech bubbles and the concierge are shown only while one of OpenAI / Anthropic / Local is set up
+    summarySetUp: anyAiProviderSetUp({ anthropic: aiKeySet.anthropic, openai: aiKeySet.openai, local: localAi !== null }),
     iconSetAssignments,
     loadSettings,
     toggleMuted,
@@ -250,6 +320,8 @@ export function useSettings() {
     changeChirpVolume,
     saveAiKey,
     removeAiKey,
+    saveLocalAi,
+    removeLocalAi,
     selectAiProvider,
     runAiKeyTest,
     assignIconSet,

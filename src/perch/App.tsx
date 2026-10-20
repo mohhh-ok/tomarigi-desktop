@@ -108,6 +108,8 @@ export default function App({
     keyStoreAvailable,
     aiKeyTestState,
     aiProvider,
+    localAi,
+    summarySetUp,
     iconSetAssignments,
     loadSettings,
     toggleMuted,
@@ -116,13 +118,15 @@ export default function App({
     changeChirpVolume,
     saveAiKey,
     removeAiKey,
+    saveLocalAi,
+    removeLocalAi,
     selectAiProvider,
     runAiKeyTest,
     assignIconSet,
     conciergeLook,
     changeConciergeLook,
   } = useSettings();
-  const { requestJudgements, displaySessions } = useTurnJudgements(sessions, aiKeySet);
+  const { requestJudgements, displaySessions } = useTurnJudgements(sessions, aiKeySet, summarySetUp);
   // Readout is off where the WebView can't speak (some Linux builds; docs/design.md "Platforms")
   const canSpeak = speechAvailable();
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
@@ -425,7 +429,7 @@ export default function App({
     });
   }, [events, displaySessions]);
 
-  // The concierge (docs/design.md "Concierge"): shown while an OpenAI / Anthropic key is saved. It reads the same
+  // The concierge (docs/design.md "Concierge"): shown while an OpenAI / Anthropic key is saved or Local is set up. It reads the same
   // sessions and events as the screens, so it sees the Jev verdicts and bubble lines they show
   const agentOfSession = useCallback(
     (id: string) => roots.find((r) => id.startsWith(`${r.id}/`))?.kind,
@@ -434,7 +438,7 @@ export default function App({
   const concierge = useConcierge(
     displaySessions,
     displayEvents,
-    aiKeySet.anthropic || aiKeySet.openai,
+    summarySetUp,
     agentOfSession,
     source.conciergeAdvice?.(displaySessions),
   );
@@ -676,13 +680,17 @@ export default function App({
               />
             )}
             <AiKeySettings
+              open={settingsOpen && !showDebug}
               keySet={aiKeySet}
               storeAvailable={keyStoreAvailable}
+              localAi={localAi}
+              onSaveLocal={(config) => void saveLocalAi(config)}
+              onDeleteLocal={() => void removeLocalAi()}
               selectedProvider={aiProvider}
               testState={aiKeyTestState}
               onSaveKey={saveAiKey}
               onDeleteKey={(provider) => void removeAiKey(provider)}
-              onTest={(provider) => void runAiKeyTest(provider)}
+              onTest={(provider, localDraft) => void runAiKeyTest(provider, localDraft)}
               onSelect={(provider) => void selectAiProvider(provider)}
             />
             <ConciergeSettings look={conciergeLook} onChange={changeConciergeLook} />

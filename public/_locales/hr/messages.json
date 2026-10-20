@@ -220,13 +220,13 @@
     "message": "OpenAI API ključ"
   },
   "byokUseForSummaryLabel": {
-    "message": "Koristi za sažetke"
+    "message": "Koristi za sažetke i concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI API ključevi"
+    "message": "UI"
   },
   "aiApiKeysDescription": {
-    "message": "Neobavezno. Koristi se za glasovne sažetke dovršenih događaja i testove veze. Ako spremite oba ključa, možete odabrati pružatelja sažetaka."
+    "message": "Neobavezno. Koristi se za sažetke u oblačićima, concierge i glasovne sažetke završenih događaja. Ako je postavljeno više njih, odaberite koji koristiti."
   },
   "rootDefaultBadge": {
     "message": "Zadano"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Ažuriranje nije dovršeno. tomarigi ostaje na trenutačnoj verziji; pokušajte ponovno"
+  },
+  "localAiHeading": {
+    "message": "Lokalno"
+  },
+  "localAiDescription": {
+    "message": "Koristi model na poslužitelju kompatibilnom s OpenAI-jem, poput Ollame ili LM Studija. Ključ nije potreban."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL poslužitelja"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Učitavanje modela…"
+  },
+  "localAiModelsFailed": {
+    "message": "Nije moguće dohvatiti popis modela s ovog poslužitelja. Upišite naziv modela."
+  },
+  "localAiReloadModels": {
+    "message": "Ponovno učitaj popis"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL mora počinjati s http:// ili https://."
+  },
+  "localAiChangeButton": {
+    "message": "Promijeni"
+  },
+  "localAiTestUnreachable": {
+    "message": "Poslužitelj nije dostupan. Provjerite radi li i je li URL ispravan."
   }
 }

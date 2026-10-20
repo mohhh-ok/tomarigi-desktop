@@ -220,13 +220,13 @@
     "message": "OpenAI API-nyckel"
   },
   "byokUseForSummaryLabel": {
-    "message": "Använd för sammanfattningar"
+    "message": "Använd för sammanfattningar och conciergen"
   },
   "aiApiKeysHeading": {
-    "message": "AI API-nycklar"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Valfritt. Används för upplästa sammanfattningar av slutförda händelser och anslutningstester. Om båda nycklarna sparas kan du välja leverantör för sammanfattningar."
+    "message": "Valfritt. Används för sammanfattningar i pratbubblor, conciergen och upplästa sammanfattningar av klara händelser. Om fler än en är inställd väljer du vilken som används."
   },
   "rootDefaultBadge": {
     "message": "Standard"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Uppdateringen slutfördes inte. tomarigi har kvar den nuvarande versionen; försök igen"
+  },
+  "localAiHeading": {
+    "message": "Lokalt"
+  },
+  "localAiDescription": {
+    "message": "Använder en modell på en OpenAI-kompatibel server som Ollama eller LM Studio. Ingen nyckel behövs."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Serverns URL"
+  },
+  "localAiModelLabel": {
+    "message": "Modell"
+  },
+  "localAiModelsLoading": {
+    "message": "Läser in modeller …"
+  },
+  "localAiModelsFailed": {
+    "message": "Det gick inte att hämta modellistan från servern. Skriv modellens namn."
+  },
+  "localAiReloadModels": {
+    "message": "Läs in listan igen"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL:en måste börja med http:// eller https://."
+  },
+  "localAiChangeButton": {
+    "message": "Ändra"
+  },
+  "localAiTestUnreachable": {
+    "message": "Det går inte att nå servern. Kontrollera att den körs och att URL:en stämmer."
   }
 }

@@ -220,13 +220,13 @@
     "message": "API-ключ OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Використовувати для підсумків"
+    "message": "Використовувати для підсумків і консьєржа"
   },
   "aiApiKeysHeading": {
-    "message": "API-ключі ШІ"
+    "message": "ШІ"
   },
   "aiApiKeysDescription": {
-    "message": "Необов’язково. Використовується для голосових підсумків завершених подій і перевірки з’єднання. Якщо збережено обидва ключі, можна вибрати постачальника для підсумків."
+    "message": "Необов’язково. Використовується для підсумків у бульбашках, консьєржа та голосових підсумків завершених подій. Якщо налаштовано кілька, виберіть, який використовувати."
   },
   "rootDefaultBadge": {
     "message": "Типова"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Оновлення не завершилося. tomarigi залишається на поточній версії; спробуйте ще раз"
+  },
+  "localAiHeading": {
+    "message": "Локально"
+  },
+  "localAiDescription": {
+    "message": "Використовує модель на OpenAI-сумісному сервері, як-от Ollama або LM Studio. Ключ не потрібен."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL сервера"
+  },
+  "localAiModelLabel": {
+    "message": "Модель"
+  },
+  "localAiModelsLoading": {
+    "message": "Завантаження моделей…"
+  },
+  "localAiModelsFailed": {
+    "message": "Не вдалося отримати список моделей із цього сервера. Введіть назву моделі."
+  },
+  "localAiReloadModels": {
+    "message": "Оновити список"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL має починатися з http:// або https://."
+  },
+  "localAiChangeButton": {
+    "message": "Змінити"
+  },
+  "localAiTestUnreachable": {
+    "message": "Не вдається підключитися до сервера. Перевірте, чи він запущений і чи правильний URL."
   }
 }

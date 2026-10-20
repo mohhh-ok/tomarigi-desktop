@@ -18,7 +18,7 @@ A desktop app for macOS, Windows, and Linux (the Windows and Linux builds haven'
 - In the floating window's Garden, only the birds, their bubbles, and the "tomarigi" handle are shown, and clicks go through to the window below. Click the handle to show the whole window; drag it to move the window
 - Icon sets: Birds, Gnome, Cat, Robot, and Frog, assigned per project
 - No hooks or config changes on the agent side. It only reads each agent's session files (`~/.claude/projects`, `~/.codex/sessions`, `~/.qwen/projects`, `~/.copilot/session-state`, `~/.gemini/tmp`, `~/.local/share/opencode`, `~/.cursor/projects`)
-- Optional BYOK keys: OpenAI or Anthropic for the speech bubble that summarizes each finished turn, and TypeSafe for spotting questions asked in plain text (the "?") and abuse toward the AI (the anger mark). Voice readout uses the system speech synthesizer and needs no key
+- Optional BYOK keys: OpenAI or Anthropic for the speech bubble that summarizes each finished turn (or, without a key, a local model on an OpenAI-compatible server such as Ollama or LM Studio), and TypeSafe for spotting questions asked in plain text (the "?") and abuse toward the AI (the anger mark). Voice readout uses the system speech synthesizer and needs no key
 
 ## Install
 
@@ -90,6 +90,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly.
 - `TOMARIGI_FADE_TEST=1`: "Fade until hovered" self-test. 4 seconds after launch, shows the faded Garden as clicking the window handle would, keeps it shown for 6 seconds as if the cursor were in the window, then lets it fade again (logs `[fade-test] reveal` and `[fade] revealed=...`)
 - `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window
 - `TOMARIGI_IMPORT_KEY=<anthropic|openai|typesafe>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)
+- `TOMARIGI_LOCAL_AI="<base URL>|<model>"`: sets up Local AI with that server and model, chooses it for summaries and the concierge, and logs the connection test result (`[keys] imported local ...`)
 - `TOMARIGI_KEY_BACKEND=webview`: stores keys in IndexedDB instead of the Keychain (for testing the IndexedDB → Keychain migration)
 
 ### Other notes

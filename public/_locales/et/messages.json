@@ -220,13 +220,13 @@
     "message": "OpenAI API võti"
   },
   "byokUseForSummaryLabel": {
-    "message": "Kasuta kokkuvõteteks"
+    "message": "Kasuta kokkuvõteteks ja concierge’i jaoks"
   },
   "aiApiKeysHeading": {
-    "message": "AI API võtmed"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Valikuline. Kasutatakse lõpetatud sündmuste häälega kokkuvõteteks ja ühenduse testimiseks. Mõlema võtme salvestamisel saad valida kokkuvõtete pakkuja."
+    "message": "Valikuline. Kasutatakse kõnemullide kokkuvõteteks, concierge’i jaoks ja lõpetatud sündmuste häälkokkuvõteteks. Kui seadistatud on mitu, valige, millist kasutada."
   },
   "rootDefaultBadge": {
     "message": "Vaikimisi"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Värskendus ei lõppenud. tomarigi jääb praegusele versioonile; proovi uuesti"
+  },
+  "localAiHeading": {
+    "message": "Kohalik"
+  },
+  "localAiDescription": {
+    "message": "Kasutab mudelit OpenAI-ga ühilduvas serveris, näiteks Ollamas või LM Studios. Võtit pole vaja."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Serveri URL"
+  },
+  "localAiModelLabel": {
+    "message": "Mudel"
+  },
+  "localAiModelsLoading": {
+    "message": "Mudelite laadimine…"
+  },
+  "localAiModelsFailed": {
+    "message": "Sellest serverist ei saanud mudelite loendit. Sisestage mudeli nimi."
+  },
+  "localAiReloadModels": {
+    "message": "Laadi loend uuesti"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL peab algama http:// või https://."
+  },
+  "localAiChangeButton": {
+    "message": "Muuda"
+  },
+  "localAiTestUnreachable": {
+    "message": "Serveriga ei saa ühendust. Kontrollige, et see töötab ja URL on õige."
   }
 }

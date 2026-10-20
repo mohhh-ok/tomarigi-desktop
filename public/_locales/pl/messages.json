@@ -220,13 +220,13 @@
     "message": "Klucz API OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Używaj do podsumowań"
+    "message": "Używaj do podsumowań i konsjerża"
   },
   "aiApiKeysHeading": {
-    "message": "Klucze API AI"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Opcjonalne. Używane do głosowych podsumowań ukończonych zdarzeń i testów połączenia. Po zapisaniu obu kluczy możesz wybrać dostawcę podsumowań."
+    "message": "Opcjonalne. Używane do podsumowań w dymkach, konsjerża i głosowych podsumowań zakończonych zdarzeń. Jeśli skonfigurowano więcej niż jeden, wybierz, którego używać."
   },
   "rootDefaultBadge": {
     "message": "Domyślny"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Aktualizacja się nie powiodła. tomarigi pozostaje w obecnej wersji; spróbuj ponownie"
+  },
+  "localAiHeading": {
+    "message": "Lokalnie"
+  },
+  "localAiDescription": {
+    "message": "Używa modelu na serwerze zgodnym z OpenAI, takim jak Ollama lub LM Studio. Klucz nie jest potrzebny."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Adres URL serwera"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Wczytywanie modeli…"
+  },
+  "localAiModelsFailed": {
+    "message": "Nie udało się pobrać listy modeli z tego serwera. Wpisz nazwę modelu."
+  },
+  "localAiReloadModels": {
+    "message": "Wczytaj listę ponownie"
+  },
+  "localAiUrlInvalid": {
+    "message": "Adres URL musi zaczynać się od http:// lub https://."
+  },
+  "localAiChangeButton": {
+    "message": "Zmień"
+  },
+  "localAiTestUnreachable": {
+    "message": "Nie można połączyć się z serwerem. Sprawdź, czy działa i czy adres URL jest poprawny."
   }
 }

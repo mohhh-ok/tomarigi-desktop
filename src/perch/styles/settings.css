@@ -371,6 +371,59 @@ button.remove {
   color: #a49f92;
 }
 
+/* Local AI: the base URL and model fields, label above each, sized like the key input */
+.local-ai-fields {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.local-ai-field {
+  display: grid;
+  gap: 4px;
+}
+
+.local-ai-field-label {
+  font-size: 12px;
+  color: #a49f92;
+}
+
+.local-ai-current {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.local-ai-current-model {
+  color: #d1cdc3;
+  overflow-wrap: anywhere;
+}
+
+.local-ai-current-url {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.local-ai-model-row {
+  margin-bottom: 0;
+}
+
+.local-ai-field-error {
+  margin: 0;
+}
+
+/* The model list couldn't be read: a note in the description's tone, with the retry button under it */
+.local-ai-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #8d887c;
+  line-height: 1.6;
+}
+
+.local-ai-note p {
+  margin: 0 0 6px;
+}
+
 .ai-provider-choice {
   display: flex;
   align-items: flex-start;

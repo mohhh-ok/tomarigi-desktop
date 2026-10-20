@@ -220,13 +220,13 @@
     "message": "מפתח API של OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "שימוש לסיכומים"
+    "message": "להשתמש לסיכומים ולקונסיירז׳"
   },
   "aiApiKeysHeading": {
-    "message": "מפתחות API של בינה מלאכותית"
+    "message": "בינה מלאכותית"
   },
   "aiApiKeysDescription": {
-    "message": "אופציונלי. משמש לסיכומים קוליים של אירועים שהושלמו ולבדיקות חיבור. אם שני המפתחות נשמרו, ניתן לבחור ספק לסיכומים."
+    "message": "אופציונלי. משמש לסיכומים בבועות הדיבור, לקונסיירז׳ ולסיכומים קוליים של אירועים שהסתיימו. אם הוגדר יותר מאחד, בחרו באיזה להשתמש."
   },
   "rootDefaultBadge": {
     "message": "ברירת מחדל"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "העדכון לא הושלם. tomarigi נשאר בגרסה הנוכחית; נסו שוב"
+  },
+  "localAiHeading": {
+    "message": "מקומי"
+  },
+  "localAiDescription": {
+    "message": "משתמש במודל בשרת תואם OpenAI כמו Ollama או LM Studio. אין צורך במפתח."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "כתובת השרת"
+  },
+  "localAiModelLabel": {
+    "message": "מודל"
+  },
+  "localAiModelsLoading": {
+    "message": "טוען מודלים…"
+  },
+  "localAiModelsFailed": {
+    "message": "לא ניתן לקבל את רשימת המודלים מהשרת הזה. הקלידו את שם המודל."
+  },
+  "localAiReloadModels": {
+    "message": "טעינה מחדש של הרשימה"
+  },
+  "localAiUrlInvalid": {
+    "message": "הכתובת חייבת להתחיל ב-http://‎ או ב-https://‎."
+  },
+  "localAiChangeButton": {
+    "message": "שינוי"
+  },
+  "localAiTestUnreachable": {
+    "message": "לא ניתן להתחבר לשרת. ודאו שהוא פועל ושהכתובת נכונה."
   }
 }

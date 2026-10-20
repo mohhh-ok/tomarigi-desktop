@@ -220,13 +220,13 @@
     "message": "Clau API d'OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Utilitza per als resums"
+    "message": "Fes-lo servir per als resums i el conserge"
   },
   "aiApiKeysHeading": {
-    "message": "Claus API d’IA"
+    "message": "IA"
   },
   "aiApiKeysDescription": {
-    "message": "Opcional. S'utilitza per als resums de veu dels esdeveniments completats i les proves de connexió. Si deses les dues claus, pots triar el proveïdor dels resums."
+    "message": "Opcional. S’utilitza per als resums de les bombolles, el conserge i els resums de veu dels esdeveniments acabats. Si n’hi ha més d’un de configurat, tria quin fer servir."
   },
   "rootDefaultBadge": {
     "message": "Per defecte"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "L’actualització no s’ha acabat. tomarigi continua a la versió actual; torneu-ho a provar"
+  },
+  "localAiHeading": {
+    "message": "Local"
+  },
+  "localAiDescription": {
+    "message": "Fa servir un model en un servidor compatible amb OpenAI, com Ollama o LM Studio. No cal clau."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL del servidor"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "S’estan carregant els models…"
+  },
+  "localAiModelsFailed": {
+    "message": "No s’ha pogut obtenir la llista de models d’aquest servidor. Escriu el nom del model."
+  },
+  "localAiReloadModels": {
+    "message": "Torna a carregar la llista"
+  },
+  "localAiUrlInvalid": {
+    "message": "L’URL ha de començar per http:// o https://."
+  },
+  "localAiChangeButton": {
+    "message": "Canvia"
+  },
+  "localAiTestUnreachable": {
+    "message": "No es pot connectar amb el servidor. Comprova que estigui en marxa i que l’URL sigui correcte."
   }
 }

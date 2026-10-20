@@ -220,13 +220,13 @@
     "message": "คีย์ API ของ OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "ใช้สำหรับสรุป"
+    "message": "ใช้สำหรับสรุปและคอนเซียร์จ"
   },
   "aiApiKeysHeading": {
-    "message": "คีย์ API ของ AI"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "ไม่บังคับ ใช้สำหรับสรุปเสียงของเหตุการณ์ที่เสร็จสิ้นและทดสอบการเชื่อมต่อ หากบันทึกทั้งสองคีย์ คุณสามารถเลือกผู้ให้บริการสำหรับการสรุปได้"
+    "message": "ไม่บังคับ ใช้สำหรับสรุปในบอลลูนคำพูด คอนเซียร์จ และสรุปด้วยเสียงของเหตุการณ์ที่เสร็จแล้ว หากตั้งค่าไว้มากกว่าหนึ่ง ให้เลือกตัวที่จะใช้"
   },
   "rootDefaultBadge": {
     "message": "ค่าเริ่มต้น"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "อัปเดตไม่สำเร็จ tomarigi ยังเป็นเวอร์ชันเดิม ลองอีกครั้ง"
+  },
+  "localAiHeading": {
+    "message": "ภายในเครื่อง"
+  },
+  "localAiDescription": {
+    "message": "ใช้โมเดลบนเซิร์ฟเวอร์ที่เข้ากันได้กับ OpenAI เช่น Ollama หรือ LM Studio ไม่ต้องใช้คีย์"
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL ของเซิร์ฟเวอร์"
+  },
+  "localAiModelLabel": {
+    "message": "โมเดล"
+  },
+  "localAiModelsLoading": {
+    "message": "กำลังโหลดโมเดล…"
+  },
+  "localAiModelsFailed": {
+    "message": "ดึงรายการโมเดลจากเซิร์ฟเวอร์นี้ไม่ได้ พิมพ์ชื่อโมเดล"
+  },
+  "localAiReloadModels": {
+    "message": "โหลดรายการใหม่"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL ต้องขึ้นต้นด้วย http:// หรือ https://"
+  },
+  "localAiChangeButton": {
+    "message": "เปลี่ยน"
+  },
+  "localAiTestUnreachable": {
+    "message": "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบว่าเซิร์ฟเวอร์ทำงานอยู่และ URL ถูกต้อง"
   }
 }

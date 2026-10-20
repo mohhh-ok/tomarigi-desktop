@@ -220,13 +220,13 @@
     "message": "Cheie API OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Folosește pentru rezumate"
+    "message": "Folosește pentru rezumate și concierge"
   },
   "aiApiKeysHeading": {
-    "message": "Chei API AI"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Opțional. Folosit pentru rezumatele vocale ale evenimentelor finalizate și testele de conexiune. Dacă salvezi ambele chei, poți alege furnizorul pentru rezumate."
+    "message": "Opțional. Folosit pentru rezumatele din baloane, concierge și rezumatele vocale ale evenimentelor finalizate. Dacă sunt configurate mai multe, alegeți pe care îl folosiți."
   },
   "rootDefaultBadge": {
     "message": "Implicit"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Actualizarea nu s-a terminat. tomarigi rămâne la versiunea curentă; încercați din nou"
+  },
+  "localAiHeading": {
+    "message": "Local"
+  },
+  "localAiDescription": {
+    "message": "Folosește un model pe un server compatibil OpenAI, precum Ollama sau LM Studio. Nu e nevoie de cheie."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL server"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Se încarcă modelele…"
+  },
+  "localAiModelsFailed": {
+    "message": "Nu s-a putut obține lista de modele de pe acest server. Introduceți numele modelului."
+  },
+  "localAiReloadModels": {
+    "message": "Reîncarcă lista"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL-ul trebuie să înceapă cu http:// sau https://."
+  },
+  "localAiChangeButton": {
+    "message": "Modifică"
+  },
+  "localAiTestUnreachable": {
+    "message": "Serverul nu poate fi accesat. Verificați dacă rulează și dacă URL-ul este corect."
   }
 }

@@ -220,13 +220,13 @@
     "message": "OpenAI API Key"
   },
   "byokUseForSummaryLabel": {
-    "message": "Use for summaries"
+    "message": "Use for summaries and the concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI API Keys"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Optional. Used for done-event voice summaries and connection tests. If both keys are saved, choose which provider to use for summaries."
+    "message": "Optional. Used for speech bubble summaries, the concierge, and voice summaries of done events. If more than one is set up, choose which one to use."
   },
   "rootDefaultBadge": {
     "message": "Default"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "The update didn't finish. tomarigi is still on the current version; try again"
+  },
+  "localAiHeading": {
+    "message": "Local"
+  },
+  "localAiDescription": {
+    "message": "Uses a model on an OpenAI-compatible server such as Ollama or LM Studio. No key needed."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "Server URL"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Loading models…"
+  },
+  "localAiModelsFailed": {
+    "message": "Couldn't get the model list from this server. Type the model name."
+  },
+  "localAiReloadModels": {
+    "message": "Reload list"
+  },
+  "localAiUrlInvalid": {
+    "message": "The URL must start with http:// or https://."
+  },
+  "localAiChangeButton": {
+    "message": "Change"
+  },
+  "localAiTestUnreachable": {
+    "message": "Can't reach the server. Check that it's running and the URL is right."
   }
 }

@@ -220,13 +220,13 @@
     "message": "کلید API اوپن‌ای‌آی"
   },
   "byokUseForSummaryLabel": {
-    "message": "استفاده برای خلاصه‌ها"
+    "message": "استفاده برای خلاصه‌ها و کانسیرژ"
   },
   "aiApiKeysHeading": {
-    "message": "کلیدهای API هوش مصنوعی"
+    "message": "هوش مصنوعی"
   },
   "aiApiKeysDescription": {
-    "message": "اختیاری است. برای خلاصه‌های صوتی رویدادهای تکمیل‌شده و آزمایش اتصال استفاده می‌شود. با ذخیره هر دو کلید می‌توانید ارائه‌دهنده خلاصه را انتخاب کنید."
+    "message": "اختیاری. برای خلاصهٔ حباب‌های گفتار، کانسیرژ و خلاصهٔ صوتی رویدادهای تمام‌شده استفاده می‌شود. اگر بیش از یکی تنظیم شده باشد، انتخاب کنید کدام استفاده شود."
   },
   "rootDefaultBadge": {
     "message": "پیش‌فرض"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "به‌روزرسانی تمام نشد. tomarigi روی نسخهٔ فعلی می‌ماند؛ دوباره امتحان کنید"
+  },
+  "localAiHeading": {
+    "message": "محلی"
+  },
+  "localAiDescription": {
+    "message": "از مدلی روی سرور سازگار با OpenAI مانند Ollama یا LM Studio استفاده می‌کند. کلید لازم نیست."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "نشانی سرور"
+  },
+  "localAiModelLabel": {
+    "message": "مدل"
+  },
+  "localAiModelsLoading": {
+    "message": "در حال دریافت مدل‌ها…"
+  },
+  "localAiModelsFailed": {
+    "message": "فهرست مدل‌ها از این سرور دریافت نشد. نام مدل را وارد کنید."
+  },
+  "localAiReloadModels": {
+    "message": "دریافت دوباره فهرست"
+  },
+  "localAiUrlInvalid": {
+    "message": "نشانی باید با http:// یا https:// شروع شود."
+  },
+  "localAiChangeButton": {
+    "message": "تغییر"
+  },
+  "localAiTestUnreachable": {
+    "message": "به سرور وصل نمی‌شود. بررسی کنید که سرور در حال اجرا باشد و نشانی درست باشد."
   }
 }

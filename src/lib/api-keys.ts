@@ -1,4 +1,4 @@
-// BYOK API keys and the provider used for summaries (docs/design.md "BYOK API keys")
+// BYOK API keys, the Local AI settings, and the provider used for summaries (docs/design.md "BYOK API keys")
 import { invoke } from "@tauri-apps/api/core";
 import { kvDelete, kvGet, kvPut } from "./settings-store";
 
@@ -8,10 +8,14 @@ const KEY_AI_API_KEY = "judgeApiKey";
 const KEY_OPENAI_API_KEY = "openAiApiKey";
 const KEY_TYPESAFE_API_KEY = "typeSafeApiKey";
 const KEY_AI_PROVIDER = "aiProvider";
+const KEY_LOCAL_AI = "localAi";
 
-export type AiProvider = "anthropic" | "openai";
-// Providers listed under BYOK on the settings screen. typesafe is not used for summaries; it is only for the needs-reply verdict (lib/jev.ts)
-export type ApiKeyProvider = AiProvider | "typesafe";
+// Providers that run summaries and the concierge. local is an OpenAI-compatible server and has no key (lib/local-judge.ts)
+export type AiProvider = "anthropic" | "openai" | "local";
+// Providers with a key. typesafe is not used for summaries; it is only for the needs-reply verdict (lib/jev.ts)
+export type ApiKeyProvider = "anthropic" | "openai" | "typesafe";
+// The rows of the AI settings: the providers with a key, and Local
+export type AiSettingsProvider = ApiKeyProvider | "local";
 
 // Where keys are stored is decided by Rust at launch from the identifier (KeyStore in src-tauri/src/keys.rs). Everyday and verify builds use the Keychain,
 // dev uses IndexedDB. API calls that use keys are made from Rust, so JS never reads key values.
@@ -93,10 +97,10 @@ export async function deleteApiKey(provider: ApiKeyProvider): Promise<void> {
   await kvDelete(API_KEY_IDB_KEYS[provider]);
 }
 
-/** Provider used for summaries when both keys exist. Saved independently of the keys themselves. */
+/** Provider used for summaries and the concierge when more than one is set up. Saved independently of the keys themselves. */
 export async function loadAiProvider(): Promise<AiProvider | undefined> {
   const saved = await kvGet(KEY_AI_PROVIDER);
-  return saved === "anthropic" || saved === "openai" ? saved : undefined;
+  return saved === "anthropic" || saved === "openai" || saved === "local" ? saved : undefined;
 }
 
 export async function saveAiProvider(provider: AiProvider): Promise<void> {
@@ -107,21 +111,54 @@ export async function deleteAiProvider(): Promise<void> {
   await kvDelete(KEY_AI_PROVIDER);
 }
 
-/** Respect the saved choice if it's available; if only one key exists, pick that provider automatically. */
-export function resolveAiProvider(
-  preferred: AiProvider | undefined,
-  hasAnthropic: boolean,
-  hasOpenAi: boolean,
-): AiProvider | undefined {
-  if (preferred === "anthropic" && hasAnthropic) return preferred;
-  if (preferred === "openai" && hasOpenAi) return preferred;
-  if (hasAnthropic) return "anthropic";
-  if (hasOpenAi) return "openai";
-  return undefined;
+// ---- Local AI (docs/design.md "BYOK API keys", Local AI). Settings, not secrets: kept in IndexedDB with the others ----
+
+export interface LocalAiConfig {
+  baseUrl: string;
+  model: string;
 }
 
-/** Provider used for summaries (decided from saved keys and the choice). Only Rust holds key values */
+/** Ollama's default */
+export const DEFAULT_LOCAL_BASE_URL = "http://localhost:11434/v1";
+
+/** The saved base URL and model, or undefined when Local isn't set up */
+export async function loadLocalAiConfig(): Promise<LocalAiConfig | undefined> {
+  const saved = (await kvGet(KEY_LOCAL_AI)) as Partial<LocalAiConfig> | undefined;
+  const baseUrl = typeof saved?.baseUrl === "string" ? saved.baseUrl.trim() : "";
+  const model = typeof saved?.model === "string" ? saved.model.trim() : "";
+  return baseUrl && model ? { baseUrl, model } : undefined;
+}
+
+export async function saveLocalAiConfig(config: LocalAiConfig): Promise<void> {
+  await kvPut(KEY_LOCAL_AI, { baseUrl: config.baseUrl.trim(), model: config.model.trim() });
+}
+
+export async function deleteLocalAiConfig(): Promise<void> {
+  await kvDelete(KEY_LOCAL_AI);
+}
+
+/** Which of the summary providers are set up (a key saved, or Local's base URL and model saved) */
+export type AiProviderSetUp = Record<AiProvider, boolean>;
+
+/**
+ * Respect the saved choice if it's set up; otherwise the first one set up, in this order. Local comes last, so
+ * someone who already used OpenAI / Anthropic keeps it until they choose Local
+ */
+export function resolveAiProvider(
+  preferred: AiProvider | undefined,
+  setUp: AiProviderSetUp,
+): AiProvider | undefined {
+  if (preferred && setUp[preferred]) return preferred;
+  return (["anthropic", "openai", "local"] as const).find((p) => setUp[p]);
+}
+
+/** Whether any summary provider is set up (speech bubbles and the concierge are shown only then) */
+export function anyAiProviderSetUp(setUp: AiProviderSetUp): boolean {
+  return setUp.anthropic || setUp.openai || setUp.local;
+}
+
+/** Provider used for summaries and the concierge (decided from what is set up and the choice). Only Rust holds key values */
 export async function loadActiveAiProvider(): Promise<AiProvider | undefined> {
-  const [preferred, status] = await Promise.all([loadAiProvider(), loadApiKeyStatus()]);
-  return resolveAiProvider(preferred, status.anthropic, status.openai);
+  const [preferred, status, local] = await Promise.all([loadAiProvider(), loadApiKeyStatus(), loadLocalAiConfig()]);
+  return resolveAiProvider(preferred, { anthropic: status.anthropic, openai: status.openai, local: local !== undefined });
 }

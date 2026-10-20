@@ -220,13 +220,13 @@
     "message": "API klíč OpenAI"
   },
   "byokUseForSummaryLabel": {
-    "message": "Použít pro shrnutí"
+    "message": "Použít pro shrnutí a concierge"
   },
   "aiApiKeysHeading": {
-    "message": "API klíče AI"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "Volitelné. Používá se pro hlasová shrnutí dokončených událostí a testy připojení. Pokud uložíte oba klíče, můžete zvolit poskytovatele shrnutí."
+    "message": "Volitelné. Používá se pro shrnutí v bublinách, concierge a hlasová shrnutí dokončených událostí. Pokud je nastaveno více, vyberte, který použít."
   },
   "rootDefaultBadge": {
     "message": "Výchozí"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "Aktualizace se nedokončila. tomarigi zůstává v aktuální verzi; zkuste to znovu"
+  },
+  "localAiHeading": {
+    "message": "Lokálně"
+  },
+  "localAiDescription": {
+    "message": "Používá model na serveru kompatibilním s OpenAI, jako je Ollama nebo LM Studio. Klíč není potřeba."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "URL serveru"
+  },
+  "localAiModelLabel": {
+    "message": "Model"
+  },
+  "localAiModelsLoading": {
+    "message": "Načítání modelů…"
+  },
+  "localAiModelsFailed": {
+    "message": "Ze serveru se nepodařilo získat seznam modelů. Zadejte název modelu."
+  },
+  "localAiReloadModels": {
+    "message": "Znovu načíst seznam"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL musí začínat http:// nebo https://."
+  },
+  "localAiChangeButton": {
+    "message": "Změnit"
+  },
+  "localAiTestUnreachable": {
+    "message": "Nelze se připojit k serveru. Zkontrolujte, že běží a URL je správná."
   }
 }

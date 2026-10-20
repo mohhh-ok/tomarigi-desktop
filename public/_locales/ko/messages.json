@@ -220,13 +220,13 @@
     "message": "OpenAI API 키"
   },
   "byokUseForSummaryLabel": {
-    "message": "요약에 사용"
+    "message": "요약과 컨시어지에 사용"
   },
   "aiApiKeysHeading": {
-    "message": "AI API 키"
+    "message": "AI"
   },
   "aiApiKeysDescription": {
-    "message": "선택 사항입니다. 완료 이벤트 음성 요약과 연결 테스트에 사용합니다. 두 키를 모두 저장하면 요약에 사용할 제공업체를 선택할 수 있습니다."
+    "message": "선택 사항입니다. 말풍선 요약, 컨시어지, 완료 이벤트 음성 요약에 사용합니다. 여러 개를 설정하면 사용할 것을 선택할 수 있습니다."
   },
   "rootDefaultBadge": {
     "message": "기본"
@@ -353,5 +353,35 @@
   },
   "updatesInstallFailed": {
     "message": "업데이트를 마치지 못했습니다. tomarigi는 현재 버전 그대로입니다. 다시 시도하세요"
+  },
+  "localAiHeading": {
+    "message": "로컬"
+  },
+  "localAiDescription": {
+    "message": "Ollama, LM Studio 등 OpenAI 호환 서버에서 실행되는 모델을 사용합니다. 키는 필요 없습니다."
+  },
+  "localAiBaseUrlLabel": {
+    "message": "서버 URL"
+  },
+  "localAiModelLabel": {
+    "message": "모델"
+  },
+  "localAiModelsLoading": {
+    "message": "모델을 가져오는 중…"
+  },
+  "localAiModelsFailed": {
+    "message": "이 서버에서 모델 목록을 가져오지 못했습니다. 모델 이름을 입력하세요."
+  },
+  "localAiReloadModels": {
+    "message": "목록 다시 가져오기"
+  },
+  "localAiUrlInvalid": {
+    "message": "URL은 http:// 또는 https://로 시작해야 합니다."
+  },
+  "localAiChangeButton": {
+    "message": "변경"
+  },
+  "localAiTestUnreachable": {
+    "message": "서버에 연결할 수 없습니다. 서버가 실행 중인지, URL이 맞는지 확인하세요."
   }
 }
