@@ -56,12 +56,22 @@ interface GardenSize {
   viewH: number;
 }
 
+/** Room the mock controls (?mock=1) take below the tab panels, margin included. Left out of the garden's room and the
+    window's overhead, so the birds are placed (and the window grows) as without them; the controls are scrolled to */
+function mockPanelRoom(body: HTMLElement): number {
+  const panel = body.querySelector<HTMLElement>(":scope > .mock-panel");
+  return panel ? panel.offsetHeight + parseFloat(getComputedStyle(panel).marginTop) : 0;
+}
+
+/** Height of what is in the scroll area besides the garden (padding, margins), the mock controls left out */
+const othersInBody = (body: HTMLElement, el: HTMLElement) => body.scrollHeight - el.offsetHeight - mockPanelRoom(body);
+
 /** The garden's size, and its height without its own stretching (minHeight): the scroll area's visible height minus
     what else is in it (padding, margins) */
 function measureGarden(el: HTMLElement): GardenSize {
   const { width, height } = el.getBoundingClientRect();
   const body = el.closest<HTMLElement>(".page-body");
-  const viewH = body ? body.clientHeight - (body.scrollHeight - el.offsetHeight) : height;
+  const viewH = body ? body.clientHeight - othersInBody(body, el) : height;
   return { w: width, h: height, viewH: Math.max(0, viewH) };
 }
 
@@ -620,11 +630,11 @@ export function Garden({
     let fit: GardenFit | null = null;
     if (el && body && base && el.offsetWidth > 0) {
       // Everything in .page-body other than the garden (tab panel padding, the garden's margin) counts as overhead,
-      // so the garden's own stretched height doesn't
-      const others = body.scrollHeight - el.offsetHeight;
+      // so the garden's own stretched height doesn't. The mock controls don't (mockPanelRoom)
+      const others = othersInBody(body, el);
       // The garden must never reach past the window (docs/design.md "Layout"); log it if it ever does
-      const past = body.scrollHeight - body.clientHeight;
-      if (past > 1 && !body.querySelector(":scope > .mock-panel")) {
+      const past = body.scrollHeight - mockPanelRoom(body) - body.clientHeight;
+      if (past > 1) {
         void invoke("log", { line: `[garden] content ${past}px past the window bottom` }).catch(() => {});
       }
       fit = {
