@@ -32,42 +32,40 @@
 
 /* working effect: an aura of gathering energy. drop-shadow follows the alpha outline of the transparent WebP
    (box-shadow and a background radial-gradient are rectangle/background based and don't follow the outline, so
-   they can't be used). The two layers, gold and white (white-hot), peak at different times on uneven % steps
-   (0/30/55/80/100), so even with "one filter animation" the two layers appear to flicker on different cycles
-   (two animation-names holding the same filter at once don't add up; the last one wins, so putting both
-   layers in one keyframes is required. The hue is close to the live-dots pulse (#e8a13d), but one is a
-   drop-shadow lighting the sprite's outline and the other a small dot at the end of the row, so position and
-   shape tell them apart) */
-@keyframes bird-aura-glow {
+   they can't be used). The two layers, gold and white (white-hot), are separate copies of the sprite (.bird-aura
+   in perch-rows.css) whose opacity peaks at different times on uneven % steps (0/30/55/80/100), so they appear to
+   flicker on different cycles. The hue is close to the live-dots pulse (#e8a13d), but one is a drop-shadow
+   lighting the sprite's outline and the other a small dot at the end of the row, so position and shape tell them
+   apart */
+@keyframes bird-aura-gold {
   0%,
   100% {
-    filter: drop-shadow(0 0 2px rgba(255, 196, 90, 0.55)) drop-shadow(0 0 4px rgba(255, 248, 220, 0.3));
+    opacity: 0.55;
   }
   30% {
-    filter: drop-shadow(0 0 3.5px rgba(255, 196, 90, 0.85)) drop-shadow(0 0 3px rgba(255, 248, 220, 0.5));
+    opacity: 0.85;
   }
   55% {
-    filter: drop-shadow(0 0 2.5px rgba(255, 196, 90, 0.6)) drop-shadow(0 0 6px rgba(255, 248, 220, 0.8));
+    opacity: 0.6;
   }
   80% {
-    filter: drop-shadow(0 0 4px rgba(255, 196, 90, 0.9)) drop-shadow(0 0 3.5px rgba(255, 248, 220, 0.45));
+    opacity: 0.9;
   }
 }
 
-/* For garden nodes (26-52px). Same rhythm as the base bird-aura-glow, with only the blur/spread enlarged */
-@keyframes bird-aura-glow-lg {
+@keyframes bird-aura-white {
   0%,
   100% {
-    filter: drop-shadow(0 0 3px rgba(255, 196, 90, 0.55)) drop-shadow(0 0 6px rgba(255, 248, 220, 0.3));
+    opacity: 0.3;
   }
   30% {
-    filter: drop-shadow(0 0 5.5px rgba(255, 196, 90, 0.85)) drop-shadow(0 0 4.5px rgba(255, 248, 220, 0.5));
+    opacity: 0.5;
   }
   55% {
-    filter: drop-shadow(0 0 4px rgba(255, 196, 90, 0.6)) drop-shadow(0 0 9px rgba(255, 248, 220, 0.8));
+    opacity: 0.8;
   }
   80% {
-    filter: drop-shadow(0 0 6px rgba(255, 196, 90, 0.9)) drop-shadow(0 0 5.5px rgba(255, 248, 220, 0.45));
+    opacity: 0.45;
   }
 }
 
