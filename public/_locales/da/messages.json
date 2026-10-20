@@ -303,7 +303,7 @@
     "message": "Ser på alle dine sessioner og foreslår, hvad du skal gøre nu. Klik for at åbne den session"
   },
   "conciergeSettingsNote": {
-    "message": "Ser på alle dine sessioner og siger, hvilken du bør tage dig af nu. Klik for at gå til den sessions rude. Vises, så længe en OpenAI- eller Anthropic-nøgle er gemt. Vælg, hvordan den ser ud"
+    "message": "Ser på alle dine sessioner og siger, hvilken du bør tage dig af nu. Klik for at gå til den sessions rude. Vises, så længe en OpenAI- eller Anthropic-nøgle er gemt, eller Lokalt er sat op. Vælg, hvordan den ser ud"
   },
   "conciergeLookOwl": {
     "message": "Ugle"

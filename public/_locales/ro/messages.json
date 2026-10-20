@@ -303,7 +303,7 @@
     "message": "Se uită la toate sesiunile și îți sugerează ce să faci mai departe. Fă clic pentru a deschide acea sesiune"
   },
   "conciergeSettingsNote": {
-    "message": "Se uită la toate sesiunile și îți spune de care să te ocupi mai departe. Fă clic pentru a merge la panoul acelei sesiuni. Apare cât timp este salvată o cheie OpenAI sau Anthropic. Alege-i aspectul"
+    "message": "Se uită la toate sesiunile și îți spune de care să te ocupi mai departe. Fă clic pentru a merge la panoul acelei sesiuni. Apare cât timp este salvată o cheie OpenAI sau Anthropic ori este configurat Local. Alege-i aspectul"
   },
   "conciergeLookOwl": {
     "message": "Bufniță"

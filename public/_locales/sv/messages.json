@@ -303,7 +303,7 @@
     "message": "Tittar på alla sessioner och föreslår vad du ska göra härnäst. Klicka för att öppna den sessionen"
   },
   "conciergeSettingsNote": {
-    "message": "Tittar på alla sessioner och säger vilken du bör ta hand om härnäst. Klicka för att gå till den sessionens fönsterdel. Visas så länge en OpenAI- eller Anthropic-nyckel är sparad. Välj hur den ser ut"
+    "message": "Tittar på alla sessioner och säger vilken du bör ta hand om härnäst. Klicka för att gå till den sessionens fönsterdel. Visas så länge en OpenAI- eller Anthropic-nyckel är sparad eller Lokalt är inställt. Välj hur den ser ut"
   },
   "conciergeLookOwl": {
     "message": "Uggla"

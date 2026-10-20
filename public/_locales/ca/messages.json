@@ -303,7 +303,7 @@
     "message": "Mira totes les sessions i et diu què fer a continuació. Fes clic per obrir aquella sessió"
   },
   "conciergeSettingsNote": {
-    "message": "Mira totes les sessions i et diu de quina t'has d'ocupar ara. Fes clic per anar al panell d'aquella sessió. Apareix mentre hi hagi desada una clau d'OpenAI o d'Anthropic. Tria'n l'aspecte"
+    "message": "Mira totes les sessions i et diu de quina t'has d'ocupar ara. Fes clic per anar al panell d'aquella sessió. Apareix mentre hi hagi desada una clau d'OpenAI o d'Anthropic o estigui configurat Local. Tria'n l'aspecte"
   },
   "conciergeLookOwl": {
     "message": "Mussol"

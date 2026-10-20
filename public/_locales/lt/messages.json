@@ -303,7 +303,7 @@
     "message": "Peržiūri visas sesijas ir pasiūlo, ką daryti toliau. Spustelėkite, kad atidarytumėte tą sesiją"
   },
   "conciergeSettingsNote": {
-    "message": "Peržiūri visas sesijas ir pasako, kuria verta užsiimti toliau. Spustelėkite, kad pereitumėte į tos sesijos sritį. Rodomas, kol išsaugotas OpenAI arba Anthropic raktas. Pasirinkite jo išvaizdą"
+    "message": "Peržiūri visas sesijas ir pasako, kuria verta užsiimti toliau. Spustelėkite, kad pereitumėte į tos sesijos sritį. Rodomas, kol išsaugotas OpenAI arba Anthropic raktas arba nustatytas Vietinis. Pasirinkite jo išvaizdą"
   },
   "conciergeLookOwl": {
     "message": "Pelėda"

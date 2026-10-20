@@ -303,7 +303,7 @@
     "message": "查看所有会话，告诉你下一步该做什么。点击打开那个会话"
   },
   "conciergeSettingsNote": {
-    "message": "查看你所有的会话，告诉你下一步该处理哪一个。点击即可跳到那个会话的窗格。保存了 OpenAI 或 Anthropic 密钥时出现。可以选择它的样子"
+    "message": "查看你所有的会话，告诉你下一步该处理哪一个。点击即可跳到那个会话的窗格。保存了 OpenAI 或 Anthropic 密钥，或设置了本地时出现。可以选择它的样子"
   },
   "conciergeLookOwl": {
     "message": "猫头鹰"

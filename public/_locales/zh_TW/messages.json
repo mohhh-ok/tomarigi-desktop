@@ -303,7 +303,7 @@
     "message": "查看所有工作階段，告訴你下一步該做什麼。點擊開啟那個工作階段"
   },
   "conciergeSettingsNote": {
-    "message": "查看你所有的工作階段，告訴你下一步該處理哪一個。點擊即可跳到那個工作階段的窗格。儲存了 OpenAI 或 Anthropic 金鑰時出現。可以選擇它的樣子"
+    "message": "查看你所有的工作階段，告訴你下一步該處理哪一個。點擊即可跳到那個工作階段的窗格。儲存了 OpenAI 或 Anthropic 金鑰，或設定了本機時出現。可以選擇它的樣子"
   },
   "conciergeLookOwl": {
     "message": "貓頭鷹"

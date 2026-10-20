@@ -303,7 +303,7 @@
     "message": "Katsoo kaikki istuntosi ja ehdottaa, mitä tehdä seuraavaksi. Avaa istunto napsauttamalla"
   },
   "conciergeSettingsNote": {
-    "message": "Katsoo kaikki istuntosi ja kertoo, mihin kannattaa tarttua seuraavaksi. Napsauta siirtyäksesi sen istunnon ruutuun. Näkyy, kun OpenAI- tai Anthropic-avain on tallennettu. Valitse sen ulkonäkö"
+    "message": "Katsoo kaikki istuntosi ja kertoo, mihin kannattaa tarttua seuraavaksi. Napsauta siirtyäksesi sen istunnon ruutuun. Näkyy, kun OpenAI- tai Anthropic-avain on tallennettu tai Paikallinen on määritetty. Valitse sen ulkonäkö"
   },
   "conciergeLookOwl": {
     "message": "Pöllö"

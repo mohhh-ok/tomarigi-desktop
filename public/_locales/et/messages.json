@@ -303,7 +303,7 @@
     "message": "Vaatab kõiki seansse ja soovitab, mida edasi teha. Klõpsa, et see seanss avada"
   },
   "conciergeSettingsNote": {
-    "message": "Vaatab kõiki seansse ja ütleb, millega järgmisena tegeleda. Klõpsa, et minna selle seansi paanile. Ilmub, kuni OpenAI või Anthropicu võti on salvestatud. Vali selle välimus"
+    "message": "Vaatab kõiki seansse ja ütleb, millega järgmisena tegeleda. Klõpsa, et minna selle seansi paanile. Ilmub, kuni OpenAI või Anthropicu võti on salvestatud või Kohalik on seadistatud. Vali selle välimus"
   },
   "conciergeLookOwl": {
     "message": "Öökull"
