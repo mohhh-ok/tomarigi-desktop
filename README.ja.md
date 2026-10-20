@@ -4,7 +4,7 @@ AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitH
 
 | | |
 |---|---|
-| <img src="docs/images/gallery-1-on-top-ja.webp" alt="ほかのウィンドウより手前に出る。触っていない間は窓が透明になり、後ろのターミナルの上に鳥と「tomarigi」の札だけが残る（札を押すと窓が戻る）" /><br>ほかのウィンドウより手前に出る。触っていない間は窓が透明になり、後ろのターミナルの上に鳥と「tomarigi」の札だけが残る（札を押すと窓が戻る） | <img src="docs/images/gallery-2-garden-ja.webp" alt="セッション 1 つに鳥が 1 羽" /><br>セッション 1 つに鳥が 1 羽 |
+| <img src="docs/images/gallery-1-on-top-ja.webp" alt="ほかの窓より手前に出て、触っていない間は透けて鳥と札だけが残る" /><br>ほかの窓より手前に出て、触っていない間は透けて鳥と札だけが残る | <img src="docs/images/gallery-2-garden-ja.webp" alt="セッション 1 つに鳥が 1 羽" /><br>セッション 1 つに鳥が 1 羽 |
 | <img src="docs/images/gallery-3-needs-reply-ja.webp" alt="エージェントが返事を待っていると「?」が出る" /><br>エージェントが返事を待っていると「?」が出る | <img src="docs/images/gallery-4-bubble-ja.webp" alt="エージェントの応答が終わると、吹き出しに中身の要約が出る" /><br>エージェントの応答が終わると、吹き出しに中身の要約が出る |
 
 > [!IMPORTANT]

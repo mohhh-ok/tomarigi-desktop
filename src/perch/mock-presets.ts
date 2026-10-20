@@ -568,7 +568,8 @@ export const PRESETS: Preset[] = [
     }),
   },
   // The gallery images in docs/images/ (docs/design.md "Gallery images"). The text follows the UI language, so the
-  // Japanese set shows no English. No tool names, since they are English identifiers in every language
+  // Japanese set shows no English. No tool names, since they are English identifiers in every language. Project names
+  // match the terminal's tabs in scripts/gallery/stage.mjs
   {
     id: "gallery",
     label: "Gallery: garden",
@@ -599,7 +600,7 @@ function tr(en: string, ja: string): string {
 
 const GALLERY: SessionView[] = [
   { id: "gallery/plan", project: "blog", slug: "blog", state: "waiting", sinceMs: 70_000, toolName: "ExitPlanMode" },
-  { id: "gallery/working", project: "docs-migration", slug: "docs-migration", state: "working", sinceMs: 3_000 },
+  { id: "gallery/working", project: "tomarigi", slug: "tomarigi", state: "working", sinceMs: 3_000 },
   {
     id: "gallery/question",
     project: "tomarigi",
@@ -638,8 +639,8 @@ const GALLERY: SessionView[] = [
   },
   {
     id: "gallery/dozing",
-    project: "cloudflare-lab",
-    slug: "cloudflare-lab",
+    project: "figma-adapter",
+    slug: "figma-adapter",
     state: "dozing",
     sinceMs: 9 * 60_000,
     ask: { status: "not_asking" },
