@@ -109,7 +109,8 @@
 
 /* Smooth the automatic glyph resizing based on the number of birds and the container's actual size (scoped to the
    garden only; doesn't affect .bird-glyph-img in the Perch list) */
-.garden-node .bird-glyph-img {
+.garden-node .bird-glyph-img,
+.garden-node .bird-aura {
   transition: width 0.3s ease, height 0.3s ease;
 }
 
