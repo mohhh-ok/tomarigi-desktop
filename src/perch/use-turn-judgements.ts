@@ -61,7 +61,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         // Local AI), recorded as such in the app log and the debug log screen
         const noMatchingJson = !result.ok && result.noMatchingJson === true;
         const head = result.ok
-          ? `ok len=${outcome.line?.length ?? 0} asking=${result.verdict.asking} abusive=${result.verdict.abusive}`
+          ? `ok len=${outcome.line?.length ?? 0} asking=${result.verdict.asking} abusive=${result.verdict.abusive} continuing=${result.verdict.continuing}`
           : noMatchingJson
             ? "no summary no-matching-json"
             : `error=${result.kind}`;
@@ -74,7 +74,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
             text: `no summary (answer didn't match the schema) ${project}`,
           });
         }
-        recordTurnVerdict(id, reply.at, outcome.ask, outcome.abusive);
+        recordTurnVerdict(id, reply.at, outcome.ask, outcome.abusive, outcome.continuing);
         setTurns((current) => (requestedRef.current.has(key) ? { ...current, [key]: outcome } : current));
         if (outcome.abusive === undefined) return;
         setAnger((current) => {
@@ -114,7 +114,12 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         if (angry !== undefined && s.angry === undefined) s = { ...s, angry };
         if (!s.reply) return s;
         const turn = turns[turnKey(s.id, s.reply.at)];
-        return { ...s, ask: s.ask ?? turn?.ask, summary: s.summary ?? turn?.line };
+        return {
+          ...s,
+          ask: s.ask ?? turn?.ask,
+          summary: s.summary ?? turn?.line,
+          continuing: s.continuing ?? turn?.continuing,
+        };
       }),
     [sessions, turns, anger, summarySetUp],
   );

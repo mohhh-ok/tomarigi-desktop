@@ -40,10 +40,12 @@ export interface SessionEvent {
   // IndexedDB, so appendToEventLog strips it right before saving (it stays in the in-memory
   // sessionEventCache/events, so it can still be used for the readout at the moment App.tsx detects a new done)
   assistantText?: string;
-  // The turn verdict of the done turn (recordTurnVerdict): whether it waits on the user, and whether a message the user
-  // sent in that turn was abusive toward the AI (absent when the request failed). Shown in the debug log screen
+  // The turn verdict of the done turn (recordTurnVerdict): whether it waits on the user, whether a message the user
+  // sent in that turn was abusive toward the AI, and whether its work goes on in the background (both absent when the
+  // request failed). Shown in the debug log screen
   ask?: AskJudgement;
   abusive?: boolean;
+  continuing?: boolean;
   // Whether this session's bird has the anger mark now. App sets it only for display; it is not written to the
   // persistent log
   angry?: boolean;
@@ -74,6 +76,9 @@ export interface SessionView {
   reply?: { at: number; text: string };
   // The turn verdict for the reply's turn. Set by App (mock writes it directly)
   ask?: AskJudgement;
+  // The turn verdict's continuing for the reply's turn: the session's work goes on in the background after the turn
+  // (docs/design.md "Turn verdicts"). A fact for the concierge only; the bird's look doesn't change. Set by App
+  continuing?: boolean;
   // The messages a person typed in the stopped turn, oldest first (turnUserMessages in lib/session-tail.ts). Input
   // for the abuse verdict (docs/design.md "Anger mark for abuse toward the AI"). Untrusted input; never shown
   userMessages?: { at: number; text: string }[];

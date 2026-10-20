@@ -124,7 +124,7 @@ test("a finished session carries the end of its last reply; a dozing one doesn't
   expect(done.last_reply_tail).toBe(waiting);
   expect(dozing.last_reply_tail).toBeUndefined();
   expect(working.last_reply_tail).toBeUndefined();
-  expect(CONCIERGE_TASK.systemPrompt).toContain("the session is still working, waiting on its own work");
+  expect(CONCIERGE_TASK.systemPrompt).toContain("is still working, waiting on its own work");
 });
 
 test("the system prompt passes the ? as a fact, not to be judged again, and keeps reply tails untrusted", () => {
@@ -354,6 +354,61 @@ test("an advice with nothing to do now, or about a working session, is dropped f
   }
 });
 
+test("an advice to check the result of a session whose work goes on in the background is dropped for every provider", async () => {
+  // The user's case: the last reply said the measurement runs until 18:47, and the concierge said it finished
+  const measuring = "計測を回しています（7 段階 × 40 秒、18:47 ごろ終了）";
+  const payload = buildConciergePayload(
+    [
+      {
+        view: view("i", {
+          project: "idle-render",
+          state: "done",
+          reply: { at: 1, text: measuring },
+          ask: { status: "not_asking" },
+          continuing: true,
+        }),
+      },
+      {
+        view: view("f", {
+          project: "finished",
+          state: "done",
+          reply: { at: 1, text: "Done." },
+          ask: { status: "not_asking" },
+          continuing: false,
+        }),
+      },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  expect(payload.sessions[0]).toMatchObject({ id: "i", needs_reply: false, asking: false, continuing: true });
+  expect(payload.sessions[1]).toMatchObject({ id: "f", continuing: false });
+  // Without a verdict, continuing isn't sent
+  expect(buildConciergePayload([{ view: view("x", { state: "done" }) }], [], [], NOW, "ja").sessions[0].continuing).toBeUndefined();
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  for (const provider of ["openai", "anthropic", "local"] as const) {
+    const check = { advice: "idle-renderが終わりました。計測結果を確認してください", session_id: "i", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(check))).toEqual({
+      ok: true,
+      verdict: null,
+      dropped: { line: check.advice, targetId: "i", reason: "working" },
+      action: "check_result",
+      answer: check,
+    });
+    // continuing no: its result is ready to check
+    const done = { advice: "finishedが終わりました。結果を確認", session_id: "f", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(done))).toMatchObject({
+      verdict: { line: done.advice, targetId: "f" },
+    });
+  }
+  expect(CONCIERGE_TASK.systemPrompt).toContain("A session with continuing true is still working");
+});
+
 test("an advice that asks to reply about a session that doesn't need a reply is dropped for every provider", async () => {
   const payload = buildConciergePayload(
     [
@@ -408,12 +463,21 @@ test("the app log keeps each session's facts and the advice text with its kind, 
           state: "done",
           reply: { at: 1, text: "後で伺います" },
           ask: { status: "not_asking" },
+          continuing: true,
         }),
         agent: "claude",
         parentId: "w",
       },
       { view: view("w", { project: "worker", state: "waiting", question: "Merge it?" }), agent: "codex" },
-      { view: view("q", { project: "asker", state: "done", reply: { at: 1, text: "Which one?" }, ask: { status: "asking" } }) },
+      {
+        view: view("q", {
+          project: "asker",
+          state: "done",
+          reply: { at: 1, text: "Which one?" },
+          ask: { status: "asking" },
+          continuing: false,
+        }),
+      },
     ],
     [],
     [],
@@ -423,9 +487,9 @@ test("the app log keeps each session's facts and the advice text with its kind, 
   const lines = conciergeRequestLogLines({ req: "r1", provider: "local", model: "qwen2.5:7b-instruct" }, payload);
   expect(lines[0]).toStartWith("[concierge] request req=r1 provider=local model=qwen2.5:7b-instruct sessions=3 ");
   expect(lines.slice(1)).toEqual([
-    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- verdict=not_asking watch_parent=w watch_children=- chicks_working=0",
-    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine verdict=- watch_parent=- watch_children=t chicks_working=0",
-    "[concierge] fact req=r1 session=q agent=- state=done since=10s needs_reply=true source=verdict verdict=asking watch_parent=- watch_children=- chicks_working=0",
+    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- verdict=not_asking continuing=true watch_parent=w watch_children=- chicks_working=0",
+    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine verdict=- continuing=- watch_parent=- watch_children=t chicks_working=0",
+    "[concierge] fact req=r1 session=q agent=- state=done since=10s needs_reply=true source=verdict verdict=asking continuing=false watch_parent=- watch_children=- chicks_working=0",
   ]);
   // No text from the sessions: the name, reply and question stay out
   expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it|asker|Which one/);

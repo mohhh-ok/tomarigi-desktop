@@ -66,6 +66,9 @@ interface PayloadSession {
   question?: string;
   /** The turn verdict of a stopped turn: whether its last reply waits on the developer (docs/design.md "Turn verdicts") */
   asking?: boolean;
+  /** The turn verdict of a stopped turn: whether the session's work goes on in the background after it (docs/design.md
+   * "Turn verdicts") */
+  continuing?: boolean;
   /** The last CONCIERGE_REPLY_TAIL_CHARS of the last reply, when the session is done */
   last_reply_tail?: string;
   watch_parent?: string;
@@ -143,6 +146,7 @@ export function buildConciergePayload(
       ...(line && { line: clip(line) }),
       ...(view.state === "waiting" && view.question && { question: clip(view.question) }),
       ...(ask && (ask.status === "asking" || ask.status === "not_asking") && { asking: ask.status === "asking" }),
+      ...(view.continuing !== undefined && { continuing: view.continuing }),
       // A finished session gets it, so one that only waits on its own background work isn't taken as finished.
       // Dozing doesn't: it has been stopped long enough not to be news (docs/design.md "Concierge")
       ...(view.state === "done" && view.reply && { last_reply_tail: tail(view.reply.text) }),
@@ -210,9 +214,11 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "needs_reply_source tells where needs_reply came from: machine means a question tool or a permission prompt " +
     "is open; verdict means the session's last reply was judged as waiting on the developer (asking). Both are " +
     "facts: trust needs_reply as given.\n" +
-    "A session in state done also has last_reply_tail. When it says the work goes on in the background and the " +
-    "session will check it later (e.g. an export or a build is running and it will look at the log at some time), " +
-    "the session is still working, waiting on its own work: do not call it finished, do not tell the developer " +
+    "A stopped session may have continuing. continuing true means its turn ended but work it started goes on in " +
+    "the background (e.g. a measurement, an export or a build is running and it will report or look at the log " +
+    "later); it is a fact: trust it as given. A session in state done also has last_reply_tail; when continuing is " +
+    "absent and last_reply_tail says the work goes on in the background, treat it the same. A session with " +
+    "continuing true is still working, waiting on its own work: do not call it finished, do not tell the developer " +
     "to check its result or to do the checks it said it will do itself, and do not advise about it.\n" +
     "While any session needs a reply now, advise about one of those, never about a finished or working session; " +
     "an advice about another session is not shown then.\n" +
@@ -314,9 +320,10 @@ function dropReason(
   if (action === "none") return "nothing_to_do";
   const target = sessions.find((s) => s.id === advice.targetId);
   if (!target) return undefined;
-  // A session done but waiting on its own background work is answered with none above; this is the one the facts
-  // say is working
+  // The facts say it is working, or the turn verdict says its work goes on in the background, so its result isn't
+  // ready to check (the prompt alone didn't hold)
   if (target.state === "working") return "working";
+  if (action === "check_result" && target.continuing) return "working";
   // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or the turn
   // verdict asking (the prompt alone didn't hold)
   if (action === "reply" && !target.needs_reply) return "no_reply_needed";
@@ -347,7 +354,7 @@ const logHead = (kind: string, c: ConciergeLogContext) =>
  * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
  * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
  * form to grep. source: machine is a question tool or a permission prompt, verdict is the turn verdict asking; verdict
- * is the turn verdict of a stopped turn (asking / not_asking)
+ * is the turn verdict of a stopped turn (asking / not_asking); continuing is the turn verdict's continuing
  */
 export function conciergeRequestLogLines(c: ConciergeLogContext, payload: ConciergePayload): string[] {
   const head = `${logHead("request", c)} sessions=${payload.sessions.length} holds=${payload.holds.length} events=${payload.recent_events.length} chars=${JSON.stringify(payload).length}`;
@@ -362,6 +369,7 @@ export function conciergeRequestLogLines(c: ConciergeLogContext, payload: Concie
         `needs_reply=${s.needs_reply}`,
         `source=${s.needs_reply_source ?? "-"}`,
         `verdict=${s.asking === undefined ? "-" : s.asking ? "asking" : "not_asking"}`,
+        `continuing=${s.continuing ?? "-"}`,
         `watch_parent=${s.watch_parent ?? "-"}`,
         `watch_children=${s.watch_children?.join(",") ?? "-"}`,
         `chicks_working=${s.chicks_working ?? 0}`,
