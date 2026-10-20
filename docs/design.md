@@ -44,7 +44,7 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 
 ## BYOK API keys
 
-- Providers: OpenAI / Anthropic for speech bubble summaries, TypeSafe for Jev (the "?" and the anger mark). Each can be saved, deleted, and connection-tested from the settings screen
+- Providers: OpenAI / Anthropic / Local (see "Local AI" below) for speech bubble summaries and the concierge, TypeSafe for Jev (the "?" and the anger mark). Each can be saved, deleted, and connection-tested from the settings screen
 - Models for summaries and the concierge: OpenAI `gpt-5.6-luna` (reasoning effort none), Anthropic Claude Haiku 5.5. Both are the low-cost models meant for many small requests. They replaced `gpt-5.4-mini` and Claude Haiku 4.5, which were carried over from the first version without being chosen for the concierge's volume (the user: 「5.6lunaはどう」, then agreed to both: 「うん、」)
 - API keys are stored in the macOS Keychain in the everyday build (the WebView's IndexedDB is a plaintext file readable by other processes of the same user). Windows and Linux use their own OS stores (see "Platforms"); "Keychain" below means the OS store there
 - The store is decided in one place at launch, by identifier. Everyday (`net.mohtech.tomarigi-desktop`) and verify (`.verify`) use the Keychain; dev (`.dev`) uses IndexedDB (dev's signature changes every build, which would trigger Keychain permission prompts every time)
@@ -247,7 +247,7 @@ Applies to the floating window's Garden tab only.
 
 ## Speech bubbles
 
-- Only when a turn ends (done), the last reply is summarized briefly with BYOK OpenAI / Anthropic (`src/lib/summarize.ts`). It stays until the next turn starts (working). One summary call per turn. Without a key, no bubble
+- Only when a turn ends (done), the last reply is summarized briefly with BYOK OpenAI / Anthropic or Local (`src/lib/summarize.ts`). It stays until the next turn starts (working). One summary call per turn. Without a key, no bubble
 - Garden: the bird's name is above the icon. Right below the icon is a bubble of about 15 full-width characters, with an upward tail pointing at the bird. Even when the bubble is shifted left or right, the tail stays right under the icon. The status line, count at the bird's feet, and marks follow below the bubble. Overflow is cut with "…" and the full text shows on hover. Bubbles may overlap each other and birds; bubbles from later turns are drawn on top
 - Perch: the same summary on one line within the row
 - Recent activity: each row gets the same summary for that turn on one line. No extra summary calls. Summaries aren't stored, so events from before a restart have none
@@ -266,7 +266,7 @@ An AI looks at every session together and gives the user one piece of advice abo
   - The concierge bird's image is generated with an image model (the user: 「アドバイザーのとりは画像生成してね」). It must read as different from the session birds at a glance, in every icon set. Candidates are shown to the user before one is chosen
   - The user picks the look in settings between an owl and a penguin (the user, shown four candidates: 「bcをえらべるようにして」). The default is the owl (Claude's own decision; Claude recommended it). The choice is saved. The same image is used in every icon set (Claude's own decision)
   - It is placed, dragged, and counted for the window's automatic growing and shrinking like a session bird, and can be clicked and dragged at rest like one (Claude's own decision)
-  - It is shown only while an OpenAI / Anthropic key is saved (Claude's own decision). With no advice, it stays without a bubble
+  - It is shown only while an OpenAI / Anthropic key is saved or Local is set up (Claude's own decision). With no advice, it stays without a bubble
 - Perch: the advice above the list. Clicking it jumps the same way (Claude's own decision)
 - Recent activity: no concierge. It is a list of past events, and a row about what to do now at its top was confusing (user-reviewer's finding; the user: 「なおしといて」. Removing it rather than restyling it is Claude's own decision)
 - Model and key: the same BYOK provider and verdict layer as speech bubble summaries (`runJudge` / `runOpenAiJudge`), output pinned to one tool call (Claude's own decision). Models are in "BYOK API keys"
