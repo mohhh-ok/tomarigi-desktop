@@ -1,4 +1,4 @@
-/* Animations (peck, hop, live dots, and the working aura) */
+/* Animations (peck, hop, live dots, the working aura, and the ring of a status still running) */
 
 @keyframes peck {
   0%,
@@ -115,5 +115,11 @@
   }
   75% {
     transform: translate(0.4px, 0.8px) rotate(2deg) scaleX(var(--glyph-flip, 1));
+  }
+}
+
+@keyframes pending-turn {
+  to {
+    transform: rotate(360deg);
   }
 }

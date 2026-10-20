@@ -66,7 +66,7 @@ function UpdateBody({ status, onCheck, onInstall }: Omit<Props, "version">) {
           <button className="small" onClick={onCheck} disabled={status.kind === "checking"}>
             {t("updatesCheckButton")}
           </button>
-          {status.kind === "checking" && <p className="judge-status">{t("updatesChecking")}</p>}
+          {status.kind === "checking" && <p className="judge-status judge-status-pending">{t("updatesChecking")}</p>}
           {status.kind === "upToDate" && <p className="judge-status judge-status-ok">{t("updatesUpToDate")}</p>}
           {status.kind === "checkFailed" && (
             <p className="judge-status judge-status-error" role="alert">
