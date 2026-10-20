@@ -22,7 +22,14 @@ A desktop app for macOS, Windows, and Linux (the Windows and Linux builds haven'
 
 ## Install
 
-Download from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases): the `.dmg` for macOS, the `.exe` installer for Windows, or the `.deb` / `.AppImage` for Linux.
+Open the **[download page](https://moh-tech.net/en/tomarigi/desktop/)** for the file for your OS. Or download the latest version directly:
+
+- macOS (Apple Silicon and Intel): [Tomarigi-macOS.dmg](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-macOS.dmg)
+- Windows 10 / 11 (x64): [Tomarigi-Windows-setup.exe](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-Windows-setup.exe)
+- Linux (x64): [Tomarigi-Linux.deb](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-Linux.deb) (Debian, Ubuntu, and others) or [Tomarigi-Linux.AppImage](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-Linux.AppImage)
+- The VS Code / Cursor extension (below): [Tomarigi-VSCode.vsix](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-VSCode.vsix)
+
+[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) has the same files under names with the version too. `.sig`, `latest.json`, and `.app.tar.gz` are for the app's updater.
 
 Requirements: macOS, Windows 10 / 11 (x64), or Linux (x64, X11; on Wayland it runs through Xwayland). The Windows and Linux builds are on Releases from v0.7.0 (v0.6.0 and earlier are macOS only) and haven't been checked on real machines yet.
 
@@ -39,7 +46,7 @@ allow_remote_control socket-only
 listen_on unix:/tmp/kitty
 ```
 
-VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. Download `tomarigi-v<version>.vsix` from [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) (from v0.7.0) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
+VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. Download [Tomarigi-VSCode.vsix](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-VSCode.vsix) (the same file as `tomarigi-v<version>.vsix` on [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases)) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
 
 ### Windows and Linux
 

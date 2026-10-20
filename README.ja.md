@@ -20,7 +20,14 @@ AI コーディングエージェント（Claude Code・Codex・Qwen Code・GitH
 
 ## インストール
 
-[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) から、macOS は `.dmg`、Windows は `.exe` のインストーラー、Linux は `.deb` か `.AppImage` をダウンロードしてください。
+**[ダウンロードページ](https://moh-tech.net/tomarigi/desktop/)** を開くと、使っている OS 用のファイルがそのまま落とせます。直接落とすなら、どれも最新版です:
+
+- macOS（Apple Silicon と Intel）: [Tomarigi-macOS.dmg](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-macOS.dmg)
+- Windows 10 / 11（x64）: [Tomarigi-Windows-setup.exe](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-Windows-setup.exe)
+- Linux（x64）: [Tomarigi-Linux.deb](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-Linux.deb)（Debian・Ubuntu など）か [Tomarigi-Linux.AppImage](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-Linux.AppImage)
+- VS Code・Cursor の拡張（下記）: [Tomarigi-VSCode.vsix](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-VSCode.vsix)
+
+[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) には同じファイルが版付きの名前でもあります。`.sig`・`latest.json`・`.app.tar.gz` はアプリの自動更新が使うファイルです。
 
 動作環境: macOS、Windows 10 / 11（x64）、Linux（x64、X11。Wayland では Xwayland 経由で動きます）。Windows と Linux 向けのビルドは v0.7.0 から Releases に置いています（v0.6.0 までは macOS 版だけです）。まだ実機では確かめていません。
 
@@ -37,7 +44,7 @@ allow_remote_control socket-only
 listen_on unix:/tmp/kitty
 ```
 
-VS Code・Cursor などの VS Code 系のエディタ: 統合ターミナルのタブへ飛ぶには、Tomarigi の拡張を入れてください。[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) に `tomarigi-v<バージョン>.vsix` を置いています（v0.7.0 から）。それをダウンロードし、コマンドパレットの「Extensions: Install from VSIX...」で入れます（`code --install-extension <ファイル>`、`cursor --install-extension <ファイル>` でも入ります）。初めて飛ぶとき、エディタが「この拡張に URI を開かせるか」を聞くので、「Do not ask me again for this extension」に印を付けてください。拡張が無い場合は、エディタを手前に出すだけです。拡張は、ウィンドウごとにターミナルのプロセス ID を `~/.tomarigi/vscode/` に書き、Tomarigi がそれを読みます。
+VS Code・Cursor などの VS Code 系のエディタ: 統合ターミナルのタブへ飛ぶには、Tomarigi の拡張を入れてください。[Tomarigi-VSCode.vsix](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-VSCode.vsix) をダウンロードし（[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) の `tomarigi-v<バージョン>.vsix` と同じものです）、コマンドパレットの「Extensions: Install from VSIX...」で入れます（`code --install-extension <ファイル>`、`cursor --install-extension <ファイル>` でも入ります）。初めて飛ぶとき、エディタが「この拡張に URI を開かせるか」を聞くので、「Do not ask me again for this extension」に印を付けてください。拡張が無い場合は、エディタを手前に出すだけです。拡張は、ウィンドウごとにターミナルのプロセス ID を `~/.tomarigi/vscode/` に書き、Tomarigi がそれを読みます。
 
 ### Windows と Linux
 
