@@ -356,3 +356,14 @@ The app updates itself with Tauri's official updater plugin (the user chose it o
 
 - Put the .app from `bun run tauri build` at `/Applications/tomarigi-desktop.app`
 - Info.plist includes `NSAppleEventsUsageDescription` (the text of the terminal automation permission dialog). The base text is English (`CFBundleDevelopmentRegion` en); the Japanese text is in `src-tauri/locales/ja.lproj/InfoPlist.strings`, copied into the bundle via `bundle.macOS.files` in `tauri.conf.json`
+
+## Download page
+
+The GitHub Release lists about 11 files (the installers plus the updater's signatures, `latest.json`, and `.app.tar.gz`), and many people can't tell which one to take (the user: 「いまのgithubのreleaseだとどれをだうんろーどすればいいかわからないひとおおいとおもうねん。せんようぺーじあったほうがいいかな」, then 「おk」 to Claude's proposal below)
+
+- A page of its own at `https://moh-tech.net/tomarigi/desktop/` (English at `/en/tomarigi/desktop/`), in the `moh-tech-net` repo (static files, deployed on push to main). Not a section of `/tomarigi/`, which is the Chrome extension's page and says it makes no network requests, unlike the desktop app (Claude's own decision)
+- The page detects the visitor's OS and shows one main download button for it: macOS `.dmg`, Windows `-setup.exe`, Linux `.deb` / `.AppImage`. The other OSes' files and the VS Code / Cursor extension (`.vsix`) are listed below it, smaller. The updater's files (`.sig`, `latest.json`, `.app.tar.gz`) are not shown
+- Links are built when the page opens from GitHub's latest release (`GET https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/latest`), so the page isn't edited for each release. When that request fails, the button links to the Releases page
+- The page also carries what README's "Install" says that a first-time user needs: requirements, first launch on macOS and Windows SmartScreen, jumping to the terminal pane (permissions, kitty, VS Code extension), and updates
+- README, the GitHub Release notes, and the extension's page `/tomarigi/` link to it
+- It is aimed at the v0.10.0 release (Claude's own decision)
