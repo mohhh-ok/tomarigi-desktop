@@ -8,6 +8,7 @@ import {
   MAX_FIT_SCALE,
   gardenSimulate,
   nextGrowScale,
+  nextUnsettled,
   ROUNDING_PX,
   type GardenFit,
   type PlacedGarden,
@@ -335,5 +336,33 @@ describe("birds first placed in a render that asks the window to grow are placed
     expect(Math.round(userW * s)).toBeLessThanOrEqual(634);
     expect(gardenSimulate(placed(true), userW * s - overheadW - ROUNDING_PX, userH * s - overheadH - ROUNDING_PX).overflow).toBe(0);
     expect(gardenSimulate(placed(true), 632 - overheadW, 723 - overheadH).overflow).toBe(0);
+  });
+});
+
+// docs/design.md "Layout": a bird or block the user dragged stays where it was dropped until dragged again. One that
+// was not settled yet (first placed in a render that asked the window to grow) is placed again when the garden changes
+// size, unless the user dropped it in between
+describe("a dragged bird that was not settled stays where it was dropped when the window grows", () => {
+  const live = ["a", "b", "c"];
+
+  test("not settled and not dragged: still not settled, so it is placed again after the window grows", () => {
+    expect([...nextUnsettled(["a", "b"], live, [], new Set(), false)].sort()).toEqual(["a", "b"]);
+  });
+
+  test("not settled and dropped in this render: no longer unsettled (before the fix it stayed in)", () => {
+    const unsettled = nextUnsettled(["a", "b"], live, [], new Set(["a"]), false);
+    expect(unsettled.has("a")).toBe(false);
+    expect(unsettled.has("b")).toBe(true);
+  });
+
+  test("first placed in this render and dropped: not unsettled either", () => {
+    expect([...nextUnsettled([], live, ["a", "c"], new Set(["c"]), false)]).toEqual(["a"]);
+  });
+
+  test("the window grew and the dropped one is not among the unsettled, so it is not placed again", () => {
+    const unsettled = nextUnsettled(["a", "b"], live, [], new Set(["a"]), false);
+    const replace = (id: string) => unsettled.has(id); // garden.tsx: replaceAll && kept.unsettled.has(id)
+    expect(replace("a")).toBe(false);
+    expect(replace("b")).toBe(true);
   });
 });
