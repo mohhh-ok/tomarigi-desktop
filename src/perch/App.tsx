@@ -274,7 +274,7 @@ export default function App({
         }
         // The observed set is replaced even while muted (so missed events don't all chirp at once after
         // unmuting). As with sessionEventCache, remembering only the recent events is enough
-        // Write to the Rust log (/tmp/tomarigi-desktop/app-log.txt) only when the set of birds or their states change.
+        // Write to the Rust log (~/Library/Logs/tomarigi-desktop/app-log.txt) only when the set of birds or their states change.
         // This is for checking against the actual transcripts without looking at the screen
         const signature = views.map((v) => `${v.id}:${v.state}`).join(",");
         if (signature !== scanSignatureRef.current) {

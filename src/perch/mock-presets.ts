@@ -519,7 +519,7 @@ export const PRESETS: Preset[] = [
   },
   {
     // Actually asks Jev (ask isn't given as data). For checking that verdicts work with the saved TypeSafe key.
-    // Results appear in the log ([jev] in /tmp/tomarigi-desktop/app-log.txt) and as the bird's "?"
+    // Results appear in the log ([jev] in ~/Library/Logs/tomarigi-desktop/app-log.txt) and as the bird's "?"
     id: "jev-live",
     label: "Real Jev verdict",
     build: () => ({

@@ -40,8 +40,9 @@ use window::{
     WindowMode, WINDOW_MODE,
 };
 
-/// /tmp/tomarigi-desktop on macOS. Elsewhere a folder of this user, since another user could plant a link in a shared
-/// /tmp: `$XDG_STATE_HOME` (or ~/.local/state)/tomarigi-desktop on Linux, the user's temp folder on Windows
+/// A folder of this user on every OS, since another user could plant a folder or a link in a shared /tmp:
+/// ~/Library/Logs/tomarigi-desktop on macOS, `$XDG_STATE_HOME` (or ~/.local/state)/tomarigi-desktop on Linux, the user's
+/// temp folder on Windows
 fn log_dir() -> PathBuf {
     #[cfg(windows)]
     return std::env::temp_dir().join("tomarigi-desktop");
@@ -52,7 +53,7 @@ fn log_dir() -> PathBuf {
         .unwrap_or_else(|| home().join(".local/state"))
         .join("tomarigi-desktop");
     #[cfg(target_os = "macos")]
-    PathBuf::from("/tmp/tomarigi-desktop")
+    home().join("Library/Logs/tomarigi-desktop")
 }
 
 /// The app log's size limit: past it the file becomes app-log.1.txt, so about twice this is kept (docs/design.md)
