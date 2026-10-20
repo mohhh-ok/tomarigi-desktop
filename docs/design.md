@@ -368,4 +368,5 @@ The GitHub Release lists about 11 files (the installers plus the updater's signa
   - v0.10.0, released before this, gets the copies added by hand
 - The page also carries what README's "Install" says that a first-time user needs: requirements, first launch on macOS and Windows SmartScreen, jumping to the terminal pane (permissions, kitty, VS Code extension), and updates
 - README, the GitHub Release notes, and the extension's page `/tomarigi/` link to it
+- The page shows what the app looks like: the four screenshots of README's gallery (`docs/images/gallery-1..4.webp`) with their captions, so a visitor sees the app before downloading (the user: 「てかだうんろーどぺーじにすくしょいれろよ」). Where and how they are laid out is Claude's own decision
 - It is aimed at the v0.10.0 release (Claude's own decision)
