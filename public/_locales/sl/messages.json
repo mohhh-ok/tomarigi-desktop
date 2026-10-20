@@ -376,7 +376,7 @@
     "message": "Znova naloži seznam"
   },
   "localAiUrlInvalid": {
-    "message": "URL se mora začeti s http:// ali https://."
+    "message": "Vnesite URL, ki se začne s http:// ali https://, brez ?, # ter uporabniškega imena in gesla."
   },
   "localAiChangeButton": {
     "message": "Spremeni"

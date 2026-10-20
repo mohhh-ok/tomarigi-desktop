@@ -376,7 +376,7 @@
     "message": "Muat ulang daftar"
   },
   "localAiUrlInvalid": {
-    "message": "URL harus diawali http:// atau https://."
+    "message": "Masukkan URL yang diawali http:// atau https://, tanpa ?, #, atau nama pengguna dan kata sandi."
   },
   "localAiChangeButton": {
     "message": "Ubah"

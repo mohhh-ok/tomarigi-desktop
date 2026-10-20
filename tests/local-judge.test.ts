@@ -1,7 +1,14 @@
 // Local AI (lib/local-judge.ts, lib/api-keys.ts; docs/design.md "BYOK API keys", Local AI). The server is never
 // called: the request body and the reading of reply bodies are checked as plain functions
 import { expect, test } from "bun:test";
-import { LOCAL_NO_MATCHING_JSON, localChatBody, parseLocalChatReply, stripThinking } from "../src/lib/local-judge";
+import {
+  isValidBaseUrl,
+  LOCAL_NO_MATCHING_JSON,
+  localChatBody,
+  parseLocalChatReply,
+  pickLocalModel,
+  stripThinking,
+} from "../src/lib/local-judge";
 import { anyAiProviderSetUp, resolveAiProvider } from "../src/lib/api-keys";
 import { askConcierge, buildConciergePayload } from "../src/lib/concierge";
 import type { JudgeResult, JudgeTaskDefinition } from "../src/lib/judge";
@@ -121,4 +128,25 @@ test("the concierge treats a local answer that doesn't match the schema as no ad
   // Other failures stay errors
   const network = async <V>(): Promise<JudgeResult<V>> => ({ ok: false, kind: "network", message: "refused" });
   expect(await askConcierge("local", payload, network)).toEqual({ ok: false, kind: "network", message: "refused" });
+});
+
+test("a base URL is accepted on the same terms as Rust's local_url", () => {
+  expect(isValidBaseUrl("http://localhost:11434/v1")).toBe(true);
+  expect(isValidBaseUrl(" https://192.168.1.5:1234/v1/ ")).toBe(true);
+  expect(isValidBaseUrl("localhost:11434")).toBe(false);
+  expect(isValidBaseUrl("file:///etc/passwd")).toBe(false);
+  expect(isValidBaseUrl("http://user:secret@localhost:11434/v1")).toBe(false);
+  expect(isValidBaseUrl("http://localhost:11434/v1?x=1")).toBe(false);
+  expect(isValidBaseUrl("http://localhost:11434/v1?")).toBe(false);
+  expect(isValidBaseUrl("http://localhost:11434/v1#x")).toBe(false);
+});
+
+test("the model after a list is read: kept when listed, a saved one kept as the first option, else the first", () => {
+  const ids = ["qwen2.5:7b-instruct", "llama3.2:3b"];
+  expect(pickLocalModel(ids, "llama3.2:3b", undefined)).toEqual({ options: ids, model: "llama3.2:3b" });
+  // The saved model the server no longer lists isn't swapped silently
+  expect(pickLocalModel(ids, "gone:1b", "gone:1b")).toEqual({ options: ["gone:1b", ...ids], model: "gone:1b" });
+  // Another server's model, or nothing chosen yet, becomes the list's first
+  expect(pickLocalModel(ids, "other-server:7b", undefined)).toEqual({ options: ids, model: "qwen2.5:7b-instruct" });
+  expect(pickLocalModel(ids, "", "gone:1b")).toEqual({ options: ids, model: "qwen2.5:7b-instruct" });
 });

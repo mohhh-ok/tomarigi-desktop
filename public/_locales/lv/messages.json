@@ -376,7 +376,7 @@
     "message": "Ielādēt sarakstu vēlreiz"
   },
   "localAiUrlInvalid": {
-    "message": "URL jāsākas ar http:// vai https://."
+    "message": "Ievadiet URL, kas sākas ar http:// vai https://, bez ?, # un bez lietotājvārda un paroles."
   },
   "localAiChangeButton": {
     "message": "Mainīt"

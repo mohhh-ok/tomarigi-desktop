@@ -376,7 +376,7 @@
     "message": "Tải lại danh sách"
   },
   "localAiUrlInvalid": {
-    "message": "URL phải bắt đầu bằng http:// hoặc https://."
+    "message": "Nhập URL bắt đầu bằng http:// hoặc https://, không có ?, # hay tên người dùng và mật khẩu."
   },
   "localAiChangeButton": {
     "message": "Thay đổi"

@@ -376,7 +376,7 @@
     "message": "Last inn listen på nytt"
   },
   "localAiUrlInvalid": {
-    "message": "URL-en må begynne med http:// eller https://."
+    "message": "Skriv inn en URL som begynner med http:// eller https://, uten ?, # eller brukernavn og passord."
   },
   "localAiChangeButton": {
     "message": "Endre"

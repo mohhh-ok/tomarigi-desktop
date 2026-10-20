@@ -376,7 +376,7 @@
     "message": "Znovu načíst seznam"
   },
   "localAiUrlInvalid": {
-    "message": "URL musí začínat http:// nebo https://."
+    "message": "Zadejte URL začínající http:// nebo https://, bez ?, # a bez uživatelského jména a hesla."
   },
   "localAiChangeButton": {
     "message": "Změnit"

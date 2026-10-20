@@ -376,7 +376,7 @@
     "message": "Indlæs listen igen"
   },
   "localAiUrlInvalid": {
-    "message": "URL’en skal starte med http:// eller https://."
+    "message": "Angiv en URL, der starter med http:// eller https://, uden ?, # eller brugernavn og adgangskode."
   },
   "localAiChangeButton": {
     "message": "Skift"

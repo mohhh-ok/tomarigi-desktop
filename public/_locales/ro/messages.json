@@ -376,7 +376,7 @@
     "message": "Reîncarcă lista"
   },
   "localAiUrlInvalid": {
-    "message": "URL-ul trebuie să înceapă cu http:// sau https://."
+    "message": "Introduceți un URL care începe cu http:// sau https://, fără ?, # sau nume de utilizator și parolă."
   },
   "localAiChangeButton": {
     "message": "Modifică"

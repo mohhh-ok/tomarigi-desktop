@@ -376,7 +376,7 @@
     "message": "Lataa lista uudelleen"
   },
   "localAiUrlInvalid": {
-    "message": "URL-osoitteen on alettava http:// tai https://."
+    "message": "Anna URL, joka alkaa http:// tai https://, ilman merkkejä ? ja # tai käyttäjänimeä ja salasanaa."
   },
   "localAiChangeButton": {
     "message": "Muuta"

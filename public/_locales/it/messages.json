@@ -376,7 +376,7 @@
     "message": "Ricarica elenco"
   },
   "localAiUrlInvalid": {
-    "message": "L’URL deve iniziare con http:// o https://."
+    "message": "Inserisci un URL che inizi con http:// o https://, senza ?, # né nome utente e password."
   },
   "localAiChangeButton": {
     "message": "Modifica"

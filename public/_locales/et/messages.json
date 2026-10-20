@@ -376,7 +376,7 @@
     "message": "Laadi loend uuesti"
   },
   "localAiUrlInvalid": {
-    "message": "URL peab algama http:// või https://."
+    "message": "Sisestage URL, mis algab http:// või https://, ilma ?, # ning kasutajanime ja paroolita."
   },
   "localAiChangeButton": {
     "message": "Muuda"

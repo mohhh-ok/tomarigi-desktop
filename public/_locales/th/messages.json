@@ -376,7 +376,7 @@
     "message": "โหลดรายการใหม่"
   },
   "localAiUrlInvalid": {
-    "message": "URL ต้องขึ้นต้นด้วย http:// หรือ https://"
+    "message": "ป้อน URL ที่ขึ้นต้นด้วย http:// หรือ https:// โดยไม่มี ? # หรือชื่อผู้ใช้และรหัสผ่าน"
   },
   "localAiChangeButton": {
     "message": "เปลี่ยน"

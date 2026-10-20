@@ -376,7 +376,7 @@
     "message": "Lista újratöltése"
   },
   "localAiUrlInvalid": {
-    "message": "Az URL-nek http:// vagy https:// előtaggal kell kezdődnie."
+    "message": "Adjon meg http:// vagy https:// kezdetű URL-t ?, # és felhasználónév meg jelszó nélkül."
   },
   "localAiChangeButton": {
     "message": "Módosítás"

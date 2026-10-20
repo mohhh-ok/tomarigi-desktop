@@ -376,7 +376,7 @@
     "message": "Lijst opnieuw laden"
   },
   "localAiUrlInvalid": {
-    "message": "De URL moet beginnen met http:// of https://."
+    "message": "Voer een URL in die begint met http:// of https://, zonder ?, # of gebruikersnaam en wachtwoord."
   },
   "localAiChangeButton": {
     "message": "Wijzigen"

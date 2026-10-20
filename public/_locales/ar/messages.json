@@ -376,7 +376,7 @@
     "message": "إعادة تحميل القائمة"
   },
   "localAiUrlInvalid": {
-    "message": "يجب أن يبدأ عنوان URL بـ http:// أو https://."
+    "message": "أدخل عنوان URL يبدأ بـ http:// أو https:// دون ? أو # أو اسم مستخدم وكلمة مرور."
   },
   "localAiChangeButton": {
     "message": "تغيير"
