@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Odustani"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Unesite ispravan URL poslužitelja da biste testirali vezu."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Odaberite ili upišite model da biste testirali vezu."
+  "localAiNeedsModel": {
+    "message": "Odaberite ili upišite model da biste ga spremili i testirali vezu."
   }
 }

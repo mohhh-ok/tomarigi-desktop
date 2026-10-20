@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Avbryt"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Ange en giltig server-URL för att testa anslutningen."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Välj eller skriv en modell för att testa anslutningen."
+  "localAiNeedsModel": {
+    "message": "Välj eller skriv en modell för att spara och testa anslutningen."
   }
 }

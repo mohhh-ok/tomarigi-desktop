@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Peruuta"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Anna kelvollinen palvelimen URL, niin voit testata yhteyden."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Valitse tai kirjoita malli, niin voit testata yhteyden."
+  "localAiNeedsModel": {
+    "message": "Valitse tai kirjoita malli, niin voit tallentaa ja testata yhteyden."
   }
 }

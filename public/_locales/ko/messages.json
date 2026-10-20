@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "취소"
   },
-  "localAiTestNeedsUrl": {
-    "message": "올바른 서버 URL을 입력하면 연결을 테스트할 수 있습니다."
-  },
-  "localAiTestNeedsModel": {
-    "message": "모델을 선택하거나 입력하면 연결을 테스트할 수 있습니다."
+  "localAiNeedsModel": {
+    "message": "모델을 선택하거나 입력하면 저장하고 연결을 테스트할 수 있습니다."
   }
 }

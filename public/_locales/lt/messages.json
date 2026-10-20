@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Atšaukti"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Įveskite tinkamą serverio URL, kad galėtumėte patikrinti ryšį."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Pasirinkite arba įveskite modelį, kad galėtumėte patikrinti ryšį."
+  "localAiNeedsModel": {
+    "message": "Pasirinkite arba įveskite modelį, kad galėtumėte išsaugoti ir patikrinti ryšį."
   }
 }

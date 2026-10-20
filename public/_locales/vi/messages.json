@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Hủy"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Nhập URL máy chủ hợp lệ để kiểm tra kết nối."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Chọn hoặc nhập mô hình để kiểm tra kết nối."
+  "localAiNeedsModel": {
+    "message": "Chọn hoặc nhập mô hình để lưu và kiểm tra kết nối."
   }
 }

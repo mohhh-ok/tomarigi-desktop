@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Annuller"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Angiv en gyldig server-URL for at teste forbindelsen."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Vælg eller skriv en model for at teste forbindelsen."
+  "localAiNeedsModel": {
+    "message": "Vælg eller skriv en model for at gemme og teste forbindelsen."
   }
 }

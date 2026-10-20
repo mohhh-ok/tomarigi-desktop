@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "रद्द करें"
   },
-  "localAiTestNeedsUrl": {
-    "message": "कनेक्शन जाँचने के लिए सही सर्वर URL डालें।"
-  },
-  "localAiTestNeedsModel": {
-    "message": "कनेक्शन जाँचने के लिए मॉडल चुनें या लिखें।"
+  "localAiNeedsModel": {
+    "message": "सहेजने और कनेक्शन जाँचने के लिए मॉडल चुनें या लिखें।"
   }
 }

@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "لغو"
   },
-  "localAiTestNeedsUrl": {
-    "message": "برای آزمایش اتصال، نشانی درست سرور را وارد کنید."
-  },
-  "localAiTestNeedsModel": {
-    "message": "برای آزمایش اتصال، مدلی را انتخاب یا وارد کنید."
+  "localAiNeedsModel": {
+    "message": "برای ذخیره و آزمایش اتصال، مدلی را انتخاب یا وارد کنید."
   }
 }

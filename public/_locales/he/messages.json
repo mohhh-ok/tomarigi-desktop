@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "ביטול"
   },
-  "localAiTestNeedsUrl": {
-    "message": "הזינו כתובת שרת תקינה כדי לבדוק את החיבור."
-  },
-  "localAiTestNeedsModel": {
-    "message": "בחרו או הקלידו מודל כדי לבדוק את החיבור."
+  "localAiNeedsModel": {
+    "message": "בחרו או הקלידו מודל כדי לשמור ולבדוק את החיבור."
   }
 }

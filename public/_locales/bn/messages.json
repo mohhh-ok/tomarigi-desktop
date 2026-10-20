@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "বাতিল"
   },
-  "localAiTestNeedsUrl": {
-    "message": "সংযোগ পরীক্ষা করতে সঠিক সার্ভার URL লিখুন।"
-  },
-  "localAiTestNeedsModel": {
-    "message": "সংযোগ পরীক্ষা করতে একটি মডেল বেছে নিন বা লিখুন।"
+  "localAiNeedsModel": {
+    "message": "সংরক্ষণ ও সংযোগ পরীক্ষা করতে একটি মডেল বেছে নিন বা লিখুন।"
   }
 }

@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Zrušit"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Zadejte platnou URL serveru, abyste mohli otestovat připojení."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Vyberte nebo zadejte model, abyste mohli otestovat připojení."
+  "localAiNeedsModel": {
+    "message": "Vyberte nebo zadejte model, abyste ho mohli uložit a otestovat připojení."
   }
 }

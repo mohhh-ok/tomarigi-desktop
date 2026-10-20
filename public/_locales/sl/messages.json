@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Prekliči"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Vnesite veljaven URL strežnika, da preizkusite povezavo."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Izberite ali vnesite model, da preizkusite povezavo."
+  "localAiNeedsModel": {
+    "message": "Izberite ali vnesite model, da ga shranite in preizkusite povezavo."
   }
 }

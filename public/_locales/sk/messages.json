@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Zrušiť"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Zadajte platnú URL servera, aby ste mohli otestovať pripojenie."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Vyberte alebo zadajte model, aby ste mohli otestovať pripojenie."
+  "localAiNeedsModel": {
+    "message": "Vyberte alebo zadajte model, aby ste ho mohli uložiť a otestovať pripojenie."
   }
 }

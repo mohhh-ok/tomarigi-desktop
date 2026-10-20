@@ -387,10 +387,7 @@
   "cancelButton": {
     "message": "Abbrechen"
   },
-  "localAiTestNeedsUrl": {
-    "message": "Gib eine gültige Server-URL ein, um die Verbindung zu testen."
-  },
-  "localAiTestNeedsModel": {
-    "message": "Wähle oder gib ein Modell ein, um die Verbindung zu testen."
+  "localAiNeedsModel": {
+    "message": "Wähle oder gib ein Modell ein, um zu speichern und die Verbindung zu testen."
   }
 }
