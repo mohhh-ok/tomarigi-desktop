@@ -16,10 +16,19 @@ import {
   recentJumps,
   type ConciergeAdvice,
   type ConciergeStateClass,
+  type DroppedConciergeAdvice,
 } from "@/lib/concierge";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import { bubbleText } from "./bubble";
 import { orderByWatchLinks } from "./watch-links";
+
+/** Why an advice wasn't shown, for the debug log screen (English only, like the rest of that screen) */
+const DROP_REASON_TEXT: Record<DroppedConciergeAdvice["reason"], string> = {
+  nothing_to_do: "nothing to do now",
+  working: "the session is working",
+  no_name: "no session name",
+  not_waiting: "another session needs a reply",
+};
 
 export interface ConciergeState {
   /** Whether the concierge is shown at all (an OpenAI / Anthropic key is saved, or Local is set up) */
@@ -104,7 +113,7 @@ export function useConcierge(
         ...(next
           ? { at: Date.now(), kind: "advice", text: `${next.line}${next.targetId ? ` → ${next.targetId}` : " (no target)"}${tokens}` }
           : result.dropped
-            ? { at: Date.now(), kind: "dropped", text: `not shown, ${result.dropped.reason === "no_name" ? "no session name" : "another session needs a reply"}: ${result.dropped.line} → ${result.dropped.targetId}${tokens}` }
+            ? { at: Date.now(), kind: "dropped", text: `not shown, ${DROP_REASON_TEXT[result.dropped.reason]}: ${result.dropped.line} → ${result.dropped.targetId ?? "(no target)"}${tokens}` }
             : { at: Date.now(), kind: "none", text: `no advice${result.noMatchingJson ? " (answer didn't match the schema)" : ""}${tokens}` }),
         ...(detail !== undefined && { detail }),
       });
@@ -112,7 +121,7 @@ export function useConcierge(
         line: next
           ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}${tokens}`
           : result.dropped
-            ? `[concierge] dropped ${result.dropped.reason} len=${result.dropped.line.length} target=${result.dropped.targetId}${tokens}`
+            ? `[concierge] dropped ${result.dropped.reason} len=${result.dropped.line.length} target=${result.dropped.targetId ?? "-"}${tokens}`
             : `[concierge] no advice${result.noMatchingJson ? " no-matching-json" : ""}${tokens}`,
       }).catch(() => {});
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;

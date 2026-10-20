@@ -191,7 +191,13 @@ export function buildConciergePayload(
 interface ConciergeVerdict {
   advice: string;
   session_id: string;
+  action: ConciergeAction;
 }
+
+/** What the advice asks the developer to do now (docs/design.md "Concierge"). none: nothing they can do now, so the
+ * advice isn't shown */
+export const CONCIERGE_ACTIONS = ["reply", "check_result", "none"] as const;
+export type ConciergeAction = (typeof CONCIERGE_ACTIONS)[number];
 
 export const CONCIERGE_TASK: JudgeTaskDefinition = {
   name: "concierge_advice",
@@ -231,7 +237,13 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "Write one short line, about 30 full-width characters (or about 60 Latin characters), plain text, no " +
     "markdown, no quotation marks, no trailing period, in the language given by ui_language. Set session_id to " +
     "the id of the session the advice is about, exactly as given. When nothing needs the developer (no session " +
-    "needs a reply and nothing looks wrong), return an empty advice and an empty session_id.",
+    "needs a reply and nothing looks wrong), return an empty advice and an empty session_id.\n" +
+    "Advise only something the developer can do now. Set action to what the advice asks: reply (answer, approve, " +
+    "or decide for a session that needs a reply), check_result (look at the result of a session that finished), " +
+    "or none. Use none when there is nothing to do now, e.g. waiting for a report, a child session, or background " +
+    "work to finish first; an advice with action none is not shown, so never advise the developer to wait. A " +
+    "session that is working, or that finished but only waits on its own background work, is never the subject " +
+    "of an advice.",
   outputFields: {
     advice: {
       type: "string",
@@ -242,6 +254,13 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     session_id: {
       type: "string",
       description: "The id of the session the advice is about, copied exactly from the input. Empty when none.",
+    },
+    action: {
+      type: "string",
+      enum: CONCIERGE_ACTIONS,
+      description:
+        "What the advice asks the developer to do now: reply, check_result, or none when there is nothing they " +
+        "can do now (only waiting).",
     },
   },
   maxTokens: 256,
@@ -263,6 +282,12 @@ export function parseConciergeVerdict(verdict: unknown, sentIds: ReadonlySet<str
   return sentIds.has(id) ? { line, targetId: id } : { line };
 }
 
+/** The verdict's action, or undefined when it isn't one of CONCIERGE_ACTIONS */
+function actionOf(verdict: unknown): ConciergeAction | undefined {
+  const action = verdict && typeof verdict === "object" ? (verdict as Partial<ConciergeVerdict>).action : undefined;
+  return CONCIERGE_ACTIONS.find((a) => a === action);
+}
+
 const normalizeName = (text: string) => text.normalize("NFKC").toLowerCase();
 
 /**
@@ -275,17 +300,25 @@ export function adviceNamesTarget(line: string, name: string): boolean {
 }
 
 
-/** An advice that isn't shown, and why: it doesn't contain its session's name, or it is about a session that doesn't
- * need a reply while another does */
+/** An advice that isn't shown, and why: it asks nothing the developer can do now, it is about a working session, it
+ * doesn't contain its session's name, or it is about a session that doesn't need a reply while another does */
 export interface DroppedConciergeAdvice extends ConciergeAdvice {
-  targetId: string;
-  reason: "no_name" | "not_waiting";
+  reason: "nothing_to_do" | "working" | "no_name" | "not_waiting";
 }
 
-/** Why an advice about a sent session isn't shown, or undefined when it is (docs/design.md "Concierge") */
-function dropReason(advice: ConciergeAdvice, sessions: PayloadSession[]): DroppedConciergeAdvice["reason"] | undefined {
+/** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge") */
+function dropReason(
+  advice: ConciergeAdvice,
+  action: ConciergeAction | undefined,
+  sessions: PayloadSession[],
+): DroppedConciergeAdvice["reason"] | undefined {
+  // Only waiting is not advice, with a target or without (the prompt alone didn't hold)
+  if (action === "none") return "nothing_to_do";
   const target = sessions.find((s) => s.id === advice.targetId);
   if (!target) return undefined;
+  // A session done but waiting on its own background work is answered with none above; this is the one the facts
+  // say is working
+  if (target.state === "working") return "working";
   if (!adviceNamesTarget(advice.line, target.name)) return "no_name";
   // A "?" from Jev counts too, even if the concierge judged it as not waiting from the reply: then no advice is
   // shown rather than one about another session (Claude's own decision)
@@ -315,11 +348,11 @@ export async function askConcierge(
   }
   if (!result.ok) return result;
   const parsed = parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id)));
-  const reason = parsed && dropReason(parsed, payload.sessions);
+  const reason = parsed && dropReason(parsed, actionOf(result.verdict), payload.sessions);
   return {
     ok: true,
     verdict: reason ? null : parsed,
-    ...(reason && { dropped: { line: parsed!.line, targetId: parsed!.targetId!, reason } }),
+    ...(reason && { dropped: { ...parsed!, reason } }),
     answer: result.verdict,
     ...(result.usage && { usage: result.usage }),
   };
@@ -529,7 +562,8 @@ export function recentJumps(): ConciergeJump[] {
 
 export interface ConciergeLogEntry {
   at: number;
-  /** dropped: an advice that wasn't shown (no session name, or not about a session that needs a reply while one does) */
+  /** dropped: an advice that wasn't shown (nothing to do now, a working session, no session name, or not about a session
+   * that needs a reply while one does) */
   kind: "request" | "advice" | "none" | "dropped" | "error";
   /** What the entry is about. Speech bubble summaries also log here when a local model gave no summary */
   source?: "concierge" | "bubble";
