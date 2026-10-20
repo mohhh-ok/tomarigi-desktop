@@ -494,11 +494,17 @@ export function conciergeTriggered(
   return false;
 }
 
-/** Whether a session that needed a reply was answered (or left the screen). That asks without the 60-second wait */
-export function conciergeAnswered(
+/**
+ * Whether a session started needing a reply (including the "?", or first seen so), or one that needed a reply was
+ * answered (or left the screen). That asks without the 60-second wait
+ */
+export function conciergeReplyChanged(
   prev: ReadonlyMap<string, ConciergeTriggerClass> | undefined,
   next: ReadonlyMap<string, ConciergeTriggerClass>,
 ): boolean {
+  for (const [id, now] of next) {
+    if (now === "reply" && prev?.get(id) !== "reply") return true;
+  }
   for (const [id, before] of prev ?? []) {
     if (before === "reply" && next.get(id) !== "reply") return true;
   }
@@ -550,7 +556,7 @@ const realTimers: Timers = {
 /**
  * When the concierge is asked (docs/design.md "Concierge"): on the changes conciergeTriggered tells, gathered for
  * CONCIERGE_DEBOUNCE_MS, at most once per CONCIERGE_MIN_INTERVAL_MS (changes inside it make one request when it ends;
- * an answer to a session that needed a reply doesn't wait for it),
+ * a session starting to need a reply, or an answer to one, doesn't wait for it),
  * and every CONCIERGE_REPEAT_MS while any session needs a reply. While no session needs a reply or is done, nothing is
  * asked and clear() is called so the advice goes away. update() is called on every scan; request() when it is time
  * to ask
@@ -593,9 +599,10 @@ export class ConciergeScheduler {
     }
     if (conciergeTriggered(prev, classes)) {
       // Changes that come after this one join it; the wait isn't restarted, so steady changes can't hold it off
-      // (Claude's own decision). An answer skips the 60-second wait, bringing a change already waiting forward
+      // (Claude's own decision). A session starting to need a reply, or an answer, skips the 60-second wait, bringing
+      // a change already waiting forward
       const now = this.timers.now();
-      const at = conciergeAnswered(prev, classes)
+      const at = conciergeReplyChanged(prev, classes)
         ? now + CONCIERGE_DEBOUNCE_MS
         : Math.max(now + CONCIERGE_DEBOUNCE_MS, this.lastAt + CONCIERGE_MIN_INTERVAL_MS);
       if (this.pending === undefined || at < this.pendingAt) {
