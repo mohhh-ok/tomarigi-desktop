@@ -296,9 +296,55 @@ test("askConcierge sends one request with the task and payload, and returns the 
   expect(await askConcierge("openai", payload, failing)).toEqual({ ok: false, kind: "rate_limit", status: 429 });
 });
 
-test("the task asks for two strings and states that the input is untrusted", () => {
-  expect(Object.keys(CONCIERGE_TASK.outputFields)).toEqual(["advice", "session_id"]);
+test("the task asks for two strings and what the advice asks for, and states that the input is untrusted", () => {
+  expect(Object.keys(CONCIERGE_TASK.outputFields)).toEqual(["advice", "session_id", "action"]);
+  expect(CONCIERGE_TASK.outputFields.action.enum).toEqual(["reply", "check_result", "none"]);
   expect(CONCIERGE_TASK.systemPrompt).toContain("untrusted");
+  expect(CONCIERGE_TASK.systemPrompt).toContain("never advise the developer to wait");
+});
+
+test("an advice with nothing to do now, or about a working session, is dropped for every provider", async () => {
+  const payload = buildConciergePayload(
+    [
+      { view: view("t", { project: "tomarigi-desktop", state: "done" }) },
+      { view: view("w", { project: "worker", state: "working" }) },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  for (const provider of ["openai", "anthropic", "local"] as const) {
+    // The user's case: waiting for a child's report is not something to do now
+    const wait = { advice: "tomarigi-desktopの子の報告を待ち、完了後に結果を確認", session_id: "t", action: "none" };
+    expect(await askConcierge(provider, payload, answering(wait))).toEqual({
+      ok: true,
+      verdict: null,
+      dropped: { line: wait.advice, targetId: "t", reason: "nothing_to_do" },
+      answer: wait,
+    });
+    // none without a target is dropped too
+    const general = { advice: "しばらく待つ", session_id: "", action: "none" };
+    expect(await askConcierge(provider, payload, answering(general))).toMatchObject({
+      verdict: null,
+      dropped: { line: "しばらく待つ", reason: "nothing_to_do" },
+    });
+    // A session the facts say is working is never advised about, whatever the action
+    const working = { advice: "workerの結果を確認", session_id: "w", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(working))).toMatchObject({
+      verdict: null,
+      dropped: { targetId: "w", reason: "working" },
+    });
+    // Something to do now about a finished session is shown
+    const check = { advice: "tomarigi-desktopが終わりました。結果を確認", session_id: "t", action: "check_result" };
+    expect(await askConcierge(provider, payload, answering(check))).toMatchObject({
+      verdict: { line: check.advice, targetId: "t" },
+    });
+  }
 });
 
 const classes = (...views: SessionView[]) => conciergeTriggerClasses(views);
