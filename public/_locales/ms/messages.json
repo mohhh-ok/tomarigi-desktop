@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Tidak dapat menghubungi pelayan. Pastikan pelayan sedang berjalan dan URL betul."
+  },
+  "cancelButton": {
+    "message": "Batal"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Masukkan URL pelayan yang sah untuk menguji sambungan."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Pilih atau taip model untuk menguji sambungan."
   }
 }

@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Serveriga ei saa ühendust. Kontrollige, et see töötab ja URL on õige."
+  },
+  "cancelButton": {
+    "message": "Tühista"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Ühenduse testimiseks sisestage kehtiv serveri URL."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Ühenduse testimiseks valige või sisestage mudel."
   }
 }

@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Serverul nu poate fi accesat. Verificați dacă rulează și dacă URL-ul este corect."
+  },
+  "cancelButton": {
+    "message": "Anulează"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Introduceți un URL de server valid pentru a testa conexiunea."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Alegeți sau introduceți un model pentru a testa conexiunea."
   }
 }

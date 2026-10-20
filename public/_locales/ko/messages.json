@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "서버에 연결할 수 없습니다. 서버가 실행 중인지, URL이 맞는지 확인하세요."
+  },
+  "cancelButton": {
+    "message": "취소"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "올바른 서버 URL을 입력하면 연결을 테스트할 수 있습니다."
+  },
+  "localAiTestNeedsModel": {
+    "message": "모델을 선택하거나 입력하면 연결을 테스트할 수 있습니다."
   }
 }

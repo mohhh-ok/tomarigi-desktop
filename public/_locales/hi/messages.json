@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "सर्वर से कनेक्ट नहीं हो सका। जाँचें कि वह चल रहा है और URL सही है।"
+  },
+  "cancelButton": {
+    "message": "रद्द करें"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "कनेक्शन जाँचने के लिए सही सर्वर URL डालें।"
+  },
+  "localAiTestNeedsModel": {
+    "message": "कनेक्शन जाँचने के लिए मॉडल चुनें या लिखें।"
   }
 }

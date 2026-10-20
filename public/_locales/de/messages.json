@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Server nicht erreichbar. Prüfe, ob er läuft und die URL stimmt."
+  },
+  "cancelButton": {
+    "message": "Abbrechen"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Gib eine gültige Server-URL ein, um die Verbindung zu testen."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Wähle oder gib ein Modell ein, um die Verbindung zu testen."
   }
 }

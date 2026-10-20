@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบว่าเซิร์ฟเวอร์ทำงานอยู่และ URL ถูกต้อง"
+  },
+  "cancelButton": {
+    "message": "ยกเลิก"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "ป้อน URL ของเซิร์ฟเวอร์ที่ถูกต้องเพื่อทดสอบการเชื่อมต่อ"
+  },
+  "localAiTestNeedsModel": {
+    "message": "เลือกหรือพิมพ์โมเดลเพื่อทดสอบการเชื่อมต่อ"
   }
 }

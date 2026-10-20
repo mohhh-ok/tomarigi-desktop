@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "تعذّر الوصول إلى الخادم. تحقّق من أنه يعمل وأن عنوان URL صحيح."
+  },
+  "cancelButton": {
+    "message": "إلغاء"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "أدخل عنوان URL صالحًا للخادم لاختبار الاتصال."
+  },
+  "localAiTestNeedsModel": {
+    "message": "اختر نموذجًا أو اكتبه لاختبار الاتصال."
   }
 }

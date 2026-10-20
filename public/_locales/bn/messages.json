@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "সার্ভারে সংযোগ করা যাচ্ছে না। সার্ভার চালু আছে কি না এবং URL ঠিক আছে কি না দেখুন।"
+  },
+  "cancelButton": {
+    "message": "বাতিল"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "সংযোগ পরীক্ষা করতে সঠিক সার্ভার URL লিখুন।"
+  },
+  "localAiTestNeedsModel": {
+    "message": "সংযোগ পরীক্ষা করতে একটি মডেল বেছে নিন বা লিখুন।"
   }
 }

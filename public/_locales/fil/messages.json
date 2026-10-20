@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Hindi maabot ang server. Tiyaking tumatakbo ito at tama ang URL."
+  },
+  "cancelButton": {
+    "message": "Kanselahin"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Maglagay ng tamang URL ng server para masubok ang koneksyon."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Pumili o mag-type ng model para masubok ang koneksyon."
   }
 }

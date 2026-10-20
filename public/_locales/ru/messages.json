@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Не удаётся подключиться к серверу. Проверьте, что он запущен и URL указан верно."
+  },
+  "cancelButton": {
+    "message": "Отмена"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Введите правильный URL сервера, чтобы проверить подключение."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Выберите или введите модель, чтобы проверить подключение."
   }
 }

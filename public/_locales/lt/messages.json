@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Nepavyksta prisijungti prie serverio. Patikrinkite, ar jis veikia ir ar URL teisingas."
+  },
+  "cancelButton": {
+    "message": "Atšaukti"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Įveskite tinkamą serverio URL, kad galėtumėte patikrinti ryšį."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Pasirinkite arba įveskite modelį, kad galėtumėte patikrinti ryšį."
   }
 }

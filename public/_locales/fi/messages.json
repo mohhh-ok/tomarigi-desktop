@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Palvelimeen ei saada yhteyttä. Tarkista, että se on käynnissä ja URL-osoite on oikein."
+  },
+  "cancelButton": {
+    "message": "Peruuta"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Anna kelvollinen palvelimen URL, niin voit testata yhteyden."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Valitse tai kirjoita malli, niin voit testata yhteyden."
   }
 }

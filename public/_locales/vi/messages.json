@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Không kết nối được máy chủ. Hãy kiểm tra máy chủ đang chạy và URL đúng."
+  },
+  "cancelButton": {
+    "message": "Hủy"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Nhập URL máy chủ hợp lệ để kiểm tra kết nối."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Chọn hoặc nhập mô hình để kiểm tra kết nối."
   }
 }

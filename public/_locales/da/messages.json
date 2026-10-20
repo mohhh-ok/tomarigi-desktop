@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Kan ikke få forbindelse til serveren. Tjek, at den kører, og at URL’en er korrekt."
+  },
+  "cancelButton": {
+    "message": "Annuller"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Angiv en gyldig server-URL for at teste forbindelsen."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Vælg eller skriv en model for at teste forbindelsen."
   }
 }

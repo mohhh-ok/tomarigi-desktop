@@ -383,5 +383,14 @@
   },
   "localAiTestUnreachable": {
     "message": "Tidak bisa terhubung ke server. Pastikan server berjalan dan URL-nya benar."
+  },
+  "cancelButton": {
+    "message": "Batal"
+  },
+  "localAiTestNeedsUrl": {
+    "message": "Masukkan URL server yang valid untuk menguji koneksi."
+  },
+  "localAiTestNeedsModel": {
+    "message": "Pilih atau ketik model untuk menguji koneksi."
   }
 }
