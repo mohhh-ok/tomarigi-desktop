@@ -1,5 +1,6 @@
 // The stage for shoot.mjs: a desktop with a terminal, and the Tomarigi mock in a frame on top. The terminal's tabs run
-// four agents (one per bird); the open tab shows the blog session, whose question matches the blog bird's bubble
+// four agents (one per bird); the open tab shows the blog session, whose question matches the blog bird's bubble.
+// The terminal reaches past the window's right and top edges, so no terminal edge shows through the frosted glass
 const TABS = [
   ["blog", "claude"],
   ["tomarigi", "codex"],
@@ -26,7 +27,7 @@ export function stage({ lang, url, win, fade }) {
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   html{color-scheme:dark}html,body{margin:0;height:100%;overflow:hidden}
   body{background:#56636a;font-family:-apple-system,"Hiragino Sans",sans-serif}
-  .term{position:absolute;left:16px;top:20px;width:640px;height:470px;background:#17191d;border-radius:10px;
+  .term{position:absolute;left:16px;top:12px;width:740px;height:470px;background:#17191d;border-radius:10px;
     box-shadow:0 18px 40px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.7);overflow:hidden}
   .bar{height:28px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#202328}
   .bar i{width:12px;height:12px;border-radius:50%;display:block}

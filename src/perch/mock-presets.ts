@@ -587,7 +587,7 @@ export const PRESETS: Preset[] = [
   {
     id: "gallery-bubble",
     label: "Gallery: bubbles",
-    build: () => ({ sessions: pick(["gallery/asking", "gallery/done"]), events: [] }),
+    build: () => ({ sessions: pick(["gallery/finished", "gallery/done", "gallery/tested"]), events: [] }),
   },
 ];
 
@@ -610,13 +610,13 @@ const GALLERY: SessionView[] = [
     question: tr("One panel or tabs?", "設定はタブに分ける？"),
   },
   {
-    id: "gallery/asking",
+    id: "gallery/finished",
     project: "figma-adapter",
     slug: "figma-adapter",
     state: "done",
-    sinceMs: 20_000,
-    ask: { status: "asking" },
-    summary: tr("Headline A or B?", "見出しは A と B のどっち？"),
+    sinceMs: 5_000,
+    ask: { status: "not_asking" },
+    summary: tr("Added three button sizes", "ボタンを 3 種類にした"),
   },
   {
     id: "gallery/done",
@@ -626,6 +626,15 @@ const GALLERY: SessionView[] = [
     sinceMs: 2 * 60_000,
     ask: { status: "not_asking" },
     summary: tr("Fixed the README typo", "README の誤字を直した"),
+  },
+  {
+    id: "gallery/tested",
+    project: "tomarigi",
+    slug: "tomarigi",
+    state: "done",
+    sinceMs: 40_000,
+    ask: { status: "not_asking" },
+    summary: tr("Wrote the settings tests", "設定のテストを書いた"),
   },
   {
     id: "gallery/dozing",
