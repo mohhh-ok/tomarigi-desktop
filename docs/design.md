@@ -12,6 +12,7 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 - Persistent event history and a debug log screen
 - i18n (see "Language")
 - Mock mode (presets + JSON injection)
+- Not bundled: the author's `peer-session` skill (starts child Claude Code sessions in Ghostty panes, which then show up as birds). It is Ghostty- and Claude Code-only and still being shaped by the author's own use (the user: 「peer-sessionはえっとね、基本的には俺も使いながらブラッシュアップしていきたいから細かい設定も基本的には俺好みでかんがえてる。でさ、もんだいはたーみなるごかんよな」「とりあえず自分の使用でそだてていきたい。」). Revisit bundling or publishing it, and support for terminals other than Ghostty, when the user brings it up again
 
 ## Language
 
