@@ -9,7 +9,7 @@ import { httpFailure, invokeKeyedApi, verdictSchema, type JudgeResult, type Judg
  * For summaries and the concierge (docs/design.md "BYOK API keys"). A light model that supports the Responses API,
  * Structured Outputs, and reasoning effort none.
  */
-const OPENAI_JUDGE_MODEL = "gpt-5.6-luna";
+export const OPENAI_JUDGE_MODEL = "gpt-5.6-luna";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 512;
 

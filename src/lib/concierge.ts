@@ -330,6 +330,70 @@ function dropReason(
   return undefined;
 }
 
+/** What askConcierge returns. action is the kind of the advice (shown or dropped) as the AI gave it */
+export type ConciergeResult = JudgeResult<ConciergeAdvice | null> & {
+  answer?: unknown;
+  dropped?: DroppedConciergeAdvice;
+  action?: ConciergeAction;
+  noMatchingJson?: true;
+};
+
+/** Who wrote an answer, for the app log: the request's id and the provider and model it went to */
+export interface ConciergeLogContext {
+  req: string;
+  provider: AiProvider;
+  model: string;
+}
+
+const logHead = (kind: string, c: ConciergeLogContext) =>
+  `[concierge] ${kind} req=${c.req} provider=${c.provider} model=${c.model}`;
+
+/**
+ * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
+ * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
+ * form to grep. source: machine is a question tool or a permission prompt; jev is Jev's "?" with its probability
+ */
+export function conciergeRequestLogLines(c: ConciergeLogContext, payload: ConciergePayload): string[] {
+  const head = `${logHead("request", c)} sessions=${payload.sessions.length} holds=${payload.holds.length} events=${payload.recent_events.length} chars=${JSON.stringify(payload).length}`;
+  return [
+    head,
+    ...payload.sessions.map((s) =>
+      [
+        `[concierge] fact req=${c.req} session=${s.id}`,
+        `agent=${s.agent ?? "-"}`,
+        `state=${s.state}`,
+        `since=${s.seconds_since_last_activity}s`,
+        `needs_reply=${s.needs_reply}`,
+        `source=${s.needs_reply_source ?? "-"}`,
+        `jev=${s.jev ? `${s.jev.asking ? "asking" : "not_asking"}${s.jev.probability === undefined ? "" : `:${s.jev.probability.toFixed(2)}`}` : "-"}`,
+        `watch_parent=${s.watch_parent ?? "-"}`,
+        `watch_children=${s.watch_children?.join(",") ?? "-"}`,
+        `chicks_working=${s.chicks_working ?? 0}`,
+      ].join(" "),
+    ),
+  ];
+}
+
+/**
+ * The app log line of an answer: the advice text (shown or dropped, with the reason) with its kind and target, or no
+ * advice, or the error. The text is JSON-quoted, so its line breaks stay on one line
+ */
+export function conciergeResultLogLine(c: ConciergeLogContext, result: ConciergeResult): string {
+  if (!result.ok) return `${logHead("error", c)} error=${result.kind}${result.status ? ` status=${result.status}` : ""}`;
+  const tokens = result.usage
+    ? ` tokens in=${result.usage.input} cached=${result.usage.cachedInput} out=${result.usage.output}`
+    : "";
+  const advice = result.verdict ?? result.dropped;
+  if (!advice) return `${logHead("none", c)}${result.noMatchingJson ? " no-matching-json" : ""}${tokens}`;
+  return [
+    logHead(result.verdict ? "advice" : "dropped", c),
+    `kind=${result.action ?? "-"}`,
+    `target=${advice.targetId ?? "-"}`,
+    ...(result.dropped ? [`reason=${result.dropped.reason}`] : []),
+    `text=${JSON.stringify(advice.line)}${tokens}`,
+  ].join(" ");
+}
+
 /**
  * Asks the concierge once. Errors are returned as a JudgeResult, not thrown. answer is the verdict as the AI gave it
  * (including an id that is ignored), for the debug log screen. An advice about a session that doesn't contain its
@@ -341,9 +405,7 @@ export async function askConcierge(
   provider: AiProvider,
   payload: ConciergePayload,
   run: JudgeRunner = judgeRunnerFor(provider),
-): Promise<
-  JudgeResult<ConciergeAdvice | null> & { answer?: unknown; dropped?: DroppedConciergeAdvice; noMatchingJson?: true }
-> {
+): Promise<ConciergeResult> {
   const result = await run<ConciergeVerdict>(CONCIERGE_TASK, payload);
   // A local model's answer that isn't JSON matching the schema is no advice, not an error (docs/design.md "BYOK API
   // keys", Local AI)
@@ -352,11 +414,13 @@ export async function askConcierge(
   }
   if (!result.ok) return result;
   const parsed = parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id)));
-  const reason = parsed && dropReason(parsed, actionOf(result.verdict), payload.sessions);
+  const action = actionOf(result.verdict);
+  const reason = parsed && dropReason(parsed, action, payload.sessions);
   return {
     ok: true,
     verdict: reason ? null : parsed,
     ...(reason && { dropped: { ...parsed!, reason } }),
+    ...(parsed && action && { action }),
     answer: result.verdict,
     ...(result.usage && { usage: result.usage }),
   };

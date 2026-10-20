@@ -47,7 +47,7 @@ export function httpFailure(
  * pinned snapshot. It thinks adaptively by default, but a forced tool_choice makes the reply start with the tool call
  * and carry no thinking block, so max_tokens isn't spent on thinking
  */
-const JUDGE_MODEL = "claude-haiku-5-5";
+export const JUDGE_MODEL = "claude-haiku-5-5";
 
 /** Output is kept small since it's for verdicts. When tool_choice is forced, if this is too small
  * stop_reason: "max_tokens" breaks the tool_use input JSON, so
