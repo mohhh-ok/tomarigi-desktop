@@ -69,6 +69,7 @@ export function BirdGlyph({
       className={state === "dozing" ? "bird-glyph bird-glyph-dozing" : "bird-glyph"}
       style={{ "--glyph-size": `${size}px` } as CSSProperties}
     >
+      {state === "working" && <WorkingAura src={ICON_SETS[set][state]} size={size} style={style} />}
       <img
         className={state === "working" ? "bird-glyph-img bird-working-fx" : "bird-glyph-img"}
         src={ICON_SETS[set][state]}
@@ -81,6 +82,31 @@ export function BirdGlyph({
       {asking && <BirdBadge kind="ask" />}
       {angry && <BirdBadge kind="anger" />}
     </span>
+  );
+}
+
+/** The glow of the working aura: two copies of the sprite under it, one with a gold and one with a white drop-shadow,
+ * each flickering by opacity on its own rhythm (.bird-aura in styles/perch-rows.css). Animating the filter itself made
+ * WebKit repaint the sprite every frame while any bird was working; the copies are drawn once and only their opacity
+ * changes, which the compositor does without repainting. They take the same shake/peck as the sprite (same class, same
+ * start), so they move with it. Goes before the sprite inside a positioned frame (.bird-glyph, .chick-glyph) */
+export function WorkingAura({ src, size, style }: { src: string; size: number; style?: CSSProperties }) {
+  return (
+    <>
+      {(["gold", "white"] as const).map((tone) => (
+        <img
+          key={tone}
+          className={`bird-aura bird-aura-${tone} bird-working-fx`}
+          src={src}
+          width={size}
+          height={size}
+          alt=""
+          aria-hidden
+          draggable={false}
+          style={style}
+        />
+      ))}
+    </>
   );
 }
 

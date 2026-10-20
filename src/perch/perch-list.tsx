@@ -4,7 +4,7 @@ import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
 import type { SessionView } from "@/lib/sessions";
 import type { IconSetAssignments } from "@/lib/icon-set-store";
 import { bubbleText, SpeechBubble } from "./bubble";
-import { BIRD, BirdGlyph } from "./bird-glyph";
+import { BIRD, BirdGlyph, WorkingAura } from "./bird-glyph";
 import { LiveDots, StatusParts } from "./bird-status";
 import { focusProps } from "./focus";
 import { formatSince } from "./format-time";
@@ -108,16 +108,19 @@ export function Perch({
                 {...focus}
                 className={`chick ${c.state} ${focus.className ?? ""}`}
               >
-                <img
-                  className={
-                    c.state === "working" ? "bird-glyph-img bird-working-fx" : "bird-glyph-img"
-                  }
-                  src={ICON_SETS[set].chick}
-                  width={14}
-                  height={14}
-                  alt=""
-                  draggable={false}
-                />
+                <span className="chick-glyph">
+                  {c.state === "working" && <WorkingAura src={ICON_SETS[set].chick} size={14} />}
+                  <img
+                    className={
+                      c.state === "working" ? "bird-glyph-img bird-working-fx" : "bird-glyph-img"
+                    }
+                    src={ICON_SETS[set].chick}
+                    width={14}
+                    height={14}
+                    alt=""
+                    draggable={false}
+                  />
+                </span>
                 <span className="name">{c.name}</span>
                 <span className="status">
                   {BIRD[c.state].label}
