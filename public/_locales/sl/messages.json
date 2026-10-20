@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Povezava uspešna"
   },
-  "byokTestResultFailure": {
-    "message": "Povezava neuspešna ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Ključ je bil zavrnjen. Preverite, ali je pravilen in še veljaven."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Preveč zahtev ali ni več dobroimetja. Malo počakajte ali preverite paket in stanje."
+  },
+  "byokTestFailedServer": {
+    "message": "Storitev je naletela na težavo. Poskusite znova čez nekaj časa."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Storitve ni mogoče doseči. Preverite internetno povezavo."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Odgovora storitve ni bilo mogoče prebrati. Poskusite znova čez nekaj časa."
   },
   "byokNoKeyMessage": {
     "message": "Najprej vnesite in shranite API ključ"

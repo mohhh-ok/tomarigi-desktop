@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Forbindelse oprettet"
   },
-  "byokTestResultFailure": {
-    "message": "Forbindelse mislykkedes ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Nøglen blev afvist. Tjek, at den er korrekt og stadig gyldig."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "For mange forespørgsler eller ingen saldo tilbage. Vent lidt, eller tjek dit abonnement og din saldo."
+  },
+  "byokTestFailedServer": {
+    "message": "Tjenesten havde et problem. Prøv igen om lidt."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Tjenesten kan ikke nås. Tjek din internetforbindelse."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Svaret fra tjenesten kunne ikke læses. Prøv igen om lidt."
   },
   "byokNoKeyMessage": {
     "message": "Indtast og gem en API-nøgle først"

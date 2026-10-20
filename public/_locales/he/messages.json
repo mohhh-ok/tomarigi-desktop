@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "החיבור הצליח"
   },
-  "byokTestResultFailure": {
-    "message": "החיבור נכשל ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "המפתח נדחה. בדקו שהוא נכון ועדיין בתוקף."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "יותר מדי בקשות או שנגמרה היתרה. המתינו רגע או בדקו את התוכנית והיתרה."
+  },
+  "byokTestFailedServer": {
+    "message": "אירעה בעיה בשירות. נסו שוב בעוד זמן מה."
+  },
+  "byokTestFailedNetwork": {
+    "message": "לא ניתן להתחבר לשירות. בדקו את החיבור לאינטרנט."
+  },
+  "byokTestFailedMalformed": {
+    "message": "לא ניתן היה לקרוא את תשובת השירות. נסו שוב בעוד זמן מה."
   },
   "byokNoKeyMessage": {
     "message": "יש להזין ולשמור מפתח API תחילה"

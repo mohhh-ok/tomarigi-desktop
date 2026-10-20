@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Připojení úspěšné"
   },
-  "byokTestResultFailure": {
-    "message": "Připojení se nezdařilo ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Klíč byl odmítnut. Zkontrolujte, že je správný a stále platný."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Příliš mnoho požadavků nebo došel kredit. Chvíli počkejte nebo zkontrolujte tarif a zůstatek."
+  },
+  "byokTestFailedServer": {
+    "message": "Služba narazila na problém. Zkuste to znovu za chvíli."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Službu nelze zastihnout. Zkontrolujte připojení k internetu."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Odpověď služby nelze přečíst. Zkuste to znovu za chvíli."
   },
   "byokNoKeyMessage": {
     "message": "Nejprve zadejte a uložte API klíč"

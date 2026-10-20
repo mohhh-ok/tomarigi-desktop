@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Połączenie udane"
   },
-  "byokTestResultFailure": {
-    "message": "Połączenie nieudane ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Klucz został odrzucony. Sprawdź, czy jest poprawny i nadal ważny."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Za dużo żądań lub brak środków. Poczekaj chwilę albo sprawdź plan i saldo."
+  },
+  "byokTestFailedServer": {
+    "message": "Usługa napotkała problem. Spróbuj ponownie za chwilę."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Nie można połączyć się z usługą. Sprawdź połączenie z internetem."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Nie udało się odczytać odpowiedzi usługi. Spróbuj ponownie za chwilę."
   },
   "byokNoKeyMessage": {
     "message": "Najpierw wprowadź i zapisz klucz API"

@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Verbinding geslaagd"
   },
-  "byokTestResultFailure": {
-    "message": "Verbinding mislukt ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "De sleutel is geweigerd. Controleer of hij klopt en nog geldig is."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Te veel verzoeken of geen tegoed meer. Wacht even of controleer je abonnement en saldo."
+  },
+  "byokTestFailedServer": {
+    "message": "Er ging iets mis bij de dienst. Probeer het straks opnieuw."
+  },
+  "byokTestFailedNetwork": {
+    "message": "De dienst is niet bereikbaar. Controleer je internetverbinding."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Het antwoord van de dienst kon niet worden gelezen. Probeer het straks opnieuw."
   },
   "byokNoKeyMessage": {
     "message": "Voer eerst een API-sleutel in en sla die op"

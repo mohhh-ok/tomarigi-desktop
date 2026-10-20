@@ -14,8 +14,7 @@ import { fetchLocalModels, isValidBaseUrl, pickLocalModel } from "@/lib/local-ju
 // TypeSafe's official site (linked from the settings description)
 const TYPESAFE_SITE_URL = "https://typesafe.ai";
 
-// Display state of the connection test button. reason is a technical identifier (kind) embedded as is into
-// $REASON$ of byokTestResultFailure, and is not localized (treated like an HTTP status).
+// Display state of the connection test button. reason picks the failure line (TEST_FAILURE_TEXT); it isn't shown
 // The key isn't only for judging, so the type name isn't limited to Judge either (JudgeErrorKind itself
 // just reuses the existing name in lib/judge.ts)
 export type ApiKeyTestState =
@@ -129,6 +128,15 @@ function CancelEditButton({ onCancel }: { onCancel: () => void }) {
   );
 }
 
+/** What a failed connection test says, by why it failed: what happened and what to check, never the internal kind */
+const TEST_FAILURE_TEXT: Record<JudgeErrorKind, Parameters<typeof t>[0]> = {
+  auth: "byokTestFailedAuth",
+  rate_limit: "byokTestFailedRateLimit",
+  server: "byokTestFailedServer",
+  network: "byokTestFailedNetwork",
+  malformed: "byokTestFailedMalformed",
+};
+
 /** The connection test button and its result. Shared by the key rows and Local */
 function ConnectionTest({
   enabled,
@@ -153,7 +161,7 @@ function ConnectionTest({
       {testState.phase === "testing" && <p className="judge-status judge-status-pending">{t("byokTestingLabel")}</p>}
       {testState.phase === "success" && <p className="judge-status judge-status-ok">{t("byokTestResultSuccess")}</p>}
       {testState.phase === "failure" && (
-        <p className="judge-status judge-status-error">{failureText ?? t("byokTestResultFailure", testState.reason)}</p>
+        <p className="judge-status judge-status-error">{failureText ?? t(TEST_FAILURE_TEXT[testState.reason])}</p>
       )}
       {testState.phase === "no-key" && <p className="judge-status judge-status-error">{t("byokNoKeyMessage")}</p>}
     </>

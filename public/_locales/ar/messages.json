@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "تم الاتصال بنجاح"
   },
-  "byokTestResultFailure": {
-    "message": "فشل الاتصال ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "تم رفض المفتاح. تحقق من أنه صحيح ولا يزال صالحًا."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "طلبات كثيرة جدًا أو لا يوجد رصيد. انتظر قليلًا أو تحقق من خطتك ورصيدك."
+  },
+  "byokTestFailedServer": {
+    "message": "حدثت مشكلة في الخدمة. حاول مرة أخرى بعد قليل."
+  },
+  "byokTestFailedNetwork": {
+    "message": "تعذر الوصول إلى الخدمة. تحقق من اتصالك بالإنترنت."
+  },
+  "byokTestFailedMalformed": {
+    "message": "تعذرت قراءة رد الخدمة. حاول مرة أخرى بعد قليل."
   },
   "byokNoKeyMessage": {
     "message": "أدخل مفتاح واجهة برمجة التطبيقات واحفظه أولاً"

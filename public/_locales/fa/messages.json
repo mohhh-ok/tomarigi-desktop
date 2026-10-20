@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "اتصال موفق بود"
   },
-  "byokTestResultFailure": {
-    "message": "اتصال ناموفق بود ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "کلید پذیرفته نشد. بررسی کنید که درست و هنوز معتبر باشد."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "درخواست‌ها بیش از حد است یا اعتباری نمانده. کمی صبر کنید یا طرح و موجودی خود را بررسی کنید."
+  },
+  "byokTestFailedServer": {
+    "message": "سرویس با مشکل روبه‌رو شد. کمی بعد دوباره امتحان کنید."
+  },
+  "byokTestFailedNetwork": {
+    "message": "دسترسی به سرویس ممکن نیست. اتصال اینترنت خود را بررسی کنید."
+  },
+  "byokTestFailedMalformed": {
+    "message": "پاسخ سرویس خوانده نشد. کمی بعد دوباره امتحان کنید."
   },
   "byokNoKeyMessage": {
     "message": "ابتدا یک کلید API وارد و ذخیره کنید"

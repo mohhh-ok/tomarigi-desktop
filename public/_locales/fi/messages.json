@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Yhteys onnistui"
   },
-  "byokTestResultFailure": {
-    "message": "Yhteys epäonnistui ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Avain hylättiin. Tarkista, että se on oikein ja yhä voimassa."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Liian monta pyyntöä tai saldo on lopussa. Odota hetki tai tarkista tilauksesi ja saldosi."
+  },
+  "byokTestFailedServer": {
+    "message": "Palvelussa oli ongelma. Yritä hetken päästä uudelleen."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Palveluun ei saada yhteyttä. Tarkista internetyhteytesi."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Palvelun vastausta ei voitu lukea. Yritä hetken päästä uudelleen."
   },
   "byokNoKeyMessage": {
     "message": "Anna ja tallenna API-avain ensin"

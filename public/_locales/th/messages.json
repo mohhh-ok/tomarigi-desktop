@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "เชื่อมต่อสำเร็จ"
   },
-  "byokTestResultFailure": {
-    "message": "เชื่อมต่อล้มเหลว ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "คีย์ถูกปฏิเสธ ตรวจสอบว่าคีย์ถูกต้องและยังใช้งานได้"
+  },
+  "byokTestFailedRateLimit": {
+    "message": "คำขอมากเกินไปหรือยอดเงินหมด รอสักครู่ หรือตรวจสอบแผนและยอดเงินของคุณ"
+  },
+  "byokTestFailedServer": {
+    "message": "บริการมีปัญหา ลองอีกครั้งในภายหลัง"
+  },
+  "byokTestFailedNetwork": {
+    "message": "ติดต่อบริการไม่ได้ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ"
+  },
+  "byokTestFailedMalformed": {
+    "message": "อ่านคำตอบของบริการไม่ได้ ลองอีกครั้งในภายหลัง"
   },
   "byokNoKeyMessage": {
     "message": "กรุณาป้อนและบันทึกคีย์ API ก่อน"

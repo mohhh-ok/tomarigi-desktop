@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Pripojenie úspešné"
   },
-  "byokTestResultFailure": {
-    "message": "Pripojenie zlyhalo ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Kľúč bol odmietnutý. Skontrolujte, či je správny a stále platný."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Príliš veľa požiadaviek alebo došiel kredit. Chvíľu počkajte alebo skontrolujte tarifu a zostatok."
+  },
+  "byokTestFailedServer": {
+    "message": "Služba narazila na problém. Skúste to znova o chvíľu."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Službu nemožno zastihnúť. Skontrolujte pripojenie k internetu."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Odpoveď služby sa nedá prečítať. Skúste to znova o chvíľu."
   },
   "byokNoKeyMessage": {
     "message": "Najprv zadajte a uložte API kľúč"

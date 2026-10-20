@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Connected successfully"
   },
-  "byokTestResultFailure": {
-    "message": "Connection failed ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "The key was rejected. Check that it's correct and still valid."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Too many requests, or no credit left. Wait a moment, or check your plan and balance."
+  },
+  "byokTestFailedServer": {
+    "message": "The service had a problem. Try again in a while."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Can't reach the service. Check your internet connection."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Couldn't read the service's answer. Try again in a while."
   },
   "byokNoKeyMessage": {
     "message": "Enter and save an API key first"

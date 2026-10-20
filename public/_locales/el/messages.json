@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Επιτυχής σύνδεση"
   },
-  "byokTestResultFailure": {
-    "message": "Αποτυχία σύνδεσης ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Το κλειδί απορρίφθηκε. Ελέγξτε ότι είναι σωστό και ακόμη έγκυρο."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Πάρα πολλά αιτήματα ή δεν υπάρχει υπόλοιπο. Περιμένετε λίγο ή ελέγξτε το πρόγραμμα και το υπόλοιπό σας."
+  },
+  "byokTestFailedServer": {
+    "message": "Η υπηρεσία αντιμετώπισε πρόβλημα. Δοκιμάστε ξανά σε λίγο."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Δεν είναι δυνατή η σύνδεση με την υπηρεσία. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Η απάντηση της υπηρεσίας δεν ήταν δυνατό να διαβαστεί. Δοκιμάστε ξανά σε λίγο."
   },
   "byokNoKeyMessage": {
     "message": "Εισαγάγετε και αποθηκεύστε πρώτα ένα κλειδί API"

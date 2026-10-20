@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Verbindung erfolgreich"
   },
-  "byokTestResultFailure": {
-    "message": "Verbindung fehlgeschlagen ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Der Schlüssel wurde abgelehnt. Prüfe, ob er richtig und noch gültig ist."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Zu viele Anfragen oder kein Guthaben mehr. Warte kurz oder prüfe deinen Tarif und dein Guthaben."
+  },
+  "byokTestFailedServer": {
+    "message": "Beim Dienst ist ein Problem aufgetreten. Versuche es später noch einmal."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Der Dienst ist nicht erreichbar. Prüfe deine Internetverbindung."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Die Antwort des Dienstes konnte nicht gelesen werden. Versuche es später noch einmal."
   },
   "byokNoKeyMessage": {
     "message": "Zuerst einen API-Schlüssel eingeben und speichern"

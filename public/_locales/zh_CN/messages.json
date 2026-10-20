@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "连接成功"
   },
-  "byokTestResultFailure": {
-    "message": "连接失败($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "密钥被拒绝。请检查密钥是否正确且仍然有效。"
+  },
+  "byokTestFailedRateLimit": {
+    "message": "请求过多或余额不足。请稍等片刻，或检查你的套餐和余额。"
+  },
+  "byokTestFailedServer": {
+    "message": "服务出现问题。请稍后再试。"
+  },
+  "byokTestFailedNetwork": {
+    "message": "无法连接到服务。请检查网络连接。"
+  },
+  "byokTestFailedMalformed": {
+    "message": "无法读取服务的回复。请稍后再试。"
   },
   "byokNoKeyMessage": {
     "message": "请先输入并保存 API 密钥"

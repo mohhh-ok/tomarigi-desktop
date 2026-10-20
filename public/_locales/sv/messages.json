@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Anslutningen lyckades"
   },
-  "byokTestResultFailure": {
-    "message": "Anslutningen misslyckades ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Nyckeln avvisades. Kontrollera att den är rätt och fortfarande giltig."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "För många förfrågningar eller slut på saldo. Vänta en stund eller kontrollera din plan och ditt saldo."
+  },
+  "byokTestFailedServer": {
+    "message": "Tjänsten fick ett problem. Försök igen om en stund."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Det går inte att nå tjänsten. Kontrollera din internetanslutning."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Tjänstens svar kunde inte läsas. Försök igen om en stund."
   },
   "byokNoKeyMessage": {
     "message": "Ange och spara en API-nyckel först"

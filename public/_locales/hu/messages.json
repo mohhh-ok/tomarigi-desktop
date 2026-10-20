@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Sikeres kapcsolat"
   },
-  "byokTestResultFailure": {
-    "message": "Sikertelen kapcsolat ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "A kulcsot elutasították. Ellenőrizze, hogy helyes-e és érvényes-e még."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Túl sok kérés, vagy elfogyott az egyenleg. Várjon egy kicsit, vagy ellenőrizze a csomagját és az egyenlegét."
+  },
+  "byokTestFailedServer": {
+    "message": "Hiba történt a szolgáltatásnál. Próbálja újra kicsit később."
+  },
+  "byokTestFailedNetwork": {
+    "message": "A szolgáltatás nem érhető el. Ellenőrizze az internetkapcsolatát."
+  },
+  "byokTestFailedMalformed": {
+    "message": "A szolgáltatás válasza nem olvasható. Próbálja újra kicsit később."
   },
   "byokNoKeyMessage": {
     "message": "Először add meg és mentsd el az API-kulcsot"

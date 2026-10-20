@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Sambungan berjaya"
   },
-  "byokTestResultFailure": {
-    "message": "Sambungan gagal ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Kunci ditolak. Semak sama ada kunci betul dan masih sah."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Terlalu banyak permintaan atau baki habis. Tunggu sebentar, atau semak pelan dan baki anda."
+  },
+  "byokTestFailedServer": {
+    "message": "Perkhidmatan menghadapi masalah. Cuba lagi sebentar nanti."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Tidak dapat menghubungi perkhidmatan. Semak sambungan internet anda."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Jawapan perkhidmatan tidak dapat dibaca. Cuba lagi sebentar nanti."
   },
   "byokNoKeyMessage": {
     "message": "Masukkan dan simpan kunci API dahulu"

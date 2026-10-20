@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Conexión exitosa"
   },
-  "byokTestResultFailure": {
-    "message": "Falló la conexión ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "La clave fue rechazada. Verifica que sea correcta y siga siendo válida."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Demasiadas solicitudes o sin saldo. Espera un momento o revisa tu plan y tu saldo."
+  },
+  "byokTestFailedServer": {
+    "message": "El servicio tuvo un problema. Inténtalo de nuevo en un rato."
+  },
+  "byokTestFailedNetwork": {
+    "message": "No se puede conectar con el servicio. Verifica tu conexión a internet."
+  },
+  "byokTestFailedMalformed": {
+    "message": "No se pudo leer la respuesta del servicio. Inténtalo de nuevo en un rato."
   },
   "byokNoKeyMessage": {
     "message": "Primero ingresa y guarda una clave de API"

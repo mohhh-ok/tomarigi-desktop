@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Koneksi berhasil"
   },
-  "byokTestResultFailure": {
-    "message": "Koneksi gagal ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Kunci ditolak. Periksa apakah kunci benar dan masih berlaku."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Terlalu banyak permintaan atau saldo habis. Tunggu sebentar, atau periksa paket dan saldo Anda."
+  },
+  "byokTestFailedServer": {
+    "message": "Layanan mengalami masalah. Coba lagi beberapa saat lagi."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Tidak dapat menjangkau layanan. Periksa koneksi internet Anda."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Balasan layanan tidak dapat dibaca. Coba lagi beberapa saat lagi."
   },
   "byokNoKeyMessage": {
     "message": "Masukkan dan simpan kunci API terlebih dahulu"

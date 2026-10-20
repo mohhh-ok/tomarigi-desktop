@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Kết nối thành công"
   },
-  "byokTestResultFailure": {
-    "message": "Kết nối thất bại ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Khóa bị từ chối. Hãy kiểm tra khóa có đúng và còn hiệu lực không."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Quá nhiều yêu cầu hoặc đã hết số dư. Hãy đợi một lát hoặc kiểm tra gói và số dư."
+  },
+  "byokTestFailedServer": {
+    "message": "Dịch vụ gặp sự cố. Hãy thử lại sau ít phút."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Không thể kết nối tới dịch vụ. Hãy kiểm tra kết nối internet."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Không đọc được phản hồi của dịch vụ. Hãy thử lại sau ít phút."
   },
   "byokNoKeyMessage": {
     "message": "Vui lòng nhập và lưu khóa API trước"

@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Връзката е успешна"
   },
-  "byokTestResultFailure": {
-    "message": "Връзката е неуспешна ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Ключът беше отхвърлен. Проверете дали е правилен и все още валиден."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Твърде много заявки или няма наличност. Изчакайте малко или проверете плана и баланса си."
+  },
+  "byokTestFailedServer": {
+    "message": "Услугата срещна проблем. Опитайте отново след малко."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Няма връзка с услугата. Проверете интернет връзката си."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Отговорът на услугата не можа да бъде прочетен. Опитайте отново след малко."
   },
   "byokNoKeyMessage": {
     "message": "Първо въведете и запазете API ключ"

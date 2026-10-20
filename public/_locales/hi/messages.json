@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "कनेक्शन सफल रहा"
   },
-  "byokTestResultFailure": {
-    "message": "कनेक्शन विफल ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "कुंजी अस्वीकार कर दी गई। जाँचें कि यह सही है और अभी भी मान्य है।"
+  },
+  "byokTestFailedRateLimit": {
+    "message": "बहुत अधिक अनुरोध हैं या बैलेंस खत्म हो गया है। थोड़ा रुकें, या अपना प्लान और बैलेंस जाँचें।"
+  },
+  "byokTestFailedServer": {
+    "message": "सेवा में कोई समस्या आई। थोड़ी देर बाद फिर से कोशिश करें।"
+  },
+  "byokTestFailedNetwork": {
+    "message": "सेवा तक नहीं पहुँच पा रहे। अपना इंटरनेट कनेक्शन जाँचें।"
+  },
+  "byokTestFailedMalformed": {
+    "message": "सेवा का जवाब पढ़ा नहीं जा सका। थोड़ी देर बाद फिर से कोशिश करें।"
   },
   "byokNoKeyMessage": {
     "message": "पहले एक API कुंजी दर्ज करें और सहेजें"

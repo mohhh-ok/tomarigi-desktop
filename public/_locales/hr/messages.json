@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "Veza uspješna"
   },
-  "byokTestResultFailure": {
-    "message": "Veza neuspješna ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "Ključ je odbijen. Provjerite je li ispravan i još uvijek valjan."
+  },
+  "byokTestFailedRateLimit": {
+    "message": "Previše zahtjeva ili nema više sredstava. Pričekajte malo ili provjerite plan i stanje."
+  },
+  "byokTestFailedServer": {
+    "message": "Usluga je naišla na problem. Pokušajte ponovno malo kasnije."
+  },
+  "byokTestFailedNetwork": {
+    "message": "Usluga nije dostupna. Provjerite internetsku vezu."
+  },
+  "byokTestFailedMalformed": {
+    "message": "Odgovor usluge nije moguće pročitati. Pokušajte ponovno malo kasnije."
   },
   "byokNoKeyMessage": {
     "message": "Najprije unesite i spremite API ključ"

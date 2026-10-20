@@ -146,13 +146,20 @@
   "byokTestResultSuccess": {
     "message": "সংযোগ সফল হয়েছে"
   },
-  "byokTestResultFailure": {
-    "message": "সংযোগ ব্যর্থ হয়েছে ($REASON$)",
-    "placeholders": {
-      "reason": {
-        "content": "$1"
-      }
-    }
+  "byokTestFailedAuth": {
+    "message": "কী গ্রহণ করা হয়নি। কী-টি সঠিক এবং এখনও বৈধ কিনা দেখে নিন।"
+  },
+  "byokTestFailedRateLimit": {
+    "message": "অনুরোধ খুব বেশি বা ব্যালান্স শেষ। একটু অপেক্ষা করুন, অথবা প্ল্যান ও ব্যালান্স দেখে নিন।"
+  },
+  "byokTestFailedServer": {
+    "message": "পরিষেবায় সমস্যা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
+  },
+  "byokTestFailedNetwork": {
+    "message": "পরিষেবায় পৌঁছানো যাচ্ছে না। ইন্টারনেট সংযোগ দেখে নিন।"
+  },
+  "byokTestFailedMalformed": {
+    "message": "পরিষেবার উত্তর পড়া যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
   },
   "byokNoKeyMessage": {
     "message": "প্রথমে একটি API কী লিখুন এবং সংরক্ষণ করুন"
