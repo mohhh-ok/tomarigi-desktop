@@ -692,14 +692,14 @@ test("at most one request per 60 seconds; the changes inside it make one request
   scheduler.update(classes(view("a", { state: "done" }), view("b"), view("c")), true);
   clock.advance(CONCIERGE_DEBOUNCE_MS);
   expect(counts.requests).toBe(1);
-  // Three changes within the next minute
+  // Three turns finishing within the next minute (none starts needing a reply, which wouldn't wait)
   clock.advance(5_000);
   scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c")), true);
   clock.advance(10_000);
-  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c", { state: "waiting" })), true);
+  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c", { state: "done" })), true);
   clock.advance(10_000);
-  scheduler.update(classes(view("a"), view("b", { state: "done" }), view("c", { state: "waiting" })), true);
-  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c", { state: "waiting" })), true);
+  scheduler.update(classes(view("a"), view("b", { state: "done" }), view("c", { state: "done" })), true);
+  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "done" }), view("c", { state: "done" })), true);
   // 25 seconds after the first request (which was 3 seconds in): nothing yet
   expect(counts.requests).toBe(1);
   clock.advance(CONCIERGE_DEBOUNCE_MS + CONCIERGE_MIN_INTERVAL_MS - 28_000 - 1);
@@ -709,6 +709,38 @@ test("at most one request per 60 seconds; the changes inside it make one request
   expect(counts.requests).toBe(2);
   clock.advance(CONCIERGE_MIN_INTERVAL_MS);
   expect(counts.requests).toBe(2);
+});
+
+test("a session starting to need a reply asks 3 seconds later without waiting for the 60 seconds", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "done" }), view("b"), view("c")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  // 20 seconds after the request, b starts needing a reply (a question tool or permission prompt)
+  clock.advance(20_000);
+  scheduler.update(classes(view("a", { state: "done" }), view("b", { state: "waiting" }), view("c")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS - 1);
+  expect(counts.requests).toBe(1);
+  clock.advance(1);
+  expect(counts.requests).toBe(2);
+  // The "?" the turn verdict finds in a finished turn counts the same
+  clock.advance(10_000);
+  scheduler.update(
+    classes(view("a", { state: "done", ask: { status: "asking" } }), view("b", { state: "waiting" }), view("c")),
+    true,
+  );
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(3);
+  // Other changes still wait for the 60 seconds: c finishing 10 seconds later asks a minute after the last request
+  clock.advance(10_000);
+  scheduler.update(
+    classes(view("a", { state: "done", ask: { status: "asking" } }), view("b", { state: "waiting" }), view("c", { state: "done" })),
+    true,
+  );
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS - 10_000 - 1);
+  expect(counts.requests).toBe(3);
+  clock.advance(1);
+  expect(counts.requests).toBe(4);
 });
 
 test("not asked, and the advice cleared, while nothing needs a reply, has the ?, or is done", () => {
