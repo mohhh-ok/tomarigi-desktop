@@ -4,12 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { uiLanguage } from "@/lib/i18n";
 import { loadActiveAiProvider } from "@/lib/api-keys";
+import { judgeModelFor } from "@/lib/ai-judge";
 import {
   adviceStillHolds,
   adviceTargetChanged,
   appendConciergeLog,
   askConcierge,
   buildConciergePayload,
+  conciergeRequestLogLines,
+  conciergeResultLogLine,
   ConciergeScheduler,
   conciergeStateOf,
   conciergeTriggerClasses,
@@ -89,9 +92,12 @@ export function useConcierge(
         text: `${provider} ${summary}`,
         detail: JSON.stringify(payload, null, 2),
       });
-      void invoke("log", { line: `[concierge] request ${provider} ${summary}` }).catch(() => {});
+      // The request's id ties the advice in the app log to the facts it was given
+      const logContext = { req: crypto.randomUUID().slice(0, 8), provider, model: await judgeModelFor(provider) };
+      for (const line of conciergeRequestLogLines(logContext, payload)) void invoke("log", { line }).catch(() => {});
       const result = await askConcierge(provider, payload);
       if (seq !== seqRef.current) return;
+      void invoke("log", { line: conciergeResultLogLine(logContext, result) }).catch(() => {});
       if (!result.ok) {
         // A failed request keeps the advice shown until the next one, unless its target changed state since the advice
         // came (Claude's own decision, with the parent's addition)
@@ -102,7 +108,6 @@ export function useConcierge(
         }
         const text = `${result.kind}${result.status ? ` ${result.status}` : ""}${result.message ? ` ${result.message}` : ""}`;
         appendConciergeLog({ at: Date.now(), kind: "error", text });
-        void invoke("log", { line: `[concierge] error=${result.kind}` }).catch(() => {});
         return;
       }
       const next = result.verdict;
@@ -118,13 +123,6 @@ export function useConcierge(
             : { at: Date.now(), kind: "none", text: `no advice${result.noMatchingJson ? " (answer didn't match the schema)" : ""}${tokens}` }),
         ...(detail !== undefined && { detail }),
       });
-      void invoke("log", {
-        line: next
-          ? `[concierge] advice len=${next.line.length} target=${next.targetId ?? "-"}${tokens}`
-          : result.dropped
-            ? `[concierge] dropped ${result.dropped.reason} len=${result.dropped.line.length} target=${result.dropped.targetId ?? "-"}${tokens}`
-            : `[concierge] no advice${result.noMatchingJson ? " no-matching-json" : ""}${tokens}`,
-      }).catch(() => {});
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;
       shownRef.current = next && { advice: next, targetState: target && conciergeStateOf(target) };
       setAdvice(next);

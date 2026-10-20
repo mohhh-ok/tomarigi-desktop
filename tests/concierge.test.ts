@@ -18,6 +18,8 @@ import {
   conciergeTriggered,
   parseConciergeVerdict,
   type ConciergeSessionInput,
+  conciergeRequestLogLines,
+  conciergeResultLogLine,
 } from "../src/lib/concierge.ts";
 import type { JudgeResult, JudgeTaskDefinition } from "../src/lib/judge.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
@@ -325,6 +327,7 @@ test("an advice with nothing to do now, or about a working session, is dropped f
       ok: true,
       verdict: null,
       dropped: { line: wait.advice, targetId: "t", reason: "nothing_to_do" },
+      action: "none",
       answer: wait,
     });
     // none without a target is dropped too
@@ -377,6 +380,7 @@ test("an advice that asks to reply about a session that doesn't need a reply is 
       ok: true,
       verdict: null,
       dropped: { line: reply.advice, targetId: "t", reason: "no_reply_needed" },
+      action: "reply",
       answer: reply,
     });
     // A "?" from Jev and a session the machine says waits do need a reply
@@ -386,6 +390,61 @@ test("an advice that asks to reply about a session that doesn't need a reply is 
     expect(await askConcierge(provider, payload, answering(machine))).toMatchObject({
       verdict: { line: machine.advice, targetId: "p" },
     });
+  }
+});
+
+test("the app log keeps each session's facts and the advice text with its kind, target, provider and model", async () => {
+  const payload = buildConciergePayload(
+    [
+      {
+        view: view("t", {
+          project: "tomarigi-desktop",
+          state: "done",
+          reply: { at: 1, text: "後で伺います" },
+          ask: { status: "not_asking", probability: 0.1 },
+        }),
+        agent: "claude",
+        parentId: "w",
+      },
+      { view: view("w", { project: "worker", state: "waiting", question: "Merge it?" }), agent: "codex" },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  const lines = conciergeRequestLogLines({ req: "r1", provider: "local", model: "qwen2.5:7b-instruct" }, payload);
+  expect(lines[0]).toStartWith("[concierge] request req=r1 provider=local model=qwen2.5:7b-instruct sessions=2 ");
+  expect(lines.slice(1)).toEqual([
+    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- jev=not_asking:0.10 watch_parent=w watch_children=- chicks_working=0",
+    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine jev=- watch_parent=- watch_children=t chicks_working=0",
+  ]);
+  // No text from the sessions: the name, reply and question stay out
+  expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it/);
+
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+    usage: { input: 10, cachedInput: 2, output: 3 },
+  });
+  for (const provider of ["openai", "anthropic", "local"] as const) {
+    const c = { req: "r2", provider, model: "m" };
+    const shown = { advice: "workerの質問に答える\n2行目", session_id: "w", action: "reply" };
+    expect(conciergeResultLogLine(c, await askConcierge(provider, payload, answering(shown)))).toBe(
+      `[concierge] advice req=r2 provider=${provider} model=m kind=reply target=w text="workerの質問に答える\\n2行目" tokens in=10 cached=2 out=3`,
+    );
+    const dropped = { advice: "tomarigi-desktopに返信", session_id: "t", action: "reply" };
+    expect(conciergeResultLogLine(c, await askConcierge(provider, payload, answering(dropped)))).toBe(
+      `[concierge] dropped req=r2 provider=${provider} model=m kind=reply target=t reason=no_reply_needed text="tomarigi-desktopに返信" tokens in=10 cached=2 out=3`,
+    );
+    const empty = { advice: "", session_id: "", action: "none" };
+    expect(conciergeResultLogLine(c, await askConcierge(provider, payload, answering(empty)))).toBe(
+      `[concierge] none req=r2 provider=${provider} model=m tokens in=10 cached=2 out=3`,
+    );
+    const failing = async <V>(): Promise<JudgeResult<V>> => ({ ok: false, kind: "rate_limit", status: 429 });
+    expect(conciergeResultLogLine(c, await askConcierge(provider, payload, failing))).toBe(
+      `[concierge] error req=r2 provider=${provider} model=m error=rate_limit status=429`,
+    );
   }
 });
 
