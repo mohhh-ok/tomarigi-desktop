@@ -376,7 +376,7 @@
     "message": "Listeyi yeniden yükle"
   },
   "localAiUrlInvalid": {
-    "message": "URL http:// veya https:// ile başlamalıdır."
+    "message": "http:// veya https:// ile başlayan, ?, # ya da kullanıcı adı ve parola içermeyen bir URL girin."
   },
   "localAiChangeButton": {
     "message": "Değiştir"

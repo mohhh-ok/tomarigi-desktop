@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { t } from "@/lib/i18n";
 import {
@@ -9,7 +9,7 @@ import {
   type LocalAiConfig,
 } from "@/lib/api-keys";
 import type { JudgeErrorKind } from "@/lib/judge";
-import { fetchLocalModels } from "@/lib/local-judge";
+import { fetchLocalModels, isValidBaseUrl, pickLocalModel } from "@/lib/local-judge";
 
 // TypeSafe's official site (linked from the settings description)
 const TYPESAFE_SITE_URL = "https://typesafe.ai";
@@ -142,14 +142,6 @@ function ConnectionTest({
   );
 }
 
-function isHttpUrl(value: string): boolean {
-  try {
-    return ["http:", "https:"].includes(new URL(value.trim()).protocol);
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Local AI: an OpenAI-compatible server (Ollama, LM Studio, ...). The base URL and model are settings, not secrets, so
  * the saved values are shown. The model is picked from the server's list; when the list can't be read it is typed
@@ -177,8 +169,13 @@ function LocalAiSettings({
   const [editing, setEditing] = useState(false);
   const [baseUrl, setBaseUrl] = useState(config?.baseUrl ?? DEFAULT_LOCAL_BASE_URL);
   const [model, setModel] = useState(config?.model ?? "");
-  // The model list of the base URL it was read from: loading, the ids, or failed (then the model is typed)
+  // The model list of the base URL it was read from: loading, the options, or failed (then the model is typed)
   const [models, setModels] = useState<{ baseUrl: string; ids: string[] | "loading" | "failed" } | null>(null);
+  // The URL whose list was asked for last: an answer for an older URL that comes back later is dropped
+  const requestedRef = useRef<string | null>(null);
+  // The model in the field when an answer comes back
+  const modelRef = useRef(model);
+  modelRef.current = model;
   const [urlInvalid, setUrlInvalid] = useState(false);
   const showForm = config === null || editing;
   // The base URL and model the last test ran on: a result for other values than the ones in the form isn't shown
@@ -187,17 +184,26 @@ function LocalAiSettings({
   const shownTest: ApiKeyTestState = showForm && tested !== draftKey ? { phase: "idle" } : testState;
 
   const loadModels = (url: string) => {
-    if (!isHttpUrl(url)) {
-      setModels({ baseUrl: url, ids: "failed" });
+    requestedRef.current = url;
+    // An invalid URL isn't asked; the URL error says why when saving
+    if (!isValidBaseUrl(url)) {
+      setModels(null);
       return;
     }
     setModels({ baseUrl: url, ids: "loading" });
+    // The saved model belongs to the saved URL only
+    const saved = config && config.baseUrl === url.trim() ? config.model : undefined;
     void fetchLocalModels(url).then((ids) => {
-      // Only the answer for the URL still in the field counts
-      setModels((current) =>
-        current?.baseUrl === url ? { baseUrl: url, ids: ids && ids.length > 0 ? ids : "failed" } : current,
-      );
-      if (ids && ids.length > 0) setModel((current) => (ids.includes(current) ? current : ids[0]));
+      if (requestedRef.current !== url) return;
+      if (!ids || ids.length === 0) {
+        setModels({ baseUrl: url, ids: "failed" });
+        // Typed by hand from here; another server's model isn't left in the field
+        setModel(saved ?? "");
+        return;
+      }
+      const picked = pickLocalModel(ids, modelRef.current, saved);
+      setModels({ baseUrl: url, ids: picked.options });
+      setModel(picked.model);
     });
   };
 
@@ -209,7 +215,7 @@ function LocalAiSettings({
   }, [open, showForm]);
 
   const save = () => {
-    if (!isHttpUrl(baseUrl)) {
+    if (!isValidBaseUrl(baseUrl)) {
       setUrlInvalid(true);
       return;
     }
@@ -291,7 +297,8 @@ function LocalAiSettings({
               </span>
             </label>
           </div>
-          {ids === "failed" && (
+          {/* Only about the URL in the field, and not while that URL is invalid */}
+          {ids === "failed" && models?.baseUrl === baseUrl && !urlInvalid && (
             <div className="local-ai-note">
               <p>{t("localAiModelsFailed")}</p>
               <button className="small" onClick={() => loadModels(baseUrl)}>
@@ -324,7 +331,7 @@ function LocalAiSettings({
       )}
       {config !== null && onSelect && <ProviderChoice selected={selected} onSelect={onSelect} />}
       <ConnectionTest
-        enabled={showForm ? isHttpUrl(baseUrl) && model.trim() !== "" : true}
+        enabled={showForm ? isValidBaseUrl(baseUrl) && model.trim() !== "" : true}
         testState={shownTest}
         // A server that can't be reached is the usual failure here (not started, or a wrong URL), so it says what to check
         failureText={shownTest.phase === "failure" && shownTest.reason === "network" ? t("localAiTestUnreachable") : undefined}

@@ -376,7 +376,7 @@
     "message": "一覧を再取得"
   },
   "localAiUrlInvalid": {
-    "message": "URL は http:// か https:// で始めてください。"
+    "message": "http:// か https:// で始まる URL を入力してください。?・#・ユーザー名とパスワードは含められません。"
   },
   "localAiChangeButton": {
     "message": "変更"

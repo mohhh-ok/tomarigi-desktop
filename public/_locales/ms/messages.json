@@ -376,7 +376,7 @@
     "message": "Muat semula senarai"
   },
   "localAiUrlInvalid": {
-    "message": "URL mesti bermula dengan http:// atau https://."
+    "message": "Masukkan URL yang bermula dengan http:// atau https://, tanpa ?, #, atau nama pengguna dan kata laluan."
   },
   "localAiChangeButton": {
     "message": "Tukar"

@@ -376,7 +376,7 @@
     "message": "I-reload ang listahan"
   },
   "localAiUrlInvalid": {
-    "message": "Dapat magsimula ang URL sa http:// o https://."
+    "message": "Maglagay ng URL na nagsisimula sa http:// o https://, nang walang ?, #, o username at password."
   },
   "localAiChangeButton": {
     "message": "Baguhin"

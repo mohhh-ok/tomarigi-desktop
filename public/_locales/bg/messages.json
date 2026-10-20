@@ -376,7 +376,7 @@
     "message": "Презареди списъка"
   },
   "localAiUrlInvalid": {
-    "message": "URL адресът трябва да започва с http:// или https://."
+    "message": "Въведете URL адрес, който започва с http:// или https://, без ?, # и без потребителско име и парола."
   },
   "localAiChangeButton": {
     "message": "Промяна"

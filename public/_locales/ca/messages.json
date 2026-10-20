@@ -376,7 +376,7 @@
     "message": "Torna a carregar la llista"
   },
   "localAiUrlInvalid": {
-    "message": "L’URL ha de començar per http:// o https://."
+    "message": "Escriu un URL que comenci per http:// o https://, sense ?, # ni nom d’usuari i contrasenya."
   },
   "localAiChangeButton": {
     "message": "Canvia"

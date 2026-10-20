@@ -376,7 +376,7 @@
     "message": "Επαναφόρτωση λίστας"
   },
   "localAiUrlInvalid": {
-    "message": "Η διεύθυνση URL πρέπει να ξεκινά με http:// ή https://."
+    "message": "Εισαγάγετε μια διεύθυνση URL που ξεκινά με http:// ή https://, χωρίς ?, # ή όνομα χρήστη και κωδικό."
   },
   "localAiChangeButton": {
     "message": "Αλλαγή"

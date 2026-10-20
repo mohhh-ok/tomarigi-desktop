@@ -376,7 +376,7 @@
     "message": "טעינה מחדש של הרשימה"
   },
   "localAiUrlInvalid": {
-    "message": "הכתובת חייבת להתחיל ב-http://‎ או ב-https://‎."
+    "message": "הזינו כתובת שמתחילה ב-http://‎ או ב-https://‎, בלי ?, # או שם משתמש וסיסמה."
   },
   "localAiChangeButton": {
     "message": "שינוי"

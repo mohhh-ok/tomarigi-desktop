@@ -376,7 +376,7 @@
     "message": "重新获取列表"
   },
   "localAiUrlInvalid": {
-    "message": "URL 必须以 http:// 或 https:// 开头。"
+    "message": "请输入以 http:// 或 https:// 开头的 URL，不能包含 ?、# 或用户名和密码。"
   },
   "localAiChangeButton": {
     "message": "更改"

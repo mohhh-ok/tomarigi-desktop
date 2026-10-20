@@ -376,7 +376,7 @@
     "message": "دریافت دوباره فهرست"
   },
   "localAiUrlInvalid": {
-    "message": "نشانی باید با http:// یا https:// شروع شود."
+    "message": "نشانی‌ای وارد کنید که با http:// یا https:// شروع شود و ? و # یا نام کاربری و گذرواژه نداشته باشد."
   },
   "localAiChangeButton": {
     "message": "تغییر"

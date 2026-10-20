@@ -376,7 +376,7 @@
     "message": "Įkelti sąrašą iš naujo"
   },
   "localAiUrlInvalid": {
-    "message": "URL turi prasidėti http:// arba https://."
+    "message": "Įveskite URL, prasidedantį http:// arba https://, be ?, # ir be naudotojo vardo bei slaptažodžio."
   },
   "localAiChangeButton": {
     "message": "Keisti"

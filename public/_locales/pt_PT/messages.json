@@ -376,7 +376,7 @@
     "message": "Recarregar lista"
   },
   "localAiUrlInvalid": {
-    "message": "O URL tem de começar por http:// ou https://."
+    "message": "Introduza um URL que comece por http:// ou https://, sem ?, # nem utilizador e palavra-passe."
   },
   "localAiChangeButton": {
     "message": "Alterar"

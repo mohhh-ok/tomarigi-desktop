@@ -376,7 +376,7 @@
     "message": "তালিকা আবার লোড করুন"
   },
   "localAiUrlInvalid": {
-    "message": "URL অবশ্যই http:// বা https:// দিয়ে শুরু হতে হবে।"
+    "message": "http:// বা https:// দিয়ে শুরু হওয়া URL লিখুন, যাতে ?, # বা ব্যবহারকারীর নাম ও পাসওয়ার্ড নেই।"
   },
   "localAiChangeButton": {
     "message": "পরিবর্তন"

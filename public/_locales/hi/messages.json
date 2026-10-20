@@ -376,7 +376,7 @@
     "message": "सूची फिर से लोड करें"
   },
   "localAiUrlInvalid": {
-    "message": "URL http:// या https:// से शुरू होना चाहिए।"
+    "message": "http:// या https:// से शुरू होने वाला URL डालें, जिसमें ?, # या यूज़रनेम और पासवर्ड न हों।"
   },
   "localAiChangeButton": {
     "message": "बदलें"
