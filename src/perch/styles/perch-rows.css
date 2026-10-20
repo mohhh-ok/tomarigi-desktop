@@ -35,44 +35,96 @@
 }
 
 /* A special effect only for working (an aura of gathering energy). The actual hook is .bird-working-fx, which
-   BirdGlyph and the raw img of Perch chick rows add only while working; this base rule applies to chick rows
-   and garden nodes (garden nodes put the peck on the outer .garden-glyph span, so the img itself has no
-   competing transform animation).
-   Only in the Perch parent row (.bird.working .bird-glyph-img) does the existing peck (pecking bounce) own
-   the same img's transform, and CSS Animations don't add up multiple animation-names on the same property:
-   the last one wins and overrides (two can't run side by side). So the dedicated rule below merges the peck
-   and the slight shake into a single keyframes (bird-peck-shake) */
+   BirdGlyph and the img of Perch chick rows add only while working, on the sprite and on its two glow copies
+   (.bird-aura, WorkingAura in bird-glyph.tsx); this base rule is the slight shake for chick rows and garden nodes
+   (garden nodes put the peck on the outer .garden-glyph span, so the img itself has no competing transform
+   animation).
+   Only in the Perch parent row (.bird.working) does the existing peck (pecking bounce) own the same img's
+   transform, and CSS Animations don't add up multiple animation-names on the same property: the last one wins
+   and overrides (two can't run side by side). So the dedicated rule below merges the peck and the slight shake
+   into a single keyframes (bird-peck-shake) */
 .bird-working-fx {
-  animation: bird-aura-shake 0.6s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
+  animation: bird-aura-shake 0.6s ease-in-out infinite;
 }
 
-.bird.working .bird-glyph-img.bird-working-fx {
-  animation: bird-peck-shake 1.1s ease-in-out infinite, bird-aura-glow 0.9s ease-in-out infinite;
+.bird.working .bird-working-fx {
+  animation: bird-peck-shake 1.1s ease-in-out infinite;
 }
 
-/* Garden nodes (26-52px) are larger than Perch (18px), so the same blur looks faint.
-   shake stays shared; only glow is swapped for dedicated keyframes with a larger blur/spread */
-.garden-node .bird-glyph-img.bird-working-fx {
-  animation: bird-aura-shake 0.6s ease-in-out infinite,
-    bird-aura-glow-lg 0.9s ease-in-out infinite;
+/* The sprite paints over its glow copies (positioned, and later in the frame than them) */
+.bird-glyph-img.bird-working-fx {
+  position: relative;
 }
 
-/* prefers-reduced-motion: stop the flicker (glow) and slight shake (shake), leaving only a static glow.
+/* The glow: copies of the sprite right under it, each with one fixed drop-shadow layer (gold, and white for
+   white-hot), flickering only by opacity on uneven % steps so the two layers peak at different times
+   (bird-aura-gold / bird-aura-white in keyframes.css). Animating the drop-shadow itself made WebKit repaint
+   every frame while a bird was working; an opacity change is done by the compositor without repainting.
+   The shadow color is opaque and the keyframes' opacity is the layer's alpha. The copy of the sprite under the
+   sprite isn't seen */
+.bird-aura {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transform: scaleX(var(--glyph-flip, 1));
+}
+
+.bird-aura-gold {
+  filter: drop-shadow(0 0 3px rgb(255, 196, 90));
+}
+
+.bird-aura-white {
+  filter: drop-shadow(0 0 4.5px rgb(255, 248, 220));
+}
+
+/* Garden nodes (26-52px) are larger than Perch (18px), so the same blur looks faint */
+.garden-node .bird-aura-gold {
+  filter: drop-shadow(0 0 4.5px rgb(255, 196, 90));
+}
+
+.garden-node .bird-aura-white {
+  filter: drop-shadow(0 0 6.5px rgb(255, 248, 220));
+}
+
+.bird-aura-gold.bird-working-fx {
+  animation: bird-aura-shake 0.6s ease-in-out infinite, bird-aura-gold 0.9s ease-in-out infinite;
+}
+
+.bird-aura-white.bird-working-fx {
+  animation: bird-aura-shake 0.6s ease-in-out infinite, bird-aura-white 0.9s ease-in-out infinite;
+}
+
+.bird.working .bird-aura-gold.bird-working-fx {
+  animation: bird-peck-shake 1.1s ease-in-out infinite, bird-aura-gold 0.9s ease-in-out infinite;
+}
+
+.bird.working .bird-aura-white.bird-working-fx {
+  animation: bird-peck-shake 1.1s ease-in-out infinite, bird-aura-white 0.9s ease-in-out infinite;
+}
+
+/* prefers-reduced-motion: stop the flicker and slight shake, leaving only a static glow.
    For the Perch parent row, the original peck (pecking bounce) is existing behavior outside the scope of this
-   change, so it isn't newly disabled here; only the flicker/shake stops */
+   change, so it isn't newly disabled here (the glow copies peck with the sprite); only the flicker/shake stops */
 @media (prefers-reduced-motion: reduce) {
-  .bird-working-fx {
+  .bird-working-fx,
+  .bird-aura-gold.bird-working-fx,
+  .bird-aura-white.bird-working-fx {
     animation: none;
-    filter: drop-shadow(0 0 2.5px rgba(255, 196, 90, 0.7)) drop-shadow(0 0 5px rgba(255, 248, 220, 0.5));
   }
 
-  .bird.working .bird-glyph-img.bird-working-fx {
+  .bird.working .bird-working-fx,
+  .bird.working .bird-aura-gold.bird-working-fx,
+  .bird.working .bird-aura-white.bird-working-fx {
     animation: peck 1.1s ease-in-out infinite;
   }
 
-  .garden-node .bird-glyph-img.bird-working-fx {
-    animation: none;
-    filter: drop-shadow(0 0 4px rgba(255, 196, 90, 0.7)) drop-shadow(0 0 8px rgba(255, 248, 220, 0.5));
+  .bird-aura-gold {
+    opacity: 0.7;
+  }
+
+  .bird-aura-white {
+    opacity: 0.5;
   }
 }
 
@@ -88,6 +140,13 @@
   padding: 4px 8px 4px 26px;
   border-bottom: 1px dashed #2c2a22;
   opacity: 0.75;
+}
+
+/* Frame of the chick sprite and its glow copies (.bird-aura). inline-flex keeps the row's baseline at the sprite's
+   bottom edge, as when the img was the row's own item */
+.chick-glyph {
+  position: relative;
+  display: inline-flex;
 }
 
 .chick .glyph {
