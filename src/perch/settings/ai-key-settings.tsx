@@ -150,7 +150,7 @@ function ConnectionTest({
       <button className="small" onClick={onTest} disabled={!enabled || testState.phase === "testing"}>
         {t("byokTestButton")}
       </button>
-      {testState.phase === "testing" && <p className="judge-status">{t("byokTestingLabel")}</p>}
+      {testState.phase === "testing" && <p className="judge-status judge-status-pending">{t("byokTestingLabel")}</p>}
       {testState.phase === "success" && <p className="judge-status judge-status-ok">{t("byokTestResultSuccess")}</p>}
       {testState.phase === "failure" && (
         <p className="judge-status judge-status-error">{failureText ?? t("byokTestResultFailure", testState.reason)}</p>

@@ -460,6 +460,33 @@ button.remove {
   color: #d97e6a;
 }
 
+/* Still running (a connection test, an update check): the gray of the notes, not a result's color, with a turning
+   ring before it so it reads as under way */
+.judge-status-pending {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8d887c;
+}
+
+.judge-status-pending::before {
+  content: "";
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: pending-turn 0.9s linear infinite;
+}
+
+/* Reduced motion: the ring stays still */
+@media (prefers-reduced-motion: reduce) {
+  .judge-status-pending::before {
+    animation: none;
+  }
+}
+
 /* Per-project icon set assignments (issue #14). Same separator tone as .roots/.ai-keys */
 .icon-sets,
 .concierge-settings,
