@@ -303,7 +303,7 @@
     "message": "Regarde toutes tes sessions et te dit quoi faire ensuite. Clique pour ouvrir cette session"
   },
   "conciergeSettingsNote": {
-    "message": "Regarde toutes tes sessions et te dit laquelle traiter ensuite. Clique pour aller au volet de cette session. Apparaît tant qu'une clé OpenAI ou Anthropic est enregistrée. Choisis son apparence"
+    "message": "Regarde toutes tes sessions et te dit laquelle traiter ensuite. Clique pour aller au volet de cette session. Apparaît tant qu'une clé OpenAI ou Anthropic est enregistrée ou que Local est configuré. Choisis son apparence"
   },
   "conciergeLookOwl": {
     "message": "Hibou"

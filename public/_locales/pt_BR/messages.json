@@ -303,7 +303,7 @@
     "message": "Olha todas as suas sessões e sugere o que fazer em seguida. Clique para abrir essa sessão"
   },
   "conciergeSettingsNote": {
-    "message": "Olha todas as suas sessões e diz qual atender em seguida. Clique para ir ao painel dessa sessão. Aparece enquanto houver uma chave da OpenAI ou da Anthropic salva. Escolha a aparência"
+    "message": "Olha todas as suas sessões e diz qual atender em seguida. Clique para ir ao painel dessa sessão. Aparece enquanto houver uma chave da OpenAI ou da Anthropic salva ou o Local estiver configurado. Escolha a aparência"
   },
   "conciergeLookOwl": {
     "message": "Coruja"

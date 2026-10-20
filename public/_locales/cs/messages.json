@@ -303,7 +303,7 @@
     "message": "Prohlíží všechny relace a radí, co dělat dál. Kliknutím tu relaci otevřete"
   },
   "conciergeSettingsNote": {
-    "message": "Prohlíží všechny relace a radí, kterou se zabývat dál. Kliknutím přejdete do panelu té relace. Zobrazí se, dokud je uložen klíč OpenAI nebo Anthropic. Vyberte jeho vzhled"
+    "message": "Prohlíží všechny relace a radí, kterou se zabývat dál. Kliknutím přejdete do panelu té relace. Zobrazí se, dokud je uložen klíč OpenAI nebo Anthropic nebo je nastaveno lokální AI. Vyberte jeho vzhled"
   },
   "conciergeLookOwl": {
     "message": "Sova"

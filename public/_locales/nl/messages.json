@@ -303,7 +303,7 @@
     "message": "Bekijkt al je sessies en zegt wat je hierna kunt doen. Klik om die sessie te openen"
   },
   "conciergeSettingsNote": {
-    "message": "Bekijkt al je sessies en zegt welke je hierna kunt oppakken. Klik om naar het paneel van die sessie te gaan. Verschijnt zolang er een OpenAI- of Anthropic-sleutel is opgeslagen. Kies hoe hij eruitziet"
+    "message": "Bekijkt al je sessies en zegt welke je hierna kunt oppakken. Klik om naar het paneel van die sessie te gaan. Verschijnt zolang er een OpenAI- of Anthropic-sleutel is opgeslagen of Lokaal is ingesteld. Kies hoe hij eruitziet"
   },
   "conciergeLookOwl": {
     "message": "Uil"

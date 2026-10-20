@@ -303,7 +303,7 @@
     "message": "Pregleda vse seje in predlaga, kaj narediti naprej. Kliknite, da odprete to sejo"
   },
   "conciergeSettingsNote": {
-    "message": "Pregleda vse seje in pove, s katero se ukvarjati naslednjo. Kliknite, da skočite v podokno te seje. Prikaže se, dokler je shranjen ključ OpenAI ali Anthropic. Izberite njegov videz"
+    "message": "Pregleda vse seje in pove, s katero se ukvarjati naslednjo. Kliknite, da skočite v podokno te seje. Prikaže se, dokler je shranjen ključ OpenAI ali Anthropic ali je nastavljeno Lokalno. Izberite njegov videz"
   },
   "conciergeLookOwl": {
     "message": "Sova"

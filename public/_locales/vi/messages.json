@@ -303,7 +303,7 @@
     "message": "Xem tất cả phiên và gợi ý việc nên làm tiếp. Bấm để mở phiên đó"
   },
   "conciergeSettingsNote": {
-    "message": "Xem tất cả phiên và cho bạn biết nên xử lý phiên nào tiếp theo. Bấm để chuyển tới khung của phiên đó. Xuất hiện khi đã lưu khóa OpenAI hoặc Anthropic. Chọn hình dạng của nó"
+    "message": "Xem tất cả phiên và cho bạn biết nên xử lý phiên nào tiếp theo. Bấm để chuyển tới khung của phiên đó. Xuất hiện khi đã lưu khóa OpenAI hoặc Anthropic, hoặc đã thiết lập Cục bộ. Chọn hình dạng của nó"
   },
   "conciergeLookOwl": {
     "message": "Cú mèo"

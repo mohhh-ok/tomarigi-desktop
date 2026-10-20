@@ -303,7 +303,7 @@
     "message": "Przegląda wszystkie sesje i podpowiada, co zrobić dalej. Kliknij, aby otworzyć tę sesję"
   },
   "conciergeSettingsNote": {
-    "message": "Przegląda wszystkie sesje i podpowiada, którą zająć się teraz. Kliknij, aby przejść do panelu tej sesji. Pojawia się, gdy zapisany jest klucz OpenAI lub Anthropic. Wybierz jego wygląd"
+    "message": "Przegląda wszystkie sesje i podpowiada, którą zająć się teraz. Kliknij, aby przejść do panelu tej sesji. Pojawia się, gdy zapisany jest klucz OpenAI lub Anthropic albo skonfigurowano tryb lokalny. Wybierz jego wygląd"
   },
   "conciergeLookOwl": {
     "message": "Sowa"

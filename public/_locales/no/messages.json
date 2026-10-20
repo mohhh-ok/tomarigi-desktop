@@ -303,7 +303,7 @@
     "message": "Ser på alle øktene og foreslår hva du bør gjøre nå. Klikk for å åpne den økten"
   },
   "conciergeSettingsNote": {
-    "message": "Ser på alle øktene og sier hvilken du bør ta deg av nå. Klikk for å gå til ruten for den økten. Vises så lenge en OpenAI- eller Anthropic-nøkkel er lagret. Velg hvordan den ser ut"
+    "message": "Ser på alle øktene og sier hvilken du bør ta deg av nå. Klikk for å gå til ruten for den økten. Vises så lenge en OpenAI- eller Anthropic-nøkkel er lagret eller Lokalt er satt opp. Velg hvordan den ser ut"
   },
   "conciergeLookOwl": {
     "message": "Ugle"

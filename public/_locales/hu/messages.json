@@ -303,7 +303,7 @@
     "message": "Átnézi az összes munkamenetet, és javasolja, mi legyen a következő lépés. Kattints a munkamenet megnyitásához"
   },
   "conciergeSettingsNote": {
-    "message": "Átnézi az összes munkamenetet, és megmondja, melyikkel foglalkozz következőként. Kattints, hogy a munkamenet paneljére ugorj. Akkor jelenik meg, ha el van mentve OpenAI- vagy Anthropic-kulcs. Válaszd ki a kinézetét"
+    "message": "Átnézi az összes munkamenetet, és megmondja, melyikkel foglalkozz következőként. Kattints, hogy a munkamenet paneljére ugorj. Akkor jelenik meg, ha el van mentve OpenAI- vagy Anthropic-kulcs, vagy be van állítva a Helyi. Válaszd ki a kinézetét"
   },
   "conciergeLookOwl": {
     "message": "Bagoly"

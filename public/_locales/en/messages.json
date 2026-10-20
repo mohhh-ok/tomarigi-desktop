@@ -303,7 +303,7 @@
     "message": "Looks at all your sessions and suggests what to do next. Click to open that session"
   },
   "conciergeSettingsNote": {
-    "message": "Looks at all your sessions and tells you which one to handle next. Click it to jump to that session's pane. Appears while an OpenAI or Anthropic key is saved. Choose its look"
+    "message": "Looks at all your sessions and tells you which one to handle next. Click it to jump to that session's pane. Appears while an OpenAI or Anthropic key is saved or Local is set up. Choose its look"
   },
   "conciergeLookOwl": {
     "message": "Owl"
