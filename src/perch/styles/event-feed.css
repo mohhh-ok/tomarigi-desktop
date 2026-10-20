@@ -89,9 +89,11 @@
   margin-top: 2px;
 }
 
-/* 16px state icon + 3px gap + 14px anger mark, kept on every row while any row has the mark */
+/* 14px anger mark + 3px gap + 16px state icon, kept on every row while any row has the mark. The state icons stay in
+   one column at the right of that room */
 .event-feed-anger .event-marks {
   min-width: 33px;
+  justify-content: flex-end;
 }
 
 .event-card-body {
