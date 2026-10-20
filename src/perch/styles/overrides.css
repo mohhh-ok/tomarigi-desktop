@@ -8,8 +8,15 @@
   flex-shrink: 0;
 }
 
+/* The Garden fills the content area as it does without the panel, and the panel follows below it (scrolled to). The
+   garden's room leaves the panel out (mockPanelRoom in garden.tsx), so the birds are placed as in the real app at the
+   same window size. Sharing the room with the panel left the birds a few px or less, and they were all put on one
+   spot (observed) */
+.page-body:has(> .mock-panel) > #tabpanel-garden {
+  flex: 0 0 100%;
+}
+
 /* At least 300px. If the window is tall (maximized as a standard window), use the space left above the mock panel */
-.page-body:has(.mock-panel) #tabpanel-garden,
 .page-body:has(.mock-panel) #tabpanel-perch,
 .page-body:has(.mock-panel) #tabpanel-events {
   flex: 1 0 300px;
