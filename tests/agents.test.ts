@@ -1,6 +1,6 @@
 // The adapters of docs/design.md "Agents": each format is read into the shared TailInfo, and deriveState gives the
 // same states as for Claude Code. Fixtures follow each agent's source (Qwen Code, Copilot CLI, Gemini CLI; no
-// install was available) or the shape of real files (OpenCode 1.19.0, cursor-agent 2025.09.18), with made-up text
+// install was available) or the shape of real files (OpenCode 1.19.0, cursor-agent 2025.09.18 / 2026.10.18), with made-up text
 import { describe, expect, test } from "bun:test";
 import { parseJsonl } from "../src/lib/agent-tail.ts";
 import { deriveState } from "../src/lib/bird-state.ts";
@@ -213,9 +213,42 @@ describe("Cursor CLI", () => {
     expect(stateOf(tail, 6 * MIN)).toBe("dozing");
   });
 
-  test("the project folder name is the cwd with every non-alphanumeric character as -", () => {
+  test("2026.10.18: the prompt is wrapped in <user_query>, and hidden reasoning after the reply is not shown", () => {
+    // Shape measured with cursor-agent 2026.10.18 (one turn: two tool calls in one line, then the reply)
+    const prompt = { role: "user", message: { content: [{ type: "text", text: "<timestamp>Tuesday, Oct 20, 2026, 8:59 AM (UTC+9)</timestamp>\n<user_query>\nFix the build\n</user_query>" }] } };
+    const calls = {
+      role: "assistant",
+      message: {
+        content: [
+          { type: "text", text: "Let me look at the workspace.\n\n[REDACTED]" },
+          { type: "tool_use", name: "Glob", input: { glob_pattern: "**/*", target_directory: "/Users/me/app" } },
+          { type: "tool_use", name: "Grep", input: { pattern: ".", glob: "README*", path: "/Users/me/app", head_limit: 5 } },
+        ],
+      },
+    };
+    const answer = { role: "assistant", message: { content: [{ type: "text", text: "Which build do you mean?\n\n[REDACTED]" }] } };
+    const path = "/tmp/cursor-fixture-2026.jsonl";
+
+    const first = jsonl(prompt, calls);
+    const working = parseCursorLines(first, lineTimesOf(path, first.at(-1)!.end, T0), "/Users/me/app");
+    expect(working.events[0]).toMatchObject({ kind: "user", text: "Fix the build" });
+    expect(working).toMatchObject({ kind: "tool_use", toolName: "Grep" });
+    expect(stateOf(working, 60)).toBe("working");
+
+    const all = jsonl(prompt, calls, answer, ended);
+    const tail = parseCursorLines(all, lineTimesOf(path, all.at(-1)!.end, T0 + 9000), "/Users/me/app");
+    expect(tail.events.at(-1)).toMatchObject({ kind: "assistant_text", text: "Which build do you mean?" });
+    expect(stateOf(tail, 10)).toBe("done");
+
+    // Reasoning that is not hidden stays; only a `[REDACTED]` paragraph is dropped
+    const noted = { role: "assistant", message: { content: [{ type: "text", text: "Done.\n\n[REDACTED] was in the log" }] } };
+    expect(parseCursorLines(jsonl(prompt, noted), () => T0).events.at(-1)).toMatchObject({ text: "Done.\n\n[REDACTED] was in the log" });
+  });
+
+  test("the project folder name is the cwd with each run of non-alphanumeric characters as one -", () => {
     expect(cursorProjectSlug("/Users/me/Dev/yokai-no-sensei")).toBe("Users-me-Dev-yokai-no-sensei");
     expect(cursorProjectSlug("/var/folders/jw/x_y/T/abc.d")).toBe("var-folders-jw-x-y-T-abc-d");
+    expect(cursorProjectSlug("/Users/me/.config/my - app_")).toBe("Users-me-config-my-app");
   });
 });
 

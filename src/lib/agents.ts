@@ -476,10 +476,14 @@ const cursor: AgentAdapter = {
   kind: "cursor",
   label: "Cursor CLI",
   home: ".cursor/projects",
-  // cursor-agent 2025.09.18 runs as `<home>/.local/share/cursor-agent/versions/<v>/node --use-system-ca <same>/index.js`
+  // cursor-agent 2025.09.18 runs as `<home>/.local/share/cursor-agent/versions/<v>/node --use-system-ca <same>/index.js`.
+  // 2026.10.18 keeps the name it was started by as argv[0] (`<home>/.local/bin/cursor-agent --use-system-ca
+  // <same>/index.js`, or `agent ...` when started by that name), and spawns `<same>/node <same>/index.js
+  // worker-server`, which outlives the session (its parent becomes pid 1) and is not a session
   matchesProcess: (argv) => {
-    const program = programOf(argv) ?? "";
-    return basenameOf(program) === "cursor-agent" || /[\\/]cursor-agent[\\/]versions[\\/][^\\/]+[\\/]index\.js$/.test(program);
+    const script = argv.findIndex((arg) => /[\\/]cursor-agent[\\/]versions[\\/][^\\/]+[\\/]index\.js$/.test(arg));
+    if (script >= 0) return argv[script + 1] !== "worker-server";
+    return basenameOf(programOf(argv) ?? "") === "cursor-agent";
   },
   async list(root, listing) {
     await listByProcess(

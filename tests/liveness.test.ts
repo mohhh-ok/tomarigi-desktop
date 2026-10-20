@@ -140,6 +140,7 @@ mock.module("@tauri-apps/api/core", () => ({
 const { NativeDirectoryHandle } = await import("../src/lib/native-fs.ts");
 const { scanSessions, jumpPidOf } = await import("../src/lib/sessions.ts");
 const { focusTargetOf, focusSession } = await import("../src/lib/terminal-focus.ts");
+const { cursorProjectSlug } = await import("../src/lib/cursor-transcript.ts");
 type Roots = Parameters<typeof scanSessions>[0];
 
 const base = fs.mkdtempSync(path.join(os.tmpdir(), "tomarigi-test-"));
@@ -486,6 +487,36 @@ describe("agents matched by process and cwd", () => {
     psFails = false;
     expect((await scanSessions(roots)).views.length).toBe(1);
     expect((await scanSessions(roots)).views).toEqual([]);
+  });
+
+  test("Cursor CLI 2026.10.18: the session's process is a bird; the worker-server it leaves behind is not", async () => {
+    // A cwd with a run of symbols: Cursor's folder name has one "-" for it
+    const cwd = workDir("cu_.next");
+    const slug = cursorProjectSlug(cwd);
+    expect(slug.endsWith("-work-cu-next")).toBe(true);
+    const id = "b0f9ecf2-2f0a-4ceb-9305-5ef778ead769";
+    const dir = path.join(base, "cursor", "projects", slug, "agent-transcripts", id);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, `${id}.jsonl`),
+      line({ role: "user", message: { content: [{ type: "text", text: "<timestamp>Tuesday, Oct 20, 2026, 8:59 AM (UTC+9)</timestamp>\n<user_query>\nhi\n</user_query>" }] } }) +
+        line({ role: "assistant", message: { content: [{ type: "text", text: "Hello.\n\n[REDACTED]" }] } }) +
+        line({ type: "turn_ended", status: "success" }),
+    );
+    const roots = [rootOf("cu", "cursor", path.join(base, "cursor", "projects"))];
+    const version = "/Users/me/.local/share/cursor-agent/versions/2026.10.18-ea085cb";
+    // Started by the name `agent`: argv[0] is that name, not cursor-agent
+    const proc = startAgent(`/Users/me/.local/bin/agent --use-system-ca ${version}/index.js`, cwd);
+    const worker = startAgent(`${version}/node ${version}/index.js worker-server`, cwd);
+
+    const shown = await scanTwice(roots);
+    expect(shown.views.map((v) => [v.project, v.cwd])).toEqual([["cu_.next", cwd]]);
+    expect(jumpPidOf(shown.views[0].id)).toBe(proc.pid!);
+
+    // Quitting cursor-agent leaves the worker-server running in the same cwd; the bird still goes away
+    await stop(proc);
+    expect((await scanTwice(roots)).views).toEqual([]);
+    await stop(worker);
   });
 
   test("Copilot CLI and Gemini CLI: sessions written since the process started are birds", async () => {
