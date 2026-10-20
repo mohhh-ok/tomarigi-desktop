@@ -72,6 +72,9 @@ interface PayloadSession {
   /** The last CONCIERGE_REPLY_TAIL_CHARS of the last reply, when the session is done */
   last_reply_tail?: string;
   watch_parent?: string;
+  /** For a stopped session with a watch parent: whether its result reached the parent, i.e. the parent is working or
+   * was active after this session last was. false when the parent stopped before it finished and hasn't worked since */
+  result_reached_parent?: boolean;
   watch_children?: string[];
   chicks_working?: number;
 }
@@ -100,6 +103,12 @@ const tail = (text: string) =>
 
 const clip = (text: string | undefined) =>
   text === undefined ? undefined : text.length > MAX_TEXT_CHARS ? `${text.slice(0, MAX_TEXT_CHARS)}…` : text;
+
+/** Whether a stopped session's result reached its watch parent: the parent is working, or it was active after the
+ * session last was (docs/design.md "Concierge", watch links) */
+function resultReachedParent(view: SessionView, parent: SessionView): boolean {
+  return parent.state === "working" || parent.sinceMs < view.sinceMs;
+}
 
 /** Kind of an event as the concierge sees it. A done whose turn verdict is asking counts as needs reply */
 function eventKindOf(e: SessionEvent): EventKind | undefined {
@@ -151,6 +160,9 @@ export function buildConciergePayload(
       // Dozing doesn't: it has been stopped long enough not to be news (docs/design.md "Concierge")
       ...(view.state === "done" && view.reply && { last_reply_tail: tail(view.reply.text) }),
       ...(parentId && ids.has(parentId) && { watch_parent: parentId }),
+      ...(parentId && byId.has(parentId) && (view.state === "done" || view.state === "dozing") && {
+        result_reached_parent: resultReachedParent(view, byId.get(parentId)!),
+      }),
       ...(children.has(view.id) && { watch_children: children.get(view.id) }),
       ...(chicksWorking > 0 && { chicks_working: chicksWorking }),
     };
@@ -220,6 +232,11 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "absent and last_reply_tail says the work goes on in the background, treat it the same. A session with " +
     "continuing true is still working, waiting on its own work: do not call it finished, do not tell the developer " +
     "to check its result or to do the checks it said it will do itself, and do not advise about it.\n" +
+    "Watch links: a session with watch_parent hands its result to that parent, so never advise checking its result. " +
+    "When its result_reached_parent is false (the parent stopped before it finished and hasn't worked since), " +
+    "advise about the parent instead, with the parent's id as session_id (e.g. in Japanese: <parent>に<child>の結果が" +
+    "まだ届いていません). A session with watch_children where any of them is working is not finished yet: never " +
+    "advise checking its result.\n" +
     "While any session needs a reply now, advise about one of those, never about a finished or working session; " +
     "an advice about another session is not shown then.\n" +
     "Only a session whose needs_reply is true now may be advised to reply, answer, or check its question or " +
@@ -304,11 +321,15 @@ export function adviceNamesTarget(line: string, name: string): boolean {
 
 
 /** An advice that isn't shown, and why: it asks nothing the developer can do now, it is about a working session, it
- * asks to reply about a session that doesn't need a reply, it doesn't contain its session's name, or it is about a
- * session that doesn't need a reply while another does */
+ * asks to reply about a session that doesn't need a reply, it doesn't contain its session's name, it is about a
+ * session that doesn't need a reply while another does, or it asks to check the result of a session whose watching
+ * parent takes it or that watches a child still working */
 export interface DroppedConciergeAdvice extends ConciergeAdvice {
-  reason: "nothing_to_do" | "working" | "no_reply_needed" | "no_name" | "not_waiting";
+  reason: "nothing_to_do" | "working" | "no_reply_needed" | "no_name" | "not_waiting" | "watched" | "child_working";
 }
+
+const watchesWorkingChild = (target: PayloadSession, sessions: PayloadSession[]) =>
+  (target.watch_children ?? []).some((id) => sessions.find((s) => s.id === id)?.state === "working");
 
 /** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge") */
 function dropReason(
@@ -324,6 +345,10 @@ function dropReason(
   // ready to check (the prompt alone didn't hold)
   if (target.state === "working") return "working";
   if (action === "check_result" && target.continuing) return "working";
+  // Watch links (the prompt alone didn't hold): the watching parent takes a child's result, and a parent watching a
+  // child that still works isn't finished
+  if (action === "check_result" && target.watch_parent) return "watched";
+  if (action === "check_result" && watchesWorkingChild(target, sessions)) return "child_working";
   // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or the turn
   // verdict asking (the prompt alone didn't hold)
   if (action === "reply" && !target.needs_reply) return "no_reply_needed";
@@ -634,8 +659,8 @@ export function recentJumps(): ConciergeJump[] {
 
 export interface ConciergeLogEntry {
   at: number;
-  /** dropped: an advice that wasn't shown (nothing to do now, a working session, no session name, or not about a session
-   * that needs a reply while one does) */
+  /** dropped: an advice that wasn't shown (nothing to do now, a working session, no session name, not about a session
+   * that needs a reply while one does, or a result a watch link holds) */
   kind: "request" | "advice" | "none" | "dropped" | "error";
   /** What the entry is about. Speech bubble summaries also log here when a local model gave no summary */
   source?: "concierge" | "bubble";
