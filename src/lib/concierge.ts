@@ -301,9 +301,10 @@ export function adviceNamesTarget(line: string, name: string): boolean {
 
 
 /** An advice that isn't shown, and why: it asks nothing the developer can do now, it is about a working session, it
- * doesn't contain its session's name, or it is about a session that doesn't need a reply while another does */
+ * asks to reply about a session that doesn't need a reply, it doesn't contain its session's name, or it is about a
+ * session that doesn't need a reply while another does */
 export interface DroppedConciergeAdvice extends ConciergeAdvice {
-  reason: "nothing_to_do" | "working" | "no_name" | "not_waiting";
+  reason: "nothing_to_do" | "working" | "no_reply_needed" | "no_name" | "not_waiting";
 }
 
 /** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge") */
@@ -319,6 +320,9 @@ function dropReason(
   // A session done but waiting on its own background work is answered with none above; this is the one the facts
   // say is working
   if (target.state === "working") return "working";
+  // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or a "?" from Jev
+  // (the prompt alone didn't hold)
+  if (action === "reply" && !target.needs_reply) return "no_reply_needed";
   if (!adviceNamesTarget(advice.line, target.name)) return "no_name";
   // A "?" from Jev counts too, even if the concierge judged it as not waiting from the reply: then no advice is
   // shown rather than one about another session (Claude's own decision)
