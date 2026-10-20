@@ -302,6 +302,14 @@ fn local_url(base_url: &str, path: &str) -> Result<String, String> {
     if !matches!(parsed.scheme(), "http" | "https") {
         return Err("invalid base url: not http(s)".into());
     }
+    // A user name or password in the URL would end up in error messages and the app log
+    if !parsed.username().is_empty() || parsed.password().is_some() {
+        return Err("invalid base url: credentials in the url".into());
+    }
+    // The path is appended to the base URL as text, so a query or fragment would swallow it
+    if parsed.query().is_some() || parsed.fragment().is_some() {
+        return Err("invalid base url: query or fragment".into());
+    }
     Ok(format!("{base}/{path}"))
 }
 
@@ -310,7 +318,7 @@ fn local_url(base_url: &str, path: &str) -> Result<String, String> {
 pub(crate) async fn local_chat(base_url: String, body: String) -> Result<HttpReply, String> {
     let url = local_url(&base_url, "chat/completions")?;
     let started = std::time::Instant::now();
-    let reply = post_json_with_timeout(&url, vec![], body, LOCAL_TIMEOUT).await;
+    let reply = local_post(&url, body).await;
     let ms = started.elapsed().as_millis();
     match &reply {
         Ok(r) => append_log(&format!("[keys] send local status={} ms={ms}", r.status)),
@@ -323,14 +331,38 @@ pub(crate) async fn local_chat(base_url: String, body: String) -> Result<HttpRep
 #[tauri::command]
 pub(crate) async fn local_models(base_url: String) -> Result<HttpReply, String> {
     let url = local_url(&base_url, "models")?;
-    let res = reqwest::Client::new()
+    let res = local_client()
         .get(&url)
         .timeout(LOCAL_MODELS_TIMEOUT)
         .send()
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(local_error)?;
     let status = res.status().as_u16();
-    let body = res.text().await.map_err(|e| e.to_string())?;
+    let body = res.text().await.map_err(local_error)?;
+    Ok(HttpReply { status, body })
+}
+
+/// The base URL is the user's own setting, so errors (shown to JS and written to the app log) leave it out
+fn local_error(e: reqwest::Error) -> String {
+    e.without_url().to_string()
+}
+
+/// Requests to the local server go only to the URL the user set: redirects are not followed
+fn local_client() -> reqwest::Client {
+    reqwest::Client::builder().redirect(reqwest::redirect::Policy::none()).build().unwrap_or_default()
+}
+
+async fn local_post(url: &str, body: String) -> Result<HttpReply, String> {
+    let res = local_client()
+        .post(url)
+        .header("content-type", "application/json")
+        .body(body)
+        .timeout(LOCAL_TIMEOUT)
+        .send()
+        .await
+        .map_err(local_error)?;
+    let status = res.status().as_u16();
+    let body = res.text().await.map_err(local_error)?;
     Ok(HttpReply { status, body })
 }
 
@@ -383,5 +415,8 @@ mod tests {
         );
         assert!(local_url("file:///etc/passwd", "models").is_err());
         assert!(local_url("localhost:11434", "models").is_err());
+        assert!(local_url("http://user:secret@localhost:11434/v1", "models").is_err());
+        assert!(local_url("http://localhost:11434/v1?x=1", "models").is_err());
+        assert!(local_url("http://localhost:11434/v1#x", "models").is_err());
     }
 }
