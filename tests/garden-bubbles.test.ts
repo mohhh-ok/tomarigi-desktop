@@ -1,5 +1,5 @@
 // Speech bubbles in the garden (docs/design.md "Layout", "Speech bubbles"): a bubble shows its whole text, wrapping past
-// 180px, and is drawn above the birds; only the status lines of a row line up below the bubbles
+// 180px (120px inside a watch block), and is drawn above the birds; only the status lines of a row line up below the bubbles
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { bubbleRoomFor, type BubbleBird } from "../src/perch/garden-bubbles.ts";
@@ -44,7 +44,9 @@ describe("the garden's speech bubble (styles/speech-bubble.css)", () => {
     expect(body).toContain("--bubble-max: 180px");
   });
 
-  test("inside a watch block the bubble isn't kept to a bird's width", () => {
-    expect(rule(".garden-bubble-anchor.in-watch-block .speech-bubble-below")).toBeUndefined();
+  test("inside a watch block the bubble is at most a bird's width (120px), so neighbours' bubbles don't overlap", () => {
+    const body = rule(".garden-bubble-anchor.in-watch-block .speech-bubble-below");
+    expect(body).toBeDefined();
+    expect(body).toContain("--bubble-max: 120px");
   });
 });
