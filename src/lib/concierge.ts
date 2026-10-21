@@ -6,7 +6,7 @@
 // them. Reply and question text are untrusted input, the same as the other verdict tasks: the output is pinned to
 // one tool call (two short strings), so injected text can at worst make one piece of advice wrong.
 
-import type { JudgeResult, JudgeTaskDefinition } from "./judge";
+import type { JudgeErrorKind, JudgeResult, JudgeTaskDefinition } from "./judge";
 import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
 import { needsAnswer } from "./turn-verdict";
@@ -25,6 +25,8 @@ export const CONCIERGE_DEBOUNCE_MS = 3_000;
 export const CONCIERGE_MIN_INTERVAL_MS = 60_000;
 /** While any session needs a reply, ask again this often so a skipped session is brought up again */
 export const CONCIERGE_REPEAT_MS = 5 * 60_000;
+/** A request that failed with a temporary error is asked again after these waits, one per retry (at most 3) */
+export const CONCIERGE_RETRY_MS = [10_000, 30_000, 60_000];
 /** Number of recent events sent */
 export const CONCIERGE_EVENT_LIMIT = 20;
 /** Cap on each free text field sent (bubble line, question), so a long question doesn't grow the request */
@@ -406,6 +408,11 @@ export interface ConciergeLogContext {
 const logHead = (kind: string, c: ConciergeLogContext) =>
   `[concierge] ${kind} req=${c.req} provider=${c.provider} model=${c.model}`;
 
+/** The app log line of a retry: the request that failed, which retry this is, and how long it waits */
+export function conciergeRetryLogLine(c: ConciergeLogContext, retry: ConciergeRetry): string {
+  return `${logHead("retry", c)} attempt=${retry.attempt} after=${retry.afterMs / 1000}s`;
+}
+
 /**
  * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
  * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
@@ -589,19 +596,36 @@ const realTimers: Timers = {
   clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
 };
 
+/** A retry ConciergeScheduler.failed() set: which one (from 1) and how long it waits */
+export interface ConciergeRetry {
+  attempt: number;
+  afterMs: number;
+}
+
+/**
+ * Whether a failed request is asked again: HTTP 5xx, 429, a timeout or no connection (both come from Rust as network).
+ * A wrong key or a bad request would fail the same way again
+ */
+export function conciergeErrorIsTemporary(result: { ok: false; kind: JudgeErrorKind }): boolean {
+  return result.kind === "server" || result.kind === "rate_limit" || result.kind === "network";
+}
+
 /**
  * When the concierge is asked (docs/design.md "Concierge"): on the changes conciergeTriggered tells, gathered for
  * CONCIERGE_DEBOUNCE_MS, at most once per CONCIERGE_MIN_INTERVAL_MS (changes inside it make one request when it ends;
  * a session starting to need a reply, or an answer to one, doesn't wait for it),
  * and every CONCIERGE_REPEAT_MS while any session needs a reply. While no session needs a reply or is done, nothing is
  * asked and clear() is called so the advice goes away. update() is called on every scan; request() when it is time
- * to ask
+ * to ask; failed() when that request failed, to ask again after a temporary error
  */
 export class ConciergeScheduler {
   private classes: ReadonlyMap<string, ConciergeTriggerClass> | undefined;
   private pending: unknown;
   private pendingAt = 0;
   private repeat: unknown;
+  private retry: unknown;
+  /** Retries made since the last request that wasn't one */
+  private retries = 0;
   private lastAt = Number.NEGATIVE_INFINITY;
   private cleared = false;
 
@@ -641,7 +665,8 @@ export class ConciergeScheduler {
       const at = conciergeReplyChanged(prev, classes)
         ? now + CONCIERGE_DEBOUNCE_MS
         : Math.max(now + CONCIERGE_DEBOUNCE_MS, this.lastAt + CONCIERGE_MIN_INTERVAL_MS);
-      if (this.pending === undefined || at < this.pendingAt) {
+      // A retry waiting takes the change instead
+      if (this.retry === undefined && (this.pending === undefined || at < this.pendingAt)) {
         if (this.pending !== undefined) this.timers.clear(this.pending);
         this.pending = this.timers.set(() => this.fire(), at - now);
         this.pendingAt = at;
@@ -655,7 +680,21 @@ export class ConciergeScheduler {
     }
   }
 
-  /** Stops both timers and forgets the sessions, so the next enabled update asks again (still once per interval) */
+  /**
+   * The last request failed. A temporary error is asked again after the next of CONCIERGE_RETRY_MS while a session
+   * still needs a reply, has the "?", or is done; returns the retry, or undefined when none is made
+   */
+  failed(temporary: boolean): ConciergeRetry | undefined {
+    if (!temporary || this.retries >= CONCIERGE_RETRY_MS.length) return undefined;
+    const states = [...(this.classes?.values() ?? [])];
+    if (!states.includes("reply") && !states.includes("done")) return undefined;
+    const afterMs = CONCIERGE_RETRY_MS[this.retries++];
+    if (this.retry !== undefined) this.timers.clear(this.retry);
+    this.retry = this.timers.set(() => this.fire(true), afterMs);
+    return { attempt: this.retries, afterMs };
+  }
+
+  /** Stops the timers and forgets the sessions, so the next enabled update asks again (still once per interval) */
   stop(): void {
     this.cancelTimers();
     this.classes = undefined;
@@ -664,18 +703,26 @@ export class ConciergeScheduler {
   private cancelTimers(): void {
     if (this.pending !== undefined) this.timers.clear(this.pending);
     if (this.repeat !== undefined) this.timers.clear(this.repeat);
+    if (this.retry !== undefined) this.timers.clear(this.retry);
     this.pending = undefined;
     this.repeat = undefined;
+    this.retry = undefined;
   }
 
-  private fire(): void {
+  private fire(retry = false): void {
     // The repeat can fire while a change is pending; that change is covered by this request
     if (this.pending !== undefined) this.timers.clear(this.pending);
     this.pending = undefined;
+    if (this.retry !== undefined) this.timers.clear(this.retry);
+    this.retry = undefined;
     if (this.repeat !== undefined) this.timers.clear(this.repeat);
     const waiting = [...(this.classes?.values() ?? [])].includes("reply");
     this.repeat = waiting ? this.timers.set(() => this.fire(), CONCIERGE_REPEAT_MS) : undefined;
-    this.lastAt = this.timers.now();
+    // A retry doesn't count toward the 60 seconds, and a request that isn't one starts the retries over
+    if (!retry) {
+      this.lastAt = this.timers.now();
+      this.retries = 0;
+    }
     this.cleared = false;
     this.request();
   }
