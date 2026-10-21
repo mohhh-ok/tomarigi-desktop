@@ -1,6 +1,7 @@
 // A bird the user dragged is drawn in front of every other bird and bubble, with its bubble, status lines and marks; the
 // last dragged frontmost, saved with the positions (docs/design.md "Layout")
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { frontRanks, positionsAfterDrop, type GardenPosition } from "../src/lib/garden-layout.ts";
 import { BUBBLE_LAYER_Z, gardenStack } from "../src/perch/garden-stack.ts";
 
@@ -84,5 +85,31 @@ describe("gardenStack", () => {
     expect(dragged.node).toBeGreaterThan(dropped.bubble);
     expect(dragged.bubble).toBeGreaterThan(dragged.node);
     expect(dragged.bubbleInLayer).toBe(false);
+  });
+});
+
+describe("the name and status lines of a bird in front have a backing (docs/design.md \"Layout\")", () => {
+  test("only a bird in front (dragged or dropped by the user) is marked for it", () => {
+    expect(gardenStack({ dragging: true }).inFront).toBe(true);
+    expect(gardenStack({ dragging: false, front: 1 }).inFront).toBe(true);
+    expect(gardenStack({ dragging: false, bubbleOrder: 2 }).inFront).toBe(false);
+  });
+
+  const css = readFileSync(new URL("../src/perch/styles/garden.css", import.meta.url), "utf8");
+  const rule = (selector: string) => {
+    const at = css.indexOf(`${selector} {`);
+    return at < 0 ? undefined : css.slice(at, css.indexOf("}", at));
+  };
+
+  test("the backing is in the garden's background color, behind the name and the status lines", () => {
+    const body = rule(".garden-node.in-front :is(.garden-name, .garden-status)");
+    expect(body).toBeDefined();
+    expect(body).toContain("background: var(--garden-backing)");
+    expect(css).toContain("--garden-backing:");
+  });
+
+  test("a bird not in front gets no backing", () => {
+    expect(rule(".garden-name")).not.toContain("background");
+    expect(rule(".garden-status")).not.toContain("background");
   });
 });
