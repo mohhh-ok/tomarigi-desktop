@@ -44,8 +44,14 @@ fn keep_of(start: i32, len: u32, area_start: i32, area_len: u32) -> Keep {
 /// One axis: where the window of length `len` at `start` starts once grown to `new_len` (keep_of decides which edge
 /// stays). Then kept inside the area
 fn grow_axis(start: i32, len: u32, new_len: u32, area_start: i32, area_len: u32) -> i32 {
+    place_axis(start, len, new_len, keep_of(start, len, area_start, area_len), area_start, area_len)
+}
+
+/// One axis: where the window of length `len` at `start` starts once resized to `new_len`, keeping `keep`. Then kept
+/// inside the area
+fn place_axis(start: i32, len: u32, new_len: u32, keep: Keep, area_start: i32, area_len: u32) -> i32 {
     let grow = new_len as i64 - len as i64;
-    let pos = match keep_of(start, len, area_start, area_len) {
+    let pos = match keep {
         Keep::Start => start as i64,
         Keep::End => start as i64 - grow,
         Keep::Center => start as i64 - grow / 2,
@@ -76,11 +82,71 @@ pub(crate) fn grow_frame(user: Frame, scale: f64, area: Frame) -> Frame {
     }
 }
 
+/// The garden's edges inside the window (physical px from each window edge)
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Insets {
+    pub left: f64,
+    pub top: f64,
+    pub right: f64,
+    pub bottom: f64,
+}
+
+/// While a bird or block is dragged (docs/design.md "Layout"): the frame `cur` grown on each axis where the pointer
+/// (physical, on screen) is within `band` of the garden's edge or past it, toward that edge only, so the garden's edge
+/// ends up `band` past the pointer. The other edge of the axis stays. Capped at the visible area `area`
+pub(crate) fn drag_grow_frame(cur: Frame, pointer: (f64, f64), insets: Insets, band: f64, area: Frame) -> Frame {
+    let axis = |start: i32, len: u32, p: f64, lo_in: f64, hi_in: f64, area_start: i32, area_len: u32| {
+        let (start, end) = (start as f64, start as f64 + len as f64);
+        let (area_start, area_end) = (area_start as f64, area_start as f64 + area_len as f64);
+        let (garden_lo, garden_hi) = (start + lo_in, end - hi_in);
+        let (start, end) = if p > garden_hi - band {
+            (start, end.max((p + band + hi_in).min(area_end)))
+        } else if p < garden_lo + band {
+            (start.min((p - band - lo_in).max(area_start)), end)
+        } else {
+            (start, end)
+        };
+        (start.round() as i32, (end - start).round() as u32)
+    };
+    let (x, width) = axis(cur.x, cur.width, pointer.0, insets.left, insets.right, area.x, area.width);
+    let (y, height) = axis(cur.y, cur.height, pointer.1, insets.top, insets.bottom, area.y, area.height);
+    Frame { x, y, width, height }
+}
+
+/// Which part of the window stayed put when `cur` became `grown` by drag_grow_frame, per axis (as GrowAnchor): the
+/// right / bottom edge when it grew left / up, otherwise the left / top edge
+pub(crate) fn drag_anchor(cur: Frame, grown: Frame) -> (f64, f64) {
+    (if grown.x < cur.x { 1.0 } else { 0.0 }, if grown.y < cur.y { 1.0 } else { 0.0 })
+}
+
+/// The frame for growing to fit at `scale` (grow_frame). After a drag grew the window (`dragged`, the frame it left),
+/// the dragged size stays while the scale doesn't go down (a bird joining doesn't take back the room the user pulled
+/// out), and when the scale goes down (birds left) the window goes to the fitted size. Either way it is resized from
+/// the dragged frame keeping the edge the page expects (keep_of the user's frame, as garden_grow_anchor tells it), so
+/// the birds on screen stay at the same place on screen
+pub(crate) fn fit_frame(user: Frame, scale: f64, area: Frame, dragged: Option<Frame>, last_scale: f64) -> Frame {
+    let fit = grow_frame(user, scale, area);
+    let Some(d) = dragged else { return fit };
+    let (width, height) = if scale < last_scale {
+        (fit.width, fit.height)
+    } else {
+        (fit.width.max(d.width), fit.height.max(d.height))
+    };
+    Frame {
+        x: place_axis(d.x, d.width, width, keep_of(user.x, user.width, area.x, area.width), area.x, area.width),
+        y: place_axis(d.y, d.height, height, keep_of(user.y, user.height, area.y, area.height), area.y, area.height),
+        width,
+        height,
+    }
+}
+
 struct Grown {
     /// The user's frame (what is saved, and what the window goes back to)
     user: Frame,
     /// The frame set by growing
     applied: Frame,
+    /// A drag grew the window (drag_grow_frame) since it was last grown to fit
+    dragged: bool,
 }
 
 /// Some while the window is grown
@@ -91,6 +157,12 @@ static AUTO_UNTIL: Mutex<Option<Instant>> = Mutex::new(None);
 const AUTO_SETTLE_MS: u64 = 400;
 /// The user's size last sent to the page (physical)
 static SENT_USER_SIZE: Mutex<Option<(u32, u32)>> = Mutex::new(None);
+/// The scale the page last asked for (garden_fit), to tell growing from shrinking back after a drag (fit_frame)
+static LAST_SCALE: Mutex<f64> = Mutex::new(1.0);
+/// While a drag grows the window: the part of the window that stays put (garden_grow_anchor tells the page this one)
+static DRAG_ANCHOR: Mutex<Option<GrowAnchor>> = Mutex::new(None);
+/// How far past the pointer a drag pulls the garden's edge, and how close the pointer must come to it (CSS px)
+const DRAG_BAND_PX: f64 = 24.0;
 
 fn current_frame(win: &WebviewWindow) -> Option<Frame> {
     let (pos, size) = (win.outer_position().ok()?, win.inner_size().ok()?);
@@ -154,19 +226,67 @@ fn apply(app: &AppHandle, scale: f64) {
     if current_mode() != WindowMode::Floating {
         return;
     }
-    let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied));
-    let Some((user, shown)) = grown.or_else(|| current_frame(&win).map(|f| (f, f))) else { return };
+    let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied, g.dragged));
+    let Some((user, shown, dragged)) = grown.or_else(|| current_frame(&win).map(|f| (f, f, false))) else { return };
     let Some(area) = visible_area(&win, user) else { return };
-    let target = grow_frame(user, scale, area);
+    let last = std::mem::replace(&mut *LAST_SCALE.lock().unwrap(), scale);
+    let target = fit_frame(user, scale, area, dragged.then_some(shown), last);
     if target == shown {
         return;
     }
+    // Back at the user's size after a drag moved an edge: the user's frame is where the window now is
+    let user = if (target.width, target.height) == (user.width, user.height) { target } else { user };
+    set_frame(&win, Grown { user, applied: target, dragged });
+    append_log(&format!("[grow] scale={scale} user={user:?} area={area:?} dragged={dragged} -> {target:?}"));
+}
+
+/// Moves the window to `grown.applied`, remembering it as grown unless it is the user's frame
+fn set_frame(win: &WebviewWindow, grown: Grown) {
+    let target = grown.applied;
     // Set the state before moving the window: Moved / Resized can arrive while set_size / set_position run
     *AUTO_UNTIL.lock().unwrap() = Some(Instant::now() + Duration::from_millis(AUTO_SETTLE_MS));
-    *GROWN.lock().unwrap() = (target != user).then_some(Grown { user, applied: target });
+    *GROWN.lock().unwrap() = (target != grown.user).then_some(grown);
     win.set_size(tauri::PhysicalSize::new(target.width, target.height)).ok();
     win.set_position(tauri::PhysicalPosition::new(target.x, target.y)).ok();
-    append_log(&format!("[grow] scale={scale} user={user:?} area={area:?} -> {target:?}"));
+}
+
+fn drag_grow(app: &AppHandle, pointer: (f64, f64), insets: Insets) {
+    let Some(win) = app.get_webview_window("main") else { return };
+    if current_mode() != WindowMode::Floating {
+        return;
+    }
+    let Some(scale) = win.scale_factor().ok() else { return };
+    let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied));
+    let Some((user, shown)) = grown.or_else(|| current_frame(&win).map(|f| (f, f))) else { return };
+    let Some(area) = visible_area(&win, user) else { return };
+    let physical = Insets {
+        left: insets.left * scale,
+        top: insets.top * scale,
+        right: insets.right * scale,
+        bottom: insets.bottom * scale,
+    };
+    let target = drag_grow_frame(shown, (pointer.0 * scale, pointer.1 * scale), physical, DRAG_BAND_PX * scale, area);
+    if target == shown {
+        return;
+    }
+    let (x, y) = drag_anchor(shown, target);
+    *DRAG_ANCHOR.lock().unwrap() = Some(GrowAnchor { x, y });
+    set_frame(&win, Grown { user, applied: target, dragged: true });
+    append_log(&format!("[grow] drag pointer={pointer:?} user={user:?} {shown:?} -> {target:?}"));
+}
+
+/// While a bird or block is dragged: grows the floating window toward the garden's edge the pointer is near or past
+/// (drag_grow_frame). x, y: the pointer on screen; left..bottom: the garden's edges inside the window (CSS px)
+#[tauri::command]
+pub(crate) fn garden_drag_grow(app: AppHandle, x: f64, y: f64, left: f64, top: f64, right: f64, bottom: f64) {
+    let handle = app.clone();
+    app.run_on_main_thread(move || drag_grow(&handle, (x, y), Insets { left, top, right, bottom })).ok();
+}
+
+/// The drag ended: the next resizes keep the edges garden_grow_anchor tells from the user's frame again
+#[tauri::command]
+pub(crate) fn garden_drag_end() {
+    *DRAG_ANCHOR.lock().unwrap() = None;
 }
 
 /// Grows the floating window to `scale` times the user's size (1 or less: back to the user's size)
@@ -195,6 +315,9 @@ fn anchor_value(keep: Keep) -> f64 {
 /// The anchor the next grow_frame of the user's frame uses (the page asks before each garden_fit)
 #[tauri::command]
 pub(crate) fn garden_grow_anchor(app: AppHandle) -> Option<GrowAnchor> {
+    if let Some(anchor) = *DRAG_ANCHOR.lock().unwrap() {
+        return Some(anchor);
+    }
     let win = app.get_webview_window("main")?;
     let user = grown_user_frame().or_else(|| current_frame(&win))?;
     let area = visible_area(&win, user)?;
@@ -319,6 +442,80 @@ mod tests {
         let f = grow_frame(user, 1.02, AREA);
         assert_eq!(f.height, 796);
         assert_eq!(f.y + f.height as i32, AREA.y + AREA.height as i32);
+    }
+
+    // Garden edges inside the window (physical px): header and tabs above, padding around
+    const INSETS: Insets = Insets { left: 20.0, top: 100.0, right: 20.0, bottom: 20.0 };
+    const BAND: f64 = 48.0;
+
+    #[test]
+    fn dragging_near_the_right_edge_grows_right_only() {
+        let cur = Frame { x: 100, y: 100, width: 680, height: 600 };
+        // The garden's right edge is at 760; the pointer is 10px inside it
+        let f = drag_grow_frame(cur, (750.0, 300.0), INSETS, BAND, AREA);
+        assert_eq!((f.x, f.y, f.height), (100, 100, 600));
+        // The garden's right edge goes BAND past the pointer
+        assert_eq!(f.x + f.width as i32 - 20, 750 + 48);
+        assert_eq!(drag_anchor(cur, f), (0.0, 0.0));
+    }
+
+    #[test]
+    fn dragging_past_the_left_edge_grows_left_keeping_the_right_edge() {
+        let cur = Frame { x: 400, y: 100, width: 680, height: 600 };
+        let f = drag_grow_frame(cur, (380.0, 300.0), INSETS, BAND, AREA);
+        assert_eq!(f.x + f.width as i32, 1080);
+        assert_eq!(f.x + 20, 380 - 48);
+        assert_eq!((f.y, f.height), (100, 600));
+        assert_eq!(drag_anchor(cur, f).0, 1.0);
+    }
+
+    #[test]
+    fn dragging_near_the_top_grows_up_keeping_the_bottom_edge() {
+        let cur = Frame { x: 100, y: 300, width: 680, height: 400 };
+        // The garden's top edge is at 400
+        let f = drag_grow_frame(cur, (300.0, 420.0), INSETS, BAND, AREA);
+        assert_eq!(f.y + f.height as i32, 700);
+        assert_eq!(f.y + 100, 420 - 48);
+        assert_eq!(drag_anchor(cur, f), (0.0, 1.0));
+    }
+
+    #[test]
+    fn dragging_in_the_middle_of_the_garden_doesnt_grow() {
+        let cur = Frame { x: 100, y: 100, width: 680, height: 600 };
+        assert_eq!(drag_grow_frame(cur, (400.0, 400.0), INSETS, BAND, AREA), cur);
+    }
+
+    #[test]
+    fn dragging_grows_up_to_the_visible_area() {
+        let cur = Frame { x: 700, y: 300, width: 680, height: 500 };
+        // Near the bottom-right corner, far past the display
+        let f = drag_grow_frame(cur, (1500.0, 900.0), INSETS, BAND, AREA);
+        assert_eq!(f.x + f.width as i32, AREA.x + AREA.width as i32);
+        assert_eq!(f.y + f.height as i32, AREA.y + AREA.height as i32);
+        assert_eq!((f.x, f.y), (700, 300));
+    }
+
+    #[test]
+    fn growing_to_fit_after_a_drag_keeps_the_dragged_size() {
+        // Top-left window (keeps its top-left when growing to fit), grown 300px to the right by a drag
+        let user = Frame { x: 20, y: 40, width: 340, height: 300 };
+        let dragged = Frame { x: 20, y: 40, width: 640, height: 300 };
+        let f = fit_frame(user, 1.2, AREA, Some(dragged), 1.0);
+        // Width stays at the dragged 640 (the fit asks for 408), height grows to the fit's 360
+        assert_eq!(f, Frame { x: 20, y: 40, width: 640, height: 360 });
+        // Without a drag, as before
+        assert_eq!(fit_frame(user, 1.2, AREA, None, 1.0), grow_frame(user, 1.2, AREA));
+    }
+
+    #[test]
+    fn shrinking_after_a_drag_keeps_the_edge_the_page_expects() {
+        // Top-left window grown 300px to the left by a drag (its right edge stayed). Birds leave: back to the user's
+        // size, keeping the left edge as the page's anchor (keep_of the user's frame) says, not jumping to the user's x
+        let user = Frame { x: 300, y: 40, width: 340, height: 300 };
+        let dragged = Frame { x: 0, y: 40, width: 640, height: 300 };
+        assert_eq!(keep_of(user.x, user.width, AREA.x, AREA.width), Keep::Start);
+        let f = fit_frame(user, 1.0, AREA, Some(dragged), 1.2);
+        assert_eq!(f, Frame { x: 0, y: 40, width: 340, height: 300 });
     }
 
     #[test]

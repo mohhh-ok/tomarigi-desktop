@@ -313,6 +313,8 @@ pub fn run() {
             fade::set_garden_fade,
             fade::reveal_garden,
             garden_grow::garden_fit,
+            garden_grow::garden_drag_grow,
+            garden_grow::garden_drag_end,
             garden_grow::garden_grow_anchor,
             garden_grow::window_user_size,
             fs::save_download,

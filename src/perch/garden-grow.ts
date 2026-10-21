@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gardenFitScale, nextGrowScale, type GardenFit, type GrowKept } from "@/lib/garden-fit";
+import { dragGrowRequest } from "./garden-drag-grow";
 
 /**
  * Which part of the window stays put on screen when it grows or shrinks back, per axis (0 the left / top edge, 1 the
@@ -13,6 +14,32 @@ import { gardenFitScale, nextGrowScale, type GardenFit, type GrowKept } from "@/
  * stay at the same place on screen (docs/design.md "Layout")
  */
 export const gardenGrowAnchor = { x: 0, y: 0 };
+
+// A drag is growing the window: the anchor is the drag's until it ends (dragGrowEnd), not the one fetched for growing
+// to fit
+let dragGrowing = false;
+
+/** Called on each pointer move of a drag. e: the pointer event; garden: the garden element */
+export function dragGrowAt(e: PointerEvent, garden: HTMLElement): void {
+  const rect = garden.getBoundingClientRect();
+  const request = dragGrowRequest(
+    { x: e.clientX, y: e.clientY },
+    rect,
+    { width: window.innerWidth, height: window.innerHeight },
+  );
+  if (!request) return;
+  dragGrowing = true;
+  // Set before the resize arrives, so the Garden keeps its birds at the same place on screen with it
+  Object.assign(gardenGrowAnchor, request.anchor);
+  void invoke("garden_drag_grow", { x: e.screenX, y: e.screenY, ...request.insets }).catch(() => {});
+}
+
+/** The drag ended */
+export function dragGrowEnd(): void {
+  if (!dragGrowing) return;
+  dragGrowing = false;
+  void invoke("garden_drag_end").catch(() => {});
+}
 
 interface UserSize {
   width: number;
@@ -102,7 +129,7 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
       .catch(() => null)
       .then((anchor) => {
         if (seq !== seqRef.current) return;
-        if (anchor) Object.assign(gardenGrowAnchor, anchor);
+        if (anchor && !dragGrowing) Object.assign(gardenGrowAnchor, anchor);
         decide();
       });
   }, [decide]);
