@@ -15,21 +15,20 @@ import { STAGE, stage } from "./stage.mjs";
 const { chromium } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "index.mjs"));
 const IMAGES = process.env.OUT ?? new URL("../../docs/images/", import.meta.url).pathname;
 const only = process.argv.slice(2);
-// One image per message (docs/design.md "Gallery images"). The garden window is at rest, over the terminal just below its
-// text (birds over text read as a broken screen), and the download page (moh-tech-net, public/tomarigi/desktop/index.html) crops to the handle, the birds, and the
-// text around them. Perch and Recent activity are never faded; their windows are tall enough to show every row
+// One image per message (docs/design.md "Gallery images"). The garden window is at rest, over the terminal's text, and
+// the download page (moh-tech-net, public/tomarigi/desktop/index.html) crops to the birds and their bubbles with the text
+// around them. Perch and Recent activity are never faded; their windows are tall enough to show every row
 const SCENES = [
   // The garden's birds are put at saved (dragged) positions, left to right the "?", the working one, and the done one,
   // in as little width as the garden allows so the download page can show them large: the garden keeps each bird's
   // footprint (180px, a bubble's room) 12px from the next (src/lib/garden-place.ts), so two birds fit side by side and the
-  // working one, which has no bubble, sits above between them. The terminal is scrolled so its question stays just above
-  // the window's handle, and the window sits at the left edge of the terminal's text
+  // working one, which has no bubble, sits above between them. The window sits over the long lines of the blog session's
+  // plan (stage.mjs), so the text runs on behind the birds and the bubbles on every side
   {
     id: "1-garden",
     query: "preset=gallery-garden",
     // The garden is the window less 46px across and 112px down (handle and tabs); 380 x 180 holds the three footprints
-    win: { w: 426, h: 305, left: 29, top: 264 },
-    scroll: 66,
+    win: { w: 426, h: 305, left: 55, top: 169 },
     fade: true,
     ready: ".garden-node",
     positions: { "gallery/working": { x: 50, y: 0 }, "gallery/plan": { x: 24.7, y: 44 }, "gallery/finished": { x: 75.3, y: 44 } },
@@ -60,7 +59,7 @@ try {
     const page = await ctx.newPage();
     for (const sc of SCENES) {
       if (only.length && !only.includes(sc.id)) continue;
-      const html = stage({ lang, url: `/?mock=1&panel=0&${sc.query}`, win: sc.win, fade: sc.fade, scroll: sc.scroll });
+      const html = stage({ lang, url: `/?mock=1&panel=0&${sc.query}`, win: sc.win, fade: sc.fade });
       // Served from the dev server's origin: a cross-origin frame was drawn at 1x and scaled up
       await page.unrouteAll();
       if (process.env.DIST) await page.route(`${ORIGIN}/**`, serveDist);
