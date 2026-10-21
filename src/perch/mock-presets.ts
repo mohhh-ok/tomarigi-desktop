@@ -796,7 +796,8 @@ const GALLERY: SessionView[] = [
     // A whole minute, so Perch and Recent activity both say 1m whenever in the minute the shot is taken
     sinceMs: 60_000,
     toolName: "ExitPlanMode",
-    snippet: tr("Write the v0.4 release post", "v0.4 のお知らせ記事を書いて"),
+    // The ask the blog session's terminal shows (scripts/gallery/stage.mjs)
+    snippet: tr("Add pages that list posts by tag", "記事一覧に、タグで絞り込めるページを足して"),
   },
   { id: "gallery/working", project: "tomarigi", slug: "tomarigi", state: "working", sinceMs: 3_000 },
   {

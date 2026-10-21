@@ -1,6 +1,7 @@
 // Shoots the README / download page gallery (docs/design.md "Gallery images") into docs/images/.
 // The mock (?mock=1&panel=0&preset=gallery-...) is put in a frame over a desktop with a terminal (stage.mjs), English and
-// Japanese, at 2540x1900 (762x570 CSS px at 3.33x).
+// Japanese, at 3.33x (2540 / 762) CSS px. Perch and Recent activity use the default 762x570 stage (2540x1900); the
+// garden's stage is just the terminal window, so the download page can show it whole.
 // Needs `bun run dev:web` (port 4842), cwebp, and Playwright, which isn't a dependency of this repo:
 //   mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell)
 //   PLAYWRIGHT=/tmp/pw/node_modules/playwright node scripts/gallery/shoot.mjs [scene ids...]
@@ -16,19 +17,21 @@ const { chromium } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "
 const IMAGES = process.env.OUT ?? new URL("../../docs/images/", import.meta.url).pathname;
 const only = process.argv.slice(2);
 // One image per message (docs/design.md "Gallery images"). The garden window is at rest, over the terminal's text, and
-// the download page (moh-tech-net, public/tomarigi/desktop/index.html) crops to the birds and their bubbles with the text
-// around them. Perch and Recent activity are never faded; their windows are tall enough to show every row
+// the download page (moh-tech-net, public/tomarigi/desktop/index.html) shows it whole, terminal window and all. Perch
+// and Recent activity are never faded; their windows are tall enough to show every row
 const SCENES = [
   // The garden's birds are put at saved (dragged) positions, left to right the "?", the working one, and the done one,
   // in as little width as the garden allows so the download page can show them large: the garden keeps each bird's
   // footprint (180px, a bubble's room) 12px from the next (src/lib/garden-place.ts), so two birds fit side by side and the
   // working one, which has no bubble, sits above between them. The window sits over the long lines of the blog session's
-  // plan (stage.mjs), so the text runs on behind the birds and the bubbles on every side
+  // plan (stage.mjs), so the text runs on behind the birds and the bubbles on every side. The stage is just the terminal
+  // window with a narrow margin, small enough that the bubbles' text reads where the page shows the image about 680px wide
   {
     id: "1-garden",
     query: "preset=gallery-garden",
     // The garden is the window less 46px across and 112px down (handle and tabs); 380 x 180 holds the three footprints
-    win: { w: 426, h: 305, left: 55, top: 169 },
+    win: { w: 426, h: 305, left: 20, top: 60 },
+    size: { w: 520, h: 386, term: { left: 10, top: 10, w: 500, h: 366 } },
     fade: true,
     ready: ".garden-node",
     positions: { "gallery/working": { x: 50, y: 0 }, "gallery/plan": { x: 24.7, y: 44 }, "gallery/finished": { x: 75.3, y: 44 } },
@@ -59,10 +62,14 @@ try {
     const page = await ctx.newPage();
     for (const sc of SCENES) {
       if (only.length && !only.includes(sc.id)) continue;
-      const html = stage({ lang, url: `/?mock=1&panel=0&${sc.query}`, win: sc.win, fade: sc.fade });
+      const size = sc.size ?? STAGE;
+      const html = stage({ lang, url: `/?mock=1&panel=0&${sc.query}`, win: sc.win, fade: sc.fade, size });
+      await page.setViewportSize({ width: size.w, height: size.h });
       // Served from the dev server's origin: a cross-origin frame was drawn at 1x and scaled up
       await page.unrouteAll();
       if (process.env.DIST) await page.route(`${ORIGIN}/**`, serveDist);
+      // No update checks or other calls out while shooting
+      await page.route("https://api.github.com/**", (r) => r.abort());
       await page.route(STAGE_URL, (r) => r.fulfill({ contentType: "text/html", body: html }));
       await page.goto(STAGE_URL);
       if (sc.positions) {
