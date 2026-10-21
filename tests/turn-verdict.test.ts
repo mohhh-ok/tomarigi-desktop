@@ -57,6 +57,22 @@ test("the request keeps the end of the reply and the start of each user message"
   expect(turnPayload("en", "Done.", []).user_messages).toEqual([]);
 });
 
+test("a user message from the start of the turn isn't read as the answer to the reply's question", () => {
+  // The turn started with 「いいよ。」 (an approval of an earlier question) and ended asking for a new approval.
+  // gpt-5.6-luna read 「いいよ。」 as the answer and said asking=false, continuing=true in 8 of 8 runs; without the
+  // user message, asking=true in 6 of 6
+  const reply =
+    "生成の予定を dry-run で確かめました。…今回は、緊急地震速報の 17 件だけを `--only` で指定して作ります。" +
+    "この件は終わったときに親に伝えます。\n\n**音声の生成の了解をお願いします。**\n…\n\n**この 17 件を作ってよいですか。**";
+  const sent = JSON.stringify(turnPayload("ja", reply, ["いいよ。"]));
+  // The keys go in the order things happened
+  expect(sent.indexOf('"user_messages"')).toBeLessThan(sent.indexOf('"assistant_text"'));
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("user_messages all came before assistant_text was written");
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
+    "Judge line, asking, and continuing from assistant_text alone; user_messages are only for abusive",
+  );
+});
+
 const answering = (verdict: unknown) => async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: verdict as V });
 
 test("an answer matching the schema gives the line, the ? and the anger mark, for every provider", async () => {
