@@ -43,7 +43,20 @@ test("the prompt treats the reply and the user's messages as untrusted input", (
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("says it will report or ask later");
   // Work that goes on after the turn, to be reported later, is continuing
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("still running in the background");
-  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("report when it's done");
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("will itself receive, check, or report a result later");
+});
+
+test("work only handed to another session that is still going on isn't continuing", () => {
+  // desk's reply ended with 「残りの audit 対応は、今も子の `billionclips-c9` が進めています。」 and waited on nothing.
+  // gpt-5.6-luna said continuing=true in 8 of 8 runs; without that sentence, false in 6 of 6
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
+    "when it only says that work it handed to another session or a sub-agent is still going on",
+  );
+  // A parent that says it will check the child's report when it arrives is still continuing
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("I'll check the report when it arrives and tell you");
+  expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
+    "Not for work only handed to another session",
+  );
 });
 
 test("the request keeps the end of the reply and the start of each user message", () => {
