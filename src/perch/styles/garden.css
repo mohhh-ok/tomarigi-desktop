@@ -128,6 +128,20 @@
   white-space: nowrap;
 }
 
+/* A bird in front of the other birds and bubbles (dragged or dropped by the user; gardenStack in garden-stack.ts): its
+   name and status lines get a backing in about the garden's background color, so they stay readable over a bubble;
+   over the plain garden it hardly shows (docs/design.md "Layout"). The soft edge hides the small difference from the
+   garden's gradients. At rest (Fade until hovered) the name and status lines are transparent, backing included */
+.garden {
+  --garden-backing: rgb(24, 24, 26);
+}
+
+.garden-node.in-front :is(.garden-name, .garden-status) {
+  background: var(--garden-backing);
+  border-radius: 4px;
+  box-shadow: 0 0 3px 2px var(--garden-backing);
+}
+
 /* Status row (StatusParts in bird-status.tsx). The same component as Perch, centered in the garden's small text */
 .garden-status {
   /* Size to content (so the shift at the garden edge is measured by the visible width; visibleWidth in garden.tsx) */

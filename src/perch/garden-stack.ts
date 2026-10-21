@@ -16,12 +16,17 @@ export interface GardenStack {
   /** z-index of its bubble's anchor: inside the bubble layer, or beside it in the garden */
   bubble: number;
   bubbleInLayer: boolean;
+  /** In front of the other birds and bubbles (dragged or dropped by the user): its name and status lines get a backing
+      so they stay readable over a bubble (.garden-node.in-front in styles/garden.css) */
+  inFront: boolean;
 }
 
 /** front: the bird's rank among dropped ones (frontRanks in lib/garden-layout.ts); bubbleOrder: among bubbles by turn */
 export function gardenStack(args: { dragging: boolean; front?: number; bubbleOrder?: number }): GardenStack {
   const { dragging, front, bubbleOrder } = args;
-  if (dragging) return { node: DRAGGING_Z, bubble: DRAGGING_Z + 1, bubbleInLayer: false };
-  if (front !== undefined) return { node: FRONT_Z + 2 * front, bubble: FRONT_Z + 2 * front + 1, bubbleInLayer: false };
-  return { node: bubbleOrder ?? 0, bubble: bubbleOrder ?? 0, bubbleInLayer: true };
+  if (dragging) return { node: DRAGGING_Z, bubble: DRAGGING_Z + 1, bubbleInLayer: false, inFront: true };
+  if (front !== undefined) {
+    return { node: FRONT_Z + 2 * front, bubble: FRONT_Z + 2 * front + 1, bubbleInLayer: false, inFront: true };
+  }
+  return { node: bubbleOrder ?? 0, bubble: bubbleOrder ?? 0, bubbleInLayer: true, inFront: false };
 }

@@ -1164,7 +1164,7 @@ function GardenNode({
     <div
       ref={nodeRef}
       data-session-id={session.id}
-      className={`garden-node ${concierge ? "concierge" : session.state}${question ? " asking" : ""}${live ? " dragging" : ""}${exiting ? " leaving" : ""}${focusable ? " focusable" : ""}${inBlock ? " in-watch-block" : ""}`}
+      className={`garden-node ${concierge ? "concierge" : session.state}${question ? " asking" : ""}${live ? " dragging" : ""}${exiting ? " leaving" : ""}${focusable ? " focusable" : ""}${inBlock ? " in-watch-block" : ""}${stack.inFront ? " in-front" : ""}`}
       style={{
         left,
         top,
