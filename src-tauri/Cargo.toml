@@ -1,6 +1,6 @@
 [package]
 name = "tomarigi-desktop"
-version = "0.12.0"
+version = "0.12.1"
 description = "tomarigi desktop"
 authors = ["MOhhh"]
 license = "MIT"
