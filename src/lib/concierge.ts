@@ -168,11 +168,13 @@ export function buildConciergePayload(
     };
   });
 
-  // What holds up what: a session that is watching (stopped and waiting on its linked peers) is held up by a peer
-  // that needs a reply; any session is held up by one of its chicks that waits on a reply
+  // What holds up what: a session that is watching and whose turn verdict says continuing (it waits on its own work or
+  // on its linked peers) is held up by a peer that needs a reply; one whose turn ended with continuing no handed the
+  // work off and isn't held up. Any session is held up by one of its chicks that waits on a reply (docs/design.md
+  // "Concierge")
   const holds: PayloadHold[] = [];
   for (const { view } of inputs) {
-    if (view.watching !== undefined) {
+    if (view.watching !== undefined && view.continuing === true) {
       for (const peer of view.peers ?? []) {
         const other = peer.viewId ? byId.get(peer.viewId) : undefined;
         if (other && needsAnswer(other.state, other.ask)) {
@@ -254,6 +256,10 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "reply; two sessions that seem to work on the same file or task.\n" +
     "Call a session by its name in the advice. Write its id only in session_id, never in the advice. An advice " +
     "about a session must contain that session's name exactly as given; one without the name is not shown.\n" +
+    "An advice is about one session only: never put another session's name or something to do in another session " +
+    "in it; an advice that does is not shown. A held-up session is a reason to choose an advice, not something to " +
+    "write in it. The one exception is the advice about a parent that hasn't got its child's result, which names " +
+    "both.\n" +
     "Write one short line, about 30 full-width characters (or about 60 Latin characters), plain text, no " +
     "markdown, no quotation marks, no trailing period, in the language given by ui_language. Set session_id to " +
     "the id of the session the advice is about, exactly as given. When nothing needs the developer (no session " +
@@ -321,15 +327,39 @@ export function adviceNamesTarget(line: string, name: string): boolean {
 
 
 /** An advice that isn't shown, and why: it asks nothing the developer can do now, it is about a working session, it
- * asks to reply about a session that doesn't need a reply, it doesn't contain its session's name, it is about a
- * session that doesn't need a reply while another does, or it asks to check the result of a session whose watching
- * parent takes it or that watches a child still working */
+ * asks to reply about a session that doesn't need a reply, it doesn't contain its session's name, it names another
+ * session, it is about a session that doesn't need a reply while another does, or it asks to check the result of a
+ * session whose watching parent takes it or that watches a child still working */
 export interface DroppedConciergeAdvice extends ConciergeAdvice {
-  reason: "nothing_to_do" | "working" | "no_reply_needed" | "no_name" | "not_waiting" | "watched" | "child_working";
+  reason:
+    | "nothing_to_do"
+    | "working"
+    | "no_reply_needed"
+    | "no_name"
+    | "other_session"
+    | "not_waiting"
+    | "watched"
+    | "child_working";
 }
 
 const watchesWorkingChild = (target: PayloadSession, sessions: PayloadSession[]) =>
   (target.watch_children ?? []).some((id) => sessions.find((s) => s.id === id)?.state === "working");
+
+/**
+ * Whether the advice names a session other than its target. A name that is also part of the target's name doesn't
+ * count, and neither does a child of the target whose result hasn't reached it: the advice about such a parent names
+ * both (docs/design.md "Concierge")
+ */
+function adviceNamesOtherSession(line: string, target: PayloadSession, sessions: PayloadSession[]): boolean {
+  const targetName = normalizeName(target.name.endsWith("…") ? target.name.slice(0, -1) : target.name);
+  return sessions.some(
+    (s) =>
+      s.id !== target.id &&
+      !(s.watch_parent === target.id && s.result_reached_parent === false) &&
+      !targetName.includes(normalizeName(s.name.endsWith("…") ? s.name.slice(0, -1) : s.name)) &&
+      adviceNamesTarget(line, s.name),
+  );
+}
 
 /** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge") */
 function dropReason(
@@ -353,6 +383,7 @@ function dropReason(
   // verdict asking (the prompt alone didn't hold)
   if (action === "reply" && !target.needs_reply) return "no_reply_needed";
   if (!adviceNamesTarget(advice.line, target.name)) return "no_name";
+  if (adviceNamesOtherSession(advice.line, target, sessions)) return "other_session";
   if (!target.needs_reply && sessions.some((s) => s.needs_reply)) return "not_waiting";
   return undefined;
 }
@@ -399,6 +430,11 @@ export function conciergeRequestLogLines(c: ConciergeLogContext, payload: Concie
         `watch_children=${s.watch_children?.join(",") ?? "-"}`,
         `chicks_working=${s.chicks_working ?? 0}`,
       ].join(" "),
+    ),
+    // A chick is logged without its name, which is text from the session
+    ...payload.holds.map(
+      (h) =>
+        `[concierge] hold req=${c.req} waiting=${h.waiting_session} held_up_by=${h.reason === "chick_needs_reply" ? "chick" : h.held_up_by} reason=${h.reason}`,
     ),
   ];
 }

@@ -31,6 +31,7 @@ const DROP_REASON_TEXT: Record<DroppedConciergeAdvice["reason"], string> = {
   working: "the session is working",
   no_reply_needed: "the session doesn't need a reply",
   no_name: "no session name",
+  other_session: "another session is in the advice",
   not_waiting: "another session needs a reply",
   watched: "a watching session takes its result",
   child_working: "a session it watches is still working",
