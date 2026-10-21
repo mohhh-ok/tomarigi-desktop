@@ -46,3 +46,41 @@ describe("after a drop, reopening puts every bird where it was right after the d
     expect(movedFrom(appear(saved), after)).toEqual([]);
   });
 });
+
+/** Birds whose footprint is level with the dropped bird's (they overlap in height) but whose top is elsewhere */
+const offRow = (at: Map<string, Point>, id: string, h: number) => {
+  const p = at.get(id)!;
+  return [...at]
+    .filter(([b, q]) => b !== id && q.y < p.y + h && p.y < q.y + h && Math.abs(q.y - p.y) > 0.5)
+    .map(([b]) => b);
+};
+
+// A bird dropped onto another and pushed away lines up with the row it lands in (issue #3: moh-tech-net dropped onto
+// blog landed 16px above the other birds of its row, at blog's bottom edge plus the gap)
+describe("a bird pushed away by a drop lines up with the row it lands in", () => {
+  test("the issue's garden (520×420 window, preset=bubble): moh-tech-net dropped onto blog", () => {
+    const foot = { w: 120, h: 113 };
+    // The boxes garden.tsx placed (logged from the app): birds on screen, the drop, then docs-migration, which had no
+    // free spot at this size and overlaps others, last
+    const x = (center: number) => center - foot.w / 2;
+    const boxes: PlaceBox[] = [
+      { id: "concierge", ...foot, at: { x: x(392.33), y: 159 } },
+      { id: "figma-adapter", ...foot, at: { x: x(81.67), y: 159 } },
+      { id: "tomarigi", ...foot, at: { x: x(392.33), y: 18 } },
+      { id: "cloudflare-lab", ...foot, at: { x: x(81.67), y: 18 } },
+      { id: "blog", ...foot, at: { x: x(237), y: 18 } },
+      { id: "moh-tech-net", ...foot, want: { x: 202.55, y: 18 } },
+      { id: "docs-migration", ...foot, at: { x: 64, y: 60.5 } },
+    ];
+    const at = placeBoxes(boxes, 474, 290).at;
+    expect(offRow(new Map([...at].filter(([id]) => id !== "docs-migration")), "moh-tech-net", foot.h)).toEqual([]);
+  });
+
+  const first = appear({});
+  const cases = ids.flatMap((id) => ids.filter((o) => o !== id).map((onto) => [id, onto] as const));
+  test.each(cases)("%s dropped onto %s", (id, onto) => {
+    const target = first.get(onto)!;
+    const after = drop(first, id, { x: target.x + FOOT.w / 2 + 20, y: target.y + 10 });
+    expect(offRow(after, id, FOOT.h)).toEqual([]);
+  });
+});

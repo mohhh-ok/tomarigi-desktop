@@ -98,12 +98,14 @@ function clampBox(box: PlaceBox, p: Point, W: number, H: number): Point {
 
 /**
  * The free spot nearest to p. Candidates are p itself, the garden's edges, and the spots right next to each placed box
- * (combined per axis), which covers every place a box can go without leaving a gap it doesn't need
+ * (combined per axis), which covers every place a box can go without leaving a gap it doesn't need. When p isn't free,
+ * spots whose top is level with a placed box come first, so the box lines up with a row (docs/design.md "Layout")
  */
 function nearestFree(p: Point, box: PlaceBox, placed: readonly Rect[], W: number, H: number): Point | undefined {
   const maxX = W - PLACE_EDGE_PX - box.w;
   const maxY = H - PLACE_EDGE_PX - box.h;
   if (maxX < PLACE_EDGE_PX || maxY < PLACE_EDGE_PX) return undefined;
+  if (!placed.some((r) => hits(r, { ...p, w: box.w, h: box.h }))) return p;
   const xs = [p.x, PLACE_EDGE_PX, maxX];
   const ys = [p.y, PLACE_EDGE_PX, maxY];
   for (const r of placed) {
@@ -112,15 +114,16 @@ function nearestFree(p: Point, box: PlaceBox, placed: readonly Rect[], W: number
   }
   // Nearest first, so the search stops at the first free one. Edges of boxes laid out in rows repeat a lot; each value
   // is tried once
-  const candidates: { x: number; y: number; d: number }[] = [];
+  const rows = new Set(unique(placed.map((r) => r.y)));
+  const candidates: { x: number; y: number; d: number; level: boolean }[] = [];
   for (const x of unique(xs)) {
     if (x < PLACE_EDGE_PX || x > maxX) continue;
     for (const y of unique(ys)) {
       if (y < PLACE_EDGE_PX || y > maxY) continue;
-      candidates.push({ x, y, d: Math.hypot(x - p.x, y - p.y) });
+      candidates.push({ x, y, d: Math.hypot(x - p.x, y - p.y), level: rows.has(y) });
     }
   }
-  candidates.sort((a, b) => a.d - b.d);
+  candidates.sort((a, b) => Number(b.level) - Number(a.level) || a.d - b.d);
   for (const { x, y } of candidates) {
     const rect = { x, y, w: box.w, h: box.h };
     if (!placed.some((r) => hits(r, rect))) return { x, y };
