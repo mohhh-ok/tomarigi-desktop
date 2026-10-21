@@ -46,7 +46,8 @@ function pane(lang) {
   return `<div class="pane"><div class="cmd"><span class="dir">~/Dev/blog</span> <span class="pr">$</span> claude</div>${rows}<div class="u cursor"><span class="pr">›</span> <i></i></div></div>`;
 }
 
-export function stage({ lang, url, win, fade }) {
+// scroll: px of the pane's text scrolled up out of view, as a terminal does when lines are added (the first image)
+export function stage({ lang, url, win, fade, scroll = 0 }) {
   const tabs = TABS.map(([dir, cmd], i) => `<span class="tab${i === 0 ? " on" : ""}">${dir} — ${cmd}</span>`).join("");
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   html{color-scheme:dark}html,body{margin:0;height:100%;overflow:hidden}
@@ -58,7 +59,7 @@ export function stage({ lang, url, win, fade }) {
   .tabs{display:flex;background:#202328;border-bottom:1px solid #000;font:11px/1 -apple-system,sans-serif;color:#8a9099}
   .tab{flex:1;text-align:center;padding:7px 4px;border-left:1px solid #000;white-space:nowrap;overflow:hidden}
   .tab.on{background:#17191d;color:#d6d9de}
-  .pane{padding:14px 16px;font:12px/1.65 "SF Mono",Menlo,"Hiragino Sans",monospace;color:#c9ccd1}
+  .view{height:100%;overflow:hidden}.pane{margin-top:-${scroll}px;padding:14px 16px;font:12px/1.65 "SF Mono",Menlo,"Hiragino Sans",monospace;color:#c9ccd1}
   .cmd{color:#8a9099;margin-bottom:10px}.dir{color:#7fb0d9}.pr{color:#8a9099}
   .u{color:#e8e9eb;margin:4px 0 8px}.a,.i{color:#b4b9c0;white-space:nowrap}.i{padding-left:2ch}.q{color:#f0c46a;white-space:pre}
   .cursor{margin-top:12px}.cursor i{display:inline-block;width:7px;height:14px;background:#c9ccd1;vertical-align:-2px}
@@ -67,7 +68,7 @@ export function stage({ lang, url, win, fade }) {
   .win iframe{position:absolute;inset:0;border:0;width:100%;height:100%;background:transparent;border-radius:12px}
   </style></head><body>
   <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
-  <div class="tabs">${tabs}</div>${pane(lang)}</div>
+  <div class="tabs">${tabs}</div><div class="view">${pane(lang)}</div></div>
   <div class="win"><div class="glass"></div><iframe src="${url}"></iframe></div>
   </body></html>`;
 }
