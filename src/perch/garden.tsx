@@ -28,7 +28,7 @@ import { PLACE_EDGE_PX, placeBoxes, shiftPoints, type PlaceBox, type Point } fro
 import type { SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
-import { gardenGrowAnchor } from "./garden-grow";
+import { dragGrowAt, dragGrowEnd, gardenGrowAnchor } from "./garden-grow";
 import { onFadeHandlePointerDown } from "./garden-fade";
 import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
 import { createPortal } from "react-dom";
@@ -954,6 +954,10 @@ function GardenNode({
     // Pointer-down position, to tell a drag (moved) from a click (not moved)
     let downX = 0;
     let downY = 0;
+    // The same on screen: a block moves by how far the pointer moved on screen, which stays right when the window
+    // grows left or up during the drag (the window's corner moves under the pointer)
+    let downScreenX = 0;
+    let downScreenY = 0;
     let moved = false;
     // The block the grabbed bird is in, if any
     let groupRoot: string | undefined;
@@ -969,6 +973,8 @@ function GardenNode({
       grabOffsetY = node.offsetTop - (e.clientY - startRect.top);
       downX = e.clientX;
       downY = e.clientY;
+      downScreenX = e.screenX;
+      downScreenY = e.screenY;
       moved = false;
       dragging = true;
       groupRoot = groupRef.current.groupRootId;
@@ -976,6 +982,9 @@ function GardenNode({
     };
 
     const posFromEvent = (e: PointerEvent): NodePos | null => {
+      // Measured again each time: a drag may grow the window (dragGrowAt)
+      const container = containerRef.current;
+      if (container) startRect = container.getBoundingClientRect();
       if (!startRect || startRect.width === 0 || startRect.height === 0) return null;
       const half = node.offsetWidth / 2;
       const x = e.clientX - startRect.left + grabOffsetX;
@@ -989,12 +998,16 @@ function GardenNode({
 
     // Dragging a group's bird: move the block by the pointer movement (px)
     const groupFromEvent = (e: PointerEvent): GroupDrag | undefined =>
-      groupRoot === undefined ? undefined : { rootId: groupRoot, dx: e.clientX - downX, dy: e.clientY - downY };
+      groupRoot === undefined
+        ? undefined
+        : { rootId: groupRoot, dx: e.screenX - downScreenX, dy: e.screenY - downScreenY };
 
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
       if (!moved && Math.hypot(e.clientX - downX, e.clientY - downY) < CLICK_SLOP_PX) return;
       moved = true;
+      // Near or past the garden's edge, the window grows that way (docs/design.md "Layout")
+      if (containerRef.current) dragGrowAt(e, containerRef.current);
       const group = groupFromEvent(e);
       if (group) {
         groupRef.current.onGroupMove?.(group);
@@ -1007,6 +1020,7 @@ function GardenNode({
     const endDrag = (e: PointerEvent) => {
       if (!dragging) return;
       dragging = false;
+      dragGrowEnd();
       if (node.hasPointerCapture(e.pointerId)) node.releasePointerCapture(e.pointerId);
       setLive(null);
       if (!moved) {
