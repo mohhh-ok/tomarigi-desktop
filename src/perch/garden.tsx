@@ -146,6 +146,8 @@ interface Kept {
   unsettledAt?: { w: number; h: number };
   // Garden size at the last placement (to keep things at the same place on screen when it resizes)
   frame?: { w: number; h: number };
+  // How many times the user dropped a bird or block (GardenFit.drops: the window shrinks once on each)
+  dropCount: number;
 }
 
 export function Garden({
@@ -202,6 +204,7 @@ export function Garden({
     overlapping: new Set(),
     byUser: new Set(),
     unsettled: new Set(),
+    dropCount: 0,
   });
   // Log lines about the placement, written by render and sent to the log after commit
   const logRef = useRef<string[]>([]);
@@ -540,6 +543,7 @@ export function Garden({
       // The birds dropped now come in front of the others (docs/design.md "Layout")
       const front = new Set(dropped.flatMap((b) => shapes.find((sh) => sh.rootId === b.id)?.memberIds ?? [b.id]));
       dropSaveRef.current = { settled: new Map(birdAt), byUser, front, w: W, h: baseH };
+      kept.dropCount++;
     }
     kept.drops.clear();
     // Something had no spot, so the window is asked to grow: what was first placed now (and what still isn't settled
@@ -608,6 +612,7 @@ export function Garden({
       overflowH: Math.max(0, ...over.map((b) => b.h)),
       gardenW: W,
       gardenH: containerSize.viewH,
+      drops: kept.dropCount,
     };
   }
 

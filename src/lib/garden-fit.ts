@@ -47,6 +47,8 @@ export interface GardenFit {
    * many birds or blocks would have no spot, and how many on screen would have to move. Not part of the JSON sent
    */
   simulate?: (w: number, h: number) => { overflow: number; moved: number };
+  /** Counts the user's drops of a bird or block: a new count asks for shrinking once (gardenDropScale) */
+  drops?: number;
 }
 
 /** What the Garden placed at its current size, for trying the same placement at another size (gardenSimulate) */
@@ -202,6 +204,33 @@ export function gardenFitScale(userW: number, userH: number, fit: GardenFit, cur
   if (!fit.overflow) return Math.min(empty, base);
   const strip = base + Math.min((fit.overflowW + PLACE_GAP_PX) / userW, (fit.overflowH + PLACE_GAP_PX) / userH);
   return Math.round(roundUp(Math.max(empty, strip)) * 100) / 100;
+}
+
+/**
+ * On a drop (docs/design.md "Layout"): the smallest scale (≥ 1) of the user's window size at which the actual placement
+ * gives everything a spot without moving anyone on screen, so the window shrinks once and nothing moves. undefined
+ * when no size keeps everyone in place, or without fit.simulate to try sizes with (then it doesn't shrink)
+ */
+export function gardenDropScale(userW: number, userH: number, fit: GardenFit): number | undefined {
+  const simulate = fit.simulate;
+  if (!simulate || userW <= 0 || userH <= 0) return undefined;
+  const scaleAt = (i: number) => Math.round((1 + i * SCALE_STEP) * 100) / 100;
+  // 1px smaller than the exact size, as in gardenFitScale (the window takes whole pixels)
+  const ok = (i: number) => {
+    const s = scaleAt(i);
+    const r = simulate(userW * s - fit.overheadW - ROUNDING_PX, userH * s - fit.overheadH - ROUNDING_PX);
+    return r.overflow === 0 && r.moved === 0;
+  };
+  let lo = 0;
+  let hi = Math.round((MAX_FIT_SCALE - 1) / SCALE_STEP);
+  if (!ok(hi)) return undefined;
+  // Binary search, assuming more room never makes anyone move
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (ok(mid)) hi = mid;
+    else lo = mid + 1;
+  }
+  return scaleAt(lo);
 }
 
 /** The scale last applied, with the number of birds and the user's size it was decided for */
