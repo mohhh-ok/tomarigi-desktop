@@ -138,6 +138,9 @@ interface Kept {
   drops: Map<string, Point>;
   // Birds and blocks that had no free spot and overlap others
   overlapping: Set<string>;
+  // Birds and blocks (by their first-started bird) the user dropped where they are: kept there over others too
+  // (docs/design.md "Layout"), until dragged again or gone
+  byUser: Set<string>;
   // Birds and blocks (by their first-started bird) not on screen yet: first placed in a render that had no spot for
   // something, which asks the window to grow (docs/design.md "Layout": "On screen"). Kept where they are while the
   // garden keeps that size (unsettledAt); placed again like new ones once it changes, so the places they got in the
@@ -200,6 +203,7 @@ export function Garden({
     blocks: new Map(),
     drops: new Map(),
     overlapping: new Set(),
+    byUser: new Set(),
     unsettled: new Set(),
   });
   // Log lines about the placement, written by render and sent to the log after commit
@@ -293,7 +297,7 @@ export function Garden({
   const [, setDropCount] = useState(0);
   const placeDrop = useCallback(() => setDropCount((n) => n + 1), []);
   // Where every bird settled in the render that placed a drop, saved after commit (for the next launch)
-  const dropSaveRef = useRef<{ settled: Map<string, Point>; w: number; h: number } | null>(null);
+  const dropSaveRef = useRef<{ settled: Map<string, Point>; byUser: Set<string>; w: number; h: number } | null>(null);
 
   // Every session whose process is alive is a node in the garden, dozing ones included (docs/design.md
   // "Garden layout"). The useLayoutEffect below must be called on every render (Rules of Hooks), so
@@ -332,11 +336,13 @@ export function Garden({
     const boxes: PlaceBox[] = [];
     for (const sh of trial) {
       const at = kept.blocks.get(sh.rootId)?.at;
-      if (at) boxes.push({ id: sh.rootId, w: sh.width, h: sh.footH, at });
+      if (at) boxes.push({ id: sh.rootId, w: sh.width, h: sh.footH, at, byUser: kept.byUser.has(sh.rootId) });
     }
     for (const s of sessions) {
       const at = kept.birds.get(s.id);
-      if (at && !inBlock.has(s.id)) boxes.push({ id: s.id, w: FOOT_W, h: g + birdExtraH(s), at });
+      if (at && !inBlock.has(s.id)) {
+        boxes.push({ id: s.id, w: FOOT_W, h: g + birdExtraH(s), at, byUser: kept.byUser.has(s.id) });
+      }
     }
     const result = placeBoxes(boxes, W, baseH);
     return (
@@ -433,9 +439,14 @@ export function Garden({
       const at = stayAt
         ? { x: stayAt.x + FOOT_W / 2 - shape.cells.get(stay)!.dx, y: stayAt.y - shape.cells.get(stay)!.dy }
         : before?.at;
-      if (drop) dropped.push({ ...box, want: drop });
-      else if (before && at && !replace(shape.rootId)) keptBlocks.push({ ...box, at });
-      else newBlocks.push({ ...box, want: blockWant(shape, (id) => appearing.has(id)) });
+      // Placed by the user: this block was dropped there (by whichever bird was its first-started one then), or it
+      // appears with every bird at the spot saved for being dropped there
+      const beforeByUser = [...kept.blocks].some(([root, b]) => b === before && kept.byUser.has(root));
+      const savedByUser = shape.memberIds.every((id) => appearing.has(id) && positions[id]?.byUser);
+      // A block the user drops stays where it is dropped, over others too (docs/design.md "Layout")
+      if (drop) dropped.push({ ...box, want: drop, byUser: true });
+      else if (before && at && !replace(shape.rootId)) keptBlocks.push({ ...box, at, byUser: beforeByUser });
+      else newBlocks.push({ ...box, want: blockWant(shape, (id) => appearing.has(id)), byUser: savedByUser });
     }
     for (const s of [...sessions].sort((a, b) => a.id.localeCompare(b.id))) {
       if (shapeOf.has(s.id)) continue;
@@ -444,9 +455,10 @@ export function Garden({
       const drop = kept.drops.get(s.id);
       const at = kept.birds.get(s.id);
       const saved = savedAt(s.id, FOOT_W);
-      if (drop) dropped.push({ ...box, want: drop });
-      else if (at && !replace(s.id)) keptBirds.push({ ...box, at });
-      else if (saved) newBirds.push({ ...box, want: saved });
+      // A bird the user drops stays where it is dropped, over others too, and opens there again (docs/design.md "Layout")
+      if (drop) dropped.push({ ...box, want: drop, byUser: true });
+      else if (at && !replace(s.id)) keptBirds.push({ ...box, at, byUser: kept.byUser.has(s.id) });
+      else if (saved) newBirds.push({ ...box, want: saved, byUser: positions[s.id]?.byUser });
       else newBirds.push({ ...box, seed: hashId(s.id) });
     }
     keptBlocks.sort(order(kept.blocks));
@@ -457,8 +469,12 @@ export function Garden({
       ...keptBlocks.filter((b) => !overlapping(b)),
       ...keptBirds.filter((b) => !overlapping(b)),
       ...dropped,
-      ...newBlocks,
-      ...newBirds,
+      // What appears at a spot the user placed it on comes after the rest that appears, so the birds it was dropped
+      // over open where they were too (they don't look for a spot around it)
+      ...newBlocks.filter((b) => !b.byUser),
+      ...newBirds.filter((b) => !b.byUser),
+      ...newBlocks.filter((b) => b.byUser),
+      ...newBirds.filter((b) => b.byUser),
       ...keptBlocks.filter(overlapping),
       ...keptBirds.filter(overlapping),
     ];
@@ -470,7 +486,9 @@ export function Garden({
     // from where it is, the same way it does on the next placement
     const settled = boxes.map((b): PlaceBox => {
       const at = placement.at.get(b.id);
-      return overflowAtBase.includes(b.id) ? { id: b.id, w: b.w, h: b.h, want: at } : { id: b.id, w: b.w, h: b.h, at };
+      return overflowAtBase.includes(b.id)
+        ? { id: b.id, w: b.w, h: b.h, want: at }
+        : { id: b.id, w: b.w, h: b.h, at, byUser: b.byUser };
     });
     for (const box of boxes) {
       const to = placement.at.get(box.id)!;
@@ -509,8 +527,15 @@ export function Garden({
     kept.birds = birds;
     kept.blocks = blocks;
     kept.overlapping = new Set(overflowAtBase);
-    // Saved after commit: every bird where it settled, so the next launch opens as it is right after the drop
-    if (dropped.length > 0) dropSaveRef.current = { settled: new Map(birdAt), w: W, h: baseH };
+    kept.byUser = new Set(boxes.filter((b) => b.byUser).map((b) => b.id));
+    // Saved after commit: every bird where it settled, so the next launch opens as it is right after the drop. Birds
+    // the user placed (alone or in a block they dropped) are marked so they open there over others too
+    if (dropped.length > 0) {
+      const byUser = new Set(
+        [...kept.byUser].flatMap((id) => shapes.find((sh) => sh.rootId === id)?.memberIds ?? [id]),
+      );
+      dropSaveRef.current = { settled: new Map(birdAt), byUser, w: W, h: baseH };
+    }
     kept.drops.clear();
     // Something had no spot, so the window is asked to grow: what was first placed now (and what still isn't settled
     // at this size) isn't on screen yet, and is placed again once the size changes. Everything has a spot: all settled

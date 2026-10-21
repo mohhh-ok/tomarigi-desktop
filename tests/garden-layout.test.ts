@@ -68,7 +68,7 @@ describe("placeBoxes", () => {
     expect(overlaps(at, [block, bird("a"), bird("b")])).toBe(false);
   });
 
-  test("a bird dropped onto another is nudged to the nearest free spot in its row; the other stays", () => {
+  test("a bird that wants a taken spot goes to the nearest free spot in its row; the other stays (a drop is not nudged: garden-drop.test.ts)", () => {
     const a = { x: 10, y: 10 };
     const { at } = placeBoxes([bird("a", { at: a }), bird("b", { want: { x: 30, y: 20 } })], 500, 500);
     expect(at.get("a")).toEqual(a);
