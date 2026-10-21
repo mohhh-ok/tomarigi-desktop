@@ -280,7 +280,7 @@ describe("birds first placed in a render that asks the window to grow are placed
   const overheadW = 46;
   const overheadH = 121;
   const ids = ["concierge", "mock/extra/0", "mock/extra/1", "mock/extra/2", "mock/extra/3", "mock/extra/4", "mock/extra/5", "mock/watch/blog"];
-  // A watch block of 2×2 birds (280×278) and birds with the footprint as wide as the widest bubble (180×113), placed
+  // A watch block of 2×2 birds (280×278) and birds 180×113 (the footprint was the widest bubble's width then), placed
   // as new ones: the block from the top-left, the birds in seeded grid cells (the same order as garden.tsx)
   const asNew = (): PlaceBox[] => [
     { id: "mock/watch/parent", w: 280, h: 278, want: { x: PLACE_EDGE_PX, y: PLACE_EDGE_PX } },
