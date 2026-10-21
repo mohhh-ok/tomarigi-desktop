@@ -345,6 +345,7 @@ An AI looks at every session together and gives the user one piece of advice abo
     - The 3 seconds count from the first change; later changes join it without restarting the wait, so sessions that keep changing can't hold the request off (Claude's own decision)
   - Not asked while no session needs a reply, has the "?", or is done (not dozing); the advice is cleared then
   - Every 5 minutes while any session needs a reply or has the "?", so a skipped session is brought up again
+  - A request that fails with a temporary error (HTTP 5xx, 429, a timeout, or no connection) is asked again after 10 seconds, then 30, then 60, at most 3 times, while a session still needs a reply, has the "?", or is done; changes that come in meanwhile join the retry. Other errors (a wrong key, a bad request) are not retried. Retries don't count toward the 60-second limit (the user, after OpenAI returned 503 and the concierge stayed silent with a bird waiting: 「こんしぇるじゅがはんのうしてない」; the rule is Claude's own decision). Before, a failed request waited for the 5-minute timer or the next change
   - The token counts the API returns (input, cached input, output) are logged per request, so cost is measured rather than estimated. Input is the whole input including the cached part; for Anthropic it is input_tokens plus the cache reads and writes (Claude's own decision)
 - Requests and advice are logged in the app log and the debug log screen
   - The debug log screen keeps them in memory only; the app log keeps them across launches (Claude's own decision)
