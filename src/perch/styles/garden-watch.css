@@ -1,13 +1,34 @@
-/* Watching blocks and the peer count in the Garden */
+/* Watch lines and the peer count in the Garden */
 
-/* Rounded block enclosing a watching group (watchShapes in garden-watch-layout.ts). A faint surface and border laid under
-   the birds. left/top are its top-left corner in px (garden.tsx) */
-.garden-watch-block {
+/* Lines between linked birds of a watching group (garden.tsx). Under the birds, bubbles, and status lines, and not a
+   hover or click target. Kept faint, to be seen only on a closer look (docs/design.md "Watching"). They stay at rest
+   ("Fade until hovered"), when the window background is gone, so a thin dark outline lies under a light core and the
+   line can be made out over a light or a dark desktop */
+.garden-watch-lines {
   position: absolute;
-  border: 1px solid rgba(217, 176, 106, 0.28);
-  border-radius: 14px;
-  background: rgba(217, 176, 106, 0.05);
+  left: 0;
+  top: 0;
+  overflow: visible;
   pointer-events: none;
+  /* Faded as one layer, so where lines share a trunk they don't get darker */
+  opacity: 0.6;
+}
+
+.garden-watch-line-outline,
+.garden-watch-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.garden-watch-line-outline {
+  stroke: rgba(20, 18, 12, 0.5);
+  stroke-width: 2.5px;
+}
+
+.garden-watch-line {
+  stroke: #e2bd78;
+  stroke-width: 1.2px;
 }
 
 /* Number of active peers shown under a watching bird */

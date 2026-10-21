@@ -519,6 +519,167 @@ export const PRESETS: Preset[] = [
     },
   },
   {
+    // Watching in two steps (docs/design.md "Watching"): the parent tomarigi watches api and web, and api in turn watches
+    // api-db. Each linked pair gets a line, so api-db is joined to api, not to the parent
+    id: "watching-chain",
+    label: "Watching (two steps)",
+    build: () => {
+      const parent = "mock/watch-chain/parent";
+      const api = "mock/watch-chain/api";
+      const web = "mock/watch-chain/web";
+      const db = "mock/watch-chain/db";
+      const root = "/Users/me/Dev/tomarigi";
+      const toParent = [{ sessionId: "parent", viewId: parent, name: "tomarigi", cwd: root, active: false }];
+      return {
+        sessions: [
+          {
+            id: parent,
+            project: "tomarigi",
+            slug: "tomarigi",
+            state: "done",
+            sinceMs: 6 * 60_000,
+            cwd: root,
+            startedAt: BASE - 60 * 60_000,
+            watching: 2,
+            peers: [
+              { sessionId: "api", viewId: api, name: "tomarigi-api", cwd: `${root}/packages/api`, active: true },
+              { sessionId: "web", viewId: web, name: "tomarigi-web", cwd: `${root}/apps/web`, active: true },
+            ],
+          },
+          {
+            id: api,
+            project: "api",
+            slug: "api",
+            state: "done",
+            sinceMs: 2 * 60_000,
+            cwd: `${root}/packages/api`,
+            startedAt: BASE - 40 * 60_000,
+            watching: 1,
+            peers: [
+              ...toParent,
+              { sessionId: "db", viewId: db, name: "tomarigi-db", cwd: `${root}/packages/db`, active: true },
+            ],
+          },
+          {
+            id: web,
+            project: "web",
+            slug: "web",
+            state: "working",
+            sinceMs: 8_000,
+            toolName: "Edit",
+            summary: "Moving the header links",
+            cwd: `${root}/apps/web`,
+            startedAt: BASE - 30 * 60_000,
+            peers: toParent,
+          },
+          {
+            id: db,
+            project: "db",
+            slug: "db",
+            state: "working",
+            sinceMs: 20_000,
+            toolName: "Bash",
+            cwd: `${root}/packages/db`,
+            startedAt: BASE - 20 * 60_000,
+            peers: [{ sessionId: "api", viewId: api, name: "tomarigi-api", cwd: `${root}/packages/api`, active: false }],
+          },
+          { id: "mock/watch-chain/blog", project: "blog", slug: "blog", state: "done", sinceMs: 6 * 60_000 },
+        ],
+        events: [],
+      };
+    },
+  },
+  {
+    // Watching with 4 linked birds, one of which watches 2 more (docs/design.md "Watching": each linked bird sits next
+    // to the bird it is linked to, beside or diagonal, and only neighbours are joined by lines)
+    id: "watching-many",
+    label: "Watching (4 + 2)",
+    build: () => {
+      const root = "/Users/me/Dev/tomarigi";
+      const parent = "mock/watch-many/parent";
+      const kid = (k: string) => `mock/watch-many/${k}`;
+      const toParent = [{ sessionId: "parent", viewId: parent, name: "tomarigi", cwd: root, active: false }];
+      const kids = ["api", "web", "docs", "db"];
+      return {
+        sessions: [
+          {
+            id: parent,
+            project: "tomarigi",
+            slug: "tomarigi",
+            state: "done",
+            sinceMs: 5 * 60_000,
+            cwd: root,
+            startedAt: BASE - 60 * 60_000,
+            watching: 4,
+            summary: "Handed the API and web work out",
+            peers: kids.map((k) => ({ sessionId: k, viewId: kid(k), name: k, cwd: `${root}/packages/${k}`, active: true })),
+          },
+          {
+            id: kid("api"),
+            project: "api",
+            slug: "api",
+            state: "done",
+            sinceMs: 60_000,
+            cwd: `${root}/packages/api`,
+            startedAt: BASE - 50 * 60_000,
+            watching: 2,
+            peers: [
+              ...toParent,
+              ...["migrate", "seed"].map((g) => ({ sessionId: g, viewId: kid(g), name: g, cwd: `${root}/packages/${g}`, active: true })),
+            ],
+          },
+          {
+            id: kid("web"),
+            project: "web",
+            slug: "web",
+            state: "waiting",
+            sinceMs: 40_000,
+            toolName: "AskUserQuestion",
+            question: "Should the button be green or blue?",
+            cwd: `${root}/packages/web`,
+            startedAt: BASE - 45 * 60_000,
+            peers: toParent,
+          },
+          {
+            id: kid("docs"),
+            project: "docs",
+            slug: "docs",
+            state: "done",
+            sinceMs: 2 * 60_000,
+            summary: "Fixed the header spacing",
+            cwd: `${root}/packages/docs`,
+            startedAt: BASE - 40 * 60_000,
+            peers: toParent,
+          },
+          {
+            id: kid("db"),
+            project: "db",
+            slug: "db",
+            state: "working",
+            sinceMs: 12_000,
+            toolName: "Bash",
+            cwd: `${root}/packages/db`,
+            startedAt: BASE - 35 * 60_000,
+            peers: toParent,
+          },
+          ...["migrate", "seed"].map((g, i) => ({
+            id: kid(g),
+            project: g,
+            slug: g,
+            state: "working" as const,
+            sinceMs: 5_000,
+            toolName: "Edit",
+            cwd: `${root}/packages/${g}`,
+            startedAt: BASE - (30 - i) * 60_000,
+            peers: [{ sessionId: "api", viewId: kid("api"), name: "api", cwd: `${root}/packages/api`, active: false }],
+          })),
+          { id: "mock/watch-many/blog", project: "blog", slug: "blog", state: "done", sinceMs: 6 * 60_000 },
+        ],
+        events: [],
+      };
+    },
+  },
+  {
     // Actually sends the turn verdict request (ask, summary, and angry aren't given as data), with the summary provider
     // set up in settings (docs/design.md "Turn verdicts"). Results appear in the log ([bubble] with asking, abusive, and
     // continuing in ~/Library/Logs/tomarigi-desktop/app-log.txt) and as the bird's bubble, "?", and anger mark

@@ -652,7 +652,6 @@ export default function App({
               <Garden
                 sessions={displaySessions}
                 concierge={concierge.shown ? { advice: concierge.advice, look: conciergeLook } : undefined}
-                events={displayEvents}
                 hasGranted={hasGranted}
                 iconSetAssignments={iconSetAssignments}
                 onFocus={onFocusSession}

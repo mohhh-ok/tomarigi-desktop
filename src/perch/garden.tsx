@@ -24,7 +24,7 @@ import {
   type PlacedGarden,
 } from "@/lib/garden-fit";
 import { PLACE_EDGE_PX, placeBoxes, shiftPoints, type PlaceBox, type Point } from "@/lib/garden-place";
-import type { SessionEvent, SessionView } from "@/lib/sessions";
+import type { SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
 import { gardenGrowAnchor } from "./garden-grow";
@@ -37,16 +37,15 @@ import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
-import { EVENT, EventIcon, eventKind } from "./event-kind";
-import { formatEventTime } from "./format-time";
 import {
   BUBBLE_MAX_PX,
   BUBBLE_ROOM_PX,
   birdExtraH,
   NODE_TEXT_PX,
   watchBubbleRange,
-  watchColumnLimit,
+  watchLinePath,
   watchShapes,
+  type GridCell,
   type WatchShape,
 } from "./garden-watch-layout";
 
@@ -108,12 +107,15 @@ function bubbleShift(x: number, lo: number, hi: number): CSSProperties | undefin
 
 // Stacking order of a node being dragged. Above the speech bubble order (1 to the number of birds)
 const BUBBLE_Z_DRAGGING = 1000;
+// Usual height of a bird's name row (.garden-name: 11px text + 3px margin), until the icon's position is measured
+const WATCH_NAME_ROW_PX = 16;
+// Watch lines are kept short and away from the icons, so they are seen only on a closer look (docs/design.md
+// "Watching"): room between a line's end and the icon's edge, and the longest a line gets (px)
+const WATCH_LINE_GAP_PX = 18;
+const WATCH_LINE_MAX_PX = 36;
 
 // Releasing after moving less than this counts as a click (jump to the terminal pane), not a drag
 const CLICK_SLOP_PX = 4;
-
-// Number of recent event icons shown under a node (only the latest one, so the garden doesn't get crowded)
-const HISTORY_LIMIT = 1;
 
 /** A node's position in the garden, px: x is its center, y its top edge */
 type NodePos = Point;
@@ -145,9 +147,8 @@ interface GroupDrag {
 interface Kept {
   // Top-left of each bird's footprint as last shown (birds in a block included, so they stay put if the block goes)
   birds: Map<string, Point>;
-  // Top-left of each block as last shown, by its first-started bird, with its members and its column limit (kept
-  // while it still fits, so the block keeps its shape when the window grows)
-  blocks: Map<string, { at: Point; members: string[]; limit: number }>;
+  // Top-left of each block as last shown, by its first-started bird, with its members' grid cells (so they keep them)
+  blocks: Map<string, { at: Point; members: string[]; grid: Map<string, GridCell> }>;
   // Spots the user just dropped a bird (footprint top-left) or a block (block top-left) on, used on the next render
   drops: Map<string, Point>;
   // Birds and blocks that had no free spot and overlap others
@@ -165,7 +166,6 @@ interface Kept {
 export function Garden({
   sessions: sessionViews,
   concierge,
-  events,
   hasGranted,
   iconSetAssignments = {},
   onFocus,
@@ -175,7 +175,6 @@ export function Garden({
   sessions: SessionView[];
   // The concierge bird (docs/design.md "Concierge"): absent when it isn't shown, advice null when it has none
   concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook };
-  events: SessionEvent[];
   hasGranted: boolean;
   // slug → assignment map (same meaning as in Perch in perch-list.tsx; passed from App.tsx)
   iconSetAssignments?: IconSetAssignments;
@@ -346,27 +345,13 @@ export function Garden({
   const baseH = containerSize.viewH;
   const ready = W > 0 && containerSize.viewH > 0 && positions !== null && sessions.length > 0;
   const kept = keptRef.current;
-  const limits = new Map<string, number>();
-  const colLimit = (rootId: string) => {
-    const fit = watchColumnLimit(W);
-    const before = kept.blocks.get(rootId)?.limit;
-    const limit = before !== undefined && before <= fit ? before : fit;
-    limits.set(rootId, limit);
-    return limit;
-  };
-  // Cells of a block: as they were (a block that took over another one keeps its order too); a block that forms puts
-  // its birds in the order they stood (top to bottom, then left to right), so none of them crosses over another
-  const cellOrder = (rootId: string, ids: string[]) => {
-    const before =
-      kept.blocks.get(rootId) ?? [...kept.blocks.values()].find((b) => b.members.some((m) => ids.includes(m)));
-    if (before) return before.members;
-    const shown = ids.filter((id) => kept.birds.has(id));
-    const row = (id: string) => Math.round(kept.birds.get(id)!.y / 60);
-    return shown.sort((a, b) => row(a) - row(b) || kept.birds.get(a)!.x - kept.birds.get(b)!.x);
-  };
+  // Grid cells of a block as they were (a block that took over another one keeps them too), so its birds stay in their
+  // cells when another joins
+  const keptGrid = (rootId: string, ids: string[]) =>
+    (kept.blocks.get(rootId) ?? [...kept.blocks.values()].find((b) => b.members.some((m) => ids.includes(m))))?.grid;
   /** Whether something on screen would have to move if the icons were g px (taller birds and blocks) */
   const wouldMove = (g: number) => {
-    const trial = watchShapes(sessions, g, (root) => kept.blocks.get(root)?.limit ?? watchColumnLimit(W), cellOrder);
+    const trial = watchShapes(sessions, g, keptGrid);
     const inBlock = new Set(trial.flatMap((sh) => sh.memberIds));
     const boxes: PlaceBox[] = [];
     for (const sh of trial) {
@@ -402,7 +387,7 @@ export function Garden({
   // Placement (docs/design.md "Layout"). A bird or block on screen stays where it is; only one that would overlap
   // another or leave the garden moves, to the nearest free spot. The garden is never taller than the window; if
   // something has no free spot, the window is asked to grow (onFit) and meanwhile that one overlaps others
-  const shapes = watchShapes(sessions, glyphSize, colLimit, cellOrder);
+  const shapes = watchShapes(sessions, glyphSize, keptGrid);
   const shapeOf = new Map<string, WatchShape>();
   for (const shape of shapes) for (const id of shape.memberIds) shapeOf.set(id, shape);
   const birdAt = new Map<string, NodePos>();
@@ -466,8 +451,14 @@ export function Garden({
       const before =
         kept.blocks.get(shape.rootId) ??
         [...kept.blocks.values()].find((b) => b.members.some((m) => shape.memberIds.includes(m)));
+      // The block's corner moves when the grid grows left or up; it is kept so a bird that was already there stays put
+      const stay = before && shape.memberIds.find((id) => kept.birds.has(id) && before.members.includes(id));
+      const stayAt = stay && kept.birds.get(stay)!;
+      const at = stayAt
+        ? { x: stayAt.x + FOOT_W / 2 - shape.cells.get(stay)!.dx, y: stayAt.y - shape.cells.get(stay)!.dy }
+        : before?.at;
       if (drop) dropped.push({ ...box, want: drop });
-      else if (before && !replace(shape.rootId)) keptBlocks.push({ ...box, at: before.at });
+      else if (before && at && !replace(shape.rootId)) keptBlocks.push({ ...box, at });
       else newBlocks.push({ ...box, want: blockWant(shape, (id) => appearing.has(id)) });
     }
     for (const s of [...sessions].sort((a, b) => a.id.localeCompare(b.id))) {
@@ -520,7 +511,7 @@ export function Garden({
     // Keep what is shown now for the next render. Birds in a block are kept at their spot in it, so they stay put
     // if the block goes
     const birds = new Map<string, Point>();
-    const blocks = new Map<string, { at: Point; members: string[]; limit: number }>();
+    const blocks = new Map<string, { at: Point; members: string[]; grid: Map<string, GridCell> }>();
     for (const box of boxes) {
       const at = placement.at.get(box.id)!;
       const shape = shapes.find((sh) => sh.rootId === box.id);
@@ -531,7 +522,7 @@ export function Garden({
         birdAt.set(box.id, { x: at.x + FOOT_W / 2, y: at.y });
         continue;
       }
-      blocks.set(shape.rootId, { at, members: shape.memberIds, limit: limits.get(shape.rootId) ?? 1 });
+      blocks.set(shape.rootId, { at, members: shape.memberIds, grid: shape.grid });
       blockAt.set(shape.rootId, at);
       for (const id of shape.memberIds) {
         const cell = shape.cells.get(id)!;
@@ -670,6 +661,16 @@ export function Garden({
     shownSnapshotRef.current = newSnapshot;
   });
 
+  // How far below a bird's top edge its icon's center is (px), for the watch lines. Measured from a bird in a block (its
+  // name row is always there); until then, the name row's usual height
+  const [glyphMid, setGlyphMid] = useState<number | undefined>(undefined);
+  useLayoutEffect(() => {
+    const el = containerRef.current?.querySelector<HTMLElement>(".garden-node.in-watch-block .garden-glyph");
+    if (!el) return;
+    const mid = el.offsetTop + el.offsetHeight / 2;
+    if (mid !== glyphMid) setGlyphMid(mid);
+  });
+
   // Birds are drawn from the first render that places them (ready); only birds that come after that fly in
   useEffect(() => {
     if (ready) initializedRef.current = true;
@@ -726,19 +727,32 @@ export function Garden({
       {/* Speech bubble layer. Placed above the bird/name layer so no bird's name hides bubble text (or the "…").
           Among bubbles, newer turns are on top (bubbleOrder) */}
       <div className="garden-bubble-layer" ref={setBubbleLayer} />
-      {/* Rounded block enclosing a watching group. Laid under the bird layer (docs/design.md "Watching") */}
-      {shapes.map((shape) => {
-        const at = shownBlockAt(shape);
-        return (
-          at && (
-            <div
-              key={shape.rootId}
-              className="garden-watch-block"
-              style={{ left: at.x, top: at.y, width: shape.width, height: shape.height }}
-            />
-          )
-        );
-      })}
+      {/* Lines between linked birds of a watching group, from icon to icon. Laid under the bird layer and kept at rest
+          (docs/design.md "Watching") */}
+      {shapes.length > 0 && (
+        <svg className="garden-watch-lines" width={W} height={gardenH} aria-hidden>
+          {shapes.flatMap((shape) => {
+            const mid = glyphMid ?? WATCH_NAME_ROW_PX + glyphSize / 2;
+            const iconAt = (id: string) => {
+              const p = positionOf(id);
+              return p && { x: p.x, y: p.y + mid };
+            };
+            return shape.links.map(([a, b]) => {
+              const pa = iconAt(a);
+              const pb = iconAt(b);
+              const ends = pa && pb && watchLinePath(pa, pb, glyphSize / 2 + WATCH_LINE_GAP_PX, WATCH_LINE_MAX_PX);
+              return (
+                ends && (
+                  <g key={`${a}\n${b}`}>
+                    <line className="garden-watch-line-outline" x1={ends[0].x} y1={ends[0].y} x2={ends[1].x} y2={ends[1].y} />
+                    <line className="garden-watch-line" x1={ends[0].x} y1={ends[0].y} x2={ends[1].x} y2={ends[1].y} />
+                  </g>
+                )
+              );
+            });
+          })}
+        </svg>
+      )}
       {sessions.map((s) => {
         const position = positionOf(s.id);
         if (!position) return null;
@@ -756,8 +770,6 @@ export function Garden({
               }
             : undefined;
         const stackOrder = bubbleOrder.get(s.id);
-        // events arrive newest first (lib/sessions.ts), so taking from the start keeps them newest first
-        const recent = events.filter((e) => e.sessionId === s.id).slice(0, HISTORY_LIMIT);
         // On first display, static without flying; new sessions come from the sky
         const entryOrigin: "none" | "sky" = animateEntry ? "sky" : "none";
         const isConcierge = s.id === CONCIERGE_ID;
@@ -769,7 +781,6 @@ export function Garden({
             session={s}
             position={position}
             gardenH={gardenH}
-            recentEvents={recent}
             containerRef={containerRef}
             entryOrigin={entryOrigin}
             glyphSize={glyphSize}
@@ -806,7 +817,6 @@ export function Garden({
           session={entry.session}
           position={entry.position}
           gardenH={gardenH}
-          recentEvents={[]}
           containerRef={containerRef}
           entryOrigin="none"
           glyphSize={glyphSize}
@@ -825,7 +835,6 @@ function GardenNode({
   session,
   position,
   gardenH,
-  recentEvents,
   containerRef,
   entryOrigin,
   glyphSize,
@@ -848,7 +857,6 @@ function GardenNode({
   position: NodePos;
   // Height the birds are placed in (px; the garden may be stretched taller than the window)
   gardenH: number;
-  recentEvents: SessionEvent[];
   containerRef: RefObject<HTMLDivElement | null>;
   entryOrigin: "none" | "sky";
   glyphSize: number;
@@ -1154,24 +1162,6 @@ function GardenNode({
           <span className="garden-watch-count" title={t("watchingPeersTitle")}>
             <MdLink size={12} aria-hidden />
             {session.watching}
-          </span>
-        )}
-        {/* While the "?" is shown, don't show the event marker. The only needs-reply marker is the "?" at the bird's
-            top right (docs/design.md "The "?" for sessions waiting on you") */}
-        {!question && recentEvents.length > 0 && (
-          <span className="garden-icons">
-            {recentEvents.map((e) => {
-              const kind = eventKind(e);
-              return (
-                <span
-                  key={e.key}
-                  className="garden-icon-wrap"
-                  title={`${EVENT[kind].label} · ${formatEventTime(e.at)}`}
-                >
-                  <EventIcon kind={kind} size={12} />
-                </span>
-              );
-            })}
           </span>
         )}
       </div>
