@@ -151,9 +151,9 @@ function emptyFitScale(userW: number, userH: number, fit: GardenFit): number {
  *   with the birds on screen kept at the same place on screen) gives everything a spot without moving anyone; failing
  *   that, the smallest at which everything has a spot
  * - Nothing overflowed: never more than current (no growing when they fit; the user's report was a window grown with
- *   the birds sparse). The smallest scale at which the actual placement gives everything a spot, for shrinking back
- *   after birds left (nextGrowScale decides whether to shrink). Birds that would stick out of the smaller garden may
- *   move to the nearest free spot inside, as on a manual shrink; requiring that nobody moves left the window grown
+ *   the birds sparse). The smallest scale at which the actual placement gives everything a spot without moving anyone
+ *   on screen, for shrinking back after birds left (nextGrowScale decides whether to shrink). Unlike a manual shrink,
+ *   no bird moves for it
  * Without fit.simulate, an estimate: enough for the footprints to fit in an empty garden, and when something
  * overflowed, at least a strip as wide or tall as the footprint that had no spot
  */
@@ -197,7 +197,13 @@ export function gardenFitScale(userW: number, userH: number, fit: GardenFit, cur
       }
       return scaleAt(placed);
     }
-    const keep = first(0, baseStep - 1, (s) => at(s).overflow === 0);
+    // Shrinking back: only as far as nobody on screen moves, as on a drop (gardenDropScale). Allowing birds that stick
+    // out to move to a free spot inside moved birds the user hadn't touched when another left (the user: 「キャラが消える
+    // 時に、関係ないキャラも動いてしまってくずれることがある」)
+    const keep = first(0, baseStep - 1, (s) => {
+      const r = at(s);
+      return r.overflow === 0 && r.moved === 0;
+    });
     return keep === undefined ? base : scaleAt(keep);
   }
   const empty = emptyFitScale(userW, userH, fit);
