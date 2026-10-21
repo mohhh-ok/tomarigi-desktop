@@ -20,8 +20,9 @@ export const BUBBLE_MAX_PX = 180;
 // Watching groups (docs/design.md "Watching"): each linked bird is put in a cell next to the bird it is linked to, in a
 // small grid (the block, which is not drawn), and the two are joined by a short line (watchLinePath).
 // Cell width and padding inside the block. A cell is as wide as a bird's node plus the gap between footprints, the same
-// as a bird's footprint outside a block (garden.tsx). A bubble inside a block shows its whole text and may cover the next
-// cell; the status lines of a row with a bubble go below the bubble room (WatchCell.bubbleRoom).
+// as a bird's footprint outside a block (garden.tsx). A bubble inside a block shows its whole text but is at most a
+// bird's width, wrapping onto more lines, so it doesn't cover the next cell's bubble; the status lines of a row with a
+// bubble go below the bubble room (WatchCell.bubbleRoom).
 // When a block goes away, a bird of it that now overlaps a neighbour moves to the nearest free spot
 const WATCH_CELL_W = NODE_WIDTH_PX + PLACE_GAP_PX;
 const WATCH_PAD = 8;

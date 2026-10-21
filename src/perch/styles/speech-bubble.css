@@ -23,7 +23,8 @@
    drop-shadow, cast by the body and tail as a single shape (no shadow line at the seam): a thin one all around, so a
    bubble over another bubble shows its edge on every side, and a soft one below (docs/design.md "Layout").
    It is centered under the bird and pushed only to stay within --bubble-lo left and --bubble-hi right of the bird's
-   center (bubbleVars in garden.tsx: inside the garden frame). Birds in a watch block follow the same rule */
+   center (bubbleVars in garden.tsx: inside the garden frame). Birds in a watch block follow the same rule, but at most
+   a bird's width (below) */
 .speech-bubble-below {
   --bubble-lo: 9999px;
   --bubble-hi: 9999px;
@@ -37,6 +38,12 @@
   font-size: 11px;
   transform: translateX(clamp(calc(-1 * var(--bubble-lo)), -50%, calc(var(--bubble-hi) - 100%)));
   filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.6)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+}
+
+/* Inside a watch block a bubble is at most a bird's width (the block's cell), wrapping onto more lines, so the bubbles
+   of birds side by side don't overlap: a block's birds can't be moved apart one by one (docs/design.md "Layout") */
+.garden-bubble-anchor.in-watch-block .speech-bubble-below {
+  --bubble-max: 120px;
 }
 
 /* The garden's bubble body wraps instead of cutting with "…" (.speech-bubble cuts on the Perch's one line) */
