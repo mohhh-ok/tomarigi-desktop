@@ -26,19 +26,20 @@ export function SpeechBubble({
 }: {
   text: string;
   placement: "below" | "row";
-  // Position when pulled inward at the edge of the garden (bubbleShift in garden.tsx)
+  // Position when pulled inward at the edge of the garden (bubbleVars in garden.tsx)
   style?: CSSProperties;
 }) {
-  // Long text is cut with "…" by CSS. Hovering shows the full text (title)
   if (placement === "below") {
-    // Garden: an outer box holding the tail and position sits outside the body that is cut with "…" (overflow: hidden) (.speech-bubble-below in styles/speech-bubble.css)
+    // Garden: the whole text, wrapping past 180px; an outer box holds the tail and position (.speech-bubble-below in
+    // styles/speech-bubble.css)
     return (
-      <span className="speech-bubble-below" title={text} style={style}>
+      <span className="speech-bubble-below" style={style}>
         <span className="speech-bubble">{text}</span>
       </span>
     );
   }
-  // In Perch rows, put it in an outer box that takes the whole second line, and size the bubble itself to the text
+  // In Perch rows, long text is cut with "…" by CSS and hovering shows the full text (title). Put it in an outer box
+  // that takes the whole second line, and size the bubble itself to the text
   return (
     <span className="speech-bubble-line">
       <span className="speech-bubble speech-bubble-row" title={text} style={style}>
