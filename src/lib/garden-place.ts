@@ -22,6 +22,11 @@ export interface PlaceBox {
   want?: Point;
   /** Not on screen yet and no wanted spot: a free cell of the grid, starting from the cell this number picks */
   seed?: number;
+  /**
+   * Placed by the user (dropped there): it takes its spot (`at`, else `want`) kept inside the garden, over others too.
+   * Boxes on screen don't move for it, and an overlap with it isn't "no free spot"; boxes that look for a spot avoid it
+   */
+  byUser?: boolean;
 }
 
 export interface Placement {
@@ -47,11 +52,13 @@ const hits = (a: Rect, b: Rect) =>
 
 /**
  * Places boxes in the order given, each avoiding the ones before it. Put what must stay first: boxes already on screen
- * (blocks before birds), then boxes the user just dropped, then new ones.
+ * (blocks before birds), then new ones. Boxes the user placed (byUser) keep their spot wherever they come.
  * W×H is the room the boxes may use (the garden). A box larger than the garden is put at the top-left and counts as overflow
  */
 export function placeBoxes(boxes: readonly PlaceBox[], W: number, H: number): Placement {
   const placed: Rect[] = [];
+  // What a box on screen checks its own spot against: not boxes the user placed, which may overlap it
+  const placedNotByUser: Rect[] = [];
   const at = new Map<string, Point>();
   const overflow: string[] = [];
   boxes.forEach((box, index) => {
@@ -62,7 +69,7 @@ export function placeBoxes(boxes: readonly PlaceBox[], W: number, H: number): Pl
       x: Math.max(PLACE_EDGE_PX, Math.min(maxX, p.x)),
       y: Math.max(PLACE_EDGE_PX, Math.min(maxY, p.y)),
     });
-    const free = (p: Point) => fits && !placed.some((r) => hits(r, { ...p, w: box.w, h: box.h }));
+    const free = (p: Point) => fits && !placedNotByUser.some((r) => hits(r, { ...p, w: box.w, h: box.h }));
     // A box that moves (or is new) also avoids the spots of boxes still to come that are on screen, so it doesn't
     // land on one of them and push it on in turn. Only if that leaves no room does it take one of their spots
     const ahead = boxes
@@ -74,7 +81,9 @@ export function placeBoxes(boxes: readonly PlaceBox[], W: number, H: number): Pl
       return gridSpot(box, obstacles, W, H) ?? nearestFree(clamp({ x: 0, y: 0 }), box, obstacles, W, H);
     };
     let spot: Point | undefined;
-    if (box.at && free(clamp(box.at))) spot = clamp(box.at);
+    const userSpot = box.byUser ? (box.at ?? box.want) : undefined;
+    if (userSpot && fits) spot = clamp(userSpot);
+    else if (box.at && free(clamp(box.at))) spot = clamp(box.at);
     else spot = search([...placed, ...ahead]) ?? search(placed);
     if (!spot) {
       // No free spot: the garden never grows past the window (docs/design.md "Layout"), so it overlaps instead. A box
@@ -85,6 +94,7 @@ export function placeBoxes(boxes: readonly PlaceBox[], W: number, H: number): Pl
     }
     at.set(box.id, spot);
     placed.push({ ...spot, w: box.w, h: box.h });
+    if (!box.byUser) placedNotByUser.push({ ...spot, w: box.w, h: box.h });
   });
   return { at, overflow };
 }

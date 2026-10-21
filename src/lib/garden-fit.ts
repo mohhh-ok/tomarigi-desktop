@@ -90,7 +90,7 @@ export function gardenSimulate(placed: PlacedGarden, gw: number, gh: number) {
   const move = (p: Point) => ({ x: p.x + dx, y: p.y + dy });
   const tried = placed.settled.map((b): PlaceBox => {
     const h = placed.heightAt.get(b.id)?.(glyph) ?? b.h;
-    if (b.at) return { id: b.id, w: b.w, h, at: move(b.at) };
+    if (b.at) return { id: b.id, w: b.w, h, at: move(b.at), byUser: b.byUser };
     if (placed.fresh?.has(b.id)) return { id: b.id, w: b.w, h, want: b.want, seed: b.seed };
     return { id: b.id, w: b.w, h, want: b.want && move(b.want) };
   });
