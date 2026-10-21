@@ -8,7 +8,7 @@ const TABS = [
   ["moh-tech-net", "opencode"],
 ];
 
-// Short lines that run down the pane, so the first image (window at rest) shows the terminal's text behind the birds
+// Short lines that run down the pane, so the first image (window at rest) shows the terminal's text above the birds
 const LINES = {
   en: [
     ["u", "Sum up the changes since v0.3"],

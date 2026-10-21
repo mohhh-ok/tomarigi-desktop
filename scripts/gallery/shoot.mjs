@@ -13,8 +13,8 @@ import { STAGE, stage } from "./stage.mjs";
 const { chromium } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "index.mjs"));
 const IMAGES = new URL("../../docs/images/", import.meta.url).pathname;
 const only = process.argv.slice(2);
-// One image per message (docs/design.md "Gallery images"). The garden window is at rest, at the left over the terminal's
-// text, and the download page (moh-tech-net, public/tomarigi/desktop/index.html) crops to the handle, the birds, and the
+// One image per message (docs/design.md "Gallery images"). The garden window is at rest, over the terminal just below its
+// text (birds over text read as a broken screen), and the download page (moh-tech-net, public/tomarigi/desktop/index.html) crops to the handle, the birds, and the
 // text around them. Perch and Recent activity are never faded; their windows are tall enough to show every row
 const SCENES = [
   // The garden's birds are put at saved (dragged) positions, in a row with room between them: left to right the "?", the
