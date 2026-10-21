@@ -119,16 +119,23 @@ pub(crate) fn drag_anchor(cur: Frame, grown: Frame) -> (f64, f64) {
     (if grown.x < cur.x { 1.0 } else { 0.0 }, if grown.y < cur.y { 1.0 } else { 0.0 })
 }
 
+/// Whether a resize to `scale` shrinks the window: the scale went down (birds left), or the user dropped a bird or block
+/// (the page then asks for the smallest scale at which everything stays put, which may be the same scale as before)
+pub(crate) fn shrinking(scale: f64, last_scale: f64, drop: bool) -> bool {
+    drop || scale < last_scale
+}
+
 /// The frame for growing to fit at `scale` (grow_frame). After a drag grew the window (`dragged`, the frame it left),
-/// the dragged size stays while the scale doesn't go down (a bird joining doesn't take back the room the user pulled
-/// out), and when the scale goes down (birds left) the window goes to the fitted size. Either way it is resized from
-/// the dragged frame keeping the edge the page expects (keep_of the user's frame, as garden_grow_anchor tells it), so
-/// the birds on screen stay at the same place on screen
-pub(crate) fn fit_frame(user: Frame, scale: f64, area: Frame, dragged: Option<Frame>, last_scale: f64) -> Frame {
+/// the dragged size stays while growing (a bird joining doesn't take back the room the user pulled out), and when
+/// shrinking each axis goes to the fitted size but never above the dragged one (shrinking doesn't grow the other axis;
+/// what fits unmoved at both sizes fits at the smaller of each). Either way it is resized from the dragged frame keeping
+/// the edge the page expects (keep_of the user's frame, as garden_grow_anchor tells it), so the birds on screen stay at
+/// the same place on screen
+pub(crate) fn fit_frame(user: Frame, scale: f64, area: Frame, dragged: Option<Frame>, shrink: bool) -> Frame {
     let fit = grow_frame(user, scale, area);
     let Some(d) = dragged else { return fit };
-    let (width, height) = if scale < last_scale {
-        (fit.width, fit.height)
+    let (width, height) = if shrink {
+        (fit.width.min(d.width).max(user.width), fit.height.min(d.height).max(user.height))
     } else {
         (fit.width.max(d.width), fit.height.max(d.height))
     };
@@ -221,7 +228,7 @@ fn visible_area(win: &WebviewWindow, user: Frame) -> Option<Frame> {
     Some(Frame { x: area.position.x, y: area.position.y, width: area.size.width, height: area.size.height })
 }
 
-fn apply(app: &AppHandle, scale: f64) {
+fn apply(app: &AppHandle, scale: f64, drop: bool) {
     let Some(win) = app.get_webview_window("main") else { return };
     if current_mode() != WindowMode::Floating {
         return;
@@ -230,14 +237,14 @@ fn apply(app: &AppHandle, scale: f64) {
     let Some((user, shown, dragged)) = grown.or_else(|| current_frame(&win).map(|f| (f, f, false))) else { return };
     let Some(area) = visible_area(&win, user) else { return };
     let last = std::mem::replace(&mut *LAST_SCALE.lock().unwrap(), scale);
-    let target = fit_frame(user, scale, area, dragged.then_some(shown), last);
+    let target = fit_frame(user, scale, area, dragged.then_some(shown), shrinking(scale, last, drop));
     if target == shown {
         return;
     }
     // Back at the user's size after a drag moved an edge: the user's frame is where the window now is
     let user = if (target.width, target.height) == (user.width, user.height) { target } else { user };
     set_frame(&win, Grown { user, applied: target, dragged });
-    append_log(&format!("[grow] scale={scale} user={user:?} area={area:?} dragged={dragged} -> {target:?}"));
+    append_log(&format!("[grow] scale={scale} drop={drop} user={user:?} area={area:?} dragged={dragged} -> {target:?}"));
 }
 
 /// Moves the window to `grown.applied`, remembering it as grown unless it is the user's frame
@@ -289,11 +296,12 @@ pub(crate) fn garden_drag_end() {
     *DRAG_ANCHOR.lock().unwrap() = None;
 }
 
-/// Grows the floating window to `scale` times the user's size (1 or less: back to the user's size)
+/// Grows the floating window to `scale` times the user's size (1 or less: back to the user's size). drop: the user just
+/// dropped a bird or block, and `scale` is the smallest at which everything stays put (shrinks a dragged window too)
 #[tauri::command]
-pub(crate) fn garden_fit(app: AppHandle, scale: f64) {
+pub(crate) fn garden_fit(app: AppHandle, scale: f64, drop: Option<bool>) {
     let handle = app.clone();
-    app.run_on_main_thread(move || apply(&handle, scale)).ok();
+    app.run_on_main_thread(move || apply(&handle, scale, drop.unwrap_or(false))).ok();
 }
 
 /// Which part of the window stays put on screen when it grows or shrinks back, per axis: 0 the left / top edge, 1 the
@@ -500,11 +508,11 @@ mod tests {
         // Top-left window (keeps its top-left when growing to fit), grown 300px to the right by a drag
         let user = Frame { x: 20, y: 40, width: 340, height: 300 };
         let dragged = Frame { x: 20, y: 40, width: 640, height: 300 };
-        let f = fit_frame(user, 1.2, AREA, Some(dragged), 1.0);
+        let f = fit_frame(user, 1.2, AREA, Some(dragged), false);
         // Width stays at the dragged 640 (the fit asks for 408), height grows to the fit's 360
         assert_eq!(f, Frame { x: 20, y: 40, width: 640, height: 360 });
         // Without a drag, as before
-        assert_eq!(fit_frame(user, 1.2, AREA, None, 1.0), grow_frame(user, 1.2, AREA));
+        assert_eq!(fit_frame(user, 1.2, AREA, None, false), grow_frame(user, 1.2, AREA));
     }
 
     #[test]
@@ -514,8 +522,25 @@ mod tests {
         let user = Frame { x: 300, y: 40, width: 340, height: 300 };
         let dragged = Frame { x: 0, y: 40, width: 640, height: 300 };
         assert_eq!(keep_of(user.x, user.width, AREA.x, AREA.width), Keep::Start);
-        let f = fit_frame(user, 1.0, AREA, Some(dragged), 1.2);
+        let f = fit_frame(user, 1.0, AREA, Some(dragged), true);
         assert_eq!(f, Frame { x: 0, y: 40, width: 340, height: 300 });
+    }
+
+    #[test]
+    fn a_drop_shrinks_a_dragged_window_without_growing_the_other_axis() {
+        // Grown 300px to the right by a drag; on the drop the page finds everything stays put from scale 1.6 (544×480).
+        // The width shrinks to 544, and the height stays 300 rather than growing to 480
+        let user = Frame { x: 20, y: 40, width: 340, height: 300 };
+        let dragged = Frame { x: 20, y: 40, width: 640, height: 300 };
+        assert_eq!(fit_frame(user, 1.6, AREA, Some(dragged), true), Frame { x: 20, y: 40, width: 544, height: 300 });
+    }
+
+    #[test]
+    fn a_drop_is_a_shrink_even_at_the_same_scale() {
+        // The page sent scale 1 before the drag and sends 1 again on the drop: the window still goes back
+        assert!(shrinking(1.0, 1.0, true));
+        assert!(shrinking(1.0, 1.2, false));
+        assert!(!shrinking(1.0, 1.0, false));
     }
 
     #[test]
