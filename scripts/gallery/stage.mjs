@@ -45,14 +45,22 @@ const LINES = {
 
 // A stage's default size in CSS px and where the terminal sits on it (shoot.mjs shoots every stage at the same scale,
 // 2540 / 762). Tall enough for Perch and Recent activity to show every row
-// cmdGap: the space under the `claude` command line, where the first image puts the garden's handle so it covers no text
+// cmdGap: the space under the `claude` command line
+// askGap: the space under the user's ask, where the first image puts the garden's handle so it covers no text
 export const STAGE = { w: 762, h: 570, term: { left: 16, top: 12, w: 740, h: 570 }, cmdGap: 10 };
+
+// wall: a light desktop wallpaper (soft lavender folds, like macOS's), for the first image, where the birds and bubbles
+// reach past the terminal window onto the desktop. The others keep the plain background: their glass is over the terminal
+const WALL = `body{background:
+  radial-gradient(ellipse 60% 45% at 85% 20%,rgba(255,255,255,.85),transparent 70%),
+  radial-gradient(ellipse 50% 60% at 10% 90%,rgba(255,255,255,.6),transparent 70%),
+  repeating-linear-gradient(104deg,#efedf7 0,#d6d0ea 46px,#a99fcf 72px,#e4e0f1 104px,#f6f5fb 140px),#e6e2f2}`;
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 function pane(lang) {
   const rows = LINES[lang]
-    .map(([k, t]) => (k === "u" ? `<div class="u"><span class="pr">›</span> ${esc(t)}</div>` : `<div class="${k}">${esc(t)}</div>`))
+    .map(([k, t]) => (k === "u" ? `<div class="u ask"><span class="pr">›</span> ${esc(t)}</div>` : `<div class="${k}">${esc(t)}</div>`))
     .join("");
   return `<div class="pane"><div class="cmd"><span class="dir">~/Dev/blog</span> <span class="pr">$</span> claude</div>${rows}<div class="u cursor"><span class="pr">›</span> <i></i></div></div>`;
 }
@@ -63,6 +71,7 @@ export function stage({ lang, url, win, fade, size = STAGE }) {
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   html{color-scheme:dark}html,body{margin:0;height:100%;overflow:hidden}
   body{background:#56636a;font-family:-apple-system,"Hiragino Sans",sans-serif}
+  ${size.wall ? WALL : ""}
   .term{position:absolute;left:${term.left}px;top:${term.top}px;width:${term.w}px;height:${term.h}px;background:#17191d;border-radius:10px;
     box-shadow:0 18px 40px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.7);overflow:hidden}
   .bar{height:28px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#202328}
@@ -72,7 +81,7 @@ export function stage({ lang, url, win, fade, size = STAGE }) {
   .tab.on{background:#17191d;color:#d6d9de}
   .view{height:100%;overflow:hidden}.pane{padding:12px 14px;font:11px/1.6 "SF Mono",Menlo,"Hiragino Sans",monospace;color:#c9ccd1}
   .cmd{color:#8a9099;margin-bottom:${size.cmdGap ?? STAGE.cmdGap}px}.dir{color:#7fb0d9}.pr{color:#8a9099}
-  .u{color:#e8e9eb;margin:4px 0 8px}.a,.i,.d{color:#b4b9c0;white-space:nowrap}.i{padding-left:2ch}.d{padding-left:5ch}.q{color:#f0c46a;white-space:pre;margin-top:14px}
+  .u{color:#e8e9eb;margin:4px 0 8px}.ask{margin-bottom:${size.askGap ?? 8}px}.a,.i,.d{color:#b4b9c0;white-space:nowrap}.i{padding-left:2ch}.d{padding-left:5ch}.q{color:#f0c46a;white-space:pre;margin-top:14px}
   .cursor{margin-top:10px}.cursor i{display:inline-block;width:7px;height:13px;background:#c9ccd1;vertical-align:-2px}
   .win{position:absolute;${win.left != null ? `left:${win.left}px` : "right:20px"};top:${win.top ?? Math.round((size.h - win.h) / 2)}px;width:${win.w}px;height:${win.h}px}
   .glass{position:absolute;inset:0;border-radius:12px;${fade ? "display:none;" : "backdrop-filter:blur(22px) saturate(1.2);box-shadow:0 22px 50px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.55);"}}

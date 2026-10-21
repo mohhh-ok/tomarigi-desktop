@@ -1,7 +1,7 @@
 // Shoots the README / download page gallery (docs/design.md "Gallery images") into docs/images/.
 // The mock (?mock=1&panel=0&preset=gallery-...) is put in a frame over a desktop with a terminal (stage.mjs), English and
 // Japanese, at 3.33x (2540 / 762) CSS px. Perch and Recent activity use the default 762x570 stage (2540x1900); the
-// garden's stage is just the terminal window, so the download page can show it whole.
+// garden's stage is the terminal window on a desktop wallpaper, which the download page shows whole.
 // Needs `bun run dev:web` (port 4842), cwebp, and Playwright, which isn't a dependency of this repo:
 //   mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell)
 //   PLAYWRIGHT=/tmp/pw/node_modules/playwright node scripts/gallery/shoot.mjs [scene ids...]
@@ -16,26 +16,29 @@ import { STAGE, stage } from "./stage.mjs";
 const { chromium } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "index.mjs"));
 const IMAGES = process.env.OUT ?? new URL("../../docs/images/", import.meta.url).pathname;
 const only = process.argv.slice(2);
-// One image per message (docs/design.md "Gallery images"). The garden window is at rest, over the terminal's text, and
-// the download page (moh-tech-net, public/tomarigi/desktop/index.html) shows it whole, terminal window and all. Perch
+// One image per message (docs/design.md "Gallery images"). The garden window is at rest, over the terminal's text and
+// past its lower right corner onto the wallpaper, and the download page (moh-tech-net, public/tomarigi/desktop/index.html) shows
+// the image whole. Perch
 // and Recent activity are never faded; their windows are tall enough to show every row
 const SCENES = [
   // The garden's birds are put at saved (dragged) positions, left to right the "?", the working one, and the done one,
   // in as little width as the garden allows so the download page can show them large: the garden keeps each bird's
-  // footprint (180px, a bubble's room) 12px from the next (src/lib/garden-place.ts), so two birds fit side by side and the
-  // working one, which has no bubble, sits above between them. The window sits over the long lines of the blog session's
-  // plan (stage.mjs), so the text runs on behind the birds and the bubbles on every side. The stage is just the terminal
-  // window with a narrow margin, small enough that the bubbles' text reads where the page shows the image about 680px wide
+  // footprint (180px, a bubble's room) 12px from the next (src/lib/garden-place.ts). They run toward the terminal's lower
+  // right corner: the "?" and the working bird over the blog session's plan (stage.mjs), the working one beside the "?"
+  // since the "?" bird's bubble takes the room below it, and the done bird past the terminal's right edge on the
+  // wallpaper, its bubble crossing the edge. The wallpaper is narrow enough that the bubbles' text reads where the page
+  // shows the image about 680px wide
   {
     id: "1-garden",
     query: "preset=gallery-garden",
-    // The garden is the window less 46px across and 112px down (handle and tabs); 380 x 180 holds the three footprints
-    // The handle sits in the empty band under the `claude` command line (cmdGap), over no text
-    win: { w: 426, h: 305, left: 20, top: 90 },
-    size: { w: 520, h: 420, term: { left: 10, top: 10, w: 500, h: 400 }, cmdGap: 44 },
+    // The garden is the window less 46px across and 112px down (handle and tabs): 502 x 193
+    // The handle sits in the empty band under the user's ask (askGap), over no text, which puts the birds by the plan's
+    // middle lines (the handle's distance above the birds is the app's)
+    win: { w: 548, h: 305, left: 83, top: 116 },
+    size: { w: 620, h: 450, term: { left: 14, top: 14, w: 470, h: 400 }, cmdGap: 10, askGap: 42, wall: true },
     fade: true,
     ready: ".garden-node",
-    positions: { "gallery/working": { x: 50, y: 0 }, "gallery/plan": { x: 24.7, y: 44 }, "gallery/finished": { x: 75.3, y: 44 } },
+    positions: { "gallery/plan": { x: 18.7, y: 0 }, "gallery/working": { x: 42.6, y: 31 }, "gallery/finished": { x: 81.3, y: 100 } },
   },
   { id: "2-perch", query: "preset=gallery-perch&tab=perch", win: { w: 480, h: 540 }, ready: ".perch .bird" },
   { id: "3-activity", query: "preset=gallery-activity&tab=events", win: { w: 480, h: 540 }, ready: ".event-card" },
