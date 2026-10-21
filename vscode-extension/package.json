@@ -3,7 +3,7 @@
   "publisher": "mohtech",
   "displayName": "Tomarigi",
   "description": "Lets Tomarigi jump to the integrated terminal where an AI coding agent runs",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "license": "MIT",
   "repository": {
     "type": "git",
