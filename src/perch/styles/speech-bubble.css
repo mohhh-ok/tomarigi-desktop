@@ -69,7 +69,8 @@
 }
 
 /* The garden's speech bubble layer. Stacked above every bird with its name, marks and status lines (.garden-node), so
-   a bubble covers a neighbour rather than hiding under it (docs/design.md "Layout"). The layer itself can't be pressed,
+   a bubble covers a neighbour rather than hiding under it (docs/design.md "Layout"). Birds the user dragged go above it
+   (BUBBLE_LAYER_Z in garden-stack.ts is this z-index). The layer itself can't be pressed,
    so it doesn't block dragging/clicking birds */
 .garden-bubble-layer {
   position: absolute;
@@ -84,6 +85,9 @@
   position: absolute;
   width: 120px;
   transform: translateX(-50%);
+  /* The bubble of a bird the user dragged sits outside the layer (gardenStack in garden-stack.ts); it doesn't take the
+     presses of the birds under it either */
+  pointer-events: none;
 }
 
 /* Perch: shown as one line on a second line aligned with the start of the name (bird 18px + right space 4px + row gap

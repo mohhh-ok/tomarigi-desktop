@@ -16,6 +16,8 @@ export interface GardenPosition {
   y: number; // % of container height
   /** The user dropped it there (or its block): it opens there even over other birds (docs/design.md "Layout") */
   byUser?: boolean;
+  /** The user dragged it: drawn in front of the birds and bubbles, higher in front of lower (docs/design.md "Layout") */
+  front?: number;
 }
 
 function db(): Promise<IDBPDatabase> {
@@ -61,13 +63,36 @@ export function positionsAfterDrop(args: {
   prev: Record<string, GardenPosition>;
   settled: Map<string, { x: number; y: number }>;
   byUser: ReadonlySet<string>;
+  /** The birds dropped now (a block's all together): in front of every bird dropped before */
+  front?: ReadonlySet<string>;
   w: number;
   h: number;
 }): Record<string, GardenPosition> {
-  const { prev, settled, byUser, w, h } = args;
+  const { prev, settled, byUser, front = new Set<string>(), w, h } = args;
+  const top = Math.max(0, ...Object.values(prev).map((p) => p.front ?? 0)) + 1;
   const next = { ...prev };
   for (const [id, p] of settled) {
-    next[id] = { x: (p.x / w) * 100, y: (p.y / h) * 100, ...(byUser.has(id) && { byUser: true }) };
+    const rank = front.has(id) ? top : prev[id]?.front;
+    next[id] = {
+      x: (p.x / w) * 100,
+      y: (p.y / h) * 100,
+      ...(byUser.has(id) && { byUser: true }),
+      ...(rank !== undefined && { front: rank }),
+    };
   }
   return next;
+}
+
+/** Birds the user dragged, by how far in front (1 the back; docs/design.md "Layout"). Ranks are made consecutive, so
+    they don't grow without end as birds are dragged again and again */
+export function frontRanks(positions: Record<string, GardenPosition>): Map<string, number> {
+  const fronts = [...new Set(Object.values(positions).flatMap((p) => (p.front === undefined ? [] : [p.front])))].sort(
+    (a, b) => a - b,
+  );
+  return new Map(
+    Object.entries(positions)
+      .filter(([, p]) => p.front !== undefined)
+      .sort(([, a], [, b]) => a.front! - b.front!)
+      .map(([id, p]) => [id, fronts.indexOf(p.front!) + 1]),
+  );
 }
