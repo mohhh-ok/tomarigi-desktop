@@ -161,10 +161,11 @@ test("the system prompt asks for a reply only about a session that needs one now
   expect(prompt).toContain("it does not make that session wait");
 });
 
-test("watch links come from the caller; a watching session is held up by a peer that needs a reply", () => {
+test("watch links come from the caller; a watching session whose turn is continuing is held up by a peer that needs a reply", () => {
   const parent = view("p", {
     state: "done",
     watching: 1,
+    continuing: true,
     peers: [{ sessionId: "c", viewId: "c", name: "c", active: true }],
   });
   const child = view("c", { state: "waiting", peers: [{ sessionId: "p", viewId: "p", name: "p", active: false }] });
@@ -172,6 +173,82 @@ test("watch links come from the caller; a watching session is held up by a peer 
   expect(payload.sessions[0].watch_children).toEqual(["c"]);
   expect(payload.sessions[1].watch_parent).toBe("p");
   expect(payload.holds).toEqual([{ waiting_session: "p", held_up_by: "c", reason: "linked_session_needs_reply" }]);
+});
+
+test("a watching parent whose turn ended with continuing no isn't held up, and an advice naming it is dropped for every provider", async () => {
+  // The user's case: desk finished its daily, said no decision was needed and left billionclips to ask in its own
+  // pane; the concierge said 「billionclipsのWEB-46対応方法を選び、deskの作業を進めてください」
+  const payload = buildConciergePayload(
+    [
+      {
+        view: view("1aeffcbc", {
+          project: "billionclips",
+          state: "done",
+          sinceMs: 93_000,
+          ask: { status: "asking" },
+          continuing: true,
+          peers: [{ sessionId: "a752ec82", viewId: "a752ec82", name: "desk-1b", active: false }],
+        }),
+        parentId: "a752ec82",
+      },
+      {
+        view: view("a752ec82", {
+          project: "desk",
+          state: "dozing",
+          sinceMs: 622_000,
+          ask: { status: "not_asking" },
+          continuing: false,
+          watching: 0,
+          peers: [{ sessionId: "1aeffcbc", viewId: "1aeffcbc", name: "billionclips-be", active: false, lastActiveAt: NOW - 93_000 }],
+        }),
+      },
+      { view: view("3c25d1bb", { project: "billionclips", state: "working", sinceMs: 6_000 }) },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  expect(payload.sessions[0]).toMatchObject({ needs_reply: true, watch_parent: "a752ec82" });
+  expect(payload.holds).toEqual([]);
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  for (const provider of ["openai", "anthropic", "local"] as const) {
+    const mixed = { advice: "billionclipsのWEB-46対応方法を選び、deskの作業を進めてください", session_id: "1aeffcbc", action: "reply" };
+    expect(await askConcierge(provider, payload, answering(mixed))).toEqual({
+      ok: true,
+      verdict: null,
+      dropped: { line: mixed.advice, targetId: "1aeffcbc", reason: "other_session" },
+      action: "reply",
+      answer: mixed,
+    });
+    // Another session with the same name doesn't count
+    const own = { advice: "billionclipsにWEB-46の対応方法を選んで返信してください", session_id: "1aeffcbc", action: "reply" };
+    expect(await askConcierge(provider, payload, answering(own))).toMatchObject({
+      verdict: { line: own.advice, targetId: "1aeffcbc" },
+    });
+  }
+  expect(CONCIERGE_TASK.systemPrompt).toContain("An advice is about one session only");
+});
+
+test("a name that is part of the target's name isn't another session", async () => {
+  const payload = buildConciergePayload(
+    [
+      { view: view("t", { project: "tomarigi-desktop", state: "waiting", question: "push?" }) },
+      { view: view("o", { project: "tomarigi", state: "working" }) },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  const run = async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: { advice: "tomarigi-desktopの質問に返答してください", session_id: "t", action: "reply" } as V,
+  });
+  expect(await askConcierge("openai", payload, run)).toMatchObject({ verdict: { targetId: "t" } });
 });
 
 test("a chick waiting on a reply holds up its parent", () => {
@@ -474,6 +551,7 @@ test("when a child's result hasn't reached its parent, the advice about the pare
     verdict: answer as V,
   });
   for (const provider of ["openai", "anthropic", "local"] as const) {
+    // The fixed form names the child too; it isn't dropped as naming another session
     const toParent = { advice: "parentにchildの結果がまだ届いていません", session_id: "p", action: "check_result" };
     expect(await askConcierge(provider, payload, answering(toParent))).toMatchObject({
       verdict: { line: toParent.advice, targetId: "p" },
@@ -572,6 +650,33 @@ test("the app log keeps each session's facts and the advice text with its kind, 
   ]);
   // No text from the sessions: the name, reply and question stay out
   expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it|asker|Which one/);
+
+  // Holds are logged one per line, a chick without its name
+  const held = buildConciergePayload(
+    [
+      {
+        view: view("p", {
+          state: "done",
+          continuing: true,
+          watching: 1,
+          peers: [{ sessionId: "c", viewId: "c", name: "c", active: true }],
+          chicks: [{ id: "p/c1", name: "reviewer", state: "waiting", sinceMs: 1 }],
+        }),
+      },
+      { view: view("c", { state: "waiting" }), parentId: "p" },
+    ],
+    [],
+    [],
+    NOW,
+    "en",
+  );
+  const holdLines = conciergeRequestLogLines({ req: "r3", provider: "openai", model: "m" }, held).filter((l) =>
+    l.startsWith("[concierge] hold "),
+  );
+  expect(holdLines).toEqual([
+    "[concierge] hold req=r3 waiting=p held_up_by=c reason=linked_session_needs_reply",
+    "[concierge] hold req=r3 waiting=p held_up_by=chick reason=chick_needs_reply",
+  ]);
 
   const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
     ok: true,
