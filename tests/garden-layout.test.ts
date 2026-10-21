@@ -9,7 +9,7 @@ import {
   type PlaceBox,
   type Point,
 } from "../src/lib/garden-place.ts";
-import { watchShapes } from "../src/perch/garden-watch-layout.ts";
+import { watchLinePath, watchShapes } from "../src/perch/garden-watch-layout.ts";
 
 const bird = (id: string, extra: Partial<PlaceBox> = {}): PlaceBox => ({ id, w: 120, h: 110, ...extra });
 
@@ -139,25 +139,113 @@ describe("watchShapes", () => {
   });
 });
 
-describe("watchShapes cell order", () => {
-  const parent = {
-    id: "p",
-    project: "app",
-    slug: "app",
-    cwd: "/w/app",
+describe("watch grid", () => {
+  const bird = (id: string, startedAt: number, peers: string[]) => ({
+    id,
+    project: id,
+    slug: id,
     state: "done" as const,
     sinceMs: 0,
-    startedAt: 1,
-    peers: [{ sessionId: "c", viewId: "c", name: "c", active: true }],
-  };
-  const child = { id: "c", project: "app", slug: "app", cwd: "/w/app", state: "working" as const, sinceMs: 0, startedAt: 2 };
-  test("birds take the cells in the order given (the order they stood), the parent's name is above the parent", () => {
-    const shape = watchShapes([parent, child], 30, undefined, () => ["c", "p"])[0];
-    expect(shape.memberIds).toEqual(["c", "p"]);
-    expect(shape.cells.get("c")!.dx).toBeLessThan(shape.cells.get("p")!.dx);
+    cwd: `/w/${id}`,
+    startedAt,
+    peers: peers.map((p) => ({ sessionId: p, viewId: p, name: p, active: true })),
+  });
+  const kids = (n: number) => Array.from({ length: n }, (_, i) => `c${i}`);
+  const family = (n: number) => [bird("p", 0, kids(n)), ...kids(n).map((id, i) => bird(id, i + 1, ["p"]))];
+  const cell = (shape: { grid: Map<string, { col: number; row: number }> }, id: string) => shape.grid.get(id);
+
+  test("linked birds go beside the parent, then diagonal below, then diagonal above; never straight above or below", () => {
+    const shape = watchShapes(family(6), 30)[0];
+    expect(shape.rootId).toBe("p");
+    expect(kids(6).map((id) => cell(shape, id))).toEqual([
+      { col: 1, row: 0 },
+      { col: -1, row: 0 },
+      { col: 1, row: 1 },
+      { col: -1, row: 1 },
+      { col: 1, row: -1 },
+      { col: -1, row: -1 },
+    ]);
+    expect(shape.links).toHaveLength(6);
+  });
+
+  test("from the 7th on, a bird goes to the nearest free cell and gets no line", () => {
+    const shape = watchShapes(family(8), 30)[0];
+    expect(shape.memberIds).toHaveLength(9);
+    expect(shape.links).toHaveLength(6);
+    for (const id of ["c6", "c7"]) expect(shape.links.some((pair) => pair.includes(id))).toBe(false);
+    const cells = [...shape.grid.values()].map((c) => `${c.col},${c.row}`);
+    expect(new Set(cells).size).toBe(cells.length);
+  });
+
+  test("a bird watched by a linked bird goes next to that bird and is joined to it", () => {
+    // p watches a and b; a watches c
+    const shape = watchShapes([bird("p", 1, ["a", "b"]), bird("a", 2, ["p", "c"]), bird("b", 3, []), bird("c", 4, ["a"])], 30)[0];
+    expect(cell(shape, "a")).toEqual({ col: 1, row: 0 });
+    expect(cell(shape, "c")).toEqual({ col: 2, row: 0 });
+    expect(shape.links).toEqual([
+      ["p", "a"],
+      ["p", "b"],
+      ["a", "c"],
+    ]);
+  });
+
+  test("no two lines cross in an X", () => {
+    // p watches 6; two of them watch 3 each (many-A1 sample)
+    const g = (k: string, n: number) => Array.from({ length: n }, (_, j) => `${k}w${j}`);
+    const sessions = [
+      bird("p", 0, kids(6)),
+      ...kids(6).map((id, i) => bird(id, i + 1, ["p", ...(i < 2 ? g(id, 3) : [])])),
+      ...["c0", "c1"].flatMap((k, i) => g(k, 3).map((id, j) => bird(id, 10 + i * 3 + j, [k]))),
+    ];
+    const shape = watchShapes(sessions, 30)[0];
+    const pos = (id: string) => shape.grid.get(id)!;
+    for (const [a, b] of shape.links) {
+      for (const [c, d] of shape.links) {
+        const [pa, pb, pc, pd] = [pos(a), pos(b), pos(c), pos(d)];
+        const crossed =
+          pa.row !== pb.row &&
+          pc.row !== pd.row &&
+          new Set([a, b, c, d]).size === 4 &&
+          Math.min(pa.col, pb.col) === Math.min(pc.col, pd.col) &&
+          Math.min(pa.row, pb.row) === Math.min(pc.row, pd.row);
+        expect(crossed).toBe(false);
+      }
+    }
+  });
+
+  test("birds keep the cells they had when another joins, and a bird that took the parent's place keeps them too", () => {
+    const before = watchShapes(family(3), 30)[0];
+    const after = watchShapes(family(4), 30, () => before.grid)[0];
+    for (const id of ["p", ...kids(3)]) expect(cell(after, id)).toEqual(cell(before, id));
+    // A kept cell is used again even where a new bird would otherwise go first
+    const swapped = new Map(before.grid);
+    swapped.set("c0", { col: -1, row: 0 });
+    swapped.set("c1", { col: 1, row: 0 });
+    const kept = watchShapes(family(3), 30, () => swapped)[0];
+    expect(cell(kept, "c0")).toEqual({ col: -1, row: 0 });
+    expect(cell(kept, "c1")).toEqual({ col: 1, row: 0 });
+  });
+
+  test("the parent's name is above the parent; a bird in the parent's folder shows none", () => {
+    const parent = { ...bird("p", 1, ["c"]), project: "app", cwd: "/w/app" };
+    const child = { ...bird("c", 2, []), project: "app", cwd: "/w/app" };
+    const shape = watchShapes([parent, child], 30)[0];
     expect(shape.cells.get("p")!.label).toBe("app");
     expect(shape.cells.get("c")!.label).toBeUndefined();
-    expect(shape.rootId).toBe("p");
+  });
+});
+
+describe("watch lines", () => {
+  test("a line is short, centered between the icons, and stops at least gap from each", () => {
+    expect(watchLinePath({ x: 0, y: 0 }, { x: 132, y: 0 }, 33, 36)).toEqual([
+      { x: 48, y: 0 },
+      { x: 84, y: 0 },
+    ]);
+    // Room for a shorter line only
+    const near = watchLinePath({ x: 0, y: 0 }, { x: 80, y: 0 }, 33, 36)!;
+    expect(near[0].x).toBeCloseTo(33);
+    expect(near[1].x).toBeCloseTo(47);
+    expect(watchLinePath({ x: 0, y: 0 }, { x: 60, y: 0 }, 33, 36)).toBeUndefined();
   });
 });
 

@@ -179,15 +179,3 @@
   font-size: inherit;
 }
 
-/* Recent events under the bird are icons only (label and time aren't shown as text; they're in title).
-   events arrive newest first, so the first HISTORY_LIMIT are shown as is */
-.garden-icons {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 4px;
-}
-
-.garden-icon-wrap {
-  display: flex;
-}

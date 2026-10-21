@@ -84,9 +84,7 @@ html[data-window-mode="normal"] .page {
 .back-bar,
 .garden-name,
 .garden-status,
-.garden-watch-count,
-.garden-icons,
-.garden-watch-block {
+.garden-watch-count {
   transition: opacity 0.2s;
 }
 
@@ -132,9 +130,7 @@ html[data-window-mode="normal"] .page {
     .back-bar,
     .garden-name,
     .garden-status,
-    .garden-watch-count,
-    .garden-icons,
-    .garden-watch-block
+    .garden-watch-count
   ) {
   opacity: 0;
 }
