@@ -1,7 +1,7 @@
 /* Speech bubbles (bubble.tsx) in the Garden and on the Perch */
 
-/* The bird's speech bubble (perch/bubble.tsx). Below the icon in the garden; one line within the row in Perch.
-   Long text is cut with "…", and hovering shows the full text (title) */
+/* The bird's speech bubble (perch/bubble.tsx). Below the icon in the garden (the whole text, .speech-bubble-below);
+   one line within the row in Perch, where long text is cut with "…" and hovering shows the full text (title) */
 .speech-bubble {
   display: block;
   overflow: hidden;
@@ -16,32 +16,35 @@
   line-height: 1.35;
 }
 
-/* Garden: cut at about 15 full-width characters. Inside the bubble anchor (.garden-bubble-anchor = same position and
-   size as the bird), shown right below the icon's bottom edge (--bubble-top, measured and passed by garden.tsx), in the
-   space before the status row (.garden-bubble-room). .speech-bubble, which cuts text with "…", would also clip the
-   tail with overflow: hidden, so the outer frame (this) carries the tail and shadow. The shadow is a filter
-   drop-shadow, cast by the body and tail as a single shape (no shadow line at the seam).
-   It stays within --bubble-lo left and --bubble-hi right of the bird's center (bubbleVars in garden.tsx: inside the
-   garden frame and short of the neighbours, or inside a watch block): centered under the bird when it fits, otherwise
-   pushed inside. Narrower than both together when they are short */
+/* Garden: the whole text, never cut with "…" (docs/design.md "Speech bubbles"). As wide as the text up to 180px
+   (BUBBLE_MAX_PX in garden-watch-layout.ts), wrapping onto more lines beyond that. Inside the bubble anchor
+   (.garden-bubble-anchor = same position and size as the bird), shown right below the icon's bottom edge (--bubble-top,
+   measured and passed by garden.tsx). The outer frame (this) carries the tail and shadow. The shadow is a filter
+   drop-shadow, cast by the body and tail as a single shape (no shadow line at the seam): a thin one all around, so a
+   bubble over another bubble shows its edge on every side, and a soft one below (docs/design.md "Layout").
+   It is centered under the bird and pushed only to stay within --bubble-lo left and --bubble-hi right of the bird's
+   center (bubbleVars in garden.tsx: inside the garden frame). Birds in a watch block follow the same rule */
 .speech-bubble-below {
   --bubble-lo: 9999px;
   --bubble-hi: 9999px;
-  --bubble-max: 15em;
+  --bubble-max: 180px;
   position: absolute;
   top: calc(var(--bubble-top, 0px) + 7px);
   left: 50%;
   display: block;
+  width: max-content;
   max-width: min(var(--bubble-max), calc(var(--bubble-lo) + var(--bubble-hi)));
   font-size: 11px;
   transform: translateX(clamp(calc(-1 * var(--bubble-lo)), -50%, calc(var(--bubble-hi) - 100%)));
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.6)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
 }
 
-/* In a watch block, birds stand one cell apart (garden-watch-layout.ts), so a bubble is kept to a bird's width and
-   doesn't run into the bubble of the bird beside it (docs/design.md "Layout") */
-.garden-bubble-anchor.in-watch-block .speech-bubble-below {
-  --bubble-max: 120px;
+/* The garden's bubble body wraps instead of cutting with "…" (.speech-bubble cuts on the Perch's one line) */
+.speech-bubble-below .speech-bubble {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
 }
 
 /* The tail points upward from the top edge, with its tip pointing at the icon: at the bird's center however the bubble
@@ -65,9 +68,9 @@
   height: 26px;
 }
 
-/* The garden's speech bubble layer. Stacked above the birds and names (.garden-node), so other birds' names don't hide
-   bubble text or the "…". The layer itself can't be pressed, so it doesn't block dragging/clicking birds. Only the
-   bubbles can be hovered to see the full text (title) */
+/* The garden's speech bubble layer. Stacked above every bird with its name, marks and status lines (.garden-node), so
+   a bubble covers a neighbour rather than hiding under it (docs/design.md "Layout"). The layer itself can't be pressed,
+   so it doesn't block dragging/clicking birds */
 .garden-bubble-layer {
   position: absolute;
   inset: 0;
@@ -81,10 +84,6 @@
   position: absolute;
   width: 120px;
   transform: translateX(-50%);
-}
-
-.garden-bubble-anchor .speech-bubble {
-  pointer-events: auto;
 }
 
 /* Perch: shown as one line on a second line aligned with the start of the name (bird 18px + right space 4px + row gap

@@ -13,15 +13,15 @@ export const NODE_WIDTH_PX = 120;
 export const BUBBLE_ROOM_PX = 26;
 // Estimated height of the non-glyph part of a garden node (name and status rows)
 export const NODE_TEXT_PX = 32;
-// Estimated max width of a speech bubble (max-width 15em × 11px of .speech-bubble-below in styles/speech-bubble.css
-// + left/right padding)
+// Max width of a speech bubble in the garden; wider text wraps (--bubble-max of .speech-bubble-below in
+// styles/speech-bubble.css)
 export const BUBBLE_MAX_PX = 180;
 
 // Watching groups (docs/design.md "Watching"): each linked bird is put in a cell next to the bird it is linked to, in a
 // small grid (the block, which is not drawn), and the two are joined by a short line (watchLinePath).
 // Cell width and padding inside the block. A cell is as wide as a bird's node plus the gap between footprints, the same
-// as a bird's footprint outside a block (garden.tsx). A bubble inside a block is kept to a bird's width; it may overlap
-// the next cell's status line, which goes below it when that row has a bubble (WatchCell.bubbleRoom).
+// as a bird's footprint outside a block (garden.tsx). A bubble inside a block shows its whole text and may cover the next
+// cell; the status lines of a row with a bubble go below the bubble room (WatchCell.bubbleRoom).
 // When a block goes away, a bird of it that now overlaps a neighbour moves to the nearest free spot
 const WATCH_CELL_W = NODE_WIDTH_PX + PLACE_GAP_PX;
 const WATCH_PAD = 8;
@@ -275,11 +275,6 @@ export function watchShapes(
     });
   }
   return shapes;
-}
-
-/** Horizontal range (px, relative to the block's left) that must contain a speech bubble inside the block */
-export function watchBubbleRange(shape: WatchShape): { lo: number; hi: number } {
-  return { lo: WATCH_PAD, hi: shape.width - WATCH_PAD };
 }
 
 type Pt = { x: number; y: number };
