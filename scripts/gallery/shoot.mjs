@@ -23,10 +23,9 @@ const only = process.argv.slice(2);
 const SCENES = [
   // The garden's birds are put at saved (dragged) positions, left to right the "?", the working one, and the done one,
   // in as little width as the garden allows so the download page can show them large: the garden keeps each bird's
-  // footprint (180px, a bubble's room) 12px from the next (src/lib/garden-place.ts). They run toward the terminal's lower
-  // right corner: the "?" and the working bird over the blog session's plan (stage.mjs), the working one beside the "?"
-  // since the "?" bird's bubble takes the room below it, and the done bird past the terminal's right edge on the
-  // wallpaper, its bubble crossing the edge. The wallpaper is narrow enough that the bubbles' text reads where the page
+  // footprint (120px, a bird's width) 12px from the next (src/lib/garden-place.ts). They run toward the terminal's lower
+  // right corner: the "?" and the working bird side by side over the blog session's plan (stage.mjs), and the done bird
+  // past the terminal's right edge on the wallpaper, its bubble crossing the edge. The wallpaper is narrow enough that the bubbles' text reads where the page
   // shows the image about 680px wide
   {
     id: "1-garden",
@@ -38,7 +37,7 @@ const SCENES = [
     size: { w: 620, h: 450, term: { left: 14, top: 14, w: 470, h: 400 }, cmdGap: 10, askGap: 42, wall: true },
     fade: true,
     ready: ".garden-node",
-    positions: { "gallery/plan": { x: 18.7, y: 0 }, "gallery/working": { x: 42.6, y: 31 }, "gallery/finished": { x: 81.3, y: 100 } },
+    positions: { "gallery/plan": { x: 28.7, y: 0 }, "gallery/working": { x: 55, y: 0 }, "gallery/finished": { x: 81.3, y: 100 } },
   },
   { id: "2-perch", query: "preset=gallery-perch&tab=perch", win: { w: 480, h: 540 }, ready: ".perch .bird" },
   { id: "3-activity", query: "preset=gallery-activity&tab=events", win: { w: 480, h: 540 }, ready: ".event-card" },

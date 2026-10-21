@@ -37,11 +37,12 @@ import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
+import { bubbleSpace } from "./garden-bubbles";
 import {
-  BUBBLE_MAX_PX,
   BUBBLE_ROOM_PX,
   birdExtraH,
   NODE_TEXT_PX,
+  NODE_WIDTH_PX,
   watchBubbleRange,
   watchLinePath,
   watchShapes,
@@ -76,33 +77,16 @@ function measureGarden(el: HTMLElement): GardenSize {
 
 // Keep speech bubbles this far inside the garden frame
 const BUBBLE_EDGE_PX = 4;
-// A bird's footprint is as wide as the widest bubble, wider than its node (.garden-node), so a bubble never reaches a
-// neighbour's status line (docs/design.md "Layout"). The node is centered in it
-const FOOT_W = BUBBLE_MAX_PX;
+// A bird's footprint is a bird's width (.garden-node). Its bubble may be wider and reach into a neighbour's footprint;
+// how far is decided by bubbleSpace (garden-bubbles.ts; docs/design.md "Layout")
+const FOOT_W = NODE_WIDTH_PX;
 
-/** From the bird's horizontal position (px) and the range lo..hi that must contain the speech bubble (px; inside the garden frame or a watching block), the position that keeps the bubble inside. undefined if it fits directly below (centered) */
-function bubbleShift(x: number, lo: number, hi: number): CSSProperties | undefined {
-  if (hi <= lo) return undefined;
-  const half = BUBBLE_MAX_PX / 2;
-  if (x - half < lo) {
-    const tail = x - lo;
-    return {
-      left: `calc(50% - ${tail}px)`,
-      transform: "none",
-      "--tail-left": `${tail}px`,
-    } as CSSProperties;
-  }
-  if (x + half > hi) {
-    const tail = hi - x;
-    return {
-      left: "auto",
-      right: `calc(50% - ${tail}px)`,
-      transform: "none",
-      "--tail-left": "auto",
-      "--tail-right": `${tail}px`,
-    } as CSSProperties;
-  }
-  return undefined;
+type BubbleRange = { lo: number; hi: number };
+
+/** The speech bubble's room around the bird at x (px): it stays within range (inside the garden frame, a watching block,
+    or short of the neighbours), centered under the bird when it fits (.speech-bubble-below in styles/speech-bubble.css) */
+function bubbleVars(x: number, range: BubbleRange): CSSProperties {
+  return { "--bubble-lo": `${x - range.lo}px`, "--bubble-hi": `${range.hi - x}px` } as CSSProperties;
 }
 
 // Stacking order of a node being dragged. Above the speech bubble order (1 to the number of birds)
@@ -133,7 +117,7 @@ interface WatchPlace {
   label?: string;
   nameRoom: boolean;
   // Horizontal range (px) that must contain the speech bubble: inside the block
-  bubbleRange: { lo: number; hi: number };
+  bubbleRange: BubbleRange;
 }
 
 /** A block being dragged: its first-started bird and how far the pointer has moved (px) */
@@ -671,6 +655,29 @@ export function Garden({
     if (mid !== glyphMid) setGlyphMid(mid);
   });
 
+  // Widths of each bubble's whole text and of each bird's status lines (px), measured after rendering, so bubbleSpace
+  // narrows a bubble or moves a status line only as far as the text needs (docs/design.md "Layout"). Neither width
+  // depends on what bubbleSpace decides, so measuring again settles at once
+  const [textWidths, setTextWidths] = useState<Map<string, { bubbleW?: number; statusW?: number }>>(new Map());
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const next = new Map<string, { bubbleW?: number; statusW?: number }>();
+    const entry = (id: string) => next.get(id) ?? next.set(id, {}).get(id)!;
+    for (const node of el.querySelectorAll<HTMLElement>(".garden-node[data-session-id]:not(.in-watch-block)")) {
+      const status = node.querySelector<HTMLElement>(".garden-status");
+      if (status) entry(node.dataset.sessionId!).statusW = status.offsetWidth;
+    }
+    for (const anchor of el.querySelectorAll<HTMLElement>(".garden-bubble-anchor[data-session-id]")) {
+      const bubble = anchor.querySelector<HTMLElement>(".speech-bubble");
+      if (bubble) entry(anchor.dataset.sessionId!).bubbleW = bubble.scrollWidth;
+    }
+    const same =
+      next.size === textWidths.size &&
+      [...next].every(([id, w]) => textWidths.get(id)?.bubbleW === w.bubbleW && textWidths.get(id)?.statusW === w.statusW);
+    if (!same) setTextWidths(next);
+  });
+
   // Birds are drawn from the first render that places them (ready); only birds that come after that fly in
   useEffect(() => {
     if (ready) initializedRef.current = true;
@@ -722,6 +729,22 @@ export function Garden({
   }
 
   const toSaved = (p: NodePos): GardenPosition => ({ x: (p.x / W) * 100, y: (p.y / baseH) * 100 });
+  // How far each bubble of a bird outside a block may reach, and which neighbours keep the bubble room so their status
+  // lines go below it (docs/design.md "Layout")
+  const frameRange: BubbleRange = { lo: BUBBLE_EDGE_PX, hi: W - BUBBLE_EDGE_PX };
+  const space = bubbleSpace(
+    sessions.flatMap((s) => {
+      const p = !shapeOf.has(s.id) && positionOf(s.id);
+      return p ? [{ id: s.id, x: p.x, y: p.y, bubble: bubbleText(s) !== undefined, ...textWidths.get(s.id) }] : [];
+    }),
+    shapes.flatMap((sh) => {
+      const at = shownBlockAt(sh);
+      return at ? [{ x: at.x, y: at.y, w: sh.width, h: sh.footH }] : [];
+    }),
+    glyphSize,
+    glyphMid !== undefined ? glyphMid - glyphSize / 2 : WATCH_NAME_ROW_PX,
+    frameRange,
+  );
   return (
     <div className="garden" ref={containerRef}>
       {/* Speech bubble layer. Placed above the bird/name layer so no bird's name hides bubble text (or the "…").
@@ -791,6 +814,8 @@ export function Garden({
             }}
             stackOrder={stackOrder}
             bubbleLayer={bubbleLayer}
+            bubbleRange={space.ranges.get(s.id) ?? frameRange}
+            keepBubbleRoom={space.roomFor.has(s.id)}
             watchPlace={watchPlace}
             groupRootId={shape?.rootId}
             onGroupMove={setGroupDrag}
@@ -846,6 +871,8 @@ function GardenNode({
   onClick,
   stackOrder,
   bubbleLayer,
+  bubbleRange,
+  keepBubbleRoom = false,
   watchPlace,
   groupRootId,
   onGroupMove,
@@ -870,6 +897,10 @@ function GardenNode({
   stackOrder?: number;
   // Where the speech bubble is rendered (Garden's .garden-bubble-layer)
   bubbleLayer?: HTMLElement | null;
+  // Horizontal range (px) that must contain the speech bubble of a bird outside a block (bubbleSpace)
+  bubbleRange?: BubbleRange;
+  // Keep the bubble room without a bubble, so the status lines go below a neighbour's bubble (bubbleSpace)
+  keepBubbleRoom?: boolean;
   // The bird's spot within a watching block. Present only for birds in a block
   watchPlace?: WatchPlace;
   // A bird in a block drags the whole block (moves the block, not its own position)
@@ -887,7 +918,7 @@ function GardenNode({
   const nodeRef = useRef<HTMLDivElement>(null);
   const glyphRef = useRef<HTMLSpanElement>(null);
   // Birds in a watching group may reserve bubble space even without a speech bubble (WatchPlace.bubbleRoom)
-  const bubbleRoom = Boolean(bubble) || Boolean(watchPlace?.bubbleRoom);
+  const bubbleRoom = Boolean(bubble) || Boolean(watchPlace?.bubbleRoom) || keepBubbleRoom;
   // From the node's top edge to the icon's bottom edge (the top of the speech bubble). The icon resizes smoothly
   // with the garden size (transition in styles/garden.css), so track size changes instead of reading once at render
   const [glyphBottom, setGlyphBottom] = useState<number | undefined>(undefined);
@@ -1018,7 +1049,6 @@ function GardenNode({
   }, [containerRef]);
 
   const pos = live ?? position;
-  const containerW = containerRef.current?.clientWidth ?? 0;
   // The speech bubble appears right below the icon and the node reserves that space (.garden-bubble-room), so it is
   // included in the node height
   const nodeH = nodeRef.current?.offsetHeight || glyphSize + NODE_TEXT_PX + (bubbleRoom ? BUBBLE_ROOM_PX : 0);
@@ -1028,14 +1058,17 @@ function GardenNode({
   const inBlock = grouped !== undefined;
   const left = `${pos.x}px`;
   const top = `${pos.y}px`;
-  // For birds near the left/right edges, a speech bubble directly below the icon gets cut off by the frame, so shift
-  // it inside the frame (the tail keeps pointing at the bird).
-  // For birds in a watching block, keep the speech bubble inside the block (off the block's border)
-  const bubbleStyle = grouped
-    ? bubbleShift(pos.x, grouped.bubbleRange.lo, grouped.bubbleRange.hi)
-    : containerW > 0
-      ? bubbleShift(pos.x, BUBBLE_EDGE_PX, containerW - BUBBLE_EDGE_PX)
-      : undefined;
+  // The speech bubble stays within its range (bubbleVars): inside the garden frame and short of the neighbours, or for
+  // birds in a watching block, inside the block (off the block's border). While dragged, only inside the frame
+  const containerW = containerRef.current?.clientWidth ?? 0;
+  const range = grouped
+    ? grouped.bubbleRange
+    : live || !bubbleRange
+      ? containerW > 0
+        ? { lo: BUBBLE_EDGE_PX, hi: containerW - BUBBLE_EDGE_PX }
+        : undefined
+      : bubbleRange;
+  const bubbleStyle = range && bubbleVars(pos.x, range);
 
   // Bird facing. About half are mirrored deterministically based on the id (all facing the same way looks stuffed).
   // Sprites are assumed to face left by default → flip = facing right
@@ -1173,6 +1206,7 @@ function GardenNode({
         !exiting &&
         createPortal(
           <div
+            data-session-id={session.id}
             className={`garden-bubble-anchor${inBlock ? " in-watch-block" : ""}${concierge ? " concierge" : ""}`}
             style={
               {
