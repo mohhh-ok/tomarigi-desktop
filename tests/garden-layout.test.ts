@@ -68,14 +68,13 @@ describe("placeBoxes", () => {
     expect(overlaps(at, [block, bird("a"), bird("b")])).toBe(false);
   });
 
-  test("a bird dropped onto another is nudged to the nearest free spot; the other stays", () => {
+  test("a bird dropped onto another is nudged to the nearest free spot in its row; the other stays", () => {
     const a = { x: 10, y: 10 };
     const { at } = placeBoxes([bird("a", { at: a }), bird("b", { want: { x: 30, y: 20 } })], 500, 500);
     expect(at.get("a")).toEqual(a);
     expect(overlaps(at, [bird("a"), bird("b")])).toBe(false);
-    // Nearest: right next to a (beside it or below it, both 112px from the drop)
-    const b = at.get("b")!;
-    expect(Math.hypot(b.x - 30, b.y - 20)).toBe(a.x + 120 + PLACE_GAP_PX - 30);
+    // Nearest spot level with a (docs/design.md "Layout"): right beside it, in its row
+    expect(at.get("b")).toEqual({ x: a.x + 120 + PLACE_GAP_PX, y: a.y });
   });
 
   test("a bird that no longer fits in a smaller garden moves inside; the others stay", () => {
