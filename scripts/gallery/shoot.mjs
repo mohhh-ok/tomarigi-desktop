@@ -17,7 +17,17 @@ const only = process.argv.slice(2);
 // text, and the download page (moh-tech-net, public/tomarigi/desktop/index.html) crops to the handle, the birds, and the
 // text around them. Perch and Recent activity are never faded; their windows are tall enough to show every row
 const SCENES = [
-  { id: "1-garden", query: "preset=gallery-garden", win: { w: 460, h: 300, left: 150, top: 300 }, fade: true, ready: ".garden-node" },
+  // The garden's birds are put at saved (dragged) positions, in a row with room between them: left to right the "?", the
+  // working one, and the done one. The grid would put them where their ids happen to land, two of them touching
+  {
+    id: "1-garden",
+    query: "preset=gallery-garden",
+    // Wide enough for three birds' footprints (a bubble's 180px each, 12px apart) side by side
+    win: { w: 615, h: 300, left: 140, top: 300 },
+    fade: true,
+    ready: ".garden-node",
+    positions: { "gallery/plan": { x: 16, y: 0 }, "gallery/working": { x: 50, y: 0 }, "gallery/finished": { x: 84, y: 0 } },
+  },
   { id: "2-perch", query: "preset=gallery-perch&tab=perch", win: { w: 480, h: 540 }, ready: ".perch .bird" },
   { id: "3-activity", query: "preset=gallery-activity&tab=events", win: { w: 480, h: 540 }, ready: ".event-card" },
 ];
@@ -36,6 +46,25 @@ try {
       await page.unrouteAll();
       await page.route(STAGE_URL, (r) => r.fulfill({ contentType: "text/html", body: html }));
       await page.goto(STAGE_URL);
+      if (sc.positions) {
+        // The same IndexedDB entry as a drag saves (src/lib/garden-layout.ts), then load the stage again to use it
+        await page.evaluate(
+          (positions) =>
+            new Promise((resolve, reject) => {
+              const open = indexedDB.open("tomarigi", 1);
+              open.onupgradeneeded = () => open.result.createObjectStore("kv");
+              open.onerror = () => reject(open.error);
+              open.onsuccess = () => {
+                const tx = open.result.transaction("kv", "readwrite");
+                tx.objectStore("kv").put(positions, "gardenPositions");
+                tx.oncomplete = () => (open.result.close(), resolve());
+                tx.onerror = () => reject(tx.error);
+              };
+            }),
+          sc.positions,
+        );
+        await page.goto(STAGE_URL);
+      }
       const frame = page.frames().find((f) => f.url().includes("mock=1"));
       await frame.waitForSelector(sc.ready, { timeout: 15000 });
       // Fade until hovered at rest (set by the Rust side in the app)
