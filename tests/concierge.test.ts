@@ -12,7 +12,9 @@ import {
   CONCIERGE_MIN_INTERVAL_MS,
   CONCIERGE_REPLY_TAIL_CHARS,
   CONCIERGE_REPEAT_MS,
+  CONCIERGE_RETRY_MS,
   CONCIERGE_TASK,
+  conciergeErrorIsTemporary,
   ConciergeScheduler,
   conciergeTriggerClasses,
   conciergeTriggered,
@@ -20,6 +22,7 @@ import {
   type ConciergeSessionInput,
   conciergeRequestLogLines,
   conciergeResultLogLine,
+  conciergeRetryLogLine,
 } from "../src/lib/concierge.ts";
 import type { JudgeResult, JudgeTaskDefinition } from "../src/lib/judge.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
@@ -992,4 +995,96 @@ test("the advice is hidden on the poll its target changes state, not when it lea
   // A left the screen: the advice stays without a jump target until the next request
   expect(adviceTargetChanged(advice, "reply", [view("b")])).toBe(false);
   expect(adviceTargetChanged({ line: "All calm" }, undefined, [view("b")])).toBe(false);
+});
+
+test("temporary errors (5xx, 429, a timeout, no connection) are retried; a wrong key or a bad request isn't", () => {
+  expect(conciergeErrorIsTemporary({ ok: false, kind: "server", status: 503 })).toBe(true);
+  expect(conciergeErrorIsTemporary({ ok: false, kind: "rate_limit", status: 429 })).toBe(true);
+  // A timeout and no connection both come back from Rust as an error string, read as network
+  expect(conciergeErrorIsTemporary({ ok: false, kind: "network", message: "error sending request: operation timed out" })).toBe(true);
+  expect(conciergeErrorIsTemporary({ ok: false, kind: "auth", status: 401 })).toBe(false);
+  expect(conciergeErrorIsTemporary({ ok: false, kind: "malformed", status: 400 })).toBe(false);
+});
+
+test("a request that fails with 503 is asked again 10 seconds later", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  expect(scheduler.failed(conciergeErrorIsTemporary({ ok: false, kind: "server", status: 503 }))).toEqual({ attempt: 1, afterMs: 10_000 });
+  clock.advance(10_000 - 1);
+  expect(counts.requests).toBe(1);
+  clock.advance(1);
+  expect(counts.requests).toBe(2);
+});
+
+test("retried after 10, 30 and 60 seconds, then not again until the 5-minute repeat", () => {
+  const { clock, counts, scheduler } = scheduled();
+  expect(CONCIERGE_RETRY_MS).toEqual([10_000, 30_000, 60_000]);
+  scheduler.update(classes(view("a", { state: "waiting" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  for (const [i, afterMs] of CONCIERGE_RETRY_MS.entries()) {
+    expect(scheduler.failed(true)).toEqual({ attempt: i + 1, afterMs });
+    clock.advance(afterMs);
+    expect(counts.requests).toBe(i + 2);
+  }
+  // The third retry failed too: no fourth
+  expect(scheduler.failed(true)).toBeUndefined();
+  clock.advance(CONCIERGE_REPEAT_MS - 1);
+  expect(counts.requests).toBe(4);
+  clock.advance(1);
+  expect(counts.requests).toBe(5);
+  // The repeat is a new request, so a failure of it is retried from the first again
+  expect(scheduler.failed(true)).toEqual({ attempt: 1, afterMs: 10_000 });
+});
+
+test("a 401 isn't retried", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(scheduler.failed(conciergeErrorIsTemporary({ ok: false, kind: "auth", status: 401 }))).toBeUndefined();
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS * 2);
+  expect(counts.requests).toBe(1);
+});
+
+test("no retry once nothing needs a reply, has the ?, or is done while it waits", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(scheduler.failed(true)).toEqual({ attempt: 1, afterMs: 10_000 });
+  // The user answers a before the retry; a is working
+  clock.advance(5_000);
+  scheduler.update(classes(view("a")), true);
+  clock.advance(CONCIERGE_REPEAT_MS);
+  expect(counts.requests).toBe(1);
+  // Nor does a failure that comes back after that retry
+  scheduler.update(classes(view("a", { state: "dozing" })), true);
+  expect(scheduler.failed(true)).toBeUndefined();
+});
+
+test("changes while a retry waits join it, and the retry doesn't count toward the 60 seconds", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(scheduler.failed(true)).toEqual({ attempt: 1, afterMs: 10_000 });
+  // b starts needing a reply 2 seconds into the wait: no request of its own 3 seconds later, it joins the retry
+  clock.advance(2_000);
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b", { state: "waiting" })), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  clock.advance(10_000 - 2_000 - CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(2);
+  // The retry worked. A turn finishing 7 seconds later waits for 60 seconds after the first request, not after the retry
+  clock.advance(7_000);
+  scheduler.update(classes(view("a", { state: "waiting" }), view("b", { state: "waiting" }), view("c", { state: "done" })), true);
+  clock.advance(CONCIERGE_MIN_INTERVAL_MS - 10_000 - 7_000 - 1);
+  expect(counts.requests).toBe(2);
+  clock.advance(1);
+  expect(counts.requests).toBe(3);
+});
+
+test("the app log line of a retry names the failed request, the attempt and the wait", () => {
+  expect(conciergeRetryLogLine({ req: "ae9d7808", provider: "openai", model: "gpt-5.6-luna" }, { attempt: 1, afterMs: 10_000 })).toBe(
+    "[concierge] retry req=ae9d7808 provider=openai model=gpt-5.6-luna attempt=1 after=10s",
+  );
 });

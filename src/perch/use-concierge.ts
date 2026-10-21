@@ -12,7 +12,9 @@ import {
   askConcierge,
   buildConciergePayload,
   conciergeRequestLogLines,
+  conciergeErrorIsTemporary,
   conciergeResultLogLine,
+  conciergeRetryLogLine,
   ConciergeScheduler,
   conciergeStateOf,
   conciergeTriggerClasses,
@@ -109,7 +111,10 @@ export function useConcierge(
           shownRef.current = null;
           setAdvice(null);
         }
-        const text = `${result.kind}${result.status ? ` ${result.status}` : ""}${result.message ? ` ${result.message}` : ""}`;
+        // A temporary error is asked again after 10, 30 and 60 seconds (docs/design.md "Concierge")
+        const retry = schedulerRef.current?.failed(conciergeErrorIsTemporary(result));
+        if (retry) void invoke("log", { line: conciergeRetryLogLine(logContext, retry) }).catch(() => {});
+        const text = `${result.kind}${result.status ? ` ${result.status}` : ""}${result.message ? ` ${result.message}` : ""}${retry ? `, retry ${retry.attempt} in ${retry.afterMs / 1000}s` : ""}`;
         appendConciergeLog({ at: Date.now(), kind: "error", text });
         return;
       }
