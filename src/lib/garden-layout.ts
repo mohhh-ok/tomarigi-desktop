@@ -47,3 +47,21 @@ export function hashId(id: string): number {
   }
   return Math.abs(h);
 }
+
+/**
+ * What is saved after the user drops a bird: every bird where it settled on screen (center and top in px), not where
+ * the pointer was released. A bird dropped onto another settles beside it, and the birds that appear on the next launch
+ * are each placed at their saved spot, so the Garden opens as it was right after the drop (docs/design.md "Layout").
+ * Saved spots of birds not on screen are kept
+ */
+export function positionsAfterDrop(args: {
+  prev: Record<string, GardenPosition>;
+  settled: Map<string, { x: number; y: number }>;
+  w: number;
+  h: number;
+}): Record<string, GardenPosition> {
+  const { prev, settled, w, h } = args;
+  const next = { ...prev };
+  for (const [id, p] of settled) next[id] = { x: (p.x / w) * 100, y: (p.y / h) * 100 };
+  return next;
+}

@@ -12,6 +12,7 @@ import { t } from "@/lib/i18n";
 import {
   hashId,
   loadGardenPositions,
+  positionsAfterDrop,
   saveGardenPositions,
   type GardenPosition,
 } from "@/lib/garden-layout";
@@ -288,20 +289,11 @@ export function Garden({
   const glyphSizeRef = useRef<number | undefined>(undefined);
   const glyphCountRef = useRef(0);
 
-  /** Saves a dragged position (for the next launch) and re-renders so the drop is placed */
-  const saveDrop = useCallback((id: string, saved: GardenPosition, liveIds: string[]) => {
-    setPositions((prev) => {
-      // Positions of sessions that have disappeared are pruned on save (only existing ids are kept)
-      const currentIds = new Set(liveIds);
-      const pruned: Record<string, GardenPosition> = {};
-      for (const [pid, ppos] of Object.entries(prev ?? {})) {
-        if (currentIds.has(pid)) pruned[pid] = ppos;
-      }
-      pruned[id] = saved;
-      void saveGardenPositions(pruned);
-      return pruned;
-    });
-  }, []);
+  // A drop is placed on the next render (kept.drops); this re-renders for it
+  const [, setDropCount] = useState(0);
+  const placeDrop = useCallback(() => setDropCount((n) => n + 1), []);
+  // Where every bird settled in the render that placed a drop, saved after commit (for the next launch)
+  const dropSaveRef = useRef<{ settled: Map<string, Point>; w: number; h: number } | null>(null);
 
   // Every session whose process is alive is a node in the garden, dozing ones included (docs/design.md
   // "Garden layout"). The useLayoutEffect below must be called on every render (Rules of Hooks), so
@@ -517,6 +509,8 @@ export function Garden({
     kept.birds = birds;
     kept.blocks = blocks;
     kept.overlapping = new Set(overflowAtBase);
+    // Saved after commit: every bird where it settled, so the next launch opens as it is right after the drop
+    if (dropped.length > 0) dropSaveRef.current = { settled: new Map(birdAt), w: W, h: baseH };
     kept.drops.clear();
     // Something had no spot, so the window is asked to grow: what was first placed now (and what still isn't settled
     // at this size) isn't on screen yet, and is placed again once the size changes. Everything has a spot: all settled
@@ -678,6 +672,21 @@ export function Garden({
     if (!same) setTextWidths(next);
   });
 
+  // After a drop, save where every bird settled, not where the pointer was released (docs/design.md "Layout"). Saved
+  // spots of birds that are gone are pruned
+  useEffect(() => {
+    const pending = dropSaveRef.current;
+    if (!pending) return;
+    dropSaveRef.current = null;
+    const live = new Set(liveIds);
+    setPositions((prev) => {
+      const pruned = Object.fromEntries(Object.entries(prev ?? {}).filter(([id]) => live.has(id)));
+      const next = positionsAfterDrop({ prev: pruned, ...pending });
+      void saveGardenPositions(next);
+      return next;
+    });
+  });
+
   // Birds are drawn from the first render that places them (ready); only birds that come after that fly in
   useEffect(() => {
     if (ready) initializedRef.current = true;
@@ -728,7 +737,6 @@ export function Garden({
     );
   }
 
-  const toSaved = (p: NodePos): GardenPosition => ({ x: (p.x / W) * 100, y: (p.y / baseH) * 100 });
   // How far each bubble of a bird outside a block may reach, and which neighbours keep the bubble room so their status
   // lines go below it (docs/design.md "Layout")
   const frameRange: BubbleRange = { lo: BUBBLE_EDGE_PX, hi: W - BUBBLE_EDGE_PX };
@@ -810,7 +818,7 @@ export function Garden({
             iconSet={resolveIconSet(iconSetAssignments, s.slug)}
             onDragEnd={(next) => {
               kept.drops.set(s.id, { x: next.x - FOOT_W / 2, y: next.y });
-              saveDrop(s.id, toSaved(next), liveIds);
+              placeDrop();
             }}
             stackOrder={stackOrder}
             bubbleLayer={bubbleLayer}
@@ -826,9 +834,7 @@ export function Garden({
               if (!dropShape || !from) return;
               const to = { x: from.x + drag.dx, y: from.y + drag.dy };
               kept.drops.set(drag.rootId, to);
-              // Saved as the first-started bird's own position, where a block that forms again is put
-              const cell = dropShape.cells.get(drag.rootId)!;
-              saveDrop(drag.rootId, toSaved({ x: to.x + cell.dx, y: to.y + cell.dy }), liveIds);
+              placeDrop();
             }}
             focusable={Boolean(onFocus && focusId && canFocus?.(focusId))}
             onClick={() => focusId && onFocus?.(focusId)}
