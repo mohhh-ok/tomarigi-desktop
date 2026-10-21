@@ -45,7 +45,8 @@ const LINES = {
 
 // A stage's default size in CSS px and where the terminal sits on it (shoot.mjs shoots every stage at the same scale,
 // 2540 / 762). Tall enough for Perch and Recent activity to show every row
-export const STAGE = { w: 762, h: 570, term: { left: 16, top: 12, w: 740, h: 570 } };
+// cmdGap: the space under the `claude` command line, where the first image puts the garden's handle so it covers no text
+export const STAGE = { w: 762, h: 570, term: { left: 16, top: 12, w: 740, h: 570 }, cmdGap: 10 };
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
@@ -70,7 +71,7 @@ export function stage({ lang, url, win, fade, size = STAGE }) {
   .tab{flex:auto;text-align:center;padding:7px 4px;border-left:1px solid #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tab.on{background:#17191d;color:#d6d9de}
   .view{height:100%;overflow:hidden}.pane{padding:12px 14px;font:11px/1.6 "SF Mono",Menlo,"Hiragino Sans",monospace;color:#c9ccd1}
-  .cmd{color:#8a9099;margin-bottom:10px}.dir{color:#7fb0d9}.pr{color:#8a9099}
+  .cmd{color:#8a9099;margin-bottom:${size.cmdGap ?? STAGE.cmdGap}px}.dir{color:#7fb0d9}.pr{color:#8a9099}
   .u{color:#e8e9eb;margin:4px 0 8px}.a,.i,.d{color:#b4b9c0;white-space:nowrap}.i{padding-left:2ch}.d{padding-left:5ch}.q{color:#f0c46a;white-space:pre;margin-top:14px}
   .cursor{margin-top:10px}.cursor i{display:inline-block;width:7px;height:13px;background:#c9ccd1;vertical-align:-2px}
   .win{position:absolute;${win.left != null ? `left:${win.left}px` : "right:20px"};top:${win.top ?? Math.round((size.h - win.h) / 2)}px;width:${win.w}px;height:${win.h}px}

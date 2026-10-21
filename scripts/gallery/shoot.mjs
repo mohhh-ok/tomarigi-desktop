@@ -30,8 +30,9 @@ const SCENES = [
     id: "1-garden",
     query: "preset=gallery-garden",
     // The garden is the window less 46px across and 112px down (handle and tabs); 380 x 180 holds the three footprints
-    win: { w: 426, h: 305, left: 20, top: 60 },
-    size: { w: 520, h: 386, term: { left: 10, top: 10, w: 500, h: 366 } },
+    // The handle sits in the empty band under the `claude` command line (cmdGap), over no text
+    win: { w: 426, h: 305, left: 20, top: 90 },
+    size: { w: 520, h: 420, term: { left: 10, top: 10, w: 500, h: 400 }, cmdGap: 44 },
     fade: true,
     ready: ".garden-node",
     positions: { "gallery/working": { x: 50, y: 0 }, "gallery/plan": { x: 24.7, y: 44 }, "gallery/finished": { x: 75.3, y: 44 } },
