@@ -10,6 +10,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import { t } from "@/lib/i18n";
 import {
+  frontRanks,
   hashId,
   loadGardenPositions,
   positionsAfterDrop,
@@ -29,6 +30,7 @@ import type { SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
 import { dragGrowAt, dragGrowEnd, gardenGrowAnchor } from "./garden-grow";
+import { gardenStack } from "./garden-stack";
 import { onFadeHandlePointerDown } from "./garden-fade";
 import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
 import { createPortal } from "react-dom";
@@ -89,8 +91,6 @@ function bubbleVars(x: number, range: BubbleRange): CSSProperties {
   return { "--bubble-lo": `${x - range.lo}px`, "--bubble-hi": `${range.hi - x}px` } as CSSProperties;
 }
 
-// Stacking order of a node being dragged. Above the speech bubble order (1 to the number of birds)
-const BUBBLE_Z_DRAGGING = 1000;
 // Usual height of a bird's name row (.garden-name: 11px text + 3px margin), until the icon's position is measured
 const WATCH_NAME_ROW_PX = 16;
 // Watch lines are kept short and away from the icons, so they are seen only on a closer look (docs/design.md
@@ -294,7 +294,13 @@ export function Garden({
   const [, setDropCount] = useState(0);
   const placeDrop = useCallback(() => setDropCount((n) => n + 1), []);
   // Where every bird settled in the render that placed a drop, saved after commit (for the next launch)
-  const dropSaveRef = useRef<{ settled: Map<string, Point>; byUser: Set<string>; w: number; h: number } | null>(null);
+  const dropSaveRef = useRef<{
+    settled: Map<string, Point>;
+    byUser: Set<string>;
+    front: Set<string>;
+    w: number;
+    h: number;
+  } | null>(null);
 
   // Every session whose process is alive is a node in the garden, dozing ones included (docs/design.md
   // "Garden layout"). The useLayoutEffect below must be called on every render (Rules of Hooks), so
@@ -531,7 +537,9 @@ export function Garden({
       const byUser = new Set(
         [...kept.byUser].flatMap((id) => shapes.find((sh) => sh.rootId === id)?.memberIds ?? [id]),
       );
-      dropSaveRef.current = { settled: new Map(birdAt), byUser, w: W, h: baseH };
+      // The birds dropped now come in front of the others (docs/design.md "Layout")
+      const front = new Set(dropped.flatMap((b) => shapes.find((sh) => sh.rootId === b.id)?.memberIds ?? [b.id]));
+      dropSaveRef.current = { settled: new Map(birdAt), byUser, front, w: W, h: baseH };
     }
     kept.drops.clear();
     // Something had no spot, so the window is asked to grow: what was first placed now (and what still isn't settled
@@ -738,6 +746,8 @@ export function Garden({
 
   // Birds outside a block in the same row as a bird with a bubble keep the bubble room, so the status lines of the row
   // line up (docs/design.md "Layout")
+  // Birds the user dragged, drawn in front of the others, the last dragged frontmost (gardenStack)
+  const fronts = frontRanks(positions ?? {});
   const roomFor = bubbleRoomFor(
     sessions.flatMap((s) => {
       const p = !shapeOf.has(s.id) && positionOf(s.id);
@@ -786,6 +796,7 @@ export function Garden({
             ? { bubbleRoom: cell.bubbleRoom, label: cell.label, nameRoom: cell.nameRoom }
             : undefined;
         const stackOrder = bubbleOrder.get(s.id);
+        const front = fronts.get(s.id);
         // On first display, static without flying; new sessions come from the sky
         const entryOrigin: "none" | "sky" = animateEntry ? "sky" : "none";
         const isConcierge = s.id === CONCIERGE_ID;
@@ -806,6 +817,8 @@ export function Garden({
               placeDrop();
             }}
             stackOrder={stackOrder}
+            front={front}
+            groupDragging={shape !== undefined && groupDrag?.rootId === shape.rootId}
             bubbleLayer={bubbleLayer}
             keepBubbleRoom={roomFor.has(s.id)}
             watchPlace={watchPlace}
@@ -860,6 +873,8 @@ function GardenNode({
   focusable = false,
   onClick,
   stackOrder,
+  front,
+  groupDragging = false,
   bubbleLayer,
   keepBubbleRoom = false,
   watchPlace,
@@ -884,6 +899,10 @@ function GardenNode({
   onClick?: () => void;
   // Stacking order of the speech bubble (higher is on top). undefined for birds without a bubble
   stackOrder?: number;
+  // How far in front among the birds the user dragged (frontRanks). undefined for birds never dragged
+  front?: number;
+  // The block this bird is in is being dragged
+  groupDragging?: boolean;
   // Where the speech bubble is rendered (Garden's .garden-bubble-layer)
   bubbleLayer?: HTMLElement | null;
   // Keep the bubble room without a bubble, so the status lines line up with a row that has a bubble (bubbleRoomFor)
@@ -1050,6 +1069,9 @@ function GardenNode({
   }, [containerRef]);
 
   const pos = live ?? position;
+  // A bird the user dragged comes in front of the other birds and bubbles, with its bubble (docs/design.md "Layout")
+  const stack = gardenStack({ dragging: Boolean(live) || groupDragging, front, bubbleOrder: stackOrder });
+  const bubbleParent = stack.bubbleInLayer ? bubbleLayer : containerRef.current;
   // The speech bubble appears right below the icon and the node reserves that space (.garden-bubble-room), so it is
   // included in the node height
   const nodeH = nodeRef.current?.offsetHeight || glyphSize + NODE_TEXT_PX + (bubbleRoom ? BUBBLE_ROOM_PX : 0);
@@ -1141,8 +1163,8 @@ function GardenNode({
       style={{
         left,
         top,
-        // While dragging, show above the speech bubble order (the z-index of .garden-node.dragging loses to the inline style)
-        zIndex: live ? BUBBLE_Z_DRAGGING : stackOrder,
+        // gardenStack (the z-index of .garden-node.dragging loses to the inline style)
+        zIndex: stack.node,
       }}
       title={concierge ? t("conciergeTitle") : undefined}
     >
@@ -1193,11 +1215,13 @@ function GardenNode({
           </span>
         )}
       </div>
-      {/* The speech bubble puts an anchor at the same position and height as the bird in the bubble layer, and appears
-          right below the icon's bottom edge (--bubble-top), in the space before the name (.garden-bubble-room). The
-          distance from the icon is the same for every bird */}
+      {/* The speech bubble puts an anchor at the same position and height as the bird in the bubble layer (for a bird
+          the user dragged, beside the layer in the garden, just above the bird: gardenStack), and appears right below
+          the icon's bottom edge (--bubble-top), in the space before the name (.garden-bubble-room). The distance from
+          the icon is the same for every bird */}
       {bubble &&
         bubbleLayer &&
+        bubbleParent &&
         !exiting &&
         createPortal(
           <div
@@ -1208,14 +1232,14 @@ function GardenNode({
                 left,
                 top,
                 height: nodeH,
-                zIndex: live ? BUBBLE_Z_DRAGGING : stackOrder,
+                zIndex: stack.bubble,
                 "--bubble-top": `${glyphBottom ?? glyphSize}px`,
               } as CSSProperties
             }
           >
             <SpeechBubble text={bubble} placement="below" style={bubbleStyle} />
           </div>,
-          bubbleLayer,
+          bubbleParent,
         )}
     </div>
   );
