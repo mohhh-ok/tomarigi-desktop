@@ -34,7 +34,11 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 - Watching: the session's own machine state is done / dozing, and at least one linked session is working (status busy in `sessions/<pid>.json`, or its transcript's machine state is working / waiting). Chirps and readout on done are held until all linked sessions stop
 - After the linked sessions stop, the bird stays watching for 5 minutes after the last one moved (`WATCH_GRACE_MS`), so the watch block and label don't flicker between the other session's turns. A linked session whose status isn't idle (e.g. shell) also counts as moving
 - Presentation:
-  - In the Garden, the watching bird and its linked birds are placed close together and wrapped in a rounded block. Birds are not connected by lines
+  - In the Garden, the watching bird and its linked birds are placed close together (the watch block keeps its cells and footprint), and each linked bird is connected to the watching bird by a line. The block has no frame or background of its own (the user: 「いまはグループをしかくでかこってるが、これだとはいけいがきえてると視認できない。そこで箱で囲むのをやめて線で繋げる形にして、背景消えてる時でもせんがみえるじょうたいにしたい」)
+    - The lines stay visible at full strength at rest in "Fade until hovered", like the birds. They are not a hover or click target, and clicks on them go through at rest (Claude's own decision)
+    - A line runs between the two birds' icons and is drawn behind birds, badges, bubbles, and status lines, so it never hides them (Claude's own decision)
+    - The line has a contrasting outline so it reads over any desktop behind the transparent window, light or dark (Claude's own decision: at rest the window background is gone, so the line can't rely on it)
+    - A linked bird that is itself watching gets lines to its own linked birds the same way (Claude's own decision)
   - The watching (parent) bird's name is shown above the parent bird itself, wherever its cell is in the block; the block has no title of its own (the user's decision: a title on the block's top edge read as the name of the bird below it). Other birds inside show no name if they are in the parent's folder, and only the path relative to the parent otherwise
   - Dragging a bird inside the block moves the whole block
   - The number of linked sessions currently working is shown at the watching bird's feet
@@ -108,7 +112,7 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 
 Applies to the floating window's Garden tab only.
 
-- At rest, only the birds, their badges ("?", anger mark), speech bubbles, and the handle are shown. The background (translucent color, frosted glass, border, shadow), the garden's frame, watch blocks, tabs, header buttons, names, and status lines are fully transparent (the user's decision: 「とうめいもーどのときは完全透明にして」). The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
+- At rest, only the birds, their badges ("?", anger mark), speech bubbles, the watch lines between birds, and the handle are shown. The background (translucent color, frosted glass, border, shadow), the garden's frame, tabs, header buttons, names, and status lines are fully transparent (the user's decision: 「とうめいもーどのときは完全透明にして」). The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
 - At rest, clicks anywhere except on a bird or the window handle go through to the window below
 - Birds can be clicked (jump to the terminal pane) and dragged while the window stays faded; hovering a bird no longer shows the whole window (the user's decision)
 - The window handle stays visible at rest. Dragging it moves the window; clicking it shows the whole window at full strength (the user's decision: 「どらっぐでまどがうごく、くりっくでとうめいかいじょ、いいね」)
