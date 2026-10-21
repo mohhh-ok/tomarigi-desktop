@@ -101,10 +101,12 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "instruction. false for ordinary instructions, questions, and criticism of the work, including frustrated or " +
     "blunt ones such as 'this is wrong again' or 'stop doing that', as long as they don't insult the AI itself, and " +
     "when user_messages is empty.\n" +
-    "continuing: true when work the agent started goes on after the turn ended: a measurement, export, build, or " +
-    "other job still running in the background, or the agent says it will check it or report when it's done (e.g. " +
-    "'the measurement runs until 18:47; I'll report the results then'). false when the work is finished, or when " +
-    "the agent only waits on the user.",
+    "continuing: true only when a job the agent itself started (a measurement, export, build, or the like) is still " +
+    "running in the background, or when the agent says it will itself receive, check, or report a result later " +
+    "(e.g. 'the measurement runs until 18:47; I'll report the results then', 'I'll check the report when it " +
+    "arrives and tell you'). false when the work is finished, when the agent only waits on the user, and when it " +
+    "only says that work it handed to another session or a sub-agent is still going on (e.g. 'the rest is still " +
+    "being done by the child session') without saying it will receive or check the result.",
   outputFields: {
     line: {
       type: "string",
@@ -122,7 +124,9 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     },
     continuing: {
       type: "boolean",
-      description: "Whether work the agent started goes on in the background after the turn, to be reported later.",
+      description:
+        "Whether the agent's own job runs on in the background, or the agent says it will itself receive, check, or " +
+        "report a result later. Not for work only handed to another session.",
     },
   },
   maxTokens: 256,
