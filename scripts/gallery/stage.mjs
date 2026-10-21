@@ -1,6 +1,6 @@
 // The stage for shoot.mjs: a desktop with a terminal, and the Tomarigi mock in a frame on top. The terminal's tabs run
 // four agents (one per bird); the open tab shows the blog session, whose question matches the blog bird's bubble.
-// The terminal reaches past the window's right and top edges, so no terminal edge shows through the frosted glass
+// The terminal reaches past the window's right and bottom edges, so no terminal edge shows through the frosted glass
 const TABS = [
   ["blog", "claude"],
   ["tomarigi", "codex"],
@@ -34,6 +34,9 @@ const LINES = {
   ],
 };
 
+// The stage's size in CSS px (shoot.mjs shoots it at 3.33x). Tall enough for Perch and Recent activity to show every row
+export const STAGE = { w: 762, h: 570 };
+
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 function pane(lang) {
@@ -48,7 +51,7 @@ export function stage({ lang, url, win, fade }) {
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   html{color-scheme:dark}html,body{margin:0;height:100%;overflow:hidden}
   body{background:#56636a;font-family:-apple-system,"Hiragino Sans",sans-serif}
-  .term{position:absolute;left:16px;top:12px;width:740px;height:470px;background:#17191d;border-radius:10px;
+  .term{position:absolute;left:16px;top:12px;width:740px;height:${STAGE.h}px;background:#17191d;border-radius:10px;
     box-shadow:0 18px 40px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.7);overflow:hidden}
   .bar{height:28px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#202328}
   .bar i{width:12px;height:12px;border-radius:50%;display:block}
@@ -59,7 +62,7 @@ export function stage({ lang, url, win, fade }) {
   .cmd{color:#8a9099;margin-bottom:10px}.dir{color:#7fb0d9}.pr{color:#8a9099}
   .u{color:#e8e9eb;margin:4px 0 8px}.a,.i{color:#b4b9c0;white-space:nowrap}.i{padding-left:2ch}.q{color:#f0c46a;white-space:pre}
   .cursor{margin-top:12px}.cursor i{display:inline-block;width:7px;height:14px;background:#c9ccd1;vertical-align:-2px}
-  .win{position:absolute;${win.left != null ? `left:${win.left}px` : "right:20px"};top:${win.top ?? Math.round((456 - win.h) / 2)}px;width:${win.w}px;height:${win.h}px}
+  .win{position:absolute;${win.left != null ? `left:${win.left}px` : "right:20px"};top:${win.top ?? Math.round((STAGE.h - win.h) / 2)}px;width:${win.w}px;height:${win.h}px}
   .glass{position:absolute;inset:0;border-radius:12px;${fade ? "display:none;" : "backdrop-filter:blur(22px) saturate(1.2);box-shadow:0 22px 50px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.55);"}}
   .win iframe{position:absolute;inset:0;border:0;width:100%;height:100%;background:transparent;border-radius:12px}
   </style></head><body>
