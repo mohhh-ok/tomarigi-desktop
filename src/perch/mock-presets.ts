@@ -728,28 +728,47 @@ export const PRESETS: Preset[] = [
       events: [],
     }),
   },
-  // The gallery images in docs/images/ (docs/design.md "Gallery images"). The text follows the UI language, so the
-  // Japanese set shows no English. No tool names, since they are English identifiers in every language. Project names
-  // match the terminal's tabs in scripts/gallery/stage.mjs
+  // The gallery images in docs/images/ (docs/design.md "Gallery images"), one preset per image. The text follows the UI
+  // language, so the Japanese set shows no English. No tool names, since they are English identifiers in every language.
+  // Project names match the terminal's tabs in scripts/gallery/stage.mjs
   {
-    id: "gallery",
+    // 1. Garden at rest: a bird with the "?", a working bird, and a done bird with its summary bubble
+    id: "gallery-garden",
     label: "Gallery: garden",
-    build: () => ({ sessions: pick(["gallery/working", "gallery/plan", "gallery/done", "gallery/dozing"]), events: [] }),
+    build: () => ({ sessions: pick(["gallery/plan", "gallery/working", "gallery/finished"]), events: [] }),
   },
   {
-    id: "gallery-on-top",
-    label: "Gallery: on top",
-    build: () => ({ sessions: pick(["gallery/plan", "gallery/done"]), events: [] }),
+    // 2. Perch: many sessions in one list with their state and summary; the sessions tomarigi handed work to are
+    // indented under it
+    id: "gallery-perch",
+    label: "Gallery: perch",
+    build: () => ({
+      sessions: pick(["gallery/plan", "gallery/lead", "gallery/lead-app", "gallery/lead-docs", "gallery/finished", "gallery/dozing"]),
+      events: [],
+    }),
   },
   {
-    id: "gallery-asking",
-    label: "Gallery: needs reply",
-    build: () => ({ sessions: pick(["gallery/plan", "gallery/question"]), events: [] }),
-  },
-  {
-    id: "gallery-bubble",
-    label: "Gallery: bubbles",
-    build: () => ({ sessions: pick(["gallery/finished", "gallery/done", "gallery/tested"]), events: [] }),
+    // 3. Recent activity: what finished or started waiting, newest first. The sessions are the Perch image's, so the two
+    // images don't contradict each other; each event is a turn of one of them, so its row shows the same line as the bubble.
+    // The watching tomarigi has no done yet: it isn't emitted while the sessions it watches go on (lib/sessions.ts)
+    id: "gallery-activity",
+    label: "Gallery: recent activity",
+    build: () => {
+      const sessions = pick(["gallery/plan", "gallery/lead-docs", "gallery/finished", "gallery/dozing"]);
+      const ev = (id: string, type: SessionEvent["type"]): SessionEvent => {
+        const s = sessions.find((x) => x.id === id)!;
+        return { key: `${id}/${type}`, sessionId: id, project: s.project, snippet: s.snippet, type, at: s.reply?.at ?? BASE - s.sinceMs };
+      };
+      return {
+        sessions,
+        events: [
+          ev("gallery/plan", "waiting"),
+          ev("gallery/lead-docs", "done"),
+          ev("gallery/finished", "done"),
+          ev("gallery/dozing", "done"),
+        ],
+      };
+    },
   },
 ];
 
@@ -759,53 +778,81 @@ function tr(en: string, ja: string): string {
   return uiLanguage().toLowerCase().startsWith("ja") ? ja : en;
 }
 
+const LEAD_ROOT = "/Users/me/Dev/tomarigi";
+// A finished turn: the bubble's summary, with the reply its turn verdict is keyed to (Recent activity matches events by it)
+const finished = (sinceMs: number, en: string, ja: string): Pick<SessionView, "sinceMs" | "reply" | "ask" | "summary"> => ({
+  sinceMs,
+  reply: { at: BASE - sinceMs, text: en },
+  ask: { status: "not_asking" },
+  summary: tr(en, ja),
+});
+
 const GALLERY: SessionView[] = [
-  { id: "gallery/plan", project: "blog", slug: "blog", state: "waiting", sinceMs: 70_000, toolName: "ExitPlanMode" },
+  {
+    id: "gallery/plan",
+    project: "blog",
+    slug: "blog",
+    state: "waiting",
+    // A whole minute, so Perch and Recent activity both say 1m whenever in the minute the shot is taken
+    sinceMs: 60_000,
+    toolName: "ExitPlanMode",
+    snippet: tr("Write the v0.4 release post", "v0.4 のお知らせ記事を書いて"),
+  },
   { id: "gallery/working", project: "tomarigi", slug: "tomarigi", state: "working", sinceMs: 3_000 },
   {
-    id: "gallery/question",
+    // Hands the settings work to two sessions and watches them (docs/design.md "Watching")
+    id: "gallery/lead",
     project: "tomarigi",
     slug: "tomarigi",
-    state: "waiting",
-    sinceMs: 30_000,
-    toolName: "AskUserQuestion",
-    question: tr("One panel or tabs?", "設定はタブに分ける？"),
+    state: "done",
+    snippet: tr("Redo the settings screen", "設定画面を作り直して"),
+    cwd: LEAD_ROOT,
+    startedAt: BASE - 60 * 60_000,
+    watching: 1,
+    peers: [
+      { sessionId: "app", viewId: "gallery/lead-app", name: "src-tauri", cwd: `${LEAD_ROOT}/src-tauri`, active: true },
+      { sessionId: "docs", viewId: "gallery/lead-docs", name: "docs", cwd: `${LEAD_ROOT}/docs`, active: false },
+    ],
+    // The summary says why the rows below are indented
+    ...finished(4 * 60_000, "Handed the settings work to two sessions", "設定の作業を 2 つのセッションに任せた"),
+  },
+  {
+    id: "gallery/lead-app",
+    project: "src-tauri",
+    slug: "tomarigi",
+    state: "working",
+    sinceMs: 5_000,
+    snippet: tr("Save the window size for each mode", "窓の大きさをモードごとに保存して"),
+    cwd: `${LEAD_ROOT}/src-tauri`,
+    startedAt: BASE - 30 * 60_000,
+    peers: [{ sessionId: "lead", viewId: "gallery/lead", name: "tomarigi", cwd: LEAD_ROOT, active: false }],
+  },
+  {
+    id: "gallery/lead-docs",
+    project: "docs",
+    slug: "tomarigi",
+    state: "done",
+    snippet: tr("Write up the settings", "設定の説明を書いて"),
+    cwd: `${LEAD_ROOT}/docs`,
+    startedAt: BASE - 25 * 60_000,
+    peers: [{ sessionId: "lead", viewId: "gallery/lead", name: "tomarigi", cwd: LEAD_ROOT, active: false }],
+    ...finished(3 * 60_000, "Wrote the settings section", "設定の節を書いた"),
   },
   {
     id: "gallery/finished",
     project: "figma-adapter",
     slug: "figma-adapter",
     state: "done",
-    sinceMs: 5_000,
-    ask: { status: "not_asking" },
-    summary: tr("Added three button sizes", "ボタンを 3 種類にした"),
-  },
-  {
-    id: "gallery/done",
-    project: "moh-tech-net",
-    slug: "moh-tech-net",
-    state: "done",
-    sinceMs: 2 * 60_000,
-    ask: { status: "not_asking" },
-    summary: tr("Fixed the README typo", "README の誤字を直した"),
-  },
-  {
-    id: "gallery/tested",
-    project: "tomarigi",
-    slug: "tomarigi",
-    state: "done",
-    sinceMs: 40_000,
-    ask: { status: "not_asking" },
-    summary: tr("Wrote the settings tests", "設定のテストを書いた"),
+    snippet: tr("Add button sizes", "ボタンの大きさを増やして"),
+    ...finished(12 * 60_000, "Added three button sizes", "ボタンを 3 種類にした"),
   },
   {
     id: "gallery/dozing",
-    project: "figma-adapter",
-    slug: "figma-adapter",
+    project: "moh-tech-net",
+    slug: "moh-tech-net",
     state: "dozing",
-    sinceMs: 9 * 60_000,
-    ask: { status: "not_asking" },
-    summary: tr("Updated the build config", "ビルド設定を更新した"),
+    snippet: tr("Check the README", "README を見直して"),
+    ...finished(48 * 60_000, "Fixed the README typo", "README の誤字を直した"),
   },
 ];
 
