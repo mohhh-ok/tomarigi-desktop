@@ -13,6 +13,7 @@ import {
   type GrowKept,
 } from "@/lib/garden-fit";
 import { dragGrowRequest } from "./garden-drag-grow";
+import { UP_GROW_WAIT_MS, upGrowDone, type UpGrowWait } from "./garden-up-grow";
 
 /**
  * Which part of the window stays put on screen when it grows or shrinks back, per axis (0 the left / top edge, 1 the
@@ -25,9 +26,9 @@ export const gardenGrowAnchor = { x: 0, y: 0 };
 // A drag is growing the window: the anchor is the drag's until it ends (dragGrowEnd), not the one fetched for growing
 // to fit
 let dragGrowing = false;
-// The window is growing up for a bubble (garden_bubble_grow): the anchor is y 1 until the Garden has seen the new size,
-// the garden's height when it was asked for
-let upGrowingAt: number | null = null;
+// The window is growing up for a bubble (garden_bubble_grow): the anchor is y 1 until the Garden has seen the new size
+// or the wait times out (upGrowDone)
+let upGrowing: UpGrowWait | null = null;
 
 /** Called on each pointer move of a drag. e: the pointer event; garden: the garden element */
 export function dragGrowAt(e: PointerEvent, garden: HTMLElement): void {
@@ -111,10 +112,12 @@ export function useGardenGrow(
   const dropsRef = useRef<number | undefined>(undefined);
   // The anchor the Rust side last told (garden_grow_anchor), and how far the window can grow up for a bubble (CSS px)
   const keepRef = useRef({ x: 0, y: 0, above: 0 });
+  // update, for the timer that ends the wait for growing up (decide is defined before it)
+  const updateRef = useRef(() => {});
 
   // Growing up for a bubble is over: the anchor goes back to the one the Rust side tells
   const upGrown = useCallback(() => {
-    upGrowingAt = null;
+    upGrowing = null;
     if (!dragGrowing) Object.assign(gardenGrowAnchor, { x: keepRef.current.x, y: keepRef.current.y });
   }, []);
 
@@ -123,15 +126,18 @@ export function useGardenGrow(
     const fit = fitRef.current;
     // Growing up for a bubble: wait until the Garden has seen the new size (it kept its birds at the same place on
     // screen with anchor y 1), so nothing else resizes the window with that anchor
-    if (upGrowingAt !== null) {
-      if (!fit || fit.gardenH === upGrowingAt) return;
+    if (upGrowing !== null) {
+      if (!upGrowDone(upGrowing, fit?.gardenH, Date.now())) return;
       upGrown();
     }
     // A bubble above its bird's name past the garden's top, in a window in the display's upper part: grow up by itself,
     // the bottom edge staying, like a drag pushing the top edge (docs/design.md "Layout")
     if (active && !held && fit?.growUp !== undefined) {
-      upGrowingAt = fit.gardenH;
+      const wait = { gardenH: fit.gardenH, since: Date.now() };
+      upGrowing = wait;
       gardenGrowAnchor.y = 1;
+      // The garden's height may never change: decide again once the wait times out, even if no fit arrives
+      setTimeout(() => upGrowing === wait && updateRef.current(), UP_GROW_WAIT_MS);
       const top = Math.ceil(fit.growUp);
       void invoke("log", { line: `[grow] page bubble up=${top}` }).catch(() => {});
       void invoke<boolean>("garden_bubble_grow", { top }).then(
@@ -189,12 +195,13 @@ export function useGardenGrow(
       .then((anchor) => {
         if (seq !== seqRef.current) return;
         if (anchor) keepRef.current = anchor;
-        if (anchor && !dragGrowing && upGrowingAt === null) {
+        if (anchor && !dragGrowing && upGrowing === null) {
           Object.assign(gardenGrowAnchor, { x: anchor.x, y: anchor.y });
         }
         decide();
       });
   }, [decide]);
+  updateRef.current = update;
 
   useEffect(update, [active, floating, held, user, birdCount, update]);
 
