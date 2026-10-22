@@ -24,6 +24,7 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 - Machine state `BirdState`: `working | waiting | done | dozing`. Recomputed on every poll
   - `waiting`: stopped on AskUserQuestion / ExitPlanMode / request_user_input, or Claude Code's `<config>/sessions/<pid>.json` has `status: "waiting"` (while it shows options or a permission prompt, Claude Code doesn't write that tool_use to the transcript until it's answered)
   - `dozing`: a finished turn (`done`) with no new writes for 5 minutes (`DOZE_MS` in `src/lib/bird-state.ts`). It only changes the sprite and the status label
+- A write in the last 6 seconds counts as working. The recap Claude Code writes while the user is away (`system` / `away_summary`) is not a write: it isn't conversation, and it made a finished session working for 6 seconds, so its turn was summarized again and the concierge asked again (the user: 「コンシェルジュのはんのうがおかしい。べつせっしょんでちょうささせて」; excluding only this line is Claude's own decision: in the local transcripts 3,692 of 3,942 such lines came alone, more than 6 seconds after the last message and with none in the 30 seconds after, while the other lines written late mostly start or belong to a turn)
 - The finished-turn state is called "done" everywhere: bird state, Recent activity, sound settings buttons, and bird descriptions (all locales)
 - The waiting state is called "needs reply" (ja: 返事待ち) everywhere: bird state, Recent activity events, and sound settings buttons (all locales)
 
