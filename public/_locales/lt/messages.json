@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Nebenaudojamas. Šį išsaugotą raktą galite ištrinti."
+  },
+  "gardenArrange": {
+    "message": "Išdėstyti"
   }
 }

@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Bruges ikke længere. Du kan slette den gemte nøgle."
+  },
+  "gardenArrange": {
+    "message": "Arranger"
   }
 }

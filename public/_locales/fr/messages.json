@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "N’est plus utilisée. Tu peux supprimer cette clé enregistrée."
+  },
+  "gardenArrange": {
+    "message": "Réorganiser"
   }
 }

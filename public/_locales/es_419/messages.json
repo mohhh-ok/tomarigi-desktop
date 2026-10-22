@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Ya no se usa. Puedes eliminar esta clave guardada."
+  },
+  "gardenArrange": {
+    "message": "Ordenar"
   }
 }

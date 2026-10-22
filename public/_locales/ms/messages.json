@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Tidak digunakan lagi. Anda boleh memadam kunci yang disimpan ini."
+  },
+  "gardenArrange": {
+    "message": "Susun"
   }
 }

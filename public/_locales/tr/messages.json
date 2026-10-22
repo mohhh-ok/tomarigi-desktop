@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Artık kullanılmıyor. Kayıtlı bu anahtarı silebilirsin."
+  },
+  "gardenArrange": {
+    "message": "Düzenle"
   }
 }

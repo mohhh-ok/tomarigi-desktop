@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "لم يعد مستخدمًا. يمكنك حذف هذا المفتاح المحفوظ."
+  },
+  "gardenArrange": {
+    "message": "ترتيب"
   }
 }
