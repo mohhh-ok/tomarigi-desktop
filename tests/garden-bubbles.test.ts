@@ -381,28 +381,38 @@ describe("layoutBubbles: above the name", () => {
   });
 });
 
-describe("aboveTail: the tail of a bubble above its bird passes beside the name to the icon", () => {
-  // A bubble 120px wide centered on its bird (shift 0), a 36px icon
+describe("aboveTail: the tail of a bubble above its bird passes beside the name and points at the icon", () => {
+  // A bubble 120px wide centered on its bird (shift 0): the bird's center is 60px from the bubble's left. The name is
+  // 17px tall and the icon 36px, 20px below the name's top; the tail starts at the bubble's bottom, 7px above the name
   const place = { w: 120, shift: 0 };
-  test("a long name: the tail runs down beside it, clear of the name's edge", () => {
-    const t = aboveTail(place, 70, 36);
-    // From the bubble's left: the bird's center is at 60, the name spans 25-95; the tail is 6px wide at its base
-    expect(t.base - 3 > 95 || t.base + 3 < 25).toBe(true);
-    expect(Math.abs(t.tip - 60)).toBeGreaterThan(35);
+  const name = (w: number) => ({ w, h: 17 });
+  const icon = { w: 36, h: 36 };
+  test("a long name: the stem runs down clear of the name, then the tip points at the icon's side", () => {
+    const t = aboveTail(place, name(70), icon, 20);
+    // The name spans 25-95: the stem (6px wide) stays right of it down to the name's bottom (7 + 17)
+    expect(t.base - 3).toBeGreaterThan(95);
+    expect(t.knee).toBe(24);
+    // The tip touches the icon (42-78) at its side, halfway down it (7 + 20 + 18)
+    expect(t.tip).toBeGreaterThan(78);
+    expect(t.tip).toBeLessThanOrEqual(80);
+    expect(t.h).toBe(45);
   });
 
-  test("a short name: the tip points at the icon's top corner", () => {
-    const t = aboveTail(place, 20, 36);
-    expect(Math.abs(t.tip - 60)).toBeLessThanOrEqual(18);
+  test("a short name: the stem runs down beside the icon to its side", () => {
+    const t = aboveTail(place, name(20), icon, 20);
+    expect(t.base - 3).toBeGreaterThanOrEqual(78);
+    expect(t.tip).toBeLessThanOrEqual(80);
   });
 
   test("the tail starts on the bubble's body, on the side it was shifted to", () => {
-    const right = aboveTail({ w: 120, shift: 40 }, 90, 36);
-    expect(right.base).toBeGreaterThan(60 - 40);
-    expect(right.base).toBeLessThanOrEqual(120 - 8);
-    const left = aboveTail({ w: 120, shift: -40 }, 90, 36);
-    expect(left.base).toBeGreaterThanOrEqual(8);
-    expect(left.base).toBeLessThan(60 + 40);
+    const right = aboveTail({ w: 120, shift: 40 }, name(70), icon, 20);
+    expect(right.base).toBeGreaterThan(20);
+    expect(right.base).toBeLessThanOrEqual(120 - 10);
+    expect(right.tip).toBeGreaterThan(20);
+    const left = aboveTail({ w: 120, shift: -40 }, name(70), icon, 20);
+    expect(left.base).toBeGreaterThanOrEqual(10);
+    expect(left.base).toBeLessThan(100);
+    expect(left.tip).toBeLessThan(100);
   });
 });
 
