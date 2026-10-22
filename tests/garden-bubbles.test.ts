@@ -2,7 +2,7 @@
 // 180px (120px inside a watch block), and is drawn above the birds; only the status lines of a row line up below the bubbles
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { bubbleReach, bubbleRoomFor, layoutBubbles, type BubbleBird, type LaidBird } from "../src/perch/garden-bubbles.ts";
+import { aboveTail, bubbleReach, bubbleRoomFor, layoutBubbles, type BubbleBird, type LaidBird } from "../src/perch/garden-bubbles.ts";
 
 const birds = (list: [string, number, boolean][]): BubbleBird[] => list.map(([id, y, bubble]) => ({ id, x: 0, y, bubble }));
 
@@ -350,6 +350,59 @@ describe("layoutBubbles: a pair that can't be moved apart sideways goes above", 
     const out = lay(list);
     expect(out.get("a")!.above).toBe(false);
     expect(out.get("b")!.above).toBe(false);
+  });
+});
+
+
+// A bubble above its bird goes above the name, so the name stays readable (docs/design.md "Layout"): its bottom is 7px
+// above the name's top, and the tail passes beside the name down to the icon
+describe("layoutBubbles: above the name", () => {
+  const named = (id: string, x: number, y: number): LaidBird => ({ id, x, y, nameTop: 4, iconTop: 20, iconBottom: 56 });
+
+  test("a bubble shown above ends 7px above its bird's name, not right above the icon", () => {
+    const out = layoutBubbles([named("t", 200, 200)], { w: 703, h: 312 }, () => ({ w: 120, h: 93 }));
+    const t = out.get("t")!;
+    expect(t.above).toBe(true);
+    expect(t.bottom).toBe(200 + 4 - 7);
+  });
+
+  test("a bubble with room above the icon but not above the name stays below while the window can grow", () => {
+    // 93px tall at y 99: above the icon it would start at 99 + 20 - 7 - 93 = 19 (inside), above the name at 3 (past the
+    // 4px edge). Below it reaches 255, past the 230px garden, which the window can grow to
+    const out = layoutBubbles([named("t", 200, 99)], { w: 703, h: 230, growH: 600 }, () => ({ w: 120, h: 93 }));
+    expect(out.get("t")!.above).toBe(false);
+  });
+
+  test("the user-reviewer's 749x442 bubble-long: the pair's bubble goes above only if it fits above the name", () => {
+    const list = [bird("a", 300, 400, 150), bird("b", 310, 400, 150)].map((b) => ({ ...b, nameTop: 4 }));
+    const out = lay(list);
+    const up = list.find((b) => out.get(b.id)!.above)!;
+    expect(out.get(up.id)!.bottom).toBe(150 + 4 - 7);
+  });
+});
+
+describe("aboveTail: the tail of a bubble above its bird passes beside the name to the icon", () => {
+  // A bubble 120px wide centered on its bird (shift 0), a 36px icon
+  const place = { w: 120, shift: 0 };
+  test("a long name: the tail runs down beside it, clear of the name's edge", () => {
+    const t = aboveTail(place, 70, 36);
+    // From the bubble's left: the bird's center is at 60, the name spans 25-95; the tail is 6px wide at its base
+    expect(t.base - 3 > 95 || t.base + 3 < 25).toBe(true);
+    expect(Math.abs(t.tip - 60)).toBeGreaterThan(35);
+  });
+
+  test("a short name: the tip points at the icon's top corner", () => {
+    const t = aboveTail(place, 20, 36);
+    expect(Math.abs(t.tip - 60)).toBeLessThanOrEqual(18);
+  });
+
+  test("the tail starts on the bubble's body, on the side it was shifted to", () => {
+    const right = aboveTail({ w: 120, shift: 40 }, 90, 36);
+    expect(right.base).toBeGreaterThan(60 - 40);
+    expect(right.base).toBeLessThanOrEqual(120 - 8);
+    const left = aboveTail({ w: 120, shift: -40 }, 90, 36);
+    expect(left.base).toBeGreaterThanOrEqual(8);
+    expect(left.base).toBeLessThan(60 + 40);
   });
 });
 

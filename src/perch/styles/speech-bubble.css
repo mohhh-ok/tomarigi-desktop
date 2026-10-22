@@ -74,19 +74,28 @@
   border-bottom: 7px solid #ece6d6;
 }
 
-/* A bubble that would reach past the garden's bottom is shown above the icon instead (layoutBubbles in
-   garden-bubbles.ts), its bottom edge right above the icon's top (--bubble-icon-top, measured and passed by
-   garden.tsx), with the tail pointing down at the icon (docs/design.md "Layout") */
+/* A bubble shown above its bird (layoutBubbles in garden-bubbles.ts) ends above the bird's name, so the name stays
+   readable (--bubble-name-top, measured and passed by garden.tsx), with the tail running down beside the name to the
+   icon's top (--bubble-icon-top). The tail's base and tip are px from the bubble's left (--tail-base, --tail-tip;
+   aboveTail) (docs/design.md "Layout") */
 .garden-bubble-anchor.above .speech-bubble-below {
   top: auto;
-  bottom: calc(100% - var(--bubble-icon-top, 0px) + 7px);
+  bottom: calc(100% - var(--bubble-name-top, var(--bubble-icon-top, 0px)) + 7px);
 }
 
 .garden-bubble-anchor.above .speech-bubble-below::after {
   top: calc(100% - 1px);
   bottom: auto;
-  border-top: 7px solid #ece6d6;
-  border-bottom: 0;
+  left: 0;
+  width: 100%;
+  height: calc(var(--bubble-icon-top, 0px) - var(--bubble-name-top, var(--bubble-icon-top, 0px)) + 8px);
+  border: 0;
+  background: #ece6d6;
+  clip-path: polygon(
+    calc(var(--tail-base, 50%) - 3px) 0,
+    calc(var(--tail-base, 50%) + 3px) 0,
+    var(--tail-tip, 50%) 100%
+  );
 }
 
 /* For birds with a speech bubble, the space between the icon and the name. Bubble height + gap to the icon (same as

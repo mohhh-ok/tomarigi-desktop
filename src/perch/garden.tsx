@@ -41,7 +41,7 @@ import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
-import { bubbleReach, bubbleRoomFor, layoutBubbles, type BubblePlace, type LaidBird } from "./garden-bubbles";
+import { aboveTail, bubbleReach, bubbleRoomFor, layoutBubbles, type BubblePlace, type LaidBird } from "./garden-bubbles";
 import {
   BUBBLE_ROOM_PX,
   birdExtraH,
@@ -719,6 +719,7 @@ export function Garden({
         x: anchor.offsetLeft,
         y: anchor.offsetTop,
         iconTop: parseFloat(anchor.style.getPropertyValue("--bubble-icon-top")) || 0,
+        nameTop: parseFloat(anchor.style.getPropertyValue("--bubble-name-top")) || 0,
         iconBottom: parseFloat(anchor.style.getPropertyValue("--bubble-top")) || 0,
         inBlock: anchor.classList.contains("in-watch-block"),
       });
@@ -1024,6 +1025,16 @@ function GardenNode({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+  // The name's top edge and width, and the icon's width: a bubble above goes above the name, its tail passing beside
+  // the name to the icon (docs/design.md "Layout"). Read after every render, as the name can change
+  const nameRef = useRef<HTMLSpanElement>(null);
+  const [nameBox, setNameBox] = useState<{ top: number; w: number; iconW: number } | undefined>(undefined);
+  useLayoutEffect(() => {
+    const name = nameRef.current;
+    const glyph = glyphRef.current;
+    const next = glyph && { top: name ? name.offsetTop : glyph.offsetTop, w: name?.offsetWidth ?? 0, iconW: glyph.offsetWidth };
+    if (next && (next.top !== nameBox?.top || next.w !== nameBox?.w || next.iconW !== nameBox?.iconW)) setNameBox(next);
+  });
   // Target driven directly by WAAPI (element.animate) for the enter/leave animations. It assumes no CSS transform
   // is applied (positioning is handled by the outer .garden-node), so it doesn't conflict with animate's transform
   // keyframes
@@ -1171,7 +1182,12 @@ function GardenNode({
   // The speech bubble is centered under the bird and pushed only to stay inside the garden frame (bubbleVars), for birds
   // in a watching block too (docs/design.md "Layout")
   const bubbleRange = bubbleRangeOf(containerRef.current);
-  const bubbleStyle = bubbleRange && bubbleVars(pos.x, bubbleRange, inBlock ? undefined : bubblePlace?.max, bubblePlace?.shift);
+  const tail = bubblePlace?.above && nameBox ? aboveTail(bubblePlace, nameBox.w, nameBox.iconW) : undefined;
+  const bubbleStyle =
+    bubbleRange && {
+      ...bubbleVars(pos.x, bubbleRange, inBlock ? undefined : bubblePlace?.max, bubblePlace?.shift),
+      ...(tail && ({ "--tail-base": `${tail.base}px`, "--tail-tip": `${tail.tip}px` } as CSSProperties)),
+    };
 
   // Bird facing. About half are mirrored deterministically based on the id (all facing the same way looks stuffed).
   // Sprites are assumed to face left by default → flip = facing right
@@ -1261,9 +1277,11 @@ function GardenNode({
         {/* Birds in a block show only what differs (path relative to the parent). If any bird in the row has a name,
             birds without one also reserve the row height */}
         {!inBlock ? (
-          <span className="garden-name">{session.project}</span>
+          <span className="garden-name" ref={nameRef}>
+            {session.project}
+          </span>
         ) : grouped.label !== undefined ? (
-          <span className="garden-name" title={grouped.label}>
+          <span className="garden-name" title={grouped.label} ref={nameRef}>
             {grouped.label}
           </span>
         ) : (
@@ -1323,6 +1341,7 @@ function GardenNode({
                 zIndex: stack.bubble,
                 "--bubble-top": `${glyphBottom ?? glyphSize}px`,
                 "--bubble-icon-top": `${glyphTop ?? 0}px`,
+                "--bubble-name-top": `${nameBox?.top ?? glyphTop ?? 0}px`,
               } as CSSProperties
             }
           >
