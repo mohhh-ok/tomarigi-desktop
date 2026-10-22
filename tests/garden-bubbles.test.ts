@@ -65,6 +65,22 @@ describe("bubbleMaxWidths", () => {
   });
 });
 
+describe("bubbleMaxWidths beside a watch block", () => {
+  test("a bubble in a watch block beside it narrows it, though the block's own bubble keeps the CSS max", () => {
+    // The concierge (outside) is 100px left of a bird in a block with a bubble in the same row
+    const max = bubbleMaxWidths([
+      { id: "concierge", x: 258, y: 14, bubble: true },
+      { id: "web", x: 358, y: 13, bubble: true, inBlock: true },
+    ]);
+    expect(max.get("concierge")).toBe(120);
+    expect(max.has("web")).toBe(false);
+  });
+
+  test("a bird in a block keeps no bubble room of its own outside the block's rows", () => {
+    expect(bubbleRoomFor([{ id: "a", x: 0, y: 20, bubble: false }, { id: "b", x: 132, y: 20, bubble: true, inBlock: true }]).size).toBe(0);
+  });
+});
+
 describe("bubbleMaxWidths near the garden's edge", () => {
   // The garden's bubble range (inside the frame): a bubble is pushed to stay within it
   const range = { lo: 4, hi: 600 };
