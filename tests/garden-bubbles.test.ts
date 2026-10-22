@@ -31,21 +31,21 @@ describe("bubbleMaxWidths", () => {
     expect(max.get("c")).toBe(180);
   });
 
-  test("birds placed side by side (132px apart) get 132px, so two long bubbles don't overlap", () => {
+  test("birds placed side by side (132px apart) get 124px, so two long bubbles keep an 8px gap", () => {
     const max = bubbleMaxWidths(placed([["a", 100, 20, true], ["b", 232, 20, true]]));
-    expect(max.get("a")).toBe(132);
-    expect(max.get("b")).toBe(132);
-    // Each reaches at most halfway: 100 + 66 = 232 - 66
-    expect(100 + max.get("a")! / 2).toBeLessThanOrEqual(232 - max.get("b")! / 2);
+    expect(max.get("a")).toBe(124);
+    expect(max.get("b")).toBe(124);
+    // Each reaches at most halfway less 4px: 100 + 62 = 232 - 62 - 8
+    expect(232 - max.get("b")! / 2 - (100 + max.get("a")! / 2)).toBe(8);
   });
 
   test("three side by side: none overlaps, the middle one takes the nearer side", () => {
     const max = bubbleMaxWidths(placed([["a", 100, 20, true], ["b", 232, 25, true], ["c", 464, 18, true]]));
-    expect(max.get("a")).toBe(132);
-    expect(max.get("b")).toBe(132);
+    expect(max.get("a")).toBe(124);
+    expect(max.get("b")).toBe(124);
     expect(max.get("c")).toBe(180);
-    expect(100 + max.get("a")! / 2).toBeLessThanOrEqual(232 - max.get("b")! / 2);
-    expect(232 + max.get("b")! / 2).toBeLessThanOrEqual(464 - max.get("c")! / 2);
+    expect(232 - max.get("b")! / 2 - (100 + max.get("a")! / 2)).toBeGreaterThanOrEqual(8);
+    expect(464 - max.get("c")! / 2 - (232 + max.get("b")! / 2)).toBeGreaterThanOrEqual(8);
   });
 
   test("never below 120px, even for birds dropped close together", () => {
@@ -60,7 +60,7 @@ describe("bubbleMaxWidths", () => {
       placed([["a", 100, 20, true], ["b", 250, 20, false], ["c", 250, 33, true], ["d", 400, 20, true], ["e", 255, 20, true]]),
     );
     // a's nearest neighbour with a bubble on the right is e (155px), not b (no bubble) or c (13px lower)
-    expect(max.get("a")).toBe(155);
+    expect(max.get("a")).toBe(155 - 8);
     expect(max.has("b")).toBe(false);
   });
 });
@@ -74,6 +74,15 @@ describe("bubbleMaxWidths beside a watch block", () => {
     ]);
     expect(max.get("concierge")).toBe(120);
     expect(max.has("web")).toBe(false);
+  });
+
+  test("140px from a block's bubble it keeps the 8px gap: the block's bubble reaches 60px, less than its half", () => {
+    const max = bubbleMaxWidths([
+      { id: "concierge", x: 218, y: 14, bubble: true },
+      { id: "web", x: 358, y: 13, bubble: true, inBlock: true },
+    ]);
+    expect(max.get("concierge")).toBe(132);
+    expect(358 - 60 - (218 + max.get("concierge")! / 2)).toBeGreaterThanOrEqual(8);
   });
 
   test("a bird in a block keeps no bubble room of its own outside the block's rows", () => {
@@ -91,15 +100,15 @@ describe("bubbleMaxWidths near the garden's edge", () => {
   };
 
   test("a bubble pushed left by the right edge narrows so it stays short of halfway to its left neighbour", () => {
-    // b is 60px inside the right edge: at 132px it would be pushed 6px left, over a's bubble
+    // b is 60px inside the right edge: at 124px it would be pushed 2px left, into the gap before a's bubble
     const max = bubbleMaxWidths(placed([["a", 408, 20, true], ["b", 540, 20, true]]), range);
-    expect(max.get("b")).toBe(60 + 66);
-    expect(max.get("a")).toBe(132);
+    expect(max.get("b")).toBe(60 + 66 - 4);
+    expect(max.get("a")).toBe(124);
   });
 
   test("the same on the left edge, and a bird with no neighbour keeps 180px at the edge", () => {
     const max = bubbleMaxWidths(placed([["a", 44, 20, true], ["b", 176, 20, true], ["c", 20, 200, true]]), range);
-    // a is 40px inside the left edge: room 40 + half-distance 66 is below the floor, so 120px
+    // a is 40px inside the left edge: room 40 + half-distance 66 less 4px is below the floor, so 120px
     expect(max.get("a")).toBe(120);
     expect(max.get("c")).toBe(180);
   });
@@ -110,11 +119,11 @@ describe("bubbleMaxWidths near the garden's edge", () => {
     const max = bubbleMaxWidths(placed([["a", xs[0], 20, true], ["b", xs[1], 20, true]]), range);
     const [, aRight] = span(xs[0], max.get("a")!);
     const [bLeft] = span(xs[1], max.get("b")!);
-    expect(aRight).toBeLessThanOrEqual(bLeft);
+    expect(bLeft - aRight).toBeGreaterThanOrEqual(8);
   });
 });
 
-// The garden's bubble is sized// The garden's bubble is sized and wrapped by CSS (styles/speech-bubble.css), so read the rules it uses
+// The garden's bubble is sized and wrapped by CSS (styles/speech-bubble.css), so read the rules it uses
 const css = readFileSync(new URL("../src/perch/styles/speech-bubble.css", import.meta.url), "utf8");
 const rule = (selector: string) => {
   const at = css.indexOf(`${selector} {`);
@@ -141,5 +150,10 @@ describe("the garden's speech bubble (styles/speech-bubble.css)", () => {
     const body = rule(".garden-bubble-anchor.in-watch-block .speech-bubble-below");
     expect(body).toBeDefined();
     expect(body).toContain("--bubble-max: 120px");
+  });
+
+  test("the concierge's bubble shows its whole text too, not cut after two lines (styles/concierge.css)", () => {
+    const concierge = readFileSync(new URL("../src/perch/styles/concierge.css", import.meta.url), "utf8");
+    expect(concierge).not.toContain("line-clamp");
   });
 });
