@@ -255,22 +255,27 @@ export function gardenDropScale(userW: number, userH: number, fit: GardenFit): n
 }
 
 /**
- * The fit with the lowest bubble shown below its bird counted too (docs/design.md "Layout"): reach is how far down the
- * garden must go for it (garden px at gardenH, the garden's height the placement was made at, edge room included),
- * undefined without one. A bubble cut by the garden's bottom asks the window to grow like a bird without a spot, and
- * simulate counts it as one at sizes where it would still be cut, so shrinking back (keepPlaceScale) never cuts it and
- * the window doesn't shrink and grow right back. anchor: the part of the window that stays put (gardenGrowAnchor); the
- * garden's bottom moves down by (1 - anchor.y) of what it grows. Pass a reach that growing can give (bubbleGrowH):
- * one it can't would grow the window to the end
+ * The fit with the bubbles past the garden's edges counted too (docs/design.md "Layout"): reach is how far down the
+ * garden must go for the lowest bubble below its bird (garden px at gardenH, the garden's height the placement was
+ * made at, edge room included), reachUp how far above the garden's top it must go for the highest bubble above its
+ * bird's name (px); undefined without one. A bubble cut by the garden's edge asks the window to grow like a bird
+ * without a spot, and simulate counts it as one at sizes where it would still be cut, so shrinking back
+ * (keepPlaceScale) never cuts it and the window doesn't shrink and grow right back. anchor: the part of the window that
+ * stays put (gardenGrowAnchor); of what the garden grows, its bottom moves down by (1 - anchor.y) and its top up by
+ * anchor.y, the birds staying at the same place on screen. Pass reaches that growing can give (bubbleGrowRoom): one
+ * it can't would grow the window to the end
  */
 export function withBubbleReach<F extends Pick<GardenFit, "overflow" | "simulate">>(
   fit: F,
   reach: number | undefined,
   gardenH: number,
   anchor: Readonly<Point>,
+  reachUp?: number,
 ): F {
-  if (reach === undefined) return fit;
-  const cutAt = (gh: number) => reach > gh - (gh - gardenH) * anchor.y + 0.5;
+  if (reach === undefined && reachUp === undefined) return fit;
+  const cutAt = (gh: number) =>
+    (reach !== undefined && reach > gh - (gh - gardenH) * anchor.y + 0.5) ||
+    (reachUp !== undefined && reachUp > (gh - gardenH) * anchor.y + 0.5);
   const simulate = fit.simulate;
   return {
     ...fit,
@@ -285,20 +290,21 @@ export function withBubbleReach<F extends Pick<GardenFit, "overflow" | "simulate
 }
 
 /**
- * How far down the garden can reach by growing the window, in garden px now (docs/design.md "Layout": a bubble past the
- * garden's bottom stays below while growing gives it room): the garden at the largest scale the display's visible area
- * (area, CSS px) allows, of which the garden's bottom gets (1 - anchorY) (the rest goes above). The garden's height now
- * when the window grows upward from the display's bottom
+ * How far the garden can reach by growing the window (docs/design.md "Layout": a bubble past the garden's bottom stays
+ * below, and one above its bird's name past the top stays there, while growing gives them room): h is how far down,
+ * in garden px now, up how far above the garden's top. The garden at the largest scale the display's visible area
+ * (area, CSS px) allows, of which the garden's bottom gets (1 - anchorY) and its top anchorY: a window in the display's
+ * upper part grows downward only, one in its lower part upward only (garden_grow.rs)
  */
-export function bubbleGrowH(
+export function bubbleGrowRoom(
   user: { width: number; height: number },
   fit: Pick<GardenFit, "gardenH" | "overheadH">,
   anchorY: number,
   area: { width: number; height: number },
-): number {
+): { h: number; up: number } {
   const most = Math.min(MAX_FIT_SCALE, area.width / user.width, area.height / user.height);
-  const grown = Math.max(fit.gardenH, user.height * most - fit.overheadH);
-  return fit.gardenH + (grown - fit.gardenH) * (1 - anchorY);
+  const grows = Math.max(0, user.height * most - fit.overheadH - fit.gardenH);
+  return { h: fit.gardenH + grows * (1 - anchorY), up: grows * anchorY };
 }
 
 /** The scale last applied, with the number of birds and the user's size it was decided for */
