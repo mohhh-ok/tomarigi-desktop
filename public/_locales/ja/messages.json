@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "使われなくなりました。保存済みのキーは削除できます。"
+  },
+  "gardenArrange": {
+    "message": "整列"
   }
 }

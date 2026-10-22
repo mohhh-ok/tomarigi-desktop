@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Wordt niet meer gebruikt. Je kunt deze opgeslagen sleutel verwijderen."
+  },
+  "gardenArrange": {
+    "message": "Rangschikken"
   }
 }

@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Ei ole enää käytössä. Voit poistaa tallennetun avaimen."
+  },
+  "gardenArrange": {
+    "message": "Järjestä"
   }
 }

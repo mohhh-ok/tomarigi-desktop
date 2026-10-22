@@ -5,6 +5,7 @@ import { AGENTS } from "@/lib/agents";
 import { NativeDirectoryHandle } from "@/lib/native-fs";
 import type { RootEntry } from "@/lib/settings-store";
 import { DEFAULT_PRESET, PRESETS } from "./mock-presets";
+import { GARDEN_ARRANGE_EVENT } from "./garden-menu";
 import { needsAnswer } from "@/lib/turn-verdict";
 import type { ConciergeAdvice } from "@/lib/concierge";
 
@@ -249,6 +250,10 @@ export function MockPanel({ source }: { source: MockSource }) {
         </button>
         <button className="small" onClick={closeBird}>
           Close one (fade out)
+        </button>
+        {/* The Garden's right-click menu is native and doesn't show in a browser */}
+        <button className="small" onClick={() => window.dispatchEvent(new Event(GARDEN_ARRANGE_EVENT))}>
+          Arrange the Garden
         </button>
       </div>
       <div className="mock-preset-row">

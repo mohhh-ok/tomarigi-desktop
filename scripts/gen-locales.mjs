@@ -168,6 +168,7 @@ export const KEYS = [
   "localAiNeedsModel",
   "aiUserMessagesNote",
   "retiredKeyNote",
+  "gardenArrange",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

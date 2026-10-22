@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "ไม่ได้ใช้แล้ว คุณลบคีย์ที่บันทึกไว้นี้ได้"
+  },
+  "gardenArrange": {
+    "message": "จัดเรียง"
   }
 }
