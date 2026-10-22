@@ -32,6 +32,8 @@ import type { SessionView } from "@/lib/sessions";
 import type { IconSetAssignments, IconSetId } from "@/lib/icon-set-store";
 import { resolveIconSet } from "./icon-sets";
 import { dragGrowAt, dragGrowEnd, gardenGrowAnchor } from "./garden-grow";
+import { arrangeKept, arrangeSettled, newKept, type Kept } from "./garden-arrange";
+import { GARDEN_ARRANGE_EVENT, popupGardenMenu } from "./garden-menu";
 import { gardenStack } from "./garden-stack";
 import { onFadeHandlePointerDown } from "./garden-fade";
 import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
@@ -138,31 +140,6 @@ interface GroupDrag {
   dy: number;
 }
 
-// What the placement keeps between renders (docs/design.md "Layout": a bird or block on screen stays where it is)
-interface Kept {
-  // Top-left of each bird's footprint as last shown (birds in a block included, so they stay put if the block goes)
-  birds: Map<string, Point>;
-  // Top-left of each block as last shown, by its first-started bird, with its members' grid cells (so they keep them)
-  blocks: Map<string, { at: Point; members: string[]; grid: Map<string, GridCell> }>;
-  // Spots the user just dropped a bird (footprint top-left) or a block (block top-left) on, used on the next render
-  drops: Map<string, Point>;
-  // Birds and blocks that had no free spot and overlap others
-  overlapping: Set<string>;
-  // Birds and blocks (by their first-started bird) the user dropped where they are: kept there over others too
-  // (docs/design.md "Layout"), until dragged again or gone
-  byUser: Set<string>;
-  // Birds and blocks (by their first-started bird) not on screen yet: first placed in a render that had no spot for
-  // something, which asks the window to grow (docs/design.md "Layout": "On screen"). Kept where they are while the
-  // garden keeps that size (unsettledAt); placed again like new ones once it changes, so the places they got in the
-  // small garden don't split the room the window grew for
-  unsettled: Set<string>;
-  unsettledAt?: { w: number; h: number };
-  // Garden size at the last placement (to keep things at the same place on screen when it resizes)
-  frame?: { w: number; h: number };
-  // How many times the user dropped a bird or block (GardenFit.drops: the window shrinks once on each)
-  dropCount: number;
-}
-
 export function Garden({
   sessions: sessionViews,
   concierge,
@@ -215,15 +192,7 @@ export function Garden({
   // Saved (dragged) positions, only used for birds that aren't on screen yet (e.g. after a relaunch). null until loaded,
   // so birds aren't placed once without them and then moved
   const [positions, setPositions] = useState<Record<string, GardenPosition> | null>(null);
-  const keptRef = useRef<Kept>({
-    birds: new Map(),
-    blocks: new Map(),
-    drops: new Map(),
-    overlapping: new Set(),
-    byUser: new Set(),
-    unsettled: new Set(),
-    dropCount: 0,
-  });
+  const keptRef = useRef<Kept>(newKept());
   // Log lines about the placement, written by render and sent to the log after commit
   const logRef = useRef<string[]>([]);
   // Last "no free spot" line logged. While the same birds overlap at the same size it isn't logged again (every poll
@@ -313,7 +282,26 @@ export function Garden({
 
   // A drop is placed on the next render (kept.drops); this re-renders for it
   const [, setDropCount] = useState(0);
-  const placeDrop = useCallback(() => setDropCount((n) => n + 1), []);
+  const placeDrop = useCallback(() => {
+    // A drop ends an Arrange that was waiting for the window to grow: it is saved with the drop instead
+    keptRef.current.arranging = false;
+    setDropCount((n) => n + 1);
+  }, []);
+  // Arrange (the right-click menu): forget every saved spot, the user's marks and where everything is, and lay the birds
+  // out again on the next render as on a launch with no saved positions (docs/design.md "Layout"). The icon size is
+  // worked out again as on a launch too
+  const arrange = useCallback(() => {
+    arrangeKept(keptRef.current);
+    glyphSizeRef.current = undefined;
+    setGroupDrag(null);
+    logRef.current.push("[garden] arrange");
+    void saveGardenPositions({});
+    setPositions({});
+  }, []);
+  useEffect(() => {
+    window.addEventListener(GARDEN_ARRANGE_EVENT, arrange);
+    return () => window.removeEventListener(GARDEN_ARRANGE_EVENT, arrange);
+  }, [arrange]);
   // Where every bird settled in the render that placed a drop, saved after commit (for the next launch)
   const dropSaveRef = useRef<{
     settled: Map<string, Point>;
@@ -564,6 +552,11 @@ export function Garden({
       kept.dropCount++;
     }
     kept.drops.clear();
+    // An Arrange whose birds all have a spot now (the window grew for them if it had to) is saved like a drop, with no
+    // bird marked as placed by the user and no front order, and the window shrinks once (docs/design.md "Layout")
+    if (arrangeSettled(kept, overflowAtBase.length)) {
+      dropSaveRef.current = { settled: new Map(birdAt), byUser: new Set(), front: new Set(), w: W, h: baseH };
+    }
     // Something had no spot, so the window is asked to grow: what was first placed now (and what still isn't settled
     // at this size) isn't on screen yet, and is placed again once the size changes. Everything has a spot: all settled
     if (overflowAtBase.length > 0) {
@@ -842,7 +835,15 @@ export function Garden({
     }),
   );
   return (
-    <div className="garden" ref={containerRef}>
+    <div
+      className="garden"
+      ref={containerRef}
+      // The same menu on a bird, a watch block and an empty spot, in place of the WebView's own (docs/design.md "Layout")
+      onContextMenu={(e) => {
+        e.preventDefault();
+        popupGardenMenu(arrange);
+      }}
+    >
       {/* Speech bubble layer. Placed above the birds with their names, marks and status lines, so a bubble covers a
           neighbour rather than hiding under it. Among bubbles, newer turns are on top (bubbleOrder) */}
       <div className="garden-bubble-layer" ref={setBubbleLayer} />
@@ -1099,8 +1100,9 @@ function GardenNode({
     let groupRoot: string | undefined;
 
     const onPointerDown = (e: PointerEvent) => {
-      // Left button only, so a right/middle click released without moving doesn't jump to the terminal
-      if (e.button !== 0) return;
+      // Left button only, so a right/middle click released without moving doesn't jump to the terminal. Control-click is
+      // macOS's right click: it opens the Garden's menu instead
+      if (e.button !== 0 || e.ctrlKey) return;
       const container = containerRef.current;
       if (!container) return;
       e.preventDefault();

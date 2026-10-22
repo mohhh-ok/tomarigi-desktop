@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "No longer used. You can delete this saved key."
+  },
+  "gardenArrange": {
+    "message": "Arrange"
   }
 }

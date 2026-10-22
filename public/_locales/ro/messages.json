@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Nu mai este folosită. Poți șterge această cheie salvată."
+  },
+  "gardenArrange": {
+    "message": "Aranjează"
   }
 }

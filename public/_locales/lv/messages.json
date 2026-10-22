@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Vairs netiek izmantota. Šo saglabāto atslēgu varat izdzēst."
+  },
+  "gardenArrange": {
+    "message": "Sakārtot"
   }
 }

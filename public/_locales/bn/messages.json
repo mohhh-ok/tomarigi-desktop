@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "আর ব্যবহার হয় না। সংরক্ষিত এই কী মুছে ফেলতে পারেন।"
+  },
+  "gardenArrange": {
+    "message": "সাজান"
   }
 }

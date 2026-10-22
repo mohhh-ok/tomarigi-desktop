@@ -210,10 +210,11 @@ export default function App({
     return () => document.removeEventListener("pointerdown", unlock);
   }, []);
 
-  // Grab the window background to move the window (see NO_WINDOW_DRAG). Left button only
+  // Grab the window background to move the window (see NO_WINDOW_DRAG). Left button only, not Control-click (macOS's
+  // right click, which opens the Garden's menu)
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || e.ctrlKey) return;
       if (e.target instanceof Element && e.target.closest(NO_WINDOW_DRAG)) return;
       // A standard window moves by its title bar (so grabbing the background while maximized or fullscreen doesn't pull the window out)
       if (currentWindowMode() === "normal") return;
