@@ -40,7 +40,7 @@ import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
-import { bubbleRoomFor } from "./garden-bubbles";
+import { bubbleMaxWidths, bubbleRoomFor } from "./garden-bubbles";
 import {
   BUBBLE_ROOM_PX,
   birdExtraH,
@@ -85,10 +85,20 @@ const FOOT_W = NODE_WIDTH_PX;
 
 type BubbleRange = { lo: number; hi: number };
 
+/** Where the speech bubbles stay: inside the garden frame. undefined until the frame is measured */
+function bubbleRangeOf(garden: HTMLElement | null): BubbleRange | undefined {
+  const w = garden?.clientWidth ?? 0;
+  return w > 0 ? { lo: BUBBLE_EDGE_PX, hi: w - BUBBLE_EDGE_PX } : undefined;
+}
+
 /** The speech bubble's room around the bird at x (px): it stays within range (inside the garden frame), centered under
     the bird when it fits (.speech-bubble-below in styles/speech-bubble.css) */
-function bubbleVars(x: number, range: BubbleRange): CSSProperties {
-  return { "--bubble-lo": `${x - range.lo}px`, "--bubble-hi": `${range.hi - x}px` } as CSSProperties;
+function bubbleVars(x: number, range: BubbleRange, max?: number): CSSProperties {
+  return {
+    "--bubble-lo": `${x - range.lo}px`,
+    "--bubble-hi": `${range.hi - x}px`,
+    ...(max !== undefined && { "--bubble-max": `${max}px` }),
+  } as CSSProperties;
 }
 
 // Usual height of a bird's name row (.garden-name: 11px text + 3px margin), until the icon's position is measured
@@ -749,16 +759,16 @@ export function Garden({
     );
   }
 
-  // Birds outside a block in the same row as a bird with a bubble keep the bubble room, so the status lines of the row
-  // line up (docs/design.md "Layout")
   // Birds the user dragged, drawn in front of the others, the last dragged frontmost (gardenStack)
   const fronts = frontRanks(positions ?? {});
-  const roomFor = bubbleRoomFor(
-    sessions.flatMap((s) => {
-      const p = !shapeOf.has(s.id) && positionOf(s.id);
-      return p ? [{ id: s.id, y: p.y, bubble: bubbleText(s) !== undefined }] : [];
-    }),
-  );
+  // Birds outside a block in the same row as a bird with a bubble keep the bubble room, so the status lines of the row
+  // line up, and each bubble reaches at most halfway to the bubbles beside it in its row (docs/design.md "Layout")
+  const freeBirds = sessions.flatMap((s) => {
+    const p = !shapeOf.has(s.id) && positionOf(s.id);
+    return p ? [{ id: s.id, x: p.x, y: p.y, bubble: bubbleText(s) !== undefined }] : [];
+  });
+  const roomFor = bubbleRoomFor(freeBirds);
+  const bubbleMax = bubbleMaxWidths(freeBirds, bubbleRangeOf(containerRef.current));
   return (
     <div className="garden" ref={containerRef}>
       {/* Speech bubble layer. Placed above the birds with their names, marks and status lines, so a bubble covers a
@@ -826,6 +836,7 @@ export function Garden({
             groupDragging={shape !== undefined && groupDrag?.rootId === shape.rootId}
             bubbleLayer={bubbleLayer}
             keepBubbleRoom={roomFor.has(s.id)}
+            bubbleMax={bubbleMax.get(s.id)}
             watchPlace={watchPlace}
             groupRootId={shape?.rootId}
             onGroupMove={setGroupDrag}
@@ -882,6 +893,7 @@ function GardenNode({
   groupDragging = false,
   bubbleLayer,
   keepBubbleRoom = false,
+  bubbleMax,
   watchPlace,
   groupRootId,
   onGroupMove,
@@ -912,6 +924,8 @@ function GardenNode({
   bubbleLayer?: HTMLElement | null;
   // Keep the bubble room without a bubble, so the status lines line up with a row that has a bubble (bubbleRoomFor)
   keepBubbleRoom?: boolean;
+  // Max width of the speech bubble outside a block (bubbleMaxWidths); undefined keeps the CSS max
+  bubbleMax?: number;
   // The bird's spot within a watching block. Present only for birds in a block
   watchPlace?: WatchPlace;
   // A bird in a block drags the whole block (moves the block, not its own position)
@@ -1088,9 +1102,8 @@ function GardenNode({
   const top = `${pos.y}px`;
   // The speech bubble is centered under the bird and pushed only to stay inside the garden frame (bubbleVars), for birds
   // in a watching block too (docs/design.md "Layout")
-  const containerW = containerRef.current?.clientWidth ?? 0;
-  const bubbleStyle =
-    containerW > 0 ? bubbleVars(pos.x, { lo: BUBBLE_EDGE_PX, hi: containerW - BUBBLE_EDGE_PX }) : undefined;
+  const bubbleRange = bubbleRangeOf(containerRef.current);
+  const bubbleStyle = bubbleRange && bubbleVars(pos.x, bubbleRange, bubbleMax);
 
   // Bird facing. About half are mirrored deterministically based on the id (all facing the same way looks stuffed).
   // Sprites are assumed to face left by default → flip = facing right
