@@ -316,6 +316,7 @@ pub fn run() {
             garden_grow::garden_drag_grow,
             garden_grow::garden_drag_end,
             garden_grow::garden_grow_anchor,
+            garden_grow::garden_bubble_grow,
             garden_grow::window_user_size,
             fs::save_download,
             keys::anthropic_messages,

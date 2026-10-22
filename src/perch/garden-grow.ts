@@ -4,7 +4,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { bubbleGrowRoom, gardenDropScale, growStep, type GardenFit, type GrowKept } from "@/lib/garden-fit";
+import {
+  bubbleGrowRoom,
+  gardenDropScale,
+  growStep,
+  type BubbleGrowRoom,
+  type GardenFit,
+  type GrowKept,
+} from "@/lib/garden-fit";
 import { dragGrowRequest } from "./garden-drag-grow";
 
 /**
@@ -18,6 +25,9 @@ export const gardenGrowAnchor = { x: 0, y: 0 };
 // A drag is growing the window: the anchor is the drag's until it ends (dragGrowEnd), not the one fetched for growing
 // to fit
 let dragGrowing = false;
+// The window is growing up for a bubble (garden_bubble_grow): the anchor is y 1 until the Garden has seen the new size,
+// the garden's height when it was asked for
+let upGrowingAt: number | null = null;
 
 /** Called on each pointer move of a drag. e: the pointer event; garden: the garden element */
 export function dragGrowAt(e: PointerEvent, garden: HTMLElement): void {
@@ -63,8 +73,8 @@ export function useGardenGrow(
   active: boolean,
   floating: boolean,
   birdCount: number,
-): { onFit: (fit: GardenFit | null) => void; growRoom: { h: number; up: number } | undefined } {
-  const [growRoom, setGrowRoom] = useState<{ h: number; up: number } | undefined>(undefined);
+): { onFit: (fit: GardenFit | null) => void; growRoom: BubbleGrowRoom | undefined } {
+  const [growRoom, setGrowRoom] = useState<BubbleGrowRoom | undefined>(undefined);
   const [user, setUser] = useState<UserSize | null>(null);
   // Number of birds at the last manual resize. Growth waits until there are more birds than this
   const [heldAt, setHeldAt] = useState<number | null>(null);
@@ -99,10 +109,37 @@ export function useGardenGrow(
   const seqRef = useRef(0);
   // The drop count (GardenFit.drops) last seen: a new one shrinks the window once
   const dropsRef = useRef<number | undefined>(undefined);
+  // The anchor the Rust side last told (garden_grow_anchor), and how far the window can grow up for a bubble (CSS px)
+  const keepRef = useRef({ x: 0, y: 0, above: 0 });
+
+  // Growing up for a bubble is over: the anchor goes back to the one the Rust side tells
+  const upGrown = useCallback(() => {
+    upGrowingAt = null;
+    if (!dragGrowing) Object.assign(gardenGrowAnchor, { x: keepRef.current.x, y: keepRef.current.y });
+  }, []);
 
   const decide = useCallback(() => {
     const { active, floating, held, user, birdCount } = inputsRef.current;
     const fit = fitRef.current;
+    // Growing up for a bubble: wait until the Garden has seen the new size (it kept its birds at the same place on
+    // screen with anchor y 1), so nothing else resizes the window with that anchor
+    if (upGrowingAt !== null) {
+      if (!fit || fit.gardenH === upGrowingAt) return;
+      upGrown();
+    }
+    // A bubble above its bird's name past the garden's top, in a window in the display's upper part: grow up by itself,
+    // the bottom edge staying, like a drag pushing the top edge (docs/design.md "Layout")
+    if (active && !held && fit?.growUp !== undefined) {
+      upGrowingAt = fit.gardenH;
+      gardenGrowAnchor.y = 1;
+      const top = Math.ceil(fit.growUp);
+      void invoke("log", { line: `[grow] page bubble up=${top}` }).catch(() => {});
+      void invoke<boolean>("garden_bubble_grow", { top }).then(
+        (grew) => !grew && upGrown(),
+        () => upGrown(),
+      );
+      return;
+    }
     // The user dropped a bird or block: shrink once to the smallest size at which nothing on screen moves (even after a
     // manual resize, as it never goes below the user's size; docs/design.md "Layout")
     const seen = dropsRef.current;
@@ -114,10 +151,18 @@ export function useGardenGrow(
     // The display's visible area of the screen the window is on (CSS px), for how far the garden can reach
     const room =
       active && !held && fit && user
-        ? bubbleGrowRoom(user, fit, gardenGrowAnchor.y, { width: screen.availWidth, height: screen.availHeight })
+        ? bubbleGrowRoom(
+            user,
+            fit,
+            gardenGrowAnchor.y,
+            { width: screen.availWidth, height: screen.availHeight },
+            keepRef.current.above,
+          )
         : undefined;
-    const rounded = room && { h: Math.floor(room.h), up: Math.floor(room.up) };
-    setGrowRoom((was) => (was?.h === rounded?.h && was?.up === rounded?.up ? was : rounded));
+    const rounded = room && { ...room, h: Math.floor(room.h), up: Math.floor(room.up) };
+    setGrowRoom((was) =>
+      was?.h === rounded?.h && was?.up === rounded?.up && was?.upAlone === rounded?.upAlone ? was : rounded,
+    );
     const step = growStep({ active, floating, held, fit, user, birdCount, kept: keptRef.current, dropScale });
     const { scale, needed, drop } = step;
     keptRef.current = step.kept;
@@ -130,7 +175,7 @@ export function useGardenGrow(
     )}`;
     void invoke("log", { line }).catch(() => {});
     void invoke("garden_fit", { scale, drop }).catch(() => {});
-  }, []);
+  }, [upGrown]);
 
   // The anchor is fetched before the scale is decided, not only before a resize: Garden's simulate tries other sizes
   // with it, and one left over from before (the window moved to another part of the display while grown, or the page
@@ -139,11 +184,14 @@ export function useGardenGrow(
   const update = useCallback(() => {
     const seq = ++seqRef.current;
     void Promise.resolve()
-      .then(() => invoke<{ x: number; y: number } | null>("garden_grow_anchor"))
+      .then(() => invoke<{ x: number; y: number; above: number } | null>("garden_grow_anchor"))
       .catch(() => null)
       .then((anchor) => {
         if (seq !== seqRef.current) return;
-        if (anchor && !dragGrowing) Object.assign(gardenGrowAnchor, anchor);
+        if (anchor) keepRef.current = anchor;
+        if (anchor && !dragGrowing && upGrowingAt === null) {
+          Object.assign(gardenGrowAnchor, { x: anchor.x, y: anchor.y });
+        }
         decide();
       });
   }, [decide]);
