@@ -763,12 +763,12 @@ export function Garden({
   const fronts = frontRanks(positions ?? {});
   // Birds outside a block in the same row as a bird with a bubble keep the bubble room, so the status lines of the row
   // line up, and each bubble reaches at most halfway to the bubbles beside it in its row (docs/design.md "Layout")
-  const freeBirds = sessions.flatMap((s) => {
-    const p = !shapeOf.has(s.id) && positionOf(s.id);
-    return p ? [{ id: s.id, x: p.x, y: p.y, bubble: bubbleText(s) !== undefined }] : [];
+  const bubbleBirds = sessions.flatMap((s) => {
+    const p = positionOf(s.id);
+    return p ? [{ id: s.id, x: p.x, y: p.y, bubble: bubbleText(s) !== undefined, inBlock: shapeOf.has(s.id) }] : [];
   });
-  const roomFor = bubbleRoomFor(freeBirds);
-  const bubbleMax = bubbleMaxWidths(freeBirds, bubbleRangeOf(containerRef.current));
+  const roomFor = bubbleRoomFor(bubbleBirds);
+  const bubbleMax = bubbleMaxWidths(bubbleBirds, bubbleRangeOf(containerRef.current));
   return (
     <div className="garden" ref={containerRef}>
       {/* Speech bubble layer. Placed above the birds with their names, marks and status lines, so a bubble covers a
