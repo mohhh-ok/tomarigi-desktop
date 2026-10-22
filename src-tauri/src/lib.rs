@@ -310,6 +310,7 @@ pub fn run() {
             window::hide_window,
             window::get_window_mode,
             window::set_window_mode,
+            tray::set_voice_menu,
             fade::set_garden_fade,
             fade::reveal_garden,
             garden_grow::garden_fit,

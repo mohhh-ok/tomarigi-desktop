@@ -13,6 +13,62 @@ pub(crate) struct ModeMenu {
     pub(crate) normal: CheckMenuItem<tauri::Wry>,
 }
 
+/// The "Read aloud" item and the value the settings last reported (set_voice_menu). The setting itself stays in the
+/// WebView's IndexedDB (voiceEnabled in src/lib/settings-store.ts; src/perch/voice-menu.ts)
+struct VoiceMenu {
+    item: CheckMenuItem<tauri::Wry>,
+    state: VoiceState,
+}
+
+/// What a click on the "Read aloud" item switches to: the opposite of the value the settings last reported, rather
+/// than the item's own check mark, so a click before or during a report doesn't depend on how the menu toggles it
+#[derive(Default)]
+struct VoiceState(std::sync::atomic::AtomicBool);
+
+impl VoiceState {
+    fn report(&self, on: bool) {
+        self.0.store(on, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    /// Returns the new value
+    fn click(&self) -> bool {
+        !self.0.fetch_xor(true, std::sync::atomic::Ordering::SeqCst)
+    }
+}
+
+/// The "Read aloud" label: the settings checkbox's label (voiceEnableLabel) in the menu's language, read from the
+/// same locale files so the two can't drift apart
+fn voice_label(ja: bool) -> String {
+    let messages = if ja {
+        include_str!("../../public/_locales/ja/messages.json")
+    } else {
+        include_str!("../../public/_locales/en/messages.json")
+    };
+    serde_json::from_str::<serde_json::Value>(messages)
+        .ok()
+        .and_then(|v| v["voiceEnableLabel"]["message"].as_str().map(str::to_owned))
+        .unwrap_or_else(|| (if ja { "声で読み上げる" } else { "Read aloud with voice" }).into())
+}
+
+/// Called by the settings on launch and whenever readout is switched (src/perch/voice-menu.ts). available is false
+/// where the WebView has no speech engine; the item is then disabled, as the settings checkbox is
+#[tauri::command]
+pub(crate) fn set_voice_menu(app: AppHandle, checked: bool, available: bool) {
+    let Some(menu) = app.try_state::<VoiceMenu>() else { return };
+    menu.state.report(checked);
+    menu.item.set_checked(checked).ok();
+    menu.item.set_enabled(available).ok();
+}
+
+/// A click on "Read aloud": the settings save the new value and report it back (the "voice-enabled" event in
+/// src/perch/voice-menu.ts). The WebView runs while the window is hidden, so this works then too
+fn on_voice_item(app: &AppHandle) {
+    let Some(menu) = app.try_state::<VoiceMenu>() else { return };
+    let on = menu.state.click();
+    menu.item.set_checked(on).ok();
+    app.emit("voice-enabled", on).ok();
+}
+
 /// The "Check for updates" / "Update to v<version>" item. Its label follows the update status (show_update_status)
 struct UpdateMenu(MenuItem<tauri::Wry>);
 
@@ -85,6 +141,8 @@ pub(crate) fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()
     let floating =
         CheckMenuItem::with_id(app, "mode-floating", floating_label, true, mode == WindowMode::Floating, None::<&str>)?;
     let normal = CheckMenuItem::with_id(app, "mode-normal", normal_label, true, mode == WindowMode::Normal, None::<&str>)?;
+    // Unchecked and disabled until the settings report the saved value and whether the system can speak
+    let voice = CheckMenuItem::with_id(app, "voice", voice_label(is_japanese()), false, false, None::<&str>)?;
     let (update_text, _) = update_label(&UpdateStatus::Idle);
     let update = MenuItem::with_id(app, "update", update_text, true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", quit_label, true, None::<&str>)?;
@@ -96,12 +154,15 @@ pub(crate) fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()
             &floating,
             &normal,
             &PredefinedMenuItem::separator(app)?,
+            &voice,
+            &PredefinedMenuItem::separator(app)?,
             &update,
             &quit,
         ],
     )?;
     app.manage(ModeMenu { floating, normal });
     app.manage(UpdateMenu(update));
+    app.manage(VoiceMenu { item: voice, state: VoiceState::default() });
     // macOS: a black template image the menu bar tints. Windows / Linux taskbars are often dark, so the app icon in
     // color is used there
     #[cfg(target_os = "macos")]
@@ -118,6 +179,7 @@ pub(crate) fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()
             "toggle" => toggle_window(app),
             "mode-floating" => switch_mode(app, WindowMode::Floating),
             "mode-normal" => switch_mode(app, WindowMode::Normal),
+            "voice" => on_voice_item(app),
             "update" => on_update_item(app),
             "quit" => app.exit(0),
             _ => {}
@@ -131,4 +193,26 @@ pub(crate) fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()
         })
         .build(app)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn voice_label_is_the_settings_checkbox_label() {
+        assert_eq!(voice_label(false), "Read aloud with voice");
+        assert_eq!(voice_label(true), "声で読み上げる");
+    }
+
+    #[test]
+    fn a_click_flips_the_value_the_settings_last_reported() {
+        let state = VoiceState::default();
+        assert!(state.click());
+        assert!(!state.click());
+        state.report(true);
+        assert!(!state.click());
+        state.report(false);
+        assert!(state.click());
+    }
 }
