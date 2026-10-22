@@ -4,7 +4,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { gardenDropScale, growStep, type GardenFit, type GrowKept } from "@/lib/garden-fit";
+import { bubbleGrowH, gardenDropScale, growStep, type GardenFit, type GrowKept } from "@/lib/garden-fit";
 import { dragGrowRequest } from "./garden-drag-grow";
 
 /**
@@ -51,12 +51,19 @@ interface UserSize {
 /**
  * active: floating window, Garden tab, nothing else shown in its place. floating: the floating window; on its other
  * tabs the window keeps its size, and the standard window goes back to the user's size. birdCount: after a manual resize the window isn't grown back until a bird joins.
- * Returns the callback for Garden's onFit. The fit is kept in a ref, not in state: Garden reports it after every
- * render, and its values move with the layout (measured block heights), so putting it in the parent's state re-rendered
- * Garden, which reported a different fit again, until React stopped with "Maximum update depth exceeded" and the
- * whole page went blank (observed)
+ * Returns the callback for Garden's onFit, and growH for Garden: how far down the garden can reach by growing the
+ * window (bubbleGrowH), undefined when it doesn't grow (another tab, the standard window, held after a manual resize).
+ * The fit is kept in a ref, not in state: Garden reports it after every render, and its values move with the layout
+ * (measured block heights), so putting it in the parent's state re-rendered Garden, which reported a different fit
+ * again, until React stopped with "Maximum update depth exceeded" and the whole page went blank (observed). growH is
+ * state, rounded to whole px, so it changes only when the room does
  */
-export function useGardenGrow(active: boolean, floating: boolean, birdCount: number): (fit: GardenFit | null) => void {
+export function useGardenGrow(
+  active: boolean,
+  floating: boolean,
+  birdCount: number,
+): { onFit: (fit: GardenFit | null) => void; growH: number | undefined } {
+  const [growH, setGrowH] = useState<number | undefined>(undefined);
   const [user, setUser] = useState<UserSize | null>(null);
   // Number of birds at the last manual resize. Growth waits until there are more birds than this
   const [heldAt, setHeldAt] = useState<number | null>(null);
@@ -103,6 +110,14 @@ export function useGardenGrow(active: boolean, floating: boolean, birdCount: num
       active && fit && user && seen !== undefined && fit.drops !== seen && !fit.overflow
         ? gardenDropScale(user.width, user.height, fit)
         : undefined;
+    // The display's visible area of the screen the window is on (CSS px), for how far the garden can reach
+    const room =
+      active && !held && fit && user
+        ? Math.floor(
+            bubbleGrowH(user, fit, gardenGrowAnchor.y, { width: screen.availWidth, height: screen.availHeight }),
+          )
+        : undefined;
+    setGrowH(room);
     const step = growStep({ active, floating, held, fit, user, birdCount, kept: keptRef.current, dropScale });
     const { scale, needed, drop } = step;
     keptRef.current = step.kept;
@@ -135,11 +150,12 @@ export function useGardenGrow(active: boolean, floating: boolean, birdCount: num
 
   useEffect(update, [active, floating, held, user, birdCount, update]);
 
-  return useCallback(
+  const onFit = useCallback(
     (fit: GardenFit | null) => {
       fitRef.current = fit;
       update();
     },
     [update],
   );
+  return { onFit, growH };
 }

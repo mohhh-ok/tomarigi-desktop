@@ -57,13 +57,14 @@ export interface LaidBird {
 }
 
 /** Where a bubble goes and how big it is: max is its max width, w and h its size at that width (tail not included),
-    shift moves it sideways off its bird's center, above puts it over the icon */
+    shift moves it sideways off its bird's center, above puts it over the icon, bottom is its bottom edge (garden px) */
 export interface BubblePlace {
   max: number;
   w: number;
   h: number;
   shift: number;
   above: boolean;
+  bottom: number;
 }
 
 /** The bubble's size when its max width is max (measured in the DOM by the garden) */
@@ -74,26 +75,104 @@ export type MeasureBubble = (id: string, max: number) => { w: number; h: number 
  * - Max width: 180px, narrowed so it stops BUBBLE_GAP_PX / 2 short of halfway to the nearest bird on each side whose
  *   bubble overlaps it vertically (its whole wrapped height, below or above its bird), and at an edge to the room to the
  *   edge plus that reach on the other side; never below a bird's width. Bubbles in a block keep their own max
- * - A bubble that would reach past the garden's bottom goes above its icon, or to the side with more room
  * - Width, height and side depend on each other, so they are worked out again until they settle (LAYOUT_ROUNDS)
  * - Then bubbles that still overlap vertically and come closer than BUBBLE_GAP_PX are moved sideways apart, staying
- *   inside the garden, each by at most its half-width less TAIL_INSET_PX so the tail stays under the icon. When that
- *   isn't enough they still overlap, and are moved apart only as far as that makes no new overlap with other bubbles
+ *   inside the garden, each by at most its half-width less TAIL_INSET_PX so the tail stays under the icon. A pair that
+ *   can't be moved apart is moved apart only as far as that makes no new overlap with other bubbles
+ * - A bubble that would reach past the garden's bottom goes above its icon when it fits there without overlapping
+ *   another bubble. Otherwise it stays below while growing the window gives it room (growH: how far down the garden
+ *   can reach, bubbleGrowH in lib/garden-fit.ts; the garden asks for it with bubbleReach), and at that limit goes on the
+ *   side where less of it is cut or covered
+ * - Bubbles that still overlap: one of a pair goes above its icon when it fits there without overlapping another
+ *   bubble, the one whose move clears more overlap first
  */
 export function layoutBubbles(
   birds: LaidBird[],
+  garden: { w: number; h: number; growH?: number },
+  measure: MeasureBubble,
+): Map<string, BubblePlace> {
+  // Trying sides lays them out again and again with the same widths: measure each width once
+  const sizes = new Map<string, { w: number; h: number }>();
+  const sized: MeasureBubble = (id, max) => {
+    const key = `${id}\n${max}`;
+    if (!sizes.has(key)) sizes.set(key, measure(id, max));
+    return sizes.get(key)!;
+  };
+  const limit = Math.max(garden.h, garden.growH ?? garden.h) - EDGE_PX;
+  let above = new Set<string>();
+  let out = arrange(birds, garden, sized, above);
+  const withAbove = (id: string) => arrange(birds, garden, sized, new Set([...above, id]));
+  const fitsAbove = (b: LaidBird, o: Map<string, BubblePlace>) =>
+    verticalSpan(b, o.get(b.id)!.h, true)[0] >= EDGE_PX;
+  // Past the garden's bottom
+  for (const b of birds) {
+    const { h, w } = out.get(b.id)!;
+    const bottom = verticalSpan(b, h, false)[1];
+    if (bottom <= garden.h - EDGE_PX) continue;
+    const up = withAbove(b.id);
+    const covered = coveredArea(birds, up, b);
+    if (fitsAbove(b, up) && covered === 0) {
+      above.add(b.id);
+      out = up;
+      continue;
+    }
+    if (bottom <= limit) continue;
+    // At the limit: the side that loses less of it
+    const cutBelow = (bottom - limit) * w;
+    const upPlace = up.get(b.id)!;
+    const cutAbove = Math.max(0, EDGE_PX - verticalSpan(b, upPlace.h, true)[0]) * upPlace.w;
+    if (cutAbove + covered < cutBelow) {
+      above.add(b.id);
+      out = up;
+    }
+  }
+  // Pairs that still overlap, the most first; each pair is tried once
+  const tried = new Set<string>();
+  for (let round = 0; round < birds.length; round++) {
+    const pairs = overlappingPairs(birds, out).filter(([p, q]) => !tried.has(`${p.id}\n${q.id}`));
+    if (pairs.length === 0) break;
+    const [p, q] = pairs[0];
+    tried.add(`${p.id}\n${q.id}`);
+    const before = totalOverlap(birds, out);
+    let best: { id: string; out: Map<string, BubblePlace>; cleared: number } | undefined;
+    for (const b of [p, q]) {
+      if (above.has(b.id)) continue;
+      const up = withAbove(b.id);
+      if (!fitsAbove(b, up) || coveredArea(birds, up, b) > 0) continue;
+      const cleared = before - totalOverlap(birds, up);
+      if (cleared > 0 && (!best || cleared > best.cleared)) best = { id: b.id, out: up, cleared };
+    }
+    if (best) {
+      above = new Set([...above, best.id]);
+      out = best.out;
+    }
+  }
+  return out;
+}
+
+/** How far down the garden must reach for the bubbles shown below their birds (their bottom plus the edge room, garden
+    px), capped at growH (how far growing the window can take it); undefined without a bubble below */
+export function bubbleReach(places: Map<string, BubblePlace>, growH: number): number | undefined {
+  const below = [...places.values()].filter((p) => !p.above);
+  if (below.length === 0) return undefined;
+  return Math.min(growH, Math.max(...below.map((p) => p.bottom)) + EDGE_PX);
+}
+
+/** Widths, sizes and sideways shifts with each bubble's side given (above: the ones over their icon) */
+function arrange(
+  birds: LaidBird[],
   garden: { w: number; h: number },
   measure: MeasureBubble,
+  above: ReadonlySet<string>,
 ): Map<string, BubblePlace> {
   const lo = EDGE_PX;
   const hi = garden.w - EDGE_PX;
   const max = new Map(birds.map((b) => [b.id, b.inBlock ? BLOCK_BUBBLE_MAX_PX : BUBBLE_MAX_PX]));
   let size = new Map<string, { w: number; h: number }>();
-  let above = new Map<string, boolean>();
+  const side = new Map(birds.map((b) => [b.id, above.has(b.id)]));
   for (let round = 0; round < LAYOUT_ROUNDS; round++) {
     size = new Map(birds.map((b) => [b.id, measure(b.id, max.get(b.id)!)]));
-    above = new Map(birds.map((b) => [b.id, goesAbove(b, size.get(b.id)!.h, garden.h)]));
-    const span = (b: LaidBird) => verticalSpan(b, size.get(b.id)!.h, above.get(b.id)!);
+    const span = (b: LaidBird) => verticalSpan(b, size.get(b.id)!.h, side.get(b.id)!);
     let settled = true;
     for (const b of birds) {
       if (b.inBlock) continue;
@@ -116,26 +195,48 @@ export function layoutBubbles(
       max.set(b.id, next);
     }
     if (settled) break;
-    if (round === LAYOUT_ROUNDS - 1) {
-      size = new Map(birds.map((b) => [b.id, measure(b.id, max.get(b.id)!)]));
-      above = new Map(birds.map((b) => [b.id, goesAbove(b, size.get(b.id)!.h, garden.h)]));
-    }
+    if (round === LAYOUT_ROUNDS - 1) size = new Map(birds.map((b) => [b.id, measure(b.id, max.get(b.id)!)]));
   }
-  const shift = spreadApart(birds, size, above, lo, hi);
+  const shift = spreadApart(birds, size, side, lo, hi);
   return new Map(
-    birds.map((b) => [
-      b.id,
-      { max: max.get(b.id)!, ...size.get(b.id)!, shift: shift.get(b.id)!, above: above.get(b.id)! },
-    ]),
+    birds.map((b) => {
+      const { w, h } = size.get(b.id)!;
+      const bottom = verticalSpan(b, h, side.get(b.id)!)[1];
+      return [b.id, { max: max.get(b.id)!, w, h, shift: shift.get(b.id)!, above: side.get(b.id)!, bottom }];
+    }),
   );
 }
 
-/** Whether a bubble of height h goes above its icon: when it would reach past the garden's bottom, unless there is
-    even less room above */
-function goesAbove(b: LaidBird, h: number, gardenH: number): boolean {
-  const roomBelow = gardenH - EDGE_PX - (b.y + b.iconBottom + TAIL_PX);
-  const roomAbove = b.y + b.iconTop - TAIL_PX - EDGE_PX;
-  return h > roomBelow && (h <= roomAbove || roomAbove > roomBelow);
+/** Area two laid-out bubbles overlap (px²) */
+function overlap(a: LaidBird, p: BubblePlace, b: LaidBird, q: BubblePlace): number {
+  const across =
+    Math.min(a.x + p.shift + p.w / 2, b.x + q.shift + q.w / 2) - Math.max(a.x + p.shift - p.w / 2, b.x + q.shift - q.w / 2);
+  const down = Math.min(p.bottom, q.bottom) - Math.max(p.bottom - p.h, q.bottom - q.h);
+  return across > 1e-6 && down > 1e-6 ? across * down : 0;
+}
+
+/** Area of b's bubble covered by the other bubbles */
+function coveredArea(birds: LaidBird[], out: Map<string, BubblePlace>, b: LaidBird): number {
+  return birds.reduce((sum, a) => (a === b ? sum : sum + overlap(a, out.get(a.id)!, b, out.get(b.id)!)), 0);
+}
+
+/** Pairs of bubbles that overlap, the largest overlap first */
+function overlappingPairs(birds: LaidBird[], out: Map<string, BubblePlace>): [LaidBird, LaidBird][] {
+  const pairs: [LaidBird, LaidBird, number][] = [];
+  for (let i = 0; i < birds.length; i++) {
+    for (let j = i + 1; j < birds.length; j++) {
+      const area = overlap(birds[i], out.get(birds[i].id)!, birds[j], out.get(birds[j].id)!);
+      if (area > 0) pairs.push([birds[i], birds[j], area]);
+    }
+  }
+  return pairs.sort((x, y) => y[2] - x[2]).map(([a, b]) => [a, b]);
+}
+
+function totalOverlap(birds: LaidBird[], out: Map<string, BubblePlace>): number {
+  return overlappingPairs(birds, out).reduce(
+    (sum, [a, b]) => sum + overlap(a, out.get(a.id)!, b, out.get(b.id)!),
+    0,
+  );
 }
 
 /** Top and bottom of a bubble of height h, tail not included */

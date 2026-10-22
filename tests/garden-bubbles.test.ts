@@ -2,7 +2,7 @@
 // 180px (120px inside a watch block), and is drawn above the birds; only the status lines of a row line up below the bubbles
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { bubbleRoomFor, layoutBubbles, type BubbleBird, type LaidBird } from "../src/perch/garden-bubbles.ts";
+import { bubbleReach, bubbleRoomFor, layoutBubbles, type BubbleBird, type LaidBird } from "../src/perch/garden-bubbles.ts";
 
 const birds = (list: [string, number, boolean][]): BubbleBird[] => list.map(([id, y, bubble]) => ({ id, x: 0, y, bubble }));
 
@@ -240,7 +240,8 @@ describe("layoutBubbles: watch blocks", () => {
       place("yokai", 493, 12),
       { id: "concierge", x: 491, y: 176, iconTop: 20, iconBottom: 50 },
     ];
-    const out = layoutBubbles(list, { w: 701, h: 310 }, (id, max) =>
+    // A garden 260px tall that can't grow: below, tomarigi's bubble would be cut by 53px, more than it is covered above
+    const out = layoutBubbles(list, { w: 701, h: 260 }, (id, max) =>
       id === "concierge" ? { w: Math.min(180, max), h: 33.7 } : { w: 120, h: heights[id] },
     );
     expect(out.get("tomarigi")!.above).toBe(true);
@@ -265,6 +266,90 @@ describe("layoutBubbles: watch blocks", () => {
     expect(out.get("up")!.max).toBe(120);
     // Above, "low"'s bubble reaches up into "up"'s bubble below its icon (same x): they move apart as far as the tails let
     tailKept(out, list);
+  });
+});
+
+
+// Top and bottom of a bubble (the 7px tail between it and the icon), and the area two bubbles overlap (px²; 0 when
+// they don't)
+const vspan = (b: LaidBird, p: { h: number; above: boolean }) =>
+  p.above ? [b.y + b.iconTop - 7 - p.h, b.y + b.iconTop - 7] : [b.y + b.iconBottom + 7, b.y + b.iconBottom + 7 + p.h];
+const overlapArea = (out: ReturnType<typeof layoutBubbles>, a: LaidBird, b: LaidBird) => {
+  const [al, ar] = span(a, out.get(a.id)!);
+  const [bl, br] = span(b, out.get(b.id)!);
+  const [at, ab] = vspan(a, out.get(a.id)!);
+  const [bt, bb] = vspan(b, out.get(b.id)!);
+  const across = Math.min(ar, br) - Math.max(al, bl);
+  const down = Math.min(ab, bb) - Math.max(at, bt);
+  return across > 0 && down > 0 ? across * down : 0;
+};
+const allOverlap = (out: ReturnType<typeof layoutBubbles>, list: LaidBird[]) =>
+  list.flatMap((a, i) => list.slice(i + 1).map((b) => overlapArea(out, a, b))).reduce((x, y) => x + y, 0);
+
+// bubble-long-watch at 749x442, measured in the DOM (garden px; the bubble heights at 120px)
+const watchMeasure = (heights: Record<string, number>) => (id: string, max: number) =>
+  id === "concierge"
+    ? { w: Math.min(180, max), h: max >= 180 ? 33.7 : max >= 140 ? 48.5 : 63.4 }
+    : { w: 120, h: heights[id] };
+const at = (id: string, x: number, y: number, inBlock = true): LaidBird => ({ id, x, y, iconTop: 20, iconBottom: 50, inBlock });
+
+describe("layoutBubbles: past the garden's bottom, the window grows instead of hiding the bubble", () => {
+  test("bubble-long-watch: a bubble past the bottom whose place above is taken stays below while the window can grow", () => {
+    const list = [at("desk", 78, 12), at("billionclips", 210, 12), at("clips", 342, 12), at("tomarigi", 210, 159), at("yokai", 493, 12), at("concierge", 491, 176, false)];
+    const heights = { desk: 63.4, billionclips: 93.1, clips: 78.2, tomarigi: 93.1, yokai: 78.2 };
+    const out = layoutBubbles(list, { w: 701, h: 310, growH: 720 }, watchMeasure(heights));
+    expect(out.get("tomarigi")!.above).toBe(false);
+    expect(allOverlap(out, list)).toBe(0);
+    // The garden must reach its bottom (+ the 4px edge): the window grows by that much
+    const reach = bubbleReach(out, 720)!;
+    expect(reach).toBeCloseTo(159 + 50 + 7 + 93.1 + 4, 1);
+  });
+
+  test("a bubble past the bottom with nothing above it still goes above (the window doesn't grow for it)", () => {
+    const out = layoutBubbles([bird("t", 379, 134 * 5, 478)], { w: 434, h: 591, growH: 900 }, () => ({ w: 134, h: 93 }));
+    expect(out.get("t")!.above).toBe(true);
+    expect(bubbleReach(out, 900)).toBeUndefined();
+  });
+
+  test("when the window can't grow (at the display's limit), it goes on the side where less of it is cut or covered", () => {
+    const list = [at("up", 210, 12), at("low", 210, 159)];
+    const m = watchMeasure({ up: 93.1, low: 93.1 });
+    // Below: cut 1px; above: 93px behind "up"'s bubble even after moving apart. Below loses less
+    expect(layoutBubbles(list, { w: 701, h: 310 }, m).get("low")!.above).toBe(false);
+    // A bubble cut by half below with a free spot above goes above
+    expect(layoutBubbles([at("low", 210, 159)], { w: 701, h: 260 }, m).get("low")!.above).toBe(true);
+  });
+
+  test("the garden only needs to reach as far as growing can give (a reach past it doesn't ask the window for more)", () => {
+    const list = [at("up", 210, 12), at("low", 210, 159)];
+    const out = layoutBubbles(list, { w: 701, h: 310, growH: 312 }, watchMeasure({ up: 93.1, low: 93.1 }));
+    expect(bubbleReach(out, 312)).toBe(312);
+  });
+});
+
+describe("layoutBubbles: a pair that can't be moved apart sideways goes above", () => {
+  test("two bubbles at the same x: one of them goes above its bird, where nothing else is, and neither overlaps", () => {
+    const list = [bird("a", 300, 400, 150), bird("b", 310, 400, 150)];
+    const out = lay(list);
+    expect([out.get("a")!.above, out.get("b")!.above].sort()).toEqual([false, true]);
+    expect(allOverlap(out, list)).toBe(0);
+    tailKept(out, list);
+  });
+
+  test("the user's 16:08 layout: the three crowded bubbles no longer overlap (53px before)", () => {
+    const list = [at("billionclips", 318, 169), at("clips", 450, 169), at("desk", 186, 169), at("tomarigi", 493, 96), at("yokai", 158, 38), at("concierge", 549, 176, false)];
+    const heights = { billionclips: 93.1, clips: 78.2, desk: 63.4, tomarigi: 93.1, yokai: 78.2 };
+    const out = layoutBubbles(list, { w: 701, h: 310 }, watchMeasure(heights));
+    expect(allOverlap(out, list)).toBe(0);
+    tailKept(out, list);
+  });
+
+  test("a bubble doesn't go above when it would overlap another bubble there", () => {
+    // a and b at the same x; above them c's bubble is in the way, so they stay below and overlap
+    const list = [bird("a", 300, 400, 150), bird("b", 310, 400, 150), bird("c", 305, 1400, 0)];
+    const out = lay(list);
+    expect(out.get("a")!.above).toBe(false);
+    expect(out.get("b")!.above).toBe(false);
   });
 });
 

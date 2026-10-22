@@ -254,6 +254,53 @@ export function gardenDropScale(userW: number, userH: number, fit: GardenFit): n
   return keepPlaceScale(userW, userH, fit, MAX_FIT_SCALE);
 }
 
+/**
+ * The fit with the lowest bubble shown below its bird counted too (docs/design.md "Layout"): reach is how far down the
+ * garden must go for it (garden px at gardenH, the garden's height the placement was made at, edge room included),
+ * undefined without one. A bubble cut by the garden's bottom asks the window to grow like a bird without a spot, and
+ * simulate counts it as one at sizes where it would still be cut, so shrinking back (keepPlaceScale) never cuts it and
+ * the window doesn't shrink and grow right back. anchor: the part of the window that stays put (gardenGrowAnchor); the
+ * garden's bottom moves down by (1 - anchor.y) of what it grows. Pass a reach that growing can give (bubbleGrowH):
+ * one it can't would grow the window to the end
+ */
+export function withBubbleReach<F extends Pick<GardenFit, "overflow" | "simulate">>(
+  fit: F,
+  reach: number | undefined,
+  gardenH: number,
+  anchor: Readonly<Point>,
+): F {
+  if (reach === undefined) return fit;
+  const cutAt = (gh: number) => reach > gh - (gh - gardenH) * anchor.y + 0.5;
+  const simulate = fit.simulate;
+  return {
+    ...fit,
+    overflow: fit.overflow || cutAt(gardenH),
+    simulate:
+      simulate &&
+      ((w: number, h: number) => {
+        const r = simulate(w, h);
+        return { ...r, overflow: r.overflow + (cutAt(h) ? 1 : 0) };
+      }),
+  };
+}
+
+/**
+ * How far down the garden can reach by growing the window, in garden px now (docs/design.md "Layout": a bubble past the
+ * garden's bottom stays below while growing gives it room): the garden at the largest scale the display's visible area
+ * (area, CSS px) allows, of which the garden's bottom gets (1 - anchorY) (the rest goes above). The garden's height now
+ * when the window grows upward from the display's bottom
+ */
+export function bubbleGrowH(
+  user: { width: number; height: number },
+  fit: Pick<GardenFit, "gardenH" | "overheadH">,
+  anchorY: number,
+  area: { width: number; height: number },
+): number {
+  const most = Math.min(MAX_FIT_SCALE, area.width / user.width, area.height / user.height);
+  const grown = Math.max(fit.gardenH, user.height * most - fit.overheadH);
+  return fit.gardenH + (grown - fit.gardenH) * (1 - anchorY);
+}
+
 /** The scale last applied, with the number of birds and the user's size it was decided for */
 export interface GrowKept {
   scale: number;
