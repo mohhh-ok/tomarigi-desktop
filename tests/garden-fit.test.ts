@@ -144,7 +144,7 @@ describe("growStep while growth is held after a manual resize (docs/design.md \"
   // the drop kept it at 1.24 (observed 2026-10-22 16:05:55)
   const user = { width: 749, height: 442 };
   const dropped = { scale: 1.24, count: 9, userW: 749, userH: 442 };
-  const base = { active: true, held: true, fit: fit(9), user, birdCount: 9, dropScale: undefined };
+  const base = { active: true, floating: true, held: true, fit: fit(9), user, birdCount: 9, dropScale: undefined };
   test("a drop sends the drop scale", () => {
     const r = growStep({ ...base, kept: null, dropScale: 1.24 });
     expect([r.scale, r.drop]).toEqual([1.24, true]);
@@ -165,8 +165,10 @@ describe("growStep while growth is held after a manual resize (docs/design.md \"
   test("resized by hand again: the user's new size", () => {
     expect(growStep({ ...base, user: { width: 500, height: 441 }, kept: dropped }).scale).toBe(1);
   });
-  test("not on the Garden tab: back to the user's size", () => {
-    expect(growStep({ ...base, active: false, kept: dropped }).scale).toBe(1);
+  test("another tab of the floating window keeps the size; the standard window goes back to the user's size", () => {
+    const away = growStep({ ...base, active: false, kept: dropped });
+    expect([away.scale, away.quiet]).toEqual([1.24, true]);
+    expect(growStep({ ...base, active: false, floating: false, kept: dropped }).scale).toBe(1);
   });
 });
 
@@ -329,7 +331,17 @@ describe("shrinking back when birds leave, with the actual placement (gardenSimu
   const user = { width: userW, height: userH };
   const step = (over: Partial<Parameters<typeof growStep>[0]>) => {
     const { f } = leftAt(1.6, sticking);
-    return growStep({ active: true, held: false, fit: f, user, birdCount: 4, kept: null, dropScale: undefined, ...over });
+    return growStep({
+      active: true,
+      floating: true,
+      held: false,
+      fit: f,
+      user,
+      birdCount: 4,
+      kept: null,
+      dropScale: undefined,
+      ...over,
+    });
   };
   const nobodyMoves = (scale: number) => {
     const { placed } = leftAt(1.6, sticking);
@@ -368,6 +380,39 @@ describe("shrinking back when birds leave, with the actual placement (gardenSimu
       const r = step({ held: true, kept: { ...grown, count: 4 }, dropScale: gardenDropScale(userW, userH, f) });
       expect(r.drop).toBe(true);
       nobodyMoves(r.scale);
+    });
+    test("moving to another tab of the floating window keeps the size, and coming back to the Garden moves no bird", () => {
+      const kept = { ...grown, count: 4 };
+      const away = step({ active: false, fit: null, kept });
+      expect(away.quiet).toBe(true);
+      expect(away.kept).toEqual(kept);
+      const back = step({ kept: away.kept });
+      expect(back.scale).toBe(1.6);
+      nobodyMoves(back.scale);
+    });
+    test("the standard window goes back to the user's size, as before", () => {
+      const r = step({ active: false, floating: false, fit: null, kept: grown });
+      expect([r.scale, r.kept]).toEqual([1, null]);
+    });
+    test("a page reload while grown works out the growth from the measured garden and asks for nothing", () => {
+      const r = step({ kept: null });
+      expect(r.quiet).toBe(true);
+      expect(r.scale).toBeGreaterThan(1.59);
+      nobodyMoves(r.scale);
+      // A bird leaving afterwards shrinks only as far as nobody moves
+      const left = step({ kept: r.kept, birdCount: 3 });
+      expect(left.scale).toBeLessThan(r.scale);
+      nobodyMoves(left.scale);
+    });
+    test("right after a page reload, before the birds are loaded (no fit yet), it asks for nothing", () => {
+      expect(step({ fit: null, birdCount: 0, kept: null }).quiet).toBe(true);
+      // Every bird left a grown window: back to the user's size (nobody is left to move)
+      expect(step({ fit: null, birdCount: 0, kept: grown })).toMatchObject({ scale: 1, kept: null, quiet: false });
+    });
+    test("a page reload while held works out the growth too", () => {
+      const r = step({ held: true, kept: null });
+      expect(r.quiet).toBe(true);
+      expect(r.scale).toBeGreaterThan(1.59);
     });
     test("a bird left, without the actual placement to check with: it doesn't shrink", () => {
       const { f } = leftAt(1.6, sticking);

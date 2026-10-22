@@ -49,14 +49,14 @@ interface UserSize {
 }
 
 /**
- * active: floating window, Garden tab, nothing else shown in its place. Otherwise the window goes back to the user's
- * size. birdCount: after a manual resize the window isn't grown back until a bird joins.
+ * active: floating window, Garden tab, nothing else shown in its place. floating: the floating window; on its other
+ * tabs the window keeps its size, and the standard window goes back to the user's size. birdCount: after a manual resize the window isn't grown back until a bird joins.
  * Returns the callback for Garden's onFit. The fit is kept in a ref, not in state: Garden reports it after every
  * render, and its values move with the layout (measured block heights), so putting it in the parent's state re-rendered
  * Garden, which reported a different fit again, until React stopped with "Maximum update depth exceeded" and the
  * whole page went blank (observed)
  */
-export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenFit | null) => void {
+export function useGardenGrow(active: boolean, floating: boolean, birdCount: number): (fit: GardenFit | null) => void {
   const [user, setUser] = useState<UserSize | null>(null);
   // Number of birds at the last manual resize. Growth waits until there are more birds than this
   const [heldAt, setHeldAt] = useState<number | null>(null);
@@ -81,8 +81,8 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
 
   const held = heldAt !== null && birdCount <= heldAt;
   // Inputs other than the fit, read by update (which Garden's onFit also calls)
-  const inputsRef = useRef({ active, held, user, birdCount });
-  inputsRef.current = { active, held, user, birdCount };
+  const inputsRef = useRef({ active, floating, held, user, birdCount });
+  inputsRef.current = { active, floating, held, user, birdCount };
   const fitRef = useRef<GardenFit | null>(null);
   // The scale applied while growing. Cleared when not growing, so it starts over from the needed scale
   const keptRef = useRef<GrowKept | null>(null);
@@ -93,7 +93,7 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
   const dropsRef = useRef<number | undefined>(undefined);
 
   const decide = useCallback(() => {
-    const { active, held, user, birdCount } = inputsRef.current;
+    const { active, floating, held, user, birdCount } = inputsRef.current;
     const fit = fitRef.current;
     // The user dropped a bird or block: shrink once to the smallest size at which nothing on screen moves (even after a
     // manual resize, as it never goes below the user's size; docs/design.md "Layout")
@@ -103,9 +103,10 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
       active && fit && user && seen !== undefined && fit.drops !== seen && !fit.overflow
         ? gardenDropScale(user.width, user.height, fit)
         : undefined;
-    const step = growStep({ active, held, fit, user, birdCount, kept: keptRef.current, dropScale });
+    const step = growStep({ active, floating, held, fit, user, birdCount, kept: keptRef.current, dropScale });
     const { scale, needed, drop } = step;
     keptRef.current = step.kept;
+    if (step.quiet) return;
     if (!drop && sentRef.current === scale) return;
     sentRef.current = scale;
     // What the needed scale came from, to check in the log why it changed
@@ -132,7 +133,7 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
       });
   }, [decide]);
 
-  useEffect(update, [active, held, user, birdCount, update]);
+  useEffect(update, [active, floating, held, user, birdCount, update]);
 
   return useCallback(
     (fit: GardenFit | null) => {

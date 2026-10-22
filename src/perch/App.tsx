@@ -464,6 +464,7 @@ export default function App({
   // Garden, so it doesn't count
   const onGardenFit = useGardenGrow(
     windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
+    windowMode === "floating",
     displaySessions.length + (concierge.shown ? 1 : 0),
   );
 
