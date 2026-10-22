@@ -7,6 +7,7 @@ import {
   gardenGlyphSize,
   MAX_FIT_SCALE,
   gardenSimulate,
+  growStep,
   nextGrowScale,
   nextUnsettled,
   ROUNDING_PX,
@@ -134,6 +135,37 @@ describe("nextGrowScale", () => {
   });
   test("a different user's size (manual resize): starts over from the needed scale", () => {
     expect(nextGrowScale(kept, 1.1, 5, 300, 350)).toBe(1.1);
+  });
+});
+
+describe("growStep while growth is held after a manual resize (docs/design.md \"Layout\")", () => {
+  // The user resized the window by hand to 749x442 with 9 birds, then dragged a bird right: the drag grew the window and
+  // the drop kept it at 1.24 (observed 2026-10-22 16:05:55)
+  const user = { width: 749, height: 442 };
+  const dropped = { scale: 1.24, count: 9, userW: 749, userH: 442 };
+  const base = { active: true, held: true, fit: fit(9), user, birdCount: 9, dropScale: undefined };
+  test("a drop sends the drop scale", () => {
+    const r = growStep({ ...base, kept: null, dropScale: 1.24 });
+    expect([r.scale, r.drop]).toEqual([1.24, true]);
+    expect(r.kept).toEqual(dropped);
+  });
+  test("a render after the drop (a bubble changed, no bird left) keeps the dropped size", () => {
+    const r = growStep({ ...base, kept: dropped });
+    expect([r.scale, r.drop]).toEqual([1.24, false]);
+    expect(r.kept).toEqual(dropped);
+  });
+  test("still held, it doesn't grow for an overflow", () => {
+    expect(growStep({ ...base, fit: over(9), kept: null }).scale).toBe(1);
+    expect(growStep({ ...base, fit: over(9), kept: dropped }).scale).toBe(1.24);
+  });
+  test("a bird left: back to the user's size", () => {
+    expect(growStep({ ...base, birdCount: 8, kept: dropped }).scale).toBe(1);
+  });
+  test("resized by hand again: the user's new size", () => {
+    expect(growStep({ ...base, user: { width: 500, height: 441 }, kept: dropped }).scale).toBe(1);
+  });
+  test("not on the Garden tab: back to the user's size", () => {
+    expect(growStep({ ...base, active: false, kept: dropped }).scale).toBe(1);
   });
 });
 

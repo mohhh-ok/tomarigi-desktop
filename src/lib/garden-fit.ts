@@ -265,6 +265,48 @@ export function nextGrowScale(
   return kept.scale;
 }
 
+/** What useGardenGrow (src/perch/garden-grow.ts) knows when it decides the scale */
+export interface GrowInputs {
+  /** Floating window, Garden tab, nothing else shown in its place */
+  active: boolean;
+  /** Not growing after a manual resize until a bird joins */
+  held: boolean;
+  fit: GardenFit | null;
+  /** The user's size */
+  user: { width: number; height: number } | null;
+  birdCount: number;
+  /** The scale last applied (GrowKept), null when not grown */
+  kept: GrowKept | null;
+  /** The user just dropped a bird or block: the scale to shrink to (gardenDropScale) */
+  dropScale: number | undefined;
+}
+
+/** The scale to ask for (1 or less: the user's size), what it was decided from, and the GrowKept to remember */
+export function growStep(i: GrowInputs): { scale: number; needed: number; drop: boolean; kept: GrowKept | null } {
+  const { active, held, fit, user, birdCount, kept } = i;
+  if (i.dropScale !== undefined && fit && user) {
+    const scale = i.dropScale;
+    return { scale, needed: scale, drop: true, kept: { scale, count: birdCount, userW: user.width, userH: user.height } };
+  }
+  if (active && fit && user && !held) {
+    const current = kept && kept.userW === user.width && kept.userH === user.height ? kept.scale : 1;
+    // An overflow measured before the window reached the current scale (the resize is still on its way, or the
+    // Rust side capped it at the display) doesn't ask for more: it would grow twice for one bird
+    const stale =
+      fit.gardenW < user.width * current - fit.overheadW - 2 || fit.gardenH < user.height * current - fit.overheadH - 2;
+    const needed = gardenFitScale(user.width, user.height, stale ? { ...fit, overflow: false } : fit, current);
+    const scale = nextGrowScale(kept, needed, birdCount, user.width, user.height);
+    return { scale, needed, drop: false, kept: { scale, count: birdCount, userW: user.width, userH: user.height } };
+  }
+  // Held: no growing, but it shrinks only when birds leave or on a drop, as when not held. Going back to the user's
+  // size on any render shrank a window a drop had kept grown a few seconds later, when a bubble changed (observed)
+  if (active && fit && user) {
+    const scale = nextGrowScale(kept, 1, birdCount, user.width, user.height);
+    return { scale, needed: 1, drop: false, kept: { scale, count: birdCount, userW: user.width, userH: user.height } };
+  }
+  return { scale: 1, needed: 1, drop: false, kept: null };
+}
+
 // Ids not yet settled after a placement that left something without a free spot (docs/design.md "Layout"): what was
 // unsettled and is still shown (none when the garden changed size, as all of it was placed again), and what was first
 // placed in this render. A bird or block the user dropped in this render has its place, so it is neither
