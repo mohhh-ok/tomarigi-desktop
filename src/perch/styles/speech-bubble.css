@@ -17,11 +17,13 @@
 }
 
 /* Garden: the whole text, never cut with "…" (docs/design.md "Speech bubbles"). As wide as the text up to 180px
-   (BUBBLE_MAX_PX in garden-watch-layout.ts), wrapping onto more lines beyond that. Inside the bubble anchor
-   (.garden-bubble-anchor = same position and size as the bird), shown right below the icon's bottom edge (--bubble-top,
-   measured and passed by garden.tsx). The outer frame (this) carries the tail and shadow. The shadow is a filter
-   drop-shadow, cast by the body and tail as a single shape (no shadow line at the seam): a thin one all around, so a
-   bubble over another bubble shows its edge on every side, and a soft one below (docs/design.md "Layout").
+   (BUBBLE_MAX_PX in garden-watch-layout.ts), wrapping onto more lines beyond that; garden.tsx narrows --bubble-max
+   down to 120px so it reaches at most halfway to the bubbles beside it in its row (bubbleMaxWidths in
+   garden-bubbles.ts). Inside the bubble anchor (.garden-bubble-anchor = same position and size as the bird), shown
+   right below the icon's bottom edge (--bubble-top, measured and passed by garden.tsx). The outer frame (this) carries
+   the tail and shadow. The shadow is a filter drop-shadow, cast by the body and tail as a single shape (no shadow line
+   at the seam): a thin one all around, so a bubble over another bubble shows its edge on every side, and a soft one
+   below (docs/design.md "Layout").
    It is centered under the bird and pushed only to stay within --bubble-lo left and --bubble-hi right of the bird's
    center (bubbleVars in garden.tsx: inside the garden frame). Birds in a watch block follow the same rule, but at most
    a bird's width (below) */

@@ -393,6 +393,31 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
+    // Long speech bubbles side by side (docs/design.md "Layout"): each bubble reaches at most halfway to the bubbles beside
+    // it in its row, but never below a bird's width, wrapping onto more lines
+    id: "bubble-long",
+    label: "Long speech bubbles",
+    build: () => ({
+      sessions: [
+        ["tomarigi", "Should the settings be grouped in the top right, or split into tabs at the bottom of the window?"],
+        ["blog", "Rewrote the intro of the October post and moved the benchmark table below the summary"],
+        ["figma-adapter", "I came up with 2 headline ideas for the landing page. Do you want A or B?"],
+        ["moh-tech-net", "Fixed the README typo"],
+        ["cloudflare-lab", "Updated the Workers build config and pinned wrangler to the version the CI uses"],
+      ].map(([slug, summary], i) => ({
+        id: `mock/bubble-long/${slug}`,
+        project: slug,
+        slug,
+        state: "done" as const,
+        sinceMs: (i + 1) * 60_000,
+        reply: { at: BASE - (i + 1) * 60_000, text: summary },
+        ask: { status: "not_asking" as const },
+        summary,
+      })),
+      events: [],
+    }),
+  },
+  {
     // Watching (docs/design.md "Watching"). The parent tomarigi handed work to 3 sessions and is waiting.
     // packages/api is working, apps/web needs a reply via a question tool (the "?" reaches the parent too), other-docs is done
     // (not under the parent, so it's called by its folder name). blog is a bird with no links
