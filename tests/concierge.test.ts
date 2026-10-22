@@ -82,6 +82,33 @@ test("each session carries its facts; chicks are counted, not listed", () => {
   expect(JSON.stringify(payload)).not.toContain("Explore");
 });
 
+test("a waiting session says whether it waits on a question or a permission prompt, in the request and the log", () => {
+  const payload = buildConciergePayload(
+    [
+      { view: view("q", { state: "waiting", waitingOn: "question" }), agent: "claude" },
+      { view: view("p", { state: "waiting", waitingOn: "permission" }), agent: "claude" },
+      { view: view("u", { state: "waiting" }), agent: "claude" },
+      // Only while it waits: a stale value on a working session isn't sent
+      { view: view("w", { state: "working", waitingOn: "question" }), agent: "claude" },
+    ],
+    [],
+    [],
+    NOW,
+    "ja",
+  );
+  const [q, p, u, w] = payload.sessions;
+  expect(q).toMatchObject({ needs_reply_source: "machine", waiting_on: "question" });
+  expect(p).toMatchObject({ needs_reply_source: "machine", waiting_on: "permission" });
+  expect(u.waiting_on).toBeUndefined();
+  expect(w.waiting_on).toBeUndefined();
+  const lines = conciergeRequestLogLines({ req: "r", provider: "openai", model: "m" }, payload).slice(1);
+  expect(lines[0]).toContain(" source=machine waiting_on=question ");
+  expect(lines[1]).toContain(" source=machine waiting_on=permission ");
+  expect(lines[2]).toContain(" source=machine waiting_on=- ");
+  // The prompt tells the concierge what each value means, so it doesn't call a question a permission prompt
+  expect(CONCIERGE_TASK.systemPrompt).toContain("waiting_on");
+});
+
 test("the ? from the turn verdict is a fact with source verdict; from the machine state, source machine", () => {
   const report = "終わったら確かめます。その後、v0.9.0 として出す前に一度お聞きします";
   const long = `${"x".repeat(500)}${report}`;
@@ -647,9 +674,9 @@ test("the app log keeps each session's facts and the advice text with its kind, 
   const lines = conciergeRequestLogLines({ req: "r1", provider: "local", model: "qwen2.5:7b-instruct" }, payload);
   expect(lines[0]).toStartWith("[concierge] request req=r1 provider=local model=qwen2.5:7b-instruct sessions=3 ");
   expect(lines.slice(1)).toEqual([
-    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- verdict=not_asking continuing=true watch_parent=w watch_children=- chicks_working=0",
-    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine verdict=- continuing=- watch_parent=- watch_children=t chicks_working=0",
-    "[concierge] fact req=r1 session=q agent=- state=done since=10s needs_reply=true source=verdict verdict=asking continuing=false watch_parent=- watch_children=- chicks_working=0",
+    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- waiting_on=- verdict=not_asking continuing=true watch_parent=w watch_children=- chicks_working=0",
+    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine waiting_on=- verdict=- continuing=- watch_parent=- watch_children=t chicks_working=0",
+    "[concierge] fact req=r1 session=q agent=- state=done since=10s needs_reply=true source=verdict waiting_on=- verdict=asking continuing=false watch_parent=- watch_children=- chicks_working=0",
   ]);
   // No text from the sessions: the name, reply and question stay out
   expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it|asker|Which one/);
