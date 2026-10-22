@@ -49,6 +49,11 @@ export interface GardenFit {
   simulate?: (w: number, h: number) => { overflow: number; moved: number };
   /** Counts the user's drops of a bird or block: a new count asks for shrinking once (gardenDropScale) */
   drops?: number;
+  /**
+   * CSS px to grow the window up by itself for a bubble above its bird's name past the garden's top, in a window in the
+   * display's upper part (withBubbleUp)
+   */
+  growUp?: number;
 }
 
 /** What the Garden placed at its current size, for trying the same placement at another size (gardenSimulate) */
@@ -294,17 +299,48 @@ export function withBubbleReach<F extends Pick<GardenFit, "overflow" | "simulate
  * below, and one above its bird's name past the top stays there, while growing gives them room): h is how far down,
  * in garden px now, up how far above the garden's top. The garden at the largest scale the display's visible area
  * (area, CSS px) allows, of which the garden's bottom gets (1 - anchorY) and its top anchorY: a window in the display's
- * upper part grows downward only, one in its lower part upward only (garden_grow.rs)
+ * upper part grows downward only, one in its lower part upward only (garden_grow.rs). A window in the upper part
+ * (anchorY 0) still grows up for a bubble above its bird's name, by itself (garden_bubble_grow) rather than by the
+ * scale, as far as the room above it (above, CSS px from the window's top to the visible area's top): upAlone
  */
 export function bubbleGrowRoom(
   user: { width: number; height: number },
   fit: Pick<GardenFit, "gardenH" | "overheadH">,
   anchorY: number,
   area: { width: number; height: number },
-): { h: number; up: number } {
+  above: number,
+): BubbleGrowRoom {
   const most = Math.min(MAX_FIT_SCALE, area.width / user.width, area.height / user.height);
   const grows = Math.max(0, user.height * most - fit.overheadH - fit.gardenH);
-  return { h: fit.gardenH + grows * (1 - anchorY), up: grows * anchorY };
+  const upAlone = anchorY === 0;
+  return { h: fit.gardenH + grows * (1 - anchorY), up: upAlone ? Math.max(0, above) : grows * anchorY, upAlone };
+}
+
+export interface BubbleGrowRoom {
+  /** How far down the garden can reach (garden px now) */
+  h: number;
+  /** How far above the garden's top */
+  up: number;
+  /** up comes from growing the window up by itself for the bubble (garden_bubble_grow), not from the scale */
+  upAlone: boolean;
+}
+
+/**
+ * withBubbleReach for the bubbles past the garden's bottom (reach) and top (reachUp). In a window that grows up by the
+ * scale, both go to the scale; in one in the display's upper part (room.upAlone) the top goes to growUp instead, for
+ * growing the window up by itself (garden-grow.ts), since the scale would grow it only downward, to the end
+ */
+export function withBubbleUp<F extends Pick<GardenFit, "overflow" | "simulate">>(
+  fit: F,
+  reach: number | undefined,
+  gardenH: number,
+  anchor: Readonly<Point>,
+  reachUp: number | undefined,
+  room: BubbleGrowRoom | undefined,
+): F & { growUp?: number } {
+  if (!room?.upAlone) return withBubbleReach(fit, reach, gardenH, anchor, reachUp);
+  const reached = withBubbleReach(fit, reach, gardenH, anchor);
+  return reachUp !== undefined && reachUp > 0 ? { ...reached, growUp: reachUp } : reached;
 }
 
 /** The scale last applied, with the number of birds and the user's size it was decided for */

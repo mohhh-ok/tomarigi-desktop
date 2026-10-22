@@ -119,6 +119,14 @@ pub(crate) fn drag_anchor(cur: Frame, grown: Frame) -> (f64, f64) {
     (if grown.x < cur.x { 1.0 } else { 0.0 }, if grown.y < cur.y { 1.0 } else { 0.0 })
 }
 
+/// For a bubble above its bird's name past the garden's top (docs/design.md "Layout"): the frame `cur` grown up by `up`
+/// (physical px), the bottom edge staying, capped at the visible area `area`. Used for a window in the display's upper
+/// part, which grows to fit keeping its top edge; like a drag pushing the top edge
+pub(crate) fn bubble_grow_frame(cur: Frame, up: u32, area: Frame) -> Frame {
+    let y = (cur.y as i64 - up as i64).max(area.y as i64).min(cur.y as i64) as i32;
+    Frame { y, height: cur.height + (cur.y - y) as u32, ..cur }
+}
+
 /// Whether a resize to `scale` shrinks the window: the scale went down (birds left), or the user dropped a bird or block
 /// (the page then asks for the smallest scale at which everything stays put, which may be the same scale as before)
 pub(crate) fn shrinking(scale: f64, last_scale: f64, drop: bool) -> bool {
@@ -282,6 +290,38 @@ fn drag_grow(app: &AppHandle, pointer: (f64, f64), insets: Insets) {
     append_log(&format!("[grow] drag pointer={pointer:?} user={user:?} {shown:?} -> {target:?}"));
 }
 
+/// Grows the window up by `top` CSS px (bubble_grow_frame). Returns whether it was resized
+fn bubble_grow(app: &AppHandle, top: f64) -> bool {
+    let Some(win) = app.get_webview_window("main") else { return false };
+    if current_mode() != WindowMode::Floating {
+        return false;
+    }
+    let Some(scale) = win.scale_factor().ok() else { return false };
+    let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied));
+    let Some((user, shown)) = grown.or_else(|| current_frame(&win).map(|f| (f, f))) else { return false };
+    let Some(area) = visible_area(&win, user) else { return false };
+    let target = bubble_grow_frame(shown, (top * scale).ceil().max(0.0) as u32, area);
+    if target == shown {
+        return false;
+    }
+    set_frame(&win, Grown { user, applied: target, dragged: true });
+    append_log(&format!("[grow] bubble up={top} user={user:?} {shown:?} -> {target:?}"));
+    true
+}
+
+/// A bubble above its bird's name reaches past the garden's top in a window in the display's upper part: grows the
+/// window up by `top` CSS px, the bottom edge staying (docs/design.md "Layout"). Returns whether it was resized; the
+/// page keeps its birds at the same place on screen with anchor y 1 until the resize arrives
+#[tauri::command]
+pub(crate) async fn garden_bubble_grow(app: AppHandle, top: f64) -> bool {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let handle = app.clone();
+    if app.run_on_main_thread(move || tx.send(bubble_grow(&handle, top)).unwrap_or_default()).is_err() {
+        return false;
+    }
+    rx.recv_timeout(Duration::from_secs(2)).unwrap_or(false)
+}
+
 /// While a bird or block is dragged: grows the floating window toward the garden's edge the pointer is near or past
 /// (drag_grow_frame). x, y: the pointer on screen; left..bottom: the garden's edges inside the window (CSS px)
 #[tauri::command]
@@ -312,6 +352,15 @@ pub(crate) struct GrowAnchor {
     y: f64,
 }
 
+/// GrowAnchor, with how far the window can grow up for a bubble (garden_bubble_grow): CSS px from the window's top to
+/// the visible area's top
+#[derive(Serialize)]
+pub(crate) struct GrowAnchorRoom {
+    #[serde(flatten)]
+    anchor: GrowAnchor,
+    above: f64,
+}
+
 fn anchor_value(keep: Keep) -> f64 {
     match keep {
         Keep::Start => 0.0,
@@ -322,17 +371,17 @@ fn anchor_value(keep: Keep) -> f64 {
 
 /// The anchor the next grow_frame of the user's frame uses (the page asks before each garden_fit)
 #[tauri::command]
-pub(crate) fn garden_grow_anchor(app: AppHandle) -> Option<GrowAnchor> {
-    if let Some(anchor) = *DRAG_ANCHOR.lock().unwrap() {
-        return Some(anchor);
-    }
+pub(crate) fn garden_grow_anchor(app: AppHandle) -> Option<GrowAnchorRoom> {
     let win = app.get_webview_window("main")?;
-    let user = grown_user_frame().or_else(|| current_frame(&win))?;
+    let shown = current_frame(&win)?;
+    let user = grown_user_frame().unwrap_or(shown);
     let area = visible_area(&win, user)?;
-    Some(GrowAnchor {
+    let above = (shown.y - area.y).max(0) as f64 / win.scale_factor().ok()?;
+    let anchor = DRAG_ANCHOR.lock().unwrap().unwrap_or(GrowAnchor {
         x: anchor_value(keep_of(user.x, user.width, area.x, area.width)),
         y: anchor_value(keep_of(user.y, user.height, area.y, area.height)),
-    })
+    });
+    Some(GrowAnchorRoom { anchor, above })
 }
 
 #[derive(Serialize, Clone, Copy)]
@@ -541,6 +590,36 @@ mod tests {
         assert!(shrinking(1.0, 1.0, true));
         assert!(shrinking(1.0, 1.2, false));
         assert!(!shrinking(1.0, 1.0, false));
+    }
+
+    #[test]
+    fn a_bubble_above_grows_a_window_in_the_upper_part_upward_only() {
+        // A window in the display's top third keeps its top edge when growing to fit, but a bubble above its bird's
+        // name past the garden's top grows it up by what the bubble needs, the bottom edge staying
+        let cur = Frame { x: 100, y: 120, width: 680, height: 200 };
+        assert_eq!(keep_of(cur.y, cur.height, AREA.y, AREA.height), Keep::Start);
+        assert_eq!(bubble_grow_frame(cur, 12, AREA), Frame { x: 100, y: 108, width: 680, height: 212 });
+    }
+
+    #[test]
+    fn a_bubble_above_grows_up_to_the_visible_area() {
+        let cur = Frame { x: 100, y: 35, width: 680, height: 400 };
+        assert_eq!(bubble_grow_frame(cur, 40, AREA), Frame { x: 100, y: 25, width: 680, height: 410 });
+        // Already at the top: nothing to grow
+        let top = Frame { y: 25, ..cur };
+        assert_eq!(bubble_grow_frame(top, 40, AREA), top);
+    }
+
+    #[test]
+    fn shrinking_after_a_bubble_grew_the_window_up_keeps_the_top_edge() {
+        // Grown 12px up for a bubble from the user's frame in the top third, then a bird leaves: back to the user's
+        // size from the bottom, the top edge where the bubble left it (the page shrinks with anchor y 0)
+        let user = Frame { x: 100, y: 120, width: 680, height: 200 };
+        assert_eq!(keep_of(user.y, user.height, AREA.y, AREA.height), Keep::Start);
+        let up = bubble_grow_frame(user, 12, AREA);
+        assert_eq!(fit_frame(user, 1.0, AREA, Some(up), true), Frame { x: 100, y: 108, width: 680, height: 200 });
+        // Growing to fit afterwards keeps the grown height and the top edge
+        assert_eq!(fit_frame(user, 1.0, AREA, Some(up), false), up);
     }
 
     #[test]

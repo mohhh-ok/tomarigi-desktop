@@ -21,7 +21,8 @@ import {
   gardenGlyphSize,
   gardenSimulate,
   nextUnsettled,
-  withBubbleReach,
+  withBubbleUp,
+  type BubbleGrowRoom,
   type FitBox,
   type GardenFit,
   type PlacedGarden,
@@ -186,7 +187,7 @@ export function Garden({
   // How far down (h) and above its top (up) the garden can reach by growing the window (bubbleGrowRoom in
   // lib/garden-fit.ts, from useGardenGrow): bubbles past the garden's edges stay as far as that. undefined when the
   // window doesn't grow
-  growRoom?: { h: number; up: number };
+  growRoom?: BubbleGrowRoom;
 }) {
   // The concierge is placed, dragged, and counted for growing and shrinking like a session bird, so it joins the
   // sessions as one more node. Its advice is its speech bubble (a stopped bird's summary). Only beside other birds
@@ -799,7 +800,7 @@ export function Garden({
       // (docs/design.md "Layout")
       const reach = bubbleReach(bubblePlaces, growRoom?.h ?? base.gardenH);
       const reachUp = bubbleReachUp(bubblePlaces, growRoom?.up ?? 0);
-      fit = withBubbleReach(
+      fit = withBubbleUp(
         {
           ...base,
           overheadW: Math.round(window.innerWidth - el.offsetWidth),
@@ -809,6 +810,7 @@ export function Garden({
         base.gardenH,
         gardenGrowAnchor,
         reachUp,
+        growRoom,
       );
     }
     const key = JSON.stringify(fit);

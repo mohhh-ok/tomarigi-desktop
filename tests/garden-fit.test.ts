@@ -17,6 +17,7 @@ import {
   bubbleGrowRoom,
   shrinkScale,
   withBubbleReach,
+  withBubbleUp,
 } from "../src/lib/garden-fit.ts";
 import { PLACE_EDGE_PX, PLACE_GAP_PX, placeBoxes, type PlaceBox, type Point } from "../src/lib/garden-place.ts";
 import { hashId } from "../src/lib/garden-layout.ts";
@@ -572,15 +573,41 @@ describe("how far the garden can reach down and up by growing the window (bubble
   const user = { width: 340, height: 400 };
   const f = { ...fit(4), gardenH: 320, overheadH: 80 };
   const area = { width: 1440, height: 800 };
-  test("growing downward: the garden at the largest scale the display's visible area allows, nothing above", () => {
+  test("growing downward: the garden at the largest scale the display's visible area allows", () => {
     // 1440x800 visible: the scale is capped at 2 by the height (800 / 400), so the garden can reach 800 - 80 = 720
-    expect(bubbleGrowRoom(user, f, 0, area)).toEqual({ h: 720, up: 0 });
+    expect(bubbleGrowRoom(user, f, 0, area, 0)).toEqual({ h: 720, up: 0, upAlone: true });
+  });
+  test("a window in the display's upper part still grows up for a bubble, by itself, as far as the room above it", () => {
+    // 120px between the window's top and the visible area's top: the scale doesn't give it (the top edge stays), the
+    // bubble's own growth does (garden_bubble_grow)
+    expect(bubbleGrowRoom(user, f, 0, area, 120)).toEqual({ h: 720, up: 120, upAlone: true });
   });
   test("growing upward (the window in the display's lower part): all of the growth above, nothing below", () => {
-    expect(bubbleGrowRoom(user, f, 1, area)).toEqual({ h: 320, up: 400 });
+    expect(bubbleGrowRoom(user, f, 1, area, 300)).toEqual({ h: 320, up: 400, upAlone: false });
   });
   test("growing around the middle: half of the growth each way", () => {
-    expect(bubbleGrowRoom(user, f, 0.5, area)).toEqual({ h: 520, up: 200 });
+    expect(bubbleGrowRoom(user, f, 0.5, area, 300)).toEqual({ h: 520, up: 200, upAlone: false });
+  });
+});
+
+describe("a bubble past the garden's top in a window in the display's upper part (withBubbleUp)", () => {
+  const placedOk = { ...fit(4), gardenH: 320, simulate: () => ({ overflow: 0, moved: 0 }) };
+  test("asks for growing up by itself, not for a larger scale (which would only grow the window down)", () => {
+    const f = withBubbleUp(placedOk, undefined, 320, { x: 0, y: 0 }, 5.1, { h: 720, up: 120, upAlone: true });
+    expect(f.overflow).toBe(false);
+    expect(f.simulate!(318, 320).overflow).toBe(0);
+    expect(f.growUp).toBe(5.1);
+    expect(gardenFitScale(340, 400, f, 1)).toBe(1);
+  });
+  test("a window in the lower part or the middle grows up by the scale as before", () => {
+    const f = withBubbleUp(placedOk, undefined, 320, { x: 0, y: 1 }, 40, { h: 320, up: 400, upAlone: false });
+    expect(f.overflow).toBe(true);
+    expect(f.growUp).toBeUndefined();
+  });
+  test("a bubble below past the bottom still grows the window down by the scale", () => {
+    const f = withBubbleUp(placedOk, 400, 320, { x: 0, y: 0 }, 5.1, { h: 720, up: 120, upAlone: true });
+    expect(f.overflow).toBe(true);
+    expect(f.growUp).toBe(5.1);
   });
 });
 
