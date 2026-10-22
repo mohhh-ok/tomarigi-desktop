@@ -53,6 +53,8 @@ export interface LaidBird {
   y: number;
   iconTop: number;
   iconBottom: number;
+  // Where its name's top is, from its top edge: a bubble above goes above the name. iconTop without a name
+  nameTop?: number;
   inBlock?: boolean;
 }
 
@@ -239,9 +241,10 @@ function totalOverlap(birds: LaidBird[], out: Map<string, BubblePlace>): number 
   );
 }
 
-/** Top and bottom of a bubble of height h, tail not included */
+/** Top and bottom of a bubble of height h, tail not included. Above, it ends above the name (docs/design.md "Layout") */
 function verticalSpan(b: LaidBird, h: number, above: boolean): [number, number] {
-  if (above) return [b.y + b.iconTop - TAIL_PX - h, b.y + b.iconTop - TAIL_PX];
+  const top = b.nameTop ?? b.iconTop;
+  if (above) return [b.y + top - TAIL_PX - h, b.y + top - TAIL_PX];
   return [b.y + b.iconBottom + TAIL_PX, b.y + b.iconBottom + TAIL_PX + h];
 }
 
@@ -348,4 +351,26 @@ function spreadApart(
     moveRight(q, right);
   }
   return new Map(list.map((p) => [p.b.id, p.center - p.b.x]));
+}
+
+// Half the width of the tail's base of a bubble above its bird, and the room it keeps from the name and from the
+// bubble's ends (px)
+const TAIL_HALF_PX = 3;
+const TAIL_NAME_GAP_PX = 2;
+const TAIL_END_PX = 10;
+
+/**
+ * The tail of a bubble above its bird (docs/design.md "Layout"): it starts on the bubble's bottom edge beside the name,
+ * on the side where the bubble has more room, and runs down past the name to the icon's top. base and tip are px from
+ * the bubble's left edge; the tip is at the icon's top corner when the name is narrower than the icon, otherwise
+ * beside the name, so the tail doesn't cover it. place: the bubble's width and shift (BubblePlace); nameW: the name's
+ * width (0 without one); iconW: the icon's width
+ */
+export function aboveTail(place: { w: number; shift: number }, nameW: number, iconW: number): { base: number; tip: number } {
+  const center = place.w / 2 - place.shift;
+  const side = place.w - center >= center ? 1 : -1;
+  const clear = nameW / 2 + TAIL_HALF_PX + TAIL_NAME_GAP_PX;
+  const base = Math.min(place.w - TAIL_END_PX, Math.max(TAIL_END_PX, center + side * clear));
+  const tip = center + side * Math.max(nameW / 2 + TAIL_NAME_GAP_PX, iconW / 2 - 6);
+  return { base, tip };
 }
