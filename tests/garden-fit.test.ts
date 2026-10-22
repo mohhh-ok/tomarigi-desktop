@@ -6,6 +6,7 @@ import {
   gardenFitScale,
   gardenGlyphSize,
   MAX_FIT_SCALE,
+  gardenDropScale,
   gardenSimulate,
   growStep,
   nextGrowScale,
@@ -57,8 +58,8 @@ describe("gardenFitScale", () => {
     expect(gardenFitScale(340, 400, fit(6), 1.3)).toBeLessThanOrEqual(1.3);
   });
 
-  test("birds left: the scale they need now, so the window can shrink back (not below the user's size)", () => {
-    expect(gardenFitScale(340, 400, fit(1), 1.5)).toBe(1);
+  test("birds left, without the actual placement: stays, since nothing checks that a smaller size moves nobody", () => {
+    expect(gardenFitScale(340, 400, fit(1), 1.5)).toBe(1.5);
   });
 
   test("overflow: grows enough for them to fit, and one step less doesn't", () => {
@@ -158,8 +159,8 @@ describe("growStep while growth is held after a manual resize (docs/design.md \"
     expect(growStep({ ...base, fit: over(9), kept: null }).scale).toBe(1);
     expect(growStep({ ...base, fit: over(9), kept: dropped }).scale).toBe(1.24);
   });
-  test("a bird left: back to the user's size", () => {
-    expect(growStep({ ...base, birdCount: 8, kept: dropped }).scale).toBe(1);
+  test("a bird left, without the actual placement: stays (shrinking is checked to move nobody)", () => {
+    expect(growStep({ ...base, birdCount: 8, kept: dropped }).scale).toBe(1.24);
   });
   test("resized by hand again: the user's new size", () => {
     expect(growStep({ ...base, user: { width: 500, height: 441 }, kept: dropped }).scale).toBe(1);
@@ -320,6 +321,59 @@ describe("shrinking back when birds leave, with the actual placement (gardenSimu
     const g = gardenAt(1);
     const lost = gardenAt(1.6).w - g.w;
     expect(gardenSimulate(placed, g.w, g.h).at.get("a")).toEqual({ x: 396 - lost, y: 4 });
+  });
+
+  // Every way the window shrinks by itself goes through growStep, and none of them moves a bird on screen (the user:
+  // 「てかウィンドウを自動で縮めるときに鳥がうごくのがもんだいなのはわかってるか？」). Grown to 1.6 with c and d outside the
+  // user's garden, as after dragging them out and dropping them there
+  const user = { width: userW, height: userH };
+  const step = (over: Partial<Parameters<typeof growStep>[0]>) => {
+    const { f } = leftAt(1.6, sticking);
+    return growStep({ active: true, held: false, fit: f, user, birdCount: 4, kept: null, dropScale: undefined, ...over });
+  };
+  const nobodyMoves = (scale: number) => {
+    const { placed } = leftAt(1.6, sticking);
+    const g = gardenAt(scale);
+    const r = gardenSimulate(placed, g.w, g.h);
+    expect(r.overflow).toBe(0);
+    for (const b of sticking) expect(r.at.get(b.id)).toEqual(b.at);
+  };
+  const grown = { scale: 1.6, count: 5, userW, userH };
+
+  describe("automatic shrinking never moves a bird (growStep)", () => {
+    test("a bird left", () => {
+      const r = step({ kept: grown });
+      expect(r.scale).toBeLessThan(1.6);
+      nobodyMoves(r.scale);
+    });
+    test("a bird left while held after a manual resize", () => {
+      const r = step({ held: true, kept: grown });
+      expect(r.scale).toBeLessThan(1.6);
+      nobodyMoves(r.scale);
+    });
+    test("a render while held, no bird left (a bubble changed)", () => {
+      const r = step({ held: true, kept: { ...grown, count: 4 } });
+      expect(r.scale).toBe(1.6);
+      nobodyMoves(r.scale);
+    });
+    test("a drop", () => {
+      const { f } = leftAt(1.6, sticking);
+      const r = step({ kept: { ...grown, count: 4 }, dropScale: gardenDropScale(userW, userH, f) });
+      expect(r.drop).toBe(true);
+      expect(r.scale).toBeLessThan(1.6);
+      nobodyMoves(r.scale);
+    });
+    test("a drop while held", () => {
+      const { f } = leftAt(1.6, sticking);
+      const r = step({ held: true, kept: { ...grown, count: 4 }, dropScale: gardenDropScale(userW, userH, f) });
+      expect(r.drop).toBe(true);
+      nobodyMoves(r.scale);
+    });
+    test("a bird left, without the actual placement to check with: it doesn't shrink", () => {
+      const { f } = leftAt(1.6, sticking);
+      const r = step({ fit: { ...f, simulate: undefined }, kept: grown });
+      expect(r.scale).toBe(1.6);
+    });
   });
 
   test("other changes than birds leaving don't shrink it (bubbles and status lines come and go)", () => {
