@@ -17,22 +17,9 @@
   min-width: 0;
 }
 
-/* Garden: the advice is about twice as long as a session bird's bubble (about 30 full-width characters), so the
-   concierge's bubble wraps to two lines instead of cutting at one. It has no status lines, so the second line stays
-   inside its own footprint */
-/* A wrapping bubble would otherwise shrink to the room right of the anchor's center (half of the 120px node), so it
-   takes its text's width up to the bubble's max-width */
-.garden-bubble-anchor.concierge .speech-bubble-below {
-  width: max-content;
-}
-
-.garden-bubble-anchor.concierge .speech-bubble {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
+/* Garden: the concierge's bubble is a bird's bubble (.speech-bubble-below in speech-bubble.css): the whole text,
+   wrapping onto as many lines as it needs within the same max width. It has no status lines, so the lines below go into
+   the empty space under it */
 
 /* Settings: the two looks side by side, each the picture with its name under it. The chosen one is framed */
 .concierge-look-choices {
