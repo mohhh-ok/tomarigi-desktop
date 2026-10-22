@@ -81,16 +81,17 @@ export type MeasureBubble = (id: string, max: number) => { w: number; h: number 
  * - Then bubbles that still overlap vertically and come closer than BUBBLE_GAP_PX are moved sideways apart, staying
  *   inside the garden, each by at most its half-width less TAIL_INSET_PX so the tail stays under the icon. A pair that
  *   can't be moved apart is moved apart only as far as that makes no new overlap with other bubbles
- * - A bubble that would reach past the garden's bottom goes above its icon when it fits there without overlapping
- *   another bubble. Otherwise it stays below while growing the window gives it room (growH: how far down the garden
- *   can reach, bubbleGrowH in lib/garden-fit.ts; the garden asks for it with bubbleReach), and at that limit goes on the
- *   side where less of it is cut or covered
+ * - A bubble that would reach past the garden's bottom goes above its bird's name when it fits there without
+ *   overlapping another bubble. Otherwise it stays below while growing the window gives it room, and at that limit goes
+ *   on the side where less of it is cut or covered. growH is how far down the garden can reach and growUp how far above
+ *   its top, by growing the window (bubbleGrowRoom in lib/garden-fit.ts); a bubble above fits up to that far. The
+ *   garden asks for the room with bubbleReach and bubbleReachUp
  * - Bubbles that still overlap: one of a pair goes above its icon when it fits there without overlapping another
  *   bubble, the one whose move clears more overlap first
  */
 export function layoutBubbles(
   birds: LaidBird[],
-  garden: { w: number; h: number; growH?: number },
+  garden: { w: number; h: number; growH?: number; growUp?: number },
   measure: MeasureBubble,
 ): Map<string, BubblePlace> {
   // Trying sides lays them out again and again with the same widths: measure each width once
@@ -104,8 +105,8 @@ export function layoutBubbles(
   let above = new Set<string>();
   let out = arrange(birds, garden, sized, above);
   const withAbove = (id: string) => arrange(birds, garden, sized, new Set([...above, id]));
-  const fitsAbove = (b: LaidBird, o: Map<string, BubblePlace>) =>
-    verticalSpan(b, o.get(b.id)!.h, true)[0] >= EDGE_PX;
+  const top = EDGE_PX - Math.max(0, garden.growUp ?? 0);
+  const fitsAbove = (b: LaidBird, o: Map<string, BubblePlace>) => verticalSpan(b, o.get(b.id)!.h, true)[0] >= top;
   // Past the garden's bottom
   for (const b of birds) {
     const { h, w } = out.get(b.id)!;
@@ -122,7 +123,7 @@ export function layoutBubbles(
     // At the limit: the side that loses less of it
     const cutBelow = (bottom - limit) * w;
     const upPlace = up.get(b.id)!;
-    const cutAbove = Math.max(0, EDGE_PX - verticalSpan(b, upPlace.h, true)[0]) * upPlace.w;
+    const cutAbove = Math.max(0, top - verticalSpan(b, upPlace.h, true)[0]) * upPlace.w;
     if (cutAbove + covered < cutBelow) {
       above.add(b.id);
       out = up;
@@ -158,6 +159,15 @@ export function bubbleReach(places: Map<string, BubblePlace>, growH: number): nu
   const below = [...places.values()].filter((p) => !p.above);
   if (below.length === 0) return undefined;
   return Math.min(growH, Math.max(...below.map((p) => p.bottom)) + EDGE_PX);
+}
+
+/** How far above the garden's top it must reach for the bubbles shown above their birds (px past the top, the edge
+    room included), capped at growUp (how far growing the window can take it); undefined when none reaches past it */
+export function bubbleReachUp(places: Map<string, BubblePlace>, growUp: number): number | undefined {
+  const tops = [...places.values()].filter((p) => p.above).map((p) => p.bottom - p.h);
+  if (tops.length === 0) return undefined;
+  const past = EDGE_PX - Math.min(...tops);
+  return past > 0 ? Math.min(growUp, past) : undefined;
 }
 
 /** Widths, sizes and sideways shifts with each bubble's side given (above: the ones over their icon) */

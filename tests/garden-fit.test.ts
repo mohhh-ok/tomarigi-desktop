@@ -14,7 +14,7 @@ import {
   ROUNDING_PX,
   type GardenFit,
   type PlacedGarden,
-  bubbleGrowH,
+  bubbleGrowRoom,
   shrinkScale,
   withBubbleReach,
 } from "../src/lib/garden-fit.ts";
@@ -568,17 +568,40 @@ describe("the window grows for a bubble past the garden's bottom (withBubbleReac
   });
 });
 
-describe("how far down the garden can reach by growing the window (bubbleGrowH)", () => {
+describe("how far the garden can reach down and up by growing the window (bubbleGrowRoom)", () => {
   const user = { width: 340, height: 400 };
   const f = { ...fit(4), gardenH: 320, overheadH: 80 };
-  test("growing downward: the garden at the largest scale the display's visible area allows", () => {
+  const area = { width: 1440, height: 800 };
+  test("growing downward: the garden at the largest scale the display's visible area allows, nothing above", () => {
     // 1440x800 visible: the scale is capped at 2 by the height (800 / 400), so the garden can reach 800 - 80 = 720
-    expect(bubbleGrowH(user, f, 0, { width: 1440, height: 800 })).toBe(720);
+    expect(bubbleGrowRoom(user, f, 0, area)).toEqual({ h: 720, up: 0 });
   });
-  test("growing upward (the window at the display's bottom): no room below, the garden's height now", () => {
-    expect(bubbleGrowH(user, f, 1, { width: 1440, height: 800 })).toBe(320);
+  test("growing upward (the window in the display's lower part): all of the growth above, nothing below", () => {
+    expect(bubbleGrowRoom(user, f, 1, area)).toEqual({ h: 320, up: 400 });
   });
-  test("growing around the middle: half of the growth", () => {
-    expect(bubbleGrowH(user, f, 0.5, { width: 1440, height: 800 })).toBe(520);
+  test("growing around the middle: half of the growth each way", () => {
+    expect(bubbleGrowRoom(user, f, 0.5, area)).toEqual({ h: 520, up: 200 });
+  });
+});
+
+describe("the window grows upward for a bubble above its bird past the garden's top (withBubbleReach)", () => {
+  const userW = 340;
+  const userH = 400;
+  const placedOk = { ...fit(4), gardenH: 320, simulate: () => ({ overflow: 0, moved: 0 }) };
+  const gardenAt = (s: number) => userH * s - 80 - ROUNDING_PX;
+  test("a bubble 40px past the top grows the window just enough, the bottom edge staying (anchor y 1)", () => {
+    const f = withBubbleReach(placedOk, undefined, 320, { x: 0, y: 1 }, 40);
+    expect(f.overflow).toBe(true);
+    const s = gardenFitScale(userW, userH, f, 1);
+    expect(gardenAt(s) - 320).toBeGreaterThanOrEqual(39.5);
+    expect(gardenAt(s - 0.02) - 320).toBeLessThan(39.5);
+  });
+  test("grown for it, the window doesn't shrink back to cut it", () => {
+    const f = withBubbleReach(placedOk, undefined, 320, { x: 0, y: 1 }, 40);
+    expect(gardenAt(shrinkScale(userW, userH, f, 1.6)) - 320).toBeGreaterThanOrEqual(39.5);
+  });
+  test("growing around the middle, the top gets half the growth", () => {
+    const s = gardenFitScale(userW, userH, withBubbleReach(placedOk, undefined, 320, { x: 0, y: 0.5 }, 40), 1);
+    expect((gardenAt(s) - 320) / 2).toBeGreaterThanOrEqual(39.5);
   });
 });

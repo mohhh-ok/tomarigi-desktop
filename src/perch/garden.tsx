@@ -41,7 +41,7 @@ import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
-import { aboveTail, bubbleReach, bubbleRoomFor, layoutBubbles, type BubblePlace, type LaidBird } from "./garden-bubbles";
+import { aboveTail, bubbleReach, bubbleReachUp, bubbleRoomFor, layoutBubbles, type BubblePlace, type LaidBird } from "./garden-bubbles";
 import {
   BUBBLE_ROOM_PX,
   birdExtraH,
@@ -170,7 +170,7 @@ export function Garden({
   onFocus,
   canFocus,
   onFit,
-  growH,
+  growRoom,
 }: {
   sessions: SessionView[];
   // The concierge bird (docs/design.md "Concierge"): absent when it isn't shown, advice null when it has none
@@ -183,9 +183,10 @@ export function Garden({
   // Receives what decides whether the birds fit, for growing the floating window (garden-grow.ts). null when the
   // garden isn't measured (no birds, tab hidden)
   onFit?: (fit: GardenFit | null) => void;
-  // How far down the garden can reach by growing the window (bubbleGrowH in lib/garden-fit.ts, from useGardenGrow):
-  // a bubble past the garden's bottom stays below as far as that. undefined when the window doesn't grow
-  growH?: number;
+  // How far down (h) and above its top (up) the garden can reach by growing the window (bubbleGrowRoom in
+  // lib/garden-fit.ts, from useGardenGrow): bubbles past the garden's edges stay as far as that. undefined when the
+  // window doesn't grow
+  growRoom?: { h: number; up: number };
 }) {
   // The concierge is placed, dragged, and counted for growing and shrinking like a session bird, so it joins the
   // sessions as one more node. Its advice is its speech bubble (a stopped bird's summary). Only beside other birds
@@ -733,7 +734,11 @@ export function Garden({
       else bubble.style.removeProperty("--bubble-max");
       return size;
     };
-    const next = layoutBubbles(laid, { w: garden.clientWidth, h: garden.clientHeight, growH }, measure);
+    const next = layoutBubbles(
+      laid,
+      { w: garden.clientWidth, h: garden.clientHeight, growH: growRoom?.h, growUp: growRoom?.up },
+      measure,
+    );
     const same =
       next.size === bubblePlaces.size &&
       [...next].every(([id, p]) => {
@@ -790,9 +795,10 @@ export function Garden({
       if (past > 1) {
         void invoke("log", { line: `[garden] content ${past}px past the window bottom` }).catch(() => {});
       }
-      // A bubble below its bird past the garden's bottom grows the window too, as far as growing can give it room
+      // A bubble past the garden's bottom or top grows the window too, as far as growing can give it room
       // (docs/design.md "Layout")
-      const reach = bubbleReach(bubblePlaces, growH ?? base.gardenH);
+      const reach = bubbleReach(bubblePlaces, growRoom?.h ?? base.gardenH);
+      const reachUp = bubbleReachUp(bubblePlaces, growRoom?.up ?? 0);
       fit = withBubbleReach(
         {
           ...base,
@@ -802,6 +808,7 @@ export function Garden({
         reach,
         base.gardenH,
         gardenGrowAnchor,
+        reachUp,
       );
     }
     const key = JSON.stringify(fit);

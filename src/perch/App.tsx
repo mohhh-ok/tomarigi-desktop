@@ -462,7 +462,7 @@ export default function App({
   );
   // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
   // Garden, so it doesn't count
-  const { onFit: onGardenFit, growH: gardenGrowH } = useGardenGrow(
+  const { onFit: onGardenFit, growRoom: gardenGrowRoom } = useGardenGrow(
     windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
     windowMode === "floating",
     displaySessions.length + (concierge.shown ? 1 : 0),
@@ -658,7 +658,7 @@ export default function App({
                 onFocus={onFocusSession}
                 canFocus={canFocus}
                 onFit={onGardenFit}
-                growH={gardenGrowH}
+                growRoom={gardenGrowRoom}
               />
             </div>
           </section>

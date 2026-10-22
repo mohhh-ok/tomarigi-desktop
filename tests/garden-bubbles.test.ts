@@ -2,7 +2,8 @@
 // 180px (120px inside a watch block), and is drawn above the birds; only the status lines of a row line up below the bubbles
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { aboveTail, bubbleReach, bubbleRoomFor, layoutBubbles, type BubbleBird, type LaidBird } from "../src/perch/garden-bubbles.ts";
+import { gardenFitScale, withBubbleReach } from "../src/lib/garden-fit.ts";
+import { aboveTail, bubbleReach, bubbleReachUp, bubbleRoomFor, layoutBubbles, type BubbleBird, type LaidBird } from "../src/perch/garden-bubbles.ts";
 
 const birds = (list: [string, number, boolean][]): BubbleBird[] => list.map(([id, y, bubble]) => ({ id, x: 0, y, bubble }));
 
@@ -378,6 +379,36 @@ describe("layoutBubbles: above the name", () => {
     const out = lay(list);
     const up = list.find((b) => out.get(b.id)!.above)!;
     expect(out.get(up.id)!.bottom).toBe(150 + 4 - 7);
+  });
+});
+
+describe("layoutBubbles: past the garden's top, the window grows upward instead of leaving the overlap", () => {
+  // The user's 16:08 layout, measured in the DOM (garden 701x310 in a 749x442 window): names 3px below each bird's top
+  const at1608 = (id: string, x: number, y: number, inBlock = true): LaidBird => ({ ...at(id, x, y, inBlock), nameTop: 3 });
+  const list = [at1608("billionclips", 318, 169), at1608("clips", 450, 169), at1608("desk", 186, 169), at1608("tomarigi", 493, 96), at1608("yokai", 158, 38), at1608("concierge", 549, 176, false)];
+  const heights = { billionclips: 93.1, clips: 78.2, desk: 63.4, tomarigi: 93.1, yokai: 78.2 };
+
+  test("16:08: above its name tomarigi's bubble reaches 5px past the top; with room up there it goes there and nothing overlaps", () => {
+    // Without room above (the window can't grow up), the overlap is left, the name not hidden
+    const stuck = layoutBubbles(list, { w: 701, h: 310 }, watchMeasure(heights));
+    expect(allOverlap(stuck, list)).toBeGreaterThan(0);
+    const out = layoutBubbles(list, { w: 701, h: 310, growUp: 200 }, watchMeasure(heights));
+    expect(out.get("tomarigi")!.above).toBe(true);
+    // Its top: 96 + 3 - 7 - 93.1 = -1.1, so the garden must reach 4 - (-1.1) = 5.1px above its top
+    expect(out.get("tomarigi")!.bottom - out.get("tomarigi")!.h).toBeCloseTo(-1.1, 1);
+    expect(allOverlap(out, list)).toBe(0);
+    const up = bubbleReachUp(out, 200)!;
+    expect(up).toBeCloseTo(5.1, 1);
+    // The window (749x442, the garden 310px of it) grows by 2%: 442 x 1.02 - 132 - 1 = 317.8, 7.8px more, all upward when
+    // the window's bottom edge stays (anchor y 1), and the birds stay at the same place on screen
+    const fit = { count: 9, boxes: [], overflow: false, overflowW: 0, overflowH: 0, gardenW: 701, gardenH: 310, overheadW: 48, overheadH: 132, simulate: () => ({ overflow: 0, moved: 0 }) };
+    const s = gardenFitScale(749, 442, withBubbleReach(fit, bubbleReach(out, 310), 310, { x: 0, y: 1 }, up), 1);
+    expect(s).toBe(1.02);
+  });
+
+  test("a bubble past the top asks for nothing when it fits, and no more than growing can give", () => {
+    const out = layoutBubbles([bird("a", 300, 100, 200)], { w: 701, h: 310, growUp: 200 }, () => ({ w: 120, h: 30 }));
+    expect(bubbleReachUp(out, 200)).toBeUndefined();
   });
 });
 
