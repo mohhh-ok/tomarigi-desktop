@@ -46,6 +46,7 @@ import { testJudgeConnection } from "@/lib/judge";
 import { testOpenAiConnection } from "@/lib/openai-judge";
 import { testLocalConnection } from "@/lib/local-judge";
 import { cancelSpeech, setVoiceVolume } from "@/lib/voice";
+import { listenVoiceMenu, reportVoiceMenu } from "./voice-menu";
 import { DEFAULT_ICON_SET } from "./icon-sets";
 import type { ApiKeyTestState } from "./settings/ai-key-settings";
 
@@ -95,7 +96,9 @@ export function useSettings() {
     const cVolume = await loadChirpVolume();
     setChirpVolumeState(cVolume);
     setChirpVolume(cVolume);
-    setVoiceEnabled(await loadVoiceEnabled());
+    const voice = await loadVoiceEnabled();
+    setVoiceEnabled(voice);
+    reportVoiceMenu(voice);
     const volume = await loadVoiceVolume();
     setVoiceVolumeState(volume);
     setVoiceVolume(volume);
@@ -152,13 +155,21 @@ export function useSettings() {
     void saveMuted(next);
   }, [muted]);
 
-  const toggleVoiceEnabled = useCallback(() => {
-    const next = !voiceEnabled;
+  // From the settings checkbox and from the menu bar menu's "Read aloud" item (voice-menu.ts), so both show the same value.
+  // voiceEnabledRef is set here too: the menu item works while the window is hidden, and the next readout must see the
+  // new value even before React renders again
+  const changeVoiceEnabled = useCallback((next: boolean) => {
+    voiceEnabledRef.current = next;
     setVoiceEnabled(next);
     void saveVoiceEnabled(next);
+    reportVoiceMenu(next);
     // OFF is an "I want quiet" action, so speech that is playing or queued stops immediately too
     if (!next) cancelSpeech();
-  }, [voiceEnabled]);
+  }, []);
+
+  const toggleVoiceEnabled = useCallback(() => changeVoiceEnabled(!voiceEnabledRef.current), [changeVoiceEnabled]);
+
+  useEffect(() => listenVoiceMenu(changeVoiceEnabled), [changeVoiceEnabled]);
 
   // Slider (input shown as 0–100, internal value 0–1). The module variable in lib/voice.ts is read at the
   // "moment" of speaking, so here it is enough to apply it with setVoiceVolume right along with the state
