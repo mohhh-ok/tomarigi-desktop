@@ -13,7 +13,7 @@ import {
   type GrowKept,
 } from "@/lib/garden-fit";
 import { dragGrowRequest } from "./garden-drag-grow";
-import { UP_GROW_WAIT_MS, upGrowDone, type UpGrowWait } from "./garden-up-grow";
+import { growsUpForBubble, upGrowDone, upGrowLeftMs, type UpGrowWait } from "./garden-up-grow";
 
 /**
  * Which part of the window stays put on screen when it grows or shrinks back, per axis (0 the left / top edge, 1 the
@@ -131,14 +131,21 @@ export function useGardenGrow(
       upGrown();
     }
     // A bubble above its bird's name past the garden's top, in a window in the display's upper part: grow up by itself,
-    // the bottom edge staying, like a drag pushing the top edge (docs/design.md "Layout")
-    if (active && !held && fit?.growUp !== undefined) {
+    // the bottom edge staying, like a drag pushing the top edge (docs/design.md "Layout"). Not during a drag
+    if (fit && growsUpForBubble({ active, held, dragging: dragGrowing, growUp: fit.growUp })) {
       const wait = { gardenH: fit.gardenH, since: Date.now() };
       upGrowing = wait;
       gardenGrowAnchor.y = 1;
-      // The garden's height may never change: decide again once the wait times out, even if no fit arrives
-      setTimeout(() => upGrowing === wait && updateRef.current(), UP_GROW_WAIT_MS);
-      const top = Math.ceil(fit.growUp);
+      // The garden's height may never change: decide again once the wait times out, even if no fit arrives. The timer
+      // can fire a little early by Date.now (upGrowDone still false), so it is set again for the rest
+      const timeout = () => {
+        if (upGrowing !== wait) return;
+        const left = upGrowLeftMs(wait, Date.now());
+        if (left > 0) setTimeout(timeout, left);
+        else updateRef.current();
+      };
+      setTimeout(timeout, upGrowLeftMs(wait, Date.now()));
+      const top = Math.ceil(fit.growUp!);
       void invoke("log", { line: `[grow] page bubble up=${top}` }).catch(() => {});
       void invoke<boolean>("garden_bubble_grow", { top }).then(
         (grew) => !grew && upGrown(),
