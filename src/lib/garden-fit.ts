@@ -151,11 +151,11 @@ function emptyFitScale(userW: number, userH: number, fit: GardenFit): number {
  *   with the birds on screen kept at the same place on screen) gives everything a spot without moving anyone; failing
  *   that, the smallest at which everything has a spot
  * - Nothing overflowed: never more than current (no growing when they fit; the user's report was a window grown with
- *   the birds sparse). The smallest scale at which the actual placement gives everything a spot without moving anyone
- *   on screen, for shrinking back after birds left (nextGrowScale decides whether to shrink). Unlike a manual shrink,
- *   no bird moves for it
- * Without fit.simulate, an estimate: enough for the footprints to fit in an empty garden, and when something
- * overflowed, at least a strip as wide or tall as the footprint that had no spot
+ *   the birds sparse). shrinkScale, for shrinking back after birds left (nextGrowScale decides whether to shrink).
+ *   Unlike a manual shrink, no bird moves for it
+ * Without fit.simulate, an estimate when something overflowed: enough for the footprints to fit in an empty garden,
+ * and at least a strip as wide or tall as the footprint that had no spot. When nothing overflowed it stays at current,
+ * since without the actual placement a smaller size can't be checked to keep everyone in place
  */
 export function gardenFitScale(userW: number, userH: number, fit: GardenFit, current = 1): number {
   if (userW <= 0 || userH <= 0) return 1;
@@ -197,39 +197,36 @@ export function gardenFitScale(userW: number, userH: number, fit: GardenFit, cur
       }
       return scaleAt(placed);
     }
-    // Shrinking back: only as far as nobody on screen moves, as on a drop (gardenDropScale). Allowing birds that stick
-    // out to move to a free spot inside moved birds the user hadn't touched when another left (the user: 「キャラが消える
-    // 時に、関係ないキャラも動いてしまってくずれることがある」)
-    const keep = first(0, baseStep - 1, (s) => {
-      const r = at(s);
-      return r.overflow === 0 && r.moved === 0;
-    });
-    return keep === undefined ? base : scaleAt(keep);
+    return shrinkScale(userW, userH, fit, base);
   }
+  // Shrinking needs the actual placement to check that nobody moves (shrinkScale)
+  if (!fit.overflow) return base;
   const empty = emptyFitScale(userW, userH, fit);
-  if (!fit.overflow) return Math.min(empty, base);
   const strip = base + Math.min((fit.overflowW + PLACE_GAP_PX) / userW, (fit.overflowH + PLACE_GAP_PX) / userH);
   return Math.round(roundUp(Math.max(empty, strip)) * 100) / 100;
 }
 
 /**
- * On a drop (docs/design.md "Layout"): the smallest scale (≥ 1) of the user's window size at which the actual placement
- * gives everything a spot without moving anyone on screen, so the window shrinks once and nothing moves. undefined
- * when no size keeps everyone in place, or without fit.simulate to try sizes with (then it doesn't shrink)
+ * The one place that decides how far the window may shrink by itself (docs/design.md "Layout": birds leaving, a drop,
+ * any render while grown): the smallest scale of the user's window size, from 1 (the user's size) up to upTo, at which
+ * the actual placement (fit.simulate) gives everything a spot without moving anyone on screen. undefined when none up to
+ * upTo does, or without fit.simulate to check it with. A manual resize is the user's size and doesn't come here
  */
-export function gardenDropScale(userW: number, userH: number, fit: GardenFit): number | undefined {
+export function keepPlaceScale(userW: number, userH: number, fit: GardenFit, upTo: number): number | undefined {
   const simulate = fit.simulate;
   if (!simulate || userW <= 0 || userH <= 0) return undefined;
   const scaleAt = (i: number) => Math.round((1 + i * SCALE_STEP) * 100) / 100;
-  // 1px smaller than the exact size, as in gardenFitScale (the window takes whole pixels)
+  // Tried 1px smaller than the exact size: the window takes whole pixels (rounded on the Rust side) and the overhead
+  // is measured rounded, so the garden can come out a fraction smaller. Shrinking to a size that fit only by that
+  // fraction left a block without a spot and grew the window right back (observed: 574.02 tried, 574 shown)
   const ok = (i: number) => {
     const s = scaleAt(i);
     const r = simulate(userW * s - fit.overheadW - ROUNDING_PX, userH * s - fit.overheadH - ROUNDING_PX);
     return r.overflow === 0 && r.moved === 0;
   };
   let lo = 0;
-  let hi = Math.round((MAX_FIT_SCALE - 1) / SCALE_STEP);
-  if (!ok(hi)) return undefined;
+  let hi = Math.floor((Math.min(upTo, MAX_FIT_SCALE) - 1) / SCALE_STEP + 1e-9);
+  if (hi < 0 || !ok(hi)) return undefined;
   // Binary search, assuming more room never makes anyone move
   while (lo < hi) {
     const mid = Math.floor((lo + hi) / 2);
@@ -237,6 +234,24 @@ export function gardenDropScale(userW: number, userH: number, fit: GardenFit): n
     else lo = mid + 1;
   }
   return scaleAt(lo);
+}
+
+/**
+ * Shrinking back from current (birds left, or any render while grown): keepPlaceScale, or current when no smaller size
+ * keeps everyone in place. Allowing birds that stick out to move to a free spot inside moved birds the user hadn't
+ * touched (the user: 「キャラが消える時に、関係ないキャラも動いてしまってくずれることがある」「てかウィンドウを自動で縮めるときに
+ * 鳥がうごくのがもんだいなのはわかってるか？」)
+ */
+export function shrinkScale(userW: number, userH: number, fit: GardenFit, current: number): number {
+  return keepPlaceScale(userW, userH, fit, current) ?? current;
+}
+
+/**
+ * On a drop (docs/design.md "Layout"): keepPlaceScale over every size, so the window shrinks once and nothing moves.
+ * undefined when no size keeps everyone in place (then it doesn't shrink)
+ */
+export function gardenDropScale(userW: number, userH: number, fit: GardenFit): number | undefined {
+  return keepPlaceScale(userW, userH, fit, MAX_FIT_SCALE);
 }
 
 /** The scale last applied, with the number of birds and the user's size it was decided for */
@@ -298,11 +313,14 @@ export function growStep(i: GrowInputs): { scale: number; needed: number; drop: 
     const scale = nextGrowScale(kept, needed, birdCount, user.width, user.height);
     return { scale, needed, drop: false, kept: { scale, count: birdCount, userW: user.width, userH: user.height } };
   }
-  // Held: no growing, but it shrinks only when birds leave or on a drop, as when not held. Going back to the user's
-  // size on any render shrank a window a drop had kept grown a few seconds later, when a bubble changed (observed)
+  // Held: no growing, but shrinking is the same as when not held: only when birds leave, and only as far as nobody
+  // moves (shrinkScale). Going back to the user's size on any render shrank a window a drop had kept grown a few
+  // seconds later, when a bubble changed, and moved the birds that stuck out (observed)
   if (active && fit && user) {
-    const scale = nextGrowScale(kept, 1, birdCount, user.width, user.height);
-    return { scale, needed: 1, drop: false, kept: { scale, count: birdCount, userW: user.width, userH: user.height } };
+    const current = kept && kept.userW === user.width && kept.userH === user.height ? kept.scale : 1;
+    const needed = shrinkScale(user.width, user.height, fit, current);
+    const scale = nextGrowScale(kept, needed, birdCount, user.width, user.height);
+    return { scale, needed, drop: false, kept: { scale, count: birdCount, userW: user.width, userH: user.height } };
   }
   return { scale: 1, needed: 1, drop: false, kept: null };
 }
