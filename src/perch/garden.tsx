@@ -1028,12 +1028,22 @@ function GardenNode({
   // The name's top edge and width, and the icon's width: a bubble above goes above the name, its tail passing beside
   // the name to the icon (docs/design.md "Layout"). Read after every render, as the name can change
   const nameRef = useRef<HTMLSpanElement>(null);
-  const [nameBox, setNameBox] = useState<{ top: number; w: number; iconW: number } | undefined>(undefined);
+  const [nameBox, setNameBox] = useState<
+    { top: number; w: number; h: number; iconTop: number; iconW: number; iconH: number } | undefined
+  >(undefined);
   useLayoutEffect(() => {
     const name = nameRef.current;
     const glyph = glyphRef.current;
-    const next = glyph && { top: name ? name.offsetTop : glyph.offsetTop, w: name?.offsetWidth ?? 0, iconW: glyph.offsetWidth };
-    if (next && (next.top !== nameBox?.top || next.w !== nameBox?.w || next.iconW !== nameBox?.iconW)) setNameBox(next);
+    if (!glyph) return;
+    const next = {
+      top: name ? name.offsetTop : glyph.offsetTop,
+      w: name?.offsetWidth ?? 0,
+      h: name?.offsetHeight ?? 0,
+      iconTop: glyph.offsetTop,
+      iconW: glyph.offsetWidth,
+      iconH: glyph.offsetHeight,
+    };
+    if (!nameBox || Object.entries(next).some(([k, v]) => nameBox[k as keyof typeof next] !== v)) setNameBox(next);
   });
   // Target driven directly by WAAPI (element.animate) for the enter/leave animations. It assumes no CSS transform
   // is applied (positioning is handled by the outer .garden-node), so it doesn't conflict with animate's transform
@@ -1182,11 +1192,25 @@ function GardenNode({
   // The speech bubble is centered under the bird and pushed only to stay inside the garden frame (bubbleVars), for birds
   // in a watching block too (docs/design.md "Layout")
   const bubbleRange = bubbleRangeOf(containerRef.current);
-  const tail = bubblePlace?.above && nameBox ? aboveTail(bubblePlace, nameBox.w, nameBox.iconW) : undefined;
+  const tail =
+    bubblePlace?.above && nameBox
+      ? aboveTail(
+          bubblePlace,
+          nameBox,
+          { w: nameBox.iconW, h: nameBox.iconH },
+          nameBox.iconTop - nameBox.top,
+        )
+      : undefined;
   const bubbleStyle =
     bubbleRange && {
       ...bubbleVars(pos.x, bubbleRange, inBlock ? undefined : bubblePlace?.max, bubblePlace?.shift),
-      ...(tail && ({ "--tail-base": `${tail.base}px`, "--tail-tip": `${tail.tip}px` } as CSSProperties)),
+      ...(tail &&
+        ({
+          "--tail-base": `${tail.base}px`,
+          "--tail-knee": `${tail.knee}px`,
+          "--tail-tip": `${tail.tip}px`,
+          "--tail-h": `${tail.h}px`,
+        } as CSSProperties)),
     };
 
   // Bird facing. About half are mirrored deterministically based on the id (all facing the same way looks stuffed).

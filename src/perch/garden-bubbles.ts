@@ -353,24 +353,33 @@ function spreadApart(
   return new Map(list.map((p) => [p.b.id, p.center - p.b.x]));
 }
 
-// Half the width of the tail's base of a bubble above its bird, and the room it keeps from the name and from the
-// bubble's ends (px)
+// Half the width of the tail's stem of a bubble above its bird, and the room it keeps from the name and the icon and
+// from the bubble's ends (px)
 const TAIL_HALF_PX = 3;
 const TAIL_NAME_GAP_PX = 2;
 const TAIL_END_PX = 10;
 
 /**
- * The tail of a bubble above its bird (docs/design.md "Layout"): it starts on the bubble's bottom edge beside the name,
- * on the side where the bubble has more room, and runs down past the name to the icon's top. base and tip are px from
- * the bubble's left edge; the tip is at the icon's top corner when the name is narrower than the icon, otherwise
- * beside the name, so the tail doesn't cover it. place: the bubble's width and shift (BubblePlace); nameW: the name's
- * width (0 without one); iconW: the icon's width
+ * The tail of a bubble above its bird (docs/design.md "Layout"): a stem from the bubble's bottom edge straight down
+ * beside the name, on the side where the bubble has more room, to the name's bottom (knee), then a tip pointing at the
+ * icon's side halfway down it, so it covers neither the name nor the icon. base and tip are px from the bubble's left
+ * edge; knee and h are px down from the bubble's bottom edge to the knee and to the tip. place: the bubble's width and
+ * shift (BubblePlace); name: its size (0 without one); icon: its size; iconFromName: from the name's top to the icon's
  */
-export function aboveTail(place: { w: number; shift: number }, nameW: number, iconW: number): { base: number; tip: number } {
+export function aboveTail(
+  place: { w: number; shift: number },
+  name: { w: number; h: number },
+  icon: { w: number; h: number },
+  iconFromName: number,
+): { base: number; knee: number; tip: number; h: number } {
   const center = place.w / 2 - place.shift;
   const side = place.w - center >= center ? 1 : -1;
-  const clear = nameW / 2 + TAIL_HALF_PX + TAIL_NAME_GAP_PX;
+  const clear = Math.max(name.w, icon.w) / 2 + TAIL_NAME_GAP_PX + TAIL_HALF_PX;
   const base = Math.min(place.w - TAIL_END_PX, Math.max(TAIL_END_PX, center + side * clear));
-  const tip = center + side * Math.max(nameW / 2 + TAIL_NAME_GAP_PX, iconW / 2 - 6);
-  return { base, tip };
+  return {
+    base,
+    knee: TAIL_PX + name.h,
+    tip: center + side * (icon.w / 2 + 1),
+    h: TAIL_PX + iconFromName + icon.h / 2,
+  };
 }
