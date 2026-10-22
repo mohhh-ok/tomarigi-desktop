@@ -85,6 +85,9 @@ export interface SessionView {
   // Whether the bird has the anger mark: the latest turn verdict said a message of that turn was abusive. It stays
   // until the next turn's verdict. Set by App (mock writes it directly)
   angry?: boolean;
+  // While its own state is waiting: whether it waits on a question (a question tool) or a permission prompt, when that
+  // is known (waitingOnOf in lib/bird-state.ts). Passed to the concierge (docs/design.md "Concierge")
+  waitingOn?: "question" | "permission";
   // The question text while stopped on a question tool (AskUserQuestion / request_user_input). Taken as-is
   // from the tool input (no AI). Shown in the speech bubble (perch/bubble.tsx)
   question?: string;
@@ -155,6 +158,9 @@ export interface LiveSession {
   name?: string;
   cwd?: string;
   status?: string;
+  /** What a waiting session waits on: "input needed" (a question tool or an MCP input), "permission prompt",
+   * "sandbox request", "worker request", "dialog open", ... (Claude Code's own values) */
+  waitingFor?: string;
   startedAt?: number;
 }
 

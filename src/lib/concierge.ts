@@ -63,6 +63,9 @@ interface PayloadSession {
   /** Where needs_reply came from: the machine state (a question tool, a permission prompt) or the turn verdict asking.
    * Both are facts; the concierge doesn't judge them again */
   needs_reply_source?: "machine" | "verdict";
+  /** With needs_reply_source machine: whether the session waits on a question (a question tool) or a permission prompt,
+   * when that is known */
+  waiting_on?: "question" | "permission";
   seconds_since_last_activity: number;
   line?: string;
   question?: string;
@@ -153,6 +156,7 @@ export function buildConciergePayload(
       state: view.state,
       needs_reply: needsReply,
       ...(source && { needs_reply_source: source }),
+      ...(source === "machine" && view.waitingOn && { waiting_on: view.waitingOn }),
       seconds_since_last_activity: Math.round(view.sinceMs / 1000),
       ...(line && { line: clip(line) }),
       ...(view.state === "waiting" && view.question && { question: clip(view.question) }),
@@ -229,7 +233,9 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "(needs_reply, user_replied, done, and jump = the developer opened that session's terminal). " +
     "needs_reply_source tells where needs_reply came from: machine means a question tool or a permission prompt " +
     "is open; verdict means the session's last reply was judged as waiting on the developer (asking). Both are " +
-    "facts: trust needs_reply as given.\n" +
+    "facts: trust needs_reply as given. With machine, waiting_on says which, when known: question means it asks " +
+    "the developer a question or a choice (say so, e.g. answer its question), permission means a permission " +
+    "prompt (e.g. allow or deny it). Without waiting_on, don't say which of the two it is.\n" +
     "A stopped session may have continuing. continuing true means its turn ended but work it started goes on in " +
     "the background (e.g. a measurement, an export or a build is running and it will report or look at the log " +
     "later); it is a fact: trust it as given. A session in state done also has last_reply_tail; when continuing is " +
@@ -416,7 +422,8 @@ export function conciergeRetryLogLine(c: ConciergeLogContext, retry: ConciergeRe
 /**
  * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
  * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
- * form to grep. source: machine is a question tool or a permission prompt, verdict is the turn verdict asking; verdict
+ * form to grep. source: machine is a question tool or a permission prompt (waiting_on says which, when known), verdict is
+ * the turn verdict asking; verdict
  * is the turn verdict of a stopped turn (asking / not_asking); continuing is the turn verdict's continuing
  */
 export function conciergeRequestLogLines(c: ConciergeLogContext, payload: ConciergePayload): string[] {
@@ -431,6 +438,7 @@ export function conciergeRequestLogLines(c: ConciergeLogContext, payload: Concie
         `since=${s.seconds_since_last_activity}s`,
         `needs_reply=${s.needs_reply}`,
         `source=${s.needs_reply_source ?? "-"}`,
+        `waiting_on=${s.waiting_on ?? "-"}`,
         `verdict=${s.asking === undefined ? "-" : s.asking ? "asking" : "not_asking"}`,
         `continuing=${s.continuing ?? "-"}`,
         `watch_parent=${s.watch_parent ?? "-"}`,

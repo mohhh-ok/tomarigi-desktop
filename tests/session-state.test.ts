@@ -4,7 +4,7 @@
 import { describe, expect, test } from "bun:test";
 import type { TailEvent, TailInfo, TailKind } from "../src/lib/transcript.ts";
 import type { BirdState, ChickView } from "../src/lib/session-types.ts";
-import { deriveSdkChickState, deriveState, escalateWithChicks } from "../src/lib/bird-state.ts";
+import { deriveSdkChickState, deriveState, escalateWithChicks, waitingOnOf } from "../src/lib/bird-state.ts";
 import { deriveDoneEvent } from "../src/lib/session-events.ts";
 import { resolveChickDoneSignalAt } from "../src/lib/session-chicks.ts";
 import { extractQuestion, formatSnippet } from "../src/lib/session-snippet.ts";
@@ -293,5 +293,25 @@ describe("extractQuestion", () => {
     expect(extractQuestion(undefined)).toBeUndefined();
     expect(extractQuestion(JSON.stringify({ plan: "p" }))).toBeUndefined();
     expect(extractQuestion(JSON.stringify({ questions: [{ question: "  " }] }))).toBeUndefined();
+  });
+});
+
+describe("waitingOnOf", () => {
+  // What a waiting session waits on, for the concierge (docs/design.md "Concierge"). Claude Code writes a question
+  // tool's tool_use only after it is answered, so while it is open only sessions/<pid>.json's waitingFor tells
+  test("a question tool already in the transcript is a question", () => {
+    expect(waitingOnOf(true, undefined)).toBe("question");
+    expect(waitingOnOf(true, "permission prompt")).toBe("question");
+  });
+  test("waitingFor: input needed is a question; permission, sandbox, and worker requests are permissions", () => {
+    expect(waitingOnOf(false, "input needed")).toBe("question");
+    expect(waitingOnOf(false, "permission prompt")).toBe("permission");
+    expect(waitingOnOf(false, "sandbox request")).toBe("permission");
+    expect(waitingOnOf(false, "worker request")).toBe("permission");
+  });
+  test("other or missing values say nothing", () => {
+    expect(waitingOnOf(false, "dialog open")).toBeUndefined();
+    expect(waitingOnOf(false, "goal proposal")).toBeUndefined();
+    expect(waitingOnOf(false, undefined)).toBeUndefined();
   });
 });
