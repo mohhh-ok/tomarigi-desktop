@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Már nincs használatban. A mentett kulcsot törölheted."
+  },
+  "gardenArrange": {
+    "message": "Elrendezés"
   }
 }

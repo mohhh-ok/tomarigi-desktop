@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Används inte längre. Du kan radera den sparade nyckeln."
+  },
+  "gardenArrange": {
+    "message": "Ordna"
   }
 }

@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Hindi na ginagamit. Puwede mong burahin ang naka-save na key na ito."
+  },
+  "gardenArrange": {
+    "message": "Ayusin"
   }
 }

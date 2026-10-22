@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Enam ei kasutata. Salvestatud võtme saad kustutada."
+  },
+  "gardenArrange": {
+    "message": "Korrasta"
   }
 }

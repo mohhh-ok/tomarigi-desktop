@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "כבר לא בשימוש. אפשר למחוק את המפתח השמור."
+  },
+  "gardenArrange": {
+    "message": "סידור"
   }
 }

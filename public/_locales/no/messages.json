@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Brukes ikke lenger. Du kan slette den lagrede nøkkelen."
+  },
+  "gardenArrange": {
+    "message": "Ordne"
   }
 }

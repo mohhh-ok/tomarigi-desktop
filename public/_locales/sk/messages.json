@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Už sa nepoužíva. Uložený kľúč môžete odstrániť."
+  },
+  "gardenArrange": {
+    "message": "Usporiadať"
   }
 }

@@ -393,5 +393,8 @@
   },
   "retiredKeyNote": {
     "message": "Ni več v uporabi. Shranjeni ključ lahko izbrišete."
+  },
+  "gardenArrange": {
+    "message": "Uredi"
   }
 }
