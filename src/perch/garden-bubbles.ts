@@ -78,7 +78,7 @@ export type MeasureBubble = (id: string, max: number) => { w: number; h: number 
  * - Width, height and side depend on each other, so they are worked out again until they settle (LAYOUT_ROUNDS)
  * - Then bubbles that still overlap vertically and come closer than BUBBLE_GAP_PX are moved sideways apart, staying
  *   inside the garden, each by at most its half-width less TAIL_INSET_PX so the tail stays under the icon. When that
- *   isn't enough they still overlap
+ *   isn't enough they still overlap, and are moved apart only as far as that makes no new overlap with other bubbles
  */
 export function layoutBubbles(
   birds: LaidBird[],
@@ -144,9 +144,11 @@ function verticalSpan(b: LaidBird, h: number, above: boolean): [number, number] 
   return [b.y + b.iconBottom + TAIL_PX, b.y + b.iconBottom + TAIL_PX + h];
 }
 
-/** Sideways shifts that keep BUBBLE_GAP_PX between bubbles that overlap vertically (see layoutBubbles). Each pair that
-    comes too close is pushed apart by halves, a bubble held by its limit passing the rest to the other, until no pair
-    moves */
+/** Sideways shifts that keep BUBBLE_GAP_PX between bubbles that overlap vertically (see layoutBubbles). A pair that can
+    be moved apart within its limits is pushed apart by halves, a bubble held by its limit passing the rest to the other,
+    until no pair moves. Then each pair that can't be moved apart (birds too close) is moved apart only as far as the
+    other bubbles let it without coming closer than BUBBLE_GAP_PX to them, pushing them along as far as they can go, so
+    the overlap that can't be helped doesn't make a new one */
 function spreadApart(
   birds: LaidBird[],
   size: Map<string, { w: number; h: number }>,
@@ -170,17 +172,22 @@ function spreadApart(
       };
     })
     .sort((p, q) => p.b.x - q.b.x);
-  const pairs: [(typeof list)[number], (typeof list)[number]][] = [];
+  type Item = (typeof list)[number];
+  const apart = (p: Item, q: Item) => p.w / 2 + BUBBLE_GAP_PX + q.w / 2;
+  // Pairs that overlap vertically, left one first; those that can't keep the gap even at their limits are kept apart
+  const pairs: [Item, Item][] = [];
+  const stuck: [Item, Item][] = [];
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
       const [p, q] = [list[i], list[j]];
-      if (p.span[0] < q.span[1] && q.span[0] < p.span[1]) pairs.push([p, q]);
+      if (!(p.span[0] < q.span[1] && q.span[0] < p.span[1])) continue;
+      (q.max - p.min >= apart(p, q) - 1e-6 ? pairs : stuck).push([p, q]);
     }
   }
   for (let round = 0; round < SPREAD_ROUNDS; round++) {
     let moved = false;
     for (const [p, q] of pairs) {
-      const need = p.w / 2 + BUBBLE_GAP_PX + q.w / 2 - (q.center - p.center);
+      const need = apart(p, q) - (q.center - p.center);
       if (need <= 1e-6) continue;
       const left = Math.min(need / 2, p.center - p.min);
       const right = Math.min(need - left, q.max - q.center);
@@ -191,6 +198,53 @@ function spreadApart(
       moved = true;
     }
     if (!moved) break;
+  }
+  // How far a bubble can move left (right) with the bubbles on that side of it that it would push along, keeping the
+  // gap to each; and moving it that way, pushing them along
+  const leftOf = (p: Item) => pairs.filter(([, q]) => q === p).map(([r]) => r);
+  const rightOf = (p: Item) => pairs.filter(([q]) => q === p).map(([, r]) => r);
+  // (remembered while nothing moves, so a crowd doesn't walk the same bubbles over and over)
+  let known = new Map<Item, number>();
+  const roomLeft = (p: Item): number => {
+    if (!known.has(p)) {
+      const via = leftOf(p).map((r) => Math.max(0, p.center - r.center - apart(r, p)) + roomLeft(r));
+      known.set(p, Math.min(p.center - p.min, ...via));
+    }
+    return known.get(p)!;
+  };
+  let knownR = new Map<Item, number>();
+  const roomRight = (p: Item): number => {
+    if (!knownR.has(p)) {
+      const via = rightOf(p).map((r) => Math.max(0, r.center - p.center - apart(p, r)) + roomRight(r));
+      knownR.set(p, Math.min(p.max - p.center, ...via));
+    }
+    return knownR.get(p)!;
+  };
+  const moveLeft = (p: Item, d: number) => {
+    p.center -= d;
+    for (const r of leftOf(p)) {
+      const over = apart(r, p) - (p.center - r.center);
+      if (over > 1e-9) moveLeft(r, Math.min(over, d));
+    }
+  };
+  const moveRight = (p: Item, d: number) => {
+    p.center += d;
+    for (const r of rightOf(p)) {
+      const over = apart(p, r) - (r.center - p.center);
+      if (over > 1e-9) moveRight(r, Math.min(over, d));
+    }
+  };
+  for (const [p, q] of stuck) {
+    const need = apart(p, q) - (q.center - p.center);
+    if (need <= 1e-6) continue;
+    known = new Map();
+    knownR = new Map();
+    const roomL = Math.max(0, roomLeft(p));
+    const roomR = Math.max(0, roomRight(q));
+    const left = Math.min(need / 2, roomL);
+    const right = Math.min(need - left, roomR);
+    moveLeft(p, Math.min(roomL, need - right));
+    moveRight(q, right);
   }
   return new Map(list.map((p) => [p.b.id, p.center - p.b.x]));
 }

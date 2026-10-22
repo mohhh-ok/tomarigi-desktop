@@ -418,6 +418,38 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
+    // Long speech bubbles in watch blocks (docs/design.md "Layout"), in the user's layout at 16:08: three blocks (a parent
+    // with 2 children, a parent with 2 working children, a parent with 1 working child). A block's bubbles keep 120px and
+    // move sideways off the bubbles beside them. Add ?concierge=<text> for the concierge's bubble
+    id: "bubble-long-watch",
+    label: "Long speech bubbles (watching)",
+    build: () => longWatch([
+      ["billionclips", "Split the upload into chunks and retried the failed ones; the last 2 clips still need a check", [
+        ["clips-api", "Rewrote the retry so a timed-out chunk is sent again from where it stopped"],
+        ["desk", "Updated node and committed, watching bun and macOS"],
+      ]],
+      ["tomarigi-desktop", "Two sessions are fixing the garden's bubbles; I'll merge them when both are done", [
+        ["bubbles", undefined],
+        ["window", undefined],
+      ]],
+      ["yokai-no-sensei", "The first batch is out. Approve the second one when you have checked the first", [["batch", undefined]]],
+    ]),
+  },
+  {
+    // A watch block of two rows with long speech bubbles (docs/design.md "Layout"): the first row's bubbles wrap down
+    // over the second row's
+    id: "bubble-long-watch-rows",
+    label: "Long speech bubbles (watching, 2 rows)",
+    build: () => longWatch([
+      ["tomarigi", "Handed the settings, the garden and the docs to 4 sessions, and I'm waiting for the reviews", [
+        ["settings", "Moved the language and the window options into one tab, and the tests pass"],
+        ["garden", "Bubbles side by side keep 8px now, and one past the bottom goes above the icon"],
+        ["docs", "Rewrote the Layout section and the screenshots of the garden"],
+        ["release", "Built 0.4.2 and the notarization is still running at Apple"],
+      ]],
+    ]),
+  },
+  {
     // Watching (docs/design.md "Watching"). The parent tomarigi handed work to 3 sessions and is waiting.
     // packages/api is working, apps/web needs a reply via a question tool (the "?" reaches the parent too), other-docs is done
     // (not under the parent, so it's called by its folder name). blog is a bird with no links
@@ -884,4 +916,53 @@ const GALLERY: SessionView[] = [
 
 function pick(ids: string[]): SessionView[] {
   return ids.map((id) => GALLERY.find((s) => s.id === id)!);
+}
+
+/** Watch blocks for the bubble-long-watch presets: [slug, summary, children [slug, summary]]. A child without a summary
+    is working (no bubble) */
+function longWatch(groups: [string, string, [string, string | undefined][]][]) {
+  const sessions: SessionView[] = [];
+  groups.forEach(([slug, summary, children], g) => {
+    const root = `/Users/me/Dev/${slug}`;
+    const parent = `mock/long-watch/${slug}`;
+    const kids = children.map(([kid]) => ({ kid, id: `${parent}/${kid}`, cwd: `${root}/${kid}` }));
+    sessions.push({
+      id: parent,
+      project: slug,
+      slug,
+      state: "done",
+      sinceMs: (g + 1) * 60_000,
+      cwd: root,
+      startedAt: BASE - (60 + g) * 60_000,
+      watching: children.filter(([, text]) => text === undefined).length,
+      reply: { at: BASE - (g + 1) * 60_000, text: summary },
+      ask: { status: "not_asking" },
+      summary,
+      peers: kids.map(({ kid, id, cwd }, i) => ({
+        sessionId: kid,
+        viewId: id,
+        name: `${slug}-${kid}`,
+        cwd,
+        active: children[i][1] === undefined,
+      })),
+    });
+    kids.forEach(({ kid, id, cwd }, i) => {
+      const text = children[i][1];
+      const back = [{ sessionId: "parent", viewId: parent, name: slug, cwd: root, active: false }];
+      const base = { id, project: kid, slug: kid, cwd, startedAt: BASE - (30 - i) * 60_000, peers: back };
+      sessions.push(
+        text === undefined
+          ? { ...base, state: "working", sinceMs: (i + 1) * 4_000, toolName: "Edit" }
+          : {
+              ...base,
+              state: "done",
+              sinceMs: (i + 2) * 60_000,
+              reply: { at: BASE - (i + 2) * 60_000, text },
+              ask: { status: "not_asking" },
+              summary: text,
+            },
+      );
+    });
+  });
+  return { sessions, events: [] };
 }
