@@ -16,3 +16,24 @@ export type UpGrowWait = { gardenH: number; since: number };
 export function upGrowDone(wait: UpGrowWait, gardenH: number | undefined, now: number): boolean {
   return (gardenH !== undefined && gardenH !== wait.gardenH) || now - wait.since >= UP_GROW_WAIT_MS;
 }
+
+/**
+ * How long until the wait times out (ms, 0 once it has). The timer that ends the wait can fire a little early by
+ * Date.now, before upGrowDone says done; garden-grow.ts sets it again for the rest, as nothing else may end the wait
+ */
+export function upGrowLeftMs(wait: UpGrowWait, now: number): number {
+  return Math.max(0, wait.since + UP_GROW_WAIT_MS - now);
+}
+
+/**
+ * Whether to grow the window up for a bubble above its bird's name past the garden's top (growUp, GardenFit). Not
+ * while a drag grows the window: the anchor is the drag's until it ends, and the fit after the drag decides
+ */
+export function growsUpForBubble(state: {
+  active: boolean;
+  held: boolean;
+  dragging: boolean;
+  growUp: number | undefined;
+}): boolean {
+  return state.active && !state.held && !state.dragging && state.growUp !== undefined;
+}
