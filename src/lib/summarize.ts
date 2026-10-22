@@ -95,7 +95,11 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "options to choose from, asks for approval or confirmation, or asks for missing information. false when it only " +
     "reports finished work (including optional add-ons that need no answer, or a closing courtesy such as 'let me " +
     "know if you need anything else'), or says it will report or ask later (e.g. 'I'll ask whether to push when " +
-    "it's done').\n" +
+    "it's done'). Test it this way: can the user answer right now from assistant_text alone? When what the user is " +
+    "to choose or check (candidates, a list, results) is said to come later and is not in assistant_text (e.g. " +
+    "'I'll show you up to three candidates when they arrive; please pick one then. I won't make version B until " +
+    "you do'), the user has nothing to answer yet: asking is false, even though the agent will need the answer " +
+    "later.\n" +
     "abusive: true when any of user_messages insults, demeans, or swears at the AI itself: name-calling such as " +
     "'idiot' or 'useless', contempt, or hostile profanity aimed at the AI, even when it also contains an " +
     "instruction. false for ordinary instructions, questions, and criticism of the work, including frustrated or " +
