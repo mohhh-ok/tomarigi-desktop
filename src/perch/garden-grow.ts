@@ -4,7 +4,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { gardenDropScale, gardenFitScale, nextGrowScale, type GardenFit, type GrowKept } from "@/lib/garden-fit";
+import { gardenDropScale, growStep, type GardenFit, type GrowKept } from "@/lib/garden-fit";
 import { dragGrowRequest } from "./garden-drag-grow";
 
 /**
@@ -95,8 +95,6 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
   const decide = useCallback(() => {
     const { active, held, user, birdCount } = inputsRef.current;
     const fit = fitRef.current;
-    let scale = 1;
-    let needed = 1;
     // The user dropped a bird or block: shrink once to the smallest size at which nothing on screen moves (even after a
     // manual resize, as it never goes below the user's size; docs/design.md "Layout")
     const seen = dropsRef.current;
@@ -105,23 +103,9 @@ export function useGardenGrow(active: boolean, birdCount: number): (fit: GardenF
       active && fit && user && seen !== undefined && fit.drops !== seen && !fit.overflow
         ? gardenDropScale(user.width, user.height, fit)
         : undefined;
-    const drop = dropScale !== undefined;
-    if (drop && fit && user) {
-      needed = scale = dropScale;
-      keptRef.current = { scale, count: birdCount, userW: user.width, userH: user.height };
-    } else if (active && fit && user && !held) {
-      const kept = keptRef.current;
-      const current = kept && kept.userW === user.width && kept.userH === user.height ? kept.scale : 1;
-      // An overflow measured before the window reached the current scale (the resize is still on its way, or the
-      // Rust side capped it at the display) doesn't ask for more: it would grow twice for one bird
-      const stale =
-        fit.gardenW < user.width * current - fit.overheadW - 2 || fit.gardenH < user.height * current - fit.overheadH - 2;
-      needed = gardenFitScale(user.width, user.height, stale ? { ...fit, overflow: false } : fit, current);
-      scale = nextGrowScale(keptRef.current, needed, birdCount, user.width, user.height);
-      keptRef.current = { scale, count: birdCount, userW: user.width, userH: user.height };
-    } else {
-      keptRef.current = null;
-    }
+    const step = growStep({ active, held, fit, user, birdCount, kept: keptRef.current, dropScale });
+    const { scale, needed, drop } = step;
+    keptRef.current = step.kept;
     if (!drop && sentRef.current === scale) return;
     sentRef.current = scale;
     // What the needed scale came from, to check in the log why it changed
