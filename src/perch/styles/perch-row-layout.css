@@ -83,44 +83,41 @@
   height: 1lh;
 }
 
-/* The narrowest windows (300px wide or less): the state word, elapsed time and tool name go to a second line under the
-   name, lined up with it, so the name gets the row's whole width (docs/design.md "Display names"). At 300px a
-   16-letter project name was cut by 22px and at 260px every name and the state word were cut, while at 320px both
-   fit. The request excerpt, already hidden for lack of room at these widths, isn't shown. .bird-row-break (empty,
-   between the name and the status) takes a whole line there, so what follows it starts the second line */
+/* A row whose name and state word with its elapsed time don't fit on one line (two-lines, set per row by
+   perch-row-fit.ts): the state word, elapsed time, working dots and tool name go to a second line under the name, lined
+   up with it, so the name gets the row's whole width (docs/design.md "Display names"). The request excerpt isn't shown
+   (there is no room for it on the first line). .bird-row-break (empty, between the name and the status) takes a whole
+   line there, so what follows it starts the second line */
 .bird-row-break {
   display: none;
 }
 
-@media (max-width: 300px) {
-  .bird-row-main {
-    flex-wrap: wrap;
-    row-gap: 2px;
-  }
+.bird-row-main.two-lines {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
 
-  .bird-row-main > .bird-row-name {
-    flex: 1 1 0;
-  }
+.bird-row-main.two-lines > .bird-row-name {
+  flex: 1 1 0;
+}
 
-  .bird-row-main > .bird-row-snippet {
-    display: none;
-  }
+.bird-row-main.two-lines > .bird-row-snippet {
+  display: none;
+}
 
-  .bird-row-main > .bird-row-break {
-    display: block;
-    flex: 0 0 100%;
-    height: 0;
-    margin-top: -2px; /* the break is a line of its own: cancel one of the two row gaps around it */
-  }
+.bird-row-main.two-lines > .bird-row-break {
+  display: block;
+  flex: 0 0 100%;
+  height: 0;
+  margin-top: -2px; /* the break is a line of its own: cancel one of the two row gaps around it */
+}
 
-  /* Lined up with the name: the room left of the bird for its marks (13px), the bird (18px), its right margin (4px)
-     and the row gap (10px) (styles/bird-badge.css) */
-  .bird-row-main > .bird-row-label {
-    flex: none;
-    min-width: 0;
-    margin-left: 45px;
-  }
-
+/* Lined up with the name: the room left of the bird for its marks (13px), the bird (18px), its right margin (4px) and
+   the row gap (10px) (styles/bird-badge.css) */
+.bird-row-main.two-lines > .bird-row-label {
+  flex: none;
+  min-width: 0;
+  margin-left: 45px;
 }
 
 /* Second line of Recent activity rows. The card body is already indented, so the Perch indent isn't applied */
