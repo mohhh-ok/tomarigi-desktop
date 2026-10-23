@@ -67,6 +67,9 @@ export interface SessionView {
   // The end of project that tells it apart from another session with the same name (the folder's label, the rest of a
   // session name, the number), kept visible when the name is cut (docs/design.md "Display names")
   projectSuffix?: string;
+  // The project's name, when project isn't just that (told apart from another session, or with the folder's label).
+  // For what is set per project, such as the icon set (docs/design.md "Display names")
+  projectBase?: string;
   // Project identifier within the data source. For Claude Code, the slug under projects/; for Codex,
   // `codex:<cwd>`. Key for per-project icon set assignment (issue #14). It doesn't include rootId,
   // so the assignment is shared even when the same project path is seen from multiple roots
