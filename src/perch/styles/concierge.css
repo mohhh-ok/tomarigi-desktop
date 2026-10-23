@@ -24,6 +24,17 @@
 /* "Concierge only" is on (App.tsx): said beside the handle's name, inside its backing, so it stays at rest with it at
    the handle's opacity (docs/design.md "Concierge"). The mode's name in the accent color (the active tab's underline),
    the counts in the page's text color, both smaller than the name and without its letter spacing */
+/* The header's buttons a little tighter in this mode, so they stay on the handle's row in the narrowest window (260px)
+   and the window isn't made wider than before for them (concierge-only-garden.tsx) */
+:root[data-concierge-only] .header-controls {
+  gap: 4px;
+}
+
+:root[data-concierge-only] .header-controls button.small {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
 /* Its own row right under the handle, across the header (the header's buttons stay on the handle's row), so the
    window's width follows the concierge and this row wraps instead when the window is narrow */
 .concierge-only-row {
@@ -120,7 +131,11 @@
 
 .concierge-summary-text {
   display: block;
-  white-space: pre-line;
+}
+
+/* The state at a line's end, e.g. 「（返事待ち）」, wraps as one piece (concierge-only-garden.tsx) */
+.concierge-summary-tail {
+  white-space: nowrap;
 }
 
 .concierge-summary-note {

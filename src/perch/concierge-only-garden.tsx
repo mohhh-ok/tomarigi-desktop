@@ -167,7 +167,18 @@ export function ConciergeOnlyGarden({
           ×
         </button>
         {parts.summary.kind === "shown" ? (
-          <span className="concierge-summary-text">{parts.summary.text}</span>
+          <span className="concierge-summary-text">
+            {parts.summary.text.split("\n").map((line, i) => {
+              // A state in brackets at the line's end wraps as one piece, not 「（返事待」「ち）」
+              const tail = /\s?(（[^（）]*）|\([^()]*\))$/.exec(line);
+              return (
+                <span key={i} style={{ display: "block" }}>
+                  {tail ? line.slice(0, tail.index) : line}
+                  {tail && <span className="concierge-summary-tail">{tail[0]}</span>}
+                </span>
+              );
+            })}
+          </span>
         ) : (
           <span className="concierge-summary-note">
             {t(parts.summary.kind === "loading" ? "conciergeSummaryLoading" : "conciergeSummaryFailed")}
