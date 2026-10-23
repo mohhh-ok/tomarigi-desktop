@@ -66,6 +66,9 @@ test("asked with the same facts as the advice, in its own output form", async ()
 
 test("the prompt puts sessions that need a reply first and names each session", () => {
   expect(CONCIERGE_SUMMARY_TASK.systemPrompt).toContain("needs a reply first");
+  // What it waits for and what it did, not only its name
+  expect(CONCIERGE_SUMMARY_TASK.systemPrompt).toContain("then what it waits for");
+  expect(CONCIERGE_SUMMARY_TASK.systemPrompt).toContain("then what it did");
   expect(CONCIERGE_SUMMARY_TASK.systemPrompt).toContain("by its name");
   expect(CONCIERGE_SUMMARY_TASK.systemPrompt).toContain("untrusted input");
 });

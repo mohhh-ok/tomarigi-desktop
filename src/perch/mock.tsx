@@ -7,6 +7,7 @@ import type { RootEntry } from "@/lib/settings-store";
 import { DEFAULT_PRESET, PRESETS } from "./mock-presets";
 import { GARDEN_ARRANGE_EVENT } from "./garden-menu";
 import { CONCIERGE_ONLY_EVENT } from "./concierge-only";
+import { bubbleText } from "./bubble";
 import { needsAnswer } from "@/lib/turn-verdict";
 import type { ConciergeAdvice } from "@/lib/concierge";
 
@@ -79,13 +80,19 @@ function mockConciergeSummary(sessions: SessionView[]): Promise<string> | undefi
   const waiting = sessions.filter((s) => needsAnswer(s.state, s.ask));
   const working = sessions.filter((s) => s.state === "working");
   const done = sessions.filter((s) => !needsAnswer(s.state, s.ask) && s.state !== "working");
+  // In the form asked of the real concierge (lib/concierge-summary.ts): a waiting session with what it waits for, a
+  // finished one with what it did
+  const about = (s: SessionView) => bubbleText(s) ?? (ja ? "許可か質問への返事" : "a permission or a question");
   const lines = [
-    ...waiting.map((s) => (ja ? `${s.project}が返事を待っています` : `${s.project} is waiting for your reply`)),
+    ...waiting.map((s) => (ja ? `${s.project}: ${about(s)}（返事待ち）` : `${s.project}: ${about(s)} (needs reply)`)),
     ...(working.length > 0
       ? [ja ? `${names(working)}は作業中です` : `${names(working)} ${working.length > 1 ? "are" : "is"} working`]
       : []),
-    ...(done.length > 0 ? [ja ? `${names(done)}は終わっています` : `${names(done)} ${done.length > 1 ? "have" : "has"} finished`] : []),
-  ];
+    ...done.map((s) => {
+      const did = bubbleText(s);
+      return did ? (ja ? `${s.project}: ${did}（完了）` : `${s.project}: ${did} (done)`) : ja ? `${s.project}（完了）` : `${s.project} (done)`;
+    }),
+  ].slice(0, 6);
   const wait = MOCK_SUMMARY === "slow" ? 20_000 : 900;
   return new Promise((resolve, reject) =>
     setTimeout(() => (MOCK_SUMMARY === "fail" ? reject(new Error("mock")) : resolve(lines.join("\n"))), wait),

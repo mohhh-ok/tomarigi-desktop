@@ -51,8 +51,7 @@ export function ConciergeOnlyGarden({
     const again = () => setResized((n) => n + 1);
     const observer = new ResizeObserver(again);
     observerRef.current = observer;
-    const header = document.querySelector(".page-header");
-    if (header) observer.observe(header);
+    for (const el of document.querySelectorAll(".page-header, .tabs")) observer.observe(el);
     window.addEventListener("resize", again);
     return () => {
       observer.disconnect();
@@ -64,13 +63,32 @@ export function ConciergeOnlyGarden({
   // Measured after every render (the bubble's text, the window's size, the handle's label change it); onSize sends
   // only a changed size
   useLayoutEffect(() => {
+    // The width follows the concierge and its bubble, and holds the handle's row with the header's buttons on one line
+    // (the mode's label and button wrap on their own row below; styles/concierge.css). Never wider than that, so the
+    // window doesn't grow wider than before for the label
     const brand = document.querySelector<HTMLElement>(".page-header .brand");
+    const controls = document.querySelector<HTMLElement>(".page-header .header-controls");
     const header = brand?.parentElement;
-    // The handle with its label, on one line (its -8px margin pulls it into the page's padding)
-    const handleW = brand && header ? brand.scrollWidth - 8 + (window.innerWidth - header.clientWidth) : 0;
+    // The handle's -8px margin pulls it into the page's padding; 10px is the header's gap (base.css .page-header)
+    const handleW =
+      brand && controls && header
+        ? brand.offsetWidth - 8 + 10 + controls.scrollWidth + (window.innerWidth - header.clientWidth)
+        : 0;
+    // At rest the tab row folds (styles/concierge.css); the window keeps the height it needs once shown, so what the
+    // folded row gave up is counted back in
+    const tabs = document.querySelector<HTMLElement>(".tabs");
+    let folded = 0;
+    if (tabs) {
+      const cs = getComputedStyle(tabs);
+      const now = tabs.getBoundingClientRect().height + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+      // .tabs in styles/tabs.css: 6px above, 4px below, a 1px border under it
+      folded = Math.max(0, tabs.scrollHeight + 1 + 10 - now);
+    }
+    const innerH = window.innerHeight + folded;
     const garden = containerRef.current;
     if (garden) {
       if (garden.clientWidth !== gardenW) setGardenW(garden.clientWidth);
+      observerRef.current?.observe(garden);
       const box = garden.getBoundingClientRect();
       const node = garden.querySelector<HTMLElement>(".garden-node");
       const bubble = garden.querySelector<HTMLElement>(".speech-bubble-below");
@@ -84,7 +102,7 @@ export function ConciergeOnlyGarden({
       onSize(
         conciergeOnlyWindowSize({
           innerW: window.innerWidth,
-          innerH: window.innerHeight,
+          innerH,
           gardenW: box.width,
           gardenH: box.height,
           contentW: Math.max(node?.offsetWidth ?? 0, bubble?.offsetWidth ?? 0) + edge,
@@ -103,7 +121,7 @@ export function ConciergeOnlyGarden({
     onSize(
       conciergeOnlyWindowSize({
         innerW: window.innerWidth,
-        innerH: window.innerHeight,
+        innerH,
         gardenW: box.width,
         gardenH: window.innerHeight - box.top,
         contentW: (label?.offsetWidth ?? 0) + 16,

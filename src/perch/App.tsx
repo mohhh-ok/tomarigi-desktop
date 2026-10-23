@@ -475,6 +475,12 @@ export default function App({
   useEffect(() => {
     if (!conciergeOnly.on) closeSummary();
   }, [conciergeOnly.on, closeSummary]);
+  // At rest the header's empty rows fold so the concierge sits right under the handle (styles/concierge.css)
+  useEffect(() => {
+    const root = document.documentElement;
+    if (conciergeOnly.view) root.dataset.conciergeOnly = "";
+    else delete root.dataset.conciergeOnly;
+  }, [conciergeOnly.view]);
   const gardenMenu: GardenMenu = {
     conciergeAvailable: concierge.available,
     conciergeOnly: conciergeOnly.on,
@@ -526,15 +532,6 @@ export default function App({
         {/* The window handle while the Garden is faded (docs/design.md "Fade until hovered") */}
         <h1 className="brand fade-handle" onPointerDown={onFadeHandlePointerDown}>
           tomarigi
-          {/* "Concierge only" is on: said beside the handle, the one thing always shown at rest, with the birds it hides
-              and how many of them need a reply (docs/design.md "Concierge") */}
-          {conciergeOnly.on && showTabs && (
-            <ConciergeOnlyLabel
-              sessions={displaySessions}
-              summary={conciergeSummary.state}
-              onAsk={concierge.shown ? conciergeSummary.ask : undefined}
-            />
-          )}
         </h1>
         {/* Mute, debug, settings, and hide must always be visible on every tab, so they sit outside the tabs (in the header) */}
         <div className="header-controls">
@@ -585,6 +582,18 @@ export default function App({
             <MdClose size={16} />
           </button>
         </div>
+        {/* "Concierge only" is on: said right under the handle, on the same backing and shown at rest like it, with
+            the birds it hides and how many of them need a reply, and the "What's going on?" button. A row of its own,
+            so the window's width follows the concierge, not this text (docs/design.md "Concierge") */}
+        {conciergeOnly.on && showTabs && (
+          <div className="concierge-only-row">
+            <ConciergeOnlyLabel
+              sessions={displaySessions}
+              summary={conciergeSummary.state}
+              onAsk={concierge.shown ? conciergeSummary.ask : undefined}
+            />
+          </div>
+        )}
       </div>
       {/* While in settings, the tab row is replaced by a bar with Back and the title, so the way out is written on
           screen (⚙ again and Esc also close it). Tabs are only the "views"; settings are a separate level, so they
@@ -893,8 +902,9 @@ function ConciergeOnlyLabel({
   onAsk?: () => void;
 }) {
   const { badge, counts } = conciergeOnlyLabel(conciergeOnlyCounts(sessions));
+  // A second handle, like the Garden's empty message: dragging it moves the window, a click shows it at rest
   return (
-    <span className="concierge-only-label">
+    <span className="concierge-only-label fade-handle" onPointerDown={onFadeHandlePointerDown}>
       <span className="concierge-only-badge">{badge}</span>
       <span className="concierge-only-counts">{counts}</span>
       {onAsk && (
