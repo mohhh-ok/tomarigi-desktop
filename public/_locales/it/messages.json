@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Riordina"
+  },
+  "gardenConciergeOnly": {
+    "message": "Mostra solo il concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Solo concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "nascosti: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (aspettano la tua risposta: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

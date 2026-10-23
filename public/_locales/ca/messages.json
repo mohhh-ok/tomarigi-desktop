@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Ordena"
+  },
+  "gardenConciergeOnly": {
+    "message": "Mostra només el conserge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Només conserge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "amagats: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (esperant la teva resposta: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

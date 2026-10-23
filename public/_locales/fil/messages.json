@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Ayusin"
+  },
+  "gardenConciergeOnly": {
+    "message": "Concierge lang ang ipakita"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Concierge lang"
+  },
+  "conciergeOnlyHidden": {
+    "message": "nakatago: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (naghihintay ng sagot mo: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

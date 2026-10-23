@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "সাজান"
+  },
+  "gardenConciergeOnly": {
+    "message": "শুধু কনসিয়ার্জ দেখান"
+  },
+  "conciergeOnlyBadge": {
+    "message": "শুধু কনসিয়ার্জ"
+  },
+  "conciergeOnlyHidden": {
+    "message": "লুকানো: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (আপনার উত্তরের অপেক্ষায়: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

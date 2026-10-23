@@ -21,6 +21,29 @@
    wrapping onto as many lines as it needs within the same max width. It has no status lines, so the lines below go into
    the empty space under it */
 
+/* "Concierge only" is on (App.tsx): said beside the handle's name, inside its backing, so it stays at rest with it at
+   the handle's opacity (docs/design.md "Concierge"). The mode's name in the accent color (the active tab's underline),
+   the counts in the page's text color, both smaller than the name and without its letter spacing */
+.concierge-only-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-left: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: normal;
+  white-space: nowrap;
+}
+
+.concierge-only-badge {
+  color: #d9b06a;
+  font-weight: 600;
+}
+
+.concierge-only-counts {
+  color: #cfcabe;
+}
+
 /* Settings: the two looks side by side, each the picture with its name under it. The chosen one is framed */
 .concierge-look-choices {
   display: flex;

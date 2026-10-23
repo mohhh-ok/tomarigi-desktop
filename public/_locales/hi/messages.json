@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "व्यवस्थित करें"
+  },
+  "gardenConciergeOnly": {
+    "message": "केवल कंसीयर्ज दिखाएँ"
+  },
+  "conciergeOnlyBadge": {
+    "message": "केवल कंसीयर्ज"
+  },
+  "conciergeOnlyHidden": {
+    "message": "छिपे हुए: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (आपके जवाब का इंतज़ार: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

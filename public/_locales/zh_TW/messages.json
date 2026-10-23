@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "整理排列"
+  },
+  "gardenConciergeOnly": {
+    "message": "只顯示禮賓員"
+  },
+  "conciergeOnlyBadge": {
+    "message": "僅禮賓員"
+  },
+  "conciergeOnlyHidden": {
+    "message": "另有 $COUNT$ 隻",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": "（等你回覆：$COUNT$）",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Usporiadať"
+  },
+  "gardenConciergeOnly": {
+    "message": "Zobraziť len concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Len concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "skryté: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (čaká na odpoveď: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

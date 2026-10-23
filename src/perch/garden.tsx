@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { t } from "@/lib/i18n";
 import {
   frontRanks,
@@ -36,6 +37,7 @@ import { arrangeKept, arrangeSettled, newKept, type Kept } from "./garden-arrang
 import { GARDEN_ARRANGE_EVENT, popupGardenMenu } from "./garden-menu";
 import { gardenStack } from "./garden-stack";
 import { onFadeHandlePointerDown } from "./garden-fade";
+import { currentWindowMode } from "./window-mode";
 import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
 import { createPortal } from "react-dom";
 import { MdLink } from "react-icons/md";
@@ -140,6 +142,13 @@ interface GroupDrag {
   dy: number;
 }
 
+/** The right-click menu's "Concierge only" (gardenMenuModel in concierge-only.ts) */
+export interface GardenMenu {
+  conciergeAvailable: boolean;
+  conciergeOnly: boolean;
+  toggleConciergeOnly: () => void;
+}
+
 export function Garden({
   sessions: sessionViews,
   concierge,
@@ -149,6 +158,8 @@ export function Garden({
   canFocus,
   onFit,
   growRoom,
+  paused = false,
+  menu,
 }: {
   sessions: SessionView[];
   // The concierge bird (docs/design.md "Concierge"): absent when it isn't shown, advice null when it has none
@@ -165,6 +176,11 @@ export function Garden({
   // lib/garden-fit.ts, from useGardenGrow): bubbles past the garden's edges stay as far as that. undefined when the
   // window doesn't grow
   growRoom?: BubbleGrowRoom;
+  // Hidden by "Concierge only" (concierge-only.ts): everything stays as it was, and nothing is measured or saved, so the
+  // birds come back at the same place on screen once the window is back at its frame
+  paused?: boolean;
+  // What the right-click menu shows besides Arrange (garden-menu.ts)
+  menu: GardenMenu;
 }) {
   // The concierge is placed, dragged, and counted for growing and shrinking like a session bird, so it joins the
   // sessions as one more node. Its advice is its speech bubble (a stopped bird's summary). Only beside other birds
@@ -217,7 +233,11 @@ export function Garden({
   // Actual size of the container (.garden), and the height the garden has without its own stretching (viewH).
   // Follows window resizes via ResizeObserver
   const [containerSize, setContainerSize] = useState<GardenSize>({ w: 0, h: 0, viewH: 0 });
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
   const updateContainerSize = (el: HTMLElement) => {
+    // Hidden: it measures 0, and the birds would be shifted and placed again for it
+    if (pausedRef.current) return;
     const next = measureGarden(el);
     setContainerSize((prev) => (prev.w === next.w && prev.h === next.h && prev.viewH === next.viewH ? prev : next));
   };
@@ -291,6 +311,8 @@ export function Garden({
   // out again on the next render as on a launch with no saved positions (docs/design.md "Layout"). The icon size is
   // worked out again as on a launch too
   const arrange = useCallback(() => {
+    // Not while hidden by "Concierge only" (the menu disables it then; the mock's button too)
+    if (pausedRef.current) return;
     arrangeKept(keptRef.current);
     glyphSizeRef.current = undefined;
     setGroupDrag(null);
@@ -689,6 +711,7 @@ export function Garden({
   // name row is always there); until then, the name row's usual height
   const [glyphMid, setGlyphMid] = useState<number | undefined>(undefined);
   useLayoutEffect(() => {
+    if (paused) return;
     const el = containerRef.current?.querySelector<HTMLElement>(".garden-node.in-watch-block .garden-glyph");
     if (!el) return;
     const mid = el.offsetTop + el.offsetHeight / 2;
@@ -701,7 +724,7 @@ export function Garden({
   const [bubblePlaces, setBubblePlaces] = useState<Map<string, BubblePlace>>(new Map());
   useLayoutEffect(() => {
     const garden = containerRef.current;
-    if (!garden) return;
+    if (!garden || paused) return;
     const laid: LaidBird[] = [];
     const bubbles = new Map<string, HTMLElement>();
     for (const anchor of garden.querySelectorAll<HTMLElement>(".garden-bubble-anchor[data-session-id]")) {
@@ -776,6 +799,8 @@ export function Garden({
   useEffect(() => {
     const lines = logRef.current.splice(0);
     for (const line of lines) void invoke("log", { line }).catch(() => {});
+    // Hidden: what was sent last stays (the window doesn't grow then), so nothing is sent again once shown
+    if (paused) return;
     const el = containerRef.current;
     const body = el?.closest<HTMLElement>(".page-body");
     const base = fitRef.current;
@@ -814,7 +839,7 @@ export function Garden({
 
   if (sessions.length === 0) {
     return (
-      <div className="empty garden-empty">
+      <div className="empty garden-empty" hidden={paused}>
         {/* With no birds the Garden still fades, and this message is what stays at rest, acting as a second window
             handle (docs/design.md "Fade until hovered") */}
         <span className="fade-handle garden-empty-label" onPointerDown={onFadeHandlePointerDown}>
@@ -838,10 +863,11 @@ export function Garden({
     <div
       className="garden"
       ref={containerRef}
+      hidden={paused}
       // The same menu on a bird, a watch block and an empty spot, in place of the WebView's own (docs/design.md "Layout")
       onContextMenu={(e) => {
         e.preventDefault();
-        popupGardenMenu(arrange);
+        popupGardenMenu({ arrange, ...menu });
       }}
     >
       {/* Speech bubble layer. Placed above the birds with their names, marks and status lines, so a bubble covers a
@@ -948,7 +974,7 @@ export function Garden({
   );
 }
 
-function GardenNode({
+export function GardenNode({
   session,
   position,
   gardenH,
@@ -972,6 +998,7 @@ function GardenNode({
   onGroupMove,
   onGroupDrop,
   concierge,
+  dragMovesWindow = false,
 }: {
   session: SessionView;
   // px: the bird's center and top edge
@@ -1008,6 +1035,9 @@ function GardenNode({
   onGroupDrop?: (drag: GroupDrag) => void;
   // The concierge's node: its own image, no status lines or event marks (docs/design.md "Concierge")
   concierge?: ConciergeLook;
+  // Dragging it moves the floating window instead of the bird ("Concierge only", where the window is the concierge's
+  // size); in the standard window it stays put
+  dragMovesWindow?: boolean;
 }) {
   // Whether this bird needs a reply (switches the state word / tool name) and whether to show the "?" (only birds
   // actually asking)
@@ -1068,11 +1098,11 @@ function GardenNode({
   // bug). Read the latest value through a ref and attach the effect itself only once on mount
   const onDragEndRef = useRef(onDragEnd);
   const onClickRef = useRef(onClick);
-  const groupRef = useRef({ groupRootId, onGroupMove, onGroupDrop, gardenH });
+  const groupRef = useRef({ groupRootId, onGroupMove, onGroupDrop, gardenH, dragMovesWindow });
   useEffect(() => {
     onDragEndRef.current = onDragEnd;
     onClickRef.current = onClick;
-    groupRef.current = { groupRootId, onGroupMove, onGroupDrop, gardenH };
+    groupRef.current = { groupRootId, onGroupMove, onGroupDrop, gardenH, dragMovesWindow };
   });
 
   // Dragging needs continuous tracking beyond the node via setPointerCapture (keeps receiving pointermove/pointerup
@@ -1144,6 +1174,12 @@ function GardenNode({
       if (!dragging) return;
       if (!moved && Math.hypot(e.clientX - downX, e.clientY - downY) < CLICK_SLOP_PX) return;
       moved = true;
+      if (groupRef.current.dragMovesWindow) {
+        dragging = false;
+        if (node.hasPointerCapture(e.pointerId)) node.releasePointerCapture(e.pointerId);
+        if (currentWindowMode() !== "normal") void getCurrentWindow().startDragging();
+        return;
+      }
       // Near or past the garden's edge, the window grows that way (docs/design.md "Layout")
       if (containerRef.current) dragGrowAt(e, containerRef.current);
       const group = groupFromEvent(e);

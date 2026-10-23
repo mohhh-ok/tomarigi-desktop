@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "ترتيب"
+  },
+  "gardenConciergeOnly": {
+    "message": "عرض الكونسيرج فقط"
+  },
+  "conciergeOnlyBadge": {
+    "message": "الكونسيرج فقط"
+  },
+  "conciergeOnlyHidden": {
+    "message": "مخفية: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (تنتظر ردّك: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

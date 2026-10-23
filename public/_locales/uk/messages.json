@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Упорядкувати"
+  },
+  "gardenConciergeOnly": {
+    "message": "Показувати лише консьєржа"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Лише консьєрж"
+  },
+  "conciergeOnlyHidden": {
+    "message": "приховано: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (чекають на відповідь: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

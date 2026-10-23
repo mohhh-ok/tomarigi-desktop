@@ -38,6 +38,9 @@ import { useSettings } from "./use-settings";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
 import { ConciergeLine, ConciergeSettings } from "./concierge";
+import { conciergeOnlyCounts, conciergeOnlyLabel, useConciergeOnly } from "./concierge-only";
+import { ConciergeOnlyGarden } from "./concierge-only-garden";
+import type { GardenMenu } from "./garden";
 import { recordJump } from "@/lib/concierge";
 
 const POLL_MS = 3_000;
@@ -452,6 +455,18 @@ export default function App({
   const hasGranted = !source.usesRoots || grantedCount > 0;
 
   const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
+  // "Concierge only" (concierge-only.ts): the floating window shrinks to the concierge only on the Garden with nothing
+  // over it; on the other tabs, settings and the debug log it is back at its frame
+  const conciergeOnly = useConciergeOnly({
+    available: concierge.available,
+    loaded: phase === "ready",
+    canShrink: windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
+  });
+  const gardenMenu: GardenMenu = {
+    conciergeAvailable: concierge.available,
+    conciergeOnly: conciergeOnly.on,
+    toggleConciergeOnly: conciergeOnly.toggle,
+  };
   // Fade until hovered (garden-fade.ts). Not while settings, the debug log, or the folder dialog are open over the Garden
   useGardenFade(
     windowMode === "floating" &&
@@ -464,7 +479,7 @@ export default function App({
   // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
   // Garden, so it doesn't count
   const { onFit: onGardenFit, growRoom: gardenGrowRoom } = useGardenGrow(
-    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
+    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug && !conciergeOnly.view,
     windowMode === "floating",
     displaySessions.length + (concierge.shown ? 1 : 0),
   );
@@ -498,6 +513,9 @@ export default function App({
         {/* The window handle while the Garden is faded (docs/design.md "Fade until hovered") */}
         <h1 className="brand fade-handle" onPointerDown={onFadeHandlePointerDown}>
           tomarigi
+          {/* "Concierge only" is on: said beside the handle, the one thing always shown at rest, with the birds it hides
+              and how many of them need a reply (docs/design.md "Concierge") */}
+          {conciergeOnly.on && showTabs && <ConciergeOnlyLabel sessions={displaySessions} />}
         </h1>
         {/* Mute, debug, settings, and hide must always be visible on every tab, so they sit outside the tabs (in the header) */}
         <div className="header-controls">
@@ -651,6 +669,7 @@ export default function App({
             hidden={settingsOpen || showDebug || tab !== "garden"}
           >
             <div className="stage stage-garden">
+              {/* The birds are only hidden: the Garden stays mounted and paused, so they come back as they were */}
               <Garden
                 sessions={displaySessions}
                 concierge={concierge.shown ? { advice: concierge.advice, look: conciergeLook } : undefined}
@@ -660,7 +679,19 @@ export default function App({
                 canFocus={canFocus}
                 onFit={onGardenFit}
                 growRoom={gardenGrowRoom}
+                paused={conciergeOnly.view}
+                menu={gardenMenu}
               />
+              {conciergeOnly.view && (
+                <ConciergeOnlyGarden
+                  concierge={concierge.shown ? { advice: concierge.advice, look: conciergeLook } : undefined}
+                  hasGranted={hasGranted}
+                  onFocus={onFocusSession}
+                  canFocus={canFocus}
+                  menu={gardenMenu}
+                  onSize={conciergeOnly.fit}
+                />
+              )}
             </div>
           </section>
           <section className="settings-panel" hidden={!settingsOpen || showDebug}>
@@ -825,5 +856,17 @@ export default function App({
         />
       )}
     </main>
+  );
+}
+
+/** "Concierge only" beside the handle's name, inside its backing: the mode, then the hidden birds and how many need a
+    reply (conciergeOnlyLabel) */
+function ConciergeOnlyLabel({ sessions }: { sessions: SessionView[] }) {
+  const { badge, counts } = conciergeOnlyLabel(conciergeOnlyCounts(sessions));
+  return (
+    <span className="concierge-only-label">
+      <span className="concierge-only-badge">{badge}</span>
+      <span className="concierge-only-counts">{counts}</span>
+    </span>
   );
 }

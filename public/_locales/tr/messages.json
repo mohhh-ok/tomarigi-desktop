@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Düzenle"
+  },
+  "gardenConciergeOnly": {
+    "message": "Yalnızca konsiyerji göster"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Yalnızca konsiyerj"
+  },
+  "conciergeOnlyHidden": {
+    "message": "gizli: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (yanıtını bekleyen: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

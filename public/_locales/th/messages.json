@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "จัดเรียง"
+  },
+  "gardenConciergeOnly": {
+    "message": "แสดงเฉพาะคอนเซียร์จ"
+  },
+  "conciergeOnlyBadge": {
+    "message": "เฉพาะคอนเซียร์จ"
+  },
+  "conciergeOnlyHidden": {
+    "message": "ซ่อนอีก $COUNT$ ตัว",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (รอคำตอบจากคุณ $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

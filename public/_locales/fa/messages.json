@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "مرتب‌سازی"
+  },
+  "gardenConciergeOnly": {
+    "message": "نمایش فقط کانسیرژ"
+  },
+  "conciergeOnlyBadge": {
+    "message": "فقط کانسیرژ"
+  },
+  "conciergeOnlyHidden": {
+    "message": "پنهان: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (منتظر پاسخ شما: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "정렬"
+  },
+  "gardenConciergeOnly": {
+    "message": "컨시어지만 표시"
+  },
+  "conciergeOnlyBadge": {
+    "message": "컨시어지만"
+  },
+  "conciergeOnlyHidden": {
+    "message": "그 외 $COUNT$마리",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (답장 기다리는 중 $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

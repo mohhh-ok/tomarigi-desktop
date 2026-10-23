@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Rapikan"
+  },
+  "gardenConciergeOnly": {
+    "message": "Tampilkan hanya concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Hanya concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "$COUNT$ lainnya disembunyikan",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " ($COUNT$ menunggu balasanmu)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

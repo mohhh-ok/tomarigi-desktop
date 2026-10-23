@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Järjestä"
+  },
+  "gardenConciergeOnly": {
+    "message": "Näytä vain concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Vain concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "piilossa: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (odottaa vastaustasi: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }
