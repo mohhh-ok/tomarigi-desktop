@@ -21,6 +21,9 @@ export interface SessionEvent {
   key: string;
   sessionId: string;
   project: string;
+  // The end of project that tells it apart from another session with the same name, while the session's name is still
+  // that (set for display by App.tsx from SessionView.projectSuffix; docs/design.md "Display names")
+  projectSuffix?: string;
   // Prompt snippet. For started it is the event's own user message; for others, the latest message
   // (pickSnippet). It is a separate field rather than embedded in the project string so that EventFeed can
   // independently apply the same display style as SessionView.snippet (smaller, faded)
@@ -61,6 +64,9 @@ export type BirdState = "working" | "waiting" | "done" | "dozing";
 export interface SessionView {
   id: string; // <rootId>/<slug>/<file name>
   project: string; // display name
+  // The end of project that tells it apart from another session with the same name (the folder's label, the rest of a
+  // session name, the number), kept visible when the name is cut (docs/design.md "Display names")
+  projectSuffix?: string;
   // Project identifier within the data source. For Claude Code, the slug under projects/; for Codex,
   // `codex:<cwd>`. Key for per-project icon set assignment (issue #14). It doesn't include rootId,
   // so the assignment is shared even when the same project path is seen from multiple roots
@@ -156,6 +162,8 @@ export interface LiveSession {
   pid: number;
   sessionId: string;
   name?: string;
+  /** Who gave the name: "user" (/rename, --name) or "derived" (made up by Claude Code from the project's name) */
+  nameSource?: string;
   cwd?: string;
   status?: string;
   /** What a waiting session waits on: "input needed" (a question tool or an MCP input), "permission prompt",

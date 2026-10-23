@@ -407,6 +407,7 @@ export default function App({
     const lineByDoneTurn = new Map<string, string>();
     const lineByWaitingSession = new Map<string, string>();
     const angrySessions = new Set<string>();
+    const sessionById = new Map(displaySessions.map((s) => [s.id, s]));
     for (const s of displaySessions) {
       if (isAngry(s)) angrySessions.add(s.id);
       const line = bubbleText(s);
@@ -422,7 +423,8 @@ export default function App({
       askByTurn.size === 0 &&
       lineByDoneTurn.size === 0 &&
       lineByWaitingSession.size === 0 &&
-      angrySessions.size === 0
+      angrySessions.size === 0 &&
+      !displaySessions.some((s) => s.projectSuffix)
     ) {
       return events;
     }
@@ -436,8 +438,12 @@ export default function App({
             ? lineByWaitingSession.get(e.sessionId)
             : undefined;
       const angry = angrySessions.has(e.sessionId);
-      if (!ask && !line && !angry) return e;
-      return { ...e, ...(ask && { ask }), ...(line && { line }), ...(angry && { angry }) };
+      // The event keeps the name it had; the part that tells it apart is kept visible only while that is still the
+      // session's name (docs/design.md "Display names")
+      const session = sessionById.get(e.sessionId);
+      const projectSuffix = session?.project === e.project ? session.projectSuffix : undefined;
+      if (!ask && !line && !angry && !projectSuffix) return e;
+      return { ...e, ...(ask && { ask }), ...(line && { line }), ...(angry && { angry }), ...(projectSuffix && { projectSuffix }) };
     });
   }, [events, displaySessions]);
 

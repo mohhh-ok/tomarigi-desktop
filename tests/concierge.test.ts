@@ -1115,3 +1115,31 @@ test("the app log line of a retry names the failed request, the attempt and the 
     "[concierge] retry req=ae9d7808 provider=openai model=gpt-5.6-luna attempt=1 after=10s",
   );
 });
+
+test("sessions told apart by a number: an advice is checked against the numbered name (docs/design.md \"Display names\")", async () => {
+  const payload = buildConciergePayload(
+    [
+      { view: view("b1", { project: "orbit", state: "done" }) },
+      { view: view("b2", { project: "orbit 2", state: "done" }) },
+    ],
+    [], [], NOW, "ja",
+  );
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  const second = { advice: "orbit 2の結果を確認してください", session_id: "b2", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(second))).toMatchObject({ verdict: { line: second.advice, targetId: "b2" } });
+  const first = { advice: "orbitの結果を確認してください", session_id: "b1", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(first))).toMatchObject({ verdict: { line: first.advice, targetId: "b1" } });
+  const wrongName = { advice: "orbit 2の結果を確認してください", session_id: "b1", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(wrongName))).toMatchObject({
+    verdict: null,
+    dropped: { targetId: "b1", reason: "other_session" },
+  });
+  const plainForSecond = { advice: "orbitの結果を確認してください", session_id: "b2", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(plainForSecond))).toMatchObject({
+    verdict: null,
+    dropped: { targetId: "b2", reason: "no_name" },
+  });
+});

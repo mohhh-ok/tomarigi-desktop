@@ -279,3 +279,26 @@ button:hover {
   margin: 0;
   padding: 0;
 }
+
+/* A display name whose end tells it apart from another session's (session-name.tsx): the start shrinks first and is cut
+   with "…", the end shrinks only once the start is down to its minimum. The end keeps its leading space (" 2") */
+.session-name-split {
+  display: flex;
+  min-width: 0;
+}
+
+.session-name-head {
+  flex: 0 1000 auto;
+  min-width: 1.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-name-tail {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}

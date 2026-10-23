@@ -19,6 +19,10 @@ pub(crate) struct LiveSession {
     session_id: String,
     #[serde(default)]
     name: Option<String>,
+    /// Who gave the name: "user" (/rename, --name) or "derived" (made up from the project's name)
+    /// (docs/design.md "Display names")
+    #[serde(default)]
+    name_source: Option<String>,
     #[serde(default)]
     cwd: Option<String>,
     #[serde(default)]
