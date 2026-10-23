@@ -162,3 +162,16 @@ export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState 
       return sinceMs >= DOZE_MS ? "dozing" : "working";
   }
 }
+
+/** What a waiting session waits on (docs/design.md "Concierge"). onQuestionTool: the transcript ends on a question tool
+ * (AskUserQuestion etc.). Otherwise Claude Code's waitingFor in sessions/<pid>.json tells: it writes a question tool's
+ * tool_use only after it is answered, and puts "input needed" there while the question (or an MCP input) is open and
+ * "permission prompt" (or a sandbox / worker request) while a permission prompt is (read from Claude Code 2.1.309) */
+export function waitingOnOf(onQuestionTool: boolean, waitingFor: string | undefined): "question" | "permission" | undefined {
+  if (onQuestionTool) return "question";
+  if (waitingFor === "input needed") return "question";
+  if (waitingFor === "permission prompt" || waitingFor === "sandbox request" || waitingFor === "worker request") {
+    return "permission";
+  }
+  return undefined;
+}

@@ -20,7 +20,7 @@ import { feedTurnMessages, turnUserMessages } from "./session-tail";
 import { assignSdkChicks, isSdkSession } from "./session-chicks";
 import { AGENTS, type AgentKind, type ScanListing } from "./agents";
 import { loadAgentProcesses, type AgentProcessScan } from "./agent-processes";
-import { deriveSdkChickState, deriveState, escalateWithChicks, STATE_URGENCY } from "./bird-state";
+import { deriveSdkChickState, deriveState, escalateWithChicks, STATE_URGENCY, waitingOnOf } from "./bird-state";
 import { extractQuestion, pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
 import { cacheEvent, recentEvents, saveEventLogIfDirty } from "./session-event-log";
@@ -184,8 +184,9 @@ function buildViews(
     // While Claude Code shows choices (AskUserQuestion) or a permission prompt, it doesn't write that tool_use
     // to the transcript yet (it writes it after the answer). Instead the status in <config>/sessions/<pid>.json
     // becomes "waiting", so treat that as needs reply
-    const state: BirdState =
-      !isSdk && watch.liveBySessionId.get(sessionIdOfViewId(id))?.status === "waiting" ? "waiting" : tailState;
+    const live = isSdk ? undefined : watch.liveBySessionId.get(sessionIdOfViewId(id));
+    const state: BirdState = live?.status === "waiting" ? "waiting" : tailState;
+    const waitingOn = state === "waiting" ? waitingOnOf(tailState === "waiting", live?.waitingFor) : undefined;
     // The display state is escalated to a chick's urgency while the chick is running (anything but done/dozing)
     const displayState = escalateWithChicks(state, chickViews);
     // Always attach the latest user message snippet ("what this session was asked to do" is the main info).
@@ -217,6 +218,7 @@ function buildViews(
       snippet,
       reply,
       question,
+      ...(waitingOn && { waitingOn }),
       userMessages,
       peers: peers.length > 0 ? peers : undefined,
       watching,
