@@ -33,6 +33,22 @@ export function conciergeOnlyLabel({ hidden, waiting }: { hidden: number; waitin
   };
 }
 
+/** The header's button into the mode, the counterpart of "Show all": on the Garden (onGarden; overlay: settings or the
+    debug log open over it) while the concierge is shown and the mode is off, as the right-click menu's item is */
+export function conciergeOnlyEntryShown({
+  conciergeAvailable,
+  conciergeOnly,
+  onGarden,
+  overlay,
+}: {
+  conciergeAvailable: boolean;
+  conciergeOnly: boolean;
+  onGarden: boolean;
+  overlay: boolean;
+}): boolean {
+  return conciergeAvailable && !conciergeOnly && onGarden && !overlay;
+}
+
 /** The Garden's right-click menu: "Concierge only" below "Arrange" while the concierge is shown, checked while on, with
     "Arrange" disabled then */
 export function gardenMenuModel({
