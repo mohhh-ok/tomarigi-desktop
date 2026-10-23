@@ -879,7 +879,12 @@ export const PRESETS: Preset[] = [
       const names = displayNamesOf(raw.map((s) => ({ id: s.id, base: s.base, rootId: "claude", rootLabel: "Claude Code", sessionName: s.sessionName, startedAt: s.startedAt })));
       const sessions: SessionView[] = raw.map(({ base, sessionName: _, ...s }) => {
         const name = names.get(s.id);
-        return { ...s, project: name?.name ?? base, ...(name?.suffix && { projectSuffix: name.suffix }) };
+        return {
+          ...s,
+          project: name?.name ?? base,
+          ...(name?.suffix && { projectSuffix: name.suffix }),
+          ...(name && name.name !== base && { projectBase: base }),
+        };
       });
       const ev = (id: string, type: SessionEvent["type"], at: number): SessionEvent => ({
         key: `${id}/${type}`,

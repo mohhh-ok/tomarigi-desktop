@@ -167,6 +167,7 @@ Applies to the floating window's Garden and Concierge tabs only.
   - The label of the agent folder (「billionclips (claude2)」, for the same project in two folders) comes first; the session name or number tells apart what is still the same within a folder (Claude's own decision)
   - Sessions whose names don't collide keep the name they have today
   - Where a name is cut with "…" to fit (the bird's name in the Garden, Perch rows, Recent activity cards), the end that tells it apart (the folder's label, the rest of a session name that starts with the project's name, the number) stays visible: the start is cut first (「toma…-advice-links」「billion… 2」), and the end only once the start is down to a letter or two. Without this, 「tomarigi-desktop-advice-links」 was cut to 「tomarigi-desktop…」 in the Garden and 「billionclips 2」 to 「billioncli…」 in Perch at 260px, the same as the other session (Claude's own decision, from screenshots). A Recent activity card keeps the name its event had; the end is kept visible while that is still the session's name. The summary's lines and the concierge's advice wrap and aren't cut
+  - What is set per project, not per session (the icon set's rows in Settings), is named by the project's name, without the session name, number or folder label (Claude's own decision: the row for tomarigi-desktop showed 「tomarigi-desktop-advice-links」, one session's name)
 
 ## Layout
 
