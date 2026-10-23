@@ -5,8 +5,10 @@ import {
   conciergeStatusLines,
   conciergeStatusOf,
   MAX_STATUS_LINES,
+  statusesAt,
   suggestionNow,
   suggestionsAt,
+  suggestionsOutdated,
 } from "../src/lib/concierge-status.ts";
 import type { SessionView } from "../src/lib/sessions.ts";
 
@@ -124,5 +126,28 @@ describe("suggestions as kept until the next answer", () => {
     expect(suggestionNow(kept[0], [view("a"), views[1]])).toBe("working");
     expect(suggestionNow(kept[1], [views[0], view("b", { state: "dozing" })])).toBeNull();
     expect(suggestionNow(kept[1], [views[0]])).toBe("gone");
+  });
+});
+
+describe("whether opening the Concierge tab asks for suggestions", () => {
+  const views = [view("a", { state: "waiting" }), view("b", { state: "done" }), view("c", { toolName: "Read" })];
+
+  test("none at hand yet: asks", () => {
+    expect(suggestionsOutdated(undefined, views)).toBe(true);
+  });
+
+  test("still as they were when the suggestions came (a new tool line or time passing aside): doesn't ask", () => {
+    const at = statusesAt(views);
+    expect(suggestionsOutdated(at, views)).toBe(false);
+    expect(suggestionsOutdated(at, [views[0], view("b", { state: "dozing", sinceMs: 99_000 }), view("c", { toolName: "Edit" })])).toBe(false);
+  });
+
+  test("a session changed state, came, or left since: asks", () => {
+    const at = statusesAt(views);
+    expect(suggestionsOutdated(at, [view("a"), views[1], views[2]])).toBe(true);
+    expect(suggestionsOutdated(at, [...views, view("d")])).toBe(true);
+    expect(suggestionsOutdated(at, views.slice(0, 2))).toBe(true);
+    // As many sessions, but another one in place of one that left
+    expect(suggestionsOutdated(at, [views[0], views[1], view("d", { toolName: "Read" })])).toBe(true);
   });
 });

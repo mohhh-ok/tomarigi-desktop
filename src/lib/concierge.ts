@@ -870,6 +870,26 @@ export class ConciergeScheduler {
     return { attempt: this.retries, afterMs };
   }
 
+  /**
+   * Asks after CONCIERGE_DEBOUNCE_MS without waiting for the 60 seconds, when the user opened the Concierge tab and the
+   * suggestions at hand are none or out of date (docs/design.md "Concierge"). Like an answer to a waiting session it
+   * comes only at the user's pace. Only while a session needs a reply or is done, as any request; a retry waiting takes
+   * it instead. Returns whether it was set
+   */
+  soon(): boolean {
+    const states = [...(this.classes?.values() ?? [])];
+    if (!states.includes("reply") && !states.includes("done")) return false;
+    if (this.retry !== undefined) return false;
+    const now = this.timers.now();
+    const at = now + CONCIERGE_DEBOUNCE_MS;
+    if (this.pending === undefined || at < this.pendingAt) {
+      if (this.pending !== undefined) this.timers.clear(this.pending);
+      this.pending = this.timers.set(() => this.fire(), at - now);
+      this.pendingAt = at;
+    }
+    return true;
+  }
+
   /** Stops the timers and forgets the sessions, so the next enabled update asks again (still once per interval) */
   stop(): void {
     this.cancelTimers();
