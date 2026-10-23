@@ -11,7 +11,7 @@ import { formatSince } from "./format-time";
 import { ICON_SETS, resolveIconSet } from "./icon-sets";
 import { orderByWatchLinks, relativeLabel } from "./watch-links";
 import { SessionName, sessionNameClass } from "./session-name";
-import { useTwoLineRows } from "./perch-row-fit";
+import { useRowLayouts } from "./perch-row-fit";
 
 // The request excerpt on a Perch row is hidden entirely when narrower than this (so fragments like "「." aren't shown)
 const SNIPPET_MIN_VISIBLE_EM = 2.5;
@@ -55,8 +55,9 @@ export function Perch({
   iconSetAssignments?: IconSetAssignments;
 }) {
   const listRef = useRef<HTMLUListElement>(null);
-  // Rows whose name and state don't fit on one line show the state on a second line (perch-row-fit.ts)
-  const twoLines = useTwoLineRows(listRef, sessions);
+  // Rows whose name and state don't fit on one line show the state on a second line, and a tool name that doesn't fit
+  // whole is left out (perch-row-fit.ts)
+  const rowLayouts = useRowLayouts(listRef, sessions);
   if (sessions.length === 0) {
     return (
       <div className="empty">
@@ -89,7 +90,10 @@ export function Perch({
               className={`bird ${s.state}${parent ? " linked-child" : ""}${continuesGroup(s, i) ? " linked-continues" : ""} ${focus.className ?? ""}`}
             >
               {/* First line (bird, name, status). The speech bubble goes separately on a second line; the first line doesn't wrap */}
-              <div className={`bird-row-main${twoLines.has(s.id) ? " two-lines" : ""}`} data-row-id={s.id}>
+              <div
+                className={`bird-row-main${rowLayouts.twoLines.has(s.id) ? " two-lines" : ""}${rowLayouts.noTool.has(s.id) ? " no-tool" : ""}`}
+                data-row-id={s.id}
+              >
               <BirdGlyph state={s.state} size={18} set={set} asking={hasQuestion(s)} angry={isAngry(s)} />
               {/* When width runs short, the shrink order is request excerpt → name → status (.bird-row-* in styles/perch-row-layout.css).
                   The state word and elapsed time always stay; the tool name is hidden entirely if it doesn't fit */}
