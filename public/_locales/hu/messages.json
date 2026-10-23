@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Javaslatok"
   },
-  "conciergeSummaryStateReply": {
-    "message": "választ vár"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "kész"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "dolgozik"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ most választ vár"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ most kész"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ most dolgozik"
+  "conciergeSummaryNow": {
+    "message": "→ most: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ már nincs itt"

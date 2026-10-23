@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Vorschläge"
   },
-  "conciergeSummaryStateReply": {
-    "message": "wartet auf Antwort"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "fertig"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "arbeitet"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ wartet jetzt auf Antwort"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ jetzt fertig"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ arbeitet jetzt"
+  "conciergeSummaryNow": {
+    "message": "→ jetzt: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ nicht mehr da"

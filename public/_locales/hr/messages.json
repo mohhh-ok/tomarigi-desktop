@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Prijedlozi"
   },
-  "conciergeSummaryStateReply": {
-    "message": "čeka odgovor"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "gotovo"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "radi"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ sada čeka odgovor"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ sada gotovo"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ sada radi"
+  "conciergeSummaryNow": {
+    "message": "→ sada: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ više nije tu"

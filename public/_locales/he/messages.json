@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "הצעות"
   },
-  "conciergeSummaryStateReply": {
-    "message": "ממתין לתשובה"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "הסתיים"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "עובד"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "← עכשיו ממתין לתשובה"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "← הסתיים עכשיו"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "← עובד עכשיו"
+  "conciergeSummaryNow": {
+    "message": "← עכשיו: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "← כבר לא כאן"

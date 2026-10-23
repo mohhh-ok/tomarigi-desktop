@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Предложения"
   },
-  "conciergeSummaryStateReply": {
-    "message": "чака отговор"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "готово"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "работи"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ сега чака отговор"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ сега готово"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ сега работи"
+  "conciergeSummaryNow": {
+    "message": "→ сега: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ вече я няма"

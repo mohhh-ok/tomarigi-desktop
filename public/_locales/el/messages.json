@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Προτάσεις"
   },
-  "conciergeSummaryStateReply": {
-    "message": "περιμένει απάντηση"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "ολοκληρώθηκε"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "σε εξέλιξη"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ τώρα περιμένει απάντηση"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ τώρα ολοκληρώθηκε"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ τώρα σε εξέλιξη"
+  "conciergeSummaryNow": {
+    "message": "→ τώρα: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ έφυγε"

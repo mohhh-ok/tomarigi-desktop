@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Odporúčania"
   },
-  "conciergeSummaryStateReply": {
-    "message": "čaká na odpoveď"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "hotovo"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "pracuje"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ teraz čaká na odpoveď"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ teraz hotovo"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ teraz pracuje"
+  "conciergeSummaryNow": {
+    "message": "→ teraz: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ zmizla"

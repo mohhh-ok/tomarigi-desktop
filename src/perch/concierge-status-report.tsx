@@ -12,17 +12,14 @@ import {
 } from "@/lib/concierge-status";
 import type { SessionView } from "@/lib/sessions";
 
+// The birds' own state words (docs/design.md "Bird states"), so a state reads the same here as at the bird
 const STATE_LABEL = {
-  reply: "conciergeSummaryStateReply",
-  done: "conciergeSummaryStateDone",
-  working: "conciergeSummaryStateWorking",
+  reply: "birdWaitingLabel",
+  done: "eventDoneLabel",
+  working: "birdWorkingLabel",
 } as const;
-const NOW_LABEL = {
-  reply: "conciergeSummaryNowReply",
-  done: "conciergeSummaryNowDone",
-  working: "conciergeSummaryNowWorking",
-  gone: "conciergeSummaryGone",
-} as const;
+const nowLabel = (now: ConciergeStatus | "gone") =>
+  now === "gone" ? t("conciergeSummaryGone") : t("conciergeSummaryNow", [t(STATE_LABEL[now])]);
 
 /** Something that jumps to a session's pane on a click or Enter, at rest too (fade-target); a span, so a long name wraps
     with the line */
@@ -82,7 +79,7 @@ export function ConciergeStatusReport({
               <span key={s.sessionId} className={`concierge-status-line${now ? " is-stale" : ""}`}>
                 {name(s.sessionId, shown ?? s.name, now !== "gone")}
                 {`: ${s.text}`}
-                {now && <span className="concierge-status-now">{` ${t(NOW_LABEL[now])}`}</span>}
+                {now && <span className="concierge-status-now">{` ${nowLabel(now)}`}</span>}
               </span>
             );
           })}

@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Советы"
   },
-  "conciergeSummaryStateReply": {
-    "message": "ждёт ответа"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "готово"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "работает"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ теперь ждёт ответа"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ теперь готово"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ теперь работает"
+  "conciergeSummaryNow": {
+    "message": "→ теперь: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ исчезла"

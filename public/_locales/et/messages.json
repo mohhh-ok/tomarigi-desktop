@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Soovitused"
   },
-  "conciergeSummaryStateReply": {
-    "message": "ootab vastust"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "valmis"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "töötab"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ ootab nüüd vastust"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ nüüd valmis"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ töötab nüüd"
+  "conciergeSummaryNow": {
+    "message": "→ nüüd: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ kadunud"

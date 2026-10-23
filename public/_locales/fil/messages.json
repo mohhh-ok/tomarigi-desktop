@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Mga mungkahi"
   },
-  "conciergeSummaryStateReply": {
-    "message": "naghihintay ng sagot"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "tapos na"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "gumagana"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ naghihintay na ng sagot"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ tapos na ngayon"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ gumagana na ngayon"
+  "conciergeSummaryNow": {
+    "message": "→ ngayon: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ wala na"

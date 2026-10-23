@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "คำแนะนำ"
   },
-  "conciergeSummaryStateReply": {
-    "message": "รอคำตอบ"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "เสร็จแล้ว"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "กำลังทำงาน"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ ตอนนี้รอคำตอบ"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ ตอนนี้เสร็จแล้ว"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ ตอนนี้กำลังทำงาน"
+  "conciergeSummaryNow": {
+    "message": "→ ตอนนี้: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ ไม่อยู่แล้ว"

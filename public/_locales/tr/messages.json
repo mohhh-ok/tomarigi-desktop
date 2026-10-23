@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Öneriler"
   },
-  "conciergeSummaryStateReply": {
-    "message": "yanıt bekliyor"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "bitti"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "çalışıyor"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ şimdi yanıt bekliyor"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ şimdi bitti"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ şimdi çalışıyor"
+  "conciergeSummaryNow": {
+    "message": "→ şimdi: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ artık yok"

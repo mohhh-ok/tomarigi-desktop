@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Forslag"
   },
-  "conciergeSummaryStateReply": {
-    "message": "venter på svar"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "ferdig"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "jobber"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ venter nå på svar"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ nå ferdig"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ jobber nå"
+  "conciergeSummaryNow": {
+    "message": "→ nå: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ borte"
