@@ -178,6 +178,16 @@ export const KEYS = [
   "conciergeSummaryLoading",
   "conciergeSummaryFailed",
   "conciergeSummaryClose",
+  "conciergeSummaryMadeAt",
+  "conciergeSummarySuggestions",
+  "conciergeSummaryStateReply",
+  "conciergeSummaryStateDone",
+  "conciergeSummaryStateWorking",
+  "conciergeSummaryNowReply",
+  "conciergeSummaryNowDone",
+  "conciergeSummaryNowWorking",
+  "conciergeSummaryGone",
+  "conciergeSummaryMore",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).
@@ -203,6 +213,8 @@ export const PLACEHOLDERS = {
   updatesInstallButton: { version: "$1" },
   conciergeOnlyHidden: { count: "$1" },
   conciergeOnlyWaiting: { count: "$1" },
+  conciergeSummaryMadeAt: { time: "$1" },
+  conciergeSummaryMore: { count: "$1" },
 };
 
 // default_locale. English is the fallback for users of unsupported languages.

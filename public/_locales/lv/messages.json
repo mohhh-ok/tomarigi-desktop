@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Aizvērt kopsavilkumu"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Kopsavilkums $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Ieteikumi"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "gaida atbildi"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "pabeigts"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "strādā"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ tagad gaida atbildi"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ tagad pabeigts"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ tagad strādā"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ vairs nav"
+  },
+  "conciergeSummaryMore": {
+    "message": "vēl: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

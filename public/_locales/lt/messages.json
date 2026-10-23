@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Uždaryti apibendrinimą"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Santrauka $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Pasiūlymai"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "laukia atsakymo"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "baigta"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "dirba"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ dabar laukia atsakymo"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ dabar baigta"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ dabar dirba"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ nebėra"
+  },
+  "conciergeSummaryMore": {
+    "message": "daugiau: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

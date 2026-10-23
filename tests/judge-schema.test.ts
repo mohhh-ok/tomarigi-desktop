@@ -34,3 +34,43 @@ test("requiredFields overrides required", () => {
   });
   expect(schema.required).toEqual(["b"]);
 });
+
+test("a list of objects: every field of an item is required and nothing else is allowed (OpenAI strict)", () => {
+  const schema = verdictSchema({
+    name: "t",
+    systemPrompt: "",
+    outputFields: {
+      lines: {
+        type: "array",
+        description: "l",
+        items: {
+          type: "object",
+          properties: {
+            sessions: { type: "array", description: "s", items: { type: "string" } },
+            text: { type: "string", description: "t" },
+          },
+        },
+      },
+    },
+  });
+  expect(JSON.stringify(schema)).toBe(
+    JSON.stringify({
+      properties: {
+        lines: {
+          type: "array",
+          description: "l",
+          items: {
+            type: "object",
+            properties: {
+              sessions: { type: "array", description: "s", items: { type: "string" } },
+              text: { type: "string", description: "t" },
+            },
+            required: ["sessions", "text"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["lines"],
+    }),
+  );
+});

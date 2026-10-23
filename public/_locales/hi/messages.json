@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "सार बंद करें"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "$TIME$ का सारांश",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "सुझाव"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "जवाब का इंतज़ार"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "पूरा"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "काम जारी"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ अब जवाब का इंतज़ार"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ अब पूरा"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ अब काम जारी"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ अब नहीं है"
+  },
+  "conciergeSummaryMore": {
+    "message": "और: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

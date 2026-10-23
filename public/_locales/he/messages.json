@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "סגירת הסיכום"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "סיכום מ-$TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "הצעות"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "ממתין לתשובה"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "הסתיים"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "עובד"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "← עכשיו ממתין לתשובה"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "← הסתיים עכשיו"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "← עובד עכשיו"
+  },
+  "conciergeSummaryGone": {
+    "message": "← כבר לא כאן"
+  },
+  "conciergeSummaryMore": {
+    "message": "עוד: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

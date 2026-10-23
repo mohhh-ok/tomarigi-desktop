@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Закрыть итоги"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Сводка на $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Советы"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "ждёт ответа"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "готово"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "работает"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ теперь ждёт ответа"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ теперь готово"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ теперь работает"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ исчезла"
+  },
+  "conciergeSummaryMore": {
+    "message": "ещё: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

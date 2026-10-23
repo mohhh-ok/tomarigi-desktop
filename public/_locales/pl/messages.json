@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Zamknij podsumowanie"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Podsumowanie z $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Sugestie"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "czeka na odpowiedź"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "gotowe"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "pracuje"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ teraz czeka na odpowiedź"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ teraz gotowe"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ teraz pracuje"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ zniknęła"
+  },
+  "conciergeSummaryMore": {
+    "message": "więcej: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

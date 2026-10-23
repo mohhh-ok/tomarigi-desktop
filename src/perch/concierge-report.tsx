@@ -1,11 +1,46 @@
 // The concierge's bubble in "Concierge only" while a "What's going on?" summary is shown (docs/design.md "Concierge"):
-// the summary with × at its top right, then the advice below a dividing line. Session names in the text jump to their
-// panes (summaryNameLinks)
-import { t } from "@/lib/i18n";
-import { summaryNameLinks, type conciergeBubbleParts } from "@/lib/concierge-summary";
+// when it was made with × at its top right, a line per session, the suggestions under their heading, then the advice
+// below a dividing line. Each line is built here as 「<name>: <text> <state>」, the state from the app's facts, and the
+// name links to its session; no name is searched for in text. A line whose session changed since is dimmed with its
+// state now
+import type { ReactNode } from "react";
+import { t, uiLanguage } from "@/lib/i18n";
+import type { ConciergeAdvice } from "@/lib/concierge";
+import { summaryEntryNow, type Summary, type SummaryEntry } from "@/lib/concierge-summary";
 import type { SessionView } from "@/lib/sessions";
 
-type BubbleParts = ReturnType<typeof conciergeBubbleParts>;
+const STATE_LABEL = {
+  reply: "conciergeSummaryStateReply",
+  done: "conciergeSummaryStateDone",
+  working: "conciergeSummaryStateWorking",
+} as const;
+const NOW_LABEL = {
+  reply: "conciergeSummaryNowReply",
+  done: "conciergeSummaryNowDone",
+  working: "conciergeSummaryNowWorking",
+  gone: "conciergeSummaryGone",
+} as const;
+
+/** Something that jumps to a session's pane on a click or Enter, at rest too (fade-target, like the ×); a span, so a
+    long name wraps with the line */
+function Jump({ className, onJump, children }: { className: string; onJump: () => void; children: ReactNode }) {
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      className={`${className} fade-target`}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={onJump}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        onJump();
+      }}
+    >
+      {children}
+    </span>
+  );
+}
 
 export function ConciergeReport({
   parts,
@@ -14,37 +49,47 @@ export function ConciergeReport({
   onFocus,
   onCloseSummary,
 }: {
-  parts: { summary: NonNullable<BubbleParts["summary"]>; advice?: string };
-  // The sessions on screen, whose names in the text link to their terminal panes; only those canJump are links
+  parts: {
+    summary: { kind: "loading" } | { kind: "shown"; summary: Summary } | { kind: "failed" };
+    advice?: ConciergeAdvice;
+  };
+  // The sessions on screen now: a line's name links to its pane, and a line whose session changed is dimmed
   sessions: SessionView[];
   canJump: (id: string) => boolean;
   onFocus?: (id: string) => void;
   onCloseSummary: () => void;
 }) {
-  // A session's name jumps to its pane, as clicking its bird does; in the summary and in the advice alike
-  const linked = (text: string) =>
-    summaryNameLinks(text, sessions, canJump).map((p, i) =>
-      p.id === undefined ? (
-        p.text
-      ) : (
-        // Takes clicks at rest too, like the × (fade-target); a span, so a long name wraps with the line
-        <span
-          key={i}
-          role="button"
-          tabIndex={0}
-          className="concierge-summary-name fade-target"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => onFocus?.(p.id!)}
-          onKeyDown={(e) => {
-            if (e.key !== "Enter" && e.key !== " ") return;
-            e.preventDefault();
-            onFocus?.(p.id!);
-          }}
-        >
-          {p.text}
-        </span>
-      ),
+  // withState: items get their state from the app's facts after the AI's text; suggestions don't
+  const line = (e: SummaryEntry, i: number, withState: boolean) => {
+    const now = summaryEntryNow(e, sessions);
+    // The name as it is on screen now; the one from when the summary was made once the session left
+    const name = sessions.find((s) => s.id === e.sessionId)?.project ?? e.name;
+    return (
+      <span key={i} className={`concierge-summary-line${now ? " is-stale" : ""}`}>
+        {now !== "gone" && canJump(e.sessionId) ? (
+          <Jump className="concierge-summary-name" onJump={() => onFocus?.(e.sessionId)}>
+            {name}
+          </Jump>
+        ) : (
+          name
+        )}
+        {`: ${e.text ?? t(STATE_LABEL[e.status])}`}
+        {/* A changed line shows its state now instead of the one it had */}
+        {now ? (
+          <span className="concierge-summary-now">{` ${t(NOW_LABEL[now])}`}</span>
+        ) : (
+          withState &&
+          e.text !== undefined && (
+            <span className="concierge-summary-state" data-status={e.status}>
+              {` ${t(STATE_LABEL[e.status])}`}
+            </span>
+          )
+        )}
+      </span>
     );
+  };
+  const summary = parts.summary.kind === "shown" ? parts.summary.summary : undefined;
+  const advice = parts.advice;
   return (
     <>
       <span className="concierge-summary">
@@ -59,30 +104,43 @@ export function ConciergeReport({
         >
           ×
         </button>
-        {parts.summary.kind === "shown" ? (
-          <span className="concierge-summary-text">
-            {parts.summary.text.split("\n").map((line, i) => {
-              // A state in brackets at the line's end wraps as one piece, not 「（返事待」「ち）」
-              const tail = /\s?(（[^（）]*）|\([^()]*\))$/.exec(line);
-              return (
-                <span key={i} style={{ display: "block" }}>
-                  {linked(tail ? line.slice(0, tail.index) : line)}
-                  {tail && <span className="concierge-summary-tail">{linked(tail[0])}</span>}
-                </span>
-              );
-            })}
-          </span>
+        {summary ? (
+          <>
+            <span className="concierge-summary-made">
+              {t("conciergeSummaryMadeAt", [
+                new Date(summary.madeAt).toLocaleTimeString(uiLanguage(), { hour: "2-digit", minute: "2-digit" }),
+              ])}
+            </span>
+            <span className="concierge-summary-text">
+              {summary.items.map((e, i) => line(e, i, true))}
+              {summary.more > 0 && (
+                <span className="concierge-summary-more">{t("conciergeSummaryMore", [String(summary.more)])}</span>
+              )}
+            </span>
+            {summary.suggestions.length > 0 && (
+              <>
+                <span className="concierge-summary-heading">{t("conciergeSummarySuggestions")}</span>
+                <span className="concierge-summary-text">{summary.suggestions.map((e, i) => line(e, i, false))}</span>
+              </>
+            )}
+          </>
         ) : (
           <span className="concierge-summary-note">
             {t(parts.summary.kind === "loading" ? "conciergeSummaryLoading" : "conciergeSummaryFailed")}
           </span>
         )}
       </span>
-      {parts.advice && (
+      {advice && (
         <>
           <span className="concierge-summary-divider" aria-hidden />
-          {/* Its names link too, the same way as the summary's */}
-          <span className="concierge-summary-advice">{linked(parts.advice)}</span>
+          {/* The whole line jumps to the advice's session, like clicking the concierge */}
+          {advice.targetId && canJump(advice.targetId) ? (
+            <Jump className="concierge-summary-advice is-link" onJump={() => onFocus?.(advice.targetId!)}>
+              {advice.line}
+            </Jump>
+          ) : (
+            <span className="concierge-summary-advice">{advice.line}</span>
+          )}
         </>
       )}
     </>

@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Összefoglaló bezárása"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Összefoglaló, $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Javaslatok"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "választ vár"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "kész"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "dolgozik"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ most választ vár"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ most kész"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ most dolgozik"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ már nincs itt"
+  },
+  "conciergeSummaryMore": {
+    "message": "további $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "まとめを閉じる"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "$TIME$ のまとめ",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "おすすめ"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "返事待ち"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "完了"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "作業中"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ いま返事待ち"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ いま完了"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ いま作業中"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ いなくなりました"
+  },
+  "conciergeSummaryMore": {
+    "message": "ほか $COUNT$ 件",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

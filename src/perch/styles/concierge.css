@@ -155,13 +155,57 @@
   display: block;
 }
 
-/* The state at a line's end, e.g. 「（返事待ち）」, wraps as one piece (concierge-report.tsx) */
-.concierge-summary-tail {
+/* When the summary was made, above its lines (concierge-report.tsx): quieter than the lines, so they read first */
+.concierge-summary-made {
+  display: block;
+  margin-bottom: 2px;
+  color: #6b6355;
+  font-size: 10px;
+}
+
+/* One line per session, 「<name>: <text>」 */
+.concierge-summary-line {
+  display: block;
+}
+
+/* A line whose session changed since the summary was made: dimmed, with its state now after it */
+.concierge-summary-line.is-stale {
+  color: rgba(38, 34, 26, 0.5);
+}
+
+/* The state the app adds after the AI's text (concierge-report.tsx): quieter than the text; needing a reply stands out */
+.concierge-summary-state {
+  color: #6b6355;
+  font-size: 10px;
   white-space: nowrap;
 }
 
-/* A session's name in the summary or its advice (concierge-report.tsx): jumps to its pane, so it takes clicks like the
-   ×, at rest too, and reads as a link: underlined, a deeper color under the cursor */
+.concierge-summary-state[data-status="reply"] {
+  color: #a0461c;
+  font-weight: 600;
+}
+
+.concierge-summary-now {
+  color: #8a5a12;
+  white-space: nowrap;
+}
+
+/* 「ほか 3 件」 after the lines that fit, and the suggestions' heading: the app's own words, quieter than the lines */
+.concierge-summary-more {
+  display: block;
+  color: #6b6355;
+}
+
+.concierge-summary-heading {
+  display: block;
+  margin-top: 5px;
+  color: #6b6355;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* A session's name on a summary line (concierge-report.tsx): jumps to its pane, so it takes clicks like the ×, at rest
+   too, and reads as a link: underlined, a deeper color under the cursor */
 .concierge-summary-name {
   text-decoration: underline;
   text-decoration-color: rgba(38, 34, 26, 0.45);
@@ -218,6 +262,25 @@
 
 .concierge-summary-advice {
   display: block;
+}
+
+/* The advice line when it has a session to jump to: the whole line takes clicks like the ×, at rest too, and shows it
+   under the cursor the same way as a name */
+.concierge-summary-advice.is-link {
+  border-radius: 2px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.concierge-summary-advice.is-link:hover {
+  color: #8a5a12;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.concierge-summary-advice.is-link:focus-visible {
+  outline: 2px solid #8a5a12;
+  outline-offset: 1px;
 }
 
 /* Settings: the two looks side by side, each the picture with its name under it. The chosen one is framed */

@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "إغلاق الملخص"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "ملخص الساعة $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "اقتراحات"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "بانتظار الرد"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "انتهى"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "يعمل"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "← الآن بانتظار الرد"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "← انتهى الآن"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "← يعمل الآن"
+  },
+  "conciergeSummaryGone": {
+    "message": "← لم تعد موجودة"
+  },
+  "conciergeSummaryMore": {
+    "message": "المزيد: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

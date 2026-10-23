@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Isara ang buod"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Buod noong $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Mga mungkahi"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "naghihintay ng sagot"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "tapos na"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "gumagana"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ naghihintay na ng sagot"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ tapos na ngayon"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ gumagana na ngayon"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ wala na"
+  },
+  "conciergeSummaryMore": {
+    "message": "iba pa: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

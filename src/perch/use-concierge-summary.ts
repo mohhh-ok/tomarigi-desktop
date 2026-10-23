@@ -6,16 +6,23 @@ import { useCallback, useRef, useState } from "react";
 import { judgeModelFor } from "@/lib/ai-judge";
 import { loadActiveAiProvider } from "@/lib/api-keys";
 import { appendConciergeLog } from "@/lib/concierge";
-import { askConciergeSummary, nextSummaryState, type SummaryEvent, type SummaryState } from "@/lib/concierge-summary";
+import {
+  askConciergeSummary,
+  nextSummaryState,
+  parseConciergeSummary,
+  type SummaryEvent,
+  type SummaryState,
+} from "@/lib/concierge-summary";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import { conciergePayloadNow } from "./use-concierge";
 
-/** mock: a source that doesn't call the API gives the summary itself (PerchSource.conciergeSummary) */
+/** mock: a source that doesn't call the API gives the answer itself, in the AI's form with the sessions' own ids
+    (PerchSource.conciergeSummary); it is read the same way */
 export function useConciergeSummary(
   sessions: SessionView[],
   events: SessionEvent[],
   agentOf: (id: string) => string | undefined,
-  mock?: (sessions: SessionView[]) => Promise<string> | undefined,
+  mock?: (sessions: SessionView[]) => Promise<unknown> | undefined,
 ): { state: SummaryState; ask: () => void; close: () => void } {
   const [state, setState] = useState<SummaryState>({ kind: "idle" });
   const dispatch = useCallback((event: SummaryEvent) => setState((s) => nextSummaryState(s, event)), []);
@@ -27,15 +34,18 @@ export function useConciergeSummary(
     const seq = ++seqRef.current;
     dispatch({ type: "ask", seq });
     const { sessions, events, agentOf, mock } = inputsRef.current;
+    const payload = conciergePayloadNow(sessions, events, agentOf);
     const mocked = mock?.(sessions);
     if (mocked) {
       mocked.then(
-        (text) => dispatch({ type: "answer", seq, text }),
+        (answer) => {
+          const parsed = parseConciergeSummary(answer, payload.sessions, Date.now());
+          dispatch(parsed ? { type: "answer", seq, summary: parsed.summary } : { type: "fail", seq });
+        },
         () => dispatch({ type: "fail", seq }),
       );
       return;
     }
-    const payload = conciergePayloadNow(sessions, events, agentOf);
     void (async () => {
       const provider = await loadActiveAiProvider();
       if (!provider) return dispatch({ type: "fail", seq });
@@ -56,10 +66,14 @@ export function useConciergeSummary(
         void invoke("log", { line: `${head} error=${text}` }).catch(() => {});
         return dispatch({ type: "fail", seq });
       }
-      appendConciergeLog({ at: Date.now(), kind: "advice", source: "summary", text: result.verdict });
-      // The text is JSON-quoted, so its line breaks stay on one line
-      void invoke("log", { line: `${head} text=${JSON.stringify(result.verdict)}` }).catch(() => {});
-      dispatch({ type: "answer", seq, text: result.verdict });
+      const { summary, dropped } = result.verdict;
+      const text = [...summary.items, ...summary.suggestions].map((e) => `${e.name}: ${e.text ?? `(${e.status})`}`).join("\n");
+      appendConciergeLog({ at: Date.now(), kind: "advice", source: "summary", text });
+      // The text is JSON-quoted, so its line breaks stay on one line. Objects with an id that wasn't sent are dropped
+      void invoke("log", {
+        line: `${head} text=${JSON.stringify(text)}${dropped.length > 0 ? ` dropped=${JSON.stringify(dropped)}` : ""}`,
+      }).catch(() => {});
+      dispatch({ type: "answer", seq, summary });
     })().catch(() => dispatch({ type: "fail", seq }));
   }, [dispatch]);
 

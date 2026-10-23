@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Закрити підсумок"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Підсумок на $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Поради"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "чекає на відповідь"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "готово"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "працює"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ тепер чекає на відповідь"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ тепер готово"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ тепер працює"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ зникла"
+  },
+  "conciergeSummaryMore": {
+    "message": "ще: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

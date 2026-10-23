@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Close the summary"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Summary at $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Suggestions"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "needs reply"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "done"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "working"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ now needs reply"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ now done"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ now working"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ gone"
+  },
+  "conciergeSummaryMore": {
+    "message": "$COUNT$ more",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

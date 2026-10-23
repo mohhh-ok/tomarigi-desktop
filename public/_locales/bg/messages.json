@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Затвори обобщението"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Обобщение към $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Предложения"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "чака отговор"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "готово"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "работи"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ сега чака отговор"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ сега готово"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ сега работи"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ вече я няма"
+  },
+  "conciergeSummaryMore": {
+    "message": "още: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

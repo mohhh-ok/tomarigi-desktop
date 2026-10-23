@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Tanca el resum"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Resum de les $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Suggeriments"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "espera resposta"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "fet"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "treballant"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ ara espera resposta"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ ara fet"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ ara treballant"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ ja no hi és"
+  },
+  "conciergeSummaryMore": {
+    "message": "més: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

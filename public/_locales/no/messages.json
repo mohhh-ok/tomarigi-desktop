@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Lukk oppsummeringen"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Status kl. $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Forslag"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "venter på svar"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "ferdig"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "jobber"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ venter nå på svar"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ nå ferdig"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ jobber nå"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ borte"
+  },
+  "conciergeSummaryMore": {
+    "message": "flere: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

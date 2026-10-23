@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Zapri povzetek"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Povzetek ob $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Predlogi"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "čaka na odgovor"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "končano"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "dela"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ zdaj čaka na odgovor"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ zdaj končano"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ zdaj dela"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ ni več"
+  },
+  "conciergeSummaryMore": {
+    "message": "še: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

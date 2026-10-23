@@ -9,7 +9,15 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import { loadLocalAiConfig, type LocalAiConfig } from "./api-keys";
-import { httpFailure, verdictSchema, type JudgeResult, type JudgeTaskDefinition, type JudgeUsage } from "./judge";
+import {
+  httpFailure,
+  verdictSchema,
+  type JudgeItem,
+  type JudgeOutputField,
+  type JudgeResult,
+  type JudgeTaskDefinition,
+  type JudgeUsage,
+} from "./judge";
 
 interface HttpReply {
   status: number;
@@ -80,10 +88,22 @@ function matchesSchema(task: JudgeTaskDefinition, value: unknown): value is Reco
       if (required.includes(key)) return false;
       continue;
     }
-    if (typeof v !== field.type) return false;
-    if (field.enum && !field.enum.includes(v as string)) return false;
+    if (!matchesField(field, v)) return false;
   }
   return true;
+}
+
+function matchesField(field: JudgeOutputField, v: unknown): boolean {
+  if (field.type === "array") return Array.isArray(v) && v.every((item) => matchesItem(field.items, item));
+  if (typeof v !== field.type) return false;
+  return !field.enum || field.enum.includes(v as string);
+}
+
+function matchesItem(item: JudgeItem, v: unknown): boolean {
+  if (item.type !== "object") return typeof v === item.type;
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
+  const record = v as Record<string, unknown>;
+  return Object.entries(item.properties).every(([k, f]) => record[k] !== undefined && matchesField(f, record[k]));
 }
 
 /** The request body for one task. Exported for tests */
