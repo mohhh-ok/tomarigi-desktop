@@ -14,7 +14,10 @@ import {
   CONCIERGE_REPEAT_MS,
   CONCIERGE_RETRY_MS,
   CONCIERGE_TASK,
+  CONCIERGE_TASK_WITH_SUGGESTIONS,
   conciergeErrorIsTemporary,
+  conciergeSuggestionLogLines,
+  parseConciergeSuggestions,
   ConciergeScheduler,
   conciergeTriggerClasses,
   conciergeTriggered,
@@ -24,7 +27,7 @@ import {
   conciergeResultLogLine,
   conciergeRetryLogLine,
 } from "../src/lib/concierge.ts";
-import type { JudgeResult, JudgeTaskDefinition } from "../src/lib/judge.ts";
+import { verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "../src/lib/judge.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
 
 const NOW = 1_000_000_000;
@@ -1114,4 +1117,179 @@ test("the app log line of a retry names the failed request, the attempt and the 
   expect(conciergeRetryLogLine({ req: "ae9d7808", provider: "openai", model: "gpt-5.6-luna" }, { attempt: 1, afterMs: 10_000 })).toBe(
     "[concierge] retry req=ae9d7808 provider=openai model=gpt-5.6-luna attempt=1 after=10s",
   );
+});
+
+// ---- Suggestions of the Concierge tab (docs/design.md "Concierge"): asked with the advice, only while the tab is open ----
+
+const suggestionPayload = () =>
+  buildConciergePayload(
+    [
+      { view: view("root/w.jsonl", { project: "blog", state: "waiting", question: "Publish?" }) },
+      { view: view("root/d.jsonl", { project: "api", state: "done" }) },
+      { view: view("root/k.jsonl", { project: "web" }) },
+      { view: view("root/c.jsonl", { project: "render", state: "done", continuing: true }) },
+      { view: view("root/p.jsonl", { project: "desk", state: "done" }) },
+      { view: view("root/ch.jsonl", { project: "child", state: "done" }), parentId: "root/p.jsonl" },
+    ],
+    [],
+    [],
+    NOW,
+    "en",
+  );
+
+test("without the tab the request is the advice's as it was: no suggestions asked, the ids sent as they are", async () => {
+  expect(Object.keys(CONCIERGE_TASK.outputFields)).toEqual(["advice", "session_id", "action"]);
+  expect(CONCIERGE_TASK.maxTokens).toBe(256);
+  const payload = suggestionPayload();
+  let sent: { task?: JudgeTaskDefinition; body?: unknown } = {};
+  const run = async <V,>(task: JudgeTaskDefinition, body: unknown): Promise<JudgeResult<V>> => {
+    sent = { task, body };
+    return { ok: true, verdict: { advice: "Answer blog", session_id: "root/w.jsonl", action: "reply" } as V };
+  };
+  const got = await askConcierge("openai", payload, run);
+  expect(sent.task).toBe(CONCIERGE_TASK);
+  expect(sent.body).toBe(payload);
+  expect(got).not.toHaveProperty("suggestions");
+  expect(got).toMatchObject({ verdict: { line: "Answer blog", targetId: "root/w.jsonl" } });
+});
+
+test("with the tab: the same request plus suggestions, with short references for the ids, read back as the sessions", async () => {
+  const payload = suggestionPayload();
+  let sent: { sessions: { id: string; watch_parent?: string; watch_children?: string[] }[] } | undefined;
+  const run = async <V,>(task: JudgeTaskDefinition, body: unknown): Promise<JudgeResult<V>> => {
+    expect(task).toBe(CONCIERGE_TASK_WITH_SUGGESTIONS);
+    sent = body as never;
+    return {
+      ok: true,
+      verdict: {
+        advice: "Answer blog first",
+        session_id: "s1",
+        action: "reply",
+        suggestions: [{ session_id: "s1", kind: "reply", text: "it has waited longest" }],
+      } as V,
+    };
+  };
+  const got = await askConcierge("anthropic", payload, run, true);
+  expect(sent!.sessions.map((s) => s.id)).toEqual(["s1", "s2", "s3", "s4", "s5", "s6"]);
+  expect(sent!.sessions[5].watch_parent).toBe("s5");
+  expect(sent!.sessions[4].watch_children).toEqual(["s6"]);
+  // The payload itself isn't changed
+  expect(payload.sessions[0].id).toBe("root/w.jsonl");
+  expect(got).toMatchObject({
+    ok: true,
+    verdict: { line: "Answer blog first", targetId: "root/w.jsonl" },
+    suggestions: [{ sessionId: "root/w.jsonl", kind: "reply", text: "it has waited longest" }],
+    droppedSuggestions: [],
+  });
+  // The answer for the debug log screen holds the sessions' own ids
+  expect((got as { answer: { session_id: string } }).answer.session_id).toBe("root/w.jsonl");
+});
+
+test("the suggestions' schema: objects of session_id, kind (reply or check_result) and text", () => {
+  const field = verdictSchema(CONCIERGE_TASK_WITH_SUGGESTIONS).properties.suggestions as {
+    type: string;
+    items: { properties: Record<string, { enum?: string[] }> };
+  };
+  expect(field.type).toBe("array");
+  expect(Object.keys(field.items.properties)).toEqual(["session_id", "kind", "text"]);
+  expect(field.items.properties.kind.enum).toEqual(["reply", "check_result"]);
+  const p = CONCIERGE_TASK_WITH_SUGGESTIONS.systemPrompt;
+  expect(p.startsWith(CONCIERGE_TASK.systemPrompt)).toBe(true);
+  expect(p).toContain("without the session's name");
+  expect(p).toContain("one to three");
+});
+
+test("each suggestion goes through the advice's checks in code; one that fails is dropped with the reason", () => {
+  const sessions = suggestionPayload().sessions;
+  const S = (session_id: string, kind: string, text = "do it") => ({ session_id, kind, text });
+  // While blog needs a reply, only it may be suggested
+  const { suggestions, dropped } = parseConciergeSuggestions(
+    [
+      S("root/w.jsonl", "reply", "blog: it has waited longest"),
+      S("root/d.jsonl", "check_result"),
+      S("root/w.jsonl", "reply"),
+      S("nope", "reply"),
+    ],
+    sessions,
+  );
+  expect(suggestions).toEqual([{ sessionId: "root/w.jsonl", kind: "reply", text: "it has waited longest" }]);
+  expect(dropped.map((d) => [d.sessionId, d.reason])).toEqual([
+    ["root/d.jsonl", "not_waiting"],
+    ["root/w.jsonl", "duplicate"],
+    ["nope", "unknown_session"],
+  ]);
+
+  // With no session needing a reply: the kinds and watch links are checked as for the advice
+  const calm = sessions.filter((s) => s.id !== "root/w.jsonl");
+  const checked = parseConciergeSuggestions(
+    [
+      S("root/d.jsonl", "reply"),
+      S("root/k.jsonl", "check_result"),
+      S("root/c.jsonl", "check_result"),
+      S("root/ch.jsonl", "check_result"),
+      S("root/d.jsonl", "none"),
+      S("root/d.jsonl", "check_result", "  "),
+      S("root/d.jsonl", "check_result", "the API docs are ready"),
+      S("root/p.jsonl", "check_result", "the daily is done, api too"),
+    ],
+    calm,
+  );
+  expect(checked.dropped.map((d) => [d.sessionId, d.reason])).toEqual([
+    ["root/d.jsonl", "no_reply_needed"],
+    ["root/k.jsonl", "working"],
+    ["root/c.jsonl", "working"],
+    ["root/ch.jsonl", "watched"],
+    ["root/d.jsonl", "no_kind"],
+    ["root/d.jsonl", "no_text"],
+    ["root/p.jsonl", "other_session"],
+  ]);
+  expect(checked.suggestions).toEqual([{ sessionId: "root/d.jsonl", kind: "check_result", text: "the API docs are ready" }]);
+});
+
+test("at most three suggestions, in the AI's order", () => {
+  const sessions = buildConciergePayload(
+    ["a", "b", "c", "d"].map((id) => ({ view: view(id, { state: "waiting" }) })),
+    [],
+    [],
+    NOW,
+    "en",
+  ).sessions;
+  const { suggestions, dropped } = parseConciergeSuggestions(
+    ["c", "a", "d", "b"].map((id) => ({ session_id: id, kind: "reply", text: "reply now" })),
+    sessions,
+  );
+  expect(suggestions.map((s) => s.sessionId)).toEqual(["c", "a", "d"]);
+  expect(dropped.map((d) => [d.sessionId, d.reason])).toEqual([["b", "too_many"]]);
+});
+
+test("the suggestions are logged one per line, shown and dropped, with the request's id", async () => {
+  const payload = suggestionPayload();
+  const run = async <V,>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: {
+      advice: "",
+      session_id: "",
+      action: "none",
+      suggestions: [
+        { session_id: "s1", kind: "reply", text: "answer it" },
+        { session_id: "s2", kind: "check_result", text: "look" },
+      ],
+    } as V,
+  });
+  const result = await askConcierge("openai", payload, run, true);
+  expect(conciergeSuggestionLogLines({ req: "r1", provider: "openai", model: "m" }, result)).toEqual([
+    '[concierge] suggestion req=r1 provider=openai model=m kind=reply target=root/w.jsonl text="answer it"',
+    '[concierge] suggestion-dropped req=r1 provider=openai model=m kind=check_result target=root/d.jsonl reason=not_waiting text="look"',
+  ]);
+});
+
+test("the tab asks no more often: what only changes a state line (a tool, a line, the time) doesn't ask", () => {
+  // What the scheduler is given doesn't move when only a line's text does
+  const before = conciergeTriggerClasses([view("a", { toolName: "Read" }), view("b", { state: "done", summary: "x" })]);
+  const after = conciergeTriggerClasses([
+    view("a", { toolName: "Edit", sinceMs: 99_000 }),
+    view("b", { state: "done", summary: "y", continuing: true }),
+  ]);
+  expect([...after]).toEqual([...before]);
+  expect(conciergeTriggered(before, after)).toBe(false);
 });

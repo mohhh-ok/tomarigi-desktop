@@ -1,6 +1,7 @@
 import { type RootEntry } from "@/lib/settings-store";
 import { scanSessions, type ScanResult, type SessionView } from "@/lib/sessions";
 import type { ConciergeAdvice } from "@/lib/concierge";
+import type { ShownSuggestion } from "@/lib/concierge-status";
 
 /**
  * Abstraction of the data source App.tsx uses. The boundary for injecting real data (scanning roots via FileSystemAccess) and
@@ -22,9 +23,8 @@ export interface PerchSource {
   /** For a source that doesn't call the API (mock): the concierge's advice for these sessions, or undefined to ask the
    * real concierge. Left undefined because real doesn't use it */
   conciergeAdvice?(sessions: SessionView[]): ConciergeAdvice | null | undefined;
-  /** The same for "What's going on?": an answer in the AI's form for these sessions (rejects for a failure), or undefined
-   * to ask the real concierge */
-  conciergeSummary?(sessions: SessionView[]): Promise<unknown> | undefined;
+  /** The same for the suggestions of "Concierge only", or undefined to take them from the real concierge */
+  conciergeSuggestions?(sessions: SessionView[]): ShownSuggestion[] | undefined;
   /** For a source with no terminal panes (mock, ?focusable=1): every session can be clicked and a click is only
    * logged, so how clickable things look can be checked in a browser. Left undefined because real doesn't use it */
   focusLogOnly?: boolean;

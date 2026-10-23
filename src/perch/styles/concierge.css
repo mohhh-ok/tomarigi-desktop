@@ -80,35 +80,8 @@
   white-space: nowrap;
 }
 
-/* "What's going on?" (App.tsx): the one thing to press in this row, so it is a filled button in the accent color, set
-   apart from the mode's label, which is only text. It stays in the handle's backing at rest, at its opacity */
-.concierge-summary-button {
-  margin-left: 2px;
-  padding: 2px 8px;
-  border: none;
-  border-radius: 5px;
-  background: #d9b06a;
-  color: #26221a;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: normal;
-  line-height: 1.4;
-  cursor: pointer;
-}
-
-.concierge-summary-button:hover {
-  background: #e8c27e;
-}
-
-/* While its summary is on its way: can't be pressed again, and looks it */
-.concierge-summary-button:disabled {
-  background: #8d7a55;
-  color: #3a3428;
-  cursor: default;
-}
-
-/* "Show all" (App.tsx): turns the mode off. Beside the main button and quieter than it: outlined, in the label's text
-   color, so the two don't read as equals */
+/* "Show all" (App.tsx): turns the mode off. Quieter than the label's words would make a filled button: outlined, in the
+   label's text color */
 .concierge-only-show-all {
   padding: 1px 7px;
   border: 1px solid rgba(207, 202, 190, 0.55);
@@ -129,64 +102,50 @@
   color: #e9e6de;
 }
 
-/* The concierge's bubble with a summary (concierge-report.tsx): wider than a bird's bubble, since it holds a few
-   lines; the summary on top with × at its top right, then the advice below a dividing line */
+/* The concierge's bubble in "Concierge only" (concierge-status-report.tsx): wider than a bird's bubble, since it holds a
+   line per session, then the suggestions under their heading */
 .speech-bubble-below.concierge-report {
   --bubble-max: 240px;
 }
 
-.concierge-summary {
-  position: relative;
-  display: block;
-  padding-right: 16px;
-}
-
-.concierge-summary-text {
+.concierge-status {
   display: block;
 }
 
-/* When the summary was made, above its lines (concierge-report.tsx): quieter than the lines, so they read first */
-.concierge-summary-made {
-  display: block;
-  margin-bottom: 2px;
-  color: #6b6355;
-  font-size: 10px;
-}
-
-/* One line per session, 「<name>: <text>」 */
-.concierge-summary-line {
+/* One line per session, 「<name>: <text> <state>」, and one per suggestion */
+.concierge-status-line {
   display: block;
 }
 
-/* A line whose session changed since the summary was made: dimmed, with its state now after it */
-.concierge-summary-line.is-stale {
+/* A suggestion whose session changed since it came: dimmed, with its state now after it */
+.concierge-status-line.is-stale {
   color: rgba(38, 34, 26, 0.5);
 }
 
-/* The state the app adds after the AI's text (concierge-report.tsx): quieter than the text; needing a reply stands out */
-.concierge-summary-state {
+/* The state the app adds after the text: quieter than the text; needing a reply stands out */
+.concierge-status-state {
   color: #6b6355;
   font-size: 10px;
   white-space: nowrap;
 }
 
-.concierge-summary-state[data-status="reply"] {
+.concierge-status-state[data-status="reply"] {
   color: #a0461c;
   font-weight: 600;
 }
 
-.concierge-summary-now {
+.concierge-status-now {
   color: #8a5a12;
   white-space: nowrap;
 }
 
 /* 「ほか 3 件」 after the lines that fit, and the suggestions' heading: the app's own words, quieter than the lines */
-.concierge-summary-more {
+.concierge-status-more {
   display: block;
   color: #6b6355;
 }
 
-.concierge-summary-heading {
+.concierge-status-heading {
   display: block;
   margin-top: 5px;
   color: #6b6355;
@@ -194,9 +153,9 @@
   font-weight: 600;
 }
 
-/* A session's name on a summary line (concierge-report.tsx): jumps to its pane, so it takes clicks like the ×, at rest
-   too, and reads as a link: underlined, a deeper color under the cursor */
-.concierge-summary-name {
+/* A session's name (concierge-status-report.tsx): jumps to its pane, so it takes clicks at rest too (the rest of the
+   bubble lets them through, as every bubble does), and reads as a link: underlined, a deeper color under the cursor */
+.concierge-status-name {
   text-decoration: underline;
   text-decoration-color: rgba(38, 34, 26, 0.45);
   text-underline-offset: 2px;
@@ -205,70 +164,12 @@
   cursor: pointer;
 }
 
-.concierge-summary-name:hover {
+.concierge-status-name:hover {
   color: #8a5a12;
   text-decoration-color: currentColor;
 }
 
-.concierge-summary-name:focus-visible {
-  outline: 2px solid #8a5a12;
-  outline-offset: 1px;
-}
-
-.concierge-summary-note {
-  display: block;
-  color: #5d5546;
-}
-
-/* The one part of the bubble that takes clicks (the rest lets them through, as every bubble does) */
-.concierge-summary-close {
-  position: absolute;
-  top: -2px;
-  right: -6px;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: #6b6355;
-  font-size: 14px;
-  line-height: 1;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.concierge-summary-close:hover {
-  background: rgba(38, 34, 26, 0.12);
-  color: #26221a;
-}
-
-.concierge-summary-divider {
-  display: block;
-  height: 1px;
-  margin: 4px 0;
-  background: rgba(38, 34, 26, 0.25);
-}
-
-.concierge-summary-advice {
-  display: block;
-}
-
-/* The advice line when it has a session to jump to: the whole line takes clicks like the ×, at rest too, and shows it
-   under the cursor the same way as a name */
-.concierge-summary-advice.is-link {
-  border-radius: 2px;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.concierge-summary-advice.is-link:hover {
-  color: #8a5a12;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.concierge-summary-advice.is-link:focus-visible {
+.concierge-status-name:focus-visible {
   outline: 2px solid #8a5a12;
   outline-offset: 1px;
 }

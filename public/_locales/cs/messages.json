@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Co se děje?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Zobrazit vše"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Shrnuji…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Shrnutí se nepovedlo. Stiskněte tlačítko znovu."
-  },
-  "conciergeSummaryClose": {
-    "message": "Zavřít shrnutí"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Přehled z $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Doporučení"

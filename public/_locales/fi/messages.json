@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Mitä nyt tapahtuu?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Näytä kaikki"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Kootaan yhteenvetoa…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Yhteenveto epäonnistui. Paina painiketta uudelleen."
-  },
-  "conciergeSummaryClose": {
-    "message": "Sulje yhteenveto"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Tilanne klo $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Ehdotukset"

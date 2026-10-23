@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Què està passant?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Mostra-ho tot"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Resumint…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "No s'ha pogut resumir. Torna a prémer el botó."
-  },
-  "conciergeSummaryClose": {
-    "message": "Tanca el resum"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Resum de les $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Suggeriments"

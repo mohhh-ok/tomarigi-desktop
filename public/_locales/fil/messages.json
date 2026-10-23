@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Ano ang nangyayari?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Ipakita lahat"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Binubuod…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Hindi nabuod. Pindutin muli ang button."
-  },
-  "conciergeSummaryClose": {
-    "message": "Isara ang buod"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Buod noong $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Mga mungkahi"

@@ -4,11 +4,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
-import { conciergeBubbleParts, type SummaryState } from "@/lib/concierge-summary";
+import { conciergeStatusLines, type ShownSuggestion } from "@/lib/concierge-status";
 import { PLACE_EDGE_PX } from "@/lib/garden-place";
 import type { SessionView } from "@/lib/sessions";
 import { CONCIERGE_ID } from "./concierge";
-import { ConciergeReport } from "./concierge-report";
+import { bubbleText } from "./bubble";
+import { ConciergeStatusReport } from "./concierge-status-report";
 import { conciergeOnlyWindowSize } from "./concierge-only";
 import { GardenNode, type GardenMenu } from "./garden";
 import { onFadeHandlePointerDown } from "./garden-fade";
@@ -25,22 +26,18 @@ export function ConciergeOnlyGarden({
   canFocus,
   menu,
   onSize,
-  summary,
-  onCloseSummary,
   sessions,
 }: {
-  // Absent with no session on screen (the Garden's empty message shows then, as without the mode)
-  concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook };
+  // Absent with no session on screen (the Garden's empty message shows then, as without the mode). suggestions: those
+  // that came with the advice (use-concierge.ts)
+  concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook; suggestions: ShownSuggestion[] };
   hasGranted: boolean;
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
   menu: GardenMenu;
   // The window size it needs (CSS px; conciergeOnlyWindowSize)
   onSize: (size: { width: number; height: number }) => void;
-  // "What's going on?" (use-concierge-summary.ts): shown in the bubble above the advice until closed with ×
-  summary: SummaryState;
-  onCloseSummary: () => void;
-  // The sessions on screen now: the summary's lines link to their panes, and a line whose session changed is dimmed
+  // The sessions on screen now: a line each in the bubble, built on every render so it is never out of date
   sessions: SessionView[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -155,17 +152,19 @@ export function ConciergeOnlyGarden({
     summary: advice?.line,
   };
   const target = advice?.targetId;
-  const parts = conciergeBubbleParts(summary, advice);
-  // A session's name in the summary, and the advice's line, jump to its pane as clicking its bird does; only those that
-  // can jump are links
+  // The bubble holds every session's line and the suggestions; the advice's own line isn't shown, since the suggestions
+  // take its place (a click on the concierge still jumps to the advice's session). A session's name jumps to its pane
+  // as clicking its bird does; only those that can jump are links
   const canJump = (id: string) => Boolean(onFocus && canFocus?.(id));
-  const report = parts.summary && (
-    <ConciergeReport
-      parts={{ summary: parts.summary, advice: parts.advice }}
+  const { lines, more } = conciergeStatusLines(sessions, bubbleText);
+  const report = (
+    <ConciergeStatusReport
+      lines={lines}
+      more={more}
+      suggestions={concierge.suggestions}
       sessions={sessions}
       canJump={canJump}
       onFocus={onFocus}
-      onCloseSummary={onCloseSummary}
     />
   );
   return (
@@ -194,7 +193,7 @@ export function ConciergeOnlyGarden({
           onClick={() => target && onFocus?.(target)}
           concierge={concierge.look}
           dragMovesWindow
-          bubbleContent={report || undefined}
+          bubbleContent={report}
         />
       )}
     </div>

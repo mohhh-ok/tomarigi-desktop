@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "מה קורה עכשיו?"
-  },
   "conciergeOnlyShowAll": {
     "message": "הצג הכול"
-  },
-  "conciergeSummaryLoading": {
-    "message": "מסכם…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "לא ניתן היה לסכם. לחצו שוב על הכפתור."
-  },
-  "conciergeSummaryClose": {
-    "message": "סגירת הסיכום"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "סיכום מ-$TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "הצעות"

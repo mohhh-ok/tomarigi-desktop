@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Was läuft gerade?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Alle zeigen"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Fasse zusammen…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Zusammenfassen fehlgeschlagen. Drück den Knopf noch einmal."
-  },
-  "conciergeSummaryClose": {
-    "message": "Zusammenfassung schließen"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Stand $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Vorschläge"

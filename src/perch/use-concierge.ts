@@ -16,13 +16,16 @@ import {
   conciergeResultLogLine,
   conciergeRetryLogLine,
   ConciergeScheduler,
+  conciergeSuggestionLogLines,
   conciergeStateOf,
   conciergeTriggerClasses,
   recentJumps,
   type ConciergeAdvice,
   type ConciergeStateClass,
   type DroppedConciergeAdvice,
+  type DroppedConciergeSuggestion,
 } from "@/lib/concierge";
+import { suggestionsAt, type ShownSuggestion } from "@/lib/concierge-status";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import { bubbleText } from "./bubble";
 import { orderByWatchLinks } from "./watch-links";
@@ -39,7 +42,16 @@ const DROP_REASON_TEXT: Record<DroppedConciergeAdvice["reason"], string> = {
   child_working: "a session it watches is still working",
 };
 
-/** The facts sent to the concierge now, for an advice and for "What's going on?" alike (use-concierge-summary.ts) */
+const SUGGESTION_DROP_TEXT: Record<DroppedConciergeSuggestion["reason"], string> = {
+  ...DROP_REASON_TEXT,
+  unknown_session: "not one of the sessions sent",
+  no_kind: "no kind",
+  no_text: "no text",
+  duplicate: "a second one for the session",
+  too_many: "more than three",
+};
+
+/** The facts sent to the concierge now */
 export function conciergePayloadNow(
   sessions: SessionView[],
   events: SessionEvent[],
@@ -67,11 +79,17 @@ export interface ConciergeState {
   available: boolean;
   /** The current advice, with its target only while that session is still on screen */
   advice: ConciergeAdvice | null;
+  /** The suggestions of the last answer while the Concierge tab is open (empty otherwise), each with its session's state
+   * when it came; they stay until the next answer (docs/design.md "Concierge") */
+  suggestions: ShownSuggestion[];
 }
 
 /**
  * enabled: an OpenAI / Anthropic key is saved, or Local is set up. agentOf: the agent kind of a session id, when known.
- * mockAdvice: a source that doesn't call the API (mock) gives the advice itself; then nothing is requested
+ * mockAdvice: a source that doesn't call the API (mock) gives the advice itself; then nothing is requested.
+ * withSuggestions: the Concierge tab is open, so the advice's request also asks for suggestions. It isn't an input of the
+ * scheduler: opening the tab doesn't ask, the next request does (no extra request; Claude's own decision).
+ * mockSuggestions: the same as mockAdvice for the suggestions
  */
 export function useConcierge(
   sessions: SessionView[],
@@ -79,12 +97,15 @@ export function useConcierge(
   enabled: boolean,
   agentOf: (id: string) => string | undefined,
   mockAdvice?: ConciergeAdvice | null,
+  withSuggestions = false,
+  mockSuggestions?: ShownSuggestion[],
 ): ConciergeState {
   const [advice, setAdvice] = useState<ConciergeAdvice | null>(null);
+  const [suggestions, setSuggestions] = useState<ShownSuggestion[]>([]);
   // The advice shown and its target's state when it came, to tell whether it still holds after a failed request
   const shownRef = useRef<{ advice: ConciergeAdvice; targetState?: ConciergeStateClass } | null>(null);
-  const inputsRef = useRef({ sessions, events, agentOf });
-  inputsRef.current = { sessions, events, agentOf };
+  const inputsRef = useRef({ sessions, events, agentOf, withSuggestions });
+  inputsRef.current = { sessions, events, agentOf, withSuggestions };
   // The latest request wins: an older one that comes back later is dropped
   const seqRef = useRef(0);
   const schedulerRef = useRef<ConciergeScheduler | null>(null);
@@ -93,10 +114,11 @@ export function useConcierge(
     seqRef.current++;
     shownRef.current = null;
     setAdvice(null);
+    setSuggestions([]);
   };
   schedulerRef.current ??= new ConciergeScheduler(() => {
     const seq = ++seqRef.current;
-    const { sessions, events, agentOf } = inputsRef.current;
+    const { sessions, events, agentOf, withSuggestions } = inputsRef.current;
     const payload = conciergePayloadNow(sessions, events, agentOf);
     const summary = `sessions=${payload.sessions.length} holds=${payload.holds.length} events=${payload.recent_events.length} chars=${JSON.stringify(payload).length}`;
     void (async () => {
@@ -105,15 +127,16 @@ export function useConcierge(
       appendConciergeLog({
         at: Date.now(),
         kind: "request",
-        text: `${provider} ${summary}`,
+        text: `${provider} ${summary}${withSuggestions ? " suggestions" : ""}`,
         detail: JSON.stringify(payload, null, 2),
       });
       // The request's id ties the advice in the app log to the facts it was given
       const logContext = { req: crypto.randomUUID().slice(0, 8), provider, model: await judgeModelFor(provider) };
       for (const line of conciergeRequestLogLines(logContext, payload)) void invoke("log", { line }).catch(() => {});
-      const result = await askConcierge(provider, payload);
+      const result = await askConcierge(provider, payload, undefined, withSuggestions);
       if (seq !== seqRef.current) return;
       void invoke("log", { line: conciergeResultLogLine(logContext, result) }).catch(() => {});
+      for (const line of conciergeSuggestionLogLines(logContext, result)) void invoke("log", { line }).catch(() => {});
       if (!result.ok) {
         // A failed request keeps the advice shown until the next one, unless its target changed state since the advice
         // came (Claude's own decision, with the parent's addition)
@@ -142,9 +165,23 @@ export function useConcierge(
             : { at: Date.now(), kind: "none", text: `no advice${result.noMatchingJson ? " (answer didn't match the schema)" : ""}${tokens}` }),
         ...(detail !== undefined && { detail }),
       });
+      for (const s of result.suggestions ?? []) {
+        appendConciergeLog({ at: Date.now(), kind: "advice", source: "suggestion", text: `${s.kind}: ${s.text} → ${s.sessionId}` });
+      }
+      for (const s of result.droppedSuggestions ?? []) {
+        appendConciergeLog({
+          at: Date.now(),
+          kind: "dropped",
+          source: "suggestion",
+          text: `not shown, ${SUGGESTION_DROP_TEXT[s.reason]}: ${s.kind ?? "-"}: ${s.text} → ${s.sessionId}`,
+        });
+      }
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;
       shownRef.current = next && { advice: next, targetState: target && conciergeStateOf(target) };
       setAdvice(next);
+      // An answer without suggestions (the tab was closed when it was asked) leaves none; the states are the ones now,
+      // so a suggestion is dimmed once its session moves after this
+      setSuggestions(suggestionsAt(result.suggestions ?? [], inputsRef.current.sessions));
     })();
   }, clearAdvice);
 
@@ -166,13 +203,19 @@ export function useConcierge(
     if (enabled) return;
     clearAdvice();
   }, [enabled]);
+  // Leaving the tab drops the suggestions; opening it again shows them from the next answer
+  useEffect(() => {
+    if (!withSuggestions) setSuggestions([]);
+  }, [withSuggestions]);
 
   const current = mockAdvice !== undefined ? mockAdvice : advice;
+  const currentSuggestions = mockSuggestions ?? suggestions;
   return useMemo(() => {
     const available = enabled || mockAdvice !== undefined;
     const shown = available && sessions.length > 0;
-    if (!shown || !current) return { shown, available, advice: null };
+    const listed = shown && withSuggestions ? currentSuggestions : [];
+    if (!shown || !current) return { shown, available, advice: null, suggestions: listed };
     const targetOnScreen = current.targetId !== undefined && sessions.some((s) => s.id === current.targetId);
-    return { shown, available, advice: targetOnScreen ? current : { line: current.line } };
-  }, [enabled, mockAdvice, current, sessions]);
+    return { shown, available, advice: targetOnScreen ? current : { line: current.line }, suggestions: listed };
+  }, [enabled, mockAdvice, current, sessions, withSuggestions, currentSuggestions]);
 }
