@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Zavřít shrnutí"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Přehled z $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Doporučení"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "čeká na odpověď"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "hotovo"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "pracuje"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ teď čeká na odpověď"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ teď hotovo"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ teď pracuje"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ zmizela"
+  },
+  "conciergeSummaryMore": {
+    "message": "další: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

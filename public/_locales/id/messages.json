@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Tutup ringkasan"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Ringkasan pukul $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Saran"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "menunggu balasan"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "selesai"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "sedang bekerja"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ kini menunggu balasan"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ kini selesai"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ kini sedang bekerja"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ sudah tidak ada"
+  },
+  "conciergeSummaryMore": {
+    "message": "$COUNT$ lainnya",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

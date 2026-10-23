@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "정리 닫기"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "$TIME$ 기준 요약",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "추천"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "답변 대기"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "완료"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "작업 중"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ 지금 답변 대기"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ 지금 완료"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ 지금 작업 중"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ 사라졌습니다"
+  },
+  "conciergeSummaryMore": {
+    "message": "그 외 $COUNT$건",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

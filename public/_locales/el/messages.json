@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Κλείσιμο σύνοψης"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Σύνοψη στις $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Προτάσεις"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "περιμένει απάντηση"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "ολοκληρώθηκε"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "σε εξέλιξη"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ τώρα περιμένει απάντηση"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ τώρα ολοκληρώθηκε"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ τώρα σε εξέλιξη"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ έφυγε"
+  },
+  "conciergeSummaryMore": {
+    "message": "ακόμη: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

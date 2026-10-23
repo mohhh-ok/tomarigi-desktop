@@ -56,11 +56,15 @@ const DEFAULT_MAX_TOKENS = 512;
 
 type JudgeFieldType = "string" | "boolean" | "number";
 
-interface JudgeOutputField {
-  type: JudgeFieldType;
-  description: string;
-  enum?: readonly string[];
-}
+/** A field of the verdict: a plain value, or a list of plain values or of objects */
+export type JudgeOutputField =
+  | { type: JudgeFieldType; description: string; enum?: readonly string[] }
+  | { type: "array"; description: string; items: JudgeItem };
+
+/** An item of a list field. An object's properties are all required, and it allows nothing else (OpenAI strict) */
+export type JudgeItem =
+  | { type: JudgeFieldType }
+  | { type: "object"; properties: Record<string, JudgeOutputField> };
 
 /**
  * Definition of a verdict task. The summary task in lib/summarize.ts uses this shape, swapping only systemPrompt and
@@ -97,8 +101,19 @@ function fieldToJsonSchema(field: JudgeOutputField): Record<string, unknown> {
     type: field.type,
     description: field.description,
   };
-  if (field.enum) schema.enum = [...field.enum];
+  if ("items" in field) schema.items = itemToJsonSchema(field.items);
+  else if (field.enum) schema.enum = [...field.enum];
   return schema;
+}
+
+function itemToJsonSchema(item: JudgeItem): Record<string, unknown> {
+  if (item.type !== "object") return { type: item.type };
+  return {
+    type: "object",
+    properties: Object.fromEntries(Object.entries(item.properties).map(([k, f]) => [k, fieldToJsonSchema(f)])),
+    required: Object.keys(item.properties),
+    additionalProperties: false,
+  };
 }
 
 /**

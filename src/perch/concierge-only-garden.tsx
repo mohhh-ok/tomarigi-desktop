@@ -40,7 +40,7 @@ export function ConciergeOnlyGarden({
   // "What's going on?" (use-concierge-summary.ts): shown in the bubble above the advice until closed with ×
   summary: SummaryState;
   onCloseSummary: () => void;
-  // The sessions on screen, whose names in the summary link to their terminal panes
+  // The sessions on screen now: the summary's lines link to their panes, and a line whose session changed is dimmed
   sessions: SessionView[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -156,8 +156,8 @@ export function ConciergeOnlyGarden({
   };
   const target = advice?.targetId;
   const parts = conciergeBubbleParts(summary, advice);
-  // A session's name in the summary or the advice jumps to its pane, as clicking its bird does; only those that can
-  // jump are links
+  // A session's name in the summary, and the advice's line, jump to its pane as clicking its bird does; only those that
+  // can jump are links
   const canJump = (id: string) => Boolean(onFocus && canFocus?.(id));
   const report = parts.summary && (
     <ConciergeReport

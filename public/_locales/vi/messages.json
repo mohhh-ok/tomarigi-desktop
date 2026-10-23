@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Đóng bản tóm tắt"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Tóm tắt lúc $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Gợi ý"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "chờ trả lời"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "xong"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "đang làm"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ giờ đang chờ trả lời"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ giờ đã xong"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ giờ đang làm"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ đã rời đi"
+  },
+  "conciergeSummaryMore": {
+    "message": "thêm $COUNT$ mục",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

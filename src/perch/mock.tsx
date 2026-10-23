@@ -73,36 +73,49 @@ function mockConciergeAdvice(sessions: SessionView[]): ConciergeAdvice | null | 
   return { line: MOCK_CONCIERGE || line, targetId: target.id };
 }
 
-// ?conciergeSummary=fail makes "What's going on?" fail, =slow keeps it on its way for 20 seconds (for checking those looks)
+// ?conciergeSummary=fail makes "What's going on?" fail, =slow keeps it on its way for 20 seconds, =stale changes the
+// birds 3 seconds after the summary is shown: the first that needs a reply starts working and the last one leaves (for
+// checking those looks)
 const MOCK_SUMMARY = new URLSearchParams(location.search).get("conciergeSummary");
-// ?conciergeSummaryText=<text> answers with that text instead (lines split by line breaks), e.g. a line with no name
-const MOCK_SUMMARY_TEXT = new URLSearchParams(location.search).get("conciergeSummaryText");
 
-/** "What's going on?" without the API: the sessions that need a reply, then working, then finished, after a short wait */
-function mockConciergeSummary(sessions: SessionView[]): Promise<string> | undefined {
+/** "What's going on?" without the API, after a short wait: an answer in the real concierge's form (lib/concierge-summary.ts),
+    with the sessions' own ids and in their order, which the app reads and puts in order as it does the real one */
+function mockConciergeSummary(sessions: SessionView[], change: (next: SessionView[]) => void): Promise<unknown> | undefined {
   if (MOCK_CONCIERGE === null) return undefined;
   const ja = navigator.language.startsWith("ja");
-  const names = (list: SessionView[]) => list.map((s) => s.project).join(ja ? "・" : ", ");
+  const textOf = (s: SessionView) => {
+    if (needsAnswer(s.state, s.ask)) return bubbleText(s) ?? (ja ? "許可か質問への返事" : "a permission or a question");
+    if (s.state === "working") return ja ? "作業を続けています" : "keeps working";
+    return bubbleText(s) ?? (ja ? "ターンを終えました" : "finished its turn");
+  };
   const waiting = sessions.filter((s) => needsAnswer(s.state, s.ask));
-  const working = sessions.filter((s) => s.state === "working");
-  const done = sessions.filter((s) => !needsAnswer(s.state, s.ask) && s.state !== "working");
-  // In the form asked of the real concierge (lib/concierge-summary.ts): a waiting session with what it waits for, a
-  // finished one with what it did
-  const about = (s: SessionView) => bubbleText(s) ?? (ja ? "許可か質問への返事" : "a permission or a question");
-  const lines = [
-    ...waiting.map((s) => (ja ? `${s.project}: ${about(s)}（返事待ち）` : `${s.project}: ${about(s)} (needs reply)`)),
-    ...(working.length > 0
-      ? [ja ? `${names(working)}は作業中です` : `${names(working)} ${working.length > 1 ? "are" : "is"} working`]
-      : []),
-    ...done.map((s) => {
-      const did = bubbleText(s);
-      return did ? (ja ? `${s.project}: ${did}（完了）` : `${s.project}: ${did} (done)`) : ja ? `${s.project}（完了）` : `${s.project} (done)`;
-    }),
-  ].slice(0, 6);
-  if (MOCK_SUMMARY_TEXT) lines.splice(0, lines.length, MOCK_SUMMARY_TEXT);
+  const first = waiting[0] ?? sessions[0];
+  const answer = {
+    items: sessions.map((s) => ({ session_id: s.id, text: textOf(s) })),
+    suggestions: first
+      ? [
+          {
+            session_id: first.id,
+            text: ja ? "いちばん先に答えると、ほかの作業も進みます" : "answer it first: the rest can move on then",
+          },
+        ]
+      : [],
+  };
   const wait = MOCK_SUMMARY === "slow" ? 20_000 : 900;
+  if (MOCK_SUMMARY === "stale" && sessions.length > 1) {
+    const last = sessions[sessions.length - 1].id;
+    setTimeout(
+      () =>
+        change(
+          sessions
+            .filter((s) => s.id !== last)
+            .map((s) => (s.id === waiting[0]?.id ? { ...s, state: "working", ask: undefined, sinceMs: 1000 } : s)),
+        ),
+      wait + 3000,
+    );
+  }
   return new Promise((resolve, reject) =>
-    setTimeout(() => (MOCK_SUMMARY === "fail" ? reject(new Error("mock")) : resolve(lines.join("\n"))), wait),
+    setTimeout(() => (MOCK_SUMMARY === "fail" ? reject(new Error("mock")) : resolve(answer)), wait),
   );
 }
 
@@ -131,8 +144,8 @@ export function createMockSource(): MockSource {
       return data;
     },
     conciergeAdvice: mockConciergeAdvice,
-    conciergeSummary: mockConciergeSummary,
-    // ?focusable=1: birds, rows and the names in the summary and its advice look clickable, and a click logs
+    conciergeSummary: (sessions) => mockConciergeSummary(sessions, (next) => setData({ ...data, sessions: next })),
+    // ?focusable=1: birds, rows, the names in the summary and its advice look clickable, and a click logs
     // "[mock] focus <id>"
     focusLogOnly: new URLSearchParams(location.search).has("focusable"),
     setData,

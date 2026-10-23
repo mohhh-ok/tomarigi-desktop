@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Sulje yhteenveto"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Tilanne klo $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Ehdotukset"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "odottaa vastausta"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "valmis"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "työn alla"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ odottaa nyt vastausta"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ nyt valmis"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ nyt työn alla"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ poistunut"
+  },
+  "conciergeSummaryMore": {
+    "message": "lisää: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

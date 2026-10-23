@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "সারাংশ বন্ধ করুন"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "$TIME$-এর সারসংক্ষেপ",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "পরামর্শ"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "উত্তরের অপেক্ষায়"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "সম্পন্ন"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "কাজ চলছে"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ এখন উত্তরের অপেক্ষায়"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ এখন সম্পন্ন"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ এখন কাজ চলছে"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ আর নেই"
+  },
+  "conciergeSummaryMore": {
+    "message": "আরও: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

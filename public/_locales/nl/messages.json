@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Samenvatting sluiten"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Overzicht van $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Suggesties"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "wacht op antwoord"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "klaar"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "bezig"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ wacht nu op antwoord"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ nu klaar"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ nu bezig"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ verdwenen"
+  },
+  "conciergeSummaryMore": {
+    "message": "meer: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

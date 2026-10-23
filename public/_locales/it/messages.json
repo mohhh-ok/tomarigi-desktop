@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Chiudi il riepilogo"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Riepilogo delle $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Suggerimenti"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "attende risposta"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "finito"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "al lavoro"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ ora attende risposta"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ ora finito"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ ora al lavoro"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ non c'è più"
+  },
+  "conciergeSummaryMore": {
+    "message": "altri: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

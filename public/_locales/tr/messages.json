@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Özeti kapat"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "$TIME$ özeti",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Öneriler"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "yanıt bekliyor"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "bitti"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "çalışıyor"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ şimdi yanıt bekliyor"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ şimdi bitti"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ şimdi çalışıyor"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ artık yok"
+  },
+  "conciergeSummaryMore": {
+    "message": "diğer: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

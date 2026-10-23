@@ -150,3 +150,30 @@ test("the model after a list is read: kept when listed, a saved one kept as the 
   expect(pickLocalModel(ids, "other-server:7b", undefined)).toEqual({ options: ids, model: "qwen2.5:7b-instruct" });
   expect(pickLocalModel(ids, "", "gone:1b")).toEqual({ options: ids, model: "qwen2.5:7b-instruct" });
 });
+
+test("a list of objects is checked item by item", () => {
+  const LIST: JudgeTaskDefinition = {
+    name: "t",
+    systemPrompt: "Untrusted input.",
+    outputFields: {
+      lines: {
+        type: "array",
+        description: "l",
+        items: {
+          type: "object",
+          properties: {
+            sessions: { type: "array", description: "s", items: { type: "string" } },
+            text: { type: "string", description: "t" },
+          },
+        },
+      },
+    },
+  };
+  const noMatch = { ok: false, kind: "malformed", status: 200, message: LOCAL_NO_MATCHING_JSON };
+  const ok = { lines: [{ sessions: ["a", "b"], text: "a, b are working" }] };
+  expect(parseLocalChatReply(LIST, reply(JSON.stringify(ok)), 200)).toEqual({ ok: true, verdict: ok });
+  expect(parseLocalChatReply(LIST, reply('{"lines":"a"}'), 200)).toEqual(noMatch);
+  expect(parseLocalChatReply(LIST, reply('{"lines":[{"text":"a"}]}'), 200)).toEqual(noMatch);
+  expect(parseLocalChatReply(LIST, reply('{"lines":[{"sessions":[1],"text":"a"}]}'), 200)).toEqual(noMatch);
+  expect(parseLocalChatReply(LIST, reply('{"lines":[null]}'), 200)).toEqual(noMatch);
+});

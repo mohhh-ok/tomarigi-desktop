@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "关闭总结"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "$TIME$ 的概况",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "建议"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "等待回复"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "已完成"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "工作中"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ 现在等待回复"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ 现在已完成"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ 现在工作中"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ 已离开"
+  },
+  "conciergeSummaryMore": {
+    "message": "另有 $COUNT$ 项",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Închide rezumatul"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Rezumat de la $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Sugestii"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "așteaptă răspuns"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "gata"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "lucrează"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ acum așteaptă răspuns"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ acum gata"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ acum lucrează"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ a dispărut"
+  },
+  "conciergeSummaryMore": {
+    "message": "încă: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

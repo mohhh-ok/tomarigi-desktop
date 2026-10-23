@@ -433,5 +433,45 @@
   },
   "conciergeSummaryClose": {
     "message": "Sulge kokkuvõte"
+  },
+  "conciergeSummaryMadeAt": {
+    "message": "Kokkuvõte kell $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeSummarySuggestions": {
+    "message": "Soovitused"
+  },
+  "conciergeSummaryStateReply": {
+    "message": "ootab vastust"
+  },
+  "conciergeSummaryStateDone": {
+    "message": "valmis"
+  },
+  "conciergeSummaryStateWorking": {
+    "message": "töötab"
+  },
+  "conciergeSummaryNowReply": {
+    "message": "→ ootab nüüd vastust"
+  },
+  "conciergeSummaryNowDone": {
+    "message": "→ nüüd valmis"
+  },
+  "conciergeSummaryNowWorking": {
+    "message": "→ töötab nüüd"
+  },
+  "conciergeSummaryGone": {
+    "message": "→ kadunud"
+  },
+  "conciergeSummaryMore": {
+    "message": "veel: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }
