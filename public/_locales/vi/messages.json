@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Gợi ý"
   },
-  "conciergeSummaryStateReply": {
-    "message": "chờ trả lời"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "xong"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "đang làm"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ giờ đang chờ trả lời"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ giờ đã xong"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ giờ đang làm"
+  "conciergeSummaryNow": {
+    "message": "→ giờ: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ đã rời đi"

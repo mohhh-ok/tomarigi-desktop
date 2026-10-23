@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "추천"
   },
-  "conciergeSummaryStateReply": {
-    "message": "답변 대기"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "완료"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "작업 중"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ 지금 답변 대기"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ 지금 완료"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ 지금 작업 중"
+  "conciergeSummaryNow": {
+    "message": "→ 지금 $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ 사라졌습니다"

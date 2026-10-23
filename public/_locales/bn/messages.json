@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "পরামর্শ"
   },
-  "conciergeSummaryStateReply": {
-    "message": "উত্তরের অপেক্ষায়"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "সম্পন্ন"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "কাজ চলছে"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ এখন উত্তরের অপেক্ষায়"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ এখন সম্পন্ন"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ এখন কাজ চলছে"
+  "conciergeSummaryNow": {
+    "message": "→ এখন: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ আর নেই"

@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "پیشنهادها"
   },
-  "conciergeSummaryStateReply": {
-    "message": "منتظر پاسخ"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "تمام شد"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "در حال کار"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "← اکنون منتظر پاسخ"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "← اکنون تمام شد"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "← اکنون در حال کار"
+  "conciergeSummaryNow": {
+    "message": "← اکنون: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "← دیگر نیست"

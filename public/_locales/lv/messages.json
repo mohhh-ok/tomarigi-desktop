@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Ieteikumi"
   },
-  "conciergeSummaryStateReply": {
-    "message": "gaida atbildi"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "pabeigts"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "strādā"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ tagad gaida atbildi"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ tagad pabeigts"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ tagad strādā"
+  "conciergeSummaryNow": {
+    "message": "→ tagad: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ vairs nav"

@@ -172,12 +172,7 @@ export const KEYS = [
   "conciergeOnlyHidden",
   "conciergeOnlyWaiting",
   "conciergeSummarySuggestions",
-  "conciergeSummaryStateReply",
-  "conciergeSummaryStateDone",
-  "conciergeSummaryStateWorking",
-  "conciergeSummaryNowReply",
-  "conciergeSummaryNowDone",
-  "conciergeSummaryNowWorking",
+  "conciergeSummaryNow",
   "conciergeSummaryGone",
   "conciergeSummaryMore",
 ];
@@ -206,6 +201,7 @@ export const PLACEHOLDERS = {
   conciergeOnlyHidden: { count: "$1" },
   conciergeOnlyWaiting: { count: "$1" },
   conciergeSummaryMore: { count: "$1" },
+  conciergeSummaryNow: { state: "$1" },
 };
 
 // default_locale. English is the fallback for users of unsupported languages.

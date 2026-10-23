@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Pasiūlymai"
   },
-  "conciergeSummaryStateReply": {
-    "message": "laukia atsakymo"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "baigta"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "dirba"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ dabar laukia atsakymo"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ dabar baigta"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ dabar dirba"
+  "conciergeSummaryNow": {
+    "message": "→ dabar: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ nebėra"

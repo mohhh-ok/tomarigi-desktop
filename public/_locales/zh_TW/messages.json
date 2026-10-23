@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "建議"
   },
-  "conciergeSummaryStateReply": {
-    "message": "等待回覆"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "已完成"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "工作中"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ 現在等待回覆"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ 現在已完成"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ 現在工作中"
+  "conciergeSummaryNow": {
+    "message": "→ 現在$STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ 已離開"

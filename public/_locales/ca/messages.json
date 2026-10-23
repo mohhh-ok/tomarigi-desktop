@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Suggeriments"
   },
-  "conciergeSummaryStateReply": {
-    "message": "espera resposta"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "fet"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "treballant"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ ara espera resposta"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ ara fet"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ ara treballant"
+  "conciergeSummaryNow": {
+    "message": "→ ara: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ ja no hi és"

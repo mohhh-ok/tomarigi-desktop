@@ -416,23 +416,13 @@
   "conciergeSummarySuggestions": {
     "message": "Sugestii"
   },
-  "conciergeSummaryStateReply": {
-    "message": "așteaptă răspuns"
-  },
-  "conciergeSummaryStateDone": {
-    "message": "gata"
-  },
-  "conciergeSummaryStateWorking": {
-    "message": "lucrează"
-  },
-  "conciergeSummaryNowReply": {
-    "message": "→ acum așteaptă răspuns"
-  },
-  "conciergeSummaryNowDone": {
-    "message": "→ acum gata"
-  },
-  "conciergeSummaryNowWorking": {
-    "message": "→ acum lucrează"
+  "conciergeSummaryNow": {
+    "message": "→ acum: $STATE$",
+    "placeholders": {
+      "state": {
+        "content": "$1"
+      }
+    }
   },
   "conciergeSummaryGone": {
     "message": "→ a dispărut"
