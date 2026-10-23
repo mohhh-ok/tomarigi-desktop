@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Ano ang nangyayari?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Ipakita lahat"
+  },
   "conciergeSummaryLoading": {
     "message": "Binubuod…"
   },

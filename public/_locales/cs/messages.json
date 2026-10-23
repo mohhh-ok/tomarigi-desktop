@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Co se děje?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Zobrazit vše"
+  },
   "conciergeSummaryLoading": {
     "message": "Shrnuji…"
   },

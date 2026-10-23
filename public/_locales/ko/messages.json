@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "지금 상황 묻기"
   },
+  "conciergeOnlyShowAll": {
+    "message": "모두 보기"
+  },
   "conciergeSummaryLoading": {
     "message": "상황을 정리하는 중…"
   },

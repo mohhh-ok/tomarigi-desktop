@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "अभी क्या चल रहा है?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "सभी दिखाएँ"
+  },
   "conciergeSummaryLoading": {
     "message": "सार बना रहे हैं…"
   },

@@ -71,6 +71,8 @@ function mockConciergeAdvice(sessions: SessionView[]): ConciergeAdvice | null | 
 
 // ?conciergeSummary=fail makes "What's going on?" fail, =slow keeps it on its way for 20 seconds (for checking those looks)
 const MOCK_SUMMARY = new URLSearchParams(location.search).get("conciergeSummary");
+// ?conciergeSummaryText=<text> answers with that text instead (lines split by line breaks), e.g. a line with no name
+const MOCK_SUMMARY_TEXT = new URLSearchParams(location.search).get("conciergeSummaryText");
 
 /** "What's going on?" without the API: the sessions that need a reply, then working, then finished, after a short wait */
 function mockConciergeSummary(sessions: SessionView[]): Promise<string> | undefined {
@@ -93,6 +95,7 @@ function mockConciergeSummary(sessions: SessionView[]): Promise<string> | undefi
       return did ? (ja ? `${s.project}: ${did}（完了）` : `${s.project}: ${did} (done)`) : ja ? `${s.project}（完了）` : `${s.project} (done)`;
     }),
   ].slice(0, 6);
+  if (MOCK_SUMMARY_TEXT) lines.splice(0, lines.length, MOCK_SUMMARY_TEXT);
   const wait = MOCK_SUMMARY === "slow" ? 20_000 : 900;
   return new Promise((resolve, reject) =>
     setTimeout(() => (MOCK_SUMMARY === "fail" ? reject(new Error("mock")) : resolve(lines.join("\n"))), wait),
@@ -125,6 +128,8 @@ export function createMockSource(): MockSource {
     },
     conciergeAdvice: mockConciergeAdvice,
     conciergeSummary: mockConciergeSummary,
+    // ?focusable=1: birds, rows and the summary's names look clickable, and a click logs "[mock] focus <id>"
+    focusLogOnly: new URLSearchParams(location.search).has("focusable"),
     setData,
   };
 }

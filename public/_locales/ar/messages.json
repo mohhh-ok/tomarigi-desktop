@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "ما الوضع الآن؟"
   },
+  "conciergeOnlyShowAll": {
+    "message": "عرض الكل"
+  },
   "conciergeSummaryLoading": {
     "message": "جارٍ التلخيص…"
   },

@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Apa yang berlaku?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Tunjukkan semua"
+  },
   "conciergeSummaryLoading": {
     "message": "Sedang meringkaskan…"
   },

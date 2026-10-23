@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "现在情况如何？"
   },
+  "conciergeOnlyShowAll": {
+    "message": "全部显示"
+  },
   "conciergeSummaryLoading": {
     "message": "正在总结情况…"
   },

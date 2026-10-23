@@ -25,6 +25,9 @@ export interface PerchSource {
   /** The same for "What's going on?": the summary of these sessions (rejects for a failure), or undefined to ask the
    * real concierge */
   conciergeSummary?(sessions: SessionView[]): Promise<string> | undefined;
+  /** For a source with no terminal panes (mock, ?focusable=1): every session can be clicked and a click is only
+   * logged, so how clickable things look can be checked in a browser. Left undefined because real doesn't use it */
+  focusLogOnly?: boolean;
 }
 
 export const realSource: PerchSource = {

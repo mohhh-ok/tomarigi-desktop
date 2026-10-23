@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Mitä nyt tapahtuu?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Näytä kaikki"
+  },
   "conciergeSummaryLoading": {
     "message": "Kootaan yhteenvetoa…"
   },

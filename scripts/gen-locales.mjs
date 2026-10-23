@@ -174,6 +174,7 @@ export const KEYS = [
   "conciergeOnlyHidden",
   "conciergeOnlyWaiting",
   "conciergeSummaryButton",
+  "conciergeOnlyShowAll",
   "conciergeSummaryLoading",
   "conciergeSummaryFailed",
   "conciergeSummaryClose",

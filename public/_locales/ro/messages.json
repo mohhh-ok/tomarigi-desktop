@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Ce se întâmplă?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Arată tot"
+  },
   "conciergeSummaryLoading": {
     "message": "Se rezumă…"
   },

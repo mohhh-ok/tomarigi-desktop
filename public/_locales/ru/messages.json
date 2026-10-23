@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Что сейчас происходит?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Показать всех"
+  },
   "conciergeSummaryLoading": {
     "message": "Подвожу итоги…"
   },

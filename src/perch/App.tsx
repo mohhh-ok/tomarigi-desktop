@@ -387,12 +387,16 @@ export default function App({
   // Jumps are an input of the concierge (which waiting session the user skipped)
   const onFocusSession = useCallback(
     (id: string) => {
+      if (source.focusLogOnly) return console.info(`[mock] focus ${id}`);
       recordJump(id);
       void focusSession(id, roots).catch((e) => console.warn("[tomarigi] focus failed", e));
     },
-    [roots],
+    [roots, source.focusLogOnly],
   );
-  const canFocus = useCallback((id: string) => focusTargetOf(id, roots) !== null, [roots]);
+  const canFocus = useCallback(
+    (id: string) => Boolean(source.focusLogOnly) || focusTargetOf(id, roots) !== null,
+    [roots, source.focusLogOnly],
+  );
 
   // So that Recent activity and the garden markers also show a done as needs reply when the turn verdict for that
   // turn is asking, attach the verdict to the done event of the same turn (sessionId + time of the last response)
@@ -591,6 +595,7 @@ export default function App({
               sessions={displaySessions}
               summary={conciergeSummary.state}
               onAsk={concierge.shown ? conciergeSummary.ask : undefined}
+              onShowAll={conciergeOnly.off}
             />
           </div>
         )}
@@ -720,6 +725,7 @@ export default function App({
                   onSize={conciergeOnly.fit}
                   summary={conciergeSummary.state}
                   onCloseSummary={conciergeSummary.close}
+                  sessions={displaySessions}
                 />
               )}
             </div>
@@ -890,16 +896,19 @@ export default function App({
 }
 
 /** "Concierge only" beside the handle's name, inside its backing: the mode, then the hidden birds and how many need a
-    reply (conciergeOnlyLabel), and the "What's going on?" button (onAsk; absent with no session, when there is nothing
-    to sum up). The button is pressed, not the handle: it doesn't drag the window or show it */
+    reply (conciergeOnlyLabel), the "What's going on?" button (onAsk; absent with no session, when there is nothing
+    to sum up), and "Show all", which turns the mode off. The buttons are pressed, not the handle: they don't drag the
+    window or show it */
 function ConciergeOnlyLabel({
   sessions,
   summary,
   onAsk,
+  onShowAll,
 }: {
   sessions: SessionView[];
   summary: SummaryState;
   onAsk?: () => void;
+  onShowAll: () => void;
 }) {
   const { badge, counts } = conciergeOnlyLabel(conciergeOnlyCounts(sessions));
   // A second handle, like the Garden's empty message: dragging it moves the window, a click shows it at rest
@@ -918,6 +927,15 @@ function ConciergeOnlyLabel({
           {t("conciergeSummaryButton")}
         </button>
       )}
+      {/* Turns the mode off, the same as unchecking it in the right-click menu; shown with no session too */}
+      <button
+        type="button"
+        className="concierge-only-show-all"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={onShowAll}
+      >
+        {t("conciergeOnlyShowAll")}
+      </button>
     </span>
   );
 }

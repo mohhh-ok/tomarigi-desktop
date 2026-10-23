@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Какво става сега?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Покажи всички"
+  },
   "conciergeSummaryLoading": {
     "message": "Обобщавам…"
   },

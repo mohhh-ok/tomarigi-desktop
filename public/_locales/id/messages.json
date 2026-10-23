@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Bagaimana keadaannya?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Tampilkan semua"
+  },
   "conciergeSummaryLoading": {
     "message": "Sedang merangkum…"
   },

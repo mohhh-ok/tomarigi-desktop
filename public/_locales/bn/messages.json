@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "এখন কী চলছে?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "সব দেখান"
+  },
   "conciergeSummaryLoading": {
     "message": "সারাংশ তৈরি হচ্ছে…"
   },

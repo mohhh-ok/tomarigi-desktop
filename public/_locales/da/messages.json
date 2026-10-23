@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Hvad sker der nu?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Vis alle"
+  },
   "conciergeSummaryLoading": {
     "message": "Opsummerer…"
   },

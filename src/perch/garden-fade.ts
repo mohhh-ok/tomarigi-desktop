@@ -39,15 +39,18 @@ function birdRects(): BirdRect[] {
 }
 
 /** The window handles: "Tomarigi" in the header (App.tsx), and the Garden's empty message while it has no birds
- * (garden.tsx). Also what else takes clicks at rest: the × on the concierge's summary (concierge-only-garden.tsx) */
+ * (garden.tsx). Also what else takes clicks at rest: the × and the session names on the concierge's summary
+ * (concierge-only-garden.tsx) */
 const HANDLE_SELECTOR = ".fade-handle, .fade-target";
 
+/** One rectangle per line box, so a name wrapped onto two lines doesn't take clicks on the text between its parts */
 function handleRects(): BirdRect[] {
   const rects: BirdRect[] = [];
   for (const el of document.querySelectorAll(HANDLE_SELECTOR)) {
-    const { left, top, right, bottom } = el.getBoundingClientRect();
-    if (right <= left || bottom <= top) continue;
-    rects.push({ x: left, y: top, width: right - left, height: bottom - top });
+    for (const { left, top, right, bottom } of el.getClientRects()) {
+      if (right <= left || bottom <= top) continue;
+      rects.push({ x: left, y: top, width: right - left, height: bottom - top });
+    }
   }
   return rects;
 }

@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Où en est-on ?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Tout afficher"
+  },
   "conciergeSummaryLoading": {
     "message": "Résumé en cours…"
   },

@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Τι γίνεται τώρα;"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Εμφάνιση όλων"
+  },
   "conciergeSummaryLoading": {
     "message": "Γίνεται σύνοψη…"
   },
