@@ -23,7 +23,7 @@ export interface PerchSource {
   /** For a source that doesn't call the API (mock): the concierge's advice for these sessions, or undefined to ask the
    * real concierge. Left undefined because real doesn't use it */
   conciergeAdvice?(sessions: SessionView[]): ConciergeAdvice | null | undefined;
-  /** The same for the suggestions of "Concierge only", or undefined to take them from the real concierge */
+  /** The same for the suggestions of the Concierge tab, or undefined to take them from the real concierge */
   conciergeSuggestions?(sessions: SessionView[]): ShownSuggestion[] | undefined;
   /** For a source with no terminal panes (mock, ?focusable=1): every session can be clicked and a click is only
    * logged, so how clickable things look can be checked in a browser. Left undefined because real doesn't use it */

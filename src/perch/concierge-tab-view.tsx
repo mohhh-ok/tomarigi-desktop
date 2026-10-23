@@ -1,5 +1,5 @@
-// The Garden in "Concierge only" mode (docs/design.md "Concierge"; concierge-only.ts): the concierge bird and its bubble
-// alone, at the top center of the garden, drawn as in the Garden (GardenNode). It isn't placed or saved like the birds:
+// The Concierge tab (docs/design.md "Concierge"; concierge-tab.ts): the concierge bird and its bubble alone, at the top
+// center, drawn as in the Garden (GardenNode). It isn't placed or saved like the birds:
 // dragging it moves the floating window, which is the concierge's size. It reports the size the window needs for it
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
@@ -10,32 +10,29 @@ import type { SessionView } from "@/lib/sessions";
 import { CONCIERGE_ID } from "./concierge";
 import { bubbleText } from "./bubble";
 import { ConciergeStatusReport } from "./concierge-status-report";
-import { conciergeOnlyWindowSize } from "./concierge-only";
-import { GardenNode, type GardenMenu } from "./garden";
+import { conciergeTabWindowSize } from "./concierge-tab";
+import { GardenNode } from "./garden";
 import { onFadeHandlePointerDown } from "./garden-fade";
-import { popupGardenMenu } from "./garden-menu";
 
 // The concierge's icon size here: a fixed size, since the window's size follows the concierge rather than the other way
 // round (Claude's own decision: about the size it has beside a few birds in a 340×480 garden, so it reads the same)
 const GLYPH_PX = 40;
 
-export function ConciergeOnlyGarden({
+export function ConciergeTabView({
   concierge,
   hasGranted,
   onFocus,
   canFocus,
-  menu,
   onSize,
   sessions,
 }: {
-  // Absent with no session on screen (the Garden's empty message shows then, as without the mode). suggestions: those
+  // Absent with no session on screen (the Garden's empty message shows then). suggestions: those
   // that came with the advice (use-concierge.ts)
   concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook; suggestions: ShownSuggestion[] };
   hasGranted: boolean;
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
-  menu: GardenMenu;
-  // The window size it needs (CSS px; conciergeOnlyWindowSize)
+  // The window size it needs (CSS px; conciergeTabWindowSize)
   onSize: (size: { width: number; height: number }) => void;
   // The sessions on screen now: a line each in the bubble, built on every render so it is never out of date
   sessions: SessionView[];
@@ -65,8 +62,8 @@ export function ConciergeOnlyGarden({
   // only a changed size
   useLayoutEffect(() => {
     // The width follows the concierge and its bubble, and holds the handle's row with the header's buttons on one line
-    // (the mode's label and button wrap on their own row below; styles/concierge.css). Never wider than that, so the
-    // window doesn't grow wider than before for the label
+    // (the tab's label wraps on its own row below; styles/concierge.css). Never wider than that, so the window doesn't
+    // grow wider for the label
     const brand = document.querySelector<HTMLElement>(".page-header .brand");
     const controls = document.querySelector<HTMLElement>(".page-header .header-controls");
     const header = brand?.parentElement;
@@ -101,7 +98,7 @@ export function ConciergeOnlyGarden({
       // Its border (1px each side) and PLACE_EDGE_PX inside it, as for the birds
       const edge = 2 * (PLACE_EDGE_PX + 1);
       onSize(
-        conciergeOnlyWindowSize({
+        conciergeTabWindowSize({
           innerW: window.innerWidth,
           innerH,
           gardenW: box.width,
@@ -120,7 +117,7 @@ export function ConciergeOnlyGarden({
     const label = empty.querySelector<HTMLElement>(".garden-empty-label");
     const box = empty.getBoundingClientRect();
     onSize(
-      conciergeOnlyWindowSize({
+      conciergeTabWindowSize({
         innerW: window.innerWidth,
         innerH,
         gardenW: box.width,
@@ -171,10 +168,9 @@ export function ConciergeOnlyGarden({
     <div
       className="garden garden-concierge-only"
       ref={containerRef}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        popupGardenMenu({ arrange: () => {}, ...menu });
-      }}
+      // The Garden's menu has only "Arrange", which has nothing to arrange here; the WebView's own menu doesn't show
+      // either, as in the Garden (Claude's own decision)
+      onContextMenu={(e) => e.preventDefault()}
     >
       <div className="garden-bubble-layer" ref={setBubbleLayer} />
       {gardenW > 0 && (

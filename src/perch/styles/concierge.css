@@ -21,9 +21,10 @@
    wrapping onto as many lines as it needs within the same max width. It has no status lines, so the lines below go into
    the empty space under it */
 
-/* "Concierge only" is on (App.tsx): said beside the handle's name, inside its backing, so it stays at rest with it at
-   the handle's opacity (docs/design.md "Concierge"). The mode's name in the accent color (the active tab's underline),
-   the counts in the page's text color, both smaller than the name and without its letter spacing */
+/* The Concierge tab is open (App.tsx): said under the handle's name, inside the same backing, so it stays at rest at the
+   handle's opacity while the tab row is hidden (docs/design.md "Concierge"). The tab's name in the accent color (the
+   active tab's underline), the counts in the page's text color, both smaller than the name and without its letter
+   spacing */
 
 /* Its own row right under the handle, across the header (the header's buttons stay on the handle's row), so the
    window's width follows the concierge and this row wraps instead when the window is narrow */
@@ -50,7 +51,7 @@
     opacity 0.2s;
 }
 
-/* At rest in this mode the tab row, which is fully transparent then, folds away, so the concierge sits right under
+/* At rest in the Concierge tab the tab row, which is fully transparent then, folds away, so the concierge sits right under
    the handle and its label instead of below an empty band; it unfolds when the window is shown. The window keeps the
    height the shown layout needs (concierge-only-garden.tsx) */
 :root[data-concierge-only] .tabs {
@@ -78,28 +79,6 @@
 .concierge-only-counts {
   color: #cfcabe;
   white-space: nowrap;
-}
-
-/* "Show all" (App.tsx): turns the mode off. Quieter than the label's words would make a filled button: outlined, in the
-   label's text color */
-.concierge-only-show-all {
-  padding: 1px 7px;
-  border: 1px solid rgba(207, 202, 190, 0.55);
-  border-radius: 5px;
-  background: transparent;
-  color: #cfcabe;
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: normal;
-  line-height: 1.4;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.concierge-only-show-all:hover {
-  border-color: #e9e6de;
-  background: rgba(233, 230, 222, 0.08);
-  color: #e9e6de;
 }
 
 /* The concierge's bubble in "Concierge only" (concierge-status-report.tsx): wider than a bird's bubble, since it holds a
@@ -215,10 +194,4 @@
 .concierge-look:has(input:focus-visible) {
   outline: 2px solid #d9b06a;
   outline-offset: 2px;
-}
-
-/* The header's button into "Concierge only" (concierge.tsx ConciergeOnlyEntry): as tall as the other header buttons,
-   whose icons sit on a text line while the picture has none */
-.concierge-only-entry {
-  align-self: stretch;
 }

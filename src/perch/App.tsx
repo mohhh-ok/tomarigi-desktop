@@ -37,13 +37,29 @@ import { UpdateSettings } from "./settings/update-settings";
 import { useSettings } from "./use-settings";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
-import { ConciergeLine, ConciergeOnlyEntry, ConciergeSettings } from "./concierge";
-import { conciergeOnlyCounts, conciergeOnlyEntryShown, conciergeOnlyLabel, useConciergeOnly } from "./concierge-only";
-import { ConciergeOnlyGarden } from "./concierge-only-garden";
-import type { GardenMenu } from "./garden";
+import { ConciergeGlyph, ConciergeLine, ConciergeSettings } from "./concierge";
+import {
+  conciergeTabCounts,
+  conciergeTabLabel,
+  tabAfter,
+  tabOf,
+  tabsShown,
+  useConciergeTab,
+  type Tab,
+} from "./concierge-tab";
+import { ConciergeTabView } from "./concierge-tab-view";
+import { loadOpenTab, saveOpenTab } from "@/lib/settings-store";
 import { recordJump } from "@/lib/concierge";
 
 const POLL_MS = 3_000;
+
+// The tab row's words; the Concierge tab is named by the concierge's own name
+const TAB_LABEL = {
+  concierge: "conciergeName",
+  garden: "tabGardenLabel",
+  perch: "tabPerchLabel",
+  events: "eventFeedHeading",
+} as const;
 
 // Chirps fire from ScanResult.events (issue #6). Which chirp maps to each event type
 // (started/closed don't chirp)
@@ -58,9 +74,8 @@ const EVENT_FRESHNESS_MS = 30_000;
 
 type Phase = "loading" | "ready";
 
-// Tabs switch the view (Perch, events, Garden). No persistence needed, so useState only.
-// Settings are a separate level (⚙ button → settings view), so they aren't a Tab
-type Tab = "perch" | "events" | "garden";
+// Tabs switch the view (Concierge, Garden, Perch, events; concierge-tab.ts). The open one is saved and opened again
+// after a relaunch. Settings are a separate level (⚙ button → settings view), so they aren't a Tab
 
 // Grabbing the window background moves the whole window. Excludes clickable controls, text inputs, birds (garden
 // drag), scrolling lists, and the window handle (it drags the window itself, garden-fade.ts)
@@ -81,11 +96,22 @@ export default function App({
   const [sessions, setSessions] = useState<SessionView[]>([]);
   const [events, setEvents] = useState<SessionEvent[]>([]);
   // The Garden is the most fun to watch = the face of the product, so it is the default tab
-  // ?tab=perch|events / ?settings=1 choose the screen at launch (for checking screenshots; TOMARIGI_QUERY in the README)
-  const [tab, setTab] = useState<Tab>(() => {
-    const q = new URLSearchParams(location.search).get("tab");
-    return q === "perch" || q === "events" ? q : "garden";
-  });
+  // ?tab=concierge|perch|events / ?settings=1 choose the screen at launch (for checking screenshots; TOMARIGI_QUERY in
+  // the README); without it the tab saved last opens
+  const [chosenTab, setChosenTab] = useState<Tab>(
+    () => tabOf(new URLSearchParams(location.search).get("tab")) ?? "garden",
+  );
+  useEffect(() => {
+    if (new URLSearchParams(location.search).has("tab")) return;
+    void loadOpenTab().then((v) => {
+      const saved = tabOf(v);
+      if (saved) setChosenTab(saved);
+    }, () => {});
+  }, []);
+  const setTab = useCallback((next: Tab) => {
+    setChosenTab(next);
+    void saveOpenTab(next).catch(() => {});
+  }, []);
   const [settingsOpen, setSettingsOpen] = useState(
     () => new URLSearchParams(location.search).has("settings"),
   );
@@ -451,8 +477,8 @@ export default function App({
     (id: string) => roots.find((r) => id.startsWith(`${r.id}/`))?.kind,
     [roots],
   );
-  // Suggestions are asked for with the advice only while "Concierge only" is on. Its on depends on the concierge being
-  // available, so it comes here a render later (wantSuggestions, set below)
+  // Suggestions are asked for with the advice only while the Concierge tab is open. Which tab is open depends on the
+  // concierge being available, so it comes here a render later (wantSuggestions, set below)
   const [wantSuggestions, setWantSuggestions] = useState(false);
   const concierge = useConcierge(
     displaySessions,
@@ -470,30 +496,30 @@ export default function App({
   const hasGranted = !source.usesRoots || grantedCount > 0;
 
   const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
-  // "Concierge only" (concierge-only.ts): the floating window shrinks to the concierge only on the Garden with nothing
+  // The Concierge tab is there only while the concierge is shown; once that stops while it is open, the Garden opens
+  // (and is saved), but not before the settings are loaded
+  const tab = tabAfter({ tab: chosenTab, available: concierge.available, loaded: phase === "ready" });
+  useEffect(() => {
+    if (tab !== chosenTab) setTab(tab);
+  }, [tab, chosenTab, setTab]);
+  // The Concierge tab (concierge-tab.ts): the floating window shrinks to the concierge while it is open with nothing
   // over it; on the other tabs, settings and the debug log it is back at its frame
-  const conciergeOnly = useConciergeOnly({
-    available: concierge.available,
-    loaded: phase === "ready",
-    canShrink: windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
+  const conciergeTab = useConciergeTab({
+    open: showTabs && tab === "concierge",
+    canShrink: windowMode === "floating" && !settingsOpen && !showDebug,
   });
-  useEffect(() => setWantSuggestions(conciergeOnly.on), [conciergeOnly.on]);
+  useEffect(() => setWantSuggestions(tab === "concierge"), [tab]);
   // At rest the header's empty rows fold so the concierge sits right under the handle (styles/concierge.css)
   useEffect(() => {
     const root = document.documentElement;
-    if (conciergeOnly.view) root.dataset.conciergeOnly = "";
+    if (conciergeTab.view) root.dataset.conciergeOnly = "";
     else delete root.dataset.conciergeOnly;
-  }, [conciergeOnly.view]);
-  const gardenMenu: GardenMenu = {
-    conciergeAvailable: concierge.available,
-    conciergeOnly: conciergeOnly.on,
-    toggleConciergeOnly: conciergeOnly.toggle,
-  };
+  }, [conciergeTab.view]);
   // Fade until hovered (garden-fade.ts). Not while settings, the debug log, or the folder dialog are open over the Garden
   useGardenFade(
     windowMode === "floating" &&
       showTabs &&
-      tab === "garden" &&
+      (tab === "garden" || tab === "concierge") &&
       !settingsOpen &&
       !showDebug &&
       !rootDialogOpen,
@@ -501,7 +527,7 @@ export default function App({
   // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
   // Garden, so it doesn't count
   const { onFit: onGardenFit, growRoom: gardenGrowRoom } = useGardenGrow(
-    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug && !conciergeOnly.view,
+    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug && !conciergeTab.view,
     windowMode === "floating",
     displaySessions.length + (concierge.shown ? 1 : 0),
   );
@@ -541,13 +567,6 @@ export default function App({
         <div className="header-controls">
           {showTabs && (
             <>
-            {/* Into "Concierge only", the counterpart of its "Show all"; the same as the right-click menu's item */}
-            {conciergeOnlyEntryShown({
-              conciergeAvailable: concierge.available,
-              conciergeOnly: conciergeOnly.on,
-              onGarden: tab === "garden",
-              overlay: settingsOpen || showDebug,
-            }) && <ConciergeOnlyEntry look={conciergeLook} onClick={conciergeOnly.toggle} />}
             <button
               className="small"
               onClick={toggleMuted}
@@ -593,12 +612,12 @@ export default function App({
             <MdClose size={16} />
           </button>
         </div>
-        {/* "Concierge only" is on: said right under the handle, on the same backing and shown at rest like it, with
-            the birds it hides and how many of them need a reply. A row of its own,
-            so the window's width follows the concierge, not this text (docs/design.md "Concierge") */}
-        {conciergeOnly.on && showTabs && (
+        {/* The Concierge tab is open: said right under the handle, on the same backing and shown at rest like it (the
+            tab row is hidden then), with the other birds and how many of them need a reply. A row of its own, so the
+            window's width follows the concierge, not this text (docs/design.md "Concierge") */}
+        {tab === "concierge" && showTabs && !settingsOpen && !showDebug && (
           <div className="concierge-only-row">
-            <ConciergeOnlyLabel sessions={displaySessions} onShowAll={conciergeOnly.off} />
+            <ConciergeTabLabel sessions={displaySessions} />
           </div>
         )}
       </div>
@@ -616,39 +635,23 @@ export default function App({
           />
         ) : (
             <div className="tabs" role="tablist">
-              <button
-                type="button"
-                role="tab"
-                id="tab-btn-garden"
-                aria-selected={tab === "garden"}
-                aria-controls="tabpanel-garden"
-                className={tab === "garden" ? "tab-btn active" : "tab-btn"}
-                onClick={() => setTab("garden")}
-              >
-                {t("tabGardenLabel")}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                id="tab-btn-perch"
-                aria-selected={tab === "perch"}
-                aria-controls="tabpanel-perch"
-                className={tab === "perch" ? "tab-btn active" : "tab-btn"}
-                onClick={() => setTab("perch")}
-              >
-                {t("tabPerchLabel")}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                id="tab-btn-events"
-                aria-selected={tab === "events"}
-                aria-controls="tabpanel-events"
-                className={tab === "events" ? "tab-btn active" : "tab-btn"}
-                onClick={() => setTab("events")}
-              >
-                {t("eventFeedHeading")}
-              </button>
+              {tabsShown(concierge.available).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`tab-btn-${id}`}
+                  aria-selected={tab === id}
+                  aria-controls={`tabpanel-${id === "concierge" ? "garden" : id}`}
+                  className={`tab-btn tab-btn-${id}${tab === id ? " active" : ""}`}
+                  onClick={() => setTab(id)}
+                  // The Concierge tab is the concierge's picture, named in its tooltip: four words don't fit the
+                  // narrowest window (docs/design.md "Concierge")
+                  {...(id === "concierge" && { "aria-label": t(TAB_LABEL[id]), title: t(TAB_LABEL[id]) })}
+                >
+                  {id === "concierge" ? <ConciergeGlyph look={conciergeLook} size={18} /> : t(TAB_LABEL[id])}
+                </button>
+              ))}
             </div>
         ))}
       {/* Only this area scrolls, so the header (⚙ and ×) and the tab / settings row stay visible */}
@@ -697,11 +700,13 @@ export default function App({
               />
             </div>
           </section>
+          {/* The Garden and the Concierge tab share one panel: the Garden's birds stay mounted and paused while the
+              concierge is shown alone, so they come back as they were */}
           <section
             role="tabpanel"
             id="tabpanel-garden"
-            aria-labelledby="tab-btn-garden"
-            hidden={settingsOpen || showDebug || tab !== "garden"}
+            aria-labelledby={tab === "concierge" ? "tab-btn-concierge" : "tab-btn-garden"}
+            hidden={settingsOpen || showDebug || (tab !== "garden" && tab !== "concierge")}
           >
             <div className="stage stage-garden">
               {/* The birds are only hidden: the Garden stays mounted and paused, so they come back as they were */}
@@ -714,11 +719,10 @@ export default function App({
                 canFocus={canFocus}
                 onFit={onGardenFit}
                 growRoom={gardenGrowRoom}
-                paused={conciergeOnly.view}
-                menu={gardenMenu}
+                paused={conciergeTab.view}
               />
-              {conciergeOnly.view && (
-                <ConciergeOnlyGarden
+              {conciergeTab.view && (
+                <ConciergeTabView
                   concierge={
                     concierge.shown
                       ? { advice: concierge.advice, look: conciergeLook, suggestions: concierge.suggestions }
@@ -727,8 +731,7 @@ export default function App({
                   hasGranted={hasGranted}
                   onFocus={onFocusSession}
                   canFocus={canFocus}
-                  menu={gardenMenu}
-                  onSize={conciergeOnly.fit}
+                  onSize={conciergeTab.fit}
                   sessions={displaySessions}
                 />
               )}
@@ -899,25 +902,15 @@ export default function App({
   );
 }
 
-/** "Concierge only" beside the handle's name, inside its backing: the mode, then the hidden birds and how many need a
-    reply (conciergeOnlyLabel), and "Show all", which turns the mode off. The button is pressed, not the handle: it
-    doesn't drag the window or show it */
-function ConciergeOnlyLabel({ sessions, onShowAll }: { sessions: SessionView[]; onShowAll: () => void }) {
-  const { badge, counts } = conciergeOnlyLabel(conciergeOnlyCounts(sessions));
-  // A second handle, like the Garden's empty message: dragging it moves the window, a click shows it at rest
+/** Right under the handle while the Concierge tab is open, inside its backing: which tab this is, then the other birds
+    and how many of them need a reply (conciergeTabLabel). A second handle, like the Garden's empty message: dragging it
+    moves the window, a click shows it at rest */
+function ConciergeTabLabel({ sessions }: { sessions: SessionView[] }) {
+  const { badge, counts } = conciergeTabLabel(conciergeTabCounts(sessions));
   return (
     <span className="concierge-only-label fade-handle" onPointerDown={onFadeHandlePointerDown}>
       <span className="concierge-only-badge">{badge}</span>
       <span className="concierge-only-counts">{counts}</span>
-      {/* Turns the mode off, the same as unchecking it in the right-click menu; shown with no session too */}
-      <button
-        type="button"
-        className="concierge-only-show-all"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={onShowAll}
-      >
-        {t("conciergeOnlyShowAll")}
-      </button>
     </span>
   );
 }

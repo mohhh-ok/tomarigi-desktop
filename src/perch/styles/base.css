@@ -162,8 +162,7 @@ html[data-window-mode="normal"] .page {
 }
 
 /* In a narrow window the header's buttons get tighter, so they stay on the handle's row down to the narrowest window
-   (260px) with the button into "Concierge only" too, and the window isn't made wider for them (docs/design.md
-   "Concierge") */
+   (260px), and the window isn't made wider for them (docs/design.md "Concierge") */
 @media (max-width: 400px) {
   .header-controls {
     gap: 4px;

@@ -397,12 +397,6 @@
   "gardenArrange": {
     "message": "व्यवस्थित करें"
   },
-  "gardenConciergeOnly": {
-    "message": "केवल कंसीयर्ज दिखाएँ"
-  },
-  "conciergeOnlyBadge": {
-    "message": "केवल कंसीयर्ज"
-  },
   "conciergeOnlyHidden": {
     "message": "छिपे हुए: $COUNT$",
     "placeholders": {
@@ -418,9 +412,6 @@
         "content": "$1"
       }
     }
-  },
-  "conciergeOnlyShowAll": {
-    "message": "सभी दिखाएँ"
   },
   "conciergeSummarySuggestions": {
     "message": "सुझाव"

@@ -397,12 +397,6 @@
   "gardenArrange": {
     "message": "Aranjează"
   },
-  "gardenConciergeOnly": {
-    "message": "Afișează doar concierge"
-  },
-  "conciergeOnlyBadge": {
-    "message": "Doar concierge"
-  },
   "conciergeOnlyHidden": {
     "message": "ascunse: $COUNT$",
     "placeholders": {
@@ -418,9 +412,6 @@
         "content": "$1"
       }
     }
-  },
-  "conciergeOnlyShowAll": {
-    "message": "Arată tot"
   },
   "conciergeSummarySuggestions": {
     "message": "Sugestii"

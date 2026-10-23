@@ -75,7 +75,7 @@ export function conciergePayloadNow(
 export interface ConciergeState {
   /** Whether the concierge is shown at all (an OpenAI / Anthropic key is saved, or Local is set up) */
   shown: boolean;
-  /** The same, whether or not a session is on screen ("Concierge only" stays on with no session; concierge-only.ts) */
+  /** The same, whether or not a session is on screen (the Concierge tab stays with no session; concierge-tab.ts) */
   available: boolean;
   /** The current advice, with its target only while that session is still on screen */
   advice: ConciergeAdvice | null;

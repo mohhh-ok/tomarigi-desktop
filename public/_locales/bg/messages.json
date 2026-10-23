@@ -397,12 +397,6 @@
   "gardenArrange": {
     "message": "Подреди"
   },
-  "gardenConciergeOnly": {
-    "message": "Показвай само консиержа"
-  },
-  "conciergeOnlyBadge": {
-    "message": "Само консиерж"
-  },
   "conciergeOnlyHidden": {
     "message": "скрити: $COUNT$",
     "placeholders": {
@@ -418,9 +412,6 @@
         "content": "$1"
       }
     }
-  },
-  "conciergeOnlyShowAll": {
-    "message": "Покажи всички"
   },
   "conciergeSummarySuggestions": {
     "message": "Предложения"

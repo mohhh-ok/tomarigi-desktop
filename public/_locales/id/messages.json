@@ -397,12 +397,6 @@
   "gardenArrange": {
     "message": "Rapikan"
   },
-  "gardenConciergeOnly": {
-    "message": "Tampilkan hanya concierge"
-  },
-  "conciergeOnlyBadge": {
-    "message": "Hanya concierge"
-  },
   "conciergeOnlyHidden": {
     "message": "$COUNT$ lainnya disembunyikan",
     "placeholders": {
@@ -418,9 +412,6 @@
         "content": "$1"
       }
     }
-  },
-  "conciergeOnlyShowAll": {
-    "message": "Tampilkan semua"
   },
   "conciergeSummarySuggestions": {
     "message": "Saran"
