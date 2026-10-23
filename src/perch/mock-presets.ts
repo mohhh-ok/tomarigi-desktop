@@ -1001,7 +1001,7 @@ const GALLERY: SessionView[] = [
 /** A suggestion's text for a gallery session, so the Concierge image's suggestions fit its sessions (mock.tsx) */
 export function gallerySuggestionText(id: string): string | undefined {
   if (id === "gallery/plan") return tr("approve the plan, it has waited longest", "いちばん長く待っている計画の承認を先に");
-  if (id === "gallery/finished") return tr("check the new button sizes", "増やしたボタンの大きさを確かめましょう");
+  if (id === "gallery/finished") return tr("check the three button sizes", "3 種類にしたボタンを確かめましょう");
   return undefined;
 }
 
