@@ -23,6 +23,10 @@ pub(crate) struct LiveSession {
     cwd: Option<String>,
     #[serde(default)]
     status: Option<String>,
+    /// What a waiting session waits on, e.g. "input needed" (a question tool) or "permission prompt"
+    /// (docs/design.md "Concierge")
+    #[serde(default)]
+    waiting_for: Option<String>,
     #[serde(default)]
     started_at: Option<f64>,
 }

@@ -19,8 +19,8 @@ export interface TailInfo {
   events: TailEvent[];
   cwd?: string; // Last cwd found in the tail window (primary source for the display name; falls back to projectLabels if absent)
   // Max epoch ms over lines in the tail window whose timestamp parses (independent of classify()'s result;
-  // includes line types not used for state, such as last-prompt and queue-operation). undefined if there
-  // are none. It does not move for lines without a timestamp (last-prompt etc.) or for after-the-fact
+  // includes line types not used for state, such as last-prompt and queue-operation, except the idle lines of
+  // isIdleLine such as away_summary). undefined if there are none. It does not move for lines without a timestamp (last-prompt etc.) or for after-the-fact
   // appends that only bump the file mtime (a known behavior where the harness touches a dead transcript
   // hours later). State decisions (sinceMs) always use this as the time basis, never mtime — with mtime,
   // ended sessions actually reappeared as "working birds" after every such append, and this prevents that
@@ -91,6 +91,7 @@ export interface TailEvent {
 
 interface TranscriptEntry {
   type?: string;
+  subtype?: unknown; // On a `system` line (e.g. away_summary, see isIdleLine)
   isMeta?: boolean;
   isSidechain?: boolean;
   interruptedByShutdown?: boolean;
@@ -141,6 +142,16 @@ const INTERRUPTED_PREFIX = "[Request interrupted by user";
 // the following user entry is the skill body without `<local-command-stdout>`, so it matches neither
 // check above and is treated as a normal user utterance (confirmed on real data)
 const CLOSING_SLASH_COMMANDS = ["/clear"];
+
+// A line Claude Code writes while the session sits idle, which is not conversation: the recap written while the user is
+// away (system / away_summary). It doesn't move lastEventAt, since it made a finished session look working for
+// WRITING_MS and its turn was summarized and sent to the concierge again. Measured on the local transcripts: 3,692 of
+// 3,942 away_summary lines came more than 6 seconds after the last user / assistant line and were not followed by one
+// within 30 seconds. Other lines written late (queue-operation, api_error, ...) mostly start or belong to a turn and
+// still count (docs/design.md "Bird states")
+function isIdleLine(entry: TranscriptEntry): boolean {
+  return entry.type === "system" && entry.subtype === "away_summary";
+}
 
 const LOCAL_COMMAND_STDOUT_TAG = "<local-command-stdout>";
 
@@ -299,7 +310,7 @@ async function readWindow(
     // next is null) (see the TailInfo.lastEventAt comment). Even line types not used for state
     // (last-prompt, queue-operation, etc.) are a valid source for "when conversation actually happened"
     // as long as they carry a timestamp, so don't miss them
-    if (at !== null) lastEventAt = lastEventAt === undefined ? at : Math.max(lastEventAt, at);
+    if (at !== null && !isIdleLine(entry)) lastEventAt = lastEventAt === undefined ? at : Math.max(lastEventAt, at);
     // Chick completion signals are collected independently of classify() (the kind/events used for state).
     // queue-operation is a line type classify() ignores for state, but it is the only source of chick
     // completion signals, so pick it up separately here (without polluting kind/events)
