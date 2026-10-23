@@ -156,6 +156,8 @@ export interface LiveSession {
   pid: number;
   sessionId: string;
   name?: string;
+  /** Who gave the name: "user" (/rename, --name) or "derived" (made up by Claude Code from the project's name) */
+  nameSource?: string;
   cwd?: string;
   status?: string;
   /** What a waiting session waits on: "input needed" (a question tool or an MCP input), "permission prompt",
