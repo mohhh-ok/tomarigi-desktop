@@ -1040,8 +1040,7 @@ export function GardenNode({
   // Dragging it moves the floating window instead of the bird ("Concierge only", where the window is the concierge's
   // size); in the standard window it stays put
   dragMovesWindow?: boolean;
-  // What the bubble shows in place of its text ("What's going on?" in "Concierge only": the summary, with the advice
-  // below it)
+  // What the bubble shows in place of its text ("Concierge only": every session's line and the suggestions)
   bubbleContent?: ReactNode;
 }) {
   // Whether this bird needs a reply (switches the state word / tool name) and whether to show the "?" (only birds

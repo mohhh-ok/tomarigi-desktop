@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Какво става сега?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Покажи всички"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Обобщавам…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Не успях да обобщя. Натиснете бутона отново."
-  },
-  "conciergeSummaryClose": {
-    "message": "Затвори обобщението"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Обобщение към $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Предложения"

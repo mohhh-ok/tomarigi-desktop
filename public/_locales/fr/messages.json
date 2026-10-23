@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Où en est-on ?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Tout afficher"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Résumé en cours…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Impossible de résumer. Appuie à nouveau sur le bouton."
-  },
-  "conciergeSummaryClose": {
-    "message": "Fermer le résumé"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Point à $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Suggestions"

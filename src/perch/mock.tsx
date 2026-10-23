@@ -7,9 +7,9 @@ import type { RootEntry } from "@/lib/settings-store";
 import { DEFAULT_PRESET, PRESETS } from "./mock-presets";
 import { GARDEN_ARRANGE_EVENT } from "./garden-menu";
 import { CONCIERGE_ONLY_EVENT } from "./concierge-only";
-import { bubbleText } from "./bubble";
 import { needsAnswer } from "@/lib/turn-verdict";
 import type { ConciergeAdvice } from "@/lib/concierge";
+import { conciergeStatusOf, type ShownSuggestion } from "@/lib/concierge-status";
 
 // Presets at launch. Choose with ?preset=<id> (TOMARIGI_QUERY="preset=asking" etc.). For checking screenshots
 const INITIAL_PRESET =
@@ -73,50 +73,42 @@ function mockConciergeAdvice(sessions: SessionView[]): ConciergeAdvice | null | 
   return { line: MOCK_CONCIERGE || line, targetId: target.id };
 }
 
-// ?conciergeSummary=fail makes "What's going on?" fail, =slow keeps it on its way for 20 seconds, =stale changes the
-// birds 3 seconds after the summary is shown: the first that needs a reply starts working and the last one leaves (for
-// checking those looks)
-const MOCK_SUMMARY = new URLSearchParams(location.search).get("conciergeSummary");
+// ?conciergeSuggestions=none shows no suggestions; =stale adds one about a working session as if it had needed a reply
+// when it came, so it shows dimmed with its state now (for checking those looks)
+const MOCK_SUGGESTIONS = new URLSearchParams(location.search).get("conciergeSuggestions");
 
-/** "What's going on?" without the API, after a short wait: an answer in the real concierge's form (lib/concierge-summary.ts),
-    with the sessions' own ids and in their order, which the app reads and puts in order as it does the real one */
-function mockConciergeSummary(sessions: SessionView[], change: (next: SessionView[]) => void): Promise<unknown> | undefined {
+/** The suggestions of "Concierge only" without the API, in the form use-concierge.ts keeps them: the sessions that need
+    a reply (at most two), else the finished ones; undefined to ask the real concierge, like mockConciergeAdvice */
+function mockConciergeSuggestions(sessions: SessionView[]): ShownSuggestion[] | undefined {
   if (MOCK_CONCIERGE === null) return undefined;
+  if (MOCK_SUGGESTIONS === "none") return [];
   const ja = navigator.language.startsWith("ja");
-  const textOf = (s: SessionView) => {
-    if (needsAnswer(s.state, s.ask)) return bubbleText(s) ?? (ja ? "許可か質問への返事" : "a permission or a question");
-    if (s.state === "working") return ja ? "作業を続けています" : "keeps working";
-    return bubbleText(s) ?? (ja ? "ターンを終えました" : "finished its turn");
-  };
   const waiting = sessions.filter((s) => needsAnswer(s.state, s.ask));
-  const first = waiting[0] ?? sessions[0];
-  const answer = {
-    items: sessions.map((s) => ({ session_id: s.id, text: textOf(s) })),
-    suggestions: first
-      ? [
-          {
-            session_id: first.id,
-            text: ja ? "いちばん先に答えると、ほかの作業も進みます" : "answer it first: the rest can move on then",
-          },
-        ]
-      : [],
-  };
-  const wait = MOCK_SUMMARY === "slow" ? 20_000 : 900;
-  if (MOCK_SUMMARY === "stale" && sessions.length > 1) {
-    const last = sessions[sessions.length - 1].id;
-    setTimeout(
-      () =>
-        change(
-          sessions
-            .filter((s) => s.id !== last)
-            .map((s) => (s.id === waiting[0]?.id ? { ...s, state: "working", ask: undefined, sinceMs: 1000 } : s)),
-        ),
-      wait + 3000,
-    );
+  const picked: ShownSuggestion[] = (
+    waiting.length > 0 ? waiting : sessions.filter((s) => conciergeStatusOf(s) === "done")
+  )
+    .slice(0, 2)
+    .map((s, i) => {
+      const status = conciergeStatusOf(s);
+      const reply = status === "reply";
+      const text = reply
+        ? i === 0
+          ? ja ? "いちばん長く待っているので先に返事を" : "answer first, it has waited longest"
+          : ja ? "ほかの作業もこの返事を待っています" : "other work waits on this answer"
+        : ja ? "終わった結果を確かめましょう" : "the result is ready to check";
+      return { sessionId: s.id, kind: reply ? "reply" : "check_result", text, name: s.project, status };
+    });
+  const working = sessions.find((s) => conciergeStatusOf(s) === "working");
+  if (MOCK_SUGGESTIONS === "stale" && working) {
+    picked.push({
+      sessionId: working.id,
+      kind: "reply",
+      text: ja ? "方針の確認に答えましょう" : "answer its question on the plan",
+      name: working.project,
+      status: "reply",
+    });
   }
-  return new Promise((resolve, reject) =>
-    setTimeout(() => (MOCK_SUMMARY === "fail" ? reject(new Error("mock")) : resolve(answer)), wait),
-  );
+  return picked;
 }
 
 export function createMockSource(): MockSource {
@@ -144,8 +136,8 @@ export function createMockSource(): MockSource {
       return data;
     },
     conciergeAdvice: mockConciergeAdvice,
-    conciergeSummary: (sessions) => mockConciergeSummary(sessions, (next) => setData({ ...data, sessions: next })),
-    // ?focusable=1: birds, rows, the names in the summary and its advice look clickable, and a click logs
+    conciergeSuggestions: mockConciergeSuggestions,
+    // ?focusable=1: birds, rows, and the names in the concierge's bubble look clickable, and a click logs
     // "[mock] focus <id>"
     focusLogOnly: new URLSearchParams(location.search).has("focusable"),
     setData,

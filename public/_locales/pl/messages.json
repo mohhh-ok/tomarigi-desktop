@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Co się dzieje?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Pokaż wszystko"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Podsumowuję…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Nie udało się podsumować. Naciśnij przycisk ponownie."
-  },
-  "conciergeSummaryClose": {
-    "message": "Zamknij podsumowanie"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Podsumowanie z $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Sugestie"

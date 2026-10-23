@@ -303,6 +303,51 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
   maxTokens: 256,
 };
 
+/** At most this many suggestions are kept, in the AI's order */
+export const CONCIERGE_MAX_SUGGESTIONS = 3;
+
+/** What a suggestion asks the developer to do: the advice's kinds without none (a suggestion is always something to do) */
+export const CONCIERGE_SUGGESTION_KINDS = ["reply", "check_result"] as const;
+export type ConciergeSuggestionKind = (typeof CONCIERGE_SUGGESTION_KINDS)[number];
+
+/**
+ * The advice request while the Concierge tab is open: the same task, plus one to three suggestions in the same answer,
+ * so there is no extra request (docs/design.md "Concierge"). Without the tab the request is CONCIERGE_TASK as it was
+ */
+export const CONCIERGE_TASK_WITH_SUGGESTIONS: JudgeTaskDefinition = {
+  ...CONCIERGE_TASK,
+  systemPrompt:
+    CONCIERGE_TASK.systemPrompt +
+    "\nAlso return suggestions: one to three objects, most important first, each about one session: what the " +
+    "developer had best do next there and why. Each has the session_id it is about, exactly as given; kind: reply " +
+    "(answer, approve, or decide for a session whose needs_reply is true) or check_result (look at the result of a " +
+    "session that finished); and a text without the session's name, since the app shows the name before it (e.g. in " +
+    "Japanese: いちばん長く待っているので先に返事を, in English: answer first, it has waited longest). The rules for " +
+    "the advice hold for each suggestion: while any session needs a reply, suggest only sessions that need one; " +
+    "never suggest a working session, one with continuing true, the result of a session with watch_parent, or the " +
+    "result of a session whose watch_children still work; never put another session's name or id in a text. At " +
+    "most one suggestion per session. Each text is about 30 full-width characters (or about 60 Latin characters), " +
+    "one line, plain text, no markdown, no quotation marks, in the language given by ui_language. When nothing " +
+    "needs the developer, return an empty list.",
+  outputFields: {
+    ...CONCIERGE_TASK.outputFields,
+    suggestions: {
+      type: "array",
+      description: "One to three things the developer had best do next and why, most important first; empty when none.",
+      items: {
+        type: "object",
+        properties: {
+          session_id: { type: "string", description: "The id of the session it is about, copied exactly from the input." },
+          kind: { type: "string", enum: CONCIERGE_SUGGESTION_KINDS, description: "reply or check_result." },
+          text: { type: "string", description: "One short line, without the session's name." },
+        },
+      },
+    },
+  },
+  // Room for three suggestions after the advice (Claude's own decision)
+  maxTokens: 512,
+};
+
 export interface ConciergeAdvice {
   line: string;
   /** The session to jump to. Absent when the AI named none or an id that wasn't sent */
@@ -372,11 +417,13 @@ function adviceNamesOtherSession(line: string, target: PayloadSession, sessions:
   );
 }
 
-/** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge") */
-function dropReason(
+/** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge"). ownName false skips the check that
+ * the text names its session: a suggestion's text is written without it (the app shows the name) */
+export function dropReason(
   advice: ConciergeAdvice,
   action: ConciergeAction | undefined,
   sessions: PayloadSession[],
+  ownName = true,
 ): DroppedConciergeAdvice["reason"] | undefined {
   // Only waiting is not advice, with a target or without (the prompt alone didn't hold)
   if (action === "none") return "nothing_to_do";
@@ -393,18 +440,96 @@ function dropReason(
   // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or the turn
   // verdict asking (the prompt alone didn't hold)
   if (action === "reply" && !target.needs_reply) return "no_reply_needed";
-  if (!adviceNamesTarget(advice.line, target.name)) return "no_name";
+  if (ownName && !adviceNamesTarget(advice.line, target.name)) return "no_name";
   if (adviceNamesOtherSession(advice.line, target, sessions)) return "other_session";
   if (!target.needs_reply && sessions.some((s) => s.needs_reply)) return "not_waiting";
   return undefined;
 }
 
-/** What askConcierge returns. action is the kind of the advice (shown or dropped) as the AI gave it */
+/** A suggestion as shown in the Concierge tab: the session, what it asks, and the AI's text without the name */
+export interface ConciergeSuggestion {
+  sessionId: string;
+  kind: ConciergeSuggestionKind;
+  text: string;
+}
+
+/** A suggestion that isn't shown, and why: the advice's reasons, an id that wasn't sent, no kind, no text, a second
+ * one for the same session, or one past CONCIERGE_MAX_SUGGESTIONS */
+export interface DroppedConciergeSuggestion {
+  sessionId: string;
+  kind?: string;
+  text: string;
+  reason: DroppedConciergeAdvice["reason"] | "unknown_session" | "no_kind" | "no_text" | "duplicate" | "too_many";
+}
+
+/** The AI's text as one trimmed line, without the session's name when it still wrote it first */
+function suggestionTextOf(text: unknown, name: string): string {
+  if (typeof text !== "string") return "";
+  let line = text.replace(/\s+/g, " ").trim();
+  const bare = name.endsWith("…") ? name.slice(0, -1) : name;
+  for (const sep of [":", "："]) if (bare && line.startsWith(`${bare}${sep}`)) line = line.slice(bare.length + 1).trim();
+  return line;
+}
+
+/**
+ * The suggestions from a verdict's suggestions (objects with the sessions' own ids), checked in code like the advice
+ * (dropReason, without the name check: the text has no name). The first CONCIERGE_MAX_SUGGESTIONS that pass are kept,
+ * in the AI's order (docs/design.md "Concierge")
+ */
+export function parseConciergeSuggestions(
+  list: unknown,
+  sessions: PayloadSession[],
+): { suggestions: ConciergeSuggestion[]; dropped: DroppedConciergeSuggestion[] } {
+  const suggestions: ConciergeSuggestion[] = [];
+  const dropped: DroppedConciergeSuggestion[] = [];
+  for (const o of Array.isArray(list) ? list : []) {
+    const item = (o && typeof o === "object" ? o : {}) as { session_id?: unknown; kind?: unknown; text?: unknown };
+    const id = typeof item.session_id === "string" ? item.session_id.trim() : String(item.session_id);
+    const target = sessions.find((s) => s.id === id);
+    const text = suggestionTextOf(item.text, target?.name ?? "");
+    const kind = CONCIERGE_SUGGESTION_KINDS.find((k) => k === item.kind);
+    const drop = (reason: DroppedConciergeSuggestion["reason"]) =>
+      dropped.push({ sessionId: id, ...(typeof item.kind === "string" && { kind: item.kind }), text, reason });
+    if (!target) drop("unknown_session");
+    else if (!kind) drop("no_kind");
+    else if (!text) drop("no_text");
+    else if (suggestions.some((s) => s.sessionId === id)) drop("duplicate");
+    else {
+      const reason = dropReason({ line: text, targetId: id }, kind, sessions, false);
+      if (reason) drop(reason);
+      else if (suggestions.length >= CONCIERGE_MAX_SUGGESTIONS) drop("too_many");
+      else suggestions.push({ sessionId: id, kind, text });
+    }
+  }
+  return { suggestions, dropped };
+}
+
+// The keys under which the facts hold session ids. While suggestions are asked for, the AI is sent short references
+// (s1, s2, …) in their place: the ids are long paths, and several objects with them filled the output (cut off at 512
+// tokens with 8 sessions, docs/design.md "Concierge")
+const ID_KEYS = new Set(["id", "watch_parent", "watch_children", "waiting_session", "held_up_by", "session"]);
+
+function withRefs(value: unknown, ref: (id: string) => string, key?: string): unknown {
+  if (key !== undefined && ID_KEYS.has(key)) {
+    if (typeof value === "string") return ref(value);
+    if (Array.isArray(value)) return value.map((v) => (typeof v === "string" ? ref(v) : v));
+  }
+  if (Array.isArray(value)) return value.map((v) => withRefs(v, ref));
+  if (typeof value === "object" && value !== null) {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, withRefs(v, ref, k)]));
+  }
+  return value;
+}
+
+/** What askConcierge returns. action is the kind of the advice (shown or dropped) as the AI gave it. suggestions and
+ * droppedSuggestions only when they were asked for; answer then holds the sessions' own ids */
 export type ConciergeResult = JudgeResult<ConciergeAdvice | null> & {
   answer?: unknown;
   dropped?: DroppedConciergeAdvice;
   action?: ConciergeAction;
   noMatchingJson?: true;
+  suggestions?: ConciergeSuggestion[];
+  droppedSuggestions?: DroppedConciergeSuggestion[];
 };
 
 /** Who wrote an answer, for the app log: the request's id and the provider and model it went to */
@@ -488,25 +613,65 @@ export async function askConcierge(
   provider: AiProvider,
   payload: ConciergePayload,
   run: JudgeRunner = judgeRunnerFor(provider),
+  withSuggestions = false,
 ): Promise<ConciergeResult> {
-  const result = await run<ConciergeVerdict>(CONCIERGE_TASK, payload);
+  // With suggestions, short references go out in place of the ids and come back as them (withRefs)
+  const refs = new Map(payload.sessions.map((s, i) => [s.id, `s${i + 1}`]));
+  const ids = new Map([...refs].map(([id, r]) => [r, id]));
+  const back = (id: unknown) => (typeof id === "string" ? (ids.get(id.trim()) ?? id) : id);
+  const result = withSuggestions
+    ? await run<ConciergeVerdict & { suggestions?: unknown }>(
+        CONCIERGE_TASK_WITH_SUGGESTIONS,
+        withRefs(payload, (id) => refs.get(id) ?? id),
+      )
+    : await run<ConciergeVerdict & { suggestions?: unknown }>(CONCIERGE_TASK, payload);
   // A local model's answer that isn't JSON matching the schema is no advice, not an error (docs/design.md "BYOK API
   // keys", Local AI)
   if (!result.ok && result.kind === "malformed" && result.message === LOCAL_NO_MATCHING_JSON) {
-    return { ok: true, verdict: null, noMatchingJson: true };
+    return { ok: true, verdict: null, noMatchingJson: true, ...(withSuggestions && { suggestions: [] }) };
   }
   if (!result.ok) return result;
-  const parsed = parseConciergeVerdict(result.verdict, new Set(payload.sessions.map((s) => s.id)));
-  const action = actionOf(result.verdict);
+  const raw = result.verdict;
+  const answer =
+    withSuggestions && raw && typeof raw === "object"
+      ? {
+          ...raw,
+          session_id: back(raw.session_id),
+          suggestions: Array.isArray(raw.suggestions)
+            ? raw.suggestions.map((o) => (o && typeof o === "object" ? { ...o, session_id: back(o.session_id) } : o))
+            : raw.suggestions,
+        }
+      : raw;
+  const parsed = parseConciergeVerdict(answer, new Set(payload.sessions.map((s) => s.id)));
+  const action = actionOf(answer);
   const reason = parsed && dropReason(parsed, action, payload.sessions);
+  const suggested = withSuggestions ? parseConciergeSuggestions(answer?.suggestions, payload.sessions) : undefined;
   return {
     ok: true,
     verdict: reason ? null : parsed,
     ...(reason && { dropped: { ...parsed!, reason } }),
     ...(parsed && action && { action }),
-    answer: result.verdict,
+    answer,
+    ...(suggested && { suggestions: suggested.suggestions, droppedSuggestions: suggested.dropped }),
     ...(result.usage && { usage: result.usage }),
   };
+}
+
+/**
+ * The app log lines of an answer's suggestions, shown and dropped (with the reason), like the advice's line
+ * (conciergeResultLogLine): one per suggestion, the text JSON-quoted
+ */
+export function conciergeSuggestionLogLines(c: ConciergeLogContext, result: ConciergeResult): string[] {
+  if (!result.ok) return [];
+  return [
+    ...(result.suggestions ?? []).map(
+      (s) => `${logHead("suggestion", c)} kind=${s.kind} target=${s.sessionId} text=${JSON.stringify(s.text)}`,
+    ),
+    ...(result.droppedSuggestions ?? []).map(
+      (s) =>
+        `${logHead("suggestion-dropped", c)} kind=${s.kind ?? "-"} target=${s.sessionId} reason=${s.reason} text=${JSON.stringify(s.text)}`,
+    ),
+  ];
 }
 
 /** A session as the concierge tells its changes apart: needs a reply, working, or stopped */
@@ -763,9 +928,9 @@ export interface ConciergeLogEntry {
   /** dropped: an advice that wasn't shown (nothing to do now, a working session, no session name, not about a session
    * that needs a reply while one does, or a result a watch link holds) */
   kind: "request" | "advice" | "none" | "dropped" | "error";
-  /** What the entry is about. Speech bubble summaries also log here when a local model gave no summary; summary is
-   * "What's going on?" (concierge-summary.ts) */
-  source?: "concierge" | "bubble" | "summary";
+  /** What the entry is about. Speech bubble summaries also log here when a local model gave no summary; suggestion is
+   * a suggestion of the Concierge tab */
+  source?: "concierge" | "bubble" | "suggestion";
   text: string;
   /** The full input of a request, or the answer as the AI gave it, as JSON. Holds text from the sessions, so it is
    * shown in the debug log screen only and never goes to the app log (docs/design.md "Concierge") */

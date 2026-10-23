@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Tình hình thế nào?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Hiện tất cả"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Đang tóm tắt…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Không tóm tắt được. Hãy bấm nút lần nữa."
-  },
-  "conciergeSummaryClose": {
-    "message": "Đóng bản tóm tắt"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Tóm tắt lúc $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Gợi ý"

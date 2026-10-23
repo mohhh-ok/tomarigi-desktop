@@ -1,0 +1,100 @@
+// The concierge's bubble in "Concierge only" (docs/design.md "Concierge"): a line per session, 「<name>: <text> <state>」,
+// built here from the app's facts (lib/concierge-status.ts) on every render, then the suggestions that came with the
+// advice under their heading. Each name links to its session by id; no name is searched for in text. A suggestion
+// whose session changed since it came is dimmed with its state now
+import type { ReactNode } from "react";
+import { t } from "@/lib/i18n";
+import {
+  suggestionNow,
+  type ConciergeStatus,
+  type ShownSuggestion,
+  type StatusLine,
+} from "@/lib/concierge-status";
+import type { SessionView } from "@/lib/sessions";
+
+const STATE_LABEL = {
+  reply: "conciergeSummaryStateReply",
+  done: "conciergeSummaryStateDone",
+  working: "conciergeSummaryStateWorking",
+} as const;
+const NOW_LABEL = {
+  reply: "conciergeSummaryNowReply",
+  done: "conciergeSummaryNowDone",
+  working: "conciergeSummaryNowWorking",
+  gone: "conciergeSummaryGone",
+} as const;
+
+/** Something that jumps to a session's pane on a click or Enter, at rest too (fade-target); a span, so a long name wraps
+    with the line */
+function Jump({ onJump, children }: { onJump: () => void; children: ReactNode }) {
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      className="concierge-status-name fade-target"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={onJump}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        onJump();
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function ConciergeStatusReport({
+  lines,
+  more,
+  suggestions,
+  sessions,
+  canJump,
+  onFocus,
+}: {
+  lines: StatusLine[];
+  more: number;
+  suggestions: ShownSuggestion[];
+  // The sessions on screen now: a suggestion whose session changed is dimmed, and its name is the one on screen now
+  sessions: SessionView[];
+  canJump: (id: string) => boolean;
+  onFocus?: (id: string) => void;
+}) {
+  const name = (id: string, text: string, linked: boolean) =>
+    linked && canJump(id) ? <Jump onJump={() => onFocus?.(id)}>{text}</Jump> : text;
+  const state = (status: ConciergeStatus) => (
+    <span className="concierge-status-state" data-status={status}>
+      {` ${t(STATE_LABEL[status])}`}
+    </span>
+  );
+  return (
+    <span className="concierge-status">
+      {lines.map((l) => (
+        <span key={l.sessionId} className="concierge-status-line">
+          {name(l.sessionId, l.name, true)}
+          {/* A session the app has no text for says only its state */}
+          {l.text === undefined ? `: ${t(STATE_LABEL[l.status])}` : <>{`: ${l.text}`}{state(l.status)}</>}
+        </span>
+      ))}
+      {more > 0 && <span className="concierge-status-more">{t("conciergeSummaryMore", [String(more)])}</span>}
+      {suggestions.length > 0 && (
+        <>
+          <span className="concierge-status-heading">{t("conciergeSummarySuggestions")}</span>
+          {suggestions.map((s) => {
+            const now = suggestionNow(s, sessions);
+            // The name on screen now; the one from when it came once the session left
+            const shown = sessions.find((v) => v.id === s.sessionId)?.project;
+            return (
+              <span key={s.sessionId} className={`concierge-status-line${now ? " is-stale" : ""}`}>
+                {name(s.sessionId, shown ?? s.name, now !== "gone")}
+                {`: ${s.text}`}
+                {now && <span className="concierge-status-now">{` ${t(NOW_LABEL[now])}`}</span>}
+              </span>
+            );
+          })}
+        </>
+      )}
+    </span>
+  );
+}

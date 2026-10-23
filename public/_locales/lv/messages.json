@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Kas notiek?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Rādīt visu"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Apkopo…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Neizdevās apkopot. Nospiediet pogu vēlreiz."
-  },
-  "conciergeSummaryClose": {
-    "message": "Aizvērt kopsavilkumu"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Kopsavilkums $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Ieteikumi"

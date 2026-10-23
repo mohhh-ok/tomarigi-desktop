@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Bagaimana keadaannya?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Tampilkan semua"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Sedang merangkum…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Gagal merangkum. Tekan tombolnya lagi."
-  },
-  "conciergeSummaryClose": {
-    "message": "Tutup ringkasan"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Ringkasan pukul $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Saran"

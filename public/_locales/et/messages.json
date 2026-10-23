@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Mis toimub?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Näita kõiki"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Teen kokkuvõtet…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Kokkuvõtet ei õnnestunud teha. Vajuta nuppu uuesti."
-  },
-  "conciergeSummaryClose": {
-    "message": "Sulge kokkuvõte"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Kokkuvõte kell $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Soovitused"

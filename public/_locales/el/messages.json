@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Τι γίνεται τώρα;"
-  },
   "conciergeOnlyShowAll": {
     "message": "Εμφάνιση όλων"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Γίνεται σύνοψη…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Δεν έγινε σύνοψη. Πάτησε ξανά το κουμπί."
-  },
-  "conciergeSummaryClose": {
-    "message": "Κλείσιμο σύνοψης"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Σύνοψη στις $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Προτάσεις"

@@ -173,12 +173,7 @@ export const KEYS = [
   "conciergeOnlyBadge",
   "conciergeOnlyHidden",
   "conciergeOnlyWaiting",
-  "conciergeSummaryButton",
   "conciergeOnlyShowAll",
-  "conciergeSummaryLoading",
-  "conciergeSummaryFailed",
-  "conciergeSummaryClose",
-  "conciergeSummaryMadeAt",
   "conciergeSummarySuggestions",
   "conciergeSummaryStateReply",
   "conciergeSummaryStateDone",
@@ -213,7 +208,6 @@ export const PLACEHOLDERS = {
   updatesInstallButton: { version: "$1" },
   conciergeOnlyHidden: { count: "$1" },
   conciergeOnlyWaiting: { count: "$1" },
-  conciergeSummaryMadeAt: { time: "$1" },
   conciergeSummaryMore: { count: "$1" },
 };
 

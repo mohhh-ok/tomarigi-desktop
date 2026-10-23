@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "現在情況如何？"
-  },
   "conciergeOnlyShowAll": {
     "message": "全部顯示"
-  },
-  "conciergeSummaryLoading": {
-    "message": "正在整理情況…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "無法整理。請再按一次按鈕。"
-  },
-  "conciergeSummaryClose": {
-    "message": "關閉整理"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "$TIME$ 的概況",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "建議"

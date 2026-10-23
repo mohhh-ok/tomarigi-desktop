@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "अभी क्या चल रहा है?"
-  },
   "conciergeOnlyShowAll": {
     "message": "सभी दिखाएँ"
-  },
-  "conciergeSummaryLoading": {
-    "message": "सार बना रहे हैं…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "सार नहीं बन सका। बटन फिर से दबाएँ।"
-  },
-  "conciergeSummaryClose": {
-    "message": "सार बंद करें"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "$TIME$ का सारांश",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "सुझाव"

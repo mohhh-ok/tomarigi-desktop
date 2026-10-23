@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "现在情况如何？"
-  },
   "conciergeOnlyShowAll": {
     "message": "全部显示"
-  },
-  "conciergeSummaryLoading": {
-    "message": "正在总结情况…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "无法总结。请再按一次按钮。"
-  },
-  "conciergeSummaryClose": {
-    "message": "关闭总结"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "$TIME$ 的概况",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "建议"

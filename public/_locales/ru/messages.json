@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Что сейчас происходит?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Показать всех"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Подвожу итоги…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Не удалось подвести итоги. Нажмите кнопку ещё раз."
-  },
-  "conciergeSummaryClose": {
-    "message": "Закрыть итоги"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Сводка на $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Советы"

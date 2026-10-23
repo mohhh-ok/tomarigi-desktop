@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Hva skjer nå?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Vis alle"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Oppsummerer…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Kunne ikke oppsummere. Trykk på knappen igjen."
-  },
-  "conciergeSummaryClose": {
-    "message": "Lukk oppsummeringen"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Status kl. $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Forslag"

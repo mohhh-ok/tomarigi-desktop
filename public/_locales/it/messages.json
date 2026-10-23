@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Cosa succede?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Mostra tutto"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Sto riassumendo…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Impossibile riassumere. Premi di nuovo il pulsante."
-  },
-  "conciergeSummaryClose": {
-    "message": "Chiudi il riepilogo"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Riepilogo delle $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Suggerimenti"

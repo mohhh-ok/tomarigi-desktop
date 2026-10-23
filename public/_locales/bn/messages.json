@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "এখন কী চলছে?"
-  },
   "conciergeOnlyShowAll": {
     "message": "সব দেখান"
-  },
-  "conciergeSummaryLoading": {
-    "message": "সারাংশ তৈরি হচ্ছে…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "সারাংশ করা গেল না। আবার বোতাম চাপুন।"
-  },
-  "conciergeSummaryClose": {
-    "message": "সারাংশ বন্ধ করুন"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "$TIME$-এর সারসংক্ষেপ",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "পরামর্শ"

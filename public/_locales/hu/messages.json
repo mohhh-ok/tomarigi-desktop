@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Mi a helyzet?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Összes mutatása"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Összefoglalás…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Nem sikerült összefoglalni. Nyomd meg újra a gombot."
-  },
-  "conciergeSummaryClose": {
-    "message": "Összefoglaló bezárása"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Összefoglaló, $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Javaslatok"

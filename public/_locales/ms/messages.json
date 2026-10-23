@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Apa yang berlaku?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Tunjukkan semua"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Sedang meringkaskan…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Tidak dapat meringkaskan. Tekan butang sekali lagi."
-  },
-  "conciergeSummaryClose": {
-    "message": "Tutup ringkasan"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Ringkasan pada $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Cadangan"

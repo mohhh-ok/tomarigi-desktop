@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "ما الوضع الآن؟"
-  },
   "conciergeOnlyShowAll": {
     "message": "عرض الكل"
-  },
-  "conciergeSummaryLoading": {
-    "message": "جارٍ التلخيص…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "تعذّر التلخيص. اضغط الزر مرة أخرى."
-  },
-  "conciergeSummaryClose": {
-    "message": "إغلاق الملخص"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "ملخص الساعة $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "اقتراحات"

@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "ตอนนี้เป็นอย่างไร?"
-  },
   "conciergeOnlyShowAll": {
     "message": "แสดงทั้งหมด"
-  },
-  "conciergeSummaryLoading": {
-    "message": "กำลังสรุป…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "สรุปไม่ได้ กดปุ่มอีกครั้ง"
-  },
-  "conciergeSummaryClose": {
-    "message": "ปิดสรุป"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "สรุป ณ $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "คำแนะนำ"

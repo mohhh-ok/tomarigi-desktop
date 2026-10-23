@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Ce se întâmplă?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Arată tot"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Se rezumă…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Nu s-a putut rezuma. Apasă din nou butonul."
-  },
-  "conciergeSummaryClose": {
-    "message": "Închide rezumatul"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Rezumat de la $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Sugestii"

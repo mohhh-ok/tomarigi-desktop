@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "الان چه خبر است؟"
-  },
   "conciergeOnlyShowAll": {
     "message": "نمایش همه"
-  },
-  "conciergeSummaryLoading": {
-    "message": "در حال جمع‌بندی…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "جمع‌بندی ممکن نشد. دوباره دکمه را بزنید."
-  },
-  "conciergeSummaryClose": {
-    "message": "بستن جمع‌بندی"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "خلاصه ساعت $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "پیشنهادها"

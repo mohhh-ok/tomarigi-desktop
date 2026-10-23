@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Hoe staat het ervoor?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Alles tonen"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Bezig met samenvatten…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Samenvatten is mislukt. Druk nog eens op de knop."
-  },
-  "conciergeSummaryClose": {
-    "message": "Samenvatting sluiten"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Overzicht van $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Suggesties"

@@ -419,28 +419,8 @@
       }
     }
   },
-  "conciergeSummaryButton": {
-    "message": "Vad händer just nu?"
-  },
   "conciergeOnlyShowAll": {
     "message": "Visa alla"
-  },
-  "conciergeSummaryLoading": {
-    "message": "Sammanfattar…"
-  },
-  "conciergeSummaryFailed": {
-    "message": "Kunde inte sammanfatta. Tryck på knappen igen."
-  },
-  "conciergeSummaryClose": {
-    "message": "Stäng sammanfattningen"
-  },
-  "conciergeSummaryMadeAt": {
-    "message": "Läget kl. $TIME$",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      }
-    }
   },
   "conciergeSummarySuggestions": {
     "message": "Förslag"
