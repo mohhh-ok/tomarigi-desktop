@@ -48,6 +48,7 @@ import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
 import { aboveTail, bubbleReach, bubbleReachUp, bubbleRoomFor, layoutBubbles, type BubblePlace, type LaidBird } from "./garden-bubbles";
+import { SessionName, sessionNameClass } from "./session-name";
 import {
   BUBBLE_ROOM_PX,
   birdExtraH,
@@ -1354,8 +1355,8 @@ export function GardenNode({
         {/* Birds in a block show only what differs (path relative to the parent). If any bird in the row has a name,
             birds without one also reserve the row height */}
         {!inBlock ? (
-          <span className="garden-name" ref={nameRef}>
-            {session.project}
+          <span className={`garden-name${sessionNameClass(session.project, session.projectSuffix)}`} ref={nameRef}>
+            <SessionName name={session.project} suffix={session.projectSuffix} />
           </span>
         ) : grouped.label !== undefined ? (
           <span className="garden-name" title={grouped.label} ref={nameRef}>
