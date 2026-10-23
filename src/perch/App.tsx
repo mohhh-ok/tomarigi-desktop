@@ -526,7 +526,8 @@ export default function App({
     for (const s of sessions) {
       if (seen.has(s.slug)) continue;
       seen.add(s.slug);
-      running.push({ slug: s.slug, label: s.project, running: true });
+      // Per project: the project's name, not a session's name told apart from another (docs/design.md "Display names")
+      running.push({ slug: s.slug, label: s.projectBase ?? s.project, running: true });
     }
     running.sort((a, b) => a.label.localeCompare(b.label));
     const savedOnly = Object.entries(iconSetAssignments)

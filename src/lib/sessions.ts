@@ -220,6 +220,7 @@ function buildViews(
       id,
       project,
       ...(projectSuffix && { projectSuffix }),
+      ...(project !== base && { projectBase: base }),
       slug,
       state: displayState,
       sinceMs,
