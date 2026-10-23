@@ -14,12 +14,23 @@ export interface RowFit {
   statusWidth: number;
   /** The gap between the name and the state word */
   gap: number;
+  /** The tool name's whole width (with its 「 · 」), or 0 without one */
+  toolWidth: number;
 }
 
 /** Whether the name and the state with its elapsed time don't fit on one line together. The tool name and the request
  * excerpt don't count: they take only what is left and hide when nothing is */
 export function needsTwoLines({ rowWidth, nameLeft, nameWidth, statusWidth, gap }: RowFit): boolean {
   return Math.ceil(nameLeft + nameWidth + gap + statusWidth) > Math.floor(rowWidth);
+}
+
+/** Whether the tool name fits whole after the state and elapsed time, on the first line or, for a row on two lines, on
+ * the second (which starts under the name). One that doesn't is left out, so it takes no width: hidden but still laid
+ * out, it kept the state from going to the row's right end */
+export function toolFits(fit: RowFit, twoLines: boolean): boolean {
+  const { rowWidth, nameLeft, nameWidth, statusWidth, gap, toolWidth } = fit;
+  const before = twoLines ? nameLeft + statusWidth : nameLeft + nameWidth + gap + statusWidth;
+  return Math.ceil(before + toolWidth) <= Math.floor(rowWidth);
 }
 
 let canvas: HTMLCanvasElement | undefined;
@@ -39,6 +50,7 @@ export function measureRow(row: HTMLElement): RowFit | undefined {
   const name = row.querySelector<HTMLElement>(".bird-row-name");
   const label = row.querySelector<HTMLElement>(".bird-row-label");
   const since = row.querySelector<HTMLElement>(".bird-row-since");
+  const tool = row.querySelector<HTMLElement>(".bird-row-tool");
   if (!name || !label || !since) return undefined;
   const style = getComputedStyle(row);
   const rowLeft = row.getBoundingClientRect().left + (parseFloat(style.paddingLeft) || 0);
@@ -50,25 +62,42 @@ export function measureRow(row: HTMLElement): RowFit | undefined {
     // word (its negative margin takes back the row gap)
     statusWidth: textWidth(label) + since.getBoundingClientRect().width,
     gap: parseFloat(style.columnGap) || 0,
+    // Its negative margin takes back the row gap too
+    toolWidth: tool ? textWidth(tool) : 0,
   };
 }
 
+export interface RowLayouts {
+  /** Rows that show the state on a second line */
+  twoLines: Set<string>;
+  /** Rows whose tool name doesn't fit and is left out */
+  noTool: Set<string>;
+}
+
+const sameIds = (a: Set<string>, b: Set<string>) => a.size === b.size && [...b].every((id) => a.has(id));
+
 /**
- * Ids of the rows (data-row-id on .bird-row-main) under list that need two lines. Measured again when the list's width
- * changes, when what the rows show changes (key), and once the fonts have loaded
+ * How the rows (data-row-id on .bird-row-main) under list are laid out. Measured again when the list's width changes,
+ * when what the rows show changes (key), and once the fonts have loaded
  */
-export function useTwoLineRows(list: RefObject<HTMLElement | null>, key: unknown): Set<string> {
-  const [ids, setIds] = useState<Set<string>>(() => new Set());
+export function useRowLayouts(list: RefObject<HTMLElement | null>, key: unknown): RowLayouts {
+  const [layouts, setLayouts] = useState<RowLayouts>(() => ({ twoLines: new Set(), noTool: new Set() }));
   useLayoutEffect(() => {
     const el = list.current;
     if (!el) return;
     const measure = () => {
-      const next = new Set<string>();
+      const next: RowLayouts = { twoLines: new Set(), noTool: new Set() };
       for (const row of el.querySelectorAll<HTMLElement>(".bird-row-main[data-row-id]")) {
         const fit = measureRow(row);
-        if (fit && needsTwoLines(fit)) next.add(row.dataset.rowId!);
+        if (!fit) continue;
+        const id = row.dataset.rowId!;
+        const twoLines = needsTwoLines(fit);
+        if (twoLines) next.twoLines.add(id);
+        if (fit.toolWidth > 0 && !toolFits(fit, twoLines)) next.noTool.add(id);
       }
-      setIds((prev) => (prev.size === next.size && [...next].every((id) => prev.has(id)) ? prev : next));
+      setLayouts((prev) =>
+        sameIds(prev.twoLines, next.twoLines) && sameIds(prev.noTool, next.noTool) ? prev : next,
+      );
     };
     measure();
     let alive = true;
@@ -80,5 +109,5 @@ export function useTwoLineRows(list: RefObject<HTMLElement | null>, key: unknown
       observer.disconnect();
     };
   }, [list, key]);
-  return ids;
+  return layouts;
 }
