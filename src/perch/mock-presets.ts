@@ -829,6 +829,13 @@ export const PRESETS: Preset[] = [
     },
   },
   {
+    // 4. Concierge tab at rest (with ?tab=concierge&concierge=): the suggestions name the two sessions that wait on the
+    // user, and the state lines mix needing a reply, done, and working. The sessions are the terminal's four tabs
+    id: "gallery-concierge",
+    label: "Gallery: concierge",
+    build: () => ({ sessions: pick(["gallery/plan", "gallery/asking", "gallery/finished", "gallery/working"]), events: [] }),
+  },
+  {
     // Two sessions in the same project, told apart by a number, and two told apart by the session name the user gave one
     // of them; the names are made by the same function as in a real scan (docs/design.md "Display names")
     id: "same-project",
@@ -981,6 +988,16 @@ const GALLERY: SessionView[] = [
     ...finished(12 * 60_000, "Added three button sizes", "ボタンを 3 種類にした"),
   },
   {
+    // Waits on the user, after the blog session (the Concierge image's second suggestion)
+    id: "gallery/asking",
+    project: "moh-tech-net",
+    slug: "moh-tech-net",
+    state: "waiting",
+    sinceMs: 30_000,
+    snippet: tr("Add the new app to the top page", "トップページに新しいアプリを足して"),
+    question: tr("Put it first or last in the list?", "一覧の先頭と末尾のどちらに置きますか？"),
+  },
+  {
     id: "gallery/dozing",
     project: "moh-tech-net",
     slug: "moh-tech-net",
@@ -989,6 +1006,13 @@ const GALLERY: SessionView[] = [
     ...finished(48 * 60_000, "Fixed the README typo", "README の誤字を直した"),
   },
 ];
+
+/** A suggestion's text for a gallery session, so the Concierge image's suggestions fit its sessions (mock.tsx) */
+export function gallerySuggestionText(id: string): string | undefined {
+  if (id === "gallery/plan") return tr("approve the plan, it has waited longest", "いちばん長く待っている計画の承認を先に");
+  if (id === "gallery/asking") return tr("pick where the new app goes", "新しいアプリの置き場所を決めましょう");
+  return undefined;
+}
 
 function pick(ids: string[]): SessionView[] {
   return ids.map((id) => GALLERY.find((s) => s.id === id)!);
