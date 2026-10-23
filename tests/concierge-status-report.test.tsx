@@ -53,14 +53,16 @@ describe("the state lines", () => {
 });
 
 describe("the suggestions", () => {
-  test("under their heading after the lines, each with its session's name as a link; no advice line of its own", () => {
+  test("at the top under their heading, before the lines, each with its session's name as a link; no advice line", () => {
     const html = render();
-    expect(html.indexOf("concierge-status-heading")).toBeGreaterThan(html.indexOf("Fixed the links"));
+    expect(html.indexOf("concierge-status-heading")).toBeLessThan(html.indexOf("Publish now?"));
+    expect(html.indexOf("it has waited longest")).toBeLessThan(html.indexOf('class="concierge-status-lines"'));
     expect(html).toContain(`<span class="concierge-status-line">${LINK}blog</span>: it has waited longest</span>`);
   });
 
-  test("none: no heading", () => {
+  test("none: no heading, and the lines start the bubble", () => {
     expect(render(NOW, [])).not.toContain("concierge-status-heading");
+    expect(render(NOW, [])).toMatch(/^<span class="concierge-status"><span class="concierge-status-lines">/);
   });
 
   test("dimmed with its session's state now once that changed; gone is no longer a link", () => {

@@ -104,6 +104,8 @@ export function Perch({
               })()}
               {/* The latest user message (always set by lib/sessions.ts; absent only for sessions with no message in the window) */}
               {s.snippet && <RowSnippet text={s.snippet} />}
+              {/* Sends the status to a second line in the narrowest windows (styles/perch-row-layout.css) */}
+              <span className="bird-row-break" aria-hidden />
               <StatusParts session={s} asking={asking} liveDots />
               </div>
               {bubble && <SpeechBubble text={bubble} placement="row" />}
