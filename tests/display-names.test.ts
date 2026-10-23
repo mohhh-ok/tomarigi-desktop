@@ -11,7 +11,10 @@ const session = (id: string, base: string, more: Partial<NameCandidate> = {}): N
   ...more,
 });
 
-const namesOf = (entries: NameCandidate[]) => Object.fromEntries(displayNamesOf(entries));
+const namesOf = (entries: NameCandidate[]) =>
+  Object.fromEntries([...displayNamesOf(entries)].map(([id, { name }]) => [id, name]));
+const suffixesOf = (entries: NameCandidate[]) =>
+  Object.fromEntries([...displayNamesOf(entries)].map(([id, { suffix }]) => [id, suffix]));
 
 describe("display names", () => {
   test("names that don't collide stay as they are", () => {
@@ -137,5 +140,29 @@ describe("display names", () => {
         session("c", "billionclips 2", { startedAt: 3000 }),
       ]),
     ).toEqual({ a: "billionclips", b: "billionclips 3", c: "billionclips 2" });
+  });
+
+  test("the end that tells a name apart is kept as its suffix, so it stays visible when the name is cut", () => {
+    expect(
+      suffixesOf([
+        session("a", "billionclips", { startedAt: 1000 }),
+        session("b", "billionclips", { startedAt: 2000 }),
+        session("c", "tomarigi-desktop", { sessionName: "tomarigi-desktop-advice-links", startedAt: 1000 }),
+        session("d", "tomarigi-desktop", { startedAt: 2000 }),
+        session("e", "blog"),
+      ]),
+    ).toEqual({ a: undefined, b: " 2", c: "-advice-links", d: undefined, e: undefined });
+  });
+
+  test("suffixes of folder labels, numbers after a label, and numbers after a session name", () => {
+    expect(
+      suffixesOf([
+        session("a", "billionclips", { rootId: "c1", rootLabel: "claude", startedAt: 1000 }),
+        session("b", "billionclips", { rootId: "c1", rootLabel: "claude", startedAt: 2000 }),
+        session("c", "billionclips", { rootId: "c2", rootLabel: "claude2" }),
+        session("d", "blog", { sessionName: "daily", startedAt: 1000 }),
+        session("e", "blog", { sessionName: "daily", startedAt: 2000 }),
+      ]),
+    ).toEqual({ a: " (claude)", b: " (claude) 2", c: " (claude2)", d: undefined, e: " 2" });
   });
 });

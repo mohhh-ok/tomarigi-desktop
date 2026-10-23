@@ -25,7 +25,7 @@ import { extractQuestion, pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
 import { cacheEvent, recentEvents, saveEventLogIfDirty } from "./session-event-log";
 import { rememberPeerStates, resolveWatchLinks, type WatchLinks } from "./session-watch";
-import { displayNamesOf } from "./display-names";
+import { displayNamesOf, type DisplayName } from "./display-names";
 
 export type { AskJudgement, BirdState, ChickView, PeerLink, ScanResult, SessionEvent, SessionView } from "./session-types";
 export { codexDirOf, configDirOf, predecessorsOf } from "./session-liveness";
@@ -152,7 +152,7 @@ function baseNames(
 /** Builds the SessionView of each bird, and caches the transition events derived from its tail */
 function buildViews(
   withTail: (FoundEntry & { base: string; isSdk: boolean })[],
-  names: Map<string, string>,
+  names: Map<string, DisplayName>,
   sdkChicksByParentId: Map<string, ChickScan[]>,
   watch: WatchLinks,
   now: number,
@@ -165,7 +165,8 @@ function buildViews(
     // advance file.lastModified, so using mtime as the basis makes ended sessions reappear (see the comment on
     // TailInfo.lastEventAt). Falls back to mtime only in the rare case where the tail window has no line with a timestamp
     const sinceMs = now - (tail.lastEventAt ?? file.lastModified);
-    const project = names.get(id) ?? base;
+    const project = names.get(id)?.name ?? base;
+    const projectSuffix = names.get(id)?.suffix;
     // Subagent chicks (from scanChicks) and SDK chicks (those for which this session was chosen as parent
     // candidate) are carried as separate lists and used differently depending on the destination.
     // - subagentChickViews (without SDK): passed only to deriveSessionEvents (done suppression check).
@@ -218,6 +219,7 @@ function buildViews(
     views.push({
       id,
       project,
+      ...(projectSuffix && { projectSuffix }),
       slug,
       state: displayState,
       sinceMs,

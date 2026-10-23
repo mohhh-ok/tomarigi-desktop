@@ -12,6 +12,13 @@ export interface NameCandidate {
   startedAt?: number;
 }
 
+export interface DisplayName {
+  name: string;
+  /** The end of the name that tells it apart from another session's (the folder's label, the rest of a session name
+   * that starts with the project's name, the number), kept visible when the name is cut to fit */
+  suffix?: string;
+}
+
 const countsOf = (names: Iterable<string>) => {
   const counts = new Map<string, number>();
   for (const name of names) counts.set(name, (counts.get(name) ?? 0) + 1);
@@ -23,7 +30,7 @@ const countsOf = (names: Iterable<string>) => {
  * that would still show the same name show their own session name when they have one, and the ones still the same
  * after that are numbered in the order they started, the first keeping the plain name
  */
-export function displayNamesOf(entries: NameCandidate[]): Map<string, string> {
+export function displayNamesOf(entries: NameCandidate[]): Map<string, DisplayName> {
   const rootsByBase = new Map<string, Set<string>>();
   for (const e of entries) {
     if (!rootsByBase.has(e.base)) rootsByBase.set(e.base, new Set());
@@ -44,6 +51,7 @@ export function displayNamesOf(entries: NameCandidate[]): Map<string, string> {
   // Number the ones still the same. Sessions without a start time go after those with one, then by id, so the
   // numbers stay the same from one scan to the next; a number already taken by another name on screen is skipped
   const taken = new Set(names.values());
+  const numberedFrom = new Map<string, string>();
   const byName = new Map<string, NameCandidate[]>();
   for (const e of entries) {
     const name = names.get(e.id) ?? e.base;
@@ -59,7 +67,15 @@ export function displayNamesOf(entries: NameCandidate[]): Map<string, string> {
       while (taken.has(`${name} ${n}`));
       taken.add(`${name} ${n}`);
       names.set(e.id, `${name} ${n}`);
+      numberedFrom.set(e.id, name);
     }
   }
-  return names;
+
+  const result = new Map<string, DisplayName>();
+  for (const e of entries) {
+    const name = names.get(e.id) ?? e.base;
+    const head = name !== e.base && name.startsWith(e.base) ? e.base : numberedFrom.get(e.id);
+    result.set(e.id, head === undefined ? { name } : { name, suffix: name.slice(head.length) });
+  }
+  return result;
 }
