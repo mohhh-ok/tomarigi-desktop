@@ -139,7 +139,7 @@
   color: #e9e6de;
 }
 
-/* The concierge's bubble with a summary (concierge-only-garden.tsx): wider than a bird's bubble, since it holds a few
+/* The concierge's bubble with a summary (concierge-report.tsx): wider than a bird's bubble, since it holds a few
    lines; the summary on top with × at its top right, then the advice below a dividing line */
 .speech-bubble-below.concierge-report {
   --bubble-max: 240px;
@@ -155,13 +155,13 @@
   display: block;
 }
 
-/* The state at a line's end, e.g. 「（返事待ち）」, wraps as one piece (concierge-only-garden.tsx) */
+/* The state at a line's end, e.g. 「（返事待ち）」, wraps as one piece (concierge-report.tsx) */
 .concierge-summary-tail {
   white-space: nowrap;
 }
 
-/* A session's name in the summary (concierge-only-garden.tsx): jumps to its pane, so it takes clicks like the ×, at
-   rest too, and reads as a link: underlined, a deeper color under the cursor */
+/* A session's name in the summary or its advice (concierge-report.tsx): jumps to its pane, so it takes clicks like the
+   ×, at rest too, and reads as a link: underlined, a deeper color under the cursor */
 .concierge-summary-name {
   text-decoration: underline;
   text-decoration-color: rgba(38, 34, 26, 0.45);

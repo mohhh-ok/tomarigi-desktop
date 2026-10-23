@@ -4,10 +4,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
-import { conciergeBubbleParts, summaryNameLinks, type SummaryState } from "@/lib/concierge-summary";
+import { conciergeBubbleParts, type SummaryState } from "@/lib/concierge-summary";
 import { PLACE_EDGE_PX } from "@/lib/garden-place";
 import type { SessionView } from "@/lib/sessions";
 import { CONCIERGE_ID } from "./concierge";
+import { ConciergeReport } from "./concierge-report";
 import { conciergeOnlyWindowSize } from "./concierge-only";
 import { GardenNode, type GardenMenu } from "./garden";
 import { onFadeHandlePointerDown } from "./garden-fade";
@@ -155,71 +156,17 @@ export function ConciergeOnlyGarden({
   };
   const target = advice?.targetId;
   const parts = conciergeBubbleParts(summary, advice);
-  // A session's name jumps to its pane, as clicking its bird does; only those that can jump are links
+  // A session's name in the summary or the advice jumps to its pane, as clicking its bird does; only those that can
+  // jump are links
   const canJump = (id: string) => Boolean(onFocus && canFocus?.(id));
-  const linked = (text: string) =>
-    summaryNameLinks(text, sessions, canJump).map((p, i) =>
-      p.id === undefined ? (
-        p.text
-      ) : (
-        // Takes clicks at rest too, like the × (fade-target); a span, so a long name wraps with the line
-        <span
-          key={i}
-          role="button"
-          tabIndex={0}
-          className="concierge-summary-name fade-target"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => onFocus?.(p.id!)}
-          onKeyDown={(e) => {
-            if (e.key !== "Enter" && e.key !== " ") return;
-            e.preventDefault();
-            onFocus?.(p.id!);
-          }}
-        >
-          {p.text}
-        </span>
-      ),
-    );
   const report = parts.summary && (
-    <>
-      <span className="concierge-summary">
-        {/* Takes clicks at rest too (fade-target in garden-fade.ts); the rest of the bubble lets them through */}
-        <button
-          type="button"
-          className="concierge-summary-close fade-target"
-          aria-label={t("conciergeSummaryClose")}
-          title={t("conciergeSummaryClose")}
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={onCloseSummary}
-        >
-          ×
-        </button>
-        {parts.summary.kind === "shown" ? (
-          <span className="concierge-summary-text">
-            {parts.summary.text.split("\n").map((line, i) => {
-              // A state in brackets at the line's end wraps as one piece, not 「（返事待」「ち）」
-              const tail = /\s?(（[^（）]*）|\([^()]*\))$/.exec(line);
-              return (
-                <span key={i} style={{ display: "block" }}>
-                  {linked(tail ? line.slice(0, tail.index) : line)}
-                  {tail && <span className="concierge-summary-tail">{linked(tail[0])}</span>}
-                </span>
-              );
-            })}
-          </span>
-        ) : (
-          <span className="concierge-summary-note">
-            {t(parts.summary.kind === "loading" ? "conciergeSummaryLoading" : "conciergeSummaryFailed")}
-          </span>
-        )}
-      </span>
-      {parts.advice && (
-        <>
-          <span className="concierge-summary-divider" aria-hidden />
-          <span className="concierge-summary-advice">{parts.advice}</span>
-        </>
-      )}
-    </>
+    <ConciergeReport
+      parts={{ summary: parts.summary, advice: parts.advice }}
+      sessions={sessions}
+      canJump={canJump}
+      onFocus={onFocus}
+      onCloseSummary={onCloseSummary}
+    />
   );
   return (
     <div
