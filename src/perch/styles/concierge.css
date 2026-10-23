@@ -103,10 +103,10 @@
 /* The one part of the bubble that takes clicks (the rest lets them through, as every bubble does) */
 .concierge-summary-close {
   position: absolute;
-  top: -1px;
-  right: -5px;
-  width: 16px;
-  height: 16px;
+  top: -2px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: none;
   border-radius: 4px;

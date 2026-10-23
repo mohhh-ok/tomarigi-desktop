@@ -81,8 +81,10 @@ function mockConciergeSummary(sessions: SessionView[]): Promise<string> | undefi
   const done = sessions.filter((s) => !needsAnswer(s.state, s.ask) && s.state !== "working");
   const lines = [
     ...waiting.map((s) => (ja ? `${s.project}が返事を待っています` : `${s.project} is waiting for your reply`)),
-    ...(working.length > 0 ? [ja ? `${names(working)}は作業中です` : `${names(working)} are working`] : []),
-    ...(done.length > 0 ? [ja ? `${names(done)}は終わっています` : `${names(done)} have finished`] : []),
+    ...(working.length > 0
+      ? [ja ? `${names(working)}は作業中です` : `${names(working)} ${working.length > 1 ? "are" : "is"} working`]
+      : []),
+    ...(done.length > 0 ? [ja ? `${names(done)}は終わっています` : `${names(done)} ${done.length > 1 ? "have" : "has"} finished`] : []),
   ];
   const wait = MOCK_SUMMARY === "slow" ? 20_000 : 900;
   return new Promise((resolve, reject) =>
