@@ -1293,3 +1293,31 @@ test("the tab asks no more often: what only changes a state line (a tool, a line
   expect([...after]).toEqual([...before]);
   expect(conciergeTriggered(before, after)).toBe(false);
 });
+
+test("sessions told apart by a number: an advice is checked against the numbered name (docs/design.md \"Display names\")", async () => {
+  const payload = buildConciergePayload(
+    [
+      { view: view("b1", { project: "billionclips", state: "done" }) },
+      { view: view("b2", { project: "billionclips 2", state: "done" }) },
+    ],
+    [], [], NOW, "ja",
+  );
+  const answering = (answer: Record<string, string>) => async <V>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: answer as V,
+  });
+  const second = { advice: "billionclips 2の結果を確認してください", session_id: "b2", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(second))).toMatchObject({ verdict: { line: second.advice, targetId: "b2" } });
+  const first = { advice: "billionclipsの結果を確認してください", session_id: "b1", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(first))).toMatchObject({ verdict: { line: first.advice, targetId: "b1" } });
+  const wrongName = { advice: "billionclips 2の結果を確認してください", session_id: "b1", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(wrongName))).toMatchObject({
+    verdict: null,
+    dropped: { targetId: "b1", reason: "other_session" },
+  });
+  const plainForSecond = { advice: "billionclipsの結果を確認してください", session_id: "b2", action: "check_result" };
+  expect(await askConcierge("openai", payload, answering(plainForSecond))).toMatchObject({
+    verdict: null,
+    dropped: { targetId: "b2", reason: "no_name" },
+  });
+});

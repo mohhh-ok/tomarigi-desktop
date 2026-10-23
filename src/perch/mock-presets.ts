@@ -1,5 +1,6 @@
 import { uiLanguage } from "@/lib/i18n";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
+import { displayNamesOf } from "@/lib/display-names";
 
 // Mock data presets for ?mock=1 (MockPanel in mock.tsx switches between them)
 
@@ -823,6 +824,81 @@ export const PRESETS: Preset[] = [
           ev("gallery/lead-docs", "done"),
           ev("gallery/finished", "done"),
           ev("gallery/dozing", "done"),
+        ],
+      };
+    },
+  },
+  {
+    // Two sessions in the same project, told apart by a number, and two told apart by the session name the user gave one
+    // of them; the names are made by the same function as in a real scan (docs/design.md "Display names")
+    id: "same-project",
+    label: "Same project twice",
+    build: () => {
+      const raw: (Omit<SessionView, "project"> & { base: string; sessionName?: string })[] = [
+        {
+          id: "mock/same/bc-a",
+          base: "billionclips",
+          slug: "billionclips",
+          startedAt: BASE - 40 * 60_000,
+          state: "waiting",
+          sinceMs: 70_000,
+          question: tr("Render at 1080p or 4K?", "1080p と 4K のどちらで書き出しますか？"),
+        },
+        {
+          id: "mock/same/bc-b",
+          base: "billionclips",
+          slug: "billionclips",
+          startedAt: BASE - 20 * 60_000,
+          state: "done",
+          sinceMs: 2 * 60_000,
+          reply: { at: BASE - 2 * 60_000, text: tr("Fixed the daily upload.", "毎日のアップロードを直しました") },
+          ask: { status: "not_asking" },
+        },
+        {
+          id: "mock/same/td-a",
+          base: "tomarigi-desktop",
+          sessionName: "tomarigi-desktop-advice-links",
+          slug: "tomarigi-desktop",
+          startedAt: BASE - 30 * 60_000,
+          state: "working",
+          sinceMs: 4_000,
+          toolName: "Edit",
+        },
+        {
+          id: "mock/same/td-b",
+          base: "tomarigi-desktop",
+          slug: "tomarigi-desktop",
+          startedAt: BASE - 10 * 60_000,
+          state: "done",
+          sinceMs: 5 * 60_000,
+          reply: { at: BASE - 5 * 60_000, text: tr("Updated the README.", "README を更新しました") },
+          ask: { status: "not_asking" },
+        },
+        { id: "mock/same/blog", base: "blog", slug: "blog", startedAt: BASE - 50 * 60_000, state: "working", sinceMs: 9_000, toolName: "Read" },
+      ];
+      const names = displayNamesOf(raw.map((s) => ({ id: s.id, base: s.base, rootId: "claude", rootLabel: "Claude Code", sessionName: s.sessionName, startedAt: s.startedAt })));
+      const sessions: SessionView[] = raw.map(({ base, sessionName: _, ...s }) => {
+        const name = names.get(s.id);
+        return {
+          ...s,
+          project: name?.name ?? base,
+          ...(name?.suffix && { projectSuffix: name.suffix }),
+          ...(name && name.name !== base && { projectBase: base }),
+        };
+      });
+      const ev = (id: string, type: SessionEvent["type"], at: number): SessionEvent => ({
+        key: `${id}/${type}`,
+        sessionId: id,
+        project: names.get(id)?.name ?? "",
+        type,
+        at,
+      });
+      return {
+        sessions,
+        events: [
+          ev("mock/same/bc-a", "waiting", BASE - 70_000),
+          ev("mock/same/bc-b", "done", BASE - 2 * 60_000),
+          ev("mock/same/td-b", "done", BASE - 5 * 60_000),
         ],
       };
     },

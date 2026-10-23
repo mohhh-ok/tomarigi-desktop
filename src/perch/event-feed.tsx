@@ -7,6 +7,7 @@ import { BirdBadge } from "./bird-glyph";
 import { EVENT, EventIcon, eventKind } from "./event-kind";
 import { focusProps } from "./focus";
 import { formatEventTime } from "./format-time";
+import { SessionName, sessionNameClass } from "./session-name";
 
 // It's an experimental feature, so keep the count modest.
 // One card = one session. Past events of the same session aren't shown; only the latest one is
@@ -72,7 +73,9 @@ export function EventFeed({
                 </span>
                 <div className="event-card-body">
                   <div className="event-card-head">
-                    <span className="event-card-project">{e.project}</span>
+                    <span className={`event-card-project${sessionNameClass(e.project, e.projectSuffix)}`}>
+                      <SessionName name={e.project} suffix={e.projectSuffix} />
+                    </span>
                     {e.snippet && <span className="event-snippet">{t("quotedSnippet", e.snippet)}</span>}
                   </div>
                   <div className="event-card-meta">

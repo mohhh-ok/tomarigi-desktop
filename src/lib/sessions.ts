@@ -25,6 +25,7 @@ import { extractQuestion, pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
 import { cacheEvent, recentEvents, saveEventLogIfDirty } from "./session-event-log";
 import { rememberPeerStates, resolveWatchLinks, type WatchLinks } from "./session-watch";
+import { displayNamesOf, type DisplayName } from "./display-names";
 
 export type { AskJudgement, BirdState, ChickView, PeerLink, ScanResult, SessionEvent, SessionView } from "./session-types";
 export { codexDirOf, configDirOf, predecessorsOf } from "./session-liveness";
@@ -86,9 +87,25 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   for (const { agent, roots } of adapters) agent.finish?.(roots, prepared.get(agent.kind));
   scanState.jumpPids = new Map(found.flatMap((f) => (f.pid === undefined ? [] : [[f.id, f.pid] as const])));
   const { displayEntries, sdkChicksByParentId } = assignSdkChicks(found, now);
-  const { withTail, baseNameRoots } = displayNames(roots, found, displayEntries);
+  const withTail = baseNames(roots, found, displayEntries);
   const watch = await resolveWatchLinks(withTail, liveSessions);
-  const views = buildViews(withTail, baseNameRoots, sdkChicksByParentId, watch, now);
+  const names = displayNamesOf(
+    withTail.map((f) => {
+      const live = f.isSdk ? undefined : watch.liveBySessionId.get(sessionIdOfViewId(f.id));
+      return {
+        id: f.id,
+        base: f.base,
+        rootId: f.rootId,
+        rootLabel: f.rootLabel,
+        // Only a name the user gave (Claude Code's /rename or --name). The one Claude Code makes up itself is the
+        // project's name with a random suffix (e.g. 「billionclips-cc」), which says nothing about the session
+        // (Claude's own decision, docs/design.md "Display names")
+        sessionName: live?.nameSource === "user" ? live.name : undefined,
+        startedAt: live?.startedAt,
+      };
+    }),
+  );
+  const views = buildViews(withTail, names, sdkChicksByParentId, watch, now);
   rememberPeerStates(views, watch, now);
 
   views.sort((a, b) => STATE_URGENCY[a.state] - STATE_URGENCY[b.state] || a.sinceMs - b.sinceMs);
@@ -100,12 +117,12 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
   return { views, brokenIds, events };
 }
 
-/** Display names of the entries shown as birds */
-function displayNames(
+/** Base names of the entries shown as birds (the project's name, before sessions with the same one are told apart) */
+function baseNames(
   roots: RootEntry[],
   found: FoundEntry[],
   displayEntries: FoundEntry[],
-): { withTail: (FoundEntry & { base: string; isSdk: boolean })[]; baseNameRoots: Map<string, Set<string>> } {
+): (FoundEntry & { base: string; isSdk: boolean })[] {
   // Compute the display name table per root (fallback for sessions without a cwd. Stripping the common prefix
   // of slugs only makes sense within a root). Computing from found (all entries including SDK) gives the same
   // result as displayEntries (an SDK session's slug is always shared with some displayed session), but we
@@ -129,35 +146,27 @@ function displayNames(
       : (labelsByRoot.get(f.rootId)?.get(f.slug) ?? f.slug);
     withTail.push({ ...f, base, isSdk: isSdkSession(f) });
   }
-
-  // Tally which roots each display name (without the root label) appears in, and append the root label only
-  // to names duplicated across different roots to tell them apart
-  const baseNameRoots = new Map<string, Set<string>>();
-  for (const f of withTail) {
-    if (!baseNameRoots.has(f.base)) baseNameRoots.set(f.base, new Set());
-    baseNameRoots.get(f.base)?.add(f.rootId);
-  }
-  return { withTail, baseNameRoots };
+  return withTail;
 }
 
 /** Builds the SessionView of each bird, and caches the transition events derived from its tail */
 function buildViews(
   withTail: (FoundEntry & { base: string; isSdk: boolean })[],
-  baseNameRoots: Map<string, Set<string>>,
+  names: Map<string, DisplayName>,
   sdkChicksByParentId: Map<string, ChickScan[]>,
   watch: WatchLinks,
   now: number,
 ): SessionView[] {
   const views: SessionView[] = [];
 
-  for (const { rootLabel, file, id, chicks, tail, base, slug, isSdk } of withTail) {
-    const ambiguous = (baseNameRoots.get(base)?.size ?? 0) > 1;
+  for (const { file, id, chicks, tail, base, slug, isSdk } of withTail) {
     // The time basis for the state check is tail.lastEventAt (the last time of a line with a timestamp).
     // Later appends without a timestamp (last-prompt etc., a touch on a dead transcript hours later) only
     // advance file.lastModified, so using mtime as the basis makes ended sessions reappear (see the comment on
     // TailInfo.lastEventAt). Falls back to mtime only in the rare case where the tail window has no line with a timestamp
     const sinceMs = now - (tail.lastEventAt ?? file.lastModified);
-    const project = ambiguous ? `${base} (${rootLabel})` : base;
+    const project = names.get(id)?.name ?? base;
+    const projectSuffix = names.get(id)?.suffix;
     // Subagent chicks (from scanChicks) and SDK chicks (those for which this session was chosen as parent
     // candidate) are carried as separate lists and used differently depending on the destination.
     // - subagentChickViews (without SDK): passed only to deriveSessionEvents (done suppression check).
@@ -210,6 +219,8 @@ function buildViews(
     views.push({
       id,
       project,
+      ...(projectSuffix && { projectSuffix }),
+      ...(project !== base && { projectBase: base }),
       slug,
       state: displayState,
       sinceMs,
