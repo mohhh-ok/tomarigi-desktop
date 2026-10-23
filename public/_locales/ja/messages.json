@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "いまの状況をきく"
+  },
+  "conciergeSummaryLoading": {
+    "message": "状況をまとめています…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "まとめられませんでした。もう一度ボタンを押してください"
+  },
+  "conciergeSummaryClose": {
+    "message": "まとめを閉じる"
   }
 }

@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Tình hình thế nào?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Đang tóm tắt…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Không tóm tắt được. Hãy bấm nút lần nữa."
+  },
+  "conciergeSummaryClose": {
+    "message": "Đóng bản tóm tắt"
   }
 }

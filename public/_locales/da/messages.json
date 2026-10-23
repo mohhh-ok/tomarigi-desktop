@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Hvad sker der nu?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Opsummerer…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Kunne ikke opsummere. Tryk på knappen igen."
+  },
+  "conciergeSummaryClose": {
+    "message": "Luk opsummeringen"
   }
 }

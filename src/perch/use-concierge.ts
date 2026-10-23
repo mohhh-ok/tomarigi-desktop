@@ -39,6 +39,27 @@ const DROP_REASON_TEXT: Record<DroppedConciergeAdvice["reason"], string> = {
   child_working: "a session it watches is still working",
 };
 
+/** The facts sent to the concierge now, for an advice and for "What's going on?" alike (use-concierge-summary.ts) */
+export function conciergePayloadNow(
+  sessions: SessionView[],
+  events: SessionEvent[],
+  agentOf: (id: string) => string | undefined,
+) {
+  const { parentOf } = orderByWatchLinks(sessions);
+  return buildConciergePayload(
+    sessions.map((view) => ({
+      view,
+      agent: agentOf(view.id),
+      line: bubbleText(view),
+      parentId: parentOf.get(view.id)?.id,
+    })),
+    events,
+    recentJumps(),
+    Date.now(),
+    uiLanguage(),
+  );
+}
+
 export interface ConciergeState {
   /** Whether the concierge is shown at all (an OpenAI / Anthropic key is saved, or Local is set up) */
   shown: boolean;
@@ -76,19 +97,7 @@ export function useConcierge(
   schedulerRef.current ??= new ConciergeScheduler(() => {
     const seq = ++seqRef.current;
     const { sessions, events, agentOf } = inputsRef.current;
-    const { parentOf } = orderByWatchLinks(sessions);
-    const payload = buildConciergePayload(
-      sessions.map((view) => ({
-        view,
-        agent: agentOf(view.id),
-        line: bubbleText(view),
-        parentId: parentOf.get(view.id)?.id,
-      })),
-      events,
-      recentJumps(),
-      Date.now(),
-      uiLanguage(),
-    );
+    const payload = conciergePayloadNow(sessions, events, agentOf);
     const summary = `sessions=${payload.sessions.length} holds=${payload.holds.length} events=${payload.recent_events.length} chars=${JSON.stringify(payload).length}`;
     void (async () => {
       const provider = await loadActiveAiProvider();

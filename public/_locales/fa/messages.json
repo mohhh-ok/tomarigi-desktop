@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "الان چه خبر است؟"
+  },
+  "conciergeSummaryLoading": {
+    "message": "در حال جمع‌بندی…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "جمع‌بندی ممکن نشد. دوباره دکمه را بزنید."
+  },
+  "conciergeSummaryClose": {
+    "message": "بستن جمع‌بندی"
   }
 }

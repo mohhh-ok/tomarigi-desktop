@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Neler oluyor?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Özetleniyor…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Özetlenemedi. Düğmeye yeniden bas."
+  },
+  "conciergeSummaryClose": {
+    "message": "Özeti kapat"
   }
 }

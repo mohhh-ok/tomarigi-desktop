@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Kas vyksta?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Apibendrinama…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Nepavyko apibendrinti. Paspauskite mygtuką dar kartą."
+  },
+  "conciergeSummaryClose": {
+    "message": "Uždaryti apibendrinimą"
   }
 }

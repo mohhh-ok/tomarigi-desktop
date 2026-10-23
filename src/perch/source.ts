@@ -22,6 +22,9 @@ export interface PerchSource {
   /** For a source that doesn't call the API (mock): the concierge's advice for these sessions, or undefined to ask the
    * real concierge. Left undefined because real doesn't use it */
   conciergeAdvice?(sessions: SessionView[]): ConciergeAdvice | null | undefined;
+  /** The same for "What's going on?": the summary of these sessions (rejects for a failure), or undefined to ask the
+   * real concierge */
+  conciergeSummary?(sessions: SessionView[]): Promise<string> | undefined;
 }
 
 export const realSource: PerchSource = {

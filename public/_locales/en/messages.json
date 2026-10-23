@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "What's going on?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Summing up…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Couldn't sum up. Press the button again."
+  },
+  "conciergeSummaryClose": {
+    "message": "Close the summary"
   }
 }

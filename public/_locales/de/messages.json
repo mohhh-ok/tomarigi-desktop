@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Was läuft gerade?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Fasse zusammen…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Zusammenfassen fehlgeschlagen. Drück den Knopf noch einmal."
+  },
+  "conciergeSummaryClose": {
+    "message": "Zusammenfassung schließen"
   }
 }

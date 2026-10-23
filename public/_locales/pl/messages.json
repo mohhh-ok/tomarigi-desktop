@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Co się dzieje?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Podsumowuję…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Nie udało się podsumować. Naciśnij przycisk ponownie."
+  },
+  "conciergeSummaryClose": {
+    "message": "Zamknij podsumowanie"
   }
 }

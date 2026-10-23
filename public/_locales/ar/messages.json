@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "ما الوضع الآن؟"
+  },
+  "conciergeSummaryLoading": {
+    "message": "جارٍ التلخيص…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "تعذّر التلخيص. اضغط الزر مرة أخرى."
+  },
+  "conciergeSummaryClose": {
+    "message": "إغلاق الملخص"
   }
 }

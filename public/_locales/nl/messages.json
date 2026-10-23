@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Hoe staat het ervoor?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Bezig met samenvatten…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Samenvatten is mislukt. Druk nog eens op de knop."
+  },
+  "conciergeSummaryClose": {
+    "message": "Samenvatting sluiten"
   }
 }

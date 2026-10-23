@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Čo sa deje?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Zhrňujem…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Zhrnutie sa nepodarilo. Stlačte tlačidlo znova."
+  },
+  "conciergeSummaryClose": {
+    "message": "Zavrieť zhrnutie"
   }
 }

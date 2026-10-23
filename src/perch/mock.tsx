@@ -68,6 +68,28 @@ function mockConciergeAdvice(sessions: SessionView[]): ConciergeAdvice | null | 
   return { line: MOCK_CONCIERGE || `Reply to ${target.project} first — it has waited longest`, targetId: target.id };
 }
 
+// ?conciergeSummary=fail makes "What's going on?" fail, =slow keeps it on its way for 20 seconds (for checking those looks)
+const MOCK_SUMMARY = new URLSearchParams(location.search).get("conciergeSummary");
+
+/** "What's going on?" without the API: the sessions that need a reply, then working, then finished, after a short wait */
+function mockConciergeSummary(sessions: SessionView[]): Promise<string> | undefined {
+  if (MOCK_CONCIERGE === null) return undefined;
+  const ja = navigator.language.startsWith("ja");
+  const names = (list: SessionView[]) => list.map((s) => s.project).join(ja ? "・" : ", ");
+  const waiting = sessions.filter((s) => needsAnswer(s.state, s.ask));
+  const working = sessions.filter((s) => s.state === "working");
+  const done = sessions.filter((s) => !needsAnswer(s.state, s.ask) && s.state !== "working");
+  const lines = [
+    ...waiting.map((s) => (ja ? `${s.project}が返事を待っています` : `${s.project} is waiting for your reply`)),
+    ...(working.length > 0 ? [ja ? `${names(working)}は作業中です` : `${names(working)} are working`] : []),
+    ...(done.length > 0 ? [ja ? `${names(done)}は終わっています` : `${names(done)} have finished`] : []),
+  ];
+  const wait = MOCK_SUMMARY === "slow" ? 20_000 : 900;
+  return new Promise((resolve, reject) =>
+    setTimeout(() => (MOCK_SUMMARY === "fail" ? reject(new Error("mock")) : resolve(lines.join("\n"))), wait),
+  );
+}
+
 export function createMockSource(): MockSource {
   let data: MockData = withExtraBirds(INITIAL_PRESET.build());
   const listeners = new Set<() => void>();
@@ -93,6 +115,7 @@ export function createMockSource(): MockSource {
       return data;
     },
     conciergeAdvice: mockConciergeAdvice,
+    conciergeSummary: mockConciergeSummary,
     setData,
   };
 }

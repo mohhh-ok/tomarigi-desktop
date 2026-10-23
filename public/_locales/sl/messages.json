@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Kaj se dogaja?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Povzemam…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Povzetek ni uspel. Znova pritisnite gumb."
+  },
+  "conciergeSummaryClose": {
+    "message": "Zapri povzetek"
   }
 }

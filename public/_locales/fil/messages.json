@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Ano ang nangyayari?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Binubuod…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Hindi nabuod. Pindutin muli ang button."
+  },
+  "conciergeSummaryClose": {
+    "message": "Isara ang buod"
   }
 }

@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Apa yang berlaku?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Sedang meringkaskan…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Tidak dapat meringkaskan. Tekan butang sekali lagi."
+  },
+  "conciergeSummaryClose": {
+    "message": "Tutup ringkasan"
   }
 }

@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Mis toimub?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Teen kokkuvõtet…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Kokkuvõtet ei õnnestunud teha. Vajuta nuppu uuesti."
+  },
+  "conciergeSummaryClose": {
+    "message": "Sulge kokkuvõte"
   }
 }

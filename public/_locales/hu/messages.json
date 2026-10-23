@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Mi a helyzet?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Összefoglalás…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Nem sikerült összefoglalni. Nyomd meg újra a gombot."
+  },
+  "conciergeSummaryClose": {
+    "message": "Összefoglaló bezárása"
   }
 }

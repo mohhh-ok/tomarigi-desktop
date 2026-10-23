@@ -1,5 +1,6 @@
 import {
   type CSSProperties,
+  type ReactNode,
   type RefObject,
   useCallback,
   useEffect,
@@ -999,6 +1000,7 @@ export function GardenNode({
   onGroupDrop,
   concierge,
   dragMovesWindow = false,
+  bubbleContent,
 }: {
   session: SessionView;
   // px: the bird's center and top edge
@@ -1038,16 +1040,20 @@ export function GardenNode({
   // Dragging it moves the floating window instead of the bird ("Concierge only", where the window is the concierge's
   // size); in the standard window it stays put
   dragMovesWindow?: boolean;
+  // What the bubble shows in place of its text ("What's going on?" in "Concierge only": the summary, with the advice
+  // below it)
+  bubbleContent?: ReactNode;
 }) {
   // Whether this bird needs a reply (switches the state word / tool name) and whether to show the "?" (only birds
   // actually asking)
   const asking = needsAnswer(session.state, session.ask);
   const question = hasQuestion(session);
   const bubble = bubbleText(session);
+  const hasBubble = bubbleContent !== undefined || Boolean(bubble);
   const nodeRef = useRef<HTMLDivElement>(null);
   const glyphRef = useRef<HTMLSpanElement>(null);
   // Birds in a watching group may reserve bubble space even without a speech bubble (WatchPlace.bubbleRoom)
-  const bubbleRoom = Boolean(bubble) || Boolean(watchPlace?.bubbleRoom) || keepBubbleRoom;
+  const bubbleRoom = hasBubble || Boolean(watchPlace?.bubbleRoom) || keepBubbleRoom;
   // From the node's top edge to the icon's top and bottom edges (a bubble above the icon ends at its top, one below
   // starts at its bottom). The icon resizes smoothly with the garden size (transition in styles/garden.css), so track
   // size changes instead of reading once at render
@@ -1394,7 +1400,7 @@ export function GardenNode({
           the user dragged, beside the layer in the garden, just above the bird: gardenStack), and appears right below
           the icon's bottom edge (--bubble-top), in the space before the name (.garden-bubble-room). The distance from
           the icon is the same for every bird */}
-      {bubble &&
+      {hasBubble &&
         bubbleLayer &&
         bubbleParent &&
         !exiting &&
@@ -1416,7 +1422,13 @@ export function GardenNode({
               } as CSSProperties
             }
           >
-            <SpeechBubble text={bubble} placement="below" style={bubbleStyle} />
+            {bubbleContent === undefined ? (
+              <SpeechBubble text={bubble ?? ""} placement="below" style={bubbleStyle} />
+            ) : (
+              <span className="speech-bubble-below concierge-report" style={bubbleStyle}>
+                <span className="speech-bubble">{bubbleContent}</span>
+              </span>
+            )}
           </div>,
           bubbleParent,
         )}

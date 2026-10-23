@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "O que se passa?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "A resumir…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Não foi possível resumir. Carregue no botão outra vez."
+  },
+  "conciergeSummaryClose": {
+    "message": "Fechar o resumo"
   }
 }

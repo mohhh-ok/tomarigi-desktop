@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Co se děje?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Shrnuji…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Shrnutí se nepovedlo. Stiskněte tlačítko znovu."
+  },
+  "conciergeSummaryClose": {
+    "message": "Zavřít shrnutí"
   }
 }
