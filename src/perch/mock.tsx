@@ -4,7 +4,7 @@ import type { PerchSource } from "./source";
 import { AGENTS } from "@/lib/agents";
 import { NativeDirectoryHandle } from "@/lib/native-fs";
 import type { RootEntry } from "@/lib/settings-store";
-import { DEFAULT_PRESET, PRESETS } from "./mock-presets";
+import { DEFAULT_PRESET, PRESETS, gallerySuggestionText } from "./mock-presets";
 import { GARDEN_ARRANGE_EVENT } from "./garden-menu";
 import { needsAnswer } from "@/lib/turn-verdict";
 import type { ConciergeAdvice } from "@/lib/concierge";
@@ -90,11 +90,13 @@ function mockConciergeSuggestions(sessions: SessionView[]): ShownSuggestion[] | 
     .map((s, i) => {
       const status = conciergeStatusOf(s);
       const reply = status === "reply";
-      const text = reply
-        ? i === 0
-          ? ja ? "いちばん長く待っているので先に返事を" : "answer first, it has waited longest"
-          : ja ? "ほかの作業もこの返事を待っています" : "other work waits on this answer"
-        : ja ? "終わった結果を確かめましょう" : "the result is ready to check";
+      const text =
+        gallerySuggestionText(s.id) ??
+        (reply
+          ? i === 0
+            ? ja ? "いちばん長く待っているので先に返事を" : "answer first, it has waited longest"
+            : ja ? "ほかの作業もこの返事を待っています" : "other work waits on this answer"
+          : ja ? "終わった結果を確かめましょう" : "the result is ready to check");
       return { sessionId: s.id, kind: reply ? "reply" : "check_result", text, name: s.project, status };
     });
   const working = sessions.find((s) => conciergeStatusOf(s) === "working");

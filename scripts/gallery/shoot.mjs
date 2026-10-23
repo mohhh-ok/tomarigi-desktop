@@ -41,6 +41,20 @@ const SCENES = [
   },
   { id: "2-perch", query: "preset=gallery-perch&tab=perch", win: { w: 480, h: 540 }, ready: ".perch .bird" },
   { id: "3-activity", query: "preset=gallery-activity&tab=events", win: { w: 480, h: 540 }, ready: ".event-card" },
+  // The Concierge tab at rest over the first image's terminal. The tab asks the app for the window's size
+  // (concierge_only_fit); fit takes that size for the frame, so the window is as small as the app makes it, and win only
+  // places it
+  {
+    id: "4-concierge",
+    query: "preset=gallery-concierge&tab=concierge&concierge=",
+    // The handle and the label sit right of the `claude` command line and the ask, over no text; the bubble runs over
+    // the plan's line ends and past the terminal's right edge onto the wallpaper
+    win: { w: 260, h: 400, left: 284, top: 64 },
+    size: { w: 620, h: 470, term: { left: 14, top: 14, w: 470, h: 400 }, cmdGap: 10, askGap: 36, wall: true },
+    fade: true,
+    fit: true,
+    ready: ".garden-concierge-only .speech-bubble-below",
+  },
 ];
 const ORIGIN = process.env.DIST ? "http://tomarigi.gallery" : "http://localhost:4842";
 const STAGE_URL = `${ORIGIN}/__stage.html`;
@@ -74,6 +88,19 @@ try {
       // No update checks or other calls out while shooting
       await page.route("https://api.github.com/**", (r) => r.abort());
       await page.route(STAGE_URL, (r) => r.fulfill({ contentType: "text/html", body: html }));
+      // The Tauri calls fail in a browser; for fit, concierge_only_fit is kept so the frame can take its size
+      if (sc.fit) {
+        await page.addInitScript(() => {
+          if (!location.search.includes("tab=concierge")) return;
+          window.__TAURI_INTERNALS__ = {
+            invoke: (cmd, args) => {
+              if (cmd === "concierge_only_fit") window.__fit = args;
+              return Promise.reject(new Error("no Tauri"));
+            },
+            transformCallback: () => 0,
+          };
+        });
+      }
       await page.goto(STAGE_URL);
       if (sc.positions) {
         // The same IndexedDB entry as a drag saves (src/lib/garden-layout.ts), then load the stage again to use it
@@ -98,6 +125,19 @@ try {
       await frame.waitForSelector(sc.ready, { timeout: 15000 });
       // Fade until hovered at rest (set by the Rust side in the app)
       if (sc.fade) await frame.evaluate(() => (document.documentElement.dataset.fade = "rest"));
+      // The frame takes the size the tab asks for until it stops changing (the tab measures again at the new size)
+      for (let i = 0; sc.fit && i < 10; i++) {
+        await page.waitForTimeout(500);
+        const fit = await frame.evaluate(() => window.__fit);
+        if (!fit) continue;
+        const changed = await page.evaluate(({ width, height }) => {
+          const win = document.querySelector(".win");
+          if (win.offsetWidth === width && win.offsetHeight === height) return false;
+          Object.assign(win.style, { width: `${width}px`, height: `${height}px` });
+          return true;
+        }, fit);
+        if (!changed) break;
+      }
       // Birds fly in when the garden opens; rows fade in
       await page.waitForTimeout(3000);
       const png = join(work, `${sc.id}-${lang}.png`);
