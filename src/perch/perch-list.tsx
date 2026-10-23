@@ -10,6 +10,7 @@ import { focusProps } from "./focus";
 import { formatSince } from "./format-time";
 import { ICON_SETS, resolveIconSet } from "./icon-sets";
 import { orderByWatchLinks, relativeLabel } from "./watch-links";
+import { SessionName, sessionNameClass } from "./session-name";
 
 // The request excerpt on a Perch row is hidden entirely when narrower than this (so fragments like "「." aren't shown)
 const SNIPPET_MIN_VISIBLE_EM = 2.5;
@@ -91,8 +92,15 @@ export function Perch({
               {/* Indented peer rows are named by the path relative to the parent's working folder (the folder name if not under it) */}
               {/* Peer rows in the same folder as the parent show no name (relativeLabel is undefined) */}
               {(() => {
-                const name = parent ? relativeLabel(parent, s) : s.project;
-                return name !== undefined && <span className="name bird-row-name">{name}</span>;
+                if (parent) {
+                  const name = relativeLabel(parent, s);
+                  return name !== undefined && <span className="name bird-row-name">{name}</span>;
+                }
+                return (
+                  <span className={`name bird-row-name${sessionNameClass(s.project, s.projectSuffix)}`}>
+                    <SessionName name={s.project} suffix={s.projectSuffix} />
+                  </span>
+                );
               })()}
               {/* The latest user message (always set by lib/sessions.ts; absent only for sessions with no message in the window) */}
               {s.snippet && <RowSnippet text={s.snippet} />}

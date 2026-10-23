@@ -877,11 +877,14 @@ export const PRESETS: Preset[] = [
         { id: "mock/same/blog", base: "blog", slug: "blog", startedAt: BASE - 50 * 60_000, state: "working", sinceMs: 9_000, toolName: "Read" },
       ];
       const names = displayNamesOf(raw.map((s) => ({ id: s.id, base: s.base, rootId: "claude", rootLabel: "Claude Code", sessionName: s.sessionName, startedAt: s.startedAt })));
-      const sessions: SessionView[] = raw.map(({ base, sessionName: _, ...s }) => ({ ...s, project: names.get(s.id) ?? base }));
+      const sessions: SessionView[] = raw.map(({ base, sessionName: _, ...s }) => {
+        const name = names.get(s.id);
+        return { ...s, project: name?.name ?? base, ...(name?.suffix && { projectSuffix: name.suffix }) };
+      });
       const ev = (id: string, type: SessionEvent["type"], at: number): SessionEvent => ({
         key: `${id}/${type}`,
         sessionId: id,
-        project: names.get(id) ?? "",
+        project: names.get(id)?.name ?? "",
         type,
         at,
       });
