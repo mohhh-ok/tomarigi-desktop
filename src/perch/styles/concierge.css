@@ -24,16 +24,6 @@
 /* "Concierge only" is on (App.tsx): said beside the handle's name, inside its backing, so it stays at rest with it at
    the handle's opacity (docs/design.md "Concierge"). The mode's name in the accent color (the active tab's underline),
    the counts in the page's text color, both smaller than the name and without its letter spacing */
-/* The header's buttons a little tighter in this mode, so they stay on the handle's row in the narrowest window (260px)
-   and the window isn't made wider than before for them (concierge-only-garden.tsx) */
-:root[data-concierge-only] .header-controls {
-  gap: 4px;
-}
-
-:root[data-concierge-only] .header-controls button.small {
-  padding-left: 5px;
-  padding-right: 5px;
-}
 
 /* Its own row right under the handle, across the header (the header's buttons stay on the handle's row), so the
    window's width follows the concierge and this row wraps instead when the window is narrow */
@@ -324,4 +314,10 @@
 .concierge-look:has(input:focus-visible) {
   outline: 2px solid #d9b06a;
   outline-offset: 2px;
+}
+
+/* The header's button into "Concierge only" (concierge.tsx ConciergeOnlyEntry): as tall as the other header buttons,
+   whose icons sit on a text line while the picture has none */
+.concierge-only-entry {
+  align-self: stretch;
 }

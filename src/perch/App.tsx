@@ -37,8 +37,8 @@ import { UpdateSettings } from "./settings/update-settings";
 import { useSettings } from "./use-settings";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
-import { ConciergeLine, ConciergeSettings } from "./concierge";
-import { conciergeOnlyCounts, conciergeOnlyLabel, useConciergeOnly } from "./concierge-only";
+import { ConciergeLine, ConciergeOnlyEntry, ConciergeSettings } from "./concierge";
+import { conciergeOnlyCounts, conciergeOnlyEntryShown, conciergeOnlyLabel, useConciergeOnly } from "./concierge-only";
 import { ConciergeOnlyGarden } from "./concierge-only-garden";
 import type { GardenMenu } from "./garden";
 import { useConciergeSummary } from "./use-concierge-summary";
@@ -541,6 +541,13 @@ export default function App({
         <div className="header-controls">
           {showTabs && (
             <>
+            {/* Into "Concierge only", the counterpart of its "Show all"; the same as the right-click menu's item */}
+            {conciergeOnlyEntryShown({
+              conciergeAvailable: concierge.available,
+              conciergeOnly: conciergeOnly.on,
+              onGarden: tab === "garden",
+              overlay: settingsOpen || showDebug,
+            }) && <ConciergeOnlyEntry look={conciergeLook} onClick={conciergeOnly.toggle} />}
             <button
               className="small"
               onClick={toggleMuted}

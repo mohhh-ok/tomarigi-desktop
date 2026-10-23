@@ -6,6 +6,7 @@ import type { SessionView } from "../src/lib/sessions.ts";
 import {
   conciergeOnlyAfter,
   conciergeOnlyCounts,
+  conciergeOnlyEntryShown,
   conciergeOnlyWindowSize,
   gardenMenuModel,
 } from "../src/perch/concierge-only.ts";
@@ -103,5 +104,20 @@ describe("the floating window's size while on", () => {
       width: 225,
       height: 251,
     });
+  });
+});
+
+describe("the header's button into the mode, the counterpart of \"Show all\"", () => {
+  const base = { conciergeAvailable: true, conciergeOnly: false, onGarden: true, overlay: false };
+
+  test("shown on the Garden while the concierge is shown and the mode is off", () => {
+    expect(conciergeOnlyEntryShown(base)).toBe(true);
+  });
+
+  test("not without the concierge, while on, on another tab, or with settings or the debug log open", () => {
+    expect(conciergeOnlyEntryShown({ ...base, conciergeAvailable: false })).toBe(false);
+    expect(conciergeOnlyEntryShown({ ...base, conciergeOnly: true })).toBe(false);
+    expect(conciergeOnlyEntryShown({ ...base, onGarden: false })).toBe(false);
+    expect(conciergeOnlyEntryShown({ ...base, overlay: true })).toBe(false);
   });
 });
