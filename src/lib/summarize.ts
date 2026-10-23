@@ -110,7 +110,10 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "(e.g. 'the measurement runs until 18:47; I'll report the results then', 'I'll check the report when it " +
     "arrives and tell you'). false when the work is finished, when the agent only waits on the user, and when it " +
     "only says that work it handed to another session or a sub-agent is still going on (e.g. 'the rest is still " +
-    "being done by the child session') without saying it will receive or check the result.",
+    "being done by the child session') without saying it will receive or check the result. Work handed to another " +
+    "session is continuing when the agent says it will itself show, report, or ask about that work's result once " +
+    "it is done (e.g. 'I handed it to another session; when it's done I'll show you screenshots and ask whether to " +
+    "merge'): the user has no result to check yet.",
   outputFields: {
     line: {
       type: "string",
@@ -130,7 +133,8 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
       type: "boolean",
       description:
         "Whether the agent's own job runs on in the background, or the agent says it will itself receive, check, or " +
-        "report a result later. Not for work only handed to another session.",
+        "report a result later. Not for work only handed to another session when the agent says nothing about " +
+        "receiving its result.",
     },
   },
   maxTokens: 256,

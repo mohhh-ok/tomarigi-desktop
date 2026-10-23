@@ -59,6 +59,18 @@ test("work only handed to another session that is still going on isn't continuin
   );
 });
 
+test("work handed to another session whose result the agent says it will show or ask about later is continuing", () => {
+  // tomarigi-desktop's reply handed work to tomarigi-desktop-advice-links and ended with
+  // 「終わったらスクショをお見せしてから、main に取り込むかをお聞きします。」; it got continuing=false, and the concierge
+  // told the user to check tomarigi-desktop's result while there was none yet
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
+    "when it's done I'll show you screenshots and ask whether to merge",
+  );
+  expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
+    "says nothing about receiving its result",
+  );
+});
+
 test("the request keeps the end of the reply and the start of each user message", () => {
   const reply = `${"a".repeat(3000)}Which one?`;
   const message = `${"b".repeat(600)}`;
