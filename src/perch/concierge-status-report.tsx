@@ -92,8 +92,10 @@ export function ConciergeStatusReport({
         {lines.map((l) => (
           <span key={l.sessionId} className="concierge-status-line">
             {name(l.sessionId, l.name, true)}
-            {/* A session the app has no text for says only its state */}
-            {l.text === undefined ? `: ${t(STATE_LABEL[l.status])}` : <>{`: ${l.text}`}{state(l.status)}</>}
+            {/* The state is always the same part, so it looks the same with a text or without; a session the app has no
+                text for says only its state, once */}
+            {l.text === undefined ? ":" : `: ${l.text}`}
+            {state(l.status)}
           </span>
         ))}
         {more > 0 && <span className="concierge-status-more">{t("conciergeSummaryMore", [String(more)])}</span>}

@@ -36,8 +36,23 @@ describe("the state lines", () => {
     const html = render();
     expect(html).toContain(`${LINK}blog</span>: Publish now?<span class="concierge-status-state" data-status="reply">`);
     expect(html).toContain(`${LINK}api</span>: Fixed the links<span class="concierge-status-state" data-status="done">`);
-    // No text: only the state, without a second state after it
-    expect(html).toContain(`${LINK}web</span>: </span>`);
+    // No text: 「<name>: <state>」, the state in the same part as after a text, once
+    expect(html).toContain(`${LINK}web</span>:<span class="concierge-status-state" data-status="working"> </span></span>`);
+  });
+
+  test("a session that needs a reply without a text says its state in the same part, so it is red like the others", () => {
+    const html = renderToStaticMarkup(
+      <ConciergeStatusReport
+        lines={[{ sessionId: "blog", name: "blog", status: "reply" }]}
+        more={0}
+        suggestions={[]}
+        sessions={[view("blog", { state: "waiting" })]}
+        canJump={() => true}
+      />,
+    );
+    expect(html).toBe(
+      `<span class="concierge-status"><span class="concierge-status-lines"><span class="concierge-status-line">${LINK}blog</span>:<span class="concierge-status-state" data-status="reply"> </span></span></span></span>`,
+    );
   });
 
   test("in the order given; 「ほか N 件」 only when lines were cut", () => {
