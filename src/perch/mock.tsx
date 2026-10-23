@@ -77,15 +77,13 @@ function mockConciergeAdvice(sessions: SessionView[]): ConciergeAdvice | null | 
 const MOCK_SUGGESTIONS = new URLSearchParams(location.search).get("conciergeSuggestions");
 
 /** The suggestions of the Concierge tab without the API, in the form use-concierge.ts keeps them: the sessions that need
-    a reply (at most two), else the finished ones; undefined to ask the real concierge, like mockConciergeAdvice */
+    a reply, then the finished ones, at most two; undefined to ask the real concierge, like mockConciergeAdvice */
 function mockConciergeSuggestions(sessions: SessionView[]): ShownSuggestion[] | undefined {
   if (MOCK_CONCIERGE === null) return undefined;
   if (MOCK_SUGGESTIONS === "none") return [];
   const ja = navigator.language.startsWith("ja");
   const waiting = sessions.filter((s) => needsAnswer(s.state, s.ask));
-  const picked: ShownSuggestion[] = (
-    waiting.length > 0 ? waiting : sessions.filter((s) => conciergeStatusOf(s) === "done")
-  )
+  const picked: ShownSuggestion[] = [...waiting, ...sessions.filter((s) => conciergeStatusOf(s) === "done")]
     .slice(0, 2)
     .map((s, i) => {
       const status = conciergeStatusOf(s);

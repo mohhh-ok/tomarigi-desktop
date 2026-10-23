@@ -47,10 +47,11 @@ const SCENES = [
   {
     id: "4-concierge",
     query: "preset=gallery-concierge&tab=concierge&concierge=",
-    // The handle and the label sit right of the `claude` command line and the ask, over no text; the bubble runs over
-    // the plan's line ends and past the terminal's right edge onto the wallpaper
-    win: { w: 260, h: 400, left: 284, top: 64 },
-    size: { w: 620, h: 470, term: { left: 14, top: 14, w: 470, h: 400 }, cmdGap: 10, askGap: 36, wall: true },
+    // The handle sits right of the `claude` command line and the label in the empty band under it (cmdGap), both over
+    // no text and inside the terminal: the label is translucent, so across the terminal's edge it read as two boxes. The
+    // bubble runs over the plan's line ends and past the terminal's bottom edge onto the wallpaper
+    win: { w: 260, h: 400, left: 232, top: 64 },
+    size: { w: 620, h: 470, term: { left: 14, top: 14, w: 470, h: 400 }, cmdGap: 60, askGap: 8, wall: true },
     fade: true,
     fit: true,
     ready: ".garden-concierge-only .speech-bubble-below",
