@@ -24,31 +24,59 @@
 /* "Concierge only" is on (App.tsx): said beside the handle's name, inside its backing, so it stays at rest with it at
    the handle's opacity (docs/design.md "Concierge"). The mode's name in the accent color (the active tab's underline),
    the counts in the page's text color, both smaller than the name and without its letter spacing */
-/* The handle with the label stays on one line; the header's buttons wrap onto the next row instead (the window is
-   made at least as wide as the handle row: concierge-only-garden.tsx) */
-.brand:has(.concierge-only-label) {
-  flex-shrink: 0;
-  white-space: nowrap;
+/* Its own row right under the handle, across the header (the header's buttons stay on the handle's row), so the
+   window's width follows the concierge and this row wraps instead when the window is narrow */
+.concierge-only-row {
+  flex-basis: 100%;
+  margin-top: -8px;
 }
 
+/* A second handle with the same backing at rest (.fade-handle in base.css); its padding is kept when shown, and the
+   negative margin lines its text up with the handle's name */
 .concierge-only-label {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px;
-  margin-left: 10px;
+  gap: 2px 6px;
+  margin-left: -8px;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
-  letter-spacing: normal;
-  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+
+/* At rest in this mode the tab row, which is fully transparent then, folds away, so the concierge sits right under
+   the handle and its label instead of below an empty band; it unfolds when the window is shown. The window keeps the
+   height the shown layout needs (concierge-only-garden.tsx) */
+:root[data-concierge-only] .tabs {
+  max-height: 60px;
+  overflow: hidden;
+  transition:
+    max-height 0.2s,
+    margin 0.2s,
+    opacity 0.2s;
+}
+
+:root[data-concierge-only][data-fade="rest"] .tabs {
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  border-bottom-width: 0;
 }
 
 .concierge-only-badge {
   color: #d9b06a;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .concierge-only-counts {
   color: #cfcabe;
+  white-space: nowrap;
 }
 
 /* "What's going on?" (App.tsx): the one thing to press in this row, so it is a filled button in the accent color, set
