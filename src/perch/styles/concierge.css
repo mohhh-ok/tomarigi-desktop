@@ -117,6 +117,28 @@
   cursor: default;
 }
 
+/* "Show all" (App.tsx): turns the mode off. Beside the main button and quieter than it: outlined, in the label's text
+   color, so the two don't read as equals */
+.concierge-only-show-all {
+  padding: 1px 7px;
+  border: 1px solid rgba(207, 202, 190, 0.55);
+  border-radius: 5px;
+  background: transparent;
+  color: #cfcabe;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.concierge-only-show-all:hover {
+  border-color: #e9e6de;
+  background: rgba(233, 230, 222, 0.08);
+  color: #e9e6de;
+}
+
 /* The concierge's bubble with a summary (concierge-only-garden.tsx): wider than a bird's bubble, since it holds a few
    lines; the summary on top with × at its top right, then the advice below a dividing line */
 .speech-bubble-below.concierge-report {
@@ -136,6 +158,27 @@
 /* The state at a line's end, e.g. 「（返事待ち）」, wraps as one piece (concierge-only-garden.tsx) */
 .concierge-summary-tail {
   white-space: nowrap;
+}
+
+/* A session's name in the summary (concierge-only-garden.tsx): jumps to its pane, so it takes clicks like the ×, at
+   rest too, and reads as a link: underlined, a deeper color under the cursor */
+.concierge-summary-name {
+  text-decoration: underline;
+  text-decoration-color: rgba(38, 34, 26, 0.45);
+  text-underline-offset: 2px;
+  border-radius: 2px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.concierge-summary-name:hover {
+  color: #8a5a12;
+  text-decoration-color: currentColor;
+}
+
+.concierge-summary-name:focus-visible {
+  outline: 2px solid #8a5a12;
+  outline-offset: 1px;
 }
 
 .concierge-summary-note {

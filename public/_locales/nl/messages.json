@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Hoe staat het ervoor?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Alles tonen"
+  },
   "conciergeSummaryLoading": {
     "message": "Bezig met samenvatten…"
   },

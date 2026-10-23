@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Kas notiek?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Rādīt visu"
+  },
   "conciergeSummaryLoading": {
     "message": "Apkopo…"
   },

@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Mi a helyzet?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Összes mutatása"
+  },
   "conciergeSummaryLoading": {
     "message": "Összefoglalás…"
   },

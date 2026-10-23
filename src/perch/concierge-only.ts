@@ -96,7 +96,7 @@ function waitForSize(size: { width: number; height: number }): Promise<void> {
  * floating window shows the Garden with nothing over it, where the window shrinks to the concierge.
  * Returns on (the saved mode, for the menu and the label), view (show ConciergeOnlyGarden in place of the birds: on,
  * and until the window is back at its frame after it ends, so the birds are measured at that size), shrunk (the
- * window is shrunk now), toggle, and fit (ConciergeOnlyGarden's size, sent while shrunk)
+ * window is shrunk now), toggle, off ("Show all"), and fit (ConciergeOnlyGarden's size, sent while shrunk)
  */
 export function useConciergeOnly({
   available,
@@ -127,6 +127,15 @@ export function useConciergeOnly({
       void saveConciergeOnly(!was).catch(() => {});
       void invoke("log", { line: `[concierge-only] ${was ? "off" : "on"}` }).catch(() => {});
       return !was;
+    });
+  }, []);
+  // "Show all" (App.tsx): off the same way as unchecking it in the menu
+  const off = useCallback(() => {
+    setSaved((was) => {
+      if (!was) return was;
+      void saveConciergeOnly(false).catch(() => {});
+      void invoke("log", { line: "[concierge-only] off (show all)" }).catch(() => {});
+      return false;
     });
   }, []);
   useEffect(() => {
@@ -170,5 +179,5 @@ export function useConciergeOnly({
     [shrunk],
   );
 
-  return { on, view: on || restoring, shrunk, toggle, fit };
+  return { on, view: on || restoring, shrunk, toggle, off, fit };
 }

@@ -4,7 +4,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
-import { conciergeBubbleParts, type SummaryState } from "@/lib/concierge-summary";
+import { conciergeBubbleParts, summaryNameLinks, type SummaryState } from "@/lib/concierge-summary";
 import { PLACE_EDGE_PX } from "@/lib/garden-place";
 import type { SessionView } from "@/lib/sessions";
 import { CONCIERGE_ID } from "./concierge";
@@ -26,6 +26,7 @@ export function ConciergeOnlyGarden({
   onSize,
   summary,
   onCloseSummary,
+  sessions,
 }: {
   // Absent with no session on screen (the Garden's empty message shows then, as without the mode)
   concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook };
@@ -38,6 +39,8 @@ export function ConciergeOnlyGarden({
   // "What's going on?" (use-concierge-summary.ts): shown in the bubble above the advice until closed with ×
   summary: SummaryState;
   onCloseSummary: () => void;
+  // The sessions on screen, whose names in the summary link to their terminal panes
+  sessions: SessionView[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const emptyRef = useRef<HTMLDivElement>(null);
@@ -152,6 +155,31 @@ export function ConciergeOnlyGarden({
   };
   const target = advice?.targetId;
   const parts = conciergeBubbleParts(summary, advice);
+  // A session's name jumps to its pane, as clicking its bird does; only those that can jump are links
+  const canJump = (id: string) => Boolean(onFocus && canFocus?.(id));
+  const linked = (text: string) =>
+    summaryNameLinks(text, sessions, canJump).map((p, i) =>
+      p.id === undefined ? (
+        p.text
+      ) : (
+        // Takes clicks at rest too, like the × (fade-target); a span, so a long name wraps with the line
+        <span
+          key={i}
+          role="button"
+          tabIndex={0}
+          className="concierge-summary-name fade-target"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => onFocus?.(p.id!)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            e.preventDefault();
+            onFocus?.(p.id!);
+          }}
+        >
+          {p.text}
+        </span>
+      ),
+    );
   const report = parts.summary && (
     <>
       <span className="concierge-summary">
@@ -173,8 +201,8 @@ export function ConciergeOnlyGarden({
               const tail = /\s?(（[^（）]*）|\([^()]*\))$/.exec(line);
               return (
                 <span key={i} style={{ display: "block" }}>
-                  {tail ? line.slice(0, tail.index) : line}
-                  {tail && <span className="concierge-summary-tail">{tail[0]}</span>}
+                  {linked(tail ? line.slice(0, tail.index) : line)}
+                  {tail && <span className="concierge-summary-tail">{linked(tail[0])}</span>}
                 </span>
               );
             })}

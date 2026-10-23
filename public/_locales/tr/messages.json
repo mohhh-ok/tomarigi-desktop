@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Neler oluyor?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Tümünü göster"
+  },
   "conciergeSummaryLoading": {
     "message": "Özetleniyor…"
   },

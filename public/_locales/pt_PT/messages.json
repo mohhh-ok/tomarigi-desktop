@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "O que se passa?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Mostrar tudo"
+  },
   "conciergeSummaryLoading": {
     "message": "A resumir…"
   },

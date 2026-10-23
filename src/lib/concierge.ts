@@ -109,6 +109,9 @@ const tail = (text: string) =>
 const clip = (text: string | undefined) =>
   text === undefined ? undefined : text.length > MAX_TEXT_CHARS ? `${text.slice(0, MAX_TEXT_CHARS)}…` : text;
 
+/** A session's name as the concierge is given it (cut, with "…", when long) */
+export const conciergeNameOf = (view: SessionView) => clip(view.project)!;
+
 /** Whether a stopped session's result reached its watch parent: the parent is working, or it was active after the
  * session last was (docs/design.md "Concierge", watch links) */
 function resultReachedParent(view: SessionView, parent: SessionView): boolean {
@@ -151,7 +154,7 @@ export function buildConciergePayload(
     const source = !needsReply ? undefined : view.state === "waiting" ? "machine" : "verdict";
     return {
       id: view.id,
-      name: clip(view.project)!,
+      name: conciergeNameOf(view),
       ...(agent && { agent }),
       state: view.state,
       needs_reply: needsReply,
@@ -322,7 +325,7 @@ function actionOf(verdict: unknown): ConciergeAction | undefined {
   return CONCIERGE_ACTIONS.find((a) => a === action);
 }
 
-const normalizeName = (text: string) => text.normalize("NFKC").toLowerCase();
+export const normalizeName = (text: string) => text.normalize("NFKC").toLowerCase();
 
 /**
  * Whether the advice names the session it is about. The name is compared after NFKC and lower case, and a name cut

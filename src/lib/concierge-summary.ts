@@ -6,7 +6,9 @@
 import type { JudgeResult, JudgeTaskDefinition } from "./judge";
 import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import type { AiProvider } from "./api-keys";
-import type { ConciergeAdvice, ConciergePayload } from "./concierge";
+import { conciergeNameOf, normalizeName, type ConciergeAdvice, type ConciergePayload } from "./concierge";
+import type { SessionView } from "./session-types";
+import { needsAnswer } from "./turn-verdict";
 
 // At most this many lines are shown; a longer answer is cut (Claude's own decision: the bubble stays readable)
 const MAX_LINES = 6;
@@ -109,4 +111,78 @@ export function conciergeBubbleParts(
   const summary =
     state.kind === "idle" ? undefined : state.kind === "loading" ? { kind: "loading" as const } : state;
   return { ...(summary && { summary }), ...(advice && { advice: advice.line }) };
+}
+
+/** A piece of a summary line: text, or a session's name as written in it (id: the session it jumps to) */
+export interface SummaryPiece {
+  text: string;
+  id?: string;
+}
+
+const LATIN_WORD = /[\p{L}\p{N}]/u;
+const isLatinWordChar = (c: string | undefined) => c !== undefined && /[a-z0-9]/i.test(c) && LATIN_WORD.test(c);
+
+/**
+ * The session names in a summary line, as links to their sessions (docs/design.md "Concierge"). The AI's text isn't
+ * changed: the names are found in it with the advice's name check (NFKC, lower case; a cut name without its "…").
+ * Claude's own decisions: a longer name wins over one inside it and links don't overlap; a name isn't linked inside a
+ * longer Latin word ("api" in "rapid"); a name several sessions share links one the user can jump to, then one that
+ * needs a reply, then the one active last. Names are found among every session, and only those canJump are links, so
+ * a longer name that can't jump still keeps a shorter one inside it from being linked
+ */
+export function summaryNameLinks(
+  line: string,
+  sessions: SessionView[],
+  canJump: (id: string) => boolean = () => true,
+): SummaryPiece[] {
+  // The line normalized code point by code point, with where each normalized character came from
+  let norm = "";
+  const from: { start: number; end: number }[] = [];
+  let at = 0;
+  for (const cp of line) {
+    const n = normalizeName(cp);
+    for (let i = 0; i < n.length; i++) from.push({ start: at, end: at + cp.length });
+    norm += n;
+    at += cp.length;
+  }
+
+  const byName = new Map<string, SessionView>();
+  for (const s of sessions) {
+    const raw = conciergeNameOf(s);
+    const name = normalizeName(raw.endsWith("…") ? raw.slice(0, -1) : raw);
+    if (name.length === 0) continue;
+    const had = byName.get(name);
+    const rank = (v: SessionView) => [canJump(v.id) ? 0 : 1, needsAnswer(v.state, v.ask) ? 0 : 1, v.sinceMs];
+    if (!had) byName.set(name, s);
+    else {
+      const [a, b] = [rank(s), rank(had)];
+      const i = a.findIndex((x, k) => x !== b[k]);
+      if (i >= 0 && a[i] < b[i]) byName.set(name, s);
+    }
+  }
+
+  const found: { start: number; end: number; id?: string }[] = [];
+  for (const name of [...byName.keys()].sort((a, b) => b.length - a.length)) {
+    for (let i = norm.indexOf(name); i >= 0; i = norm.indexOf(name, i + 1)) {
+      const start = from[i].start;
+      const end = from[i + name.length - 1].end;
+      if (isLatinWordChar(name[0]) && isLatinWordChar(line[start - 1])) continue;
+      if (isLatinWordChar(name[name.length - 1]) && isLatinWordChar(line[end])) continue;
+      if (found.some((f) => start < f.end && f.start < end)) continue;
+      const id = byName.get(name)!.id;
+      found.push({ start, end, ...(canJump(id) && { id }) });
+    }
+  }
+  found.sort((a, b) => a.start - b.start);
+
+  const pieces: SummaryPiece[] = [];
+  let last = 0;
+  for (const f of found) {
+    if (f.id === undefined) continue;
+    if (f.start > last) pieces.push({ text: line.slice(last, f.start) });
+    pieces.push({ text: line.slice(f.start, f.end), id: f.id });
+    last = f.end;
+  }
+  if (last < line.length || pieces.length === 0) pieces.push({ text: line.slice(last) });
+  return pieces;
 }

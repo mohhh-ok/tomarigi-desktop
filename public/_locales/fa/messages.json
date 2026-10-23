@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "الان چه خبر است؟"
   },
+  "conciergeOnlyShowAll": {
+    "message": "نمایش همه"
+  },
   "conciergeSummaryLoading": {
     "message": "در حال جمع‌بندی…"
   },

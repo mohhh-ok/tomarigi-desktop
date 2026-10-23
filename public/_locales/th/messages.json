@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "ตอนนี้เป็นอย่างไร?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "แสดงทั้งหมด"
+  },
   "conciergeSummaryLoading": {
     "message": "กำลังสรุป…"
   },

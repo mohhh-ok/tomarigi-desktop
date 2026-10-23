@@ -422,6 +422,9 @@
   "conciergeSummaryButton": {
     "message": "Tình hình thế nào?"
   },
+  "conciergeOnlyShowAll": {
+    "message": "Hiện tất cả"
+  },
   "conciergeSummaryLoading": {
     "message": "Đang tóm tắt…"
   },

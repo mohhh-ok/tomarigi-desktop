@@ -1,6 +1,6 @@
 // "What's going on?" in "Concierge only" (docs/design.md "Concierge"; issue #6): the concierge sums up every session at
 // the user's timing. The summary stays in the bubble until closed with ×; an advice that comes meanwhile goes below it
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { JudgeRunner } from "../src/lib/ai-judge.ts";
 import { buildConciergePayload } from "../src/lib/concierge.ts";
 import {
@@ -9,6 +9,7 @@ import {
   conciergeBubbleParts,
   nextSummaryState,
   parseConciergeSummary,
+  summaryNameLinks,
   type SummaryState,
 } from "../src/lib/concierge-summary.ts";
 import { LOCAL_NO_MATCHING_JSON } from "../src/lib/local-judge.ts";
@@ -120,4 +121,64 @@ test("the bubble: the summary on top, an advice that came meanwhile below it; cl
   expect(conciergeBubbleParts({ kind: "failed" }, null)).toEqual({ summary: { kind: "failed" } });
   expect(conciergeBubbleParts({ kind: "idle" }, advice)).toEqual({ advice: "Reply to blog first" });
   expect(conciergeBubbleParts({ kind: "idle" }, null)).toEqual({});
+});
+
+describe("session names in the summary link to their sessions", () => {
+  const text = (pieces: { text: string; id?: string }[]) => pieces.map((p) => (p.id ? `[${p.text}→${p.id}]` : p.text)).join("");
+
+  test("each name found becomes a link; the rest stays text, unchanged", () => {
+    const sessions = [view("blog", { state: "waiting" }), view("api"), view("docs", { state: "done" })];
+    expect(text(summaryNameLinks("blog: 今すぐ公開してよいか（返事待ち）", sessions))).toBe(
+      "[blog→blog]: 今すぐ公開してよいか（返事待ち）",
+    );
+    expect(text(summaryNameLinks("Nothing to report", sessions))).toBe("Nothing to report");
+  });
+
+  test("a line naming two sessions has two links", () => {
+    const sessions = [view("docs-migration"), view("api")];
+    expect(text(summaryNameLinks("docs-migration・api は作業中", sessions))).toBe(
+      "[docs-migration→docs-migration]・[api→api] は作業中",
+    );
+  });
+
+  test("compared after NFKC and lower case, as the advice's name check; the text keeps its own form", () => {
+    const sessions = [view("s1", { project: "Blog" }), view("s2", { project: "ｱﾌﾟﾘ" })];
+    expect(text(summaryNameLinks("BLOG and アプリ are working", sessions))).toBe("[BLOG→s1] and [アプリ→s2] are working");
+  });
+
+  test("a name inside a longer one: the longer one wins, and they don't overlap", () => {
+    const sessions = [view("t1", { project: "tomarigi" }), view("t2", { project: "tomarigi-desktop" })];
+    expect(text(summaryNameLinks("tomarigi-desktop: done; tomarigi is working", sessions))).toBe(
+      "[tomarigi-desktop→t2]: done; [tomarigi→t1] is working",
+    );
+  });
+
+  test("not inside a longer Latin word", () => {
+    const sessions = [view("api")];
+    expect(text(summaryNameLinks("rapid fixes; api done", sessions))).toBe("rapid fixes; [api→api] done");
+  });
+
+  test("two sessions with the same name: the one that needs a reply, else the one active last", () => {
+    const sessions = [
+      view("a", { project: "blog", state: "done", sinceMs: 5000 }),
+      view("b", { project: "blog", state: "waiting", sinceMs: 9000 }),
+      view("c", { project: "blog", state: "done", sinceMs: 1000 }),
+    ];
+    expect(summaryNameLinks("blog: x", sessions)[0]).toEqual({ text: "blog", id: "b" });
+    expect(summaryNameLinks("blog: x", [sessions[0], sessions[2]])[0]).toEqual({ text: "blog", id: "c" });
+  });
+
+  test("only sessions the user can jump to are links; a longer name that can't still isn't split", () => {
+    const sessions = [view("t1", { project: "tomarigi" }), view("t2", { project: "tomarigi-desktop" })];
+    const canJump = (id: string) => id === "t1";
+    expect(text(summaryNameLinks("tomarigi-desktop: done; tomarigi is working", sessions, canJump))).toBe(
+      "tomarigi-desktop: done; [tomarigi→t1] is working",
+    );
+    expect(summaryNameLinks("blog: x", [view("blog")], () => false)).toEqual([{ text: "blog: x" }]);
+  });
+
+  test("of sessions sharing a name, one the user can jump to comes first", () => {
+    const sessions = [view("a", { project: "blog", state: "waiting" }), view("b", { project: "blog", state: "done" })];
+    expect(summaryNameLinks("blog: x", sessions, (id) => id === "b")[0]).toEqual({ text: "blog", id: "b" });
+  });
 });
