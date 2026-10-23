@@ -155,6 +155,14 @@ Applies to the floating window's Garden tab only.
 - Avoid false removals: nothing is removed on a load where `ps` / `lsof` failed or where any `sessions/*.json` failed to parse. A bird is removed only after it is missing on two loads in a row
 - Caveat: `thread-writer-locks` is not a public Codex spec, the same as `sessions/<pid>.json` for Claude Code
 
+## Display names
+
+- A session's display name is used everywhere it is named: the bird's name in the Garden, Perch, Recent activity, the concierge's request and advice, and the summary's lines
+- When two or more sessions on screen would show the same display name (e.g. two sessions in the same project and the same agent folder), each of them is told apart, so the user can tell which is which (the user: 「なおして」, on Claude's report that two billionclips sessions showed as two identical lines in the summary). How (Claude's own decision):
+  - By the session's own name from the agent when it has one and it differs from the base name (e.g. Claude Code's session name such as 「tomarigi-desktop-advice-links」), since it says what the session is for
+  - Otherwise, or when that still leaves two the same, by a number in the order the sessions started (「billionclips 2」); the first one keeps the plain name
+  - Sessions whose names don't collide keep the name they have today
+
 ## Layout
 
 - A bird that appears goes to its saved (dragged) position if it has one, otherwise to a free cell of a grid sized from the garden and one bird's footprint, starting from a cell picked by its id. A watch block that forms goes to the spot that moves its birds the least on average. Its birds keep their cells afterwards (while a cell is free and next to a bird it is linked to), so a bird that joins later doesn't move the others; when the block grows to the left or up, the block's corner moves so the birds already there stay put (Claude's own decision)
