@@ -397,12 +397,6 @@
   "gardenArrange": {
     "message": "Riordina"
   },
-  "gardenConciergeOnly": {
-    "message": "Mostra solo il concierge"
-  },
-  "conciergeOnlyBadge": {
-    "message": "Solo concierge"
-  },
   "conciergeOnlyHidden": {
     "message": "nascosti: $COUNT$",
     "placeholders": {
@@ -418,9 +412,6 @@
         "content": "$1"
       }
     }
-  },
-  "conciergeOnlyShowAll": {
-    "message": "Mostra tutto"
   },
   "conciergeSummarySuggestions": {
     "message": "Suggerimenti"

@@ -23,21 +23,6 @@ export function ConciergeGlyph({ look, size }: { look: ConciergeLook; size: numb
   );
 }
 
-/** The header's button into "Concierge only" (App.tsx): the concierge's picture the user chose, made like the other
-    header buttons, with the right-click menu item's name as its tooltip */
-export function ConciergeOnlyEntry({ look, onClick }: { look: ConciergeLook; onClick: () => void }) {
-  return (
-    <button
-      className="small concierge-only-entry"
-      onClick={onClick}
-      aria-label={t("gardenConciergeOnly")}
-      title={t("gardenConciergeOnly")}
-    >
-      <ConciergeGlyph look={look} size={16} />
-    </button>
-  );
-}
-
 /**
  * Perch: the advice above the list, laid out like a Perch row (the concierge and its name on the first line, the
  * advice on the second) so the full line fits. Clicking it jumps like the Garden's concierge. Recent activity has no

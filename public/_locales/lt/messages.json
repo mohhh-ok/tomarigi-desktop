@@ -397,12 +397,6 @@
   "gardenArrange": {
     "message": "Išdėstyti"
   },
-  "gardenConciergeOnly": {
-    "message": "Rodyti tik konsjeržą"
-  },
-  "conciergeOnlyBadge": {
-    "message": "Tik konsjeržas"
-  },
   "conciergeOnlyHidden": {
     "message": "paslėpta: $COUNT$",
     "placeholders": {
@@ -418,9 +412,6 @@
         "content": "$1"
       }
     }
-  },
-  "conciergeOnlyShowAll": {
-    "message": "Rodyti viską"
   },
   "conciergeSummarySuggestions": {
     "message": "Pasiūlymai"

@@ -14,7 +14,7 @@ const KEY_VOICE_ENABLED = "voiceEnabled";
 const KEY_VOICE_VOLUME = "voiceVolume";
 const KEY_CHIRP_VOLUME = "chirpVolume";
 const KEY_CONCIERGE_LOOK = "conciergeLook";
-const KEY_CONCIERGE_ONLY = "conciergeOnly";
+const KEY_OPEN_TAB = "openTab";
 
 function db(): Promise<IDBPDatabase> {
   return openDB(DB_NAME, 1, {
@@ -176,13 +176,14 @@ export async function saveConciergeLook(look: ConciergeLook): Promise<void> {
   await kvPut(KEY_CONCIERGE_LOOK, look);
 }
 
-/** "Concierge only" in the Garden (docs/design.md "Concierge"): kept after a relaunch */
-export async function loadConciergeOnly(): Promise<boolean> {
-  return (await kvGet(KEY_CONCIERGE_ONLY)) === true;
+/** The open tab (docs/design.md "Concierge"), opened again after a relaunch. What was saved, as is: the caller reads it
+ * (tabOf in perch/concierge-tab.ts) */
+export async function loadOpenTab(): Promise<unknown> {
+  return kvGet(KEY_OPEN_TAB);
 }
 
-export async function saveConciergeOnly(on: boolean): Promise<void> {
-  await kvPut(KEY_CONCIERGE_ONLY, on);
+export async function saveOpenTab(tab: string): Promise<void> {
+  await kvPut(KEY_OPEN_TAB, tab);
 }
 
 /**

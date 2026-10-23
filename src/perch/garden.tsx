@@ -144,13 +144,6 @@ interface GroupDrag {
   dy: number;
 }
 
-/** The right-click menu's "Concierge only" (gardenMenuModel in concierge-only.ts) */
-export interface GardenMenu {
-  conciergeAvailable: boolean;
-  conciergeOnly: boolean;
-  toggleConciergeOnly: () => void;
-}
-
 export function Garden({
   sessions: sessionViews,
   concierge,
@@ -161,7 +154,6 @@ export function Garden({
   onFit,
   growRoom,
   paused = false,
-  menu,
 }: {
   sessions: SessionView[];
   // The concierge bird (docs/design.md "Concierge"): absent when it isn't shown, advice null when it has none
@@ -178,11 +170,9 @@ export function Garden({
   // lib/garden-fit.ts, from useGardenGrow): bubbles past the garden's edges stay as far as that. undefined when the
   // window doesn't grow
   growRoom?: BubbleGrowRoom;
-  // Hidden by "Concierge only" (concierge-only.ts): everything stays as it was, and nothing is measured or saved, so the
-  // birds come back at the same place on screen once the window is back at its frame
+  // Hidden while the Concierge tab is open (concierge-tab.ts): everything stays as it was, and nothing is measured or
+  // saved, so the birds come back at the same place on screen once the window is back at its frame
   paused?: boolean;
-  // What the right-click menu shows besides Arrange (garden-menu.ts)
-  menu: GardenMenu;
 }) {
   // The concierge is placed, dragged, and counted for growing and shrinking like a session bird, so it joins the
   // sessions as one more node. Its advice is its speech bubble (a stopped bird's summary). Only beside other birds
@@ -313,7 +303,7 @@ export function Garden({
   // out again on the next render as on a launch with no saved positions (docs/design.md "Layout"). The icon size is
   // worked out again as on a launch too
   const arrange = useCallback(() => {
-    // Not while hidden by "Concierge only" (the menu disables it then; the mock's button too)
+    // Not while hidden by the Concierge tab (the mock's button can ask then)
     if (pausedRef.current) return;
     arrangeKept(keptRef.current);
     glyphSizeRef.current = undefined;
@@ -869,7 +859,7 @@ export function Garden({
       // The same menu on a bird, a watch block and an empty spot, in place of the WebView's own (docs/design.md "Layout")
       onContextMenu={(e) => {
         e.preventDefault();
-        popupGardenMenu({ arrange, ...menu });
+        popupGardenMenu({ arrange });
       }}
     >
       {/* Speech bubble layer. Placed above the birds with their names, marks and status lines, so a bubble covers a
@@ -1038,10 +1028,10 @@ export function GardenNode({
   onGroupDrop?: (drag: GroupDrag) => void;
   // The concierge's node: its own image, no status lines or event marks (docs/design.md "Concierge")
   concierge?: ConciergeLook;
-  // Dragging it moves the floating window instead of the bird ("Concierge only", where the window is the concierge's
+  // Dragging it moves the floating window instead of the bird (the Concierge tab, where the window is the concierge's
   // size); in the standard window it stays put
   dragMovesWindow?: boolean;
-  // What the bubble shows in place of its text ("Concierge only": every session's line and the suggestions)
+  // What the bubble shows in place of its text (the Concierge tab: the suggestions and every session's line)
   bubbleContent?: ReactNode;
 }) {
   // Whether this bird needs a reply (switches the state word / tool name) and whether to show the "?" (only birds

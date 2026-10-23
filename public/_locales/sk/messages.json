@@ -397,12 +397,6 @@
   "gardenArrange": {
     "message": "Usporiadať"
   },
-  "gardenConciergeOnly": {
-    "message": "Zobraziť len concierge"
-  },
-  "conciergeOnlyBadge": {
-    "message": "Len concierge"
-  },
   "conciergeOnlyHidden": {
     "message": "skryté: $COUNT$",
     "placeholders": {
@@ -418,9 +412,6 @@
         "content": "$1"
       }
     }
-  },
-  "conciergeOnlyShowAll": {
-    "message": "Zobraziť všetko"
   },
   "conciergeSummarySuggestions": {
     "message": "Odporúčania"

@@ -29,6 +29,41 @@
   border-bottom-color: #d9b06a;
 }
 
+/* The Concierge tab: the concierge's picture in place of a word, as tall as a word's line so the row's height stays.
+   Not chosen it is dimmed like the other tabs' words (App.tsx; docs/design.md "Concierge") */
+.tab-btn-concierge {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tab-btn-concierge:not(.active) .concierge-glyph {
+  opacity: 0.6;
+}
+
+.tab-btn-concierge:hover .concierge-glyph {
+  opacity: 1;
+}
+
+/* Four tabs in a narrow window: tighter, like the header's buttons (base.css), so their words stay whole down to the
+   narrowest window (260px); a long word in some languages may still wrap at a space */
+@media (max-width: 400px) {
+  .tab-btn {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 300px) {
+  .tabs {
+    gap: 2px;
+  }
+
+  .tab-btn {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+}
+
 /* Row that replaces the tabs on settings and the debug log (back-bar.tsx). Same margin, border, and height as .tabs,
    so the header and content don't shift when entering or leaving. The exit is written as text ("‹ Back") rather than relying on the
    ⚙ toggle, because × next to ⚙ hides the window and is easy to mistake for "close settings" */
