@@ -55,9 +55,10 @@ function withExtraBirds(data: MockData): MockData {
 }
 
 /**
- * ?concierge=<text> shows the concierge with that advice (empty: a default line) about the first bird that needs a
- * reply, or the first bird; ?concierge=none shows it without advice. Without the parameter the real concierge is asked
- * (only with a saved key). For checking the concierge's look without calling the API (docs/design.md "Concierge")
+ * ?concierge=<text> shows the concierge with that advice (empty: a default line, in Japanese on a Japanese screen) about
+ * the first bird that needs a reply, or the first bird; ?concierge=none shows it without advice. Without the parameter the
+ * real concierge is asked (only with a saved key). For checking the concierge's look without calling the API
+ * (docs/design.md "Concierge")
  */
 const MOCK_CONCIERGE = new URLSearchParams(location.search).get("concierge");
 
@@ -66,7 +67,10 @@ function mockConciergeAdvice(sessions: SessionView[]): ConciergeAdvice | null | 
   if (MOCK_CONCIERGE === "none") return null;
   const target = sessions.find((s) => needsAnswer(s.state, s.ask)) ?? sessions[0];
   if (!target) return null;
-  return { line: MOCK_CONCIERGE || `Reply to ${target.project} first — it has waited longest`, targetId: target.id };
+  const line = navigator.language.startsWith("ja")
+    ? `${target.project}に先に返事をしましょう。いちばん長く待っています`
+    : `Reply to ${target.project} first — it has waited longest`;
+  return { line: MOCK_CONCIERGE || line, targetId: target.id };
 }
 
 // ?conciergeSummary=fail makes "What's going on?" fail, =slow keeps it on its way for 20 seconds (for checking those looks)
@@ -128,7 +132,8 @@ export function createMockSource(): MockSource {
     },
     conciergeAdvice: mockConciergeAdvice,
     conciergeSummary: mockConciergeSummary,
-    // ?focusable=1: birds, rows and the summary's names look clickable, and a click logs "[mock] focus <id>"
+    // ?focusable=1: birds, rows and the names in the summary and its advice look clickable, and a click logs
+    // "[mock] focus <id>"
     focusLogOnly: new URLSearchParams(location.search).has("focusable"),
     setData,
   };
