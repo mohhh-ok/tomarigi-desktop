@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Sắp xếp"
+  },
+  "gardenConciergeOnly": {
+    "message": "Chỉ hiện Concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Chỉ Concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "ẩn $COUNT$ con khác",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " ($COUNT$ đang chờ bạn trả lời)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Išdėstyti"
+  },
+  "gardenConciergeOnly": {
+    "message": "Rodyti tik konsjeržą"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Tik konsjeržas"
+  },
+  "conciergeOnlyHidden": {
+    "message": "paslėpta: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (laukia jūsų atsakymo: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

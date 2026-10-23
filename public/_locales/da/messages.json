@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Arranger"
+  },
+  "gardenConciergeOnly": {
+    "message": "Vis kun concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Kun concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "skjult: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (venter på dit svar: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

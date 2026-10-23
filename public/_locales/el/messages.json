@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Τακτοποίηση"
+  },
+  "gardenConciergeOnly": {
+    "message": "Εμφάνιση μόνο του κονσιέρζ"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Μόνο κονσιέρζ"
+  },
+  "conciergeOnlyHidden": {
+    "message": "κρυφά: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (περιμένουν την απάντησή σου: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

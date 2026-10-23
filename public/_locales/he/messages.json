@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "סידור"
+  },
+  "gardenConciergeOnly": {
+    "message": "הצג רק את הקונסיירז׳"
+  },
+  "conciergeOnlyBadge": {
+    "message": "רק הקונסיירז׳"
+  },
+  "conciergeOnlyHidden": {
+    "message": "מוסתרים: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (מחכים לתשובה שלך: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

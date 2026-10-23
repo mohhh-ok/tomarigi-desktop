@@ -127,6 +127,29 @@ pub(crate) fn bubble_grow_frame(cur: Frame, up: u32, area: Frame) -> Frame {
     Frame { y, height: cur.height + (cur.y - y) as u32, ..cur }
 }
 
+/// "Concierge only" (docs/design.md "Concierge"): the frame `cur` resized to `width` × `height` (physical px) toward the
+/// edges it sits near, decided per axis by the display's thirds as for growing (keep_of), kept inside the visible area
+/// `area`. Used both to shrink the window to the concierge and to fit it again when its bubble changes
+pub(crate) fn compact_frame(cur: Frame, width: u32, height: u32, area: Frame) -> Frame {
+    let (width, height) = (width.min(area.width), height.min(area.height));
+    Frame {
+        x: place_axis(cur.x, cur.width, width, keep_of(cur.x, cur.width, area.x, area.width), area.x, area.width),
+        y: place_axis(cur.y, cur.height, height, keep_of(cur.y, cur.height, area.y, area.height), area.y, area.height),
+        width,
+        height,
+    }
+}
+
+/// The user's frame, what is saved and what the user's size is measured from. While "Concierge only" is on
+/// (`compact`: the frame just before it and, if the window was grown then, the user's frame of that growth), it is the
+/// frame from before it, so the compact frame is never saved; otherwise the user's frame while grown (`grown_user`)
+pub(crate) fn user_frame_of(compact: Option<(Frame, Option<Frame>)>, grown_user: Option<Frame>) -> Option<Frame> {
+    match compact {
+        Some((before, before_user)) => Some(before_user.unwrap_or(before)),
+        None => grown_user,
+    }
+}
+
 /// Whether a resize to `scale` shrinks the window: the scale went down (birds left), or the user dropped a bird or block
 /// (the page then asks for the smallest scale at which everything stays put, which may be the same scale as before)
 pub(crate) fn shrinking(scale: f64, last_scale: f64, drop: bool) -> bool {
@@ -176,6 +199,13 @@ static SENT_USER_SIZE: Mutex<Option<(u32, u32)>> = Mutex::new(None);
 static LAST_SCALE: Mutex<f64> = Mutex::new(1.0);
 /// While a drag grows the window: the part of the window that stays put (garden_grow_anchor tells the page this one)
 static DRAG_ANCHOR: Mutex<Option<GrowAnchor>> = Mutex::new(None);
+/// While "Concierge only" shrinks the floating window: the frame it had just before, and the growth it had then, both
+/// put back as they were when it ends, so every bird comes back at the same place on screen
+struct Compact {
+    before: Frame,
+    grown: Option<Grown>,
+}
+static COMPACT: Mutex<Option<Compact>> = Mutex::new(None);
 /// How far past the pointer a drag pulls the garden's edge, and how close the pointer must come to it (CSS px)
 const DRAG_BAND_PX: f64 = 24.0;
 
@@ -184,15 +214,17 @@ fn current_frame(win: &WebviewWindow) -> Option<Frame> {
     Some(Frame { x: pos.x, y: pos.y, width: size.width, height: size.height })
 }
 
-/// The user's frame while grown (None when not grown)
+/// The user's frame while grown or while "Concierge only" shrinks the window (user_frame_of; None when neither)
 pub(crate) fn grown_user_frame() -> Option<Frame> {
-    GROWN.lock().unwrap().as_ref().map(|g| g.user)
+    let compact = COMPACT.lock().unwrap().as_ref().map(|c| (c.before, c.grown.as_ref().map(|g| g.user)));
+    user_frame_of(compact, GROWN.lock().unwrap().as_ref().map(|g| g.user))
 }
 
-/// Forgets the grown frame. Called when the mode switches: the frame saved just before is the user's, and it is what
-/// gets restored
+/// Forgets the grown frame, and the frame from before "Concierge only". Called when the mode switches: the frame saved
+/// just before is the user's, and it is what gets restored
 pub(crate) fn forget() {
     *GROWN.lock().unwrap() = None;
+    *COMPACT.lock().unwrap() = None;
 }
 
 /// Handles Moved / Resized of the floating window. Returns false when it came from growing (don't save it).
@@ -202,6 +234,11 @@ pub(crate) fn on_frame_changed(win: &WebviewWindow) -> bool {
         return true;
     }
     if AUTO_UNTIL.lock().unwrap().is_some_and(|t| Instant::now() < t) {
+        return false;
+    }
+    // "Concierge only": the window goes back to the frame from before it when it ends, so a move or resize meanwhile is
+    // neither saved nor taken for the user's size
+    if COMPACT.lock().unwrap().is_some() {
         return false;
     }
     let Some(now) = current_frame(win) else { return true };
@@ -238,7 +275,7 @@ fn visible_area(win: &WebviewWindow, user: Frame) -> Option<Frame> {
 
 fn apply(app: &AppHandle, scale: f64, drop: bool) {
     let Some(win) = app.get_webview_window("main") else { return };
-    if current_mode() != WindowMode::Floating {
+    if current_mode() != WindowMode::Floating || COMPACT.lock().unwrap().is_some() {
         return;
     }
     let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied, g.dragged));
@@ -267,7 +304,7 @@ fn set_frame(win: &WebviewWindow, grown: Grown) {
 
 fn drag_grow(app: &AppHandle, pointer: (f64, f64), insets: Insets) {
     let Some(win) = app.get_webview_window("main") else { return };
-    if current_mode() != WindowMode::Floating {
+    if current_mode() != WindowMode::Floating || COMPACT.lock().unwrap().is_some() {
         return;
     }
     let Some(scale) = win.scale_factor().ok() else { return };
@@ -293,7 +330,7 @@ fn drag_grow(app: &AppHandle, pointer: (f64, f64), insets: Insets) {
 /// Grows the window up by `top` CSS px (bubble_grow_frame). Returns whether it was resized
 fn bubble_grow(app: &AppHandle, top: f64) -> bool {
     let Some(win) = app.get_webview_window("main") else { return false };
-    if current_mode() != WindowMode::Floating {
+    if current_mode() != WindowMode::Floating || COMPACT.lock().unwrap().is_some() {
         return false;
     }
     let Some(scale) = win.scale_factor().ok() else { return false };
@@ -342,6 +379,79 @@ pub(crate) fn garden_drag_end() {
 pub(crate) fn garden_fit(app: AppHandle, scale: f64, drop: Option<bool>) {
     let handle = app.clone();
     app.run_on_main_thread(move || apply(&handle, scale, drop.unwrap_or(false))).ok();
+}
+
+/// The window's smallest size (tauri.conf.json), so the compact frame is placed for the size the window really gets
+fn min_size(app: &AppHandle, scale: f64) -> (u32, u32) {
+    let w = app.config().app.windows.first();
+    let css = |v: Option<f64>| (v.unwrap_or(0.0) * scale).round() as u32;
+    (css(w.and_then(|w| w.min_width)), css(w.and_then(|w| w.min_height)))
+}
+
+fn concierge_only_apply(app: &AppHandle, width: f64, height: f64) {
+    let Some(win) = app.get_webview_window("main") else { return };
+    if current_mode() != WindowMode::Floating {
+        return;
+    }
+    let (Some(shown), Ok(scale)) = (current_frame(&win), win.scale_factor()) else { return };
+    let Some(area) = visible_area(&win, shown) else { return };
+    let (min_w, min_h) = min_size(app, scale);
+    let size = |css: f64, min: u32| ((css * scale).ceil().max(0.0) as u32).max(min);
+    let target = compact_frame(shown, size(width, min_w), size(height, min_h), area);
+    let mut compact = COMPACT.lock().unwrap();
+    if compact.is_none() {
+        // The growth is put back with the frame when it ends; meanwhile nothing grows the window
+        *compact = Some(Compact { before: shown, grown: GROWN.lock().unwrap().take() });
+        append_log(&format!("[concierge-only] on from {shown:?}"));
+    }
+    drop(compact);
+    if target == shown {
+        return;
+    }
+    *AUTO_UNTIL.lock().unwrap() = Some(Instant::now() + Duration::from_millis(AUTO_SETTLE_MS));
+    win.set_size(tauri::PhysicalSize::new(target.width, target.height)).ok();
+    win.set_position(tauri::PhysicalPosition::new(target.x, target.y)).ok();
+    append_log(&format!("[concierge-only] fit {width}x{height} {shown:?} -> {target:?}"));
+}
+
+/// "Concierge only" is on in the floating window's Garden: shrinks the window to `width` × `height` CSS px (what the
+/// concierge and its bubble need, with the window's room around the garden) toward the edges it sits near
+/// (compact_frame). The first call remembers the frame from before it; later calls fit a changed bubble the same way
+#[tauri::command]
+pub(crate) fn concierge_only_fit(app: AppHandle, width: f64, height: f64) {
+    let handle = app.clone();
+    app.run_on_main_thread(move || concierge_only_apply(&handle, width, height)).ok();
+}
+
+/// The window's inner size in CSS px
+#[derive(Serialize)]
+pub(crate) struct InnerSize {
+    width: f64,
+    height: f64,
+}
+
+fn concierge_only_restore(app: &AppHandle) -> Option<InnerSize> {
+    let compact = COMPACT.lock().unwrap().take()?;
+    let win = app.get_webview_window("main")?;
+    let before = compact.before;
+    *AUTO_UNTIL.lock().unwrap() = Some(Instant::now() + Duration::from_millis(AUTO_SETTLE_MS));
+    *GROWN.lock().unwrap() = compact.grown;
+    win.set_size(tauri::PhysicalSize::new(before.width, before.height)).ok();
+    win.set_position(tauri::PhysicalPosition::new(before.x, before.y)).ok();
+    append_log(&format!("[concierge-only] off -> {before:?}"));
+    let scale = win.scale_factor().ok()?;
+    Some(InnerSize { width: before.width as f64 / scale, height: before.height as f64 / scale })
+}
+
+/// "Concierge only" ended, or left the floating window's Garden: puts the window back to the exact frame and growth it
+/// had just before it. Returns the inner size it goes back to, for the page to wait for before showing the birds
+/// again (None when it wasn't shrunk)
+#[tauri::command]
+pub(crate) async fn concierge_only_end(app: AppHandle) -> Option<InnerSize> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let handle = app.clone();
+    app.run_on_main_thread(move || tx.send(concierge_only_restore(&handle)).unwrap_or_default()).ok()?;
+    rx.recv_timeout(Duration::from_secs(2)).ok().flatten()
 }
 
 /// Which part of the window stays put on screen when it grows or shrinks back, per axis: 0 the left / top edge, 1 the
@@ -620,6 +730,43 @@ mod tests {
         assert_eq!(fit_frame(user, 1.0, AREA, Some(up), true), Frame { x: 100, y: 108, width: 680, height: 200 });
         // Growing to fit afterwards keeps the grown height and the top edge
         assert_eq!(fit_frame(user, 1.0, AREA, Some(up), false), up);
+    }
+
+    #[test]
+    fn concierge_only_shrinks_toward_the_edges_it_sits_near() {
+        // Bottom right: the right and bottom edges stay
+        let br = Frame { x: 1080, y: 505, width: 340, height: 300 };
+        let f = compact_frame(br, 260, 220, AREA);
+        assert_eq!(f, Frame { x: 1160, y: 585, width: 260, height: 220 });
+        // Top left: the left and top edges stay
+        let tl = Frame { x: 20, y: 40, width: 340, height: 300 };
+        assert_eq!(compact_frame(tl, 260, 220, AREA), Frame { x: 20, y: 40, width: 260, height: 220 });
+        // Middle: the center stays
+        let mid = Frame { x: 550, y: 275, width: 340, height: 300 };
+        assert_eq!(compact_frame(mid, 260, 220, AREA), Frame { x: 590, y: 315, width: 260, height: 220 });
+        // A longer bubble grows it the same way, from the compact frame
+        let grown = compact_frame(f, 260, 300, AREA);
+        assert_eq!(grown, Frame { x: 1160, y: 505, width: 260, height: 300 });
+    }
+
+    #[test]
+    fn concierge_only_keeps_inside_the_visible_area() {
+        let low = Frame { x: 1300, y: 700, width: 140, height: 125 };
+        let f = compact_frame(low, 260, 400, AREA);
+        assert!(f.x + f.width as i32 <= AREA.x + AREA.width as i32);
+        assert!(f.y + f.height as i32 <= AREA.y + AREA.height as i32);
+    }
+
+    #[test]
+    fn concierge_only_saves_the_frame_from_before_it() {
+        let before = Frame { x: 1080, y: 505, width: 340, height: 300 };
+        let user = Frame { x: 1100, y: 505, width: 320, height: 280 };
+        // While on, what is saved is the frame from before it, or the user's frame if it was grown then
+        assert_eq!(user_frame_of(Some((before, None)), None), Some(before));
+        assert_eq!(user_frame_of(Some((before, Some(user))), None), Some(user));
+        // Off: the user's frame while grown, as before
+        assert_eq!(user_frame_of(None, Some(user)), Some(user));
+        assert_eq!(user_frame_of(None, None), None);
     }
 
     #[test]

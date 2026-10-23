@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Posloži"
+  },
+  "gardenConciergeOnly": {
+    "message": "Prikaži samo concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Samo concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "skriveno: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (čeka tvoj odgovor: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

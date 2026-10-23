@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "整列"
+  },
+  "gardenConciergeOnly": {
+    "message": "コンシェルジュだけ表示"
+  },
+  "conciergeOnlyBadge": {
+    "message": "コンシェルジュだけ"
+  },
+  "conciergeOnlyHidden": {
+    "message": "ほか $COUNT$ 羽",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": "（返事待ち $COUNT$）",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

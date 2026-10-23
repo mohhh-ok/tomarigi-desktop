@@ -14,6 +14,7 @@ const KEY_VOICE_ENABLED = "voiceEnabled";
 const KEY_VOICE_VOLUME = "voiceVolume";
 const KEY_CHIRP_VOLUME = "chirpVolume";
 const KEY_CONCIERGE_LOOK = "conciergeLook";
+const KEY_CONCIERGE_ONLY = "conciergeOnly";
 
 function db(): Promise<IDBPDatabase> {
   return openDB(DB_NAME, 1, {
@@ -173,6 +174,15 @@ export async function loadConciergeLook(): Promise<ConciergeLook> {
 
 export async function saveConciergeLook(look: ConciergeLook): Promise<void> {
   await kvPut(KEY_CONCIERGE_LOOK, look);
+}
+
+/** "Concierge only" in the Garden (docs/design.md "Concierge"): kept after a relaunch */
+export async function loadConciergeOnly(): Promise<boolean> {
+  return (await kvGet(KEY_CONCIERGE_ONLY)) === true;
+}
+
+export async function saveConciergeOnly(on: boolean): Promise<void> {
+  await kvPut(KEY_CONCIERGE_ONLY, on);
 }
 
 /**

@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Sakārtot"
+  },
+  "gardenConciergeOnly": {
+    "message": "Rādīt tikai konsjeržu"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Tikai konsjeržs"
+  },
+  "conciergeOnlyHidden": {
+    "message": "paslēpti: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (gaida jūsu atbildi: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

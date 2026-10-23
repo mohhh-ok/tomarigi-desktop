@@ -319,6 +319,8 @@ pub fn run() {
             garden_grow::garden_grow_anchor,
             garden_grow::garden_bubble_grow,
             garden_grow::window_user_size,
+            garden_grow::concierge_only_fit,
+            garden_grow::concierge_only_end,
             fs::save_download,
             keys::anthropic_messages,
             keys::openai_responses,

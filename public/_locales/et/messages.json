@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Korrasta"
+  },
+  "gardenConciergeOnly": {
+    "message": "Näita ainult concierge’i"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Ainult concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "peidetud: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (ootab sinu vastust: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

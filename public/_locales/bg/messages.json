@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Подреди"
+  },
+  "gardenConciergeOnly": {
+    "message": "Показвай само консиержа"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Само консиерж"
+  },
+  "conciergeOnlyHidden": {
+    "message": "скрити: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (чакат вашия отговор: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

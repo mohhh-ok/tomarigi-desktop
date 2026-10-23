@@ -42,6 +42,8 @@ const DROP_REASON_TEXT: Record<DroppedConciergeAdvice["reason"], string> = {
 export interface ConciergeState {
   /** Whether the concierge is shown at all (an OpenAI / Anthropic key is saved, or Local is set up) */
   shown: boolean;
+  /** The same, whether or not a session is on screen ("Concierge only" stays on with no session; concierge-only.ts) */
+  available: boolean;
   /** The current advice, with its target only while that session is still on screen */
   advice: ConciergeAdvice | null;
 }
@@ -158,9 +160,10 @@ export function useConcierge(
 
   const current = mockAdvice !== undefined ? mockAdvice : advice;
   return useMemo(() => {
-    const shown = (enabled || mockAdvice !== undefined) && sessions.length > 0;
-    if (!shown || !current) return { shown, advice: null };
+    const available = enabled || mockAdvice !== undefined;
+    const shown = available && sessions.length > 0;
+    if (!shown || !current) return { shown, available, advice: null };
     const targetOnScreen = current.targetId !== undefined && sessions.some((s) => s.id === current.targetId);
-    return { shown, advice: targetOnScreen ? current : { line: current.line } };
+    return { shown, available, advice: targetOnScreen ? current : { line: current.line } };
   }, [enabled, mockAdvice, current, sessions]);
 }

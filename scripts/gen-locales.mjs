@@ -169,6 +169,10 @@ export const KEYS = [
   "aiUserMessagesNote",
   "retiredKeyNote",
   "gardenArrange",
+  "gardenConciergeOnly",
+  "conciergeOnlyBadge",
+  "conciergeOnlyHidden",
+  "conciergeOnlyWaiting",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).
@@ -192,6 +196,8 @@ export const PLACEHOLDERS = {
   quotedSnippet: { snippet: "$1" },
   updatesCurrentVersion: { version: "$1" },
   updatesInstallButton: { version: "$1" },
+  conciergeOnlyHidden: { count: "$1" },
+  conciergeOnlyWaiting: { count: "$1" },
 };
 
 // default_locale. English is the fallback for users of unsupported languages.

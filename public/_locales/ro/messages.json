@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Aranjează"
+  },
+  "gardenConciergeOnly": {
+    "message": "Afișează doar concierge"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Doar concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "ascunse: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " (așteaptă răspunsul tău: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

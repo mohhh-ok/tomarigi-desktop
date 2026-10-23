@@ -396,5 +396,27 @@
   },
   "gardenArrange": {
     "message": "Elrendezés"
+  },
+  "gardenConciergeOnly": {
+    "message": "Csak a concierge megjelenítése"
+  },
+  "conciergeOnlyBadge": {
+    "message": "Csak a concierge"
+  },
+  "conciergeOnlyHidden": {
+    "message": "$COUNT$ további elrejtve",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "conciergeOnlyWaiting": {
+    "message": " ($COUNT$ a válaszodra vár)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }
