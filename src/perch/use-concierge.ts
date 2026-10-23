@@ -25,7 +25,13 @@ import {
   type DroppedConciergeAdvice,
   type DroppedConciergeSuggestion,
 } from "@/lib/concierge";
-import { suggestionsAt, type ShownSuggestion } from "@/lib/concierge-status";
+import {
+  statusesAt,
+  suggestionsAt,
+  suggestionsOutdated,
+  type ConciergeStatus,
+  type ShownSuggestion,
+} from "@/lib/concierge-status";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import { bubbleText } from "./bubble";
 import { orderByWatchLinks } from "./watch-links";
@@ -87,8 +93,9 @@ export interface ConciergeState {
 /**
  * enabled: an OpenAI / Anthropic key is saved, or Local is set up. agentOf: the agent kind of a session id, when known.
  * mockAdvice: a source that doesn't call the API (mock) gives the advice itself; then nothing is requested.
- * withSuggestions: the Concierge tab is open, so the advice's request also asks for suggestions. It isn't an input of the
- * scheduler: opening the tab doesn't ask, the next request does (no extra request; Claude's own decision).
+ * withSuggestions: the Concierge tab is open, so the advice's request also asks for suggestions. Opening it asks once,
+ * after the 3 seconds without the 60, only when the suggestions at hand are none or out of date (suggestionsOutdated);
+ * otherwise it isn't an input of the scheduler (docs/design.md "Concierge").
  * mockSuggestions: the same as mockAdvice for the suggestions
  */
 export function useConcierge(
@@ -102,6 +109,9 @@ export function useConcierge(
 ): ConciergeState {
   const [advice, setAdvice] = useState<ConciergeAdvice | null>(null);
   const [suggestions, setSuggestions] = useState<ShownSuggestion[]>([]);
+  // Each session's state when the suggestions at hand came; kept while the tab is closed, so going back and forth
+  // doesn't ask again while they are still up to date
+  const answeredAtRef = useRef<Map<string, ConciergeStatus> | undefined>(undefined);
   // The advice shown and its target's state when it came, to tell whether it still holds after a failed request
   const shownRef = useRef<{ advice: ConciergeAdvice; targetState?: ConciergeStateClass } | null>(null);
   const inputsRef = useRef({ sessions, events, agentOf, withSuggestions });
@@ -115,6 +125,7 @@ export function useConcierge(
     shownRef.current = null;
     setAdvice(null);
     setSuggestions([]);
+    answeredAtRef.current = undefined;
   };
   schedulerRef.current ??= new ConciergeScheduler(() => {
     const seq = ++seqRef.current;
@@ -179,9 +190,12 @@ export function useConcierge(
       const target = next?.targetId ? sessions.find((s) => s.id === next.targetId) : undefined;
       shownRef.current = next && { advice: next, targetState: target && conciergeStateOf(target) };
       setAdvice(next);
-      // An answer without suggestions (the tab was closed when it was asked) leaves none; the states are the ones now,
-      // so a suggestion is dimmed once its session moves after this
-      setSuggestions(suggestionsAt(result.suggestions ?? [], inputsRef.current.sessions));
+      // Only an answer asked with suggestions replaces them (the tab was open when it was asked); the states are the ones
+      // now, so a suggestion is dimmed once its session moves after this
+      if (result.suggestions) {
+        setSuggestions(suggestionsAt(result.suggestions, inputsRef.current.sessions));
+        answeredAtRef.current = statusesAt(inputsRef.current.sessions);
+      }
     })();
   }, clearAdvice);
 
@@ -203,9 +217,12 @@ export function useConcierge(
     if (enabled) return;
     clearAdvice();
   }, [enabled]);
-  // Leaving the tab drops the suggestions; opening it again shows them from the next answer
+  // Opening the tab asks once when the suggestions at hand are none or out of date, at the user's pace like an answer
+  // to a waiting session (docs/design.md "Concierge"). The scheduler has seen these sessions: its effect runs first
   useEffect(() => {
-    if (!withSuggestions) setSuggestions([]);
+    if (!withSuggestions || !live || mockSuggestions !== undefined) return;
+    if (!suggestionsOutdated(answeredAtRef.current, inputsRef.current.sessions)) return;
+    if (schedulerRef.current?.soon()) void invoke("log", { line: "[concierge] suggestions asked on opening the tab" }).catch(() => {});
   }, [withSuggestions]);
 
   const current = mockAdvice !== undefined ? mockAdvice : advice;

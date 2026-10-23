@@ -1321,3 +1321,29 @@ test("sessions told apart by a number: an advice is checked against the numbered
     dropped: { targetId: "b2", reason: "no_name" },
   });
 });
+
+test("opening the Concierge tab with suggestions out of date asks after 3 seconds, without waiting for the 60", () => {
+  const { clock, counts, scheduler } = scheduled();
+  scheduler.update(classes(view("a", { state: "done" }), view("b")), true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS);
+  expect(counts.requests).toBe(1);
+  // 10 seconds later the user opens the tab: asked 3 seconds after, not at the end of the 60 seconds
+  clock.advance(10_000);
+  expect(scheduler.soon()).toBe(true);
+  clock.advance(CONCIERGE_DEBOUNCE_MS - 1);
+  expect(counts.requests).toBe(1);
+  clock.advance(1);
+  expect(counts.requests).toBe(2);
+  // Only that once: nothing more until a change asks
+  clock.advance(CONCIERGE_REPEAT_MS);
+  expect(counts.requests).toBe(2);
+});
+
+test("opening the tab asks nothing while no session needs a reply or is done, or before any session was seen", () => {
+  const { clock, counts, scheduler } = scheduled();
+  expect(scheduler.soon()).toBe(false);
+  scheduler.update(classes(view("a"), view("b")), true);
+  expect(scheduler.soon()).toBe(false);
+  clock.advance(CONCIERGE_REPEAT_MS);
+  expect(counts.requests).toBe(0);
+});

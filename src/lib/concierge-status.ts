@@ -59,6 +59,22 @@ export interface ShownSuggestion extends ConciergeSuggestion {
   status: ConciergeStatus;
 }
 
+/** Each session's state when an answer with suggestions came, to tell later whether they are still up to date */
+export function statusesAt(views: SessionView[]): Map<string, ConciergeStatus> {
+  return new Map(views.map((v) => [v.id, conciergeStatusOf(v)]));
+}
+
+/**
+ * Whether the suggestions at hand need asking again when the Concierge tab is opened: none came yet (answeredAt
+ * undefined), or a session changed state, came, or left since they came. Only the state counts, so a new tool line or
+ * time passing doesn't (docs/design.md "Concierge")
+ */
+export function suggestionsOutdated(answeredAt: ReadonlyMap<string, ConciergeStatus> | undefined, views: SessionView[]) {
+  if (!answeredAt) return true;
+  if (answeredAt.size !== views.length) return true;
+  return views.some((v) => answeredAt.get(v.id) !== conciergeStatusOf(v));
+}
+
 /** The suggestions of an answer with their sessions' states then. One whose session isn't on screen is left out */
 export function suggestionsAt(suggestions: ConciergeSuggestion[], views: SessionView[]): ShownSuggestion[] {
   return suggestions.flatMap((s) => {
