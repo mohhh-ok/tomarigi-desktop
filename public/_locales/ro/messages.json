@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Ce se întâmplă?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Se rezumă…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Nu s-a putut rezuma. Apasă din nou butonul."
+  },
+  "conciergeSummaryClose": {
+    "message": "Închide rezumatul"
   }
 }

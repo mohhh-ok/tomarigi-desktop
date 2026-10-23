@@ -760,8 +760,9 @@ export interface ConciergeLogEntry {
   /** dropped: an advice that wasn't shown (nothing to do now, a working session, no session name, not about a session
    * that needs a reply while one does, or a result a watch link holds) */
   kind: "request" | "advice" | "none" | "dropped" | "error";
-  /** What the entry is about. Speech bubble summaries also log here when a local model gave no summary */
-  source?: "concierge" | "bubble";
+  /** What the entry is about. Speech bubble summaries also log here when a local model gave no summary; summary is
+   * "What's going on?" (concierge-summary.ts) */
+  source?: "concierge" | "bubble" | "summary";
   text: string;
   /** The full input of a request, or the answer as the AI gave it, as JSON. Holds text from the sessions, so it is
    * shown in the debug log screen only and never goes to the app log (docs/design.md "Concierge") */

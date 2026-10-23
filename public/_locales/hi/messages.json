@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "अभी क्या चल रहा है?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "सार बना रहे हैं…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "सार नहीं बन सका। बटन फिर से दबाएँ।"
+  },
+  "conciergeSummaryClose": {
+    "message": "सार बंद करें"
   }
 }

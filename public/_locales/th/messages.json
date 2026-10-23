@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "ตอนนี้เป็นอย่างไร?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "กำลังสรุป…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "สรุปไม่ได้ กดปุ่มอีกครั้ง"
+  },
+  "conciergeSummaryClose": {
+    "message": "ปิดสรุป"
   }
 }

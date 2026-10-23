@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Что сейчас происходит?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Подвожу итоги…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Не удалось подвести итоги. Нажмите кнопку ещё раз."
+  },
+  "conciergeSummaryClose": {
+    "message": "Закрыть итоги"
   }
 }

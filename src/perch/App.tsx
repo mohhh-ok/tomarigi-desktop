@@ -41,6 +41,8 @@ import { ConciergeLine, ConciergeSettings } from "./concierge";
 import { conciergeOnlyCounts, conciergeOnlyLabel, useConciergeOnly } from "./concierge-only";
 import { ConciergeOnlyGarden } from "./concierge-only-garden";
 import type { GardenMenu } from "./garden";
+import { useConciergeSummary } from "./use-concierge-summary";
+import type { SummaryState } from "@/lib/concierge-summary";
 import { recordJump } from "@/lib/concierge";
 
 const POLL_MS = 3_000;
@@ -462,6 +464,17 @@ export default function App({
     loaded: phase === "ready",
     canShrink: windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug,
   });
+  // "What's going on?" (use-concierge-summary.ts): only while the mode is on; turning it off drops the summary
+  const conciergeSummary = useConciergeSummary(
+    displaySessions,
+    displayEvents,
+    agentOfSession,
+    source.conciergeSummary,
+  );
+  const closeSummary = conciergeSummary.close;
+  useEffect(() => {
+    if (!conciergeOnly.on) closeSummary();
+  }, [conciergeOnly.on, closeSummary]);
   const gardenMenu: GardenMenu = {
     conciergeAvailable: concierge.available,
     conciergeOnly: conciergeOnly.on,
@@ -515,7 +528,13 @@ export default function App({
           tomarigi
           {/* "Concierge only" is on: said beside the handle, the one thing always shown at rest, with the birds it hides
               and how many of them need a reply (docs/design.md "Concierge") */}
-          {conciergeOnly.on && showTabs && <ConciergeOnlyLabel sessions={displaySessions} />}
+          {conciergeOnly.on && showTabs && (
+            <ConciergeOnlyLabel
+              sessions={displaySessions}
+              summary={conciergeSummary.state}
+              onAsk={concierge.shown ? conciergeSummary.ask : undefined}
+            />
+          )}
         </h1>
         {/* Mute, debug, settings, and hide must always be visible on every tab, so they sit outside the tabs (in the header) */}
         <div className="header-controls">
@@ -690,6 +709,8 @@ export default function App({
                   canFocus={canFocus}
                   menu={gardenMenu}
                   onSize={conciergeOnly.fit}
+                  summary={conciergeSummary.state}
+                  onCloseSummary={conciergeSummary.close}
                 />
               )}
             </div>
@@ -860,13 +881,33 @@ export default function App({
 }
 
 /** "Concierge only" beside the handle's name, inside its backing: the mode, then the hidden birds and how many need a
-    reply (conciergeOnlyLabel) */
-function ConciergeOnlyLabel({ sessions }: { sessions: SessionView[] }) {
+    reply (conciergeOnlyLabel), and the "What's going on?" button (onAsk; absent with no session, when there is nothing
+    to sum up). The button is pressed, not the handle: it doesn't drag the window or show it */
+function ConciergeOnlyLabel({
+  sessions,
+  summary,
+  onAsk,
+}: {
+  sessions: SessionView[];
+  summary: SummaryState;
+  onAsk?: () => void;
+}) {
   const { badge, counts } = conciergeOnlyLabel(conciergeOnlyCounts(sessions));
   return (
     <span className="concierge-only-label">
       <span className="concierge-only-badge">{badge}</span>
       <span className="concierge-only-counts">{counts}</span>
+      {onAsk && (
+        <button
+          type="button"
+          className="concierge-summary-button"
+          disabled={summary.kind === "loading"}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={onAsk}
+        >
+          {t("conciergeSummaryButton")}
+        </button>
+      )}
     </span>
   );
 }

@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "מה קורה עכשיו?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "מסכם…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "לא ניתן היה לסכם. לחצו שוב על הכפתור."
+  },
+  "conciergeSummaryClose": {
+    "message": "סגירת הסיכום"
   }
 }

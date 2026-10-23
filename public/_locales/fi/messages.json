@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Mitä nyt tapahtuu?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Kootaan yhteenvetoa…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Yhteenveto epäonnistui. Paina painiketta uudelleen."
+  },
+  "conciergeSummaryClose": {
+    "message": "Sulje yhteenveto"
   }
 }

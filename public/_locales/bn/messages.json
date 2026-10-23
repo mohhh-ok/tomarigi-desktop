@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "এখন কী চলছে?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "সারাংশ তৈরি হচ্ছে…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "সারাংশ করা গেল না। আবার বোতাম চাপুন।"
+  },
+  "conciergeSummaryClose": {
+    "message": "সারাংশ বন্ধ করুন"
   }
 }

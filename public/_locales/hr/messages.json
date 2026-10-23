@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Što se događa?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Sažimam…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Sažimanje nije uspjelo. Ponovno pritisni gumb."
+  },
+  "conciergeSummaryClose": {
+    "message": "Zatvori sažetak"
   }
 }

@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "现在情况如何？"
+  },
+  "conciergeSummaryLoading": {
+    "message": "正在总结情况…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "无法总结。请再按一次按钮。"
+  },
+  "conciergeSummaryClose": {
+    "message": "关闭总结"
   }
 }

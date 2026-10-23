@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Vad händer just nu?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Sammanfattar…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Kunde inte sammanfatta. Tryck på knappen igen."
+  },
+  "conciergeSummaryClose": {
+    "message": "Stäng sammanfattningen"
   }
 }

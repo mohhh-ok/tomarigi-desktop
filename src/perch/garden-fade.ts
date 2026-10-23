@@ -39,8 +39,8 @@ function birdRects(): BirdRect[] {
 }
 
 /** The window handles: "Tomarigi" in the header (App.tsx), and the Garden's empty message while it has no birds
- * (garden.tsx) */
-const HANDLE_SELECTOR = ".fade-handle";
+ * (garden.tsx). Also what else takes clicks at rest: the × on the concierge's summary (concierge-only-garden.tsx) */
+const HANDLE_SELECTOR = ".fade-handle, .fade-target";
 
 function handleRects(): BirdRect[] {
   const rects: BirdRect[] = [];

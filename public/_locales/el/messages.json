@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Τι γίνεται τώρα;"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Γίνεται σύνοψη…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Δεν έγινε σύνοψη. Πάτησε ξανά το κουμπί."
+  },
+  "conciergeSummaryClose": {
+    "message": "Κλείσιμο σύνοψης"
   }
 }

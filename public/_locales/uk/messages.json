@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Що зараз відбувається?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Підсумовую…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Не вдалося підсумувати. Натисніть кнопку ще раз."
+  },
+  "conciergeSummaryClose": {
+    "message": "Закрити підсумок"
   }
 }

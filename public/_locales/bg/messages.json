@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Какво става сега?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Обобщавам…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Не успях да обобщя. Натиснете бутона отново."
+  },
+  "conciergeSummaryClose": {
+    "message": "Затвори обобщението"
   }
 }

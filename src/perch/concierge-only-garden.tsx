@@ -1,9 +1,10 @@
 // The Garden in "Concierge only" mode (docs/design.md "Concierge"; concierge-only.ts): the concierge bird and its bubble
 // alone, at the top center of the garden, drawn as in the Garden (GardenNode). It isn't placed or saved like the birds:
 // dragging it moves the floating window, which is the concierge's size. It reports the size the window needs for it
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
+import { conciergeBubbleParts, type SummaryState } from "@/lib/concierge-summary";
 import { PLACE_EDGE_PX } from "@/lib/garden-place";
 import type { SessionView } from "@/lib/sessions";
 import { CONCIERGE_ID } from "./concierge";
@@ -23,6 +24,8 @@ export function ConciergeOnlyGarden({
   canFocus,
   menu,
   onSize,
+  summary,
+  onCloseSummary,
 }: {
   // Absent with no session on screen (the Garden's empty message shows then, as without the mode)
   concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook };
@@ -32,11 +35,31 @@ export function ConciergeOnlyGarden({
   menu: GardenMenu;
   // The window size it needs (CSS px; conciergeOnlyWindowSize)
   onSize: (size: { width: number; height: number }) => void;
+  // "What's going on?" (use-concierge-summary.ts): shown in the bubble above the advice until closed with ×
+  summary: SummaryState;
+  onCloseSummary: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const emptyRef = useRef<HTMLDivElement>(null);
   const [bubbleLayer, setBubbleLayer] = useState<HTMLDivElement | null>(null);
   const [gardenW, setGardenW] = useState(0);
+  // A resize of the window, the header (its buttons wrap onto a row of their own) or the bubble isn't a render: measure
+  // again for it
+  const [, setResized] = useState(0);
+  const observerRef = useRef<ResizeObserver | null>(null);
+  useEffect(() => {
+    const again = () => setResized((n) => n + 1);
+    const observer = new ResizeObserver(again);
+    observerRef.current = observer;
+    const header = document.querySelector(".page-header");
+    if (header) observer.observe(header);
+    window.addEventListener("resize", again);
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+      window.removeEventListener("resize", again);
+    };
+  }, []);
 
   // Measured after every render (the bubble's text, the window's size, the handle's label change it); onSize sends
   // only a changed size
@@ -51,6 +74,7 @@ export function ConciergeOnlyGarden({
       const box = garden.getBoundingClientRect();
       const node = garden.querySelector<HTMLElement>(".garden-node");
       const bubble = garden.querySelector<HTMLElement>(".speech-bubble-below");
+      if (bubble) observerRef.current?.observe(bubble);
       const bottom = Math.max(
         node ? node.getBoundingClientRect().bottom : 0,
         bubble ? bubble.getBoundingClientRect().bottom : 0,
@@ -109,6 +133,37 @@ export function ConciergeOnlyGarden({
     summary: advice?.line,
   };
   const target = advice?.targetId;
+  const parts = conciergeBubbleParts(summary, advice);
+  const report = parts.summary && (
+    <>
+      <span className="concierge-summary">
+        {/* Takes clicks at rest too (fade-target in garden-fade.ts); the rest of the bubble lets them through */}
+        <button
+          type="button"
+          className="concierge-summary-close fade-target"
+          aria-label={t("conciergeSummaryClose")}
+          title={t("conciergeSummaryClose")}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={onCloseSummary}
+        >
+          ×
+        </button>
+        {parts.summary.kind === "shown" ? (
+          <span className="concierge-summary-text">{parts.summary.text}</span>
+        ) : (
+          <span className="concierge-summary-note">
+            {t(parts.summary.kind === "loading" ? "conciergeSummaryLoading" : "conciergeSummaryFailed")}
+          </span>
+        )}
+      </span>
+      {parts.advice && (
+        <>
+          <span className="concierge-summary-divider" aria-hidden />
+          <span className="concierge-summary-advice">{parts.advice}</span>
+        </>
+      )}
+    </>
+  );
   return (
     <div
       className="garden garden-concierge-only"
@@ -135,6 +190,7 @@ export function ConciergeOnlyGarden({
           onClick={() => target && onFocus?.(target)}
           concierge={concierge.look}
           dragMovesWindow
+          bubbleContent={report || undefined}
         />
       )}
     </div>

@@ -173,6 +173,10 @@ export const KEYS = [
   "conciergeOnlyBadge",
   "conciergeOnlyHidden",
   "conciergeOnlyWaiting",
+  "conciergeSummaryButton",
+  "conciergeSummaryLoading",
+  "conciergeSummaryFailed",
+  "conciergeSummaryClose",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

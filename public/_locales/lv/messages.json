@@ -418,5 +418,17 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSummaryButton": {
+    "message": "Kas notiek?"
+  },
+  "conciergeSummaryLoading": {
+    "message": "Apkopo…"
+  },
+  "conciergeSummaryFailed": {
+    "message": "Neizdevās apkopot. Nospiediet pogu vēlreiz."
+  },
+  "conciergeSummaryClose": {
+    "message": "Aizvērt kopsavilkumu"
   }
 }
