@@ -74,8 +74,11 @@
   white-space: nowrap;
 }
 
+/* A zero-width space, not "", so the tool name lines up with the state word on the row's baseline: an empty ::before
+   made the box's bottom the baseline, which lifted 「· Read」 above 「ついばみ中 · 9秒」 by 4px (and made working rows
+   4px taller when the status is on its own line) */
 .bird-row-tool::before {
-  content: "";
+  content: "\200b";
   width: 0;
   height: 1lh;
 }
@@ -118,11 +121,6 @@
     margin-left: 45px;
   }
 
-  /* The tool name's baseline is its empty ::before (above), which put it 4px higher than the state word on this line
-     and made working rows 4px taller than the others */
-  .bird-row-main > .bird-row-tool {
-    align-self: flex-start;
-  }
 }
 
 /* Second line of Recent activity rows. The card body is already indented, so the Perch indent isn't applied */
