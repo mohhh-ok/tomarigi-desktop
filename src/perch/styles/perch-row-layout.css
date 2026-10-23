@@ -92,6 +92,12 @@
   display: none;
 }
 
+/* A tool name that doesn't fit whole (no-tool, perch-row-fit.ts) takes no width, so the state stays at the row's right
+   end */
+.bird-row-main.no-tool > .bird-row-tool {
+  display: none;
+}
+
 .bird-row-main.two-lines {
   flex-wrap: wrap;
   row-gap: 2px;
