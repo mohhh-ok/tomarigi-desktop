@@ -829,11 +829,12 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // 4. Concierge tab at rest (with ?tab=concierge&concierge=): the suggestions name the two sessions that wait on the
-    // user, and the state lines mix needing a reply, done, and working. The sessions are the terminal's four tabs
+    // 4. Concierge tab at rest (with ?tab=concierge&concierge=): the suggestions are a reply to the waiting blog session
+    // and a look at figma-adapter's result, and the state lines mix needing a reply, done, and working. The sessions are
+    // the terminal's four tabs, each in the same state as in the other images
     id: "gallery-concierge",
     label: "Gallery: concierge",
-    build: () => ({ sessions: pick(["gallery/plan", "gallery/asking", "gallery/finished", "gallery/working"]), events: [] }),
+    build: () => ({ sessions: pick(["gallery/plan", "gallery/finished", "gallery/dozing", "gallery/working"]), events: [] }),
   },
   {
     // Two sessions in the same project, told apart by a number, and two told apart by the session name the user gave one
@@ -988,16 +989,6 @@ const GALLERY: SessionView[] = [
     ...finished(12 * 60_000, "Added three button sizes", "ボタンを 3 種類にした"),
   },
   {
-    // Waits on the user, after the blog session (the Concierge image's second suggestion)
-    id: "gallery/asking",
-    project: "moh-tech-net",
-    slug: "moh-tech-net",
-    state: "waiting",
-    sinceMs: 30_000,
-    snippet: tr("Add the new app to the top page", "トップページに新しいアプリを足して"),
-    question: tr("Put it first or last in the list?", "一覧の先頭と末尾のどちらに置きますか？"),
-  },
-  {
     id: "gallery/dozing",
     project: "moh-tech-net",
     slug: "moh-tech-net",
@@ -1010,7 +1001,7 @@ const GALLERY: SessionView[] = [
 /** A suggestion's text for a gallery session, so the Concierge image's suggestions fit its sessions (mock.tsx) */
 export function gallerySuggestionText(id: string): string | undefined {
   if (id === "gallery/plan") return tr("approve the plan, it has waited longest", "いちばん長く待っている計画の承認を先に");
-  if (id === "gallery/asking") return tr("pick where the new app goes", "新しいアプリの置き場所を決めましょう");
+  if (id === "gallery/finished") return tr("check the new button sizes", "増やしたボタンの大きさを確かめましょう");
   return undefined;
 }
 
