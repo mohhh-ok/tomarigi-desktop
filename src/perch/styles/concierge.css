@@ -102,8 +102,8 @@
   color: #e9e6de;
 }
 
-/* The concierge's bubble in "Concierge only" (concierge-status-report.tsx): wider than a bird's bubble, since it holds a
-   line per session, then the suggestions under their heading */
+/* The concierge's bubble in "Concierge only" (concierge-status-report.tsx): wider than a bird's bubble, since it holds the
+   suggestions under their heading and then a line per session */
 .speech-bubble-below.concierge-report {
   --bubble-max: 240px;
 }
@@ -112,7 +112,40 @@
   display: block;
 }
 
-/* One line per session, 「<name>: <text> <state>」, and one per suggestion */
+/* The suggestions at the top stand out from the state lines below them (docs/design.md "Concierge"): the heading in
+   the bubble's accent color (the deep amber of its links under the cursor, since the window's #d9b06a is too light on
+   the bubble), the suggestions bold and a step larger than a bird's bubble text (11px) */
+.concierge-status-suggestions {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.concierge-status-heading {
+  display: block;
+  margin-bottom: 1px;
+  color: #8a5a12;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* A suggestion often wraps, so each starts a little apart from the one before */
+.concierge-status-suggestions .concierge-status-line + .concierge-status-line {
+  margin-top: 3px;
+}
+
+/* The state lines: a step smaller and muted, the detail to read after */
+.concierge-status-lines {
+  display: block;
+  color: #5d5546;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+/* One line per suggestion, and one per session, 「<name>: <text> <state>」 */
 .concierge-status-line {
   display: block;
 }
@@ -124,8 +157,7 @@
 
 /* The state the app adds after the text: quieter than the text; needing a reply stands out */
 .concierge-status-state {
-  color: #6b6355;
-  font-size: 10px;
+  color: #7a7263;
   white-space: nowrap;
 }
 
@@ -136,21 +168,14 @@
 
 .concierge-status-now {
   color: #8a5a12;
+  font-weight: 600;
   white-space: nowrap;
 }
 
-/* 「ほか 3 件」 after the lines that fit, and the suggestions' heading: the app's own words, quieter than the lines */
+/* 「ほか 3 件」 after the lines that fit: the app's own words, quieter still */
 .concierge-status-more {
   display: block;
-  color: #6b6355;
-}
-
-.concierge-status-heading {
-  display: block;
-  margin-top: 5px;
-  color: #6b6355;
-  font-size: 10px;
-  font-weight: 600;
+  color: #7a7263;
 }
 
 /* A session's name (concierge-status-report.tsx): jumps to its pane, so it takes clicks at rest too (the rest of the

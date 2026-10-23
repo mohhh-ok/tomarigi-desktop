@@ -1,6 +1,6 @@
-// The concierge's bubble in "Concierge only" (docs/design.md "Concierge"): a line per session, 「<name>: <text> <state>」,
-// built here from the app's facts (lib/concierge-status.ts) on every render, then the suggestions that came with the
-// advice under their heading. Each name links to its session by id; no name is searched for in text. A suggestion
+// The concierge's bubble in "Concierge only" (docs/design.md "Concierge"): the suggestions that came with the advice
+// under their heading at the top, standing out, then a line per session, 「<name>: <text> <state>」, built here from the
+// app's facts (lib/concierge-status.ts) on every render, smaller and muted as the detail to read after. Each name links to its session by id; no name is searched for in text. A suggestion
 // whose session changed since it came is dimmed with its state now
 import type { ReactNode } from "react";
 import { t } from "@/lib/i18n";
@@ -70,16 +70,9 @@ export function ConciergeStatusReport({
   );
   return (
     <span className="concierge-status">
-      {lines.map((l) => (
-        <span key={l.sessionId} className="concierge-status-line">
-          {name(l.sessionId, l.name, true)}
-          {/* A session the app has no text for says only its state */}
-          {l.text === undefined ? `: ${t(STATE_LABEL[l.status])}` : <>{`: ${l.text}`}{state(l.status)}</>}
-        </span>
-      ))}
-      {more > 0 && <span className="concierge-status-more">{t("conciergeSummaryMore", [String(more)])}</span>}
+      {/* None: no heading either */}
       {suggestions.length > 0 && (
-        <>
+        <span className="concierge-status-suggestions">
           <span className="concierge-status-heading">{t("conciergeSummarySuggestions")}</span>
           {suggestions.map((s) => {
             const now = suggestionNow(s, sessions);
@@ -93,8 +86,18 @@ export function ConciergeStatusReport({
               </span>
             );
           })}
-        </>
+        </span>
       )}
+      <span className="concierge-status-lines">
+        {lines.map((l) => (
+          <span key={l.sessionId} className="concierge-status-line">
+            {name(l.sessionId, l.name, true)}
+            {/* A session the app has no text for says only its state */}
+            {l.text === undefined ? `: ${t(STATE_LABEL[l.status])}` : <>{`: ${l.text}`}{state(l.status)}</>}
+          </span>
+        ))}
+        {more > 0 && <span className="concierge-status-more">{t("conciergeSummaryMore", [String(more)])}</span>}
+      </span>
     </span>
   );
 }
