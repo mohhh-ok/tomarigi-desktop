@@ -1,6 +1,7 @@
 // A session's display name. When the name tells sessions with the same project apart by its end (the folder's label,
-// the rest of a session name, the number), only the start is cut with "…" when it doesn't fit, so that end stays
-// visible (docs/design.md "Display names"). The element around it gets sessionNameClass, which lays the two parts out
+// the rest of a session name, the number), the start and the end each take up to half the width and are cut with "…"
+// when they don't fit, so both stay readable (docs/design.md "Display names"). The element around it gets
+// sessionNameClass, which lays the two parts out
 const splitOf = (name: string, suffix: string | undefined) =>
   suffix && suffix.length < name.length && name.endsWith(suffix) ? name.length - suffix.length : undefined;
 
