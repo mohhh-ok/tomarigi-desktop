@@ -46,6 +46,7 @@ const DROP_REASON_TEXT: Record<DroppedConciergeAdvice["reason"], string> = {
   not_waiting: "another session needs a reply",
   watched: "a watching session takes its result",
   child_working: "a session it watches is still working",
+  elapsed_time: "it writes an elapsed time it was given",
 };
 
 const SUGGESTION_DROP_TEXT: Record<DroppedConciergeSuggestion["reason"], string> = {
