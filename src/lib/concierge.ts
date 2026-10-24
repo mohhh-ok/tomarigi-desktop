@@ -387,8 +387,9 @@ export function adviceNamesTarget(line: string, name: string): boolean {
 
 /** An advice that isn't shown, and why: it asks nothing the developer can do now, it is about a working session, it
  * asks to reply about a session that doesn't need a reply, it doesn't contain its session's name, it names another
- * session, it is about a session that doesn't need a reply while another does, or it asks to check the result of a
- * session whose watching parent takes it or that watches a child still working */
+ * session, it is about a session that doesn't need a reply while another does, it asks to check the result of a
+ * session whose watching parent takes it or that watches a child still working, or it writes an elapsed time it was
+ * given */
 export interface DroppedConciergeAdvice extends ConciergeAdvice {
   reason:
     | "nothing_to_do"
@@ -398,7 +399,8 @@ export interface DroppedConciergeAdvice extends ConciergeAdvice {
     | "other_session"
     | "not_waiting"
     | "watched"
-    | "child_working";
+    | "child_working"
+    | "elapsed_time";
 }
 
 const watchesWorkingChild = (target: PayloadSession, sessions: PayloadSession[]) =>
@@ -420,6 +422,42 @@ function adviceNamesOtherSession(line: string, target: PayloadSession, sessions:
   );
 }
 
+/** Numbers under this aren't taken as an elapsed time: session names carry small numbers ("billionclips 2", "Claude
+ * Code 2"), and so do choices ("A/B", two options), which would drop good text (Claude's own decision) */
+const MIN_ELAPSED_NUMBER = 10;
+
+/**
+ * The numbers the AI could copy from the facts' times: each seconds_since_last_activity and seconds_ago, and the same
+ * in whole minutes and hours (cut and rounded), as text. Text with one of them is not shown (writesElapsedTime): the
+ * prompt alone didn't hold (docs/design.md "Concierge"). Compared as numbers, so it holds in every language
+ */
+export function elapsedNumbers(payload: Pick<ConciergePayload, "sessions" | "recent_events">): Set<string> {
+  const seconds = [
+    ...payload.sessions.map((s) => s.seconds_since_last_activity),
+    ...payload.recent_events.map((e) => e.seconds_ago),
+  ];
+  const numbers = new Set<string>();
+  for (const s of seconds) {
+    for (const n of [s, s / 60, s / 3600].flatMap((v) => [Math.floor(v), Math.round(v)])) {
+      if (n >= MIN_ELAPSED_NUMBER) numbers.add(String(n));
+    }
+  }
+  return numbers;
+}
+
+/**
+ * Whether the text has one of the numbers as a number of its own (after NFKC, so full-width digits count). Thousands
+ * commas are dropped (4,562). A number in a version, a decimal or a clock time (v0.12.2, 12.5, 12:30) or after # (#86)
+ * isn't one: in the app log such text named a release or an issue and matched a time by chance (Claude's own decision)
+ */
+export function writesElapsedTime(line: string, numbers: ReadonlySet<string>): boolean {
+  return (line.normalize("NFKC").match(/#?\d+(?:[.,:]\d+)*/g) ?? []).some((token) => {
+    if (token.startsWith("#")) return false;
+    const plain = /^\d{1,3}(?:,\d{3})+$/.test(token) ? token.replaceAll(",", "") : token;
+    return /^\d+$/.test(plain) && numbers.has(plain);
+  });
+}
+
 /** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge"). ownName false skips the check that
  * the text names its session: a suggestion's text is written without it (the app shows the name) */
 export function dropReason(
@@ -427,9 +465,12 @@ export function dropReason(
   action: ConciergeAction | undefined,
   sessions: PayloadSession[],
   ownName = true,
+  elapsed: ReadonlySet<string> = new Set(),
 ): DroppedConciergeAdvice["reason"] | undefined {
   // Only waiting is not advice, with a target or without (the prompt alone didn't hold)
   if (action === "none") return "nothing_to_do";
+  // The seconds it was given are for choosing, not for the developer (elapsedNumbers)
+  if (writesElapsedTime(advice.line, elapsed)) return "elapsed_time";
   const target = sessions.find((s) => s.id === advice.targetId);
   if (!target) return undefined;
   // The facts say it is working, or the turn verdict says its work goes on in the background, so its result isn't
@@ -482,6 +523,7 @@ function suggestionTextOf(text: unknown, name: string): string {
 export function parseConciergeSuggestions(
   list: unknown,
   sessions: PayloadSession[],
+  elapsed: ReadonlySet<string> = new Set(),
 ): { suggestions: ConciergeSuggestion[]; dropped: DroppedConciergeSuggestion[] } {
   const suggestions: ConciergeSuggestion[] = [];
   const dropped: DroppedConciergeSuggestion[] = [];
@@ -498,7 +540,7 @@ export function parseConciergeSuggestions(
     else if (!text) drop("no_text");
     else if (suggestions.some((s) => s.sessionId === id)) drop("duplicate");
     else {
-      const reason = dropReason({ line: text, targetId: id }, kind, sessions, false);
+      const reason = dropReason({ line: text, targetId: id }, kind, sessions, false, elapsed);
       if (reason) drop(reason);
       else if (suggestions.length >= CONCIERGE_MAX_SUGGESTIONS) drop("too_many");
       else suggestions.push({ sessionId: id, kind, text });
@@ -647,8 +689,11 @@ export async function askConcierge(
       : raw;
   const parsed = parseConciergeVerdict(answer, new Set(payload.sessions.map((s) => s.id)));
   const action = actionOf(answer);
-  const reason = parsed && dropReason(parsed, action, payload.sessions);
-  const suggested = withSuggestions ? parseConciergeSuggestions(answer?.suggestions, payload.sessions) : undefined;
+  const elapsed = elapsedNumbers(payload);
+  const reason = parsed && dropReason(parsed, action, payload.sessions, true, elapsed);
+  const suggested = withSuggestions
+    ? parseConciergeSuggestions(answer?.suggestions, payload.sessions, elapsed)
+    : undefined;
   return {
     ok: true,
     verdict: reason ? null : parsed,

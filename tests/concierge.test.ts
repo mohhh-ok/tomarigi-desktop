@@ -26,6 +26,8 @@ import {
   conciergeRequestLogLines,
   conciergeResultLogLine,
   conciergeRetryLogLine,
+  elapsedNumbers,
+  writesElapsedTime,
 } from "../src/lib/concierge.ts";
 import { verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "../src/lib/judge.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
@@ -1380,4 +1382,66 @@ test("a cut name is compared without its cut mark: another session's name, and a
   // Both names cut to the same text; the other one's name is part of the target's, so it doesn't count
   const { suggestions } = parseConciergeSuggestions([{ session_id: "a", kind: "reply", text: `${cut.slice(0, -1)}: answer it` }], sessions);
   expect(suggestions).toEqual([{ sessionId: "a", kind: "reply", text: "answer it" }]);
+});
+
+test("the elapsed numbers: each session's and event's seconds, and the same in whole minutes and hours, from 10 up", () => {
+  const payload = buildConciergePayload(
+    [{ view: view("a", { state: "waiting", sinceMs: 770_000 }) }, { view: view("b", { sinceMs: 7_242_000 }) }],
+    [event("a", "waiting", 186)],
+    [],
+    NOW,
+    "en",
+  );
+  // 770 s is 12.8 minutes; 7242 s is 120.7 minutes and 2 hours (under 10, so not taken); 186 s is 3 minutes (not taken)
+  expect([...elapsedNumbers(payload)].sort((x, y) => Number(x) - Number(y))).toEqual(["12", "13", "120", "121", "186", "770", "7242"]);
+});
+
+test("a text with an elapsed number as a number of its own, in any language; not inside a longer number, a version or after #", () => {
+  const numbers = new Set(["12", "186", "770", "4562"]);
+  expect(writesElapsedTime("770秒待っており判断が必要です", numbers)).toBe(true);
+  expect(writesElapsedTime("質問が186秒保留中なので先に回答する", numbers)).toBe(true);
+  expect(writesElapsedTime("Reply first; it has waited 770 seconds", numbers)).toBe(true);
+  expect(writesElapsedTime("７７０秒待っています", numbers)).toBe(true);
+  expect(writesElapsedTime("waiting for 12 min", numbers)).toBe(true);
+  expect(writesElapsedTime("it has waited 4,562 seconds", numbers)).toBe(true);
+  expect(writesElapsedTime("Reply first; it has waited longest", numbers)).toBe(false);
+  expect(writesElapsedTime("build 17701 is out", numbers)).toBe(false);
+  expect(writesElapsedTime("tomarigi-desktopのv0.12.2公開を承認してください", numbers)).toBe(false);
+  expect(writesElapsedTime("TikTok #186を今日投稿するか決めてください", numbers)).toBe(false);
+  expect(writesElapsedTime("billionclips 2の結果を確認", new Set())).toBe(false);
+});
+
+test("an advice or a suggestion that writes an elapsed time it was given is not shown, and is logged with the reason", async () => {
+  const payload = buildConciergePayload(
+    [
+      { view: view("w", { project: "blog", state: "waiting", sinceMs: 770_000 }) },
+      { view: view("v", { project: "api", state: "waiting", sinceMs: 60_000 }) },
+    ],
+    [],
+    [],
+    NOW,
+    "en",
+  );
+  const run = async <V,>(): Promise<JudgeResult<V>> => ({
+    ok: true,
+    verdict: {
+      advice: "Answer blog, it has waited 770 seconds",
+      session_id: "s1",
+      action: "reply",
+      suggestions: [
+        { session_id: "s1", kind: "reply", text: "Reply first; it has waited 770 seconds" },
+        { session_id: "s2", kind: "reply", text: "Answer its question" },
+      ],
+    } as V,
+  });
+  const result = await askConcierge("openai", payload, run, true);
+  expect(result).toMatchObject({
+    verdict: null,
+    dropped: { line: "Answer blog, it has waited 770 seconds", targetId: "w", reason: "elapsed_time" },
+    suggestions: [{ sessionId: "v", kind: "reply", text: "Answer its question" }],
+  });
+  expect(result.ok && result.droppedSuggestions).toEqual([
+    { sessionId: "w", kind: "reply", text: "Reply first; it has waited 770 seconds", reason: "elapsed_time" },
+  ]);
+  expect(conciergeResultLogLine({ req: "r1", provider: "openai", model: "m" }, result)).toContain("reason=elapsed_time");
 });
