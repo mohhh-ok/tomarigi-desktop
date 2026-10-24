@@ -171,7 +171,10 @@
     "message": "Кацалка"
   },
   "tabGardenLabel": {
-    "message": "Градина"
+    "message": "Двор"
+  },
+  "tabEventsLabel": {
+    "message": "Дейност"
   },
   "tabSettingsLabel": {
     "message": "Настройки"

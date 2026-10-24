@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "にわ"
   },
+  "tabEventsLabel": {
+    "message": "最近の動き"
+  },
   "tabSettingsLabel": {
     "message": "設定"
   },

@@ -101,6 +101,7 @@ export const KEYS = [
   "byokNoKeyMessage",
   "tabPerchLabel",
   "tabGardenLabel",
+  "tabEventsLabel",
   "tabSettingsLabel",
   "voiceEnableLabel",
   "eventWaitingVoice",

@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "สวน"
   },
+  "tabEventsLabel": {
+    "message": "กิจกรรม"
+  },
   "tabSettingsLabel": {
     "message": "การตั้งค่า"
   },

@@ -45,7 +45,7 @@
 }
 
 /* Four tabs in a narrow window: tighter, like the header's buttons (base.css), so their words stay whole down to the
-   narrowest window (260px); a long word in some languages may still wrap at a space */
+   narrowest window (260px). The tabs' words are one word each for that (tabEventsLabel; docs/design.md "Concierge") */
 @media (max-width: 400px) {
   .tab-btn {
     padding-left: 10px;

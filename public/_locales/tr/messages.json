@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Bahçe"
   },
+  "tabEventsLabel": {
+    "message": "Etkinlik"
+  },
   "tabSettingsLabel": {
     "message": "Ayarlar"
   },

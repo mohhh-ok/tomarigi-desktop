@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Puutarha"
   },
+  "tabEventsLabel": {
+    "message": "Toiminta"
+  },
   "tabSettingsLabel": {
     "message": "Asetukset"
   },
