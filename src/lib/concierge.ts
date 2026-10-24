@@ -275,8 +275,11 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "write in it. The one exception is the advice about a parent that hasn't got its child's result, which names " +
     "both.\n" +
     "Write one short line, about 30 full-width characters (or about 60 Latin characters), plain text, no " +
-    "markdown, no quotation marks, no trailing period, in the language given by ui_language. Set session_id to " +
-    "the id of the session the advice is about, exactly as given. When nothing needs the developer (no session " +
+    "markdown, no quotation marks, no trailing period, in the language given by ui_language. Never write a " +
+    "number of seconds, minutes or hours, or any other number from the facts' times (seconds_since_last_activity, " +
+    "seconds_ago); they are for choosing, not for the developer: say it in words, e.g. it has waited longest. " +
+    "Set session_id to the id of the session the advice is about, exactly as given. When nothing needs the " +
+    "developer (no session " +
     "needs a reply and nothing looks wrong), return an empty advice and an empty session_id.\n" +
     "Advise only something the developer can do now. Set action to what the advice asks: reply (answer, approve, " +
     "or decide for a session that needs a reply), check_result (look at the result of a session that finished), " +
@@ -330,7 +333,8 @@ export const CONCIERGE_TASK_WITH_SUGGESTIONS: JudgeTaskDefinition = {
     "never suggest a working session, one with continuing true, the result of a session with watch_parent, or the " +
     "result of a session whose watch_children still work; never put another session's name or id in a text. At " +
     "most one suggestion per session. Each text is about 30 full-width characters (or about 60 Latin characters), " +
-    "one line, plain text, no markdown, no quotation marks, in the language given by ui_language. When nothing " +
+    "one line, plain text, no markdown, no quotation marks, in the language given by ui_language, and like the " +
+    "advice never has a number of seconds, minutes or hours from the facts' times. When nothing " +
     "needs the developer, return an empty list.",
   outputFields: {
     ...CONCIERGE_TASK.outputFields,
