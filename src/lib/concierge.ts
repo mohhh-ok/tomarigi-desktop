@@ -109,6 +109,9 @@ const tail = (text: string) =>
 const clip = (text: string | undefined) =>
   text === undefined ? undefined : text.length > MAX_TEXT_CHARS ? `${text.slice(0, MAX_TEXT_CHARS)}…` : text;
 
+/** A name cut by clip, without its cut mark, for comparing it with text the AI wrote */
+const unclip = (text: string) => (text.endsWith("…") ? text.slice(0, -1) : text);
+
 /** A session's name as the concierge is given it (cut, with "…", when long) */
 const conciergeNameOf = (view: SessionView) => clip(view.project)!;
 
@@ -377,7 +380,7 @@ const normalizeName = (text: string) => text.normalize("NFKC").toLowerCase();
  * for the request is compared without its cut mark (Claude's own decision, docs/design.md "Concierge")
  */
 export function adviceNamesTarget(line: string, name: string): boolean {
-  const n = normalizeName(name.endsWith("…") ? name.slice(0, -1) : name);
+  const n = normalizeName(unclip(name));
   return n.length > 0 && normalizeName(line).includes(n);
 }
 
@@ -407,12 +410,12 @@ const watchesWorkingChild = (target: PayloadSession, sessions: PayloadSession[])
  * both (docs/design.md "Concierge")
  */
 function adviceNamesOtherSession(line: string, target: PayloadSession, sessions: PayloadSession[]): boolean {
-  const targetName = normalizeName(target.name.endsWith("…") ? target.name.slice(0, -1) : target.name);
+  const targetName = normalizeName(unclip(target.name));
   return sessions.some(
     (s) =>
       s.id !== target.id &&
       !(s.watch_parent === target.id && s.result_reached_parent === false) &&
-      !targetName.includes(normalizeName(s.name.endsWith("…") ? s.name.slice(0, -1) : s.name)) &&
+      !targetName.includes(normalizeName(unclip(s.name))) &&
       adviceNamesTarget(line, s.name),
   );
 }
@@ -466,7 +469,7 @@ export interface DroppedConciergeSuggestion {
 function suggestionTextOf(text: unknown, name: string): string {
   if (typeof text !== "string") return "";
   let line = text.replace(/\s+/g, " ").trim();
-  const bare = name.endsWith("…") ? name.slice(0, -1) : name;
+  const bare = unclip(name);
   for (const sep of [":", "："]) if (bare && line.startsWith(`${bare}${sep}`)) line = line.slice(bare.length + 1).trim();
   return line;
 }
@@ -686,6 +689,8 @@ export type ConciergeTriggerClass = "reply" | "done" | "working" | "dozing";
 
 /** Each session's class, by id. update() of ConciergeScheduler takes this on every scan */
 export function conciergeTriggerClasses(views: SessionView[]): Map<string, ConciergeTriggerClass> {
+  // needsAnswer is true for every waiting session; the state check is there only so the type leaves waiting out of the
+  // other states
   return new Map(
     views.map((v) => [v.id, needsAnswer(v.state, v.ask) || v.state === "waiting" ? "reply" : v.state]),
   );
