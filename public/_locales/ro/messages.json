@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Grădină"
   },
+  "tabEventsLabel": {
+    "message": "Mișcare"
+  },
   "tabSettingsLabel": {
     "message": "Setări"
   },

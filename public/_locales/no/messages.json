@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Hage"
   },
+  "tabEventsLabel": {
+    "message": "Aktivitet"
+  },
   "tabSettingsLabel": {
     "message": "Innstillinger"
   },

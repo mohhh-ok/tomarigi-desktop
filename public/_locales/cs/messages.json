@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Zahrada"
   },
+  "tabEventsLabel": {
+    "message": "Aktivita"
+  },
   "tabSettingsLabel": {
     "message": "Nastavení"
   },

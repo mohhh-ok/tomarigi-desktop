@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "庭院"
   },
+  "tabEventsLabel": {
+    "message": "动态"
+  },
   "tabSettingsLabel": {
     "message": "设置"
   },

@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Κήπος"
   },
+  "tabEventsLabel": {
+    "message": "Κίνηση"
+  },
   "tabSettingsLabel": {
     "message": "Ρυθμίσεις"
   },

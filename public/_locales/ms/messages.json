@@ -168,10 +168,13 @@
     "message": "Masukkan dan simpan kunci API dahulu"
   },
   "tabPerchLabel": {
-    "message": "Tempat Bertenggek"
+    "message": "Tenggeran"
   },
   "tabGardenLabel": {
     "message": "Taman"
+  },
+  "tabEventsLabel": {
+    "message": "Aktiviti"
   },
   "tabSettingsLabel": {
     "message": "Tetapan"

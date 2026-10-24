@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Garten"
   },
+  "tabEventsLabel": {
+    "message": "Aktivität"
+  },
   "tabSettingsLabel": {
     "message": "Einstellungen"
   },

@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Kert"
   },
+  "tabEventsLabel": {
+    "message": "Tevékenység"
+  },
   "tabSettingsLabel": {
     "message": "Beállítások"
   },

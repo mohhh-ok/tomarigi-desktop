@@ -168,10 +168,13 @@
     "message": "Vui lòng nhập và lưu khóa API trước"
   },
   "tabPerchLabel": {
-    "message": "Cây sào"
+    "message": "Sào"
   },
   "tabGardenLabel": {
-    "message": "Khu vườn"
+    "message": "Vườn"
+  },
+  "tabEventsLabel": {
+    "message": "Hoạt động"
   },
   "tabSettingsLabel": {
     "message": "Cài đặt"

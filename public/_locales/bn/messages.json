@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "বাগান"
   },
+  "tabEventsLabel": {
+    "message": "কার্যকলাপ"
+  },
   "tabSettingsLabel": {
     "message": "সেটিংস"
   },

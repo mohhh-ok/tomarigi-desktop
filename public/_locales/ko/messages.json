@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "정원"
   },
+  "tabEventsLabel": {
+    "message": "활동"
+  },
   "tabSettingsLabel": {
     "message": "설정"
   },

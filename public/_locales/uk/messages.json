@@ -173,6 +173,9 @@
   "tabGardenLabel": {
     "message": "Сад"
   },
+  "tabEventsLabel": {
+    "message": "Активність"
+  },
   "tabSettingsLabel": {
     "message": "Налаштування"
   },

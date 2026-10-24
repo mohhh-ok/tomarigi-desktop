@@ -58,7 +58,7 @@ const TAB_LABEL = {
   concierge: "conciergeName",
   garden: "tabGardenLabel",
   perch: "tabPerchLabel",
-  events: "eventFeedHeading",
+  events: "tabEventsLabel",
 } as const;
 
 // Chirps fire from ScanResult.events (issue #6). Which chirp maps to each event type
