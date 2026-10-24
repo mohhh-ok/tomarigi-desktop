@@ -133,8 +133,8 @@ pub(crate) fn bubble_grow_frame(cur: Frame, up: u32, area: Frame) -> Frame {
 pub(crate) fn compact_frame(cur: Frame, width: u32, height: u32, area: Frame) -> Frame {
     let (width, height) = (width.min(area.width), height.min(area.height));
     Frame {
-        x: place_axis(cur.x, cur.width, width, keep_of(cur.x, cur.width, area.x, area.width), area.x, area.width),
-        y: place_axis(cur.y, cur.height, height, keep_of(cur.y, cur.height, area.y, area.height), area.y, area.height),
+        x: grow_axis(cur.x, cur.width, width, area.x, area.width),
+        y: grow_axis(cur.y, cur.height, height, area.y, area.height),
         width,
         height,
     }
@@ -273,11 +273,14 @@ fn visible_area(win: &WebviewWindow, user: Frame) -> Option<Frame> {
     Some(Frame { x: area.position.x, y: area.position.y, width: area.size.width, height: area.size.height })
 }
 
+/// The main window while growing applies to it: floating, and "Concierge only" not shrinking it (nothing grows it then)
+fn growable_window(app: &AppHandle) -> Option<WebviewWindow> {
+    let win = app.get_webview_window("main")?;
+    (current_mode() == WindowMode::Floating && COMPACT.lock().unwrap().is_none()).then_some(win)
+}
+
 fn apply(app: &AppHandle, scale: f64, drop: bool) {
-    let Some(win) = app.get_webview_window("main") else { return };
-    if current_mode() != WindowMode::Floating || COMPACT.lock().unwrap().is_some() {
-        return;
-    }
+    let Some(win) = growable_window(app) else { return };
     let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied, g.dragged));
     let Some((user, shown, dragged)) = grown.or_else(|| current_frame(&win).map(|f| (f, f, false))) else { return };
     let Some(area) = visible_area(&win, user) else { return };
@@ -295,18 +298,28 @@ fn apply(app: &AppHandle, scale: f64, drop: bool) {
 /// Moves the window to `grown.applied`, remembering it as grown unless it is the user's frame
 fn set_frame(win: &WebviewWindow, grown: Grown) {
     let target = grown.applied;
-    // Set the state before moving the window: Moved / Resized can arrive while set_size / set_position run
-    *AUTO_UNTIL.lock().unwrap() = Some(Instant::now() + Duration::from_millis(AUTO_SETTLE_MS));
     *GROWN.lock().unwrap() = (target != grown.user).then_some(grown);
+    move_window(win, target);
+}
+
+/// Moves the window to `target`, the Moved / Resized it causes not taken for a manual move or resize (AUTO_UNTIL). Set
+/// the other state before calling it: Moved / Resized can arrive while set_size / set_position run
+fn move_window(win: &WebviewWindow, target: Frame) {
+    *AUTO_UNTIL.lock().unwrap() = Some(Instant::now() + Duration::from_millis(AUTO_SETTLE_MS));
     win.set_size(tauri::PhysicalSize::new(target.width, target.height)).ok();
     win.set_position(tauri::PhysicalPosition::new(target.x, target.y)).ok();
 }
 
+/// Runs `f` on the main thread and waits up to 2 seconds for what it returns (None when it couldn't run or timed out)
+fn on_main_thread<T: Send + 'static>(app: &AppHandle, f: impl FnOnce(&AppHandle) -> T + Send + 'static) -> Option<T> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let handle = app.clone();
+    app.run_on_main_thread(move || tx.send(f(&handle)).unwrap_or_default()).ok()?;
+    rx.recv_timeout(Duration::from_secs(2)).ok()
+}
+
 fn drag_grow(app: &AppHandle, pointer: (f64, f64), insets: Insets) {
-    let Some(win) = app.get_webview_window("main") else { return };
-    if current_mode() != WindowMode::Floating || COMPACT.lock().unwrap().is_some() {
-        return;
-    }
+    let Some(win) = growable_window(app) else { return };
     let Some(scale) = win.scale_factor().ok() else { return };
     let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied));
     let Some((user, shown)) = grown.or_else(|| current_frame(&win).map(|f| (f, f))) else { return };
@@ -329,10 +342,7 @@ fn drag_grow(app: &AppHandle, pointer: (f64, f64), insets: Insets) {
 
 /// Grows the window up by `top` CSS px (bubble_grow_frame). Returns whether it was resized
 fn bubble_grow(app: &AppHandle, top: f64) -> bool {
-    let Some(win) = app.get_webview_window("main") else { return false };
-    if current_mode() != WindowMode::Floating || COMPACT.lock().unwrap().is_some() {
-        return false;
-    }
+    let Some(win) = growable_window(app) else { return false };
     let Some(scale) = win.scale_factor().ok() else { return false };
     let grown = GROWN.lock().unwrap().as_ref().map(|g| (g.user, g.applied));
     let Some((user, shown)) = grown.or_else(|| current_frame(&win).map(|f| (f, f))) else { return false };
@@ -351,12 +361,7 @@ fn bubble_grow(app: &AppHandle, top: f64) -> bool {
 /// page keeps its birds at the same place on screen with anchor y 1 until the resize arrives
 #[tauri::command]
 pub(crate) async fn garden_bubble_grow(app: AppHandle, top: f64) -> bool {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let handle = app.clone();
-    if app.run_on_main_thread(move || tx.send(bubble_grow(&handle, top)).unwrap_or_default()).is_err() {
-        return false;
-    }
-    rx.recv_timeout(Duration::from_secs(2)).unwrap_or(false)
+    on_main_thread(&app, move |app| bubble_grow(app, top)).unwrap_or(false)
 }
 
 /// While a bird or block is dragged: grows the floating window toward the garden's edge the pointer is near or past
@@ -408,9 +413,7 @@ fn concierge_only_apply(app: &AppHandle, width: f64, height: f64) {
     if target == shown {
         return;
     }
-    *AUTO_UNTIL.lock().unwrap() = Some(Instant::now() + Duration::from_millis(AUTO_SETTLE_MS));
-    win.set_size(tauri::PhysicalSize::new(target.width, target.height)).ok();
-    win.set_position(tauri::PhysicalPosition::new(target.x, target.y)).ok();
+    move_window(&win, target);
     append_log(&format!("[concierge-only] fit {width}x{height} {shown:?} -> {target:?}"));
 }
 
@@ -434,10 +437,8 @@ fn concierge_only_restore(app: &AppHandle) -> Option<InnerSize> {
     let compact = COMPACT.lock().unwrap().take()?;
     let win = app.get_webview_window("main")?;
     let before = compact.before;
-    *AUTO_UNTIL.lock().unwrap() = Some(Instant::now() + Duration::from_millis(AUTO_SETTLE_MS));
     *GROWN.lock().unwrap() = compact.grown;
-    win.set_size(tauri::PhysicalSize::new(before.width, before.height)).ok();
-    win.set_position(tauri::PhysicalPosition::new(before.x, before.y)).ok();
+    move_window(&win, before);
     append_log(&format!("[concierge-only] off -> {before:?}"));
     let scale = win.scale_factor().ok()?;
     Some(InnerSize { width: before.width as f64 / scale, height: before.height as f64 / scale })
@@ -448,10 +449,7 @@ fn concierge_only_restore(app: &AppHandle) -> Option<InnerSize> {
 /// again (None when it wasn't shrunk)
 #[tauri::command]
 pub(crate) async fn concierge_only_end(app: AppHandle) -> Option<InnerSize> {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let handle = app.clone();
-    app.run_on_main_thread(move || tx.send(concierge_only_restore(&handle)).unwrap_or_default()).ok()?;
-    rx.recv_timeout(Duration::from_secs(2)).ok().flatten()
+    on_main_thread(&app, concierge_only_restore).flatten()
 }
 
 /// Which part of the window stays put on screen when it grows or shrinks back, per axis: 0 the left / top edge, 1 the
