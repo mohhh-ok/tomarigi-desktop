@@ -1347,3 +1347,37 @@ test("opening the tab asks nothing while no session needs a reply or is done, or
   clock.advance(CONCIERGE_REPEAT_MS);
   expect(counts.requests).toBe(0);
 });
+
+test("a session waiting on a question tool or a permission, or whose finished turn asks, is in the reply class", () => {
+  expect([
+    ...conciergeTriggerClasses([
+      view("w", { state: "waiting" }),
+      view("d", { state: "done", ask: { status: "asking" } }),
+      view("z", { state: "dozing", ask: { status: "asking" } }),
+      view("n", { state: "done", ask: { status: "not_asking" } }),
+      view("k"),
+    ]),
+  ]).toEqual([
+    ["w", "reply"],
+    ["d", "reply"],
+    ["z", "reply"],
+    ["n", "done"],
+    ["k", "working"],
+  ]);
+});
+
+test("a cut name is compared without its cut mark: another session's name, and a suggestion that starts with its name", () => {
+  const long = "x".repeat(130);
+  const sessions = buildConciergePayload(
+    [{ view: view("a", { project: `${long}-a`, state: "waiting" }) }, { view: view("b", { project: `${long}-b`, state: "done" }) }],
+    [],
+    [],
+    NOW,
+    "en",
+  ).sessions;
+  const cut = sessions[0].name;
+  expect(cut.endsWith("…")).toBe(true);
+  // Both names cut to the same text; the other one's name is part of the target's, so it doesn't count
+  const { suggestions } = parseConciergeSuggestions([{ session_id: "a", kind: "reply", text: `${cut.slice(0, -1)}: answer it` }], sessions);
+  expect(suggestions).toEqual([{ sessionId: "a", kind: "reply", text: "answer it" }]);
+});
