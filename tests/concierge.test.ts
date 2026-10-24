@@ -1381,3 +1381,10 @@ test("a cut name is compared without its cut mark: another session's name, and a
   const { suggestions } = parseConciergeSuggestions([{ session_id: "a", kind: "reply", text: `${cut.slice(0, -1)}: answer it` }], sessions);
   expect(suggestions).toEqual([{ sessionId: "a", kind: "reply", text: "answer it" }]);
 });
+
+test("the advice and the suggestions are asked not to write the elapsed seconds they are given", () => {
+  expect(CONCIERGE_TASK.systemPrompt).toContain("Never write a number of seconds, minutes or hours");
+  expect(CONCIERGE_TASK_WITH_SUGGESTIONS.systemPrompt).toContain(
+    "like the advice never has a number of seconds, minutes or hours",
+  );
+});
