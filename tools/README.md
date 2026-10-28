@@ -25,11 +25,10 @@ Use footprint rather than RSS to judge growth: RSS goes up and down as macOS com
 ## heap-mock.mjs
 
 Runs the mock screen with updates sped up, to see whether something piles up in the page (issue #8). Needs the dev
-server at 4842 (`bun run dev:web` or `bun run dev`) and Playwright, which isn't a dependency of this repo (the same setup
-as scripts/gallery/shoot.mjs):
+server at 4842 (`bun run dev:web` or `bun run dev`) and Playwright, which isn't a dependency of this repo. Install it as
+the header of scripts/gallery/shoot.mjs says; for `BROWSER=webkit`, also run `bunx playwright install webkit` in /tmp/pw.
 
 ```sh
-mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell webkit)
 # Chromium: JS heap snapshots at the start and the end, and the objects that grew between them
 MINUTES=10 PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/heap-mock.mjs
 # WebKit (what the app runs on): no heap snapshots, so it prints its web process pid; measure it with webview-mem.sh
