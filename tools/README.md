@@ -21,3 +21,21 @@ Finding the pid of the app's WebView (the WebKit WebContent process; it is a chi
    second is the app's
 
 Use footprint rather than RSS to judge growth: RSS goes up and down as macOS compresses and swaps pages.
+
+## heap-mock.mjs
+
+Runs the mock screen with updates sped up, to see whether something piles up in the page (issue #8). Needs the dev
+server at 4842 (`bun run dev:web` or `bun run dev`) and Playwright, which isn't a dependency of this repo (the same setup
+as scripts/gallery/shoot.mjs):
+
+```sh
+mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell webkit)
+# Chromium: JS heap snapshots at the start and the end, and the objects that grew between them
+MINUTES=10 PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/heap-mock.mjs
+# WebKit (what the app runs on): no heap snapshots, so it prints its web process pid; measure it with webview-mem.sh
+BROWSER=webkit RESIZE=1 MINUTES=12 PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/heap-mock.mjs
+```
+
+Env: `QUERY` (the mock's query; default the Concierge tab with `cycle=0.5`), `TABS=1` (switch tabs every `TAB_SECONDS`),
+`RESIZE=1` (flip the viewport between 260×350 and 260×378 every `RESIZE_MS`, as the Concierge tab's window fit does),
+`OUT` (where the snapshots go; default /tmp/tomarigi-desktop/heap-mock).
