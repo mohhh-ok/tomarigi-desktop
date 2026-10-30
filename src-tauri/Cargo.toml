@@ -16,10 +16,10 @@ name = "tomarigi_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "~2.6", features = [] }
+tauri-build = { version = "~2.7", features = [] }
 
 [dependencies]
-tauri = { version = "=2.11.1", features = ["macos-private-api", "tray-icon", "image-png"] }
+tauri = { version = "=2.12.5", features = ["macos-private-api", "tray-icon", "image-png"] }
 tauri-plugin-opener = "~2.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -30,8 +30,8 @@ reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"
 # Reads OpenCode's session database read-only (opencode.rs). Bundled so it doesn't depend on the system's libsqlite3
 rusqlite = { version = "0.37", features = ["bundled"] }
 # Updates the app from latest.json on the newest GitHub Release (updater.rs; docs/design.md "Updates"). 2.10 or later
-# for .deb; held below 2.13, which needs tauri 2.12 (tauri is pinned to 2.11.1 below)
-tauri-plugin-updater = "~2.12"
+# for .deb; 2.14 or later for zip 9 (the Windows update's unzip; zip before 9.0.5 has Dependabot's alerts #6-#8)
+tauri-plugin-updater = "~2.14"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
@@ -54,12 +54,12 @@ objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry", "NSA
 # Stores BYOK API keys in the macOS Keychain (KeyStore in keys.rs)
 security-framework = "3"
 tauri-nspanel = "2.1"
-# tauri is pinned to =2.11.1 to match @tauri-apps/api 2.11.1 on the npm side (tauri build stops on a major/minor mismatch).
-# The crates below are held to the minor versions tauri 2.11.1 resolves to, so cargo update doesn't pull a newer minor
-tauri-macros = "~2.6"
-tauri-utils = "~2.9"
-tauri-runtime = "~2.11"
-tauri-runtime-wry = "~2.11"
+# tauri is pinned to =2.12.5 to match @tauri-apps/api 2.12 on the npm side (tauri build stops on a major/minor mismatch).
+# The crates below are held to the minor versions tauri 2.12.5 resolves to, so cargo update doesn't pull a newer minor
+tauri-macros = "~2.7"
+tauri-utils = "~2.10"
+tauri-runtime = "~2.12"
+tauri-runtime-wry = "~2.12"
 
 # Windows and Linux (docs/design.md "Platforms"). BYOK API keys go to Windows Credential Manager / Linux Secret Service
 # (KeyStore in keys.rs). The v1 feature picks the store per OS
@@ -71,7 +71,8 @@ sys-locale = "0.3"
 [target.'cfg(target_os = "windows")'.dependencies]
 # Processes without `ps` / `lsof` on Windows: liveness, parents, command lines, working directories (liveness.rs, focus/)
 sysinfo = { version = "0.39", default-features = false, features = ["system"] }
-# Held to the version tauri already pulls in. Window lookup and focus (focus/win32.rs), mouse buttons (fade.rs), and
+# The version tauri 2.11 pulled in; tauri 2.12 pulls in 0.62 too (tao, wry), and this stays until a Windows build is
+# checked with 0.62 (Claude's own decision). Window lookup and focus (focus/win32.rs), mouse buttons (fade.rs), and
 # the Restart Manager for Codex's lock holders (liveness.rs)
 windows = { version = "0.61", features = [
   "Win32_Foundation",
