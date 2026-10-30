@@ -115,7 +115,12 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "being done by the child session') without saying it will receive or check the result. Work handed to another " +
     "session is continuing when the agent says it will itself show, report, or ask about that work's result once " +
     "it is done (e.g. 'I handed it to another session; when it's done I'll show you screenshots and ask whether to " +
-    "merge'): the user has no result to check yet.",
+    "merge', 'I'll show you the photo candidates as soon as they arrive'): the user has no result to check yet. " +
+    "But a reply that only relays another session's question for the user to answer in that session's pane, next " +
+    "to a status list in which each other session finishes, records, or commits its own result, is false (e.g. " +
+    "'iOS 1.8: watching until the screenshots are processed; when done, that session commits the results. Session " +
+    "#251 is waiting for your answer: please answer in its pane'): a 'watching' or 'running' there is the other " +
+    "session's, and this agent receives nothing.",
   outputFields: {
     line: {
       type: "string",
@@ -138,7 +143,7 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
       description:
         "Whether the agent's own job runs on in the background, or the agent says it will itself receive, check, or " +
         "report a result later. Not for work only handed to another session when the agent says nothing about " +
-        "receiving its result.",
+        "receiving its result, nor for passing on another session's question to be answered there.",
     },
   },
   maxTokens: 256,
