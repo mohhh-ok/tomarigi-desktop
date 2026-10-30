@@ -15,3 +15,19 @@
 ## リンク
 - 告知に貼るのはダウンロードページ: https://moh-tech.net/tomarigi/desktop/ （ユーザー発言「リンクはだうんろーどぺーじにして」）
 - GitHub Releases: https://github.com/mohhh-ok/tomarigi-desktop/releases
+
+## 見本
+- ユーザーが直した v0.14.2 の告知文。形はこれに合わせる（文末に句点なし、箇条書きの主語は「Tomarigi」で「鳥」と書かない、変化の核だけ、リンクとタグの間に空行なし）。Claude の案は「Claude Code を使っている人向けに」「鳥を押すと」「コンシェルジュも返事を勧めます」と補足が多かった
+
+```
+Claude のデスクトップアプリ向けに、Tomarigi を更新しました
+
+Tomarigi は、Claude Code や Codex などの AI コーディングエージェントのセッションを、常に手前に出る窓の中の鳥として見守るデスクトップアプリです
+
+v0.14.2
+・Tomarigi から Claude デスクトップアプリセッションを開けるように
+・Claude が質問して返事を待っているときは、Tomarigiに「返事待ち」と出ます（これまでは「完了」でした）
+
+https://moh-tech.net/tomarigi/desktop/
+#TomarigiDesktop #ClaudeCode #Codex
+```
