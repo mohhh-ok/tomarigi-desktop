@@ -2,8 +2,10 @@
 // pid → tty and the chain of ancestor processes from `ps` → tmux (switches the pane, then continues with the client's
 // tty) → the terminal app that owns an ancestor (by bundle id) → that terminal's adapter focuses the pane whose tty
 // matches. Only the adapter of the owning app is called. Each adapter is one file in this folder. A terminal inside a
-// VS Code window is found through Tomarigi's extension before the owning app is looked up (vscode.rs)
+// VS Code window is found through Tomarigi's extension before the owning app is looked up (vscode.rs). A session of the
+// Claude desktop app is opened in that app instead (desktop.rs)
 // Windows (win32.rs) and Linux (x11.rs) have their own focus_pid_sync (docs/design.md "Platforms")
+pub(crate) mod desktop;
 mod ghostty;
 mod iterm2;
 mod kitty;

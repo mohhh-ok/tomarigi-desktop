@@ -4,7 +4,8 @@
 // app that owns them → that terminal's adapter (Ghostty, iTerm2, Terminal.app, WezTerm, kitty, through tmux).
 // The pid comes from sessionId in <config>/sessions/<pid>.json for Claude Code (focus_session), and from the process
 // that has thread-writer-locks/<threadId>.lock open for Codex (focus_codex), or the TUI matched to the thread when the
-// shared codex app-server holds the lock; other agents pass their pid to focusPid.
+// shared codex app-server holds the lock; other agents pass their pid to focusPid. A Claude Code session of the Claude
+// desktop app has no pane: it is opened in that app first (open_desktop_session, src-tauri/src/focus/desktop.rs).
 // Anything that can't be mapped (ended sessions, mock) does nothing.
 import { invoke } from "@tauri-apps/api/core";
 import type { RootEntry } from "./settings-store";
@@ -74,6 +75,10 @@ export async function focusSession(id: string, roots: RootEntry[]): Promise<void
     await invoke<FocusResult>("focus_codex", { codexDir: target.codexDir, threadId: target.threadId, fallbackToApp: true });
     return;
   }
+  // A session of the Claude desktop app opens there, before any terminal is looked for (a chick's target is its
+  // parent's session, so a chick opens its parent's)
+  const desktop = await invoke<FocusResult>("open_desktop_session", { sessionId: target.sessionId });
+  if (desktop.level !== "none") return;
   // A conversation handed over to another session may run in a Claude Code background process whose tty isn't
   // a terminal pane; the pane showing it is the process of a session it came from, so try those in turn.
   // Only a pane-level focus counts as found; when none is, the app owning the first session is brought to the front

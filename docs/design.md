@@ -244,6 +244,7 @@ Applies to the floating window's Garden and Concierge tabs only.
   - A desktop session is opened this way before any terminal adapter is tried; a session not found in those files jumps as before (Claude's own decision)
   - macOS only at first: the files' place on Windows and Linux is not checked (Claude's own decision)
   - A chick (subagent) of a desktop session opens its parent's desktop session, as a chick jumps to its parent's pane (Claude's own decision)
+  - Where it is done (Claude's own decisions): `open_desktop_session(sessionId)` in `src-tauri/src/focus/desktop.rs` reads the records on every click of a Claude Code session (a record is parsed only when its text holds the id) and runs `/usr/bin/open <url>`; it answers `pane` when the link was opened and `none` otherwise. `focusSession` in `src/lib/terminal-focus.ts` calls it before `focus_session`. Only the clicked session's own id is matched, not the sessions a handed-over conversation came from, nor a record's `priorCliSessionIds`. A `sessionId` other than `local_` followed by letters, digits and `-` is not put in a link
 - In the Garden, releasing after moving less than 4px is a click (left button only); anything more is a drag
 - Clickable elements get a pointer cursor. No hover hint is shown
 - VS Code / Cursor (and other VS Code forks): the integrated terminal tab is focused through Tomarigi's own VS Code extension (the user's decision: 「vscodeようの拡張？そんなんもできるの？やって」). The extension lives in `vscode-extension/` in this repo
