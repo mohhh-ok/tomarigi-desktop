@@ -1,12 +1,13 @@
-// Runs the turn verdict (src/lib/summarize.ts) on real replies several times with OpenAI and Anthropic, with the same
-// prompt, schema, models, and settings as the app (src/lib/openai-judge.ts, src/lib/judge.ts), and counts asking and
-// continuing. Used to check a change to the prompt before and after (docs/design.md "Turn verdicts").
+// Runs the turn verdict (src/lib/summarize.ts) on real replies several times with OpenAI and Anthropic, sending the
+// app's own request bodies and reading the replies the app's way (src/lib/openai-judge.ts, src/lib/judge.ts), and counts
+// asking and continuing. A reply the app would treat as a failure (cut off, refused) counts as ERR. Used to check a
+// change to the prompt before and after (docs/design.md "Turn verdicts").
 // usage: OPENAI_API_KEY=… ANTHROPIC_API_KEY=… bun tools/turn-verdict-probe.ts <cases.json> <label> [runs = 8]
 // Env: PROVIDERS (default "openai,anthropic"), CASES (comma-separated case names to run), OUT (default /tmp/tomarigi-desktop)
 import { readFileSync } from "node:fs";
 import { SUMMARIZE_TURN_TASK, turnPayload } from "../src/lib/summarize.ts";
-import { JUDGE_MODEL, verdictSchema } from "../src/lib/judge.ts";
-import { OPENAI_JUDGE_MODEL } from "../src/lib/openai-judge.ts";
+import { anthropicJudgeBody, parseAnthropicJudgeReply, type JudgeResult } from "../src/lib/judge.ts";
+import { openAiJudgeBody, parseOpenAiJudgeReply } from "../src/lib/openai-judge.ts";
 
 /** One case: a reply in a local transcript, found by its file and timestamp, and what the verdict should be */
 interface Case {
@@ -28,78 +29,52 @@ const outDir = process.env.OUT ?? "/tmp/tomarigi-desktop";
 const cases = (JSON.parse(readFileSync(casesPath, "utf8")) as Case[]).filter((c) => !only || only.includes(c.name));
 const task = SUMMARIZE_TURN_TASK;
 
-/** The reply's text as the app takes it: the text blocks of the assistant line, last 2000 characters (turnPayload) */
+/** The reply's text as the app takes it: the text blocks of the assistant line (turnPayload keeps the last 2000 characters) */
 function replyText(c: Case): string {
   for (const line of readFileSync(c.file.replace(/^~/, process.env.HOME ?? ""), "utf8").split("\n")) {
     if (!line.includes(c.ts)) continue;
     const e = JSON.parse(line);
     if (e.timestamp !== c.ts || e.type !== "assistant") continue;
-    return (e.message.content as { type: string; text?: string }[])
+    const text = (e.message.content as { type: string; text?: string }[])
       .filter((b) => b.type === "text" && b.text)
       .map((b) => b.text)
       .join("\n");
+    if (!text) throw new Error(`${c.name}: the assistant line at ${c.ts} has no text`);
+    return text;
   }
   throw new Error(`${c.name}: no assistant line at ${c.ts} in ${c.file}`);
 }
 
-async function post(url: string, headers: Record<string, string>, body: unknown): Promise<any> {
+/** Sends the body and returns the HTTP status and raw body, as Rust's openai_responses / anthropic_messages do */
+async function post(url: string, headers: Record<string, string>, body: unknown): Promise<{ status: number; text: string }> {
   const r = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json", ...headers },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(30_000),
   });
-  const d = await r.json();
-  if (!r.ok) throw new Error(`${r.status} ${d?.error?.message ?? ""}`);
-  return d;
+  return { status: r.status, text: await r.text() };
 }
 
-async function openai(payload: unknown): Promise<any> {
-  const d = await post("https://api.openai.com/v1/responses", { authorization: `Bearer ${process.env.OPENAI_API_KEY}` }, {
-    model: OPENAI_JUDGE_MODEL,
-    store: false,
-    instructions: task.systemPrompt,
-    input: JSON.stringify(payload),
-    max_output_tokens: task.maxTokens ?? 512,
-    reasoning: { effort: "none" },
-    text: {
-      format: {
-        type: "json_schema",
-        name: task.name,
-        strict: true,
-        schema: { type: "object", ...verdictSchema(task), additionalProperties: false },
-      },
-    },
-  });
-  const text = d.output
-    ?.flatMap((o: any) => o.content ?? [])
-    .find((c: any) => c.type === "output_text")?.text;
-  return JSON.parse(text);
+async function openai(payload: unknown): Promise<JudgeResult<any>> {
+  const { status, text } = await post(
+    "https://api.openai.com/v1/responses",
+    { authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    openAiJudgeBody(task, payload),
+  );
+  return parseOpenAiJudgeReply(status, text);
 }
 
-async function anthropic(payload: unknown): Promise<any> {
-  const d = await post(
+async function anthropic(payload: unknown): Promise<JudgeResult<any>> {
+  const { status, text } = await post(
     "https://api.anthropic.com/v1/messages",
     { "x-api-key": process.env.ANTHROPIC_API_KEY ?? "", "anthropic-version": "2023-06-01" },
-    {
-      model: JUDGE_MODEL,
-      max_tokens: task.maxTokens ?? 256,
-      system: task.systemPrompt,
-      messages: [{ role: "user", content: JSON.stringify(payload) }],
-      tools: [
-        {
-          name: task.name,
-          description: `Return a structured verdict for the "${task.name}" judging task.`,
-          input_schema: { type: "object", ...verdictSchema(task) },
-        },
-      ],
-      tool_choice: { type: "tool", name: task.name },
-    },
+    anthropicJudgeBody(task, payload),
   );
-  return d.content.find((c: any) => c.type === "tool_use").input;
+  return parseAnthropicJudgeReply(task, status, text);
 }
 
-const callers: Record<string, (payload: unknown) => Promise<any>> = { openai, anthropic };
+const callers: Record<string, (payload: unknown) => Promise<JudgeResult<any>>> = { openai, anthropic };
 const rows: unknown[] = [];
 for (const provider of providers) {
   const call = callers[provider];
@@ -112,7 +87,9 @@ for (const provider of providers) {
     const lines: string[] = [];
     for (let i = 0; i < runs; i++) {
       try {
-        const v = await call(payload);
+        const r = await call(payload);
+        if (!r.ok) throw new Error(`${r.kind} ${r.status ?? ""} ${r.message ?? ""}`);
+        const v = r.verdict;
         if (v.asking) asking++;
         if (v.continuing) continuing++;
         lines.push(`${v.asking ? "A" : "-"}${v.continuing ? "C" : "-"} ${v.line}`);

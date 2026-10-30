@@ -129,20 +129,9 @@ export function verdictSchema(task: JudgeTaskDefinition): { properties: Record<s
   return { properties, required };
 }
 
-/**
- * Runs a verdict task once. API errors (401/429/network, etc.) don't throw; they are
- * returned as a JudgeResult (so the caller can show them in the UI).
- *
- * payload may be assumed to be untrusted input (text from transcripts, etc.) —
- * here it's only JSON.stringify'd and put in the user message, never executed.
- * The output is pinned to one tool_use forced by tool_choice, so even if payload
- * contains prompt injection, only one verdict can break. That is the design.
- */
-export async function runJudge<V = Record<string, unknown>>(
-  task: JudgeTaskDefinition,
-  payload: unknown,
-): Promise<JudgeResult<V>> {
-  const body = {
+/** The Messages API request body for one task. tools/turn-verdict-probe.ts sends the same body */
+export function anthropicJudgeBody(task: JudgeTaskDefinition, payload: unknown): unknown {
+  return {
     model: JUDGE_MODEL,
     max_tokens: task.maxTokens ?? DEFAULT_MAX_TOKENS,
     system: task.systemPrompt,
@@ -159,10 +148,32 @@ export async function runJudge<V = Record<string, unknown>>(
     ],
     tool_choice: { type: "tool", name: task.name },
   };
+}
 
-  const sent = await invokeKeyedApi("anthropic_messages", body);
+/**
+ * Runs a verdict task once. API errors (401/429/network, etc.) don't throw; they are
+ * returned as a JudgeResult (so the caller can show them in the UI).
+ *
+ * payload may be assumed to be untrusted input (text from transcripts, etc.) —
+ * here it's only JSON.stringify'd and put in the user message, never executed.
+ * The output is pinned to one tool_use forced by tool_choice, so even if payload
+ * contains prompt injection, only one verdict can break. That is the design.
+ */
+export async function runJudge<V = Record<string, unknown>>(
+  task: JudgeTaskDefinition,
+  payload: unknown,
+): Promise<JudgeResult<V>> {
+  const sent = await invokeKeyedApi("anthropic_messages", anthropicJudgeBody(task, payload));
   if (!sent.ok) return sent;
-  const { status, body: text } = sent.reply;
+  return parseAnthropicJudgeReply<V>(task, sent.reply.status, sent.reply.body);
+}
+
+/** Reads a Messages API reply to anthropicJudgeBody. tools/turn-verdict-probe.ts reads its replies with this too */
+export function parseAnthropicJudgeReply<V = Record<string, unknown>>(
+  task: JudgeTaskDefinition,
+  status: number,
+  text: string,
+): JudgeResult<V> {
   if (status < 200 || status >= 300) {
     let message: string | undefined;
     try {
