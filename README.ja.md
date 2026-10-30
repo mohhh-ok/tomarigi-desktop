@@ -46,6 +46,8 @@ listen_on unix:/tmp/kitty
 
 VS Code・Cursor などの VS Code 系のエディタ: 統合ターミナルのタブへ飛ぶには、Tomarigi の拡張を入れてください。[Tomarigi-VSCode.vsix](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-VSCode.vsix) をダウンロードし（[Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases) の `tomarigi-v<バージョン>.vsix` と同じものです）、コマンドパレットの「Extensions: Install from VSIX...」で入れます（`code --install-extension <ファイル>`、`cursor --install-extension <ファイル>` でも入ります）。初めて飛ぶとき、エディタが「この拡張に URI を開かせるか」を聞くので、「Do not ask me again for this extension」に印を付けてください。拡張が無い場合は、エディタを手前に出すだけです。拡張は、ウィンドウごとにターミナルのプロセス ID を `~/.tomarigi/vscode/` に書き、Tomarigi がそれを読みます。
 
+Claude のデスクトップアプリ: デスクトップアプリの Code タブで動く Claude Code のセッションにはターミナルのペインが無いので、鳥を押すとデスクトップアプリでそのセッションを開きます。macOS で確かめています。Windows と Linux はまだ実機で確かめておらず、うまくいかない場合は今まで通りターミナルへ飛びます。
+
 ### Windows と Linux
 
 - 鳥を押すと、ターミナルのウィンドウを手前に出します。タブや分割までは選べません（Linux でも tmux の中のセッションならそのペインへ飛びます）。Windows Terminal は、そのとき表示しているタブのまま手前に出ます。Wayland のセッションでは、Xwayland で動いているターミナルだけを手前に出せます
