@@ -81,6 +81,20 @@ test("work handed to another session whose result the agent says it will show or
   );
 });
 
+test("only passing on another session's question isn't continuing, even with what the other sessions still do", () => {
+  // yokai-no-sensei's reply relayed its child's question (「この 20 語を R2 に上げてよいかを、そのセッションのペインで
+  // お答えください。」) next to another session watching an upload; it got continuing=true in 8 of 8 runs with both
+  // OpenAI and Haiku, so the stopped parent was shown as working
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
+    "a reply that only relays another session's question for the user to answer in that session's pane",
+  );
+  // A parent that says it will itself show what arrives stays continuing (yokai_photo_later fell to 4/8 without this)
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("I'll show you the photo candidates as soon as they arrive");
+  expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
+    "nor for passing on another session's question to be answered there",
+  );
+});
+
 test("the request keeps the end of the reply and the start of each user message", () => {
   const reply = `${"a".repeat(3000)}Which one?`;
   const message = `${"b".repeat(600)}`;
