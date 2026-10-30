@@ -34,6 +34,8 @@ const isAlive = (pid: number) => {
 // each sessionId answers (Rust's FocusResult)
 const focusCalls: string[] = [];
 const focusResults = new Map<string, "pane" | "app" | "none">();
+// Claude Code sessions the Claude desktop app runs (open_desktop_session opens them; it is "none" for any other)
+const desktopSessions = new Set<string>();
 // live_sessions answers by configDir that bypass ps, to drive reads exactly (sessions listed as alive, reliable or not)
 const liveOverride = new Map<string, { sessions: object[]; reliable: boolean }>();
 // Agents without a pid file (docs/design.md "Agents"): stand-in processes and the command line ps shows for each.
@@ -131,6 +133,10 @@ mock.module("@tauri-apps/api/core", () => ({
         return;
       case "focus_pid":
         focusCalls.push(`pid=${args.pid}${args.fallbackToApp ? "+app" : ""}`);
+        return { level: "pane", detail: "" };
+      case "open_desktop_session":
+        if (!desktopSessions.has(args.sessionId)) return { level: "none", detail: "not a desktop session" };
+        focusCalls.push(`desktop:${args.sessionId}`);
         return { level: "pane", detail: "" };
       case "focus_session":
         focusCalls.push(args.fallbackToApp ? `${args.sessionId}+app` : args.sessionId);
@@ -264,6 +270,24 @@ describe("Claude Code", () => {
     focusCalls.length = 0;
     await focusSession(`jump/-tmp-jump/${newSid}.jsonl`, fx.roots);
     expect(focusCalls).toEqual([newSid, oldSid, `${newSid}+app`]);
+  });
+
+  test("a session of the Claude desktop app opens there before any terminal is looked for; its chick opens it too", async () => {
+    const sid = "88888888-0000-4000-8000-000000000008";
+    const fx = claudeFixture("desk", sid, 2 * MIN);
+    fx.live(startProcess().pid!);
+    await scanSessions(fx.roots);
+    desktopSessions.add(sid);
+    focusCalls.length = 0;
+    await focusSession(`desk/-tmp-desk/${sid}.jsonl`, fx.roots);
+    await focusSession(`desk/-tmp-desk/${sid}.jsonl/agent-a1.jsonl`, fx.roots);
+    expect(focusCalls).toEqual([`desktop:${sid}`, `desktop:${sid}`]);
+    // Not one of the app's: its terminal pane, as before
+    desktopSessions.delete(sid);
+    focusResults.set(sid, "pane");
+    focusCalls.length = 0;
+    await focusSession(`desk/-tmp-desk/${sid}.jsonl`, fx.roots);
+    expect(focusCalls).toEqual([`${sid}+app`]);
   });
 
   test("a chick without a completion record stays however long it is idle, and leaves once completion is recorded", async () => {
