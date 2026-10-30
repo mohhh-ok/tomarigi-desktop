@@ -3,7 +3,7 @@
 import type { RootEntry } from "./settings-store";
 import { watchingCount } from "./watching";
 import { basename } from "./paths";
-import { projectLabels } from "./transcript";
+import { pendingAskOf, projectLabels } from "./transcript";
 import type {
   BirdState,
   ChickScan,
@@ -211,8 +211,11 @@ function buildViews(
       last.text
         ? { at: last.at, text: last.text }
         : undefined;
+    // The question tool's question, or the desktop app's wrap_up's ask
     const question =
-      displayState === "waiting" && last?.kind === "tool_use" ? extractQuestion(last.text) : undefined;
+      displayState !== "waiting"
+        ? undefined
+        : (pendingAskOf(tail.events)?.question ?? (last?.kind === "tool_use" ? extractQuestion(last.text) : undefined));
     feedTurnMessages(id, tail.events);
     // The messages of the stopped turn go with its turn verdict (docs/design.md "Turn verdicts")
     const userMessages = reply ? turnUserMessages(id, reply.at) : undefined;

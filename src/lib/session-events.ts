@@ -25,7 +25,8 @@ const BACKGROUND_TASK_STALE_MS = 30 * 60_000;
  * event is not tool_use/tool_result. In addition, if a chick (subagent) is still running it is too early as a
  * "come back" signal, so it is suppressed (deriveDoneEvent).
  * waiting treats a call to AskUserQuestion/ExitPlanMode as a definite wait for the user's answer, and ones
- * already answered are also emitted as history as-is (no timeout estimation).
+ * already answered are also emitted as history as-is (no timeout estimation). So does a Claude desktop app turn that
+ * ends asking (its wrap_up's ask, TailEvent.ask): that turn's closing text is then not a done.
  */
 export function deriveSessionEvents(
   tail: TailInfo,
@@ -43,8 +44,11 @@ export function deriveSessionEvents(
   // events via the first-write-wins cache.
   // snippet is only used as a substitute when there is no message in the window
   let lastPrompt: string | undefined;
+  // The turn so far has asked the user (a wrap_up with an ask): its closing text waits on them, it isn't done
+  let asked = false;
   for (let i = 0; i < events.length; i++) {
     const event = events[i];
+    if (event.kind !== "assistant_text" && event.kind !== "tool_result") asked = false;
     if (event.kind === "user") {
       // A started event carries "the prompt itself". What was asked is the main info of this event, so it
       // isn't omitted even for short instructions or a single session
@@ -54,6 +58,7 @@ export function deriveSessionEvents(
     } else if (event.kind === "closed") {
       result.push(mkSessionEvent(sessionId, project, "closed", event.at, lastPrompt ?? snippet));
     } else if (event.kind === "assistant_text") {
+      if (asked) continue;
       const next = events[i + 1];
       if (!next || (next.kind !== "tool_use" && next.kind !== "tool_result")) {
         // The existence of next (= some event after T) is a definitive signal that the parent has already
@@ -72,8 +77,9 @@ export function deriveSessionEvents(
         );
         if (done) result.push(done);
       }
-    } else if (event.kind === "tool_use" && isWaitingTool(event.toolName)) {
+    } else if (event.kind === "tool_use" && (isWaitingTool(event.toolName) || event.ask)) {
       result.push(mkSessionEvent(sessionId, project, "waiting", event.at, lastPrompt ?? snippet));
+      if (event.ask) asked = true;
     }
   }
   return result;
