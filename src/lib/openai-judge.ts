@@ -13,33 +13,42 @@ export const OPENAI_JUDGE_MODEL = "gpt-5.6-luna";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 512;
 
+/** The Responses API request body for one task. tools/turn-verdict-probe.ts sends the same body */
+export function openAiJudgeBody(task: JudgeTaskDefinition, payload: unknown): unknown {
+  return {
+    model: OPENAI_JUDGE_MODEL,
+    store: false,
+    instructions: task.systemPrompt,
+    input: JSON.stringify(payload),
+    max_output_tokens: task.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+    reasoning: { effort: "none" },
+    text: {
+      format: {
+        type: "json_schema",
+        name: task.name,
+        strict: true,
+        schema: {
+          type: "object",
+          ...verdictSchema(task),
+          additionalProperties: false,
+        },
+      },
+    },
+  };
+}
+
 /** Runs the Responses API once with Structured Outputs. Failures are returned as a JudgeResult, not thrown. */
 export async function runOpenAiJudge<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   payload: unknown,
 ): Promise<JudgeResult<V>> {
-  const sent = await invokeKeyedApi("openai_responses", {
-        model: OPENAI_JUDGE_MODEL,
-        store: false,
-        instructions: task.systemPrompt,
-        input: JSON.stringify(payload),
-        max_output_tokens: task.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-        reasoning: { effort: "none" },
-        text: {
-          format: {
-            type: "json_schema",
-            name: task.name,
-            strict: true,
-            schema: {
-              type: "object",
-              ...verdictSchema(task),
-              additionalProperties: false,
-            },
-          },
-        },
-  });
+  const sent = await invokeKeyedApi("openai_responses", openAiJudgeBody(task, payload));
   if (!sent.ok) return sent;
-  const { status, body: text } = sent.reply;
+  return parseOpenAiJudgeReply<V>(sent.reply.status, sent.reply.body);
+}
+
+/** Reads a Responses API reply to openAiJudgeBody. tools/turn-verdict-probe.ts reads its replies with this too */
+export function parseOpenAiJudgeReply<V = Record<string, unknown>>(status: number, text: string): JudgeResult<V> {
   if (status < 200 || status >= 300) {
     let message: string | undefined;
     try {
