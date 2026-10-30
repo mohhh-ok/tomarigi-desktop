@@ -6,6 +6,7 @@
 //   mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell)
 //   PLAYWRIGHT=/tmp/pw/node_modules/playwright node scripts/gallery/shoot.mjs [scene ids...]
 // OUT=<directory> writes the images there instead of docs/images (trial shots).
+// WIN_W=<px> puts every window at that width and doesn't let the Concierge tab size it (trial shots of a wider window)
 // DIST=<a `vite build --outDir` directory> serves that build through Playwright instead, without the dev server or a port
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
@@ -81,7 +82,10 @@ try {
     for (const sc of SCENES) {
       if (only.length && !only.includes(sc.id)) continue;
       const size = sc.size ?? STAGE;
-      const html = stage({ lang, url: `/?mock=1&panel=0&${sc.query}`, win: sc.win, fade: sc.fade, size });
+      const winW = Number(process.env.WIN_W) || undefined;
+      const fit = sc.fit && !winW;
+      const win = winW ? { ...sc.win, w: winW } : sc.win;
+      const html = stage({ lang, url: `/?mock=1&panel=0&${sc.query}`, win, fade: sc.fade, size });
       await page.setViewportSize({ width: size.w, height: size.h });
       // Served from the dev server's origin: a cross-origin frame was drawn at 1x and scaled up
       await page.unrouteAll();
@@ -90,7 +94,7 @@ try {
       await page.route("https://api.github.com/**", (r) => r.abort());
       await page.route(STAGE_URL, (r) => r.fulfill({ contentType: "text/html", body: html }));
       // The Tauri calls fail in a browser; for fit, concierge_only_fit is kept so the frame can take its size
-      if (sc.fit) {
+      if (fit) {
         await page.addInitScript(() => {
           if (!location.search.includes("tab=concierge")) return;
           window.__TAURI_INTERNALS__ = {
@@ -127,7 +131,7 @@ try {
       // Fade until hovered at rest (set by the Rust side in the app)
       if (sc.fade) await frame.evaluate(() => (document.documentElement.dataset.fade = "rest"));
       // The frame takes the size the tab asks for until it stops changing (the tab measures again at the new size)
-      for (let i = 0; sc.fit && i < 10; i++) {
+      for (let i = 0; fit && i < 10; i++) {
         await page.waitForTimeout(500);
         const fit = await frame.evaluate(() => window.__fit);
         if (!fit) continue;

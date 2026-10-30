@@ -2,8 +2,9 @@
 // app as 「<name>: <text> <state>」 with the name linking to its session, then the suggestions under their heading. No
 // name is searched for in text. Dictionaries aren't loaded here, so the app's own words (t()) render empty
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ShownSuggestion, StatusLine } from "../src/lib/concierge-status.ts";
+import type { ConciergeStatus, ShownSuggestion, StatusLine } from "../src/lib/concierge-status.ts";
 import type { SessionView } from "../src/lib/sessions.ts";
 import { ConciergeStatusReport } from "../src/perch/concierge-status-report.tsx";
 
@@ -86,5 +87,33 @@ describe("the suggestions", () => {
     expect(moved).toContain('class="concierge-status-now"');
     const gone = render([NOW[1], NOW[2]]);
     expect(gone).toContain('<span class="concierge-status-line is-stale">blog: it has waited longest');
+  });
+});
+
+// The state word's color is set by CSS on its data-status (styles/concierge.css), so read the rules it uses
+const css = readFileSync(new URL("../src/perch/styles/concierge.css", import.meta.url), "utf8");
+const colorOf = (status: ConciergeStatus) => {
+  const at = css.indexOf(`.concierge-status-state[data-status="${status}"] {`);
+  return at < 0 ? undefined : css.slice(at, css.indexOf("}", at)).match(/(?:^|\s)color: ([^;]+);/)?.[1];
+};
+
+describe("the state word's color (docs/design.md \"Concierge\")", () => {
+  test.each([
+    // [state, its own color rule, or none for the muted state color]
+    ["reply", "#a0461c"],
+    ["done", "#1d5ba6"],
+    ["working", undefined],
+  ] as const)("%s: %p", (status, color) => {
+    const html = renderToStaticMarkup(
+      <ConciergeStatusReport
+        lines={[{ sessionId: "s", name: "s", text: "t", status }]}
+        more={0}
+        suggestions={[]}
+        sessions={[view("s")]}
+        canJump={() => true}
+      />,
+    );
+    expect(html).toContain(`<span class="concierge-status-state" data-status="${status}">`);
+    expect(colorOf(status)).toBe(color);
   });
 });

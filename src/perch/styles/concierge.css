@@ -145,6 +145,12 @@
   font-weight: 600;
 }
 
+/* Done is blue (docs/design.md "Concierge"). The palette has no blue, so one that keeps contrast on the bubble's
+   #ece6d6 (5.4:1, near the reply word's 5.0:1); the names' links go amber under the cursor, so it doesn't read as one */
+.concierge-status-state[data-status="done"] {
+  color: #1d5ba6;
+}
+
 .concierge-status-now {
   color: #8a5a12;
   font-weight: 600;
