@@ -97,13 +97,13 @@ const colorOf = (status: ConciergeStatus) => {
   return at < 0 ? undefined : css.slice(at, css.indexOf("}", at)).match(/(?:^|\s)color: ([^;]+);/)?.[1];
 };
 
-describe("the state word's color (docs/design.md \"Concierge\")", () => {
+describe("the state word's mark (docs/design.md \"Concierge\")", () => {
   test.each([
-    // [state, its own color rule, or none for the muted state color]
-    ["reply", "#a0461c"],
-    ["done", "#1d5ba6"],
-    ["working", undefined],
-  ] as const)("%s: %p", (status, color) => {
+    // [state, its word's own color rule (none: the muted state color), a blue dot before the word]
+    ["reply", "#a0461c", false],
+    ["done", undefined, true],
+    ["working", undefined, false],
+  ] as const)("%s: color %p, dot %p", (status, color, dot) => {
     const html = renderToStaticMarkup(
       <ConciergeStatusReport
         lines={[{ sessionId: "s", name: "s", text: "t", status }]}
@@ -113,7 +113,13 @@ describe("the state word's color (docs/design.md \"Concierge\")", () => {
         canJump={() => true}
       />,
     );
-    expect(html).toContain(`<span class="concierge-status-state" data-status="${status}">`);
+    const mark = dot ? '<span class="concierge-status-dot" aria-hidden="true"></span>' : "";
+    expect(html).toContain(`<span class="concierge-status-state" data-status="${status}"> ${mark}</span>`);
     expect(colorOf(status)).toBe(color);
+  });
+
+  test("the dot is blue", () => {
+    const at = css.indexOf(".concierge-status-dot {");
+    expect(css.slice(at, css.indexOf("}", at))).toContain("background: #1d5ba6;");
   });
 });
