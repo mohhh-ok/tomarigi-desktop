@@ -1,5 +1,5 @@
 // Machine state of a bird (BirdState) from its transcript tail
-import type { TailInfo } from "./transcript";
+import { pendingAskOf, type TailInfo } from "./transcript";
 import type { BirdState, ChickView } from "./session-types";
 
 const WRITING_MS = 6_000; // recent write = working
@@ -75,6 +75,9 @@ export function deriveState(
   if (tail.kind === "closed") return "dozing";
   // Stopped on a question tool for the user. Waiting for a reply regardless of recent writes
   if (!isChick && tail.kind === "tool_use" && isWaitingTool(tail.toolName)) return "waiting";
+  // A Claude desktop app session that ended its turn asking the user (its wrap_up's ask), with only the closing text
+  // after it: the same fact as a question tool, before any time check or turn verdict
+  if (!isChick && pendingAskOf(tail.events)) return "waiting";
   // Chick-only priority check: if the parent ledger has a definite signal, return done/dozing regardless of
   // the tail's appearance (kind) (see the comment above). Checked before the sinceMs < WRITING_MS early return —
   // with a signal, the guess "there was a recent write, so it is working" no longer holds

@@ -87,6 +87,9 @@ export interface TailEvent {
   // kind === "user" only: the line says it didn't come from a person (origin.kind other than "human", such as
   // task-notification). Such lines still move the state, but are not judged as the user's message (anger mark)
   machine?: boolean;
+  // kind === "tool_use" only: the call ends the turn asking the user to decide (the Claude desktop app's
+  // mcp__ccd_turn__wrap_up with an `ask`, see desktopAskOf); question is that `ask`
+  ask?: { question?: string };
 }
 
 interface TranscriptEntry {
@@ -212,7 +215,7 @@ export async function readEventsInRange(file: NativeFile, start: number, end: nu
     const at = parseTimestamp(entry.timestamp);
     const next = classify(entry, false);
     if (!next || at === null) continue;
-    events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine });
+    events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine, ...(next.ask && { ask: next.ask }) });
   }
   return events;
 }
@@ -339,7 +342,7 @@ async function readWindow(
     kind = next.kind;
     toolName = next.toolName;
     if (at !== null) {
-      events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine });
+      events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine, ...(next.ask && { ask: next.ask }) });
     }
   }
   return {
@@ -447,6 +450,38 @@ interface Classified {
   toolName?: string;
   text?: string;
   machine?: boolean;
+  ask?: { question?: string };
+}
+
+/** The tool with which a Claude desktop app session ends its turn: the app shows its `recap`, and its `ask` (the one
+    question it leaves the user, with buttons) in a box; `blocked` says the work stops until the user answers */
+export const DESKTOP_WRAP_UP_TOOL = "mcp__ccd_turn__wrap_up";
+
+/**
+ * Whether a tool call asks the user to decide before the session goes on (docs/design.md "The "?" for sessions
+ * waiting on you"): the desktop app's wrap_up with an `ask` that isn't blank, or with `blocked: true`. The desktop app
+ * puts its question there, not in the reply's text. question is the `ask`, first 500 characters
+ */
+export function desktopAskOf(toolName: string | undefined, input: unknown): { question?: string } | undefined {
+  if (toolName !== DESKTOP_WRAP_UP_TOOL || typeof input !== "object" || input === null) return undefined;
+  const { ask, blocked } = input as { ask?: unknown; blocked?: unknown };
+  const question = typeof ask === "string" ? ask.replace(/\s+/g, " ").trim().slice(0, TEXT_FIELD_LIMIT) : "";
+  if (!question && blocked !== true) return undefined;
+  return question ? { question } : {};
+}
+
+/**
+ * The ask the session's last turn ended on, while nothing has moved since: the newest tool call that asks
+ * (desktopAskOf), with only the reply's text and tool results after it. A message (from the user or anything else that
+ * starts a turn), a closing, or another tool call after it means the session went on
+ */
+export function pendingAskOf(events: readonly TailEvent[]): { question?: string; at: number } | undefined {
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i];
+    if (e.kind === "assistant_text" || e.kind === "tool_result") continue;
+    return e.kind === "tool_use" && e.ask ? { ...e.ask, at: e.at } : undefined;
+  }
+  return undefined;
 }
 
 function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified | null {
@@ -457,7 +492,8 @@ function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified
     if (toolUse) {
       // Sending input as is can get large, so trim to the first 500 chars (this just reuses the text
       // field meant for user utterances; the content is something else)
-      return { kind: "tool_use", toolName: toolUse.name, text: summarizeToolInput(toolUse.input) };
+      const ask = desktopAskOf(toolUse.name, toolUse.input);
+      return { kind: "tool_use", toolName: toolUse.name, text: summarizeToolInput(toolUse.input), ...(ask && { ask }) };
     }
     if (blocks.some((b) => b.type === "text")) {
       return { kind: "assistant_text", text: extractAssistantText(blocks) };
