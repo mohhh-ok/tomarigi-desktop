@@ -145,10 +145,17 @@
   font-weight: 600;
 }
 
-/* Done is blue (docs/design.md "Concierge"). The palette has no blue, so one that keeps contrast on the bubble's
-   #ece6d6 (5.4:1, near the reply word's 5.0:1); the names' links go amber under the cursor, so it doesn't read as one */
-.concierge-status-state[data-status="done"] {
-  color: #1d5ba6;
+/* Done has a blue dot before its word, which keeps the state words' color (docs/design.md "Concierge"; the user chose a
+   dot over a blue word, which read as a link). The palette has no blue, so one that keeps contrast on the bubble's
+   #ece6d6 (5.4:1) */
+.concierge-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 3px;
+  border-radius: 50%;
+  background: #1d5ba6;
+  vertical-align: 0.1em;
 }
 
 .concierge-status-now {

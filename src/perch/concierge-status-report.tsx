@@ -62,7 +62,10 @@ export function ConciergeStatusReport({
     linked && canJump(id) ? <Jump onJump={() => onFocus?.(id)}>{text}</Jump> : text;
   const state = (status: ConciergeStatus) => (
     <span className="concierge-status-state" data-status={status}>
-      {` ${t(STATE_LABEL[status])}`}
+      {" "}
+      {/* Done has a blue dot before its word (docs/design.md "Concierge"); a mark, so it isn't read as a link */}
+      {status === "done" && <span className="concierge-status-dot" aria-hidden="true" />}
+      {t(STATE_LABEL[status])}
     </span>
   );
   return (
