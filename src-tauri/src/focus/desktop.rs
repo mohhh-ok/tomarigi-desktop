@@ -4,17 +4,61 @@
 // whose `sessionId` is the `local_<id>` its link opens. Not a public spec, like the transcript formats
 use std::path::{Path, PathBuf};
 
-#[cfg(target_os = "macos")]
-use super::FocusLevel;
-use super::FocusResult;
-#[cfg(target_os = "macos")]
-use crate::append_log;
-use crate::home;
+use super::{FocusLevel, FocusResult};
+use crate::{append_log, home};
 
-/// Where the desktop app keeps its session records (macOS)
-#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
-fn sessions_dir() -> PathBuf {
-    home().join("Library/Application Support/Claude/claude-code-sessions")
+/// The OS a record folder and an open command are chosen for
+#[derive(Clone, Copy, Debug)]
+pub(super) enum Os {
+    MacOs,
+    Windows,
+    Linux,
+}
+
+const THIS_OS: Os = if cfg!(target_os = "macos") {
+    Os::MacOs
+} else if cfg!(windows) {
+    Os::Windows
+} else {
+    Os::Linux
+};
+
+/// Where the desktop app keeps its session records: under the app's data folder, `claude-code-sessions`. Seen on macOS
+/// (`~/Library/Application Support/Claude`). On Windows (`%APPDATA%\Claude`) and Linux (`$XDG_CONFIG_HOME/Claude`, else
+/// `~/.config/Claude`) it is Electron's usual data folder for an app named Claude, not checked on a real install
+/// (Claude's guess). None when the variable it needs is missing
+pub(super) fn sessions_dir_for(os: Os, home: &Path, appdata: Option<&str>, xdg_config_home: Option<&str>) -> Option<PathBuf> {
+    let app = match os {
+        Os::MacOs => home.join("Library/Application Support/Claude"),
+        Os::Windows => PathBuf::from(appdata.filter(|v| !v.is_empty())?).join("Claude"),
+        // XDG says a relative value is ignored
+        Os::Linux => match xdg_config_home.filter(|v| v.starts_with('/')) {
+            Some(config) => PathBuf::from(config).join("Claude"),
+            None => home.join(".config/Claude"),
+        },
+    };
+    Some(app.join("claude-code-sessions"))
+}
+
+fn sessions_dir() -> Option<PathBuf> {
+    sessions_dir_for(
+        THIS_OS,
+        &home(),
+        std::env::var("APPDATA").ok().as_deref(),
+        std::env::var("XDG_CONFIG_HOME").ok().as_deref(),
+    )
+}
+
+/// The command that hands a link to the app registered for its scheme: LaunchServices (`open`) on macOS, the shell's
+/// URL protocol handler (`rundll32 url.dll,FileProtocolHandler`) on Windows, xdg-open on Linux. Whether the desktop app
+/// registers claude:// on Windows and Linux is not checked (Claude's guess)
+pub(super) fn open_command(os: Os, url: &str) -> (&'static str, Vec<String>) {
+    match os {
+        Os::MacOs => ("/usr/bin/open", vec![url.to_string()]),
+        // Not `cmd /C start`: its quoting rules aren't Rust's, and it opens a console window
+        Os::Windows => ("rundll32", vec!["url.dll,FileProtocolHandler".into(), url.to_string()]),
+        Os::Linux => ("xdg-open", vec![url.to_string()]),
+    }
 }
 
 /// A `local_<id>` a link may carry as is: letters, digits and `-` after the prefix
@@ -38,7 +82,6 @@ pub(super) fn session_url(local_id: &str) -> String {
 }
 
 /// The `local_<id>` of the desktop session whose transcript is session_id, from the records two folders under dir
-#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 pub(super) fn find_local_id(dir: &Path, session_id: &str) -> Option<String> {
     for a in std::fs::read_dir(dir).ok()?.flatten() {
         let Ok(b_items) = std::fs::read_dir(a.path()) else { continue };
@@ -74,30 +117,26 @@ pub(crate) async fn open_desktop_session(session_id: String) -> FocusResult {
         .unwrap_or_else(|e| FocusResult::none(e.to_string()))
 }
 
-#[cfg(target_os = "macos")]
 fn open_blocking(session_id: &str) -> FocusResult {
-    let Some(local) = find_local_id(&sessions_dir(), session_id) else {
+    let Some(dir) = sessions_dir() else { return FocusResult::none("no data folder for the desktop app") };
+    let Some(local) = find_local_id(&dir, session_id) else {
         return FocusResult::none("not a desktop session");
     };
     let url = session_url(&local);
-    // `open` hands the URL to LaunchServices, which gives it to the app registered for claude:// (Claude's own
-    // decision: the same path the parent session checked by hand)
-    match std::process::Command::new("/usr/bin/open").arg(&url).status() {
+    let (program, args) = open_command(THIS_OS, &url);
+    let mut command = std::process::Command::new(program);
+    command.args(&args);
+    match command.status() {
         Ok(status) if status.success() => {
             append_log(&format!("[focus] {session_id} -> desktop {local}"));
             FocusResult { level: FocusLevel::Pane, detail: format!("desktop {local}") }
         }
+        // Not opened (no app takes claude://, say): the caller jumps to the terminal as before
         result => {
             append_log(&format!("[focus] {session_id} -> desktop {local} failed to open: {result:?}"));
-            FocusResult::none(format!("open {url} failed"))
+            FocusResult::none(format!("{program} {url} failed"))
         }
     }
-}
-
-/// macOS only at first: where the records are on Windows and Linux isn't checked
-#[cfg(not(target_os = "macos"))]
-fn open_blocking(_session_id: &str) -> FocusResult {
-    FocusResult::none("desktop sessions are opened on macOS only")
 }
 
 #[cfg(test)]
@@ -121,6 +160,32 @@ mod tests {
         for (record, id, expected) in cases {
             assert_eq!(local_id_of(&record, id).as_deref(), expected, "{record} {id}");
         }
+    }
+
+    #[test]
+    fn the_records_folder_of_each_os() {
+        let home = Path::new("/home/u");
+        let cases = [
+            (Os::MacOs, None, None, Some("/home/u/Library/Application Support/Claude/claude-code-sessions")),
+            (Os::Windows, Some(r"C:\Users\u\AppData\Roaming"), None, Some(r"C:\Users\u\AppData\Roaming/Claude/claude-code-sessions")),
+            (Os::Windows, None, None, None),
+            (Os::Windows, Some(""), None, None),
+            (Os::Linux, None, None, Some("/home/u/.config/Claude/claude-code-sessions")),
+            (Os::Linux, None, Some("/xdg"), Some("/xdg/Claude/claude-code-sessions")),
+            (Os::Linux, None, Some("relative"), Some("/home/u/.config/Claude/claude-code-sessions")),
+        ];
+        for (os, appdata, xdg, expected) in cases {
+            let got = sessions_dir_for(os, home, appdata, xdg);
+            assert_eq!(got.as_deref().map(|p| p.to_string_lossy().replace('\\', "/")), expected.map(|e| e.replace('\\', "/")), "{os:?} {appdata:?} {xdg:?}");
+        }
+    }
+
+    #[test]
+    fn the_command_that_opens_the_link() {
+        let url = "claude://claude.ai/epitaxy/local_a";
+        assert_eq!(open_command(Os::MacOs, url), ("/usr/bin/open", vec![url.to_string()]));
+        assert_eq!(open_command(Os::Windows, url), ("rundll32", vec!["url.dll,FileProtocolHandler".into(), url.to_string()]));
+        assert_eq!(open_command(Os::Linux, url), ("xdg-open", vec![url.to_string()]));
     }
 
     #[test]
