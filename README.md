@@ -48,6 +48,8 @@ listen_on unix:/tmp/kitty
 
 VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab, install Tomarigi's extension. Download [Tomarigi-VSCode.vsix](https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/Tomarigi-VSCode.vsix) (the same file as `tomarigi-v<version>.vsix` on [Releases](https://github.com/mohhh-ok/tomarigi-desktop/releases)) and install it with "Extensions: Install from VSIX..." in the command palette (or `code --install-extension <file>`, `cursor --install-extension <file>`). The first time you jump, the editor asks whether the extension may open the URI; check "Do not ask me again for this extension". Without the extension, the editor is only brought to the front. Each editor window writes the process ids of its terminals to `~/.tomarigi/vscode/` for Tomarigi to read.
 
+Claude desktop app: a Claude Code session running in the Code tab of the Claude desktop app has no terminal pane, so clicking its bird opens that session in the desktop app instead. Checked on macOS; on Windows and Linux it is not checked on a real machine yet, and if it doesn't work there the click jumps to the terminal as before.
+
 ### Windows and Linux
 
 - Jumping brings the terminal window to the front but can't pick its tab or split (on Linux, a session inside tmux still gets its pane). Windows Terminal comes forward on whatever tab it shows. On a Wayland session only terminals running through Xwayland can be brought forward
