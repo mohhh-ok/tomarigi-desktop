@@ -238,6 +238,12 @@ Applies to the floating window's Garden and Concierge tabs only.
 - Apple Events permission dialogs appear once per terminal app (Ghostty, iTerm2, Terminal.app). `NSAppleEventsUsageDescription` names terminals in general, not only Ghostty
 - Sessions whose pid can't be found do nothing on click
 - Every agent's jump goes through one command, `focus_pid(pid, fallbackToApp)`, which returns how far it got (`pane` / `app` / `none`); `focusPid` in `src/lib/terminal-focus.ts` calls it
+- Claude desktop app: a Claude Code session run by the Claude desktop app (its Code tab) has no terminal pane. Clicking it (bird, Perch row, Recent activity row, or a concierge advice or suggestion about it) opens that session in the desktop app instead (the user, after the parent session showed that the app's session link also opens from outside: 「じゃぁmodじゃなくてtomarigiのほうでやったらいいよな」, then 「本体に切り替え」 over a Claude Code mod that would have shown the concierge in a pane of the desktop app)
+  - Matching: the desktop app keeps one file per session, `~/Library/Application Support/Claude/claude-code-sessions/<…>/<…>/local_<id>.json`, with `sessionId` (`local_<id>`) and `cliSessionId` (the transcript's file name, i.e. the Claude Code session id). A session whose id is a `cliSessionId` there is a desktop session. Like the transcript formats, this file is not a public spec
+  - Opening: `claude://claude.ai/epitaxy/<sessionId>` through LaunchServices (as `open` does). Checked by the parent session on the desktop app of 2026-10-27 (app.asar date): `open "claude://claude.ai/epitaxy/local_<id>"` opened that session in the app. The same link is what the app's own session list gives as the link that opens a session from outside the app
+  - A desktop session is opened this way before any terminal adapter is tried; a session not found in those files jumps as before (Claude's own decision)
+  - macOS only at first: the files' place on Windows and Linux is not checked (Claude's own decision)
+  - A chick (subagent) of a desktop session opens its parent's desktop session, as a chick jumps to its parent's pane (Claude's own decision)
 - In the Garden, releasing after moving less than 4px is a click (left button only); anything more is a drag
 - Clickable elements get a pointer cursor. No hover hint is shown
 - VS Code / Cursor (and other VS Code forks): the integrated terminal tab is focused through Tomarigi's own VS Code extension (the user's decision: 「vscodeようの拡張？そんなんもできるの？やって」). The extension lives in `vscode-extension/` in this repo
@@ -411,22 +417,6 @@ An AI looks at every session together and gives the user one piece of advice abo
 - When a request fails, the advice shown stays until the next one, unless the session it is about has changed state since the advice came (needs reply, working, or stopped; e.g. the user already replied), or has left the screen. Then the advice is cleared, so it doesn't send the user to a session that no longer needs them (Claude's own decision; the clearing was added by the parent session)
 - When the session the advice is about leaves the screen, the advice stays without a jump target until the next request (Claude's own decision)
 - Mock mode: `concierge=<text>` in `TOMARIGI_QUERY` shows the concierge with that advice without calling the API (README) (Claude's own decision)
-
-## Claude Desktop pane (Claude Code mod)
-
-The concierge, with the state of every session, also shown in a pane of the Claude Code tab of the Claude desktop app (the user: 「tomarigiのコンシェルジュバージョンをつかいたいねん」). The logic is shared with the app, not written twice (the user, asked whether the mod should only show what the app writes out or redo the logic itself: 「ものれぽにしてきょうつうかできないかなぁ」). Sessions of every agent in "Agents" are listed, not only Claude Code's (the user: 「もしかしてさ、tomarigiを経由することでcodexとかもccdesktopでみれるようになるのか」, then 「うん、そのほうこうでいって」 to: every agent listed with the concierge, and a click opens only Claude desktop sessions at first)
-
-- What the pane shows: the Concierge tab's content (state lines in the same order and the concierge's one to three suggestions, see "Concierge"). No Garden, Perch, or Recent activity (Claude's own decision)
-- Click: the name of a session of the Claude desktop app opens that session in the app. Sessions running in a terminal (Claude Code in a terminal, Codex, and the other agents) have no link at first: jumping to a terminal pane is Rust code (`focus_pid`) and is not shared (Claude's own decision)
-- AI: the mod asks with `$.model` (the person's Claude plan), not a BYOK key. The concierge's request, output, code checks, and timing rules are the same as the app's (Claude's own decision)
-- Repository layout: the mod lives in `claude-mod/` in this repo, like `vscode-extension/`. The concierge, the agent adapters, state (`deriveState`), and their inputs are shared from `src/lib`; whatever they need from the platform (reading files, listing processes, the AI call, the clock, logging) is passed in, with one implementation for the app (Tauri `invoke`) and one for the mod (`$.fs`, `$.process`, `$.model`, `$.clock`). The app's own folders don't move (Claude's own decision)
-- Built: a mod imports only files inside its own folder, has no Node, no DOM, and no `import()`, so the shared code is bundled into the mod's hooks module by a build step (Claude's own decision)
-- Facts checked in a probe mod on Claude Code 2.1.309 (Claude, with the user looking at the pane):
-  - A pane opened with `$.ui.open` is drawn in the desktop app beside the transcript: `surface` `desktop`, `placement` `dock`, 98×54 cells
-  - `$.fs.list` reads absolute paths outside the working folder (`~/.claude2/projects`, 214 folders). `$.fs.read` refuses files over 4 MiB, so a transcript's tail is read another way (e.g. `$.process.run(["tail", ...])`)
-  - Opening a desktop session: a `Markdown` link to `#local_<id>` opens it (the same link the chat uses), and so does `$.process.run(["open", "claude://claude.ai/epitaxy/local_<id>"])`. A `Link` element with the `claude://` URL draws but does not open (the type docs say a remote surface draws anything but `https:` as plain text)
-- Desktop sessions are matched to transcripts through the app's own record of each session, `~/Library/Application Support/Claude/claude-code-sessions/<…>/<…>/local_<id>.json`: `sessionId` (the `local_…` id for the link), `cliSessionId` (the transcript's file name), `title`, `cwd`, `isArchived`, `lastActivityAt`. Like the transcript formats, this file is not a public spec
-- Liveness (`process_cwds` in the app) is taken with `ps` / `lsof` through `$.process.run`. OpenCode's SQLite is read with the `sqlite3` command if it is there; if not, OpenCode sessions are left out of the pane (Claude's own decision)
 
 ## Updates
 
