@@ -19,6 +19,14 @@ outside the repo. Prints one line per reply and provider, and writes every run's
 `$OUT/turn-verdict-<label>.json` (`OUT` defaults to /tmp/tomarigi-desktop). Env: `PROVIDERS` (default
 `openai,anthropic`), `CASES` (comma-separated names to run). Pass the keys as environment variables; don't print them.
 
+The request and the reading of the answer are the app's own functions (`openAiJudgeBody` / `parseOpenAiJudgeReply`,
+`anthropicJudgeBody` / `parseAnthropicJudgeReply`). A run the app would treat as failed (an HTTP error, a refusal, an
+answer cut at the token limit, an incomplete answer, no output, or output that isn't JSON) counts in `errors` and is
+kept as an `ERR` line. `asking` and `continuing` don't count `ERR` runs, though the printed denominator is still all
+runs. The verdict's fields aren't checked against the schema, so an answer missing a field counts as neither.
+A case whose `ts` finds no assistant line, or a line with no text, stops the whole run with an error before anything
+is written, so a wrong case is caught instead of being sent empty.
+
 ## webview-mem.sh
 
 Records the memory of one process with a timestamp, one line per sample: footprint (KB), the "WebKit malloc" line of
