@@ -412,6 +412,22 @@ An AI looks at every session together and gives the user one piece of advice abo
 - When the session the advice is about leaves the screen, the advice stays without a jump target until the next request (Claude's own decision)
 - Mock mode: `concierge=<text>` in `TOMARIGI_QUERY` shows the concierge with that advice without calling the API (README) (Claude's own decision)
 
+## Claude Desktop pane (Claude Code mod)
+
+The concierge, with the state of every session, also shown in a pane of the Claude Code tab of the Claude desktop app (the user: 「tomarigiのコンシェルジュバージョンをつかいたいねん」). The logic is shared with the app, not written twice (the user, asked whether the mod should only show what the app writes out or redo the logic itself: 「ものれぽにしてきょうつうかできないかなぁ」). Sessions of every agent in "Agents" are listed, not only Claude Code's (the user: 「もしかしてさ、tomarigiを経由することでcodexとかもccdesktopでみれるようになるのか」, then 「うん、そのほうこうでいって」 to: every agent listed with the concierge, and a click opens only Claude desktop sessions at first)
+
+- What the pane shows: the Concierge tab's content (state lines in the same order and the concierge's one to three suggestions, see "Concierge"). No Garden, Perch, or Recent activity (Claude's own decision)
+- Click: the name of a session of the Claude desktop app opens that session in the app. Sessions running in a terminal (Claude Code in a terminal, Codex, and the other agents) have no link at first: jumping to a terminal pane is Rust code (`focus_pid`) and is not shared (Claude's own decision)
+- AI: the mod asks with `$.model` (the person's Claude plan), not a BYOK key. The concierge's request, output, code checks, and timing rules are the same as the app's (Claude's own decision)
+- Repository layout: the mod lives in `claude-mod/` in this repo, like `vscode-extension/`. The concierge, the agent adapters, state (`deriveState`), and their inputs are shared from `src/lib`; whatever they need from the platform (reading files, listing processes, the AI call, the clock, logging) is passed in, with one implementation for the app (Tauri `invoke`) and one for the mod (`$.fs`, `$.process`, `$.model`, `$.clock`). The app's own folders don't move (Claude's own decision)
+- Built: a mod imports only files inside its own folder, has no Node, no DOM, and no `import()`, so the shared code is bundled into the mod's hooks module by a build step (Claude's own decision)
+- Facts checked in a probe mod on Claude Code 2.1.309 (Claude, with the user looking at the pane):
+  - A pane opened with `$.ui.open` is drawn in the desktop app beside the transcript: `surface` `desktop`, `placement` `dock`, 98×54 cells
+  - `$.fs.list` reads absolute paths outside the working folder (`~/.claude2/projects`, 214 folders). `$.fs.read` refuses files over 4 MiB, so a transcript's tail is read another way (e.g. `$.process.run(["tail", ...])`)
+  - Opening a desktop session: a `Markdown` link to `#local_<id>` opens it (the same link the chat uses), and so does `$.process.run(["open", "claude://claude.ai/epitaxy/local_<id>"])`. A `Link` element with the `claude://` URL draws but does not open (the type docs say a remote surface draws anything but `https:` as plain text)
+- Desktop sessions are matched to transcripts through the app's own record of each session, `~/Library/Application Support/Claude/claude-code-sessions/<…>/<…>/local_<id>.json`: `sessionId` (the `local_…` id for the link), `cliSessionId` (the transcript's file name), `title`, `cwd`, `isArchived`, `lastActivityAt`. Like the transcript formats, this file is not a public spec
+- Liveness (`process_cwds` in the app) is taken with `ps` / `lsof` through `$.process.run`. OpenCode's SQLite is read with the `sqlite3` command if it is there; if not, OpenCode sessions are left out of the pane (Claude's own decision)
+
 ## Updates
 
 The app updates itself with Tauri's official updater plugin (the user chose it over only telling about a new version: 「aかなぁ」)
