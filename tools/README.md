@@ -2,6 +2,23 @@
 
 Tools for checking the app's behavior by hand or from an agent. Not part of the build.
 
+## turn-verdict-probe.ts
+
+Runs the turn verdict (docs/design.md "Turn verdicts") on real replies several times with OpenAI and Anthropic, with
+the app's prompt, schema, models, and settings, and counts asking and continuing per reply. Used to compare a prompt
+change before and after.
+
+```sh
+OPENAI_API_KEY=… ANTHROPIC_API_KEY=… bun tools/turn-verdict-probe.ts /tmp/tomarigi-desktop/cases.json before 8
+```
+
+The cases file is a JSON array of `{ name, want_asking, want_continuing, file, ts, user }`: `file` and `ts` find the
+assistant line in a local transcript (its text blocks, last 2000 characters, are sent as the app does), and `user` is
+the turn's user messages (each cut to 500 characters, as the app does). It points at local transcripts, so it stays
+outside the repo. Prints one line per reply and provider, and writes every run's answer to
+`$OUT/turn-verdict-<label>.json` (`OUT` defaults to /tmp/tomarigi-desktop). Env: `PROVIDERS` (default
+`openai,anthropic`), `CASES` (comma-separated names to run). Pass the keys as environment variables; don't print them.
+
 ## webview-mem.sh
 
 Records the memory of one process with a timestamp, one line per sample: footprint (KB), the "WebKit malloc" line of

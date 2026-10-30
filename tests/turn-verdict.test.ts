@@ -46,6 +46,16 @@ test("the prompt treats the reply and the user's messages as untrusted input", (
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("will itself receive, check, or report a result later");
 });
 
+test("a question passed on from another session, to be answered there, isn't asking", () => {
+  // yokai-no-sensei's reply relayed its child's question and ended with
+  // 「この 20 語を R2 に上げてよいかを、そのセッションのペインでお答えください。」; it got asking=true, and the concierge
+  // suggested replying to yokai-no-sensei although the answer went to the child (and had already been given there)
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
+    "only passes on a question from another session or a sub-agent",
+  );
+  expect(SUMMARIZE_TURN_TASK.outputFields.asking.description).toContain("Not for a question passed on");
+});
+
 test("work only handed to another session that is still going on isn't continuing", () => {
   // desk's reply ended with 「残りの audit 対応は、今も子の `billionclips-c9` が進めています。」 and waited on nothing.
   // gpt-5.6-luna said continuing=true in 8 of 8 runs; without that sentence, false in 6 of 6

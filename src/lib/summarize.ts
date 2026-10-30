@@ -99,7 +99,9 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "to choose or check (candidates, a list, results) is said to come later and is not in assistant_text (e.g. " +
     "'I'll show you up to three candidates when they arrive; please pick one then. I won't make version B until " +
     "you do'), the user has nothing to answer yet: asking is false, even though the agent will need the answer " +
-    "later.\n" +
+    "later. When the agent only passes on a question from another session or a sub-agent and tells the user to " +
+    "answer it there (e.g. 'session X is waiting for your answer: please answer in that session's pane whether to " +
+    "upload these 20 words'), asking is false: the answer goes to that session, and this agent isn't waiting on it.\n" +
     "abusive: true when any of user_messages insults, demeans, or swears at the AI itself: name-calling such as " +
     "'idiot' or 'useless', contempt, or hostile profanity aimed at the AI, even when it also contains an " +
     "instruction. false for ordinary instructions, questions, and criticism of the work, including frustrated or " +
@@ -123,7 +125,9 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     },
     asking: {
       type: "boolean",
-      description: "Whether the agent is stopped waiting for the user to answer before it can continue.",
+      description:
+        "Whether the agent is stopped waiting for the user to answer before it can continue. Not for a question passed " +
+        "on from another session that the user is told to answer there.",
     },
     abusive: {
       type: "boolean",
