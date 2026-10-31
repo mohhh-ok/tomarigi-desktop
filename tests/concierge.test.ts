@@ -1,6 +1,6 @@
 // The concierge's request, its reading of the answer, and when it is asked (lib/concierge.ts; docs/design.md
 // "Concierge"). The API is never called: askConcierge gets a stand-in for runJudge / runOpenAiJudge
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
   adviceStillHolds,
   adviceNamesTarget,
@@ -1209,7 +1209,7 @@ test("the suggestions' schema: objects of session_id, kind (reply or check_resul
 test("each suggestion goes through the advice's checks in code; one that fails is dropped with the reason", () => {
   const sessions = suggestionPayload().sessions;
   const S = (session_id: string, kind: string, text = "do it") => ({ session_id, kind, text });
-  // While blog needs a reply, only it may be suggested
+  // While blog needs a reply, a finished session may still be suggested after it
   const { suggestions, dropped } = parseConciergeSuggestions(
     [
       S("root/w.jsonl", "reply", "blog: it has waited longest"),
@@ -1219,9 +1219,11 @@ test("each suggestion goes through the advice's checks in code; one that fails i
     ],
     sessions,
   );
-  expect(suggestions).toEqual([{ sessionId: "root/w.jsonl", kind: "reply", text: "it has waited longest" }]);
+  expect(suggestions).toEqual([
+    { sessionId: "root/w.jsonl", kind: "reply", text: "it has waited longest" },
+    { sessionId: "root/d.jsonl", kind: "check_result", text: "do it" },
+  ]);
   expect(dropped.map((d) => [d.sessionId, d.reason])).toEqual([
-    ["root/d.jsonl", "not_waiting"],
     ["root/w.jsonl", "duplicate"],
     ["nope", "unknown_session"],
   ]);
@@ -1286,8 +1288,93 @@ test("the suggestions are logged one per line, shown and dropped, with the reque
   const result = await askConcierge("openai", payload, run, true);
   expect(conciergeSuggestionLogLines({ req: "r1", provider: "openai", model: "m" }, result)).toEqual([
     '[concierge] suggestion req=r1 provider=openai model=m kind=reply target=root/w.jsonl text="answer it"',
-    '[concierge] suggestion-dropped req=r1 provider=openai model=m kind=check_result target=root/d.jsonl reason=not_waiting text="look"',
+    '[concierge] suggestion req=r1 provider=openai model=m kind=check_result target=root/d.jsonl text="look"',
   ]);
+});
+
+describe("suggestions while a session needs a reply: replies first, then results to check (docs/design.md \"Concierge\")", () => {
+  const S = (session_id: string, kind: string) => ({ session_id, kind, text: "do it" });
+  const waitingAndDone = (n: number) =>
+    buildConciergePayload(
+      [
+        ...Array.from({ length: n }, (_, i) => ({ view: view(`w${i}`, { project: `wait${i}`, state: "waiting" as const }) })),
+        { view: view("d", { project: "api", state: "done" }) },
+        { view: view("e", { project: "docs", state: "done" }) },
+        { view: view("c", { project: "render", state: "done", continuing: true }) },
+        { view: view("p", { project: "desk", state: "done" }) },
+        { view: view("ch", { project: "child", state: "done" }), parentId: "p" },
+        { view: view("q", { project: "lead", state: "done" }) },
+        { view: view("qc", { project: "worker" }), parentId: "q" },
+      ],
+      [],
+      [],
+      NOW,
+      "en",
+    ).sessions;
+  test.each([
+    {
+      name: "a finished session's result stays, put after the reply the AI gave after it",
+      waiting: 1,
+      given: [S("d", "check_result"), S("w0", "reply")],
+      shown: [["w0", "reply"], ["d", "check_result"]],
+      dropped: [],
+    },
+    {
+      name: "each kind keeps the AI's order",
+      waiting: 2,
+      given: [S("e", "check_result"), S("w1", "reply"), S("d", "check_result"), S("w0", "reply")],
+      shown: [["w1", "reply"], ["w0", "reply"], ["e", "check_result"]],
+      dropped: [["d", "too_many"]],
+    },
+    {
+      name: "replies fill the three slots before any result to check",
+      waiting: 3,
+      given: [S("d", "check_result"), S("w0", "reply"), S("w1", "reply"), S("w2", "reply")],
+      shown: [["w0", "reply"], ["w1", "reply"], ["w2", "reply"]],
+      dropped: [["d", "too_many"]],
+    },
+    {
+      name: "a session that only looks finished is still dropped: continuing, watched, watching a working child",
+      waiting: 1,
+      given: [S("w0", "reply"), S("c", "check_result"), S("ch", "check_result"), S("q", "check_result")],
+      shown: [["w0", "reply"]],
+      dropped: [["c", "working"], ["ch", "watched"], ["q", "child_working"]],
+    },
+    {
+      name: "a reply asked of a finished session is still dropped",
+      waiting: 1,
+      given: [S("d", "reply"), S("w0", "reply")],
+      shown: [["w0", "reply"]],
+      dropped: [["d", "no_reply_needed"]],
+    },
+  ])("$name", ({ waiting, given, shown, dropped }) => {
+    const got = parseConciergeSuggestions(given, waitingAndDone(waiting));
+    expect(got.suggestions.map((s) => [s.sessionId, s.kind])).toEqual(shown);
+    expect(got.dropped.map((d) => [d.sessionId, d.reason])).toEqual(dropped);
+  });
+
+  test("the advice, shown outside the tab, still keeps a finished session out while one needs a reply", async () => {
+    const payload = buildConciergePayload(
+      [{ view: view("w", { project: "blog", state: "waiting" }) }, { view: view("d", { project: "api", state: "done" }) }],
+      [],
+      [],
+      NOW,
+      "en",
+    );
+    const answer = { advice: "Check the result of api", session_id: "d", action: "check_result" };
+    const run = async <V,>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: answer as V });
+    expect(await askConcierge("openai", payload, run)).toMatchObject({
+      verdict: null,
+      dropped: { targetId: "d", reason: "not_waiting" },
+    });
+  });
+
+  test("the prompt says to put replies first and lets the slots left suggest a finished session", () => {
+    const p = CONCIERGE_TASK_WITH_SUGGESTIONS.systemPrompt;
+    expect(p).not.toContain("suggest only sessions that need one");
+    expect(p).toContain("the slots left may suggest checking the result of a session that finished");
+    expect(CONCIERGE_TASK.systemPrompt).toContain("While any session needs a reply now, advise about one of those");
+  });
 });
 
 test("the tab asks no more often: what only changes a state line (a tool, a line, the time) doesn't ask", () => {
