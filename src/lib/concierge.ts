@@ -321,7 +321,8 @@ export const CONCIERGE_TASK_WITH_SUGGESTIONS: JudgeTaskDefinition = {
     "Japanese: いちばん長く待っているので先に返事を, in English: answer first, it has waited longest). The rules for " +
     "the advice hold for each suggestion, but one: while any session needs a reply, put the sessions that need one " +
     "first, and the slots left may suggest checking the result of a session that finished; " +
-    "never suggest a working session, one with continuing true, the result of a session with watch_parent, or the " +
+    "never suggest a working session, the result of a session with continuing true, the result of a session with " +
+    "watch_parent, or the " +
     "result of a session whose watch_children still work; never put another session's name or id in a text. At " +
     "most one suggestion per session. Each text is about 30 full-width characters (or about 60 Latin characters), " +
     "one line, plain text, no markdown, no quotation marks, in the language given by ui_language. When nothing " +
