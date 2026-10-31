@@ -12,7 +12,7 @@ import {
   turnOutcome,
   turnPayload,
 } from "../src/lib/summarize.ts";
-import { needsAnswer } from "../src/lib/turn-verdict.ts";
+import { needsAnswer, sessionContinuing } from "../src/lib/turn-verdict.ts";
 import { verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "../src/lib/judge.ts";
 import { localChatBody, LOCAL_NO_MATCHING_JSON } from "../src/lib/local-judge.ts";
 import { feedTurnMessages, MAX_TURN_USER_MESSAGES, turnUserMessages } from "../src/lib/session-tail.ts";
@@ -43,7 +43,7 @@ test("the prompt treats the reply and the user's messages as untrusted input", (
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("says it will report or ask later");
   // Work that goes on after the turn, to be reported later, is continuing
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("still running in the background");
-  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("will itself receive, check, or report a result later");
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("will itself receive, check, show, or report a result later");
 });
 
 test("a question passed on from another session, to be answered there, isn't asking", () => {
@@ -56,43 +56,35 @@ test("a question passed on from another session, to be answered there, isn't ask
   expect(SUMMARIZE_TURN_TASK.outputFields.asking.description).toContain("Not for a question passed on");
 });
 
-test("work only handed to another session that is still going on isn't continuing", () => {
-  // desk's reply ended with 「残りの audit 対応は、今も子の `billionclips-c9` が進めています。」 and waited on nothing.
-  // gpt-5.6-luna said continuing=true in 8 of 8 runs; without that sentence, false in 6 of 6
+test("work handed to another session that is still going on is continuing, with no exceptions in the prompt", () => {
+  // The user: 「子がすすめてるならcontinuingにすべきやとおもうんやが？」. desk's reply ending with 「残りの audit 対応は、
+  // 今も子の `billionclips-c9` が進めています。」 is continuing; before, the prompt said it wasn't, and Haiku said it was
+  // in 15 of 16 runs anyway
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
-    "when it only says that work it handed to another session or a sub-agent is still going on",
+    "work it handed to another session or a sub-agent is still going on (e.g. 'the rest is still being done by the child session')",
   );
-  // A parent that says it will check the child's report when it arrives is still continuing
-  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("I'll check the report when it arrives and tell you");
-  expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
-    "Not for work only handed to another session",
-  );
-});
-
-test("work handed to another session whose result the agent says it will show or ask about later is continuing", () => {
-  // tomarigi-desktop's reply handed work to tomarigi-desktop-advice-links and ended with
-  // 「終わったらスクショをお見せしてから、main に取り込むかをお聞きします。」; it got continuing=false, and the concierge
-  // told the user to check tomarigi-desktop's result while there was none yet
-  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
-    "when it's done I'll show you screenshots and ask whether to merge",
-  );
-  expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
-    "says nothing about receiving its result",
-  );
-});
-
-test("only passing on another session's question isn't continuing, even with what the other sessions still do", () => {
-  // yokai-no-sensei's reply relayed its child's question (「この 20 語を R2 に上げてよいかを、そのセッションのペインで
-  // お答えください。」) next to another session watching an upload; it got continuing=true in 8 of 8 runs with both
-  // OpenAI and Haiku, so the stopped parent was shown as working
-  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
-    "a reply that only relays another session's question for the user to answer in that session's pane",
-  );
-  // A parent that says it will itself show what arrives stays continuing (yokai_photo_later fell to 4/8 without this)
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).not.toContain("without saying it will receive or check the result");
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).not.toContain("a 'watching' or 'running' there is the other session's");
+  // A parent that says it will itself show what arrives is continuing (yokai_photo_later)
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("I'll show you the photo candidates as soon as they arrive");
+  // Work waiting on the user's approval isn't going on yet (yokai_17_ok: 「この件は終わったときに親に伝えます」 before the
+  // approval it asks for)
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("the work starts only after the user answers or does a step");
   expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
-    "nor for passing on another session's question to be answered there",
+    "work handed to another session that is still going on",
   );
+});
+
+test("a watching session is continuing whatever its reply says; otherwise the turn verdict's continuing", () => {
+  const rows: [verdict: boolean | undefined, watching: number | undefined, want: boolean | undefined][] = [
+    [false, 1, true], // a linked session moves now
+    [false, 0, true], // within the grace period after it last moved
+    [undefined, 2, true], // no verdict yet (or no provider)
+    [true, undefined, true], // its own job, or a child the app sees no link for (a desktop app child given its work at launch)
+    [false, undefined, false],
+    [undefined, undefined, undefined],
+  ];
+  for (const [verdict, watching, want] of rows) expect(sessionContinuing(verdict, watching)).toBe(want);
 });
 
 test("the request keeps the end of the reply and the start of each user message", () => {
