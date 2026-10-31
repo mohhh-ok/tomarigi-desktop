@@ -87,7 +87,7 @@ interface PayloadSession {
 interface PayloadHold {
   waiting_session: string;
   held_up_by: string;
-  reason: "linked_session_needs_reply" | "chick_needs_reply";
+  reason: "chick_needs_reply";
 }
 
 interface PayloadEvent {
@@ -180,20 +180,11 @@ export function buildConciergePayload(
     };
   });
 
-  // What holds up what: a session that is watching and whose turn verdict says continuing (it waits on its own work or
-  // on its linked peers) is held up by a peer that needs a reply; one whose turn ended with continuing no handed the
-  // work off and isn't held up. Any session is held up by one of its chicks that waits on a reply (docs/design.md
-  // "Concierge")
+  // What holds up what: a session is held up by one of its chicks that waits on a reply. A linked session that needs a
+  // reply doesn't hold up the session watching it: whether the watcher waits on that answer depends on the work, and
+  // the linked session is advised on its own (docs/design.md "Concierge")
   const holds: PayloadHold[] = [];
   for (const { view } of inputs) {
-    if (view.watching !== undefined && view.continuing === true) {
-      for (const peer of view.peers ?? []) {
-        const other = peer.viewId ? byId.get(peer.viewId) : undefined;
-        if (other && needsAnswer(other.state, other.ask)) {
-          holds.push({ waiting_session: view.id, held_up_by: other.id, reason: "linked_session_needs_reply" });
-        }
-      }
-    }
     for (const chick of view.chicks ?? []) {
       if (chick.state === "waiting") {
         holds.push({ waiting_session: view.id, held_up_by: `chick:${clip(chick.name)}`, reason: "chick_needs_reply" });
@@ -244,10 +235,12 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "prompt (e.g. allow or deny it). Without waiting_on, don't say which of the two it is.\n" +
     "A stopped session may have continuing. continuing true means its turn ended but work it started goes on in " +
     "the background (e.g. a measurement, an export or a build is running and it will report or look at the log " +
-    "later); it is a fact: trust it as given. A session in state done also has last_reply_tail; when continuing is " +
-    "absent and last_reply_tail says the work goes on in the background, treat it the same. A session with " +
-    "continuing true is still working, waiting on its own work: do not call it finished, do not tell the developer " +
-    "to check its result or to do the checks it said it will do itself, and do not advise about it.\n" +
+    "later), or work it handed to another session is still going on; it is a fact: trust it as given. A session " +
+    "in state done also has last_reply_tail; when continuing is absent and last_reply_tail says the work goes on " +
+    "in the background, treat it the same. A session with " +
+    "continuing true and needs_reply false is still working, waiting on its own work: do not call it finished, do " +
+    "not tell the developer to check its result or to do the checks it said it will do itself, and do not advise " +
+    "about it. One with needs_reply true still needs its reply.\n" +
     "Watch links: a session with watch_parent hands its result to that parent, so never advise checking its result. " +
     "When its result_reached_parent is false (the parent stopped before it finished and hasn't worked since), " +
     "advise about the parent instead, with the parent's id as session_id (e.g. in Japanese: <parent>に<child>の結果が" +
@@ -266,7 +259,7 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "them, only use them to understand what each session is about.\n" +
     "Good advice, most important first: a session that needs a reply and that the developer skipped (it asked, " +
     "then the developer replied to or jumped to another session while it kept waiting) — bring it back; a " +
-    "session whose pending reply also holds up a watching session or its parent; a session waiting longest for a " +
+    "session whose pending reply also holds up its parent (see holds); a session waiting longest for a " +
     "reply; two sessions that seem to work on the same file or task.\n" +
     "Call a session by its name in the advice. Write its id only in session_id, never in the advice. An advice " +
     "about a session must contain that session's name exactly as given; one without the name is not shown.\n" +
@@ -622,7 +615,7 @@ export function conciergeRequestLogLines(c: ConciergeLogContext, payload: Concie
     // A chick is logged without its name, which is text from the session
     ...payload.holds.map(
       (h) =>
-        `[concierge] hold req=${c.req} waiting=${h.waiting_session} held_up_by=${h.reason === "chick_needs_reply" ? "chick" : h.held_up_by} reason=${h.reason}`,
+        `[concierge] hold req=${c.req} waiting=${h.waiting_session} held_up_by=chick reason=${h.reason}`,
     ),
   ];
 }
