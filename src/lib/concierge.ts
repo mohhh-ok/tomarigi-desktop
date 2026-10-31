@@ -326,7 +326,8 @@ export const CONCIERGE_TASK_WITH_SUGGESTIONS: JudgeTaskDefinition = {
     "(answer, approve, or decide for a session whose needs_reply is true) or check_result (look at the result of a " +
     "session that finished); and a text without the session's name, since the app shows the name before it (e.g. in " +
     "Japanese: いちばん長く待っているので先に返事を, in English: answer first, it has waited longest). The rules for " +
-    "the advice hold for each suggestion: while any session needs a reply, suggest only sessions that need one; " +
+    "the advice hold for each suggestion, but one: while any session needs a reply, put the sessions that need one " +
+    "first, and the slots left may suggest checking the result of a session that finished; " +
     "never suggest a working session, one with continuing true, the result of a session with watch_parent, or the " +
     "result of a session whose watch_children still work; never put another session's name or id in a text. At " +
     "most one suggestion per session. Each text is about 30 full-width characters (or about 60 Latin characters), " +
@@ -459,13 +460,15 @@ export function writesElapsedTime(line: string, numbers: ReadonlySet<string>): b
 }
 
 /** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge"). ownName false skips the check that
- * the text names its session: a suggestion's text is written without it (the app shows the name) */
+ * the text names its session: a suggestion's text is written without it (the app shows the name). waitingFirst false
+ * skips the check that keeps every other session out while one needs a reply: the suggestions put those first instead */
 export function dropReason(
   advice: ConciergeAdvice,
   action: ConciergeAction | undefined,
   sessions: PayloadSession[],
   ownName = true,
   elapsed: ReadonlySet<string> = new Set(),
+  waitingFirst = true,
 ): DroppedConciergeAdvice["reason"] | undefined {
   // Only waiting is not advice, with a target or without (the prompt alone didn't hold)
   if (action === "none") return "nothing_to_do";
@@ -486,7 +489,7 @@ export function dropReason(
   if (action === "reply" && !target.needs_reply) return "no_reply_needed";
   if (ownName && !adviceNamesTarget(advice.line, target.name)) return "no_name";
   if (adviceNamesOtherSession(advice.line, target, sessions)) return "other_session";
-  if (!target.needs_reply && sessions.some((s) => s.needs_reply)) return "not_waiting";
+  if (waitingFirst && !target.needs_reply && sessions.some((s) => s.needs_reply)) return "not_waiting";
   return undefined;
 }
 
@@ -517,15 +520,16 @@ function suggestionTextOf(text: unknown, name: string): string {
 
 /**
  * The suggestions from a verdict's suggestions (objects with the sessions' own ids), checked in code like the advice
- * (dropReason, without the name check: the text has no name). The first CONCIERGE_MAX_SUGGESTIONS that pass are kept,
- * in the AI's order (docs/design.md "Concierge")
+ * (dropReason, without the name check: the text has no name, and without not_waiting: a session needing a reply
+ * doesn't keep a finished one out). Those that pass are put replies first, then results to check, each in the AI's
+ * order, and the first CONCIERGE_MAX_SUGGESTIONS are kept (docs/design.md "Concierge")
  */
 export function parseConciergeSuggestions(
   list: unknown,
   sessions: PayloadSession[],
   elapsed: ReadonlySet<string> = new Set(),
 ): { suggestions: ConciergeSuggestion[]; dropped: DroppedConciergeSuggestion[] } {
-  const suggestions: ConciergeSuggestion[] = [];
+  const passed: ConciergeSuggestion[] = [];
   const dropped: DroppedConciergeSuggestion[] = [];
   for (const o of Array.isArray(list) ? list : []) {
     const item = (o && typeof o === "object" ? o : {}) as { session_id?: unknown; kind?: unknown; text?: unknown };
@@ -538,15 +542,16 @@ export function parseConciergeSuggestions(
     if (!target) drop("unknown_session");
     else if (!kind) drop("no_kind");
     else if (!text) drop("no_text");
-    else if (suggestions.some((s) => s.sessionId === id)) drop("duplicate");
+    else if (passed.some((s) => s.sessionId === id)) drop("duplicate");
     else {
-      const reason = dropReason({ line: text, targetId: id }, kind, sessions, false, elapsed);
+      const reason = dropReason({ line: text, targetId: id }, kind, sessions, false, elapsed, false);
       if (reason) drop(reason);
-      else if (suggestions.length >= CONCIERGE_MAX_SUGGESTIONS) drop("too_many");
-      else suggestions.push({ sessionId: id, kind, text });
+      else passed.push({ sessionId: id, kind, text });
     }
   }
-  return { suggestions, dropped };
+  const ordered = [...passed.filter((s) => s.kind === "reply"), ...passed.filter((s) => s.kind !== "reply")];
+  for (const s of ordered.slice(CONCIERGE_MAX_SUGGESTIONS)) dropped.push({ ...s, reason: "too_many" });
+  return { suggestions: ordered.slice(0, CONCIERGE_MAX_SUGGESTIONS), dropped };
 }
 
 // The keys under which the facts hold session ids. While suggestions are asked for, the AI is sent short references
