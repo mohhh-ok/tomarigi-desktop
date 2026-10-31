@@ -3,11 +3,16 @@
 // asking and continuing. A reply the app would treat as a failure (cut off, refused) counts as ERR. Used to check a
 // change to the prompt before and after (docs/design.md "Turn verdicts").
 // usage: OPENAI_API_KEY=… ANTHROPIC_API_KEY=… bun tools/turn-verdict-probe.ts <cases.json> <label> [runs = 8]
-// Env: PROVIDERS (default "openai,anthropic"), CASES (comma-separated case names to run), OUT (default /tmp/tomarigi-desktop)
+// Env: PROVIDERS (default "openai,anthropic"), CASES (comma-separated case names to run), OUT (default /tmp/tomarigi-desktop),
+// METHOD ("direct", the default: the app's SUMMARIZE_TURN_TASK; "facts": TURN_FACTS_TASK and verdictFromFacts in
+// src/lib/turn-facts.ts), LOCAL_BASE_URL (default http://localhost:11434/v1) and LOCAL_MODEL (default qwen2.5:14b-instruct)
+// for PROVIDERS=local
 import { readFileSync } from "node:fs";
-import { SUMMARIZE_TURN_TASK, turnPayload } from "../src/lib/summarize.ts";
+import { SUMMARIZE_TURN_TASK, turnPayload, type TurnVerdict } from "../src/lib/summarize.ts";
+import { parseTurnFacts, TURN_FACTS_TASK, verdictFromFacts } from "../src/lib/turn-facts.ts";
 import { anthropicJudgeBody, parseAnthropicJudgeReply, type JudgeResult } from "../src/lib/judge.ts";
 import { openAiJudgeBody, parseOpenAiJudgeReply } from "../src/lib/openai-judge.ts";
+import { localChatBody, parseLocalChatReply } from "../src/lib/local-judge.ts";
 
 /** One case: a reply in a local transcript, found by its file and timestamp, and what the verdict should be */
 interface Case {
@@ -27,7 +32,21 @@ const only = process.env.CASES?.split(",");
 const providers = (process.env.PROVIDERS ?? "openai,anthropic").split(",");
 const outDir = process.env.OUT ?? "/tmp/tomarigi-desktop";
 const cases = (JSON.parse(readFileSync(casesPath, "utf8")) as Case[]).filter((c) => !only || only.includes(c.name));
-const task = SUMMARIZE_TURN_TASK;
+const method = process.env.METHOD ?? "direct";
+if (method !== "direct" && method !== "facts") throw new Error(`unknown METHOD ${method}`);
+const task = method === "facts" ? TURN_FACTS_TASK : SUMMARIZE_TURN_TASK;
+
+/** The verdict from the answer: as it is (direct), or built from the facts (facts). Facts off the schema throw */
+function verdictOf(answer: any): TurnVerdict & { facts?: string } {
+  if (method === "direct") return answer;
+  const facts = parseTurnFacts(answer);
+  if (!facts) throw new Error(`facts don't match the schema: ${JSON.stringify(answer).slice(0, 80)}`);
+  const f = facts;
+  return {
+    ...verdictFromFacts(f),
+    facts: `q=${f.question} ready=${+f.question_ready} own=${+f.own_job_running} underway=${+f.work_under_way} report=${+f.will_report_later}`,
+  };
+}
 
 /** The reply's text as the app takes it: the text blocks of the assistant line (turnPayload keeps the last 2000 characters) */
 function replyText(c: Case): string {
@@ -46,12 +65,17 @@ function replyText(c: Case): string {
 }
 
 /** Sends the body and returns the HTTP status and raw body, as Rust's openai_responses / anthropic_messages do */
-async function post(url: string, headers: Record<string, string>, body: unknown): Promise<{ status: number; text: string }> {
+async function post(
+  url: string,
+  headers: Record<string, string>,
+  body: unknown,
+  timeoutMs = 30_000,
+): Promise<{ status: number; text: string }> {
   const r = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json", ...headers },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   return { status: r.status, text: await r.text() };
 }
@@ -74,7 +98,16 @@ async function anthropic(payload: unknown): Promise<JudgeResult<any>> {
   return parseAnthropicJudgeReply(task, status, text);
 }
 
-const callers: Record<string, (payload: unknown) => Promise<JudgeResult<any>>> = { openai, anthropic };
+/** The app's local_chat: Chat Completions on an OpenAI-compatible server, with the app's 90-second timeout */
+async function local(payload: unknown): Promise<JudgeResult<any>> {
+  const base = (process.env.LOCAL_BASE_URL ?? "http://localhost:11434/v1").replace(/\/$/, "");
+  const model = process.env.LOCAL_MODEL ?? "qwen2.5:14b-instruct";
+  const { status, text } = await post(`${base}/chat/completions`, {}, localChatBody(task, payload, model), 90_000);
+  if (status < 200 || status >= 300) return { ok: false, kind: "server", status, message: text.slice(0, 120) };
+  return parseLocalChatReply(task, text, status);
+}
+
+const callers: Record<string, (payload: unknown) => Promise<JudgeResult<any>>> = { openai, anthropic, local };
 const rows: unknown[] = [];
 for (const provider of providers) {
   const call = callers[provider];
@@ -89,16 +122,16 @@ for (const provider of providers) {
       try {
         const r = await call(payload);
         if (!r.ok) throw new Error(`${r.kind} ${r.status ?? ""} ${r.message ?? ""}`);
-        const v = r.verdict;
+        const v = verdictOf(r.verdict);
         if (v.asking) asking++;
         if (v.continuing) continuing++;
-        lines.push(`${v.asking ? "A" : "-"}${v.continuing ? "C" : "-"} ${v.line}`);
+        lines.push(`${v.asking ? "A" : "-"}${v.continuing ? "C" : "-"} ${v.facts ? `[${v.facts}] ` : ""}${v.line}`);
       } catch (e) {
         errors++;
         lines.push(`ERR ${(e as Error).message.slice(0, 120)}`);
       }
     }
-    rows.push({ label, provider, case: c.name, want_asking: c.want_asking, want_continuing: c.want_continuing, asking, continuing, errors, runs, lines });
+    rows.push({ label, method, provider, case: c.name, want_asking: c.want_asking, want_continuing: c.want_continuing, asking, continuing, errors, runs, lines });
     console.log(
       `${new Date().toISOString()} ${label} ${provider} ${c.name} want_asking=${c.want_asking} asking=${asking}/${runs} ` +
         `want_continuing=${c.want_continuing} continuing=${continuing}/${runs} errors=${errors}`,

@@ -17,7 +17,11 @@ assistant line in a local transcript (its text blocks, last 2000 characters, are
 the turn's user messages (each cut to 500 characters, as the app does). It points at local transcripts, so it stays
 outside the repo. Prints one line per reply and provider, and writes every run's answer to
 `$OUT/turn-verdict-<label>.json` (`OUT` defaults to /tmp/tomarigi-desktop). Env: `PROVIDERS` (default
-`openai,anthropic`), `CASES` (comma-separated names to run). Pass the keys as environment variables; don't print them.
+`openai,anthropic`; `local` sends the app's Chat Completions body to `LOCAL_BASE_URL`, default
+`http://localhost:11434/v1`, with `LOCAL_MODEL`, default `qwen2.5:14b-instruct`), `CASES` (comma-separated names to run),
+`METHOD` (`direct`, the default: the app's prompt; `facts`: the trial in `src/lib/turn-facts.ts`, whose facts are
+turned into asking / continuing by `verdictFromFacts`; each run's line shows the facts). Pass the keys as environment
+variables; don't print them.
 
 The request and the reading of the answer are the app's own functions (`openAiJudgeBody` / `parseOpenAiJudgeReply`,
 `anthropicJudgeBody` / `parseAnthropicJudgeReply`). A run the app would treat as failed (an HTTP error, a refusal, an
