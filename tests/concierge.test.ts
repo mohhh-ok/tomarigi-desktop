@@ -196,7 +196,10 @@ test("the system prompt asks for a reply only about a session that needs one now
   expect(prompt).toContain("it does not make that session wait");
 });
 
-test("watch links come from the caller; a watching session whose turn is continuing is held up by a peer that needs a reply", () => {
+test("watch links come from the caller; a linked session that needs a reply doesn't hold up the session watching it", () => {
+  // Whether the watcher waits on that answer depends on the work: desk that finished its daily and left billionclips
+  // to ask in its own pane doesn't (the user: 「コンシェルジュがへんなことをいってる」). The linked session is advised
+  // on its own as needing a reply
   const parent = view("p", {
     state: "done",
     watching: 1,
@@ -207,7 +210,8 @@ test("watch links come from the caller; a watching session whose turn is continu
   const payload = buildConciergePayload([{ view: parent }, { view: child, parentId: "p" }], [], [], NOW, "en");
   expect(payload.sessions[0].watch_children).toEqual(["c"]);
   expect(payload.sessions[1].watch_parent).toBe("p");
-  expect(payload.holds).toEqual([{ waiting_session: "p", held_up_by: "c", reason: "linked_session_needs_reply" }]);
+  expect(payload.sessions[1]).toMatchObject({ needs_reply: true });
+  expect(payload.holds).toEqual([]);
 });
 
 test("a watching parent whose turn ended with continuing no isn't held up, and an advice naming it is dropped for every provider", async () => {
@@ -518,7 +522,9 @@ test("an advice to check the result of a session whose work goes on in the backg
       verdict: { line: done.advice, targetId: "f" },
     });
   }
-  expect(CONCIERGE_TASK.systemPrompt).toContain("A session with continuing true is still working");
+  expect(CONCIERGE_TASK.systemPrompt).toContain("A session with continuing true and needs_reply false is still working");
+  // A watching session is continuing, and one that also asks the developer still needs its reply
+  expect(CONCIERGE_TASK.systemPrompt).toContain("One with needs_reply true still needs its reply.");
 });
 
 test("an advice to check the result of a watched child, or of a parent watching a working child, is dropped for every provider", async () => {
@@ -709,7 +715,6 @@ test("the app log keeps each session's facts and the advice text with its kind, 
     l.startsWith("[concierge] hold "),
   );
   expect(holdLines).toEqual([
-    "[concierge] hold req=r3 waiting=p held_up_by=c reason=linked_session_needs_reply",
     "[concierge] hold req=r3 waiting=p held_up_by=chick reason=chick_needs_reply",
   ]);
 

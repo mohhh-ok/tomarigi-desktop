@@ -107,20 +107,14 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "instruction. false for ordinary instructions, questions, and criticism of the work, including frustrated or " +
     "blunt ones such as 'this is wrong again' or 'stop doing that', as long as they don't insult the AI itself, and " +
     "when user_messages is empty.\n" +
-    "continuing: true only when a job the agent itself started (a measurement, export, build, or the like) is still " +
-    "running in the background, or when the agent says it will itself receive, check, or report a result later " +
-    "(e.g. 'the measurement runs until 18:47; I'll report the results then', 'I'll check the report when it " +
-    "arrives and tell you'). false when the work is finished, when the agent only waits on the user, and when it " +
-    "only says that work it handed to another session or a sub-agent is still going on (e.g. 'the rest is still " +
-    "being done by the child session') without saying it will receive or check the result. Work handed to another " +
-    "session is continuing when the agent says it will itself show, report, or ask about that work's result once " +
-    "it is done (e.g. 'I handed it to another session; when it's done I'll show you screenshots and ask whether to " +
-    "merge', 'I'll show you the photo candidates as soon as they arrive'): the user has no result to check yet. " +
-    "But a reply that only relays another session's question for the user to answer in that session's pane, next " +
-    "to a status list in which each other session finishes, records, or commits its own result, is false (e.g. " +
-    "'iOS 1.8: watching until the screenshots are processed; when done, that session commits the results. Session " +
-    "#251 is waiting for your answer: please answer in its pane'): a 'watching' or 'running' there is the other " +
-    "session's, and this agent receives nothing.",
+    "continuing: true when work goes on after this turn: a job the agent itself started (a measurement, export, " +
+    "build, or the like) is still running in the background; work it handed to another session or a sub-agent is " +
+    "still going on (e.g. 'the rest is still being done by the child session'); or the agent says it will itself " +
+    "receive, check, show, or report a result later (e.g. 'the measurement runs until 18:47; I'll report the " +
+    "results then', 'I'll show you the photo candidates as soon as they arrive'). false when nothing goes on: the " +
+    "work is finished, the agent only waits on the user, every other session it mentions is finished or stopped " +
+    "waiting on the user, or the work starts only after the user answers or does a step (signs in, presses a " +
+    "button, starts a proposed session).",
   outputFields: {
     line: {
       type: "string",
@@ -141,9 +135,9 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     continuing: {
       type: "boolean",
       description:
-        "Whether the agent's own job runs on in the background, or the agent says it will itself receive, check, or " +
-        "report a result later. Not for work only handed to another session when the agent says nothing about " +
-        "receiving its result, nor for passing on another session's question to be answered there.",
+        "Whether work goes on after the turn: the agent's own background job, work handed to another session that " +
+        "is still going on, or a result the agent says it will itself receive, check, or report later. Not for work " +
+        "that starts only after the user answers or does a step.",
     },
   },
   maxTokens: 256,

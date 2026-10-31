@@ -5,6 +5,7 @@ import { nextAngry, summarizeTurn, turnOutcome, turnPayload, type TurnOutcome } 
 import { loadActiveAiProvider } from "@/lib/api-keys";
 import { appendConciergeLog } from "@/lib/concierge";
 import { recordTurnVerdict, type SessionView } from "@/lib/sessions";
+import { sessionContinuing } from "@/lib/turn-verdict";
 
 /** Identifies a turn for the turn verdict. Same basis as the done event key (sessionId + time of the last response) */
 export function turnKey(sessionId: string, at: number): string {
@@ -112,13 +113,14 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         // The anger mark only works while a summary provider is set up, so removing it clears the mark
         const angry = s.angry ?? (summarySetUp ? anger[s.id]?.angry : undefined);
         if (angry !== undefined && s.angry === undefined) s = { ...s, angry };
-        if (!s.reply) return s;
-        const turn = turns[turnKey(s.id, s.reply.at)];
+        const turn = s.reply ? turns[turnKey(s.id, s.reply.at)] : undefined;
+        const continuing = s.continuing ?? sessionContinuing(turn?.continuing, s.watching);
+        if (!s.reply) return continuing === undefined ? s : { ...s, continuing };
         return {
           ...s,
           ask: s.ask ?? turn?.ask,
           summary: s.summary ?? turn?.line,
-          continuing: s.continuing ?? turn?.continuing,
+          continuing,
         };
       }),
     [sessions, turns, anger, summarySetUp],

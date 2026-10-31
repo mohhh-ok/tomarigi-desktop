@@ -3,11 +3,14 @@
 // asking and continuing. A reply the app would treat as a failure (cut off, refused) counts as ERR. Used to check a
 // change to the prompt before and after (docs/design.md "Turn verdicts").
 // usage: OPENAI_API_KEY=… ANTHROPIC_API_KEY=… bun tools/turn-verdict-probe.ts <cases.json> <label> [runs = 8]
-// Env: PROVIDERS (default "openai,anthropic"), CASES (comma-separated case names to run), OUT (default /tmp/tomarigi-desktop)
+// Env: PROVIDERS (default "openai,anthropic"), CASES (comma-separated case names to run), OUT (default /tmp/tomarigi-desktop),
+// LOCAL_BASE_URL (default http://localhost:11434/v1) and LOCAL_MODEL (default qwen2.5:14b-instruct)
+// for PROVIDERS=local
 import { readFileSync } from "node:fs";
 import { SUMMARIZE_TURN_TASK, turnPayload } from "../src/lib/summarize.ts";
 import { anthropicJudgeBody, parseAnthropicJudgeReply, type JudgeResult } from "../src/lib/judge.ts";
 import { openAiJudgeBody, parseOpenAiJudgeReply } from "../src/lib/openai-judge.ts";
+import { localChatBody, parseLocalChatReply } from "../src/lib/local-judge.ts";
 
 /** One case: a reply in a local transcript, found by its file and timestamp, and what the verdict should be */
 interface Case {
@@ -46,12 +49,17 @@ function replyText(c: Case): string {
 }
 
 /** Sends the body and returns the HTTP status and raw body, as Rust's openai_responses / anthropic_messages do */
-async function post(url: string, headers: Record<string, string>, body: unknown): Promise<{ status: number; text: string }> {
+async function post(
+  url: string,
+  headers: Record<string, string>,
+  body: unknown,
+  timeoutMs = 30_000,
+): Promise<{ status: number; text: string }> {
   const r = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json", ...headers },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   return { status: r.status, text: await r.text() };
 }
@@ -74,7 +82,16 @@ async function anthropic(payload: unknown): Promise<JudgeResult<any>> {
   return parseAnthropicJudgeReply(task, status, text);
 }
 
-const callers: Record<string, (payload: unknown) => Promise<JudgeResult<any>>> = { openai, anthropic };
+/** The app's local_chat: Chat Completions on an OpenAI-compatible server, with the app's 90-second timeout */
+async function local(payload: unknown): Promise<JudgeResult<any>> {
+  const base = (process.env.LOCAL_BASE_URL ?? "http://localhost:11434/v1").replace(/\/$/, "");
+  const model = process.env.LOCAL_MODEL ?? "qwen2.5:14b-instruct";
+  const { status, text } = await post(`${base}/chat/completions`, {}, localChatBody(task, payload, model), 90_000);
+  if (status < 200 || status >= 300) return { ok: false, kind: "server", status, message: text.slice(0, 120) };
+  return parseLocalChatReply(task, text, status);
+}
+
+const callers: Record<string, (payload: unknown) => Promise<JudgeResult<any>>> = { openai, anthropic, local };
 const rows: unknown[] = [];
 for (const provider of providers) {
   const call = callers[provider];
