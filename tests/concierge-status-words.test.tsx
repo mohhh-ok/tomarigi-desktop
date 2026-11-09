@@ -52,8 +52,7 @@ describe("the state words", () => {
       { sessionId: "web", name: "web", status: "working" },
     ]);
     expect(html).toContain('data-status="reply"> birdWaitingLabel[]</span>');
-    // Done has its blue dot before the word (concierge-status-report.test.tsx)
-    expect(html).toContain('data-status="done"> <span class="concierge-status-dot" aria-hidden="true"></span>eventDoneLabel[]</span>');
+    expect(html).toContain('data-status="done"> eventDoneLabel[]</span>');
     expect(html).toContain('data-status="working"> birdWorkingLabel[]</span>');
   });
 

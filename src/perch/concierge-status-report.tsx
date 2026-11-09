@@ -11,6 +11,7 @@ import {
   type StatusLine,
 } from "@/lib/concierge-status";
 import type { SessionView } from "@/lib/sessions";
+import { conciergeDotColor } from "@/lib/state-colors";
 import { sinceAfterState } from "./format-time";
 
 // The birds' own state words (docs/design.md "Bird states"), so a state reads the same here as at the bird
@@ -66,8 +67,6 @@ export function ConciergeStatusReport({
   const state = (status: ConciergeStatus, sinceMs?: number) => (
     <span className="concierge-status-state" data-status={status}>
       {" "}
-      {/* Done has a blue dot before its word (docs/design.md "Concierge"); a mark, so it isn't read as a link */}
-      {status === "done" && <span className="concierge-status-dot" aria-hidden="true" />}
       {t(STATE_LABEL[status])}
       {sinceMs !== undefined && sinceAfterState(sinceMs)}
     </span>
@@ -95,6 +94,14 @@ export function ConciergeStatusReport({
       <span className="concierge-status-lines">
         {lines.map((l) => (
           <span key={l.sessionId} className="concierge-status-line">
+            {/* Every line starts with a dot whose color tells the state (docs/design.md "Concierge"); a mark, so it isn't
+                read as a link, and the state word stays after the text so the state doesn't rest on color alone */}
+            <span
+              className="concierge-status-dot"
+              data-status={l.status}
+              style={{ background: conciergeDotColor(l.status) }}
+              aria-hidden="true"
+            />
             {name(l.sessionId, l.name, true)}
             {/* The state is always the same part, so it looks the same with a text or without; a session the app has no
                 text for says only its state, once */}

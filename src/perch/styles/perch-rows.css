@@ -71,7 +71,7 @@
 }
 
 .bird-aura-gold {
-  filter: drop-shadow(0 0 3px rgb(255, 196, 90));
+  filter: drop-shadow(0 0 3px var(--working-glow));
 }
 
 .bird-aura-white {
@@ -80,7 +80,7 @@
 
 /* Garden nodes (26-52px) are larger than Perch (18px), so the same blur looks faint */
 .garden-node .bird-aura-gold {
-  filter: drop-shadow(0 0 4.5px rgb(255, 196, 90));
+  filter: drop-shadow(0 0 4.5px var(--working-glow));
 }
 
 .garden-node .bird-aura-white {

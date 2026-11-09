@@ -134,28 +134,29 @@
   color: rgba(38, 34, 26, 0.5);
 }
 
-/* The state the app adds after the text: quieter than the text; needing a reply stands out */
+/* The state the app adds after the text: the state lines' muted color, quieter than the text, the same for every state
+   (docs/design.md "Concierge"): the dot at the line's left tells the state by color */
 .concierge-status-state {
   color: #7a7263;
   white-space: nowrap;
 }
 
-.concierge-status-state[data-status="reply"] {
-  color: #a0461c;
-  font-weight: 600;
+/* Every state line starts with a filled dot whose color tells the state (lib/state-colors.ts conciergeDotColor, set
+   inline). The line hangs from it: a line that wraps continues under the name, not under the dot (the dot's 6px and
+   its 4px gap) */
+.concierge-status-lines .concierge-status-line {
+  padding-left: 10px;
+  text-indent: -10px;
 }
 
-/* Done has a blue dot before its word, which keeps the state words' color (docs/design.md "Concierge"; the user chose a
-   dot over a blue word, which read as a link). The palette has no blue, so one that keeps contrast on the bubble's
-   #ece6d6 (5.4:1) */
 .concierge-status-dot {
   display: inline-block;
   width: 6px;
   height: 6px;
-  margin-right: 3px;
+  margin-right: 4px;
   border-radius: 50%;
-  background: #1d5ba6;
   vertical-align: 0.1em;
+  text-indent: 0;
 }
 
 .concierge-status-now {
