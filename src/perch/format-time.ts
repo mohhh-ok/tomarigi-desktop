@@ -11,6 +11,12 @@ export function formatSince(ms: number): string {
   ]);
 }
 
+/** The elapsed time as it follows a state word on a status line (「完了 · 12分」): the bird's status line and the
+    Concierge tab's finished lines both use it, so they read the same */
+export function sinceAfterState(ms: number): string {
+  return `\u00a0· ${formatSince(ms)}`;
+}
+
 // Shown as relative time rather than absolute time (HH:MM). Using the same notation as formatSince on
 // Perch rows keeps support for 43 locales without extra i18n keys.
 // Re-renders happen via setEvents on every poll (3 seconds), so the display naturally keeps up
