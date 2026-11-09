@@ -6,9 +6,7 @@
 // use-concierge.ts only feed it and speak what it returns.
 import type { ConciergeSuggestion } from "./concierge";
 import type { SessionEvent } from "./sessions";
-
-/** The event types read per session outside the tab, and held in it */
-const HELD_TYPES: ReadonlySet<SessionEvent["type"]> = new Set(["done", "waiting"]);
+import { isReadAloudType } from "./voice";
 
 /** A suggestion is new when its session and kind were not among the suggestions of the answer just before */
 function suggestionKey(s: Pick<ConciergeSuggestion, "sessionId" | "kind">): string {
@@ -59,7 +57,8 @@ export class ConciergeReadout<S extends ConciergeSuggestion = ConciergeSuggestio
    * tab is open, so it waits for an answer (dropped) or a failure (read). "skip": a type that isn't read anyway
    */
   event(event: SessionEvent): "speak" | "held" | "skip" {
-    if (!HELD_TYPES.has(event.type)) return "skip";
+    // The types read per session outside the tab are the ones held in it
+    if (!isReadAloudType(event.type)) return "skip";
     if (!this.open) return "speak";
     this.held.push(event);
     return "held";

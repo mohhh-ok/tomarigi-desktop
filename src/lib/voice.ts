@@ -30,6 +30,12 @@ const VOICE_KEY: Partial<Record<SessionEvent["type"], VoiceMessageName>> = {
   waiting: "eventWaitingVoice",
 };
 
+/** Whether events of this type are read aloud: done (its own branch in speakEvent) or a type with a template in
+    VOICE_KEY. concierge-readout.ts holds exactly these types while the Concierge tab is open */
+export function isReadAloudType(type: SessionEvent["type"]): boolean {
+  return type === "done" || VOICE_KEY[type] !== undefined;
+}
+
 // snippet can be long, so cut it at an easy-to-follow length (spec: about 100 characters)
 const SNIPPET_MAX_CHARS = 100;
 
@@ -103,6 +109,13 @@ function enqueueUtterance(text: string, lang: string): void {
   speechSynthesis.speak(utterance);
 }
 
+// The display name, then the body, as two utterances (done readout, concierge suggestions). Each text is already
+// sanitized by the caller; an empty one is not queued, since an empty utterance only adds a gap
+function enqueueNameThenBody(name: string, body: string | undefined, lang: string): void {
+  if (name) enqueueUtterance(name, lang);
+  if (body) enqueueUtterance(body, lang);
+}
+
 /**
  * Reads one event aloud. The template sentence ($PROJECT$ embedded via t() substitution in lib/i18n.ts),
  * followed by the snippet if there is one.
@@ -127,13 +140,12 @@ export function speakEvent(event: SessionEvent): void {
   if (event.type === "done") {
     // For done, the template sentence (e.g. "... has finished") is noisy, so skip it and read only
     // the project name + prompt (just the project name if there is no snippet)
-    enqueueUtterance(project, lang);
-  } else {
-    const key = VOICE_KEY[event.type];
-    if (!key) return;
-    enqueueUtterance(t(key, project), lang);
+    enqueueNameThenBody(project, snippet, lang);
+    return;
   }
-  if (snippet) enqueueUtterance(snippet, lang);
+  const key = VOICE_KEY[event.type];
+  if (!key) return;
+  enqueueNameThenBody(t(key, project), snippet, lang);
 }
 
 /**
@@ -171,9 +183,7 @@ function speakDoneFallback(event: SessionEvent, lang: string): void {
     speakEvent(event);
     return;
   }
-  const project = sanitizeProjectForSpeech(event.project);
-  enqueueUtterance(project, lang);
-  enqueueUtterance(lastSentence, lang);
+  enqueueNameThenBody(sanitizeProjectForSpeech(event.project), lastSentence, lang);
 }
 
 // Timeout for fetching the summary. To keep a stuck BYOK call from delaying or dropping the done
@@ -266,9 +276,7 @@ export async function speakDoneEvent(
     return;
   }
 
-  const project = sanitizeProjectForSpeech(event.project);
-  enqueueUtterance(project, lang);
-  enqueueUtterance(summary, lang);
+  enqueueNameThenBody(sanitizeProjectForSpeech(event.project), summary, lang);
 }
 
 // Sanitizing only for the summary readout. Reuses the same symbol removal as sanitizeSnippetForSpeech
@@ -292,10 +300,7 @@ export function speakSuggestions(list: readonly { name: string; text: string }[]
   if (!speechAvailable()) return;
   const lang = uiLanguage();
   for (const s of list) {
-    const project = sanitizeProjectForSpeech(s.name);
-    const text = sanitizeSnippetForSpeech(s.text);
-    if (project) enqueueUtterance(project, lang);
-    if (text) enqueueUtterance(text, lang);
+    enqueueNameThenBody(sanitizeProjectForSpeech(s.name), sanitizeSnippetForSpeech(s.text), lang);
   }
 }
 
