@@ -65,3 +65,21 @@ BROWSER=webkit RESIZE=1 MINUTES=12 PLAYWRIGHT=/tmp/pw/node_modules/playwright no
 Env: `QUERY` (the mock's query; default the Concierge tab with `cycle=0.5`), `TABS=1` (switch tabs every `TAB_SECONDS`),
 `RESIZE=1` (flip the viewport between 260×350 and 260×378 every `RESIZE_MS`, as the Concierge tab's window fit does),
 `OUT` (where the snapshots go; default /tmp/tomarigi-desktop/heap-mock).
+
+## bubble-hit.mjs
+
+Checks in a headless browser what a click on a speech bubble reaches (docs/design.md "Fade until hovered"): the
+concierge's bubble takes clicks over its whole box, its empty space included, so a bird drawn under it isn't pressed
+through it and nothing jumps; a bird's own bubble lets clicks through. Runs the mock from a `vite build` output, with no
+dev server or port, in the Garden (the concierge with a bird put under its bubble, and birds with bubbles,
+`preset=asking`) and in the Concierge tab, each shown and at rest.
+
+```sh
+mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell)
+bunx vite build --outDir /tmp/tomarigi-desktop/dist
+DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/bubble-hit.mjs
+```
+
+Prints one `OK` / `NG` line per check with what `document.elementFromPoint` returned, the `[mock] focus` lines a click
+logged (`?focusable=1`), or the Tauri calls a grab made (`plugin:window|start_dragging` moves the window). Exits 1 when
+any check is NG. `CHROME=<path>` uses that Chromium instead of the one matching the Playwright version.

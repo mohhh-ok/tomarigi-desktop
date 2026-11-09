@@ -72,6 +72,9 @@
   border: 5px solid transparent;
   border-top: 0;
   border-bottom: 7px solid #ece6d6;
+  /* The tail lets clicks through even on a bubble that takes them (.fade-box in base.css), as the window does at rest:
+     Rust takes the bubble's box, which leaves the tail out */
+  pointer-events: none;
 }
 
 /* A bubble shown above its bird (layoutBubbles in garden-bubbles.ts) ends above the bird's name, so the name stays

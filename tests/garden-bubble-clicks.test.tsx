@@ -23,3 +23,25 @@ test.each([
 test("garden-fade.ts measures the box class", () => {
   expect(FADE_TARGET_SELECTOR.split(",").map((s) => s.trim())).toContain(FADE_BOX_SELECTOR);
 });
+
+// The bubble layer and its anchors let presses through (speech-bubble.css), and the bubble inherits that. The box class
+// turns them back on in the page too, so a click on the concierge's bubble, shown or at rest, doesn't reach the bird
+// drawn under it; a bird's bubble keeps letting them through. The tail lets them through, as the window does at rest
+const { readFileSync } = await import("node:fs");
+const css = (name: string) => readFileSync(new URL(`../src/perch/styles/${name}`, import.meta.url), "utf8");
+// The declarations of the rule whose selector is exactly this one
+const rule = (source: string, selector: string) => {
+  const esc = selector.replace(/[.*+?^${}()|[\]\\:]/g, "\\$&");
+  return new RegExp(`(?:^|\\}|\\*/)\\s*${esc}\\s*\\{([^}]*)\\}`).exec(source)?.[1] ?? "";
+};
+
+test("the box class takes clicks in the page", () => {
+  expect(rule(css("base.css"), FADE_BOX_SELECTOR)).toMatch(/pointer-events:\s*auto/);
+});
+
+test("the bubble layer and anchors still let presses through, and so does the tail", () => {
+  const bubble = css("speech-bubble.css");
+  expect(rule(bubble, ".garden-bubble-layer")).toMatch(/pointer-events:\s*none/);
+  expect(rule(bubble, ".garden-bubble-anchor")).toMatch(/pointer-events:\s*none/);
+  expect(rule(bubble, ".speech-bubble-below::after")).toMatch(/pointer-events:\s*none/);
+});

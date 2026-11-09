@@ -1,6 +1,6 @@
 // The Garden's right-click menu (docs/design.md "Layout"; issue #4): Arrange.
 // A native menu popped up at the cursor, not one drawn in the page: at rest ("Fade until hovered") the window is fully
-// transparent and takes clicks only over birds and the handle (fade.rs), so a menu drawn in the page would be hidden and
+// transparent and takes clicks only over birds, the handles and the concierge's bubble (fade.rs), so a menu drawn in the page would be hidden and
 // clicked through, while a native menu is its own window and shows the same at rest and when shown
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { Menu } from "@tauri-apps/api/menu";

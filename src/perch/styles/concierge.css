@@ -170,8 +170,9 @@
   color: #7a7263;
 }
 
-/* A session's name (concierge-status-report.tsx): jumps to its pane, so it takes clicks at rest too (the rest of the
-   bubble lets them through, as every bubble does), and reads as a link: underlined, a deeper color under the cursor */
+/* A session's name (concierge-status-report.tsx): jumps to its pane, so it reads as a link: underlined, a deeper color
+   under the cursor. At rest it takes clicks as one rectangle per line (.fade-target); the rest of the bubble takes them
+   too but does nothing (.fade-box in base.css) */
 .concierge-status-name {
   text-decoration: underline;
   text-decoration-color: rgba(38, 34, 26, 0.45);

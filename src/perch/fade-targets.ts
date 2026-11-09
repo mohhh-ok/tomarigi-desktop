@@ -5,7 +5,8 @@
 // - .fade-handle / .fade-target: one rectangle per line box, so a name wrapped onto two lines doesn't take clicks on the
 //   text between its parts (the window handles, the session names in the concierge's bubble)
 // - .fade-box: the whole box, its empty space included, so a click there never reaches what is hidden under it (the
-//   concierge's speech bubble, in the Garden and in the Concierge tab)
+//   concierge's speech bubble, in the Garden and in the Concierge tab). The same class turns its clicks on in the page
+//   (pointer-events: auto in styles/base.css), shown or at rest, so a bird drawn under it isn't pressed through it either
 // Birds (their glyph with the badges sticking out of it) are measured apart, since Rust also needs to know when the
 // cursor is on a bird. A bird's own speech bubble takes no class: clicks on it go through at rest
 // This file has no DOM or Tauri dependency, so tests/fade-targets.test.ts runs it as is

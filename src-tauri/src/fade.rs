@@ -8,15 +8,17 @@ use crate::window::{current_mode, WindowMode};
 use crate::window::{find_backdrop, ns_window};
 
 // ---- Fade until hovered (docs/design.md "Fade until hovered") ----
-// At rest the floating window's Garden shows only the birds and the window handles ("Tomarigi" in the header, and the
-// Garden's empty message while it has no birds), and
+// At rest the floating window's Garden shows only the birds, the window handles ("Tomarigi" in the header, and the
+// Garden's empty message while it has no birds) and the concierge's speech bubble, and
 // clicks go through to the window below (ignoresMouseEvents; set_ignore_cursor_events on Windows / Linux). The WebView
 // then gets no mouse events, so the cursor is
-// watched here: on a bird or the handle the window takes clicks while staying faded, and clicking the handle
-// (reveal_garden) shows the whole window. garden-fade.ts sends the bird and handle rectangles and whether the fade
+// watched here: on a bird, a handle or the concierge's bubble the window takes clicks while staying faded, and clicking
+// the handle (reveal_garden) shows the whole window. garden-fade.ts sends the bird rectangles, the rectangles of what
+// else takes clicks (src/perch/fade-targets.ts) and whether the fade
 // applies, and receives "garden-fade" (true = faded) to fade the page itself
 
-/// A bird's or the handle's rectangle in window content coordinates (CSS px = points, origin at the top left)
+/// A bird's rectangle, or one of what else takes clicks at rest (fade-targets.ts), in window content coordinates (CSS
+/// px = points, origin at the top left)
 #[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
 pub(crate) struct BirdRect {
     x: f64,
@@ -40,7 +42,8 @@ struct Fade {
     active: bool,
     /// Shown at full strength (the handle was clicked and the cursor hasn't left the window yet)
     revealed: bool,
-    /// Taking clicks: shown, or faded with the cursor on a bird or the handle (or a drag started there still held)
+    /// Taking clicks: shown, or faded with the cursor on a bird, a handle or the concierge's bubble (or a drag started
+    /// there still held)
     interactive: bool,
     /// Faded with the cursor on a bird (or a drag started on one still held): the page makes the handle stand out
     on_bird: bool,
@@ -118,7 +121,8 @@ fn next_revealed(revealed: bool, reveal: bool, inside: bool, button_down: bool) 
     reveal || (revealed && (inside || button_down))
 }
 
-/// Next interactive state. Faded, the window takes clicks only with the cursor on a bird or the handle. A drag started
+/// Next interactive state. Faded, the window takes clicks only with the cursor on a bird, a handle or the concierge's
+/// bubble (takes_clicks_at). A drag started
 /// there keeps it until the button is released, even off them; a press that started elsewhere (e.g. in the window
 /// below) doesn't turn it on
 fn next_interactive(interactive: bool, revealed: bool, on_target: bool, button_down: bool) -> bool {
@@ -165,7 +169,7 @@ fn mouse_button_down() -> bool {
     crate::xconn::buttons_down()
 }
 
-/// Whether clicks go through (not on a bird or the handle at rest)
+/// Whether clicks go through (at rest, not on a bird, a handle or the concierge's bubble)
 #[cfg(target_os = "macos")]
 fn apply_click_through(win: &WebviewWindow, through: bool) {
     let Some(ns) = ns_window(win) else { return };
@@ -178,8 +182,8 @@ fn apply_click_through(win: &WebviewWindow, through: bool) {
 }
 
 /// Faded: the Acrylic disappears on Windows. The rest of the page fades in CSS. While faded the window takes only
-/// clicks on birds and the handle, so it doesn't take focus from the terminal then (WS_EX_NOACTIVATE on Windows,
-/// accept-focus on X11); shown, it takes focus again so the settings inputs can be typed in
+/// clicks on birds, the handles and the concierge's bubble, so it doesn't take focus from the terminal then
+/// (WS_EX_NOACTIVATE on Windows, accept-focus on X11); shown, it takes focus again so the settings inputs can be typed in
 #[cfg(not(target_os = "macos"))]
 fn apply_fade(win: &WebviewWindow, faded: bool) {
     crate::window::set_backdrop(win, !faded);
@@ -245,7 +249,8 @@ fn fade_tick(app: &AppHandle) {
         return;
     };
     apply_click_through(&win, !interactive);
-    // Taking clicks over a bird or the handle doesn't change how the window looks, so only a reveal or fade emits
+    // Taking clicks over a bird, a handle or the concierge's bubble doesn't change how the window looks, so only a reveal
+    // or fade emits
     if changed || resync {
         apply_fade(&win, active && !revealed);
     }
@@ -329,12 +334,13 @@ mod tests {
         assert!(!takes_clicks_at(&[], &[], 30.0, 40.0));
     }
 
-    /// Faded, clicks are taken on a bird or the handle only, and a drag started there keeps them until released
+    /// Faded, clicks are taken only on a bird or what else takes clicks at rest (a handle, the concierge's bubble), and
+    /// a drag started there keeps them until released
     #[test]
-    fn faded_window_takes_clicks_only_on_a_bird_or_the_handle() {
+    fn faded_window_takes_clicks_only_on_a_bird_or_another_target() {
         assert!(!next_interactive(false, false, false, false));
         assert!(next_interactive(false, false, true, false));
-        // Dragging off the bird or handle keeps clicks until the button is released
+        // Dragging off the bird, handle or bubble keeps clicks until the button is released
         assert!(next_interactive(true, false, false, true));
         assert!(!next_interactive(true, false, false, false));
         // A press that started elsewhere doesn't take clicks when it passes over a bird

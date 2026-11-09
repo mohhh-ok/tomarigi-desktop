@@ -250,6 +250,14 @@ html:not([data-window-mode="normal"]) .fade-handle {
     0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
+/* What takes clicks over its whole box at rest (.fade-box, fade-targets.ts) takes them in the page too, shown or at
+   rest, empty space included: a click on it doesn't reach a bird or the garden drawn under it. It sits inside the
+   bubble layer, which lets presses through (speech-bubble.css), so it turns them back on here. The class is the one
+   mark for both, so something new that gets it takes clicks in the window and in the page alike */
+.fade-box {
+  pointer-events: auto;
+}
+
 .setup p {
   line-height: 1.9;
   color: #b9b5aa;
