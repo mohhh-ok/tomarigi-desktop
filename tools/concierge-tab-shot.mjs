@@ -7,9 +7,11 @@
 // session needing a reply, a finished one, a working one and a long name that wraps: preset=same-project), SHOT_LANG
 // (ja or en, default ja), NAME (the files' prefix, default concierge), LABEL (drawn at the top left of each image, to tell
 // shots apart side by side; none by default), REST=1 (shoot at rest, data-fade="rest").
-// Writes <OUT>/<NAME>-<width>.png at 2x and prints each path
+// Writes <OUT>/<NAME>-<width>.png at 2x and prints each path. Then, for each state line, prints how far its dot's
+// vertical center is from the vertical center of the line's first character (its first line), in CSS px (dot minus
+// text; plus is lower), and writes the same to <OUT>/<NAME>-<width>-dots.txt. Every line should be within ±0.5px
 import { join } from "node:path";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { launch, mockPath, routeMock } from "./mock-browser.mjs";
 
 const DIST = process.env.DIST;
@@ -52,6 +54,26 @@ try {
     const path = join(OUT, `${NAME}-${w}.png`);
     await page.screenshot({ path });
     console.log(path);
+    const dots = await page.evaluate(() =>
+      [...document.querySelectorAll(".concierge-status-lines .concierge-status-line")].map((line) => {
+        const dot = line.querySelector(".concierge-status-dot")?.getBoundingClientRect();
+        // The line's first character: the first non-blank text after the dot
+        const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode()) && !node.data.trim());
+        if (!dot || !node) return { line: line.textContent, diff: null };
+        const at = node.data.search(/\S/);
+        const range = document.createRange();
+        range.setStart(node, at);
+        range.setEnd(node, at + 1);
+        const ch = range.getClientRects()[0];
+        const diff = dot.top + dot.height / 2 - (ch.top + ch.height / 2);
+        return { line: line.textContent, diff: Math.round(diff * 100) / 100, dotTop: dot.top, lines: Math.round(line.getBoundingClientRect().height) };
+      }),
+    );
+    const text = dots.map((d) => `${d.diff === null ? "  n/a" : d.diff.toFixed(2).padStart(6)}px  ${d.line}`).join("\n");
+    writeFileSync(join(OUT, `${NAME}-${w}-dots.txt`), `${text}\n`);
+    console.log(text);
     await ctx.close();
   }
 } finally {

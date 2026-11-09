@@ -124,12 +124,16 @@
   margin-top: 3px;
 }
 
-/* The state lines: a step smaller and muted, the detail to read after */
+/* The state lines: a step smaller and muted, the detail to read after. The line height and the dot's size and gap are
+   named, since the dot is placed from them (.concierge-status-dot) */
 .concierge-status-lines {
   display: block;
   color: #5d5546;
   font-size: 10px;
-  line-height: 1.45;
+  --line-height: 1.45;
+  line-height: var(--line-height);
+  --dot-size: 8px;
+  --dot-gap: 4px;
 }
 
 /* One line per suggestion, and one per session, 「<name>: <text> <state>」 */
@@ -155,21 +159,22 @@
 
 /* Every state line starts with a filled dot whose color tells the state: needing a reply the red-brown of its word,
    done blue, working plain white with no ring. A finished session continuing in the background is working
-   (lib/concierge-status.ts), so it is white too; its word stays the muted grey. The line hangs from the dot: a line that wraps
-   continues under the name, not under the dot (the dot's 8px and its 4px gap) */
+   (lib/concierge-status.ts), so it is white too; its word stays the muted grey. The line hangs from the dot: a line
+   that wraps continues under the name, not under the dot. The dot is placed by the line's height, not by the text's
+   baseline: its center is the middle of the first line's box, which is the middle of the text on it (the leading is
+   split evenly above and below), whatever the font */
 .concierge-status-lines .concierge-status-line {
-  padding-left: 12px;
-  text-indent: -12px;
+  position: relative;
+  padding-left: calc(var(--dot-size) + var(--dot-gap));
 }
 
 .concierge-status-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 4px;
+  position: absolute;
+  left: 0;
+  top: calc((1em * var(--line-height) - var(--dot-size)) / 2);
+  width: var(--dot-size);
+  height: var(--dot-size);
   border-radius: 50%;
-  vertical-align: 0.1em;
-  text-indent: 0;
 }
 
 .concierge-status-dot[data-status="reply"] {

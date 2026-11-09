@@ -40,6 +40,10 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
 Env: `WIDTHS`, `HEIGHT`, `QUERY` (another mock scene), `SHOT_LANG=en`, `NAME` (the files' prefix), `LABEL` (drawn at
 the top left of each image, to tell shots apart), `REST=1` (at rest). Writes `<OUT>/<NAME>-<width>.png` at 2x.
 
+After each shot it prints, per state line, how far the dot's vertical center is from that of the line's first
+character, in CSS px (plus is lower), and writes it to `<OUT>/<NAME>-<width>-dots.txt`. Every line should be within
+±0.5px. It is measured in headless Chromium, not in the app's WebView.
+
 ## turn-verdict-probe.ts
 
 Runs the turn verdict (docs/design.md "Turn verdicts") on real replies several times with OpenAI and Anthropic, with

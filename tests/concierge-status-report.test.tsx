@@ -151,11 +151,20 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
     expect(render(NOW, SUGGESTIONS).split('class="concierge-status-lines"')[0]).not.toContain("concierge-status-dot");
   });
 
-  test("a wrapped line continues under the name: the line hangs from the dot by its width and gap", () => {
-    const line = rule(".concierge-status-lines .concierge-status-line");
+  test("a wrapped line continues under the name: the line hangs from the dot by its size and gap", () => {
+    expect(rule(".concierge-status-lines .concierge-status-line")).toContain("padding-left: calc(var(--dot-size) + var(--dot-gap));");
+    expect(rule(".concierge-status-lines .concierge-status-line")).not.toContain("text-indent");
+  });
+
+  test("the dot is placed from the first line's height, its center the middle of that line, not by the baseline", () => {
+    const lines = rule(".concierge-status-lines");
     const dot = rule(".concierge-status-dot");
-    const px = (r: string | undefined, prop: string) => Number(r?.match(new RegExp(`${prop}: (-?[\\d.]+)px;`))?.[1]);
-    expect(px(line, "padding-left")).toBe(px(dot, "width") + px(dot, "margin-right"));
-    expect(px(line, "text-indent")).toBe(-px(line, "padding-left"));
+    expect(lines).toContain("line-height: var(--line-height);");
+    expect(dot).toContain("position: absolute;");
+    expect(dot).toContain("top: calc((1em * var(--line-height) - var(--dot-size)) / 2);");
+    expect(dot).toContain("width: var(--dot-size);");
+    expect(dot).toContain("height: var(--dot-size);");
+    expect(dot).not.toContain("vertical-align");
+    // The measured offset in a browser: tools/concierge-tab-shot.mjs
   });
 });
