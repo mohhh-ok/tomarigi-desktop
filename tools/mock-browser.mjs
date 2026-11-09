@@ -6,10 +6,14 @@ import { readFileSync } from "node:fs";
 import { extname, join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const { chromium } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "index.mjs"));
+const { chromium, webkit } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "index.mjs"));
 
-/** Headless Chromium; CHROME=<path> uses that binary instead of the one matching the Playwright version */
-export const launch = () => chromium.launch({ executablePath: process.env.CHROME });
+/**
+ * Headless Chromium; CHROME=<path> uses that binary instead of the one matching the Playwright version. engine "webkit"
+ * (or ENGINE=webkit) launches Playwright's WebKit instead, the engine of the app's WebView on macOS (WKWebView)
+ */
+export const launch = (engine = process.env.ENGINE ?? "chromium") =>
+  engine === "webkit" ? webkit.launch() : chromium.launch({ executablePath: process.env.CHROME });
 
 /** The mock's path and query: the app reads mock=1 as the mock and panel=0 as no panel; query adds the scene's */
 export const mockPath = (query) => `/?mock=1&panel=0&${query}`;

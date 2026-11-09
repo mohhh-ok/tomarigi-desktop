@@ -130,10 +130,23 @@
   display: block;
   color: #5d5546;
   font-size: 10px;
-  --line-height: 1.45;
+  /* A whole number of px (14px at 10px): with 14.5px, lines sat on different half px and Chromium drew the text of
+     one line 0.5px higher than the others, so no --dot-nudge put every line's dot on its letters */
+  --line-height: 1.4;
   line-height: var(--line-height);
   --dot-size: 8px;
   --dot-gap: 4px;
+  /* How far the dot is moved down from the middle of the first line's box, to sit at the middle of the lowercase
+     letters (x-height) of the session name after it (docs/design.md "Concierge"). The box's middle is where the UI
+     font's ascent and descent put it, not where the letters are: in WebKit (the macOS app's WKWebView) with
+     -apple-system (SF) at 10px, the ascent is 10.00 and the descent 2.00, so the box's middle is 4.00px above the
+     baseline, while the ink of "x" is centered 2.65px above it (of 「完」 3.50px). Measured with
+     tools/concierge-tab-shot.mjs at 2x, line height 14px: without it the dot's ink sat 1.2–1.4px above the lowercase
+     letters' ink. The dot's top is drawn on whole device px, so the dot moves in steps, not by this value: in WebKit up
+     to 1.25px leaves it at -0.29px (dot higher) and 1.3px–1.35px at +0.21px; in Chromium (WebView2 on Windows)
+     1.3px–1.35px leave it at -0.18px. 1.3px is the one within ±0.5 device px on every line in both.
+     vertical-align: middle on an inline dot (baseline + half the x-height) drew it where 1.25px does */
+  --dot-nudge: 1.3px;
 }
 
 /* One line per suggestion, and one per session, 「<name>: <text> <state>」 */
@@ -161,8 +174,8 @@
    done blue, working plain white with no ring. A finished session continuing in the background is working
    (lib/concierge-status.ts), so it is white too; its word stays the muted grey. The line hangs from the dot: a line
    that wraps continues under the name, not under the dot. The dot is placed by the line's height, not by the text's
-   baseline: its center is the middle of the first line's box, which is the middle of the text on it (the leading is
-   split evenly above and below), whatever the font */
+   baseline: its center is the middle of the first line's box (the leading is split evenly above and below, so this
+   holds whatever the font), moved down by --dot-nudge to the middle of the lowercase letters */
 .concierge-status-lines .concierge-status-line {
   position: relative;
   padding-left: calc(var(--dot-size) + var(--dot-gap));
@@ -171,7 +184,7 @@
 .concierge-status-dot {
   position: absolute;
   left: 0;
-  top: calc((1em * var(--line-height) - var(--dot-size)) / 2);
+  top: calc((1em * var(--line-height) - var(--dot-size)) / 2 + var(--dot-nudge));
   width: var(--dot-size);
   height: var(--dot-size);
   border-radius: 50%;

@@ -38,11 +38,21 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
 ```
 
 Env: `WIDTHS`, `HEIGHT`, `QUERY` (another mock scene), `SHOT_LANG=en`, `NAME` (the files' prefix), `LABEL` (drawn at
-the top left of each image, to tell shots apart), `REST=1` (at rest). Writes `<OUT>/<NAME>-<width>.png` at 2x.
+the top left of each image, to tell shots apart), `REST=1` (at rest), `CSS` (a style sheet added to the page, to try a
+value before writing it, e.g. `CSS='.concierge-status-lines { --dot-nudge: 1px }'`). Writes `<OUT>/<NAME>-<width>.png` at 2x.
 
-After each shot it prints, per state line, how far the dot's vertical center is from that of the line's first
-character, in CSS px (plus is lower), and writes it to `<OUT>/<NAME>-<width>-dots.txt`. Every line should be within
-±0.5px. It is measured in headless Chromium, not in the app's WebView.
+`ENGINE=webkit` shoots in Playwright's WebKit, the engine of the app's WebView on macOS (`bunx playwright install
+webkit` in the Playwright directory); the default is Chromium.
+
+After each shot it prints, per state line, how far the vertical center of the dot's ink (the pixels it paints) is
+from that of the ink of the lowercase x-height letters (a c e m n o r s u v w x z) on the line's first line, and from
+that of its kanji and kana (dot minus text; plus is lower), in device px (2x) and CSS px, and writes it to
+`<OUT>/<NAME>-<width>-dots.txt`. Against the x-height letters, every line should be within ±0.5 device px in WebKit
+(the dot sits at their middle, docs/design.md "Concierge"; the kanji and kana come out about 1px above it). Ink, not
+the text's box: the box is the UI font's ascent to descent (SF, the first of `-apple-system`, with a tall ascent), so
+its middle is above where the letters are. Each file's first line names the font the Japanese is drawn in (by
+comparing a canvas drawing against candidate fonts) and the primary font's ascent and descent. The ink comes from three
+shots of the page: nothing on the lines drawn, only the dots, only the text.
 
 ## turn-verdict-probe.ts
 

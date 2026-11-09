@@ -156,15 +156,17 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
     expect(rule(".concierge-status-lines .concierge-status-line")).not.toContain("text-indent");
   });
 
-  test("the dot is placed from the first line's height, its center the middle of that line, not by the baseline", () => {
+  test("the dot is placed from the first line's height, moved down from its middle by one nudge, not by the baseline", () => {
     const lines = rule(".concierge-status-lines");
     const dot = rule(".concierge-status-dot");
     expect(lines).toContain("line-height: var(--line-height);");
     expect(dot).toContain("position: absolute;");
-    expect(dot).toContain("top: calc((1em * var(--line-height) - var(--dot-size)) / 2);");
+    expect(dot).toContain("top: calc((1em * var(--line-height) - var(--dot-size)) / 2 + var(--dot-nudge));");
+    // The nudge is one variable, beside the line height it goes with
+    expect(lines).toMatch(/--dot-nudge: [\d.]+px;/);
     expect(dot).toContain("width: var(--dot-size);");
     expect(dot).toContain("height: var(--dot-size);");
     expect(dot).not.toContain("vertical-align");
-    // The measured offset in a browser: tools/concierge-tab-shot.mjs
+    // The measured offset from the lowercase letters, in WebKit and Chromium: tools/concierge-tab-shot.mjs
   });
 });
