@@ -127,8 +127,8 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 
 Applies to the floating window's Garden and Concierge tabs only.
 
-- At rest, only the birds, their badges ("?", anger mark), speech bubbles, the watch lines between birds, and the handle are shown. The background (translucent color, frosted glass, border, shadow), the garden's frame, tabs, header buttons, names, and status lines are fully transparent (the user's decision: 「とうめいもーどのときは完全透明にして」). The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest
-- At rest, clicks anywhere except on a bird or the window handle go through to the window below
+- At rest, only the birds, their badges ("?", anger mark), speech bubbles, the watch lines between birds, and the handle are shown. The background (translucent color, frosted glass, border, shadow), the garden's frame, tabs, header buttons, names, and status lines are fully transparent (the user's decision: 「とうめいもーどのときは完全透明にして」). The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest, except the concierge's, which takes clicks over its whole box (see "Platforms")
+- At rest, clicks anywhere except on a bird, the window handle, or the concierge's speech bubble go through to the window below. The bubble's tail is not part of its box and lets clicks through (Claude's own decision: it is 10×7px)
 - Birds can be clicked (jump to the terminal pane) and dragged while the window stays faded; hovering a bird no longer shows the whole window (the user's decision)
 - The window handle stays visible at rest. Dragging it moves the window; clicking it shows the whole window at full strength (the user's decision: 「どらっぐでまどがうごく、くりっくでとうめいかいじょ、いいね」)
   - The handle has no menu of its own. The tabs and header buttons are reached by clicking it to show the window (the user's decision: 「透明解除されたらそこでめにゅーみれるもんな」)
