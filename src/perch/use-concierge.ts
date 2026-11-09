@@ -144,7 +144,8 @@ export function useConcierge(
       });
       // The request's id ties the advice in the app log to the facts it was given
       const logContext = { req: crypto.randomUUID().slice(0, 8), provider, model: await judgeModelFor(provider) };
-      for (const line of conciergeRequestLogLines(logContext, payload)) void invoke("log", { line }).catch(() => {});
+      const expired = new Set(sessions.filter((s) => s.continuingExpired).map((s) => s.id));
+      for (const line of conciergeRequestLogLines(logContext, payload, expired)) void invoke("log", { line }).catch(() => {});
       const result = await askConcierge(provider, payload, undefined, withSuggestions);
       if (seq !== seqRef.current) return;
       void invoke("log", { line: conciergeResultLogLine(logContext, result) }).catch(() => {});

@@ -12,7 +12,7 @@ import {
   turnOutcome,
   turnPayload,
 } from "../src/lib/summarize.ts";
-import { needsAnswer, sessionContinuing } from "../src/lib/turn-verdict.ts";
+import { needsAnswer, sessionContinuing, TEXT_CONTINUING_EXPIRES_MS } from "../src/lib/turn-verdict.ts";
 import { verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "../src/lib/judge.ts";
 import { localChatBody, LOCAL_NO_MATCHING_JSON } from "../src/lib/local-judge.ts";
 import { feedTurnMessages, MAX_TURN_USER_MESSAGES, turnUserMessages } from "../src/lib/session-tail.ts";
@@ -84,7 +84,32 @@ test("a watching session is continuing whatever its reply says; otherwise the tu
     [false, undefined, false],
     [undefined, undefined, undefined],
   ];
-  for (const [verdict, watching, want] of rows) expect(sessionContinuing(verdict, watching)).toBe(want);
+  for (const [verdict, watching, want] of rows) expect(sessionContinuing(verdict, watching, 0).continuing).toBe(want);
+});
+
+test("continuing from the reply's text expires 30 minutes after the last write; continuing from watching doesn't", () => {
+  // The user: 「30min」. kigen-card-inputs2 waited 46 hours on a parent that had gone
+  const MIN = 60_000;
+  expect(TEXT_CONTINUING_EXPIRES_MS).toBe(30 * MIN);
+  const rows: [
+    name: string,
+    verdict: boolean | undefined,
+    watching: number | undefined,
+    sinceMs: number,
+    want: { continuing: boolean | undefined; expired: boolean },
+  ][] = [
+    ["text continuing, 29 minutes", true, undefined, 29 * MIN, { continuing: true, expired: false }],
+    ["text continuing, just at 30 minutes", true, undefined, 30 * MIN, { continuing: false, expired: true }],
+    ["text continuing, 31 minutes", true, undefined, 31 * MIN, { continuing: false, expired: true }],
+    ["text continuing, 46 hours", true, undefined, 46 * 60 * MIN, { continuing: false, expired: true }],
+    ["watching, 31 minutes (in the grace period)", true, 0, 31 * MIN, { continuing: true, expired: false }],
+    ["watching with a verdict of no, 31 minutes", false, 1, 31 * MIN, { continuing: true, expired: false }],
+    ["finished (verdict no), 31 minutes", false, undefined, 31 * MIN, { continuing: false, expired: false }],
+    ["no verdict, 31 minutes", undefined, undefined, 31 * MIN, { continuing: undefined, expired: false }],
+  ];
+  for (const [name, verdict, watching, sinceMs, want] of rows) {
+    expect({ name, ...sessionContinuing(verdict, watching, sinceMs) }).toEqual({ name, ...want });
+  }
 });
 
 test("the request keeps the end of the reply and the start of each user message", () => {
