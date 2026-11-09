@@ -1,6 +1,6 @@
 // Asks the concierge (lib/concierge.ts) when a session starts or stops needing a reply or finishes, and while any needs
 // a reply, and keeps its advice for the Garden's concierge bird and the line above Perch (docs/design.md "Concierge")
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { uiLanguage } from "@/lib/i18n";
 import { loadActiveAiProvider } from "@/lib/api-keys";
@@ -33,6 +33,7 @@ import {
   type ConciergeStatus,
   type ShownSuggestion,
 } from "@/lib/concierge-status";
+import { ConciergeReadout } from "@/lib/concierge-readout";
 import type { SessionEvent, SessionView } from "@/lib/sessions";
 import { bubbleText } from "./bubble";
 import { orderByWatchLinks } from "./watch-links";
@@ -90,6 +91,17 @@ export interface ConciergeState {
   /** The suggestions of the last answer while the Concierge tab is open (empty otherwise), each with its session's state
    * when it came; they stay until the next answer (docs/design.md "Concierge") */
   suggestions: ShownSuggestion[];
+  /** Routes a session event that passed the usual checks: "speak" reads it as outside the Concierge tab, "held" leaves
+   * it to the tab's readout (docs/design.md "Readout in the Concierge tab"), "skip" is a type that isn't read */
+  readoutEvent: (event: SessionEvent) => "speak" | "held" | "skip";
+}
+
+/** What the Concierge tab's readout reads; the caller applies the "Read aloud" setting */
+export interface ConciergeReadoutSink {
+  /** New suggestions of an answer, in the order shown */
+  suggestions: (list: ShownSuggestion[]) => void;
+  /** done and needs reply events held while a request failed or gave no answer, read as outside the tab */
+  events: (list: SessionEvent[]) => void;
 }
 
 /**
@@ -98,7 +110,8 @@ export interface ConciergeState {
  * withSuggestions: the Concierge tab is open, so the advice's request also asks for suggestions. Opening it asks once,
  * after the 3 seconds without the 60, only when the suggestions at hand are none or out of date (suggestionsOutdated);
  * otherwise it isn't an input of the scheduler (docs/design.md "Concierge").
- * mockSuggestions: the same as mockAdvice for the suggestions
+ * mockSuggestions: the same as mockAdvice for the suggestions.
+ * readout: where the Concierge tab's readout goes (concierge-readout.ts)
  */
 export function useConcierge(
   sessions: SessionView[],
@@ -108,6 +121,7 @@ export function useConcierge(
   mockAdvice?: ConciergeAdvice | null,
   withSuggestions = false,
   mockSuggestions?: ShownSuggestion[],
+  readout?: ConciergeReadoutSink,
 ): ConciergeState {
   const [advice, setAdvice] = useState<ConciergeAdvice | null>(null);
   const [suggestions, setSuggestions] = useState<ShownSuggestion[]>([]);
@@ -118,6 +132,11 @@ export function useConcierge(
   const shownRef = useRef<{ advice: ConciergeAdvice; targetState?: ConciergeStateClass } | null>(null);
   const inputsRef = useRef({ sessions, events, agentOf, withSuggestions });
   inputsRef.current = { sessions, events, agentOf, withSuggestions };
+  // While the Concierge tab is open the voice reads only new suggestions (docs/design.md "Readout in the Concierge tab")
+  const readoutRef = useRef<ConciergeReadout<ShownSuggestion> | null>(null);
+  readoutRef.current ??= new ConciergeReadout<ShownSuggestion>();
+  const sinkRef = useRef(readout);
+  sinkRef.current = readout;
   // The latest request wins: an older one that comes back later is dropped
   const seqRef = useRef(0);
   const schedulerRef = useRef<ConciergeScheduler | null>(null);
@@ -128,6 +147,11 @@ export function useConcierge(
     setAdvice(null);
     setSuggestions([]);
     answeredAtRef.current = undefined;
+    readoutRef.current?.cleared();
+  };
+  const readHeldEvents = () => {
+    const read = readoutRef.current?.failed() ?? [];
+    if (read.length > 0) sinkRef.current?.events(read);
   };
   schedulerRef.current ??= new ConciergeScheduler(() => {
     const seq = ++seqRef.current;
@@ -164,6 +188,7 @@ export function useConcierge(
         if (retry) void invoke("log", { line: conciergeRetryLogLine(logContext, retry) }).catch(() => {});
         const text = `${result.kind}${result.status ? ` ${result.status}` : ""}${result.message ? ` ${result.message}` : ""}${retry ? `, retry ${retry.attempt} in ${retry.afterMs / 1000}s` : ""}`;
         appendConciergeLog({ at: Date.now(), kind: "error", text });
+        if (withSuggestions) readHeldEvents();
         return;
       }
       const next = result.verdict;
@@ -196,8 +221,16 @@ export function useConcierge(
       // Only an answer asked with suggestions replaces them (the tab was open when it was asked); the states are the ones
       // now, so a suggestion is dimmed once its session moves after this
       if (result.suggestions) {
-        setSuggestions(suggestionsAt(result.suggestions, inputsRef.current.sessions));
+        const shown = suggestionsAt(result.suggestions, inputsRef.current.sessions);
+        setSuggestions(shown);
         answeredAtRef.current = statusesAt(inputsRef.current.sessions);
+        // Output that doesn't match is no answer for the readout: the held events are read, and the next answer is
+        // compared with the one before (docs/design.md "Readout in the Concierge tab")
+        if (result.noMatchingJson) readHeldEvents();
+        else {
+          const read = readoutRef.current?.answered(shown) ?? [];
+          if (read.length > 0) sinkRef.current?.suggestions(read);
+        }
       }
     })();
   }, clearAdvice);
@@ -229,11 +262,24 @@ export function useConcierge(
   }, [enabled]);
   // Opening the tab asks once when the suggestions at hand are none or out of date, at the user's pace like an answer
   // to a waiting session (docs/design.md "Concierge"). The scheduler has seen these sessions: its effect runs first
+  // The readout takes the suggestions shown on opening, and the answer to the request opening asks, as seen
   useEffect(() => {
-    if (!withSuggestions || !live || mockSuggestions !== undefined) return;
-    if (!suggestionsOutdated(answeredAtRef.current, inputsRef.current.sessions)) return;
-    if (schedulerRef.current?.soon()) void invoke("log", { line: "[concierge] suggestions asked on opening the tab" }).catch(() => {});
+    const readout = readoutRef.current;
+    if (!withSuggestions) {
+      readout?.closed();
+      return;
+    }
+    let asking = false;
+    if (live && mockSuggestions === undefined && suggestionsOutdated(answeredAtRef.current, inputsRef.current.sessions)) {
+      asking = schedulerRef.current?.soon() ?? false;
+      if (asking) void invoke("log", { line: "[concierge] suggestions asked on opening the tab" }).catch(() => {});
+    }
+    readout?.opened(mockSuggestions ?? suggestions, asking);
   }, [withSuggestions]);
+  const readoutEvent = useCallback(
+    (event: SessionEvent) => readoutRef.current?.event(event) ?? "speak",
+    [],
+  );
 
   const current = mockAdvice !== undefined ? mockAdvice : advice;
   const currentSuggestions = mockSuggestions ?? suggestions;
@@ -241,8 +287,14 @@ export function useConcierge(
     const available = enabled || mockAdvice !== undefined;
     const shown = available && sessions.length > 0;
     const listed = shown && withSuggestions ? currentSuggestions : [];
-    if (!shown || !current) return { shown, available, advice: null, suggestions: listed };
+    if (!shown || !current) return { shown, available, advice: null, suggestions: listed, readoutEvent };
     const targetOnScreen = current.targetId !== undefined && sessions.some((s) => s.id === current.targetId);
-    return { shown, available, advice: targetOnScreen ? current : { line: current.line }, suggestions: listed };
-  }, [enabled, mockAdvice, current, sessions, withSuggestions, currentSuggestions]);
+    return {
+      shown,
+      available,
+      advice: targetOnScreen ? current : { line: current.line },
+      suggestions: listed,
+      readoutEvent,
+    };
+  }, [enabled, mockAdvice, current, sessions, withSuggestions, currentSuggestions, readoutEvent]);
 }

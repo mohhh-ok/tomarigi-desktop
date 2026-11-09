@@ -16,7 +16,7 @@ import {
 import { focusSession, focusTargetOf } from "@/lib/terminal-focus";
 import { isAngry } from "@/lib/turn-verdict";
 import type { AskJudgement, SessionEvent, SessionView } from "@/lib/sessions";
-import { speakDoneEvent, speakEvent, speechAvailable } from "@/lib/voice";
+import { speakDoneEvent, speakEvent, speakSuggestions, speechAvailable } from "@/lib/voice";
 import DebugApp from "./DebugApp";
 import { Garden } from "./garden";
 import { bubbleText } from "./bubble";
@@ -71,6 +71,13 @@ const EVENT_CHIRP: Partial<Record<SessionEvent["type"], () => void>> = {
 // Within this long of an event's at, it counts as "new" and chirps. A freshness guard so that events that already happened
 // in the past, reconstructed by the scan right after launch, don't chirp (see the comment inside tick below)
 const EVENT_FRESHNESS_MS = 30_000;
+
+// Reads a session event as outside the Concierge tab. Only done is eligible for the summary readout (when an API key
+// is set); speakDoneEvent branches internally on whether a key exists, including fallback, so here it only routes by type
+function speakSessionEvent(event: SessionEvent, stillEnabled: () => boolean): void {
+  if (event.type === "done") void speakDoneEvent(event, stillEnabled);
+  else speakEvent(event);
+}
 
 type Phase = "loading" | "ready";
 
@@ -197,6 +204,8 @@ export default function App({
   useEffect(() => {
     pageBodyRef.current?.scrollTo(0, 0);
   }, [settingsOpen, showDebug]);
+  // The concierge's readout routing (use-concierge.ts), set once the concierge is made below; read from the scan loop
+  const conciergeReadoutEventRef = useRef<(event: SessionEvent) => "speak" | "held" | "skip">(() => "speak");
   const scanBusyRef = useRef(false); // Prevents overlapping runs when a scan exceeds POLL_MS (prevents double chirps)
   // issue #6: every chirp fires from ScanResult.events (the old state-edge detection was removed).
   // Set of observed event keys. Remembers events that already chirped (or were judged for chirping) so the
@@ -293,14 +302,10 @@ export default function App({
               line: `[event] ${event.type} ${event.project} chirp=${!mutedRef.current && Boolean(EVENT_CHIRP[event.type])} voice=${voiceEnabledRef.current}`,
             });
             // Readout is an opt-in setting independent of mute (chirps). See lib/voice.ts for constraints.
-            // Only done is eligible for the summary readout (when an API key is set). speakDoneEvent branches
-            // internally on whether a key exists, including fallback, so here it only needs to route by type
-            if (voiceEnabledRef.current) {
-              if (event.type === "done") {
-                void speakDoneEvent(event, () => voiceEnabledRef.current);
-              } else {
-                speakEvent(event);
-              }
+            // While the Concierge tab is open, done and needs reply are held and the voice reads the concierge's new
+            // suggestions instead (docs/design.md "Readout in the Concierge tab")
+            if (voiceEnabledRef.current && conciergeReadoutEventRef.current(event) === "speak") {
+              speakSessionEvent(event, () => voiceEnabledRef.current);
             }
           }
         }
@@ -480,6 +485,19 @@ export default function App({
   // Suggestions are asked for with the advice only while the Concierge tab is open. Which tab is open depends on the
   // concierge being available, so it comes here a render later (wantSuggestions, set below)
   const [wantSuggestions, setWantSuggestions] = useState(false);
+  // The Concierge tab's readout, gated by the "Read aloud" setting like the per-session readout (mute only silences
+  // chirps). Read at the moment of speaking, so it is stable across renders
+  const conciergeReadoutSink = useMemo(
+    () => ({
+      suggestions: (list: { name: string; text: string }[]) => {
+        if (voiceEnabledRef.current) speakSuggestions(list);
+      },
+      events: (list: SessionEvent[]) => {
+        for (const event of list) if (voiceEnabledRef.current) speakSessionEvent(event, () => voiceEnabledRef.current);
+      },
+    }),
+    [voiceEnabledRef],
+  );
   const concierge = useConcierge(
     displaySessions,
     displayEvents,
@@ -488,7 +506,9 @@ export default function App({
     source.conciergeAdvice?.(displaySessions),
     wantSuggestions,
     source.conciergeSuggestions?.(displaySessions),
+    conciergeReadoutSink,
   );
+  conciergeReadoutEventRef.current = concierge.readoutEvent;
 
   const grantedCount = roots.filter((r) => perms[r.id] === "granted").length;
   // The mock source doesn't use roots/perms, so grantedCount is always 0, but that isn't the

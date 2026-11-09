@@ -216,8 +216,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIM
  * the old LLM judging, has been removed; this key is used only for the summary readout and the
  * connection test).
  *
- * The caller (App.tsx) must call this function only for done events with readout ON and not muted
- * (both voiceEnabled and muted share the same gate as speakEvent).
+ * The caller (App.tsx) must call this function only for done events with readout ON (voiceEnabled, the same
+ * gate as speakEvent). Mute only silences chirps; it doesn't gate the readout.
  *
  * stillEnabled: if the readout toggle is turned OFF while waiting for the summary (up to
  * SUMMARY_TIMEOUT_MS), speaking after the wait regardless would break the guarantee that
@@ -281,6 +281,22 @@ function sanitizeSummaryForSpeech(raw: string): string {
   text = text.replace(/`/g, "").replace(/\*{2,}/g, "").replace(/^#+\s*/, "");
   text = text.replace(/[\s.…,;:/\-]+$/, "").trim();
   return text;
+}
+
+/**
+ * Reads the concierge's new suggestions in the Concierge tab (docs/design.md "Readout in the Concierge tab"): for each,
+ * the session's display name, then the suggestion's text, as two utterances like the done readout (no template
+ * sentence), in the order given. The caller applies the "Read aloud" setting as for speakEvent
+ */
+export function speakSuggestions(list: readonly { name: string; text: string }[]): void {
+  if (!speechAvailable()) return;
+  const lang = uiLanguage();
+  for (const s of list) {
+    const project = sanitizeProjectForSpeech(s.name);
+    const text = sanitizeSnippetForSpeech(s.text);
+    if (project) enqueueUtterance(project, lang);
+    if (text) enqueueUtterance(text, lang);
+  }
 }
 
 /** Stops all playing and queued utterances (for turning the readout toggle OFF) */
