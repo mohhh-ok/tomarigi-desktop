@@ -11,6 +11,7 @@ import {
   type StatusLine,
 } from "@/lib/concierge-status";
 import type { SessionView } from "@/lib/sessions";
+import { sinceAfterState } from "./format-time";
 
 // The birds' own state words (docs/design.md "Bird states"), so a state reads the same here as at the bird
 const STATE_LABEL = {
@@ -60,12 +61,15 @@ export function ConciergeStatusReport({
 }) {
   const name = (id: string, text: string, linked: boolean) =>
     linked && canJump(id) ? <Jump onJump={() => onFocus?.(id)}>{text}</Jump> : text;
-  const state = (status: ConciergeStatus) => (
+  // The state with, for a finished line, the time since it finished, as the bird's status line shows it. One nowrap
+  // part, so a line too wide wraps before it and the time is never cut off on its own
+  const state = (status: ConciergeStatus, sinceMs?: number) => (
     <span className="concierge-status-state" data-status={status}>
       {" "}
       {/* Done has a blue dot before its word (docs/design.md "Concierge"); a mark, so it isn't read as a link */}
       {status === "done" && <span className="concierge-status-dot" aria-hidden="true" />}
       {t(STATE_LABEL[status])}
+      {sinceMs !== undefined && sinceAfterState(sinceMs)}
     </span>
   );
   return (
@@ -95,7 +99,7 @@ export function ConciergeStatusReport({
             {/* The state is always the same part, so it looks the same with a text or without; a session the app has no
                 text for says only its state, once */}
             {l.text === undefined ? ":" : `: ${l.text}`}
-            {state(l.status)}
+            {state(l.status, l.sinceMs)}
           </span>
         ))}
         {more > 0 && <span className="concierge-status-more">{t("conciergeSummaryMore", [String(more)])}</span>}

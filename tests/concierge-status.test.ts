@@ -64,7 +64,7 @@ describe("the state lines", () => {
     const byId = Object.fromEntries(lines.map((l) => [l.sessionId, l]));
     expect(byId.w2).toEqual({ sessionId: "w2", name: "w2", text: "Publish?", status: "reply" });
     expect(byId.v).toEqual({ sessionId: "v", name: "v", text: "Asks which plan to take", status: "reply" });
-    expect(byId.d1).toEqual({ sessionId: "d1", name: "d1", text: "Fixed the links", status: "done" });
+    expect(byId.d1).toEqual({ sessionId: "d1", name: "d1", text: "Fixed the links", status: "done", sinceMs: 120_000 });
   });
 
   test("a working session shows its tool; one continuing in the background shows its line; none has no text", () => {
@@ -85,6 +85,24 @@ describe("the state lines", () => {
     const { lines, more } = conciergeStatusLines(views, bubbleOf);
     expect(lines.map((l) => l.sessionId)).toEqual(["w", "d0", "d1", "d2", "d3", "k0"]);
     expect(more).toBe(3);
+  });
+
+  // Which lines get the time since they finished, by where the session stands (docs/design.md "Concierge")
+  test.each([
+    ["finished (done)", view("a", { state: "done", sinceMs: 720_000, summary: "ok" }), 720_000],
+    ["finished (dozing)", view("a", { state: "dozing", sinceMs: 3_600_000, summary: "ok" }), 3_600_000],
+    ["needs a reply (waiting)", view("a", { state: "waiting", sinceMs: 60_000, question: "Go?" }), undefined],
+    ["needs a reply (done, asking)", view("a", { state: "done", sinceMs: 60_000, ask: { status: "asking" } }), undefined],
+    ["working", view("a", { sinceMs: 60_000, toolName: "Edit" }), undefined],
+    ["finished but continuing (working)", view("a", { state: "done", sinceMs: 60_000, continuing: true }), undefined],
+  ])("%s: the time since it finished is %p", (_, v, sinceMs) => {
+    expect(conciergeStatusLines([v], bubbleOf).lines[0].sinceMs).toBe(sinceMs);
+  });
+
+  test("the time since it finished counts up with the bird's: each poll's sinceMs is the line's", () => {
+    const at = (sinceMs: number) =>
+      conciergeStatusLines([view("a", { state: "done", sinceMs, summary: "ok" })], bubbleOf).lines[0].sinceMs;
+    expect([at(59_000), at(62_000)]).toEqual([59_000, 62_000]);
   });
 
   test("rebuilt from the facts each time: a session that moved is on its new line at once", () => {

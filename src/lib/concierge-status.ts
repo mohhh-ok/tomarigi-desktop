@@ -18,12 +18,15 @@ export function conciergeStatusOf(view: SessionView): ConciergeStatus {
   return (view.state === "done" || view.state === "dozing") && !view.continuing ? "done" : "working";
 }
 
-/** A line of the bubble: the session, its name, its text (absent when the app has none for it) and its state */
+/** A line of the bubble: the session, its name, its text (absent when the app has none for it), its state, and for a
+    finished one the time since it finished (the bird's sinceMs, shown after the done word as the bird's status line
+    shows it; the others have none, as asked) */
 export interface StatusLine {
   sessionId: string;
   name: string;
   text?: string;
   status: ConciergeStatus;
+  sinceMs?: number;
 }
 
 /**
@@ -43,7 +46,16 @@ export function conciergeStatusLines(
     const status = conciergeStatusOf(v);
     const raw = status === "working" ? (v.toolName ?? bubbleOf(v)) : bubbleOf(v);
     const text = raw?.replace(/\s+/g, " ").trim();
-    return { line: { sessionId: v.id, name: v.project, ...(text && { text }), status }, at: place(v, status) };
+    // Only a finished one gets the time since it finished (the user: 「完了からの経過時間も表示して欲しいコンシェルジュ」); one that
+    // is continuing is working, so it has none (Claude's own decision)
+    const line: StatusLine = {
+      sessionId: v.id,
+      name: v.project,
+      ...(text && { text }),
+      status,
+      ...(status === "done" && { sinceMs: v.sinceMs }),
+    };
+    return { line, at: place(v, status) };
   });
   // Array.prototype.sort is stable, so working ones keep the order given
   all.sort((a, b) => a.at[0] - b.at[0] || a.at[1] - b.at[1]);

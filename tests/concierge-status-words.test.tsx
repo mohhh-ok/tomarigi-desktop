@@ -57,6 +57,19 @@ describe("the state words", () => {
     expect(html).toContain('data-status="working"> birdWorkingLabel[]</span>');
   });
 
+  test("a finished line has the time since it finished after the done word, with the bird's keys; the others have none", () => {
+    const html = render([
+      { sessionId: "blog", name: "blog", text: "Publish now?", status: "reply" },
+      { sessionId: "api", name: "api", text: "Fixed the links", status: "done", sinceMs: 12 * 60_000 },
+      { sessionId: "web", name: "web", status: "working" },
+    ]);
+    // In the state's own nowrap part, so it wraps with the word and is never cut off on its own
+    expect(html).toContain('eventDoneLabel[]\u00a0· sinceMinutes[12]</span>');
+    expect(html).toContain('data-status="reply"> birdWaitingLabel[]</span>');
+    expect(html).toContain('data-status="working"> birdWorkingLabel[]</span>');
+    expect(html.match(/sinceMinutes|sinceSeconds|sinceHoursMinutes/g)).toHaveLength(1);
+  });
+
   test("a suggestion whose session changed says its state now with the same words", () => {
     expect(render([], [suggestion("done")], [view("blog", "waiting")])).toContain("conciergeSummaryNow[birdWaitingLabel[]]");
     expect(render([], [suggestion("reply")], [view("blog", "done")])).toContain("conciergeSummaryNow[eventDoneLabel[]]");

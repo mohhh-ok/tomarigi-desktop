@@ -1,7 +1,7 @@
 import { t } from "@/lib/i18n";
 import type { BirdState, SessionView } from "@/lib/sessions";
 import { BIRD } from "./bird-glyph";
-import { formatSince } from "./format-time";
+import { formatSince, sinceAfterState } from "./format-time";
 
 /**
  * State label. If this session needs a reply (asking), use the needs-reply word even when done or dozing
@@ -69,7 +69,7 @@ export function StatusParts({
       <>
         <span className="garden-status-main">
           {label}
-          <span className="status bird-row-since">&nbsp;· {since}</span>
+          <span className="status bird-row-since">{sinceAfterState(session.sinceMs)}</span>
         </span>
         {tool && <span className="status garden-status-sub">{tool}</span>}
       </>
@@ -83,7 +83,7 @@ export function StatusParts({
         {birdLabel(session.state, asking, session.watching !== undefined)}
       </span>
       <span className="status bird-row-since">
-        &nbsp;· {formatSince(session.sinceMs)}
+        {sinceAfterState(session.sinceMs)}
         {liveDots && session.state === "working" && <LiveDots />}
       </span>
       {tool && (
