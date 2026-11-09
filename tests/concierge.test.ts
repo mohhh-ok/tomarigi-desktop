@@ -691,6 +691,10 @@ test("the app log keeps each session's facts and the advice text with its kind, 
   ]);
   // No text from the sessions: the name, reply and question stay out
   expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it|asker|Which one/);
+  // continuing from the reply's text that expired is logged as expired, apart from a verdict of no; the payload says false
+  const expiredLines = conciergeRequestLogLines({ req: "r1", provider: "local", model: "m" }, payload, new Set(["q"]));
+  expect(expiredLines[3]).toContain(" continuing=expired ");
+  expect(expiredLines[1]).toContain(" continuing=true ");
 
   // Holds are logged one per line, a chick without its name
   const held = buildConciergePayload(

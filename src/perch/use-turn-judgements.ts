@@ -114,13 +114,20 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         const angry = s.angry ?? (summarySetUp ? anger[s.id]?.angry : undefined);
         if (angry !== undefined && s.angry === undefined) s = { ...s, angry };
         const turn = s.reply ? turns[turnKey(s.id, s.reply.at)] : undefined;
-        const continuing = s.continuing ?? sessionContinuing(turn?.continuing, s.watching);
-        if (!s.reply) return continuing === undefined ? s : { ...s, continuing };
+        // mock writes continuing directly; it doesn't expire
+        const derived =
+          s.continuing !== undefined
+            ? { continuing: s.continuing, expired: false }
+            : sessionContinuing(turn?.continuing, s.watching, s.sinceMs);
+        const { continuing } = derived;
+        const expired = derived.expired ? { continuingExpired: true as const } : {};
+        if (!s.reply) return continuing === undefined ? s : { ...s, continuing, ...expired };
         return {
           ...s,
           ask: s.ask ?? turn?.ask,
           summary: s.summary ?? turn?.line,
           continuing,
+          ...expired,
         };
       }),
     [sessions, turns, anger, summarySetUp],

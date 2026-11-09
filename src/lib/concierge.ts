@@ -596,9 +596,14 @@ export function conciergeRetryLogLine(c: ConciergeLogContext, retry: ConciergeRe
  * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
  * form to grep. source: machine is a question tool or a permission prompt (waiting_on says which, when known), verdict is
  * the turn verdict asking; verdict
- * is the turn verdict of a stopped turn (asking / not_asking); continuing is the turn verdict's continuing
+ * is the turn verdict of a stopped turn (asking / not_asking); continuing is the session's continuing (expired when the
+ * turn verdict said continuing but it expired, docs/design.md "Turn verdicts"; the payload then says false)
  */
-export function conciergeRequestLogLines(c: ConciergeLogContext, payload: ConciergePayload): string[] {
+export function conciergeRequestLogLines(
+  c: ConciergeLogContext,
+  payload: ConciergePayload,
+  continuingExpired: ReadonlySet<string> = new Set(),
+): string[] {
   const head = `${logHead("request", c)} sessions=${payload.sessions.length} holds=${payload.holds.length} events=${payload.recent_events.length} chars=${JSON.stringify(payload).length}`;
   return [
     head,
@@ -612,7 +617,7 @@ export function conciergeRequestLogLines(c: ConciergeLogContext, payload: Concie
         `source=${s.needs_reply_source ?? "-"}`,
         `waiting_on=${s.waiting_on ?? "-"}`,
         `verdict=${s.asking === undefined ? "-" : s.asking ? "asking" : "not_asking"}`,
-        `continuing=${s.continuing ?? "-"}`,
+        `continuing=${continuingExpired.has(s.id) ? "expired" : (s.continuing ?? "-")}`,
         `watch_parent=${s.watch_parent ?? "-"}`,
         `watch_children=${s.watch_children?.join(",") ?? "-"}`,
         `chicks_working=${s.chicks_working ?? 0}`,

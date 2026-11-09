@@ -18,12 +18,27 @@ export function hasQuestion(s: SessionView): boolean {
 }
 
 /**
+ * How long continuing from the reply's text holds after the session last wrote to its transcript. Past it the session
+ * counts as finished, so the concierge can suggest checking its result (docs/design.md "Turn verdicts"; the user: 「30min」)
+ */
+export const TEXT_CONTINUING_EXPIRES_MS = 30 * 60_000;
+
+/**
  * Whether the session's work goes on after its turn (a fact for the concierge). A watching session (a linked session
  * moves, or moved within the grace period) is continuing whatever its reply says; otherwise it is the turn verdict's
- * continuing, absent when there is none (docs/design.md "Turn verdicts")
+ * continuing, absent when there is none. continuing from the verdict (the reply's text) expires
+ * TEXT_CONTINUING_EXPIRES_MS after the last write (sinceMs): then continuing is false and expired is true, so the app
+ * log can tell it from a verdict of no (docs/design.md "Turn verdicts"). Rebuilt on every poll, so it expires as time
+ * passes, without a new write
  */
-export function sessionContinuing(verdict: boolean | undefined, watching: number | undefined): boolean | undefined {
-  return watching !== undefined ? true : verdict;
+export function sessionContinuing(
+  verdict: boolean | undefined,
+  watching: number | undefined,
+  sinceMs: number,
+): { continuing: boolean | undefined; expired: boolean } {
+  if (watching !== undefined) return { continuing: true, expired: false };
+  if (verdict === true && sinceMs >= TEXT_CONTINUING_EXPIRES_MS) return { continuing: false, expired: true };
+  return { continuing: verdict, expired: false };
 }
 
 /** Whether to put the anger mark on the bird */
