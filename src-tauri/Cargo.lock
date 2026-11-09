@@ -4846,7 +4846,7 @@ dependencies = [
 
 [[package]]
 name = "tomarigi-desktop"
-version = "0.15.0"
+version = "0.15.1"
 dependencies = [
  "keyring",
  "objc2",
