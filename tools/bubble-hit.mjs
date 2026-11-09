@@ -2,33 +2,18 @@
 // concierge's bubble takes clicks over its whole box, its empty space included, so a bird drawn under it isn't pressed
 // through it; a bird's bubble lets clicks through to what is under it. Runs the mock (?mock=1&focusable=1, where a click
 // that would jump to a pane logs "[mock] focus <id>") from a `vite build` output, with no dev server or port.
-//   mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell)
-//   bunx vite build --outDir /tmp/tomarigi-desktop/dist
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/bubble-hit.mjs
+// (setup and the build: tools/README.md "Playwright")
 // Prints one line per check: OK or NG, what was checked, and what was found. Exits 1 when any check is NG.
 // Scenes, each shown and at rest (data-fade="rest", as the app sets it):
 // - garden: the Garden with the concierge and a bird put under the concierge's bubble (the same IndexedDB entry a drag
 //   saves), and birds with their own bubbles (preset=asking)
 // - concierge-tab: the Concierge tab, whose bubble holds the suggestions and the session names
-import { readFileSync } from "node:fs";
-import { extname, join } from "node:path";
+import { launch, mockPath, routeMock, saveGardenPositions } from "./mock-browser.mjs";
 
 const DIST = process.env.DIST;
 if (!DIST) throw new Error("DIST=<a vite build --outDir directory> is required");
-const { chromium } = await import(join(process.env.PLAYWRIGHT ?? "playwright", "index.mjs"));
 const ORIGIN = "http://tomarigi.bubble-hit";
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp", ".woff2": "font/woff2", ".json": "application/json" };
-// Answers every request to ORIGIN from DIST; paths without a file get index.html, as the dev server does
-const serveDist = (route) => {
-  const path = new URL(route.request().url()).pathname;
-  let body;
-  try {
-    body = readFileSync(join(DIST, path));
-  } catch {
-    body = readFileSync(join(DIST, "index.html"));
-  }
-  return route.fulfill({ contentType: TYPES[extname(path)] ?? "text/html", body });
-};
 
 const CONCIERGE = "concierge";
 // The bird put under the concierge's bubble in the garden scene
@@ -91,23 +76,6 @@ const dragFrom = async (page, x, y) => {
   return page.evaluate(() => window.__calls);
 };
 
-const savePositions = (page, positions) =>
-  page.evaluate(
-    (positions) =>
-      new Promise((resolve, reject) => {
-        const open = indexedDB.open("tomarigi", 1);
-        open.onupgradeneeded = () => open.result.createObjectStore("kv");
-        open.onerror = () => reject(open.error);
-        open.onsuccess = () => {
-          const tx = open.result.transaction("kv", "readwrite");
-          tx.objectStore("kv").put(positions, "gardenPositions");
-          tx.oncomplete = () => (open.result.close(), resolve());
-          tx.onerror = () => reject(tx.error);
-        };
-      }),
-    positions,
-  );
-
 const setRest = (page, rest) =>
   page.evaluate((rest) => {
     if (rest) document.documentElement.dataset.fade = "rest";
@@ -131,7 +99,7 @@ async function gardenScene(page, logs, url) {
   const shiftY = bubble.top + bubble.height / 2 - conciergeNode.top;
   const glyphFromTop = glyph.top + glyph.height / 2 - node.top;
   const underTop = ((conciergeTop / 100) * garden.height + shiftY - glyphFromTop) / garden.height * 100;
-  await savePositions(page, {
+  await saveGardenPositions(page, ORIGIN, {
     [CONCIERGE]: { x: cx, y: conciergeTop, byUser: true },
     [UNDER]: { x: cx, y: underTop, byUser: true },
   });
@@ -210,7 +178,7 @@ async function conciergeTabScene(page, logs, url) {
   }
 }
 
-const browser = await chromium.launch({ executablePath: process.env.CHROME });
+const browser = await launch();
 try {
   for (const [scene, query, run] of [
     ["garden", "preset=asking&concierge=&focusable=1", gardenScene],
@@ -218,8 +186,7 @@ try {
   ]) {
     const ctx = await browser.newContext({ viewport: { width: 760, height: 560 }, locale: "en-US" });
     const page = await ctx.newPage();
-    await page.route(`${ORIGIN}/**`, serveDist);
-    await page.route("https://api.github.com/**", (r) => r.abort());
+    await routeMock(page, ORIGIN, DIST);
     // Tauri calls are recorded and fail, as in a browser; start_dragging is what grabbing the window background calls
     await page.addInitScript(() => {
       window.__calls = [];
@@ -235,7 +202,7 @@ try {
     const logs = [];
     page.on("console", (m) => logs.push(m.text()));
     console.log(`# ${scene}`);
-    await run(page, logs, `${ORIGIN}/?mock=1&panel=0&${query}`);
+    await run(page, logs, `${ORIGIN}${mockPath(query)}`);
     await ctx.close();
   }
 } finally {

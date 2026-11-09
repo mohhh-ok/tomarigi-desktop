@@ -1,5 +1,5 @@
 // Runs the mock screen in headless Chromium with updates sped up, and compares JS heap snapshots taken early and late,
-// to find what piles up in the page (issue #8). See tools/README.md.
+// to find what piles up in the page (issue #8). See tools/README.md (Playwright's setup: its "Playwright").
 //   PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/heap-mock.mjs
 // BROWSER=webkit runs Playwright's WebKit instead: it has no heap snapshots, so it only drives the page; measure its web
 // process with tools/webview-mem.sh (the pid is printed at the start).

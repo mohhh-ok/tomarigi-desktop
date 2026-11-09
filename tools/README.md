@@ -2,6 +2,29 @@
 
 Tools for checking the app's behavior by hand or from an agent. Not part of the build.
 
+## Playwright
+
+The tools that open the mock in a browser (bubble-hit.mjs, heap-mock.mjs, and scripts/gallery/shoot.mjs) use
+Playwright, which isn't a dependency of this repo. Install it outside the repo and pass its path as `PLAYWRIGHT`:
+
+```sh
+mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell)
+```
+
+`CHROME=<path>` uses that Chromium instead of the one matching the Playwright version. To run the mock without a dev
+server or port, build it once and pass the output as `DIST` (bubble-hit.mjs needs it; shoot.mjs uses the dev server at
+4842 without it):
+
+```sh
+bunx vite build --outDir /tmp/tomarigi-desktop/dist
+```
+
+What bubble-hit.mjs and shoot.mjs share is in mock-browser.mjs: launching the browser, serving `DIST` (paths without a
+file get index.html, as the dev server does), no calls to api.github.com, the mock's address (`/?mock=1&panel=0&…`),
+and saving the Garden's positions as a drag does. That last one runs the app's own `saveGardenPositions`
+(src/lib/garden-layout.ts), bundled with `bun build` when a tool starts and loaded into the page, so the tools don't
+keep their own copy of the database's names. `bun` has to be on the PATH.
+
 ## turn-verdict-probe.ts
 
 Runs the turn verdict (docs/design.md "Turn verdicts") on real replies several times with OpenAI and Anthropic, with
@@ -52,8 +75,8 @@ Use footprint rather than RSS to judge growth: RSS goes up and down as macOS com
 ## heap-mock.mjs
 
 Runs the mock screen with updates sped up, to see whether something piles up in the page (issue #8). Needs the dev
-server at 4842 (`bun run dev:web` or `bun run dev`) and Playwright, which isn't a dependency of this repo. Install it as
-the header of scripts/gallery/shoot.mjs says; for `BROWSER=webkit`, also run `bunx playwright install webkit` in /tmp/pw.
+server at 4842 (`bun run dev:web` or `bun run dev`) and Playwright ("Playwright" above); for `BROWSER=webkit`, also run
+`bunx playwright install webkit` in /tmp/pw.
 
 ```sh
 # Chromium: JS heap snapshots at the start and the end, and the objects that grew between them
@@ -74,12 +97,12 @@ through it and nothing jumps; a bird's own bubble lets clicks through. Runs the 
 dev server or port, in the Garden (the concierge with a bird put under its bubble, and birds with bubbles,
 `preset=asking`) and in the Concierge tab, each shown and at rest.
 
+With Playwright and a build ("Playwright" above):
+
 ```sh
-mkdir -p /tmp/pw && (cd /tmp/pw && bun add playwright && bunx playwright install chromium-headless-shell)
-bunx vite build --outDir /tmp/tomarigi-desktop/dist
 DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/bubble-hit.mjs
 ```
 
 Prints one `OK` / `NG` line per check with what `document.elementFromPoint` returned, the `[mock] focus` lines a click
 logged (`?focusable=1`), or the Tauri calls a grab made (`plugin:window|start_dragging` moves the window). Exits 1 when
-any check is NG. `CHROME=<path>` uses that Chromium instead of the one matching the Playwright version.
+any check is NG.
