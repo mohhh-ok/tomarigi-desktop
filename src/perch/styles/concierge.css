@@ -88,11 +88,11 @@
 }
 
 /* With the state colors of the state lines (docs/design.md "Concierge"), each kept at one place: the state lines'
-   muted grey (working, and the quiet words), needing a reply's red-brown (about 5.5:1 on the bubble), and done's blue
-   (the palette has no blue; 5.4:1 on the bubble) */
+   muted grey (working, and the quiet words; 4.6:1 on the bubble), needing a reply's red-brown (5.0:1), and done's
+   blue (the palette has no blue; 5.4:1) */
 .concierge-status {
   display: block;
-  --concierge-muted: #7a7263;
+  --concierge-muted: #6b6456;
   --concierge-reply: #a0461c;
   --concierge-done: #1d5ba6;
 }
@@ -154,16 +154,16 @@
 /* Every state line starts with a filled dot whose color tells the state: needing a reply the red-brown of its word,
    done blue, working the muted grey, since working asks nothing of the user. A finished session continuing in the
    background is working (lib/concierge-status.ts), so it is grey too. The line hangs from the dot: a line that wraps
-   continues under the name, not under the dot (the dot's 6px and its 4px gap) */
+   continues under the name, not under the dot (the dot's 8px and its 4px gap) */
 .concierge-status-lines .concierge-status-line {
-  padding-left: 10px;
-  text-indent: -10px;
+  padding-left: 12px;
+  text-indent: -12px;
 }
 
 .concierge-status-dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   margin-right: 4px;
   border-radius: 50%;
   vertical-align: 0.1em;
