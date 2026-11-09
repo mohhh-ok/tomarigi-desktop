@@ -122,12 +122,12 @@ const contrast = (a: string, b: string) => {
 describe("the dot at each state line's left (docs/design.md \"Concierge\")", () => {
   test.each([
     // [scene, the session, its dot's color, its word's color, its word's weight]
-    ["finished", view("s", { state: "done", summary: "ok" }), "#1d5ba6", "#7a7263", undefined],
-    ["finished (dozing)", view("s", { state: "dozing" }), "#1d5ba6", "#7a7263", undefined],
+    ["finished", view("s", { state: "done", summary: "ok" }), "#1d5ba6", "#6b6456", undefined],
+    ["finished (dozing)", view("s", { state: "dozing" }), "#1d5ba6", "#6b6456", undefined],
     ["needs a reply (waiting)", view("s", { state: "waiting", question: "Go?" }), "#a0461c", "#a0461c", "600"],
     ["needs a reply (done, asking)", view("s", { state: "done", ask: { status: "asking" } }), "#a0461c", "#a0461c", "600"],
-    ["working", view("s"), "#7a7263", "#7a7263", undefined],
-    ["finished but continuing: working grey, like its word", view("s", { state: "done", continuing: true }), "#7a7263", "#7a7263", undefined],
+    ["working", view("s"), "#6b6456", "#6b6456", undefined],
+    ["finished but continuing: working grey, like its word", view("s", { state: "done", continuing: true }), "#6b6456", "#6b6456", undefined],
   ] as const)("%s: dot %p, word %p", (_, session, dot, word, weight) => {
     const { lines } = conciergeStatusLines([session], () => "t");
     const status = lines[0].status;
@@ -141,8 +141,9 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
     const wordRule = `.concierge-status-state[data-status="${status}"]`;
     expect(colorIn(wordRule, "color") ?? colorIn(".concierge-status-state", "color")).toBe(word);
     expect(rule(wordRule)?.match(/font-weight: (\d+);/)?.[1]).toBe(weight);
-    // A dot keeps 3:1 on the bubble (a graphic part)
+    // A dot keeps 3:1 on the bubble (a graphic part), a word 4.5:1
     expect(contrast(dot, BUBBLE_BG)).toBeGreaterThanOrEqual(3);
+    expect(contrast(word, BUBBLE_BG)).toBeGreaterThanOrEqual(4.5);
   });
 
   test("a suggestion has no dot", () => {
