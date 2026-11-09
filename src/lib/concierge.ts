@@ -9,7 +9,8 @@
 import type { JudgeErrorKind, JudgeResult, JudgeTaskDefinition } from "./judge";
 import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
-import { needsAnswer } from "./turn-verdict";
+import { needsAnswer, TEXT_CONTINUING_EXPIRES_MS } from "./turn-verdict";
+import { DOZE_MS } from "./bird-state";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView } from "./session-types";
 
@@ -733,23 +734,41 @@ export function conciergeStateOf(v: SessionView): ConciergeStateClass {
   return needsAnswer(v.state, v.ask) ? "reply" : v.state === "working" ? "working" : "stopped";
 }
 
-/** A session as the scheduler tells its changes apart: needs a reply (including the "?"), done, working, or dozing */
-export type ConciergeTriggerClass = "reply" | "done" | "working" | "dozing";
+/**
+ * A session as the scheduler tells its changes apart: needs a reply (including the "?"), done, working, dozing, or
+ * expired: dozing, but its continuing from the reply's text expired (TEXT_CONTINUING_EXPIRES_MS in lib/turn-verdict.ts)
+ * less than DOZE_MS ago. The expiry is when it finished as far as the concierge knows, so it counts as done for as long
+ * as a turn that just finished does (docs/design.md "Turn verdicts", "Concierge")
+ */
+export type ConciergeTriggerClass = "reply" | "done" | "working" | "dozing" | "expired";
+
+/** The classes that let the concierge be asked: a session needs a reply, or one finished (done, or expired) */
+function askable(states: ConciergeTriggerClass[]): boolean {
+  return states.some((s) => s === "reply" || s === "done" || s === "expired");
+}
 
 /** Each session's class, by id. update() of ConciergeScheduler takes this on every scan */
 export function conciergeTriggerClasses(views: SessionView[]): Map<string, ConciergeTriggerClass> {
   // needsAnswer is true for every waiting session; the state check is there only so the type leaves waiting out of the
   // other states
   return new Map(
-    views.map((v) => [v.id, needsAnswer(v.state, v.ask) || v.state === "waiting" ? "reply" : v.state]),
+    views.map((v) => [
+      v.id,
+      needsAnswer(v.state, v.ask) || v.state === "waiting"
+        ? "reply"
+        : v.state === "dozing" && v.continuingExpired && v.sinceMs < TEXT_CONTINUING_EXPIRES_MS + DOZE_MS
+          ? "expired"
+          : v.state,
+    ]),
   );
 }
 
 /**
  * Whether a change of sessions asks the concierge (docs/design.md "Concierge"): a session starts needing a reply, a
- * session that needed a reply is answered (or leaves the screen), or a turn finishes (done). Tool lines, working ↔
- * working, done → dozing, and a new prompt to a finished session don't. A session first seen needing a reply or done
- * counts as that change, so the first scan after launch or after saving a key asks (Claude's own decision)
+ * session that needed a reply is answered (or leaves the screen), a turn finishes (done), or a stopped session's
+ * continuing from its reply's text expires (expired). Tool lines, working ↔ working, done → dozing, expired → dozing,
+ * and a new prompt to a finished session don't. A session first seen needing a reply, done or expired counts as that
+ * change, so the first scan after launch or after saving a key asks (Claude's own decision)
  */
 export function conciergeTriggered(
   prev: ReadonlyMap<string, ConciergeTriggerClass> | undefined,
@@ -760,6 +779,7 @@ export function conciergeTriggered(
     if (now === "reply" && before !== "reply") return true;
     if (before === "reply" && now !== "reply") return true;
     if (now === "done" && before !== "done" && before !== "dozing") return true;
+    if (now === "expired" && before !== "expired") return true;
   }
   for (const [id, before] of prev ?? []) {
     if (before === "reply" && !next.has(id)) return true;
@@ -782,6 +802,20 @@ export function conciergeReplyChanged(
     if (before === "reply" && next.get(id) !== "reply") return true;
   }
   return false;
+}
+
+/**
+ * The app log lines of sessions whose continuing from the reply's text expired since the last scan (expired, first seen
+ * so included), one each: the concierge is then asked like on a finished turn, and the line tells why from the log
+ * alone. The request that follows logs the session's fact line with continuing=expired
+ */
+export function conciergeExpiredLogLines(
+  prev: ReadonlyMap<string, ConciergeTriggerClass> | undefined,
+  next: ReadonlyMap<string, ConciergeTriggerClass>,
+): string[] {
+  return [...next]
+    .filter(([id, now]) => now === "expired" && prev?.get(id) !== "expired")
+    .map(([id]) => `[concierge] trigger kind=expired session=${id}`);
 }
 
 /**
@@ -844,8 +878,8 @@ export function conciergeErrorIsTemporary(result: { ok: false; kind: JudgeErrorK
  * When the concierge is asked (docs/design.md "Concierge"): on the changes conciergeTriggered tells, gathered for
  * CONCIERGE_DEBOUNCE_MS, at most once per CONCIERGE_MIN_INTERVAL_MS (changes inside it make one request when it ends;
  * a session starting to need a reply, or an answer to one, doesn't wait for it),
- * and every CONCIERGE_REPEAT_MS while any session needs a reply. While no session needs a reply or is done, nothing is
- * asked and clear() is called so the advice goes away. update() is called on every scan; request() when it is time
+ * and every CONCIERGE_REPEAT_MS while any session needs a reply. While no session needs a reply or is done (or
+ * expired, conciergeTriggerClasses), nothing is asked and clear() is called so the advice goes away. update() is called on every scan; request() when it is time
  * to ask; failed() when that request failed, to ask again after a temporary error
  */
 export class ConciergeScheduler {
@@ -879,7 +913,7 @@ export class ConciergeScheduler {
     this.classes = classes;
     const states = [...classes.values()];
     const waiting = states.includes("reply");
-    if (!waiting && !states.includes("done")) {
+    if (!waiting && !askable(states)) {
       this.cancelTimers();
       if (!this.cleared) {
         this.cleared = true;
@@ -917,7 +951,7 @@ export class ConciergeScheduler {
   failed(temporary: boolean): ConciergeRetry | undefined {
     if (!temporary || this.retries >= CONCIERGE_RETRY_MS.length) return undefined;
     const states = [...(this.classes?.values() ?? [])];
-    if (!states.includes("reply") && !states.includes("done")) return undefined;
+    if (!askable(states)) return undefined;
     const afterMs = CONCIERGE_RETRY_MS[this.retries++];
     if (this.retry !== undefined) this.timers.clear(this.retry);
     this.retry = this.timers.set(() => this.fire(true), afterMs);
@@ -932,7 +966,7 @@ export class ConciergeScheduler {
    */
   soon(): boolean {
     const states = [...(this.classes?.values() ?? [])];
-    if (!states.includes("reply") && !states.includes("done")) return false;
+    if (!askable(states)) return false;
     if (this.retry !== undefined) return false;
     const now = this.timers.now();
     const at = now + CONCIERGE_DEBOUNCE_MS;

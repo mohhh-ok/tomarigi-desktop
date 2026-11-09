@@ -41,6 +41,31 @@ export function sessionContinuing(
   return { continuing: verdict, expired: false };
 }
 
+/**
+ * The session with its turn verdict attached: the "?" (ask), the speech bubble line, and continuing (sessionContinuing,
+ * with continuingExpired when it expired). Only the verdict of the reply's turn is given (turn); what the source set
+ * directly (mock) isn't overwritten, and continuing it wrote doesn't expire. Rebuilt on every poll
+ */
+export function withTurnVerdict(
+  s: SessionView,
+  turn: { ask?: AskJudgement; line?: string; continuing?: boolean } | undefined,
+): SessionView {
+  const derived =
+    s.continuing !== undefined
+      ? { continuing: s.continuing, expired: false }
+      : sessionContinuing(turn?.continuing, s.watching, s.sinceMs);
+  const { continuing } = derived;
+  const expired = derived.expired ? { continuingExpired: true as const } : {};
+  if (!s.reply) return continuing === undefined ? s : { ...s, continuing, ...expired };
+  return {
+    ...s,
+    ask: s.ask ?? turn?.ask,
+    summary: s.summary ?? turn?.line,
+    continuing,
+    ...expired,
+  };
+}
+
 /** Whether to put the anger mark on the bird */
 export function isAngry(s: SessionView): boolean {
   return s.angry === true;

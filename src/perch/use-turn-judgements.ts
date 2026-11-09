@@ -5,7 +5,7 @@ import { nextAngry, summarizeTurn, turnOutcome, turnPayload, type TurnOutcome } 
 import { loadActiveAiProvider } from "@/lib/api-keys";
 import { appendConciergeLog } from "@/lib/concierge";
 import { recordTurnVerdict, type SessionView } from "@/lib/sessions";
-import { sessionContinuing } from "@/lib/turn-verdict";
+import { withTurnVerdict } from "@/lib/turn-verdict";
 
 /** Identifies a turn for the turn verdict. Same basis as the done event key (sessionId + time of the last response) */
 export function turnKey(sessionId: string, at: number): string {
@@ -114,21 +114,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         const angry = s.angry ?? (summarySetUp ? anger[s.id]?.angry : undefined);
         if (angry !== undefined && s.angry === undefined) s = { ...s, angry };
         const turn = s.reply ? turns[turnKey(s.id, s.reply.at)] : undefined;
-        // mock writes continuing directly; it doesn't expire
-        const derived =
-          s.continuing !== undefined
-            ? { continuing: s.continuing, expired: false }
-            : sessionContinuing(turn?.continuing, s.watching, s.sinceMs);
-        const { continuing } = derived;
-        const expired = derived.expired ? { continuingExpired: true as const } : {};
-        if (!s.reply) return continuing === undefined ? s : { ...s, continuing, ...expired };
-        return {
-          ...s,
-          ask: s.ask ?? turn?.ask,
-          summary: s.summary ?? turn?.line,
-          continuing,
-          ...expired,
-        };
+        return withTurnVerdict(s, turn);
       }),
     [sessions, turns, anger, summarySetUp],
   );

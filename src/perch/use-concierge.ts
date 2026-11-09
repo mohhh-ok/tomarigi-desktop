@@ -13,6 +13,7 @@ import {
   buildConciergePayload,
   conciergeRequestLogLines,
   conciergeErrorIsTemporary,
+  conciergeExpiredLogLines,
   conciergeResultLogLine,
   conciergeRetryLogLine,
   ConciergeScheduler,
@@ -202,8 +203,15 @@ export function useConcierge(
   }, clearAdvice);
 
   const live = enabled && mockAdvice === undefined && sessions.length > 0;
+  // The classes of the last scan, to log a session whose continuing from its reply's text just expired
+  const classesRef = useRef<ReturnType<typeof conciergeTriggerClasses> | undefined>(undefined);
   useEffect(() => {
-    schedulerRef.current?.update(conciergeTriggerClasses(sessions), live);
+    const classes = conciergeTriggerClasses(sessions);
+    if (live) {
+      for (const line of conciergeExpiredLogLines(classesRef.current, classes)) void invoke("log", { line }).catch(() => {});
+    }
+    classesRef.current = live ? classes : undefined;
+    schedulerRef.current?.update(classes, live);
   }, [sessions, live]);
   useEffect(() => () => schedulerRef.current?.stop(), []);
   // The advice's target changed state (e.g. the user answered it): hidden on this poll, not at the next request. A

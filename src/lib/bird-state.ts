@@ -3,7 +3,7 @@ import { pendingAskOf, type TailInfo } from "./transcript";
 import type { BirdState, ChickView } from "./session-types";
 
 const WRITING_MS = 6_000; // recent write = working
-const DOZE_MS = 5 * 60_000; // dozing once this long has passed since done
+export const DOZE_MS = 5 * 60_000; // dozing once this long has passed since done
 // Idle time before a chick's assistant_text tail is treated as done, as a fallback when the parent ledger
 // (chickSignals) has no signal. The harmless pauses observed in real data ("wrote only text for a moment
 // while working") were 36 seconds, and could exceed 60 seconds with long thinking, so we use 2 minutes, well
