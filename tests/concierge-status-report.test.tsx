@@ -6,6 +6,8 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ConciergeStatus, ShownSuggestion, StatusLine } from "../src/lib/concierge-status.ts";
 import type { SessionView } from "../src/lib/sessions.ts";
+import { conciergeStatusLines } from "../src/lib/concierge-status.ts";
+import { BUBBLE_BG } from "../src/lib/bird-colors.ts";
 import { ConciergeStatusReport } from "../src/perch/concierge-status-report.tsx";
 
 const view = (id: string, patch: Partial<SessionView> = {}): SessionView => ({
@@ -31,6 +33,7 @@ const render = (sessions = NOW, suggestions = SUGGESTIONS, more = 0, canJump = (
     <ConciergeStatusReport lines={LINES} more={more} suggestions={suggestions} sessions={sessions} canJump={canJump} />,
   );
 const LINK = '<span role="button" tabindex="0" class="concierge-status-name fade-target">';
+const DOT = (status: ConciergeStatus) => `<span class="concierge-status-dot" data-status="${status}" aria-hidden="true"></span>`;
 
 describe("the state lines", () => {
   test("「<name>: <text>」 with the name linking to its session and the app's state after the text", () => {
@@ -41,7 +44,7 @@ describe("the state lines", () => {
     expect(html).toContain(`${LINK}web</span>:<span class="concierge-status-state" data-status="working"> </span></span>`);
   });
 
-  test("a session that needs a reply without a text says its state in the same part, so it is red like the others", () => {
+  test("a session that needs a reply without a text says its state in the same part as the others", () => {
     const html = renderToStaticMarkup(
       <ConciergeStatusReport
         lines={[{ sessionId: "blog", name: "blog", status: "reply" }]}
@@ -52,7 +55,7 @@ describe("the state lines", () => {
       />,
     );
     expect(html).toBe(
-      `<span class="concierge-status"><span class="concierge-status-lines"><span class="concierge-status-line">${LINK}blog</span>:<span class="concierge-status-state" data-status="reply"> </span></span></span></span>`,
+      `<span class="concierge-status"><span class="concierge-status-lines"><span class="concierge-status-line">${DOT("reply")}${LINK}blog</span>:<span class="concierge-status-state" data-status="reply"> </span></span></span></span>`,
     );
   });
 
@@ -90,36 +93,67 @@ describe("the suggestions", () => {
   });
 });
 
-// The state word's color is set by CSS on its data-status (styles/concierge.css), so read the rules it uses
+// The state lines' rules (styles/concierge.css)
 const css = readFileSync(new URL("../src/perch/styles/concierge.css", import.meta.url), "utf8");
-const colorOf = (status: ConciergeStatus) => {
-  const at = css.indexOf(`.concierge-status-state[data-status="${status}"] {`);
-  return at < 0 ? undefined : css.slice(at, css.indexOf("}", at)).match(/(?:^|\s)color: ([^;]+);/)?.[1];
+const rule = (selector: string) => {
+  const at = css.indexOf(`${selector} {`);
+  return at < 0 ? undefined : css.slice(at, css.indexOf("}", at));
 };
 
-describe("the state word's mark (docs/design.md \"Concierge\")", () => {
+// The color a rule gives, its custom property resolved from .concierge-status
+const colorIn = (selector: string, prop: string) => {
+  const v = rule(selector)?.match(new RegExp(`(?:^|\\s)${prop}: ([^;]+);`))?.[1];
+  const custom = v?.match(/^var\((--[\w-]+)\)$/)?.[1];
+  return custom ? rule(".concierge-status")?.match(new RegExp(`${custom}: ([^;]+);`))?.[1] : v;
+};
+// WCAG contrast of two #rrggbb colors
+const contrast = (a: string, b: string) => {
+  const lum = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+describe("the dot at each state line's left (docs/design.md \"Concierge\")", () => {
   test.each([
-    // [state, its word's own color rule (none: the muted state color), a blue dot before the word]
-    ["reply", "#a0461c", false],
-    ["done", undefined, true],
-    ["working", undefined, false],
-  ] as const)("%s: color %p, dot %p", (status, color, dot) => {
+    // [scene, the session, its dot's color, its word's color, its word's weight]
+    ["finished", view("s", { state: "done", summary: "ok" }), "#1d5ba6", "#7a7263", undefined],
+    ["finished (dozing)", view("s", { state: "dozing" }), "#1d5ba6", "#7a7263", undefined],
+    ["needs a reply (waiting)", view("s", { state: "waiting", question: "Go?" }), "#a0461c", "#a0461c", "600"],
+    ["needs a reply (done, asking)", view("s", { state: "done", ask: { status: "asking" } }), "#a0461c", "#a0461c", "600"],
+    ["working", view("s"), "#7a7263", "#7a7263", undefined],
+    ["finished but continuing: working grey, like its word", view("s", { state: "done", continuing: true }), "#7a7263", "#7a7263", undefined],
+  ] as const)("%s: dot %p, word %p", (_, session, dot, word, weight) => {
+    const { lines } = conciergeStatusLines([session], () => "t");
+    const status = lines[0].status;
     const html = renderToStaticMarkup(
-      <ConciergeStatusReport
-        lines={[{ sessionId: "s", name: "s", text: "t", status }]}
-        more={0}
-        suggestions={[]}
-        sessions={[view("s")]}
-        canJump={() => true}
-      />,
+      <ConciergeStatusReport lines={lines} more={0} suggestions={[]} sessions={[session]} canJump={() => true} />,
     );
-    const mark = dot ? '<span class="concierge-status-dot" aria-hidden="true"></span>' : "";
-    expect(html).toContain(`<span class="concierge-status-state" data-status="${status}"> ${mark}</span>`);
-    expect(colorOf(status)).toBe(color);
+    // The line starts with its state's dot, before the name; one dot only, the state word's part has none
+    expect(html).toContain(`<span class="concierge-status-line">${DOT(status)}${LINK}s</span>: t`);
+    expect(html.match(/concierge-status-dot/g)).toHaveLength(1);
+    expect(colorIn(`.concierge-status-dot[data-status="${status}"]`, "background")).toBe(dot);
+    const wordRule = `.concierge-status-state[data-status="${status}"]`;
+    expect(colorIn(wordRule, "color") ?? colorIn(".concierge-status-state", "color")).toBe(word);
+    expect(rule(wordRule)?.match(/font-weight: (\d+);/)?.[1]).toBe(weight);
+    // A dot keeps 3:1 on the bubble (a graphic part)
+    expect(contrast(dot, BUBBLE_BG)).toBeGreaterThanOrEqual(3);
   });
 
-  test("the dot is blue", () => {
-    const at = css.indexOf(".concierge-status-dot {");
-    expect(css.slice(at, css.indexOf("}", at))).toContain("background: #1d5ba6;");
+  test("a suggestion has no dot", () => {
+    expect(render(NOW, SUGGESTIONS).split('class="concierge-status-lines"')[0]).not.toContain("concierge-status-dot");
+  });
+
+  test("a wrapped line continues under the name: the line hangs from the dot by its width and gap", () => {
+    const line = rule(".concierge-status-lines .concierge-status-line");
+    const dot = rule(".concierge-status-dot");
+    const px = (r: string | undefined, prop: string) => Number(r?.match(new RegExp(`${prop}: (-?[\\d.]+)px;`))?.[1]);
+    expect(px(line, "padding-left")).toBe(px(dot, "width") + px(dot, "margin-right"));
+    expect(px(line, "text-indent")).toBe(-px(line, "padding-left"));
   });
 });

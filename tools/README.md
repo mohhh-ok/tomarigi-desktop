@@ -25,6 +25,21 @@ and saving the Garden's positions as a drag does. That last one runs the app's o
 (src/lib/garden-layout.ts), bundled with `bun build` when a tool starts and loaded into the page, so the tools don't
 keep their own copy of the database's names. `bun` has to be on the PATH.
 
+## concierge-tab-shot.mjs
+
+Shoots the mock's Concierge tab at given window widths (default 340px and 260px) for a UI check of its bubble: the
+suggestions and the state lines. By default the scene has a session needing a reply, finished ones, a working one and
+a long name that wraps (`preset=same-project`), in Japanese. Needs a `vite build` output (`DIST`) and Playwright
+("Playwright" above); no dev server or port.
+
+```sh
+DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/shots \
+  node tools/concierge-tab-shot.mjs
+```
+
+Env: `WIDTHS`, `HEIGHT`, `QUERY` (another mock scene), `SHOT_LANG=en`, `NAME` (the files' prefix), `LABEL` (drawn at
+the top left of each image, to tell shots apart), `REST=1` (at rest). Writes `<OUT>/<NAME>-<width>.png` at 2x.
+
 ## turn-verdict-probe.ts
 
 Runs the turn verdict (docs/design.md "Turn verdicts") on real replies several times with OpenAI and Anthropic, with

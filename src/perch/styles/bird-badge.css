@@ -32,7 +32,7 @@
 
 .bird-badge-ask {
   right: calc(var(--badge-overlap) - var(--badge-size));
-  background: #f2b33d;
+  background: var(--ask-badge);
   color: #231d12;
 }
 
