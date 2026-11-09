@@ -196,4 +196,8 @@ export type LiveFoundEntry = FoundEntry & { live: boolean | undefined; pid?: num
 export interface ChickMeta {
   name: string; // resolved from meta.json in order name → description → file name
   toolUseId?: string; // tool_use id at start (Task/Agent call). Used to match the sync completion signal
+  // How deep the chick was started: 1 = by the parent session itself, 2 = by a chick, and so on (meta.json's spawnDepth,
+  // read from Claude Code 2.1.317). undefined in older versions. A chick of depth 2 or more has its completion record in
+  // the transcript of the chick that started it, not in the parent's (see scanChicks)
+  spawnDepth?: number;
 }

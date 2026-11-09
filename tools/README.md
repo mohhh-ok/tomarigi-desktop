@@ -25,6 +25,18 @@ and saving the Garden's positions as a drag does. That last one runs the app's o
 (src/lib/garden-layout.ts), bundled with `bun build` when a tool starts and loaded into the page, so the tools don't
 keep their own copy of the database's names. `bun` has to be on the PATH.
 
+## chick-scan-measure.ts
+
+Runs the app's own `scanChicks` (src/lib/session-chicks.ts) on a real parent transcript and its `subagents/` folder,
+and prints how many chicks came out in each state, the ones still working, the time of the first scan and of a
+second, incremental one, and the peak RSS. Use it to check a change to how chicks are judged done, or what reading
+their completion records costs, on a parent with many chicks. Files are read through stand-ins backed by node:fs
+instead of Tauri's `fs_read`. Read only.
+
+```sh
+bun tools/chick-scan-measure.ts ~/.claude/projects/<project>/<session id>.jsonl
+```
+
 ## concierge-tab-shot.mjs
 
 Shoots the mock's Concierge tab at given window widths (default 340px and 260px) for a UI check of its bubble: the

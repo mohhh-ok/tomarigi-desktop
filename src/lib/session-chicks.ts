@@ -1,6 +1,6 @@
 // Chicks: subagents under a parent's transcript folder, and sessions started via the SDK
 import type { NativeDirectoryHandle, NativeFile, NativeFileHandle } from "./native-fs";
-import { scanChickSignals } from "./transcript";
+import { scanChickSignals, type TailInfo } from "./transcript";
 import type { ChickMeta, ChickScan, ChickView, FoundEntry } from "./session-types";
 import { chickMetaCache, chickSignalLedger } from "./session-store";
 import { readTailCached } from "./session-tail";
@@ -46,46 +46,46 @@ export async function scanChicks(
 
   // Completion records from the whole parent transcript, plus the tail window (it can be ahead of the ledger by
   // lines appended between the two reads). The latest time wins, as in TailInfo.chickSignals
-  let ledger = chickSignalLedger.get(parentId);
-  if (!ledger || parentFile.size < ledger.end) ledger = { end: 0, signals: new Map() };
-  if (parentFile.size > ledger.end) {
-    const scan = await scanChickSignals(parentFile, ledger.end);
-    for (const [key, at] of scan.signals) ledger.signals.set(key, Math.max(ledger.signals.get(key) ?? 0, at));
-    ledger.end = scan.end;
-  }
-  chickSignalLedger.set(parentId, ledger);
-  const parentChickSignals = new Map(ledger.signals);
-  for (const [key, at] of parentTailSignals) parentChickSignals.set(key, Math.max(parentChickSignals.get(key) ?? 0, at));
+  const chickSignals = new Map<string, number>();
+  mergeSignals(chickSignals, await readSignalLedger(parentId, parentFile));
+  mergeSignals(chickSignals, parentTailSignals);
 
-  const chicks: ChickScan[] = [];
+  const found: FoundChick[] = [];
   for await (const entry of subagentsDir.values()) {
     if (entry.kind !== "file" || !entry.name.endsWith(".jsonl")) continue;
     const file = await (entry as NativeFileHandle).getFile();
-
     const chickId = `${parentId}/${entry.name}`;
     const tail = await readTailCached(chickId, file, { includeSidechain: true });
-    // Use tail.lastEventAt as the basis for the same reason as the parent scan's sinceMs (see the equivalent
-    // place in scanSessions). sinceMs is for display, so the mtime fallback is acceptable
-    const chickSinceBasis = tail.lastEventAt ?? file.lastModified;
-    const sinceMs = now - chickSinceBasis;
     const meta = await resolveChickMeta(subagentsDir, entry.name, chickId);
     // Recover the task-id from the file name agent-<task-id>.jsonl. It matches <task-id> in
     // task-notification (confirmed in real data). Even with naming lacking the "agent-" prefix
     // (should it change in the future), it is just used as the key as-is; the signal simply won't be found
     // and it falls to the later fallback check, so it errs on the safe side
     const taskId = entry.name.replace(/^agent-/, "").replace(/\.jsonl$/, "");
-    // Pass tail.lastEventAt as-is, before the mtime fallback, to the resume check (resolveChickDoneSignalAt).
-    // Not trusting mtime is the very reason that function exists, and substituting chickSinceBasis (meant for
-    // sinceMs) would bring back the same problem (mistaking a later touch for a resume)
-    const chickDoneSignalAt = resolveChickDoneSignalAt(
-      parentChickSignals,
-      taskId,
-      meta.toolUseId,
-      tail.lastEventAt,
-    );
+    found.push({ id: chickId, file, tail, meta, taskId });
+  }
+
+  // A chick started by another chick (spawnDepth 2 or more) has its completion record in the transcript of the chick
+  // that started it, not in the parent's: the tool_result of its Agent call, or the task-notification of its async
+  // start, are written there. Without them it stayed working for as long as the parent lived and held the parent at
+  // working too (a parent that had ended its turn showed working with 10 such chicks). Those transcripts are read only
+  // while a chick of depth 2 or more (or of unknown depth) has no record, and only the chicks that can have started it;
+  // each is read incrementally, like the parent (docs/design.md "Removing birds of ended sessions")
+  const callers = callerCandidates(found.map((c) => ({ ...c, resolved: doneSignalOf(chickSignals, c) !== undefined })));
+  for (const c of found) {
+    if (callers.has(c.id)) mergeSignals(chickSignals, await readSignalLedger(c.id, c.file));
+  }
+
+  const chicks: ChickScan[] = [];
+  for (const c of found) {
+    const { id, file, tail, meta } = c;
+    // Use tail.lastEventAt as the basis for the same reason as the parent scan's sinceMs (see the equivalent
+    // place in scanSessions). sinceMs is for display, so the mtime fallback is acceptable
+    const sinceMs = now - (tail.lastEventAt ?? file.lastModified);
+    const chickDoneSignalAt = doneSignalOf(chickSignals, c);
     chicks.push({
       view: {
-        id: chickId,
+        id,
         name: meta.name,
         state: deriveState(tail, sinceMs, true, chickDoneSignalAt),
         sinceMs,
@@ -96,6 +96,65 @@ export async function scanChicks(
   }
   chicks.sort((a, b) => a.view.sinceMs - b.view.sinceMs);
   return chicks;
+}
+
+interface FoundChick {
+  id: string;
+  file: NativeFile;
+  tail: TailInfo;
+  meta: ChickMeta;
+  taskId: string;
+}
+
+// Pass tail.lastEventAt as-is, before the mtime fallback, to the resume check (resolveChickDoneSignalAt).
+// Not trusting mtime is the very reason that function exists, and substituting the mtime fallback (meant for
+// sinceMs) would bring back the same problem (mistaking a later touch for a resume)
+function doneSignalOf(signals: Map<string, number>, c: FoundChick): number | undefined {
+  return resolveChickDoneSignalAt(signals, c.taskId, c.meta.toolUseId, c.tail.lastEventAt);
+}
+
+function mergeSignals(into: Map<string, number>, from: Map<string, number>): void {
+  for (const [key, at] of from) into.set(key, Math.max(into.get(key) ?? 0, at));
+}
+
+/** Completion records from the whole of one transcript (the parent's or a chick's), read only past what was read
+ * before (the ledger is kept across scans under the transcript's id) */
+async function readSignalLedger(id: string, file: NativeFile): Promise<Map<string, number>> {
+  let ledger = chickSignalLedger.get(id);
+  if (!ledger || file.size < ledger.end) ledger = { end: 0, signals: new Map() };
+  if (file.size > ledger.end) {
+    const scan = await scanChickSignals(file, ledger.end);
+    mergeSignals(ledger.signals, scan.signals);
+    ledger.end = scan.end;
+  }
+  chickSignalLedger.set(id, ledger);
+  return ledger.signals;
+}
+
+/**
+ * The chicks whose transcripts may hold the completion record of a chick that has none in the parent's. Only chicks
+ * of depth 2 or more look there: a chick of depth d is started by one of depth d - 1. When a chick without a record
+ * has no depth (older Claude Code), or a candidate has none, depth can't narrow it down and every other chick is read.
+ * Empty when every chick without a record has depth 1 (started by the parent; its record can only be in the parent's)
+ */
+export function callerCandidates(
+  chicks: { id: string; meta: { spawnDepth?: number }; resolved: boolean }[],
+): Set<string> {
+  const wanted = new Set<number>();
+  let anyDepth = false;
+  for (const c of chicks) {
+    if (c.resolved) continue;
+    const depth = c.meta.spawnDepth;
+    if (depth === undefined) anyDepth = true;
+    else if (depth >= 2) wanted.add(depth - 1);
+  }
+  const out = new Set<string>();
+  if (!anyDepth && wanted.size === 0) return out;
+  for (const c of chicks) {
+    const depth = c.meta.spawnDepth;
+    if (anyDepth || depth === undefined || wanted.has(depth)) out.add(c.id);
+  }
+  return out;
 }
 
 /**
@@ -162,10 +221,12 @@ async function resolveChickMeta(
       name?: string;
       description?: string;
       toolUseId?: string;
+      spawnDepth?: number;
     };
     meta = {
       name: raw.name ?? raw.description ?? base,
       toolUseId: typeof raw.toolUseId === "string" ? raw.toolUseId : undefined,
+      spawnDepth: typeof raw.spawnDepth === "number" ? raw.spawnDepth : undefined,
     };
   } catch {
     // If meta.json is missing/broken, fall back to the file name for the name and continue without toolUseId
