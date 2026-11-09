@@ -5,10 +5,10 @@ import { createMockSource, MockPanel } from "./mock";
 import "./perch.css";
 import { realSource } from "./source";
 import { getIdentifier } from "@tauri-apps/api/app";
-import { applyStateColors } from "@/lib/state-colors";
+import { applyBirdColors } from "@/lib/bird-colors";
 
-// The state colors the styles read (the "?" badge, the working glow, the bubble's ground), from their one place
-applyStateColors(document.documentElement);
+// The bird colors the styles read (the "?" badge, the working glow, the bubble's ground), from their one place
+applyBirdColors(document.documentElement);
 
 const params = new URLSearchParams(location.search);
 
