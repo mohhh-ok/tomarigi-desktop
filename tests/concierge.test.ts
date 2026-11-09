@@ -31,6 +31,7 @@ import {
 } from "../src/lib/concierge.ts";
 import { verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "../src/lib/judge.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
+import { fakeTimers } from "./helpers/fake-timers.ts";
 
 const NOW = 1_000_000_000;
 
@@ -770,34 +771,6 @@ test("asked on needs reply (with the ?), its answer, and done; not on working â†
   // A session that needed a reply leaving the screen counts as its answer
   expect(conciergeTriggered(classes(view("a", { state: "waiting" }), view("b")), classes(view("b")))).toBe(true);
 });
-
-/** Timers driven by hand: advance(ms) runs what is due, in order */
-function fakeTimers() {
-  let now = 0;
-  let next = 0;
-  const pending = new Map<number, { at: number; fn: () => void }>();
-  return {
-    timers: {
-      now: () => now,
-      set: (fn: () => void, ms: number) => {
-        pending.set(++next, { at: now + ms, fn });
-        return next;
-      },
-      clear: (handle: unknown) => void pending.delete(handle as number),
-    },
-    advance(ms: number) {
-      const end = now + ms;
-      for (;;) {
-        const due = [...pending.entries()].filter(([, t]) => t.at <= end).sort((a, b) => a[1].at - b[1].at)[0];
-        if (!due) break;
-        pending.delete(due[0]);
-        now = due[1].at;
-        due[1].fn();
-      }
-      now = end;
-    },
-  };
-}
 
 function scheduled() {
   const clock = fakeTimers();

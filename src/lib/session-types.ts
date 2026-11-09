@@ -89,7 +89,9 @@ export interface SessionView {
   // (docs/design.md "Turn verdicts"). A fact for the concierge only; the bird's look doesn't change. Set by App
   continuing?: boolean;
   // The turn verdict said continuing, but TEXT_CONTINUING_EXPIRES_MS (lib/turn-verdict.ts) passed since the last write,
-  // so continuing is false. Only for the app log (continuing=expired). Set by App
+  // so continuing is false. Asks the concierge once while dozing (the "expired" class of conciergeTriggerClasses in
+  // lib/concierge.ts) and shows as continuing=expired in the app log; the concierge's payload only says continuing false.
+  // Set by App
   continuingExpired?: true;
   // The messages a person typed in the stopped turn, oldest first (turnUserMessages in lib/session-tail.ts). Input
   // for the abuse verdict (docs/design.md "Anger mark for abuse toward the AI"). Untrusted input; never shown

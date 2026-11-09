@@ -15,6 +15,7 @@ import { statusesAt, suggestionsOutdated } from "../src/lib/concierge-status.ts"
 import type { SessionView } from "../src/lib/session-types.ts";
 import type { TailInfo } from "../src/lib/transcript.ts";
 import { TEXT_CONTINUING_EXPIRES_MS, withTurnVerdict } from "../src/lib/turn-verdict.ts";
+import { fakeTimers } from "./helpers/fake-timers.ts";
 
 const MIN = 60_000;
 const textTail: TailInfo = {
@@ -83,35 +84,6 @@ describe("whether a change asks", () => {
     });
   }
 });
-
-/** Timers driven by hand: advance(ms) runs what is due, in order */
-function fakeTimers() {
-  let now = 0;
-  let next = 0;
-  const pending = new Map<number, { at: number; fn: () => void }>();
-  return {
-    timers: {
-      now: () => now,
-      set: (fn: () => void, ms: number) => {
-        pending.set(++next, { at: now + ms, fn });
-        return next;
-      },
-      clear: (handle: unknown) => void pending.delete(handle as number),
-    },
-    now: () => now,
-    advance(ms: number) {
-      const end = now + ms;
-      for (;;) {
-        const due = [...pending.entries()].filter(([, t]) => t.at <= end).sort((a, b) => a[1].at - b[1].at)[0];
-        if (!due) break;
-        pending.delete(due[0]);
-        now = due[1].at;
-        due[1].fn();
-      }
-      now = end;
-    },
-  };
-}
 
 describe("the scheduler over a session's 40 minutes after its turn (a scan every 10 seconds)", () => {
   // A turn reads as done only 6 seconds after its last write (WRITING_MS in lib/bird-state.ts), so the first scan that
