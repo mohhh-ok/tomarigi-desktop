@@ -106,6 +106,12 @@ pub(crate) fn reveal_garden() {
     }
 }
 
+/// Faded, whether the point takes clicks: on a bird, or on what else garden-fade.ts sent (the handles, the session
+/// names and the whole box of the concierge's bubble: src/perch/fade-targets.ts)
+fn takes_clicks_at(birds: &[BirdRect], handles: &[BirdRect], x: f64, y: f64) -> bool {
+    birds.iter().chain(handles.iter()).any(|b| b.contains(x, y))
+}
+
 /// Next revealed state. Only a handle click shows the window; once shown, it stays until the cursor leaves the window
 /// (kept while a mouse button is held, so resizing from the edge or dragging the window isn't cut off midway)
 fn next_revealed(revealed: bool, reveal: bool, inside: bool, button_down: bool) -> bool {
@@ -219,7 +225,7 @@ fn fade_tick(app: &AppHandle) {
         let interactive = if !active {
             true
         } else {
-            let on_target = fade.birds.iter().chain(fade.handles.iter()).any(|b| b.contains(x, y));
+            let on_target = takes_clicks_at(&fade.birds, &fade.handles, x, y);
             next_interactive(fade.interactive, revealed, on_target, button_down)
         };
         let over_bird = fade.birds.iter().any(|b| b.contains(x, y));
@@ -300,6 +306,27 @@ mod tests {
         let bird = BirdRect { x: 10.0, y: 20.0, width: 40.0, height: 40.0 };
         assert!(bird.contains(10.0, 20.0));
         assert!(!bird.contains(50.0, 30.0));
+    }
+
+    /// Faded, clicks are taken over the rectangles sent, the concierge's bubble box included, and go through elsewhere
+    #[test]
+    fn faded_window_takes_clicks_over_the_rectangles_sent() {
+        let bird = BirdRect { x: 10.0, y: 20.0, width: 40.0, height: 40.0 };
+        // The concierge's bubble as a whole box (fade-targets.ts .fade-box)
+        let bubble = BirdRect { x: 0.0, y: 70.0, width: 200.0, height: 80.0 };
+        let birds = [bird];
+        let handles = [bubble];
+        let cases = [
+            ("bubble's empty space", 190.0, 140.0, true),
+            ("bubble's text", 20.0, 80.0, true),
+            ("bird", 30.0, 40.0, true),
+            ("beside the bubble", 210.0, 100.0, false),
+            ("below the bubble", 100.0, 150.0, false),
+        ];
+        for (what, x, y, want) in cases {
+            assert_eq!(takes_clicks_at(&birds, &handles, x, y), want, "{what}");
+        }
+        assert!(!takes_clicks_at(&[], &[], 30.0, 40.0));
     }
 
     /// Faded, clicks are taken on a bird or the handle only, and a drag started there keeps them until released

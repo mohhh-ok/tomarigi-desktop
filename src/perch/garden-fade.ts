@@ -1,58 +1,47 @@
 // Fade until hovered (docs/design.md "Fade until hovered"). While clicks go through, the WebView gets no mouse events,
-// so the Rust side (fade_tick in src-tauri/src/fade.rs) watches the cursor. This sends it the bird and window handles'
-// rectangles and whether the fade applies, and copies its "garden-fade" event to <html data-fade="rest">, which
-// styles/base.css fades, and its "garden-fade-bird" event (cursor on a bird at rest) to <html data-fade-bird>, which
-// makes the handle stand out
+// so the Rust side (fade_tick in src-tauri/src/fade.rs) watches the cursor. This sends it the rectangles of the birds
+// and of what else takes clicks at rest (fade-targets.ts) and whether the fade applies, and copies its "garden-fade"
+// event to <html data-fade="rest">, which styles/base.css fades, and its "garden-fade-bird" event (cursor on a bird at
+// rest) to <html data-fade-bird>, which makes the handle stand out
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type PointerEvent as ReactPointerEvent, useEffect, useRef } from "react";
+import {
+  BIRD_BADGE_SELECTOR,
+  BIRD_GLYPH_SELECTOR,
+  birdRect,
+  FADE_BOX_SELECTOR,
+  FADE_TARGET_SELECTOR,
+  type FadeRect,
+  targetRects,
+} from "./fade-targets";
 import { currentWindowMode } from "./window-mode";
 
 // Birds move by layout changes, resizing, and enter/leave animations. Looked up at this interval and sent only
 // when changed
 const MEASURE_MS = 250;
 
-interface BirdRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 /** The bird and its badges ("?", anger mark), which stick out of the glyph */
-function birdRects(): BirdRect[] {
-  const rects: BirdRect[] = [];
-  for (const glyph of document.querySelectorAll(".garden-node .garden-glyph")) {
-    let { left, top, right, bottom } = glyph.getBoundingClientRect();
-    if (right <= left || bottom <= top) continue;
-    for (const badge of glyph.querySelectorAll(".bird-badge")) {
-      const b = badge.getBoundingClientRect();
-      left = Math.min(left, b.left);
-      top = Math.min(top, b.top);
-      right = Math.max(right, b.right);
-      bottom = Math.max(bottom, b.bottom);
-    }
-    rects.push({ x: left, y: top, width: right - left, height: bottom - top });
+function birdRects(): FadeRect[] {
+  const rects: FadeRect[] = [];
+  for (const glyph of document.querySelectorAll(BIRD_GLYPH_SELECTOR)) {
+    const badges = [...glyph.querySelectorAll(BIRD_BADGE_SELECTOR)].map((b) => b.getBoundingClientRect());
+    const r = birdRect(glyph.getBoundingClientRect(), badges);
+    if (r) rects.push(r);
   }
   return rects;
 }
 
-/** The window handles: "Tomarigi" in the header (App.tsx), and the Garden's empty message while it has no birds
- * (garden.tsx). Also what else takes clicks at rest: the session names in the concierge's bubble
- * (concierge-status-report.tsx) */
-const HANDLE_SELECTOR = ".fade-handle, .fade-target";
-
-/** One rectangle per line box, so a name wrapped onto two lines doesn't take clicks on the text between its parts */
-function handleRects(): BirdRect[] {
-  const rects: BirdRect[] = [];
-  for (const el of document.querySelectorAll(HANDLE_SELECTOR)) {
-    for (const { left, top, right, bottom } of el.getClientRects()) {
-      if (right <= left || bottom <= top) continue;
-      rects.push({ x: left, y: top, width: right - left, height: bottom - top });
-    }
-  }
-  return rects;
+/** Everything else that takes clicks at rest (fade-targets.ts): the window handles, the session names and the whole
+ * box of the concierge's bubble */
+function handleRects(): FadeRect[] {
+  const targets = [...document.querySelectorAll(FADE_TARGET_SELECTOR)].map((el) => ({
+    box: el.getBoundingClientRect(),
+    lines: [...el.getClientRects()],
+    whole: el.matches(FADE_BOX_SELECTOR),
+  }));
+  return targetRects(targets);
 }
 
 /** The Garden's empty message (garden.tsx), shown instead of birds */
@@ -116,7 +105,7 @@ export function useGardenFade(enabled: boolean) {
     let stopped = false;
     let timer: ReturnType<typeof setInterval> | undefined;
     // resync: have Rust emit its current state again (the page may have been reloaded while it was faded)
-    const send = (on: boolean, birds: BirdRect[], handles: BirdRect[], resync = false) => {
+    const send = (on: boolean, birds: FadeRect[], handles: FadeRect[], resync = false) => {
       const key = JSON.stringify([on, birds, handles]);
       if (key === last && !resync) return;
       last = key;

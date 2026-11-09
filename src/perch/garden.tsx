@@ -1413,9 +1413,11 @@ export function GardenNode({
             }
           >
             {bubbleContent === undefined ? (
-              <SpeechBubble text={bubble ?? ""} placement="below" style={bubbleStyle} />
+              // The concierge's bubble takes clicks over its whole box at rest, so a click on its empty space doesn't
+              // reach what is under it (fade-targets.ts); a bird's bubble lets clicks through
+              <SpeechBubble text={bubble ?? ""} placement="below" style={bubbleStyle} takesClicks={Boolean(concierge)} />
             ) : (
-              <span className="speech-bubble-below concierge-report" style={bubbleStyle}>
+              <span className="speech-bubble-below concierge-report fade-box" style={bubbleStyle}>
                 <span className="speech-bubble">{bubbleContent}</span>
               </span>
             )}

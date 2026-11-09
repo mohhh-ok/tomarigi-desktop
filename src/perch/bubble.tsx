@@ -23,9 +23,12 @@ export function SpeechBubble({
   text,
   placement,
   style,
+  takesClicks,
 }: {
   text: string;
   placement: "below" | "row";
+  // Garden: the whole box takes clicks at rest (.fade-box, fade-targets.ts), for the concierge's bubble
+  takesClicks?: boolean;
   // Position when pulled inward at the edge of the garden (bubbleVars in garden.tsx)
   style?: CSSProperties;
 }) {
@@ -33,7 +36,7 @@ export function SpeechBubble({
     // Garden: the whole text, wrapping past 180px; an outer box holds the tail and position (.speech-bubble-below in
     // styles/speech-bubble.css)
     return (
-      <span className="speech-bubble-below" style={style}>
+      <span className={`speech-bubble-below${takesClicks ? " fade-box" : ""}`} style={style}>
         <span className="speech-bubble">{text}</span>
       </span>
     );
