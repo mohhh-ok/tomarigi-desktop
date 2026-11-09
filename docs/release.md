@@ -118,7 +118,7 @@ What has been checked without real machines (on a Mac): the Linux build, `cargo 
 
 - [ ] The NSIS installer installs and the app starts; SmartScreen shows its warning and "Run anyway" works
 - [ ] Floating window: transparent with Acrylic behind it, borderless, always on top, not in the taskbar; it stays above other windows after switching apps
-- [ ] Fade until hovered: at rest clicks go through to the window below except on birds and the handle; clicking the handle shows the window; leaving the window fades it. Dragging a bird and dragging the window work while faded
+- [ ] Fade until hovered: at rest clicks go through to the window below except on birds, the handle, and the concierge's bubble (its empty space too); clicking the handle shows the window; leaving the window fades it. Dragging a bird and dragging the window work while faded
 - [ ] Clicking a bird while faded doesn't take focus from the terminal before the jump (the window is not focusable while faded); after the handle click, the settings inputs (API keys) can be typed in
 - [ ] Standard window: title bar, can maximize, shows in the taskbar; switching back to floating restores the floating look and position
 - [ ] Position and size are restored per mode after a restart, also with two displays and display scaling other than 100%
@@ -138,7 +138,7 @@ Check on GNOME (X11 and Wayland sessions) and KDE Plasma at least, with the `.de
 
 - [ ] The app starts from the `.deb` and the `.AppImage`; on a Wayland session it runs through Xwayland (`xprop` can click it)
 - [ ] Floating window: transparent (with a compositor), borderless, always on top (window manager dependent), not in the taskbar, shown on every workspace
-- [ ] Fade until hovered: click-through except on birds and the handle, the handle click shows the window, leaving fades it; dragging works
+- [ ] Fade until hovered: click-through except on birds, the handle, and the concierge's bubble, the handle click shows the window, leaving fades it; dragging works
 - [ ] Clicking a bird while faded doesn't take focus from the terminal; after the handle click, the settings inputs can be typed in
 - [ ] Standard window and switching back; position and size restored per mode after a restart
 - [ ] Tray icon is shown (GNOME needs the AppIndicator extension); the menu opens and "Show / Hide" works; menu language follows the system locale
