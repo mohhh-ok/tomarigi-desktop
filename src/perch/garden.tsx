@@ -42,7 +42,7 @@ import { currentWindowMode } from "./window-mode";
 import { hasQuestion, isAngry, needsAnswer } from "@/lib/turn-verdict";
 import { createPortal } from "react-dom";
 import { MdLink } from "react-icons/md";
-import { bubbleText, SpeechBubble } from "./bubble";
+import { bubbleText, GardenBubble } from "./bubble";
 import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
@@ -1412,15 +1412,12 @@ export function GardenNode({
               } as CSSProperties
             }
           >
-            {bubbleContent === undefined ? (
-              // The concierge's bubble takes clicks over its whole box at rest, so a click on its empty space doesn't
-              // reach what is under it (fade-targets.ts); a bird's bubble lets clicks through
-              <SpeechBubble text={bubble ?? ""} placement="below" style={bubbleStyle} takesClicks={Boolean(concierge)} />
-            ) : (
-              <span className="speech-bubble-below concierge-report fade-box" style={bubbleStyle}>
-                <span className="speech-bubble">{bubbleContent}</span>
-              </span>
-            )}
+            <GardenBubble
+              text={bubble ?? ""}
+              content={bubbleContent}
+              concierge={Boolean(concierge)}
+              style={bubbleStyle}
+            />
           </div>,
           bubbleParent,
         )}
