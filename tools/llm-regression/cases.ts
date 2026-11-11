@@ -126,6 +126,42 @@ export const CASES: Case[] = [
   },
   {
     kind: "turn",
+    name: "own_decision_report_child_working",
+    why:
+      "A report after a correction, with a decision the agent says it made itself, results it will check and show once " +
+      "a child's drafts arrive, and a commit not merged or pushed yet, got asking yes and continuing yes, and the " +
+      "concierge told the user to approve the direction. Nothing is asked; a child still works",
+    user: ["看板を持ってるのはいいから、向きだけ変えて"],
+    reply: `申し訳ありません。B 案の試しを見たときに、看板の向きのおかしさを見落としていました。表紙の絵は公開中のページに出ていて、同じおかしさが残っています。
+
+「看板を持ってるのはいいから、向きだけ変えて」は、表紙の絵のことと受け取りました。
+
+**表紙**
+- 看板は手に持ったままにして、文字の面だけ通る人の方へ向けます。ほかは今の絵のままです。
+- 描き直さず、看板と手のところだけを直します。B 案の試しが出たら、担当の子（cover-worker）が直し方を出すので、私が確かめてから描かせます。
+
+**B 案**
+- 看板を 2 人の間の台に置き、2 人でのぞき込む形で試しを描き直させています。
+- 台に置いた看板の上の辺は、2 人から読める向き（奥側）にしました。手前から読める向きにすると、2 人には逆さになって、また向きが食い違うからです。そのため見る人からは、看板の字が逆さに見えます。この向きは私の判断です。
+- 試しが出たら、看板のところの拡大を付けて並べてお見せします。
+
+**仕組みの直し**
+- 原因は、私の決めた仕様が「看板の字を見る人に見せる」と「人物が看板を見る」を同時に求めていたことです。
+- docs に「看板は人物の方を向いたまま、手前からも見える構図にする」と書き、今後の絵はこれに合わせます。
+
+**記録**
+- docs: 1a2b3c4d・5e6f7a8b
+- issue #71 に表紙の直しのタスクを足しました。
+
+**途中で入ったコミット**
+- 止める前に、担当の子が今の B 案の絵（向きがおかしい版）で差し替えをコミットしていました（9c0d1e2f）。
+- まだ main には取り込んでおらず、push もしていません。新しい絵ができたら入れ替えます。`,
+    want: { asking: false, continuing: true },
+    lineMustNot: /(よいか|でよい|よろし|確認(待ち|を待|したい|しますか|をお願い)|承認|判断を|返事|ください|\?|？)/,
+    runs: 16,
+  },
+  {
+    kind: "turn",
     name: "ok_then_asks_again",
     why:
       "A turn started by an approval that ends by asking for another approval got asking no: the model read the " +
@@ -446,6 +482,30 @@ https://www.example.com/help
       const first = (r.suggestions ?? [])[0];
       if (!first || first.sessionId !== "s-ask" || first.kind !== "reply") return "the session asking isn't suggested first as reply";
       return (r.suggestions ?? []).some((s) => s.sessionId === "s-fin" && s.kind === "reply") ? "asked to reply to a finished session" : undefined;
+    },
+  },
+  {
+    kind: "concierge",
+    name: "concierge_answered_waits_not_skipped",
+    why:
+      "A session that asked on a question tool twice in one turn and was answered each time, then asked again, was " +
+      "advised as kept waiting many times (「何度も待たせています」). Skips come from the skipped fact; it has none",
+    withSuggestions: true,
+    sessions: [
+      { view: view("s-ask", { project: "app-h", sinceMs: 9_000, ask: { status: "asking" }, continuing: true, reply: { at: CASE_NOW - 9_000, text: "この 2 案のどちらで進めるか選んでください。" } }), agent: "claude", line: "2 案の選択" },
+    ],
+    events: [
+      { key: "a", sessionId: "s-ask", project: "app-h", type: "waiting", at: CASE_NOW - 190_000 },
+      { key: "b", sessionId: "s-ask", project: "app-h", type: "started", at: CASE_NOW - 170_000 },
+      { key: "c", sessionId: "s-ask", project: "app-h", type: "waiting", at: CASE_NOW - 85_000 },
+      { key: "d", sessionId: "s-ask", project: "app-h", type: "started", at: CASE_NOW - 50_000 },
+      { key: "e", sessionId: "s-ask", project: "app-h", type: "done", at: CASE_NOW - 9_000, ask: { status: "asking" } },
+    ],
+    check: (r) => {
+      const texts = said(r).map((x) => x.text);
+      if (!said(r).some((x) => x.id === "s-ask" && x.kind === "reply")) return "the session asking isn't advised as reply";
+      const bad = texts.find((t) => /何度|繰り返し|ずっと|待たせ|again|repeated/.test(t));
+      return bad ? `says it was kept waiting: ${bad}` : undefined;
     },
   },
 ];

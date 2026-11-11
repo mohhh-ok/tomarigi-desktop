@@ -27,6 +27,7 @@ import {
   conciergeResultLogLine,
   conciergeRetryLogLine,
   elapsedNumbers,
+  skippedWhileWaiting,
   writesElapsedTime,
 } from "../src/lib/concierge.ts";
 import { verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "../src/lib/judge.ts";
@@ -295,6 +296,75 @@ test("a chick waiting on a reply holds up its parent", () => {
   const parent = view("p", { chicks: [{ id: "p/c1", name: "reviewer", state: "waiting", sinceMs: 1 }] });
   const payload = buildConciergePayload([{ view: parent }], [], [], NOW, "en");
   expect(payload.holds).toEqual([{ waiting_session: "p", held_up_by: "chick:reviewer", reason: "chick_needs_reply" }]);
+});
+
+describe("skippedWhileWaiting: a waiting session the developer left for another, as a fact", () => {
+  // yokai-no-sensei asked on a question tool twice in one turn and was answered each time, then its report got asking
+  // (wrongly); the concierge read the three needs_reply events as one long wait and wrote 「何度も待たせています」
+  // (docs/design.md "Concierge")
+  type E = { kind: "needs_reply" | "user_replied" | "done" | "jump"; session: string };
+  const n = (session: string): E => ({ kind: "needs_reply", session });
+  const r = (session: string): E => ({ kind: "user_replied", session });
+  const j = (session: string): E => ({ kind: "jump", session });
+  const d = (session: string): E => ({ kind: "done", session });
+  const cases: { name: string; events: E[]; waiting: string[]; skipped: string[] }[] = [
+    { name: "waits answered one after another, then a new wait", events: [n("a"), r("a"), n("a"), r("a"), n("a")], waiting: ["a"], skipped: [] },
+    { name: "replied to another session while waiting", events: [n("a"), r("b")], waiting: ["a"], skipped: ["a"] },
+    { name: "jumped to another session while waiting", events: [n("a"), j("b")], waiting: ["a"], skipped: ["a"] },
+    { name: "jumped to itself", events: [n("a"), j("a")], waiting: ["a"], skipped: [] },
+    { name: "another session moved before this wait began", events: [r("b"), j("b"), n("a")], waiting: ["a"], skipped: [] },
+    { name: "an earlier wait was skipped, then answered; the current one isn't", events: [n("a"), r("b"), r("a"), n("a"), d("b")], waiting: ["a"], skipped: [] },
+    { name: "another session only finished", events: [n("a"), d("b")], waiting: ["a"], skipped: [] },
+    { name: "not waiting now", events: [n("a"), r("b")], waiting: [], skipped: [] },
+    { name: "waiting with no needs_reply event in the window", events: [r("b")], waiting: ["a"], skipped: [] },
+  ];
+  for (const c of cases) {
+    test(c.name, () => {
+      expect([...skippedWhileWaiting(c.events, new Set(c.waiting))]).toEqual(c.skipped);
+    });
+  }
+
+  test("the payload marks a skipped session that needs a reply, and only it", () => {
+    const events = [
+      event("a", "waiting", 300),
+      event("a", "started", 280),
+      event("a", "waiting", 200),
+      event("a", "started", 180),
+      event("a", "done", 100, { ask: { status: "asking" } }),
+      event("b", "waiting", 90),
+      event("c", "started", 50),
+    ];
+    const payload = buildConciergePayload(
+      [
+        { view: view("a", { state: "done", ask: { status: "asking" } }) },
+        { view: view("b", { state: "waiting" }) },
+        { view: view("c") },
+      ],
+      events,
+      [],
+      NOW,
+      "en",
+    );
+    expect(payload.sessions.map((s) => [s.id, s.skipped])).toEqual([
+      ["a", true],
+      ["b", true],
+      ["c", undefined],
+    ]);
+    // a: its current wait began at the done that asks (100s ago); c's reply came after it. Its earlier waits were answered
+    const answered = buildConciergePayload(
+      [{ view: view("a", { state: "done", ask: { status: "asking" } }) }],
+      events.slice(0, 5),
+      [],
+      NOW,
+      "en",
+    );
+    expect(answered.sessions[0].skipped).toBeUndefined();
+  });
+
+  test("the prompt takes skips only from the fact", () => {
+    expect(CONCIERGE_TASK.systemPrompt).toContain("a session with skipped true");
+    expect(CONCIERGE_TASK.systemPrompt).toContain("unless its skipped is true");
+  });
 });
 
 test("events and jumps are merged oldest first, only for sessions sent, the last 20", () => {
