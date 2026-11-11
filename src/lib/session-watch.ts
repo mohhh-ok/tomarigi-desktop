@@ -1,6 +1,6 @@
 // Watching links between sessions (docs/design.md "Watching")
 import { invoke } from "@tauri-apps/api/core";
-import { isPeerActive, latestTurnTypedAfterRead, peerLookup, startedBySession, type FirstPrompt } from "./watching";
+import { isPeerActive, peerLookup, rememberLatestTurnTyped, startedBySession, type FirstPrompt } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
 import { firstPromptCache, latestTurnTypedIds, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
 import { sessionIdOfViewId } from "./session-liveness";
@@ -40,8 +40,7 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
           { path: f.file.path, start: peerScanOffset.get(f.id) ?? 0 },
         );
         if (scan.firstPrompt) firstPromptCache.set(f.id, scan.firstPrompt);
-        if (latestTurnTypedAfterRead(latestTurnTypedIds.has(f.id), scan.lastTurnTyped)) latestTurnTypedIds.add(f.id);
-        else latestTurnTypedIds.delete(f.id);
+        rememberLatestTurnTyped(latestTurnTypedIds, f.id, scan.lastTurnTyped);
         // The first prompt is read from the top only, so the offset stays at the top until it has come (a session
         // just started may not have written it yet; the file is still small then)
         if (firstPromptCache.has(f.id)) peerScanOffset.set(f.id, scan.end);

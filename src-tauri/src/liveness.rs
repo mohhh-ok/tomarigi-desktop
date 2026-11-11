@@ -237,13 +237,21 @@ fn peer_name_of(to: &str) -> Option<String> {
 /// subagent's or a tool result, and not meta unless it is a message from another session (written as a meta line with
 /// turnOrigin "peer"). It is typed when its turnOrigin is "human" (or, in transcripts without turnOrigin, its
 /// origin.kind). Messages from other sessions are "peer", task notifications "task_notification", and the desktop
-/// app's own turns "sdk" / "host_synthetic". Messages and notifications that arrive while it works are attachments
-/// (queued_command), not prompts
+/// app's own turns "sdk" / "host_synthetic". What arrives while it works is an attachment (queued_command): a prompt
+/// the user typed into it then (origin.kind "human") counts as typed; messages from other sessions and task
+/// notifications don't count
 fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
-    if entry.get("type").and_then(|t| t.as_str()) != Some("user")
-        || entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true)
-    {
+    if entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true) {
         return None;
+    }
+    match entry.get("type").and_then(|t| t.as_str()) {
+        Some("user") => {}
+        Some("attachment") => {
+            let typed = entry.pointer("/attachment/type").and_then(|t| t.as_str()) == Some("queued_command")
+                && entry.pointer("/attachment/origin/kind").and_then(|k| k.as_str()) == Some("human");
+            return typed.then_some(true);
+        }
+        _ => return None,
     }
     let turn_origin = entry.get("turnOrigin").and_then(|t| t.as_str());
     let origin_kind = entry.pointer("/origin/kind").and_then(|k| k.as_str());
@@ -993,6 +1001,7 @@ mod tests {
         const HOST_SYNTHETIC: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"host_synthetic","message":{"content":"x"}}"#;
         const TASK_TURN: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"task_notification","origin":{"kind":"task-notification"},"message":{"content":"<task-notification>x"}}"#;
         const TASK_MIDWORK: &str = r#"{"type":"attachment","timestamp":"T2","attachment":{"type":"queued_command","commandMode":"task-notification","origin":{"kind":"task-notification"},"prompt":"x"}}"#;
+        const TYPED_MIDWORK: &str = r#"{"type":"attachment","timestamp":"T2","attachment":{"type":"queued_command","commandMode":"prompt","origin":{"kind":"human"},"humanTurn":true,"prompt":"x"}}"#;
         const PEER_MIDWORK: &str = r#"{"type":"attachment","timestamp":"T2","attachment":{"type":"queued_command","origin":{"kind":"peer","name":"p"},"prompt":"x"}}"#;
         const TOOL_RESULT: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"human","message":{"content":[{"type":"tool_result","tool_use_id":"t","content":"x"}]}}"#;
         const META: &str = r#"{"type":"user","isMeta":true,"timestamp":"T2","turnOrigin":"system","message":{"content":"x"}}"#;
@@ -1010,11 +1019,14 @@ mod tests {
             ("desktop: a later read sees only the notification while it works", vec![DESKTOP_FIRST, TYPED, TASK_MIDWORK, REPLY], Some(true), (2, None)),
             ("desktop: its parent's message arrives while it works on a typed turn", vec![DESKTOP_FIRST, TYPED, PEER_MIDWORK, REPLY], Some(true), (2, None)),
             ("desktop: tool results, meta lines and a subagent's lines don't start a turn", vec![DESKTOP_FIRST, PEER, TOOL_RESULT, META, SIDECHAIN], Some(false), (2, None)),
+            ("desktop: the user typed into it while it worked on its parent's turn", vec![DESKTOP_FIRST, PEER, TOOL_RESULT, TYPED_MIDWORK, REPLY], Some(true), (2, Some(true))),
+            ("desktop: typed into it while it worked, then its parent's next turn", vec![DESKTOP_FIRST, PEER, TYPED_MIDWORK, REPLY, PEER, REPLY], Some(false), (3, Some(false))),
             ("desktop: the user typed again after its parent's turn", vec![DESKTOP_FIRST, TYPED, PEER, REPLY, TYPED], Some(true), (4, Some(true))),
             ("an older transcript without turnOrigin, typed", vec![DESKTOP_FIRST, TYPED_OLD], Some(true), (1, Some(true))),
             ("ghostty: only its first prompt, which is human too", vec![NAME, SESSION_START, GHOSTTY_FIRST, REPLY], None, (3, None)),
             ("ghostty: the user typed in its pane", vec![NAME, SESSION_START, GHOSTTY_FIRST, REPLY, TYPED, REPLY], Some(true), (4, Some(true))),
             ("ghostty: then its parent's message", vec![NAME, SESSION_START, GHOSTTY_FIRST, TYPED, REPLY, PEER, REPLY], Some(false), (5, Some(false))),
+            ("ghostty: the user typed into it while it worked on its parent's turn", vec![NAME, SESSION_START, GHOSTTY_FIRST, PEER, TYPED_MIDWORK, REPLY], Some(true), (4, Some(true))),
             ("ghostty: a task notification arrives while it works on a typed turn", vec![NAME, SESSION_START, GHOSTTY_FIRST, TYPED, TASK_MIDWORK, REPLY], Some(true), (4, None)),
         ];
         for (i, (scene, lines, want, (from, want_later))) in scenes.iter().enumerate() {

@@ -17,7 +17,7 @@ import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
 import { hasQuestion, waitsOnDeveloper } from "../src/lib/turn-verdict.ts";
 import { isReadAloudEvent } from "../src/lib/voice.ts";
 import {
-  latestTurnTypedAfterRead,
+  rememberLatestTurnTyped,
   silentForParent,
   startedBySession,
   takenOverByParent,
@@ -95,6 +95,9 @@ interface Scene {
 function watchOf(scene: Scene): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf"> {
   const entries = Object.entries(scene.sessions);
   const viewId = (id: string) => `root/${id}.jsonl`;
+  // Each read of a session's transcript recorded as a scan records it
+  const typedIds = new Set<string>();
+  for (const [id, s] of entries) for (const read of s.reads ?? []) rememberLatestTurnTyped(typedIds, viewId(id), read);
   return {
     liveBySessionId: new Map(entries.map(([id, s], i) => [id, { pid: i + 1, sessionId: id, startedAt: s.startedAt } as LiveSession])),
     viewIdBySessionId: new Map(entries.filter(([, s]) => s.onScreen !== false).map(([id]) => [id, viewId(id)])),
@@ -104,8 +107,7 @@ function watchOf(scene: Scene): Pick<WatchLinks, "liveBySessionId" | "viewIdBySe
         .map((p) => ({ sessionId: p, name: p, startedAt: scene.sessions[p]?.startedAt, active: false }) as PeerLink),
     startedBySessionOf: (v) => {
       const s = entries.find(([id]) => viewId(id) === v)?.[1];
-      const typed = (s?.reads ?? []).reduce<boolean>(latestTurnTypedAfterRead, false);
-      return s !== undefined && startedBySession(s.first, typed);
+      return s !== undefined && startedBySession(s.first, typedIds.has(v));
     },
   };
 }
@@ -138,12 +140,12 @@ describe("which sessions a parent takes over", () => {
       { P: false, foo: true },
     ],
     [
-      "the user typed in that session after its first prompt: it is no longer taken over",
+      "the user started that session's latest turn by typing in it: it isn't taken over",
       { sessions: { P, foo: { startedAt: 200, first: TERMINAL_CHILD, reads: [true] } }, links: [["P", "foo"]] },
       { P: false, foo: false },
     ],
     [
-      "the user typed in C's pane: C is no longer taken over, and G still is (C is now a parent the user talks to)",
+      "the user started C's latest turn by typing in its pane: C isn't taken over, and G still is (C is now a parent the user talks to)",
       { sessions: { P, C: { ...C, reads: [true] }, G }, links: [["P", "C"], ["C", "G"]] },
       { P: false, C: false, G: true },
     ],
@@ -174,8 +176,8 @@ describe("which sessions a parent takes over", () => {
 
 describe("who started the child's latest turn", () => {
   // Reads of the child's transcript, one per scan, in order: the first from the top (its first prompt never counts), the
-  // later ones from where the last stopped (start > 0). A task notification or a message that arrives while it works
-  // is an attachment, so a read that has only that says null
+  // later ones from where the last stopped (start > 0). What arrives while it works is an attachment: a prompt the user
+  // typed into it then says true, while a read that has only a task notification or a message says null
   const scenes: [string, FirstPrompt, (boolean | null)[], boolean][] = [
     ["desktop: only its parent's task so far", DESKTOP_CHILD, [null], true],
     ["desktop: the user typed and the turn ended", DESKTOP_CHILD, [true], false],
@@ -184,10 +186,13 @@ describe("who started the child's latest turn", () => {
     ["desktop: a task notification arrives while it works on the typed turn (a later read with no prompt)", DESKTOP_CHILD, [true, null], false],
     ["desktop: back with its parent, then a later read with no prompt", DESKTOP_CHILD, [true, false, null], true],
     ["desktop: the user typed again after its parent's turn", DESKTOP_CHILD, [true, false, true], false],
+    ["desktop: the user typed into it while it worked on its parent's turn (a queued prompt)", DESKTOP_CHILD, [false, true], false],
+    ["desktop: typed into it while it worked, then its parent's next turn", DESKTOP_CHILD, [false, true, false], true],
     ["ghostty: only its first prompt, human too", TERMINAL_CHILD, [null], true],
     ["ghostty: the user typed in its pane", TERMINAL_CHILD, [null, true], false],
     ["ghostty: then its parent's message", TERMINAL_CHILD, [null, true, false], true],
     ["ghostty: a task notification arrives while it works on the typed turn", TERMINAL_CHILD, [true, null], false],
+    ["ghostty: the user typed into it while it worked on its parent's turn (a queued prompt)", TERMINAL_CHILD, [null, false, true], false],
   ];
   const P = { startedAt: 100, first: TYPED };
   for (const [scene, first, reads, want] of scenes) {

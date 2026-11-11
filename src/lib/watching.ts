@@ -57,7 +57,7 @@ export const PROMPT_AT_LAUNCH_MS = 2_000;
  * - A session started in a terminal writes "human" either way. It counts as started by another session when it was
  *   given a name and a prompt at launch (`claude --name <name> "<prompt>"`): an agent-name line before the first prompt,
  *   and the first prompt within PROMPT_AT_LAUNCH_MS of the SessionStart hook's line
- * latestTurnTyped: its latest turn after the first prompt was started by a prompt the user typed (latestTurnTypedAfterRead),
+ * latestTurnTyped: its latest turn after the first prompt was started by a prompt the user typed (rememberLatestTurnTyped),
  * so the user talks to it and no parent takes it over until a later turn is started by its parent or the app
  */
 export function startedBySession(first: FirstPrompt | undefined, latestTurnTyped = false): boolean {
@@ -69,12 +69,14 @@ export function startedBySession(first: FirstPrompt | undefined, latestTurnTyped
 }
 
 /**
- * Whether the latest turn was started by a prompt the user typed, after one read of the transcript (lastTurnTyped of
- * scan_peer_names in src-tauri: the last prompt that started a turn in the part read, null when there was none).
- * A read with no new prompt keeps the previous answer (docs/design.md "Watching", "Sessions started by another session")
+ * Records, after one read of a session's transcript, whether its latest turn was started by a prompt the user typed:
+ * typedIds holds the sessions (view id) whose latest turn the user started. read is lastTurnTyped of scan_peer_names in
+ * src-tauri (the last prompt that started a turn in the part read, null when there was none); a read with no new prompt
+ * keeps the previous answer (docs/design.md "Watching", "Sessions started by another session")
  */
-export function latestTurnTypedAfterRead(previous: boolean, read: boolean | null | undefined): boolean {
-  return read ?? previous;
+export function rememberLatestTurnTyped(typedIds: Set<string>, viewId: string, read: boolean | null | undefined): void {
+  if (read === true) typedIds.add(viewId);
+  else if (read === false) typedIds.delete(viewId);
 }
 
 /** A linked session as parentTakesOver sees it */
