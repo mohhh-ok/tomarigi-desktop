@@ -15,7 +15,7 @@ import { conciergeStatusOf } from "../src/lib/concierge-status.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
 import { hasQuestion, waitsOnDeveloper } from "../src/lib/turn-verdict.ts";
 import { isReadAloudEvent } from "../src/lib/voice.ts";
-import { parentTakesOver, silentForParent, startedBySession, type FirstPrompt } from "../src/lib/watching.ts";
+import { silentForParent, startedBySession, takenOverByParent, type FirstPrompt } from "../src/lib/watching.ts";
 import { conciergeTabCounts } from "../src/perch/concierge-tab.ts";
 
 const prompt = (turnOrigin: string | null | undefined, namedAtLaunch = false): FirstPrompt => ({
@@ -29,7 +29,7 @@ describe("started by another session, from the first prompt", () => {
     ["a desktop app session started by start_session (sdk)", prompt("sdk"), true],
     ["a desktop app session started by start_session (host_synthetic)", prompt("host_synthetic"), true],
     ["a session the user started in the desktop app", prompt("human"), false],
-    ["a terminal session started with a name and a prompt: written like the user's, not told apart", prompt("human", true), false],
+    ["a terminal session with a name but no SessionStart hook line: not told apart", prompt("human", true), false],
     ["an older transcript without turnOrigin", prompt(undefined), false],
     ["no first prompt yet", undefined, false],
   ];
@@ -47,17 +47,95 @@ describe("the user talks to it after its first prompt", () => {
   }
 });
 
-describe("a parent takes over", () => {
-  const scenes: [string, boolean, number | undefined, { startedAt?: number }[], boolean][] = [
-    ["started by a session and linked to an older one", true, 200, [{ startedAt: 100 }], true],
-    ["started by a session, linked only to a younger one (its own child)", true, 200, [{ startedAt: 300 }], false],
-    ["started by a session, not linked (its parent closed)", true, 200, [], false],
-    ["started by the user and linked to an older one: the user talks to it", false, 200, [{ startedAt: 100 }], false],
-    ["a start time unknown: the link counts", true, undefined, [{ startedAt: 100 }], true],
+// First prompts as transcripts write them. A terminal session given a name and a prompt at launch writes the agent-name
+// line first and its prompt within a tenth of a second of the SessionStart hook; one the user typed comes seconds later
+const AT0 = "2026-11-11T03:00:00.000Z";
+const launched = (afterMs: number, named: boolean, turnOrigin = "human"): FirstPrompt => ({
+  turnOrigin,
+  namedAtLaunch: named,
+  sessionStartAt: AT0,
+  at: new Date(Date.parse(AT0) + afterMs).toISOString(),
+});
+const TYPED = launched(20_000, false); // the user started it and typed its first prompt
+const TERMINAL_CHILD = launched(20, true); // `claude --name <name> "<prompt>"` from another session
+const DESKTOP_CHILD = prompt("sdk"); // the desktop app's start_session
+const DESKTOP_USER = prompt("human"); // the user started it in the desktop app
+
+describe("started by another session, in a terminal", () => {
+  const scenes: [string, FirstPrompt, boolean][] = [
+    ["a name and a prompt at launch", TERMINAL_CHILD, true],
+    ["a name at launch, the prompt typed seconds later", launched(8_000, true), false],
+    ["a prompt at launch without a name (the user typed fast, or `claude \"...\"`)", launched(300, false), false],
+    ["a name and a prompt, but no SessionStart hook line to compare with", { ...TERMINAL_CHILD, sessionStartAt: null }, false],
+    ["the user started it and typed", TYPED, false],
   ];
-  for (const [scene, started, own, peers, want] of scenes) {
-    test(scene, () => expect(parentTakesOver(started, own, peers)).toBe(want));
-  }
+  for (const [scene, first, want] of scenes) test(scene, () => expect(startedBySession(first)).toBe(want));
+});
+
+/** A set of running sessions: when each started, its first prompt, whether the user typed in it later, and the links */
+interface Scene {
+  sessions: Record<string, { startedAt: number; first: FirstPrompt; typed?: boolean }>;
+  links: [string, string][];
+}
+function takenOver(scene: Scene): Record<string, boolean> {
+  const peers = (id: string) => scene.links.flatMap(([a, b]) => (a === id ? [b] : b === id ? [a] : []));
+  const world = {
+    startedAt: (id: string) => scene.sessions[id]?.startedAt,
+    startedBySession: (id: string) => {
+      const s = scene.sessions[id];
+      return s !== undefined && startedBySession(s.first, s.typed);
+    },
+    peers,
+  };
+  return Object.fromEntries(Object.keys(scene.sessions).map((id) => [id, takenOverByParent(id, world)]));
+}
+
+describe("which sessions a parent takes over", () => {
+  const P = { startedAt: 100, first: TYPED };
+  const C = { startedAt: 200, first: TERMINAL_CHILD };
+  const G = { startedAt: 300, first: TERMINAL_CHILD };
+  const R = { startedAt: 400, first: TERMINAL_CHILD }; // P's rebirth: same name, a prompt at launch; P has closed
+  const scenes: [string, Scene, Record<string, boolean>][] = [
+    ["P started C", { sessions: { P, C }, links: [["P", "C"]] }, { P: false, C: true }],
+    ["P started C, C started G", { sessions: { P, C, G }, links: [["P", "C"], ["C", "G"]] }, { P: false, C: true, G: true }],
+    [
+      "P started C, then P was reborn as R and R talks with C: R isn't C's child (C lost its parent); C is read aloud",
+      { sessions: { C, R }, links: [["C", "R"]] },
+      { C: false, R: false },
+    ],
+    [
+      "known error: after the rebirth, C's child G is read aloud too, since C lost its parent",
+      { sessions: { C, G, R }, links: [["C", "R"], ["C", "G"]] },
+      { C: false, G: false, R: false },
+    ],
+    [
+      "known error: the user ran `claude --name foo \"...\"` and it talks with an older session the user started",
+      { sessions: { P, foo: { startedAt: 200, first: TERMINAL_CHILD } }, links: [["P", "foo"]] },
+      { P: false, foo: true },
+    ],
+    [
+      "the user typed in that session after its first prompt: it is no longer taken over",
+      { sessions: { P, foo: { startedAt: 200, first: TERMINAL_CHILD, typed: true } }, links: [["P", "foo"]] },
+      { P: false, foo: false },
+    ],
+    [
+      "the user typed in C's pane: C is no longer taken over, and G still is (C is now a parent the user talks to)",
+      { sessions: { P, C: { ...C, typed: true }, G }, links: [["P", "C"], ["C", "G"]] },
+      { P: false, C: false, G: true },
+    ],
+    [
+      "a desktop app session started C by start_session",
+      { sessions: { P: { startedAt: 100, first: DESKTOP_USER }, C: { startedAt: 200, first: DESKTOP_CHILD } }, links: [["P", "C"]] },
+      { P: false, C: true },
+    ],
+    [
+      "two sessions the user started exchanged messages: neither is taken over",
+      { sessions: { P, Q: { startedAt: 200, first: TYPED } }, links: [["P", "Q"]] },
+      { P: false, Q: false },
+    ],
+    ["C's parent closed and nothing else is linked", { sessions: { C }, links: [] }, { C: false }],
+  ];
+  for (const [name, scene, want] of scenes) test(name, () => expect(takenOver(scene)).toEqual(want));
 });
 
 const ev = (type: SessionEvent["type"], sessionId: string, patch: Partial<SessionEvent> = {}): SessionEvent => ({
