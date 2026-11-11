@@ -255,8 +255,11 @@ export function nextAngry(current: boolean, outcome: TurnOutcome): boolean {
   return outcome.abusive ?? current;
 }
 
+/** The requests one finished turn sends, in order: summarizeTurn and the regression test's dry run both read this */
+export const TURN_TASKS = [SUMMARIZE_TURN_TASK, CONFIRM_ASKING_TASK] as const;
+
 /**
- * Asks for one turn's line, asking, abusive, and continuing: two requests, SUMMARIZE_TURN_TASK and CONFIRM_ASKING_TASK,
+ * Asks for one turn's line, asking, abusive, and continuing: two requests (TURN_TASKS), SUMMARIZE_TURN_TASK and CONFIRM_ASKING_TASK,
  * put together by checkedVerdict (docs/design.md "Turn verdicts"). Errors are returned as a JudgeResult, not thrown;
  * only the first request's error counts. An answer that doesn't match the schema is a malformed failure (noMatchingJson
  * when a local model gave no JSON matching it). usage is both requests'. run is swapped in tests
@@ -267,10 +270,7 @@ export async function summarizeTurn(
   run: JudgeRunner = judgeRunnerFor(provider),
 ): Promise<TurnResult> {
   // Both requests go out together: the second doesn't need the first's answer. A second that fails leaves the first
-  const [result, second] = await Promise.all([
-    run<unknown>(SUMMARIZE_TURN_TASK, payload),
-    run<unknown>(CONFIRM_ASKING_TASK, payload),
-  ]);
+  const [result, second] = await Promise.all(TURN_TASKS.map((task) => run<unknown>(task, payload)));
   if (!result.ok) {
     return result.kind === "malformed" && result.message === LOCAL_NO_MATCHING_JSON
       ? { ...result, noMatchingJson: true }

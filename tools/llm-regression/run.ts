@@ -16,9 +16,9 @@ import { z } from "zod";
 import { judgeRunnerFor, type JudgeRunner } from "../../src/lib/ai-judge.ts";
 import { DEFAULT_LOCAL_BASE_URL, type AiProvider } from "../../src/lib/api-keys.ts";
 import { askConcierge, buildConciergePayload, CONCIERGE_TASK, CONCIERGE_TASK_WITH_SUGGESTIONS } from "../../src/lib/concierge.ts";
-import { anthropicJudgeBody } from "../../src/lib/judge.ts";
+import { anthropicJudgeBody, type JudgeTaskDefinition } from "../../src/lib/judge.ts";
 import { openAiJudgeBody } from "../../src/lib/openai-judge.ts";
-import { SUMMARIZE_TURN_TASK, summarizeTurn, turnPayload } from "../../src/lib/summarize.ts";
+import { summarizeTurn, TURN_TASKS, turnPayload } from "../../src/lib/summarize.ts";
 import { CASES, CASE_NOW, type Case } from "./cases.ts";
 import { fetchTransport, localModels } from "./transport.ts";
 
@@ -103,17 +103,20 @@ function memoryPressure(): number {
 
 /** The request one run of a case makes, and how its answer is judged */
 interface Run {
-  /** The request body as sent to OpenAI and Anthropic, for the dry run's size */
-  bodies: () => unknown[];
+  /** Every request body one run sends to the provider (Anthropic's shape, or OpenAI's for the others), for the dry run's count and size */
+  bodies: (provider: AiProvider) => unknown[];
   /** undefined when the answer passes, otherwise why not, and the answer in one line */
   once: (runner: JudgeRunner, provider: AiProvider) => Promise<{ fail?: string; line: string; usage?: { input: number; output: number } }>;
 }
+
+const bodyFor = (p: AiProvider, task: JudgeTaskDefinition, payload: unknown) =>
+  p === "anthropic" ? anthropicJudgeBody(task, payload) : openAiJudgeBody(task, payload);
 
 function runOf(c: Case): Run {
   if (c.kind === "turn") {
     const payload = turnPayload("ja", c.reply, c.user ?? []);
     return {
-      bodies: () => [openAiJudgeBody(SUMMARIZE_TURN_TASK, payload), anthropicJudgeBody(SUMMARIZE_TURN_TASK, payload)],
+      bodies: (p) => TURN_TASKS.map((task) => bodyFor(p, task, payload)),
       async once(runner, provider) {
         const r = await summarizeTurn(provider, payload, runner);
         if (!r.ok) return { fail: `error ${r.kind} ${r.status ?? ""} ${r.message ?? ""}`.trim(), line: "ERR" };
@@ -128,7 +131,7 @@ function runOf(c: Case): Run {
   const payload = buildConciergePayload(c.sessions, c.events ?? [], [], CASE_NOW, "ja");
   const task = c.withSuggestions ? CONCIERGE_TASK_WITH_SUGGESTIONS : CONCIERGE_TASK;
   return {
-    bodies: () => [openAiJudgeBody(task, payload), anthropicJudgeBody(task, payload)],
+    bodies: (p) => [bodyFor(p, task, payload)],
     async once(runner, provider) {
       const r = await askConcierge(provider, payload, runner, c.withSuggestions);
       if (!r.ok) return { fail: `error ${r.kind} ${r.status ?? ""} ${r.message ?? ""}`.trim(), line: "ERR" };
@@ -160,8 +163,9 @@ if (opts.dryRun) {
     let input = 0;
     let requests = 0;
     for (const c of cases) {
-      input += roughTokens(runOf(c).bodies()[p === "anthropic" ? 1 : 0]) * runsOf(c);
-      requests += runsOf(c);
+      const bodies = runOf(c).bodies(p);
+      input += bodies.reduce<number>((sum, b) => sum + roughTokens(b), 0) * runsOf(c);
+      requests += bodies.length * runsOf(c);
     }
     console.log(
       `${p}: ${cases.length} cases, ${requests} requests, about ${input} input tokens ` +
