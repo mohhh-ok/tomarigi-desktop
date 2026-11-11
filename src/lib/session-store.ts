@@ -50,7 +50,7 @@ export const peerScanOffset = new Map<string, number>();
 // lib/watching.ts). Tells a session started by another session (docs/design.md "Watching")
 export const firstPromptCache = new Map<string, FirstPrompt>();
 // Sessions (view id) whose latest turn after the first prompt was started by a prompt the user typed
-// (latestTurnTypedAfterRead in lib/watching.ts): the user talks to it, so no parent takes it over (docs/design.md "Watching")
+// (rememberLatestTurnTyped in lib/watching.ts): the user talks to it, so no parent takes it over (docs/design.md "Watching")
 export const latestTurnTypedIds = new Set<string>();
 // Machine state and last write time of each session (sessionId) in the previous scan. Used to decide whether
 // a peer is active, and for the watching done suppression (peers are passed in the same way as chicks)
