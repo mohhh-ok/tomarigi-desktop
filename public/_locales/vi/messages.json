@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Concierge cần khóa API của OpenAI hoặc Anthropic, hoặc AI cục bộ."
+  },
+  "conciergeSetupFree": {
+    "message": "Vườn, Sào và Hoạt động dùng được mà không cần khóa."
+  },
+  "conciergeSetupButton": {
+    "message": "Mở cài đặt AI"
   }
 }

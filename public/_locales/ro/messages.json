@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Concierge are nevoie de o cheie API OpenAI sau Anthropic ori de o IA locală."
+  },
+  "conciergeSetupFree": {
+    "message": "Grădină, Stinghie și Mișcare funcționează fără cheie."
+  },
+  "conciergeSetupButton": {
+    "message": "Deschide setările AI"
   }
 }

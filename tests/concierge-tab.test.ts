@@ -1,12 +1,13 @@
-// The Concierge tab (docs/design.md "Concierge"): first in the tab row while the concierge is shown, the Garden in its
-// place once it isn't, the label under the handle says how many other birds there are and how many need a reply, and
+// The Concierge tab (docs/design.md "Concierge"): first in the tab row, with or without a provider; without one it says
+// what it needs and the readout stays per session; the label under the handle says how many other birds there are and how many need a reply, and
 // the floating window shrinks to the concierge and its bubble
 import { describe, expect, test } from "bun:test";
 import type { SessionView } from "../src/lib/sessions.ts";
 import {
   conciergeTabCounts,
   conciergeTabWindowSize,
-  tabAfter,
+  conciergeTabContent,
+  conciergeWantsSuggestions,
   tabOf,
   tabsShown,
 } from "../src/perch/concierge-tab.ts";
@@ -21,31 +22,34 @@ const bird = (id: string, patch: Partial<SessionView> = {}): SessionView => ({
 });
 
 describe("the tab row", () => {
-  test("Concierge, Garden, Perch, Recent activity, in that order, with the concierge shown", () => {
-    expect(tabsShown(true)).toEqual(["concierge", "garden", "perch", "events"]);
-  });
-
-  test("without the concierge (no key, no Local): no Concierge tab", () => {
-    expect(tabsShown(false)).toEqual(["garden", "perch", "events"]);
+  test("Concierge, Garden, Perch, Recent activity, in that order, with or without a provider", () => {
+    expect(tabsShown()).toEqual(["concierge", "garden", "perch", "events"]);
   });
 });
 
-describe("the Concierge tab goes when the concierge stops being shown", () => {
-  test("a key deleted while it is open opens the Garden", () => {
-    expect(tabAfter({ tab: "concierge", available: false, loaded: true })).toBe("garden");
-  });
+describe("what the Concierge tab shows", () => {
+  const scenes: [string, { available: boolean; sessions: number }, string][] = [
+    ["no provider, sessions on screen: what it needs", { available: false, sessions: 3 }, "setup"],
+    ["no provider, no session: what it needs all the same", { available: false, sessions: 0 }, "setup"],
+    ["a provider and sessions: the state lines and suggestions", { available: true, sessions: 3 }, "report"],
+    ["a provider, no session: the Garden's empty message", { available: true, sessions: 0 }, "empty"],
+  ];
+  for (const [name, input, want] of scenes) {
+    test(name, () => expect(conciergeTabContent(input)).toBe(want));
+  }
+});
 
-  test("stays while the concierge is shown", () => {
-    expect(tabAfter({ tab: "concierge", available: true, loaded: true })).toBe("concierge");
-  });
-
-  test("not before the settings are loaded (the key isn't known yet at launch)", () => {
-    expect(tabAfter({ tab: "concierge", available: false, loaded: false })).toBe("concierge");
-  });
-
-  test("the other tabs don't depend on it", () => {
-    expect(tabAfter({ tab: "perch", available: false, loaded: true })).toBe("perch");
-  });
+describe("suggestions are asked for, and the tab's readout takes over, only in the tab with a provider", () => {
+  const scenes: [string, Parameters<typeof conciergeWantsSuggestions>[0], boolean][] = [
+    ["the tab open with a provider", { tab: "concierge", available: true }, true],
+    ["the tab open without a provider: the per-session readout, as outside the tab", { tab: "concierge", available: false }, false],
+    ["the Garden with a provider", { tab: "garden", available: true }, false],
+    ["Perch without a provider", { tab: "perch", available: false }, false],
+    ["Recent activity with a provider", { tab: "events", available: true }, false],
+  ];
+  for (const [name, input, want] of scenes) {
+    test(name, () => expect(conciergeWantsSuggestions(input)).toBe(want));
+  }
 });
 
 describe("the saved tab", () => {

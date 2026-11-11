@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Concierge vajab OpenAI või Anthropicu API-võtit või kohalikku AI-d."
+  },
+  "conciergeSetupFree": {
+    "message": "Aed, Õrs ja Tegevus töötavad ka ilma võtmeta."
+  },
+  "conciergeSetupButton": {
+    "message": "Ava AI seaded"
   }
 }

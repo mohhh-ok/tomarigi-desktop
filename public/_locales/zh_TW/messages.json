@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "使用禮賓員需要 OpenAI 或 Anthropic 的 API 金鑰，或本機 AI。"
+  },
+  "conciergeSetupFree": {
+    "message": "庭院、棲木和動態不需金鑰也能使用。"
+  },
+  "conciergeSetupButton": {
+    "message": "開啟 AI 設定"
   }
 }

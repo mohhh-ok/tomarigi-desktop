@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Il concierge richiede una chiave API di OpenAI o Anthropic, oppure un’IA locale."
+  },
+  "conciergeSetupFree": {
+    "message": "Giardino, Posatoio e Attività funzionano senza chiave."
+  },
+  "conciergeSetupButton": {
+    "message": "Apri impostazioni IA"
   }
 }

@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Konsjerż potrzebuje klucza API OpenAI lub Anthropic albo lokalnej AI."
+  },
+  "conciergeSetupFree": {
+    "message": "Ogród, Grzęda i Aktywność działają bez klucza."
+  },
+  "conciergeSetupButton": {
+    "message": "Otwórz ustawienia AI"
   }
 }

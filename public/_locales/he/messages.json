@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "הקונסיירז׳ צריך מפתח API של OpenAI או Anthropic, או בינה מלאכותית מקומית."
+  },
+  "conciergeSetupFree": {
+    "message": "הגן, המוט ופעילות עובדים גם בלי מפתח."
+  },
+  "conciergeSetupButton": {
+    "message": "פתיחת הגדרות הבינה המלאכותית"
   }
 }

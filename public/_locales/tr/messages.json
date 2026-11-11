@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Konsiyerj için bir OpenAI veya Anthropic API anahtarı ya da yerel bir yapay zekâ gerekir."
+  },
+  "conciergeSetupFree": {
+    "message": "Bahçe, Tünek ve Etkinlik anahtar olmadan çalışır."
+  },
+  "conciergeSetupButton": {
+    "message": "Yapay zekâ ayarlarını aç"
   }
 }

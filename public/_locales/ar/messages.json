@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "يحتاج الكونسيرج إلى مفتاح API من OpenAI أو Anthropic، أو إلى ذكاء اصطناعي محلي."
+  },
+  "conciergeSetupFree": {
+    "message": "الحديقة والمجثم والنشاط تعمل دون مفتاح."
+  },
+  "conciergeSetupButton": {
+    "message": "فتح إعدادات الذكاء الاصطناعي"
   }
 }

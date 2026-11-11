@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Concierge potřebuje klíč API od OpenAI nebo Anthropic, nebo lokální AI."
+  },
+  "conciergeSetupFree": {
+    "message": "Zahrada, Bidýlko a Aktivita fungují i bez klíče."
+  },
+  "conciergeSetupButton": {
+    "message": "Otevřít nastavení AI"
   }
 }

@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "The concierge needs an OpenAI or Anthropic API key, or a local AI."
+  },
+  "conciergeSetupFree": {
+    "message": "Garden, Perch, and Activity work without a key."
+  },
+  "conciergeSetupButton": {
+    "message": "Open AI settings"
   }
 }

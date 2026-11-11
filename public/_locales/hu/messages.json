@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "A Conciergehez OpenAI- vagy Anthropic-API-kulcs, vagy helyi MI kell."
+  },
+  "conciergeSetupFree": {
+    "message": "A Kert, az Ülőrúd és a Tevékenység kulcs nélkül is működik."
+  },
+  "conciergeSetupButton": {
+    "message": "MI-beállítások megnyitása"
   }
 }

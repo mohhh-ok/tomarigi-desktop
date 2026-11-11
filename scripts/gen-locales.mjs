@@ -176,6 +176,9 @@ export const KEYS = [
   "conciergeSummaryNow",
   "conciergeSummaryGone",
   "conciergeSummaryMore",
+  "conciergeSetupNeeds",
+  "conciergeSetupFree",
+  "conciergeSetupButton",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

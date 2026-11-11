@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Concierge memerlukan kunci API OpenAI atau Anthropic, atau AI tempatan."
+  },
+  "conciergeSetupFree": {
+    "message": "Taman, Tenggeran dan Aktiviti boleh digunakan tanpa kunci."
+  },
+  "conciergeSetupButton": {
+    "message": "Buka tetapan AI"
   }
 }

@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "使用礼宾员需要 OpenAI 或 Anthropic 的 API 密钥，或本地 AI。"
+  },
+  "conciergeSetupFree": {
+    "message": "庭院、栖木和动态无需密钥也能使用。"
+  },
+  "conciergeSetupButton": {
+    "message": "打开 AI 设置"
   }
 }

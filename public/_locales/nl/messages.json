@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "De conciërge heeft een API-sleutel van OpenAI of Anthropic nodig, of een lokale AI."
+  },
+  "conciergeSetupFree": {
+    "message": "Tuin, Zitstok en Activiteit werken zonder sleutel."
+  },
+  "conciergeSetupButton": {
+    "message": "AI-instellingen openen"
   }
 }

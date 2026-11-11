@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Το κονσιέρζ χρειάζεται κλειδί API του OpenAI ή της Anthropic, ή τοπική τεχνητή νοημοσύνη."
+  },
+  "conciergeSetupFree": {
+    "message": "Ο Κήπος, η Κούρνια και η Κίνηση λειτουργούν χωρίς κλειδί."
+  },
+  "conciergeSetupButton": {
+    "message": "Άνοιγμα ρυθμίσεων ΤΝ"
   }
 }

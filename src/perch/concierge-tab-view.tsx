@@ -10,7 +10,8 @@ import type { SessionView } from "@/lib/sessions";
 import { CONCIERGE_ID } from "./concierge";
 import { bubbleText } from "./bubble";
 import { ConciergeStatusReport } from "./concierge-status-report";
-import { conciergeTabWindowSize } from "./concierge-tab";
+import { conciergeTabWindowSize, type ConciergeTabContent } from "./concierge-tab";
+import { ConciergeSetupNote } from "./concierge-setup-note";
 import { GardenNode } from "./garden";
 import { onFadeHandlePointerDown } from "./garden-fade";
 
@@ -19,16 +20,24 @@ import { onFadeHandlePointerDown } from "./garden-fade";
 const GLYPH_PX = 40;
 
 export function ConciergeTabView({
+  content,
+  look,
   concierge,
+  onOpenAiSettings,
   hasGranted,
   onFocus,
   canFocus,
   onSize,
   sessions,
 }: {
-  // Absent with no session on screen (the Garden's empty message shows then). suggestions: those
-  // that came with the advice (use-concierge.ts)
-  concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook; suggestions: ShownSuggestion[] };
+  // What the tab shows (conciergeTabContent): what the concierge needs without a provider, the Garden's empty message
+  // with no session on screen, or the state lines and suggestions
+  content: ConciergeTabContent;
+  look: ConciergeLook;
+  // suggestions: those that came with the advice (use-concierge.ts); only read for "report"
+  concierge: { advice: ConciergeAdvice | null; suggestions: ShownSuggestion[] };
+  // Opens the settings at the AI section (the "setup" bubble's button)
+  onOpenAiSettings: () => void;
   hasGranted: boolean;
   onFocus?: (id: string) => void;
   canFocus?: (id: string) => boolean;
@@ -129,7 +138,7 @@ export function ConciergeTabView({
     );
   });
 
-  if (!concierge) {
+  if (content === "empty") {
     return (
       <div className="empty garden-empty" ref={emptyRef}>
         <span className="fade-handle garden-empty-label" onPointerDown={onFadeHandlePointerDown}>
@@ -139,7 +148,8 @@ export function ConciergeTabView({
     );
   }
 
-  const advice = concierge.advice;
+  const setup = content === "setup";
+  const advice = setup ? null : concierge.advice;
   const session: SessionView = {
     id: CONCIERGE_ID,
     project: t("conciergeName"),
@@ -154,7 +164,9 @@ export function ConciergeTabView({
   // as clicking its bird does; only those that can jump are links
   const canJump = (id: string) => Boolean(onFocus && canFocus?.(id));
   const { lines, more } = conciergeStatusLines(sessions, bubbleText);
-  const report = (
+  const report = setup ? (
+    <ConciergeSetupNote onOpenAiSettings={onOpenAiSettings} />
+  ) : (
     <ConciergeStatusReport
       lines={lines}
       more={more}
@@ -187,7 +199,7 @@ export function ConciergeTabView({
           bubbleLayer={bubbleLayer}
           focusable={Boolean(onFocus && target && canFocus?.(target))}
           onClick={() => target && onFocus?.(target)}
-          concierge={concierge.look}
+          concierge={look}
           dragMovesWindow
           bubbleContent={report}
         />

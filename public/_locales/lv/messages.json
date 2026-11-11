@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Konsjeržam vajadzīga OpenAI vai Anthropic API atslēga vai lokāls MI."
+  },
+  "conciergeSetupFree": {
+    "message": "Dārzs, Laktiņa un Aktivitāte darbojas bez atslēgas."
+  },
+  "conciergeSetupButton": {
+    "message": "Atvērt MI iestatījumus"
   }
 }

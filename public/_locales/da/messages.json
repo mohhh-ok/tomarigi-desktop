@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Concierge skal bruge en API-nøgle fra OpenAI eller Anthropic eller en lokal AI."
+  },
+  "conciergeSetupFree": {
+    "message": "Have, Pind og Aktivitet virker uden nøgle."
+  },
+  "conciergeSetupButton": {
+    "message": "Åbn AI-indstillinger"
   }
 }

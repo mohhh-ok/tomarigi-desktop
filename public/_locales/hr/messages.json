@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Conciergeu treba API ključ za OpenAI ili Anthropic, ili lokalna UI."
+  },
+  "conciergeSetupFree": {
+    "message": "Vrt, Sjedalo i Aktivnost rade bez ključa."
+  },
+  "conciergeSetupButton": {
+    "message": "Otvori postavke UI"
   }
 }

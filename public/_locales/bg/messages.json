@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Консиержът се нуждае от API ключ на OpenAI или Anthropic, или от локален ИИ."
+  },
+  "conciergeSetupFree": {
+    "message": "Двор, Кацалка и Дейност работят и без ключ."
+  },
+  "conciergeSetupButton": {
+    "message": "Отвори настройките за ИИ"
   }
 }

@@ -28,18 +28,35 @@ export function conciergeTabLabel({ others, waiting }: { others: number; waiting
   };
 }
 
-/** The tabs in the tab row, in order: Concierge first, only while the concierge is shown (a key saved or Local set up) */
+/** The tabs in the tab row, in order: Concierge first, always shown, with or without a provider (docs/design.md
+    "Concierge"; without one the tab says what is needed) */
 export const TABS = ["concierge", "garden", "perch", "events"] as const;
 export type Tab = (typeof TABS)[number];
 
-export function tabsShown(conciergeAvailable: boolean): Tab[] {
-  return TABS.filter((tab) => tab !== "concierge" || conciergeAvailable);
+export function tabsShown(): readonly Tab[] {
+  return TABS;
 }
 
-/** The tab to show: the Garden in place of the Concierge tab once the concierge stops being shown (the key deleted,
-    Local removed), but not before the settings are loaded, while it isn't known yet */
-export function tabAfter({ tab, available, loaded }: { tab: Tab; available: boolean; loaded: boolean }): Tab {
-  return tab === "concierge" && !available && loaded ? "garden" : tab;
+/**
+ * What the Concierge tab shows (docs/design.md "Concierge"):
+ * - "setup": no provider (no OpenAI / Anthropic key saved, Local not set up): the concierge with a bubble saying what it
+ *   needs, that the other tabs work without a key, and a button to the settings' AI section. It doesn't depend on the
+ *   sessions, since the concierge has nothing to say about them either way (Claude's own decision)
+ * - "empty": a provider but no session on screen: the Garden's empty message
+ * - "report": the concierge with the state lines and its suggestions
+ */
+export type ConciergeTabContent = "setup" | "empty" | "report";
+
+export function conciergeTabContent({ available, sessions }: { available: boolean; sessions: number }): ConciergeTabContent {
+  if (!available) return "setup";
+  return sessions > 0 ? "report" : "empty";
+}
+
+/** Whether the concierge asks for suggestions, and so whether the Concierge tab's readout takes done and needs reply
+    (concierge-readout.ts): only with the tab open and a provider. Without a provider the tab has no suggestions, and
+    the readout is the per-session one, as outside the tab */
+export function conciergeWantsSuggestions({ tab, available }: { tab: Tab; available: boolean }): boolean {
+  return tab === "concierge" && available;
 }
 
 /** A saved tab, or undefined when what was saved isn't one */

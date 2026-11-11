@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Консьєржу потрібен API-ключ OpenAI чи Anthropic або локальний ШІ."
+  },
+  "conciergeSetupFree": {
+    "message": "Сад, Сідало й Активність працюють без ключа."
+  },
+  "conciergeSetupButton": {
+    "message": "Відкрити налаштування ШІ"
   }
 }

@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "El conserge necessita una clau d’API d’OpenAI o d’Anthropic, o una IA local."
+  },
+  "conciergeSetupFree": {
+    "message": "Jardí, Perxa i Activitat funcionen sense clau."
+  },
+  "conciergeSetupButton": {
+    "message": "Obre la configuració d’IA"
   }
 }

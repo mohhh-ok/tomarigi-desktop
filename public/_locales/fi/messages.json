@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Concierge tarvitsee OpenAI:n tai Anthropicin API-avaimen tai paikallisen tekoälyn."
+  },
+  "conciergeSetupFree": {
+    "message": "Puutarha, Orsi ja Toiminta toimivat ilman avainta."
+  },
+  "conciergeSetupButton": {
+    "message": "Avaa tekoälyasetukset"
   }
 }

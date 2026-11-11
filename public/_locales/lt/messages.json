@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Konsjeržui reikia OpenAI arba Anthropic API rakto arba vietinio DI."
+  },
+  "conciergeSetupFree": {
+    "message": "Sodas, Laktelė ir Veikla veikia be rakto."
+  },
+  "conciergeSetupButton": {
+    "message": "Atidaryti DI nustatymus"
   }
 }

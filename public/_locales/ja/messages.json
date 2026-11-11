@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "コンシェルジュを使うには、OpenAI か Anthropic の API キー、またはローカル AI が必要です。"
+  },
+  "conciergeSetupFree": {
+    "message": "にわ・止まり木・最近の動きは、キーが無くても使えます。"
+  },
+  "conciergeSetupButton": {
+    "message": "AI の設定を開く"
   }
 }

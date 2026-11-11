@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "कंसीयर्ज के लिए OpenAI या Anthropic की API कुंजी, या लोकल AI चाहिए।"
+  },
+  "conciergeSetupFree": {
+    "message": "बगीचा, बसेरा और गतिविधि बिना कुंजी के भी चलते हैं।"
+  },
+  "conciergeSetupButton": {
+    "message": "AI सेटिंग खोलें"
   }
 }

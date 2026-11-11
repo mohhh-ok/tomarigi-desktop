@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "কনসিয়ার্জ ব্যবহার করতে OpenAI বা Anthropic-এর API কী, অথবা লোকাল AI লাগবে।"
+  },
+  "conciergeSetupFree": {
+    "message": "বাগান, বসার ডাল আর কার্যকলাপ কী ছাড়াও চলে।"
+  },
+  "conciergeSetupButton": {
+    "message": "AI সেটিংস খুলুন"
   }
 }

@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "کانسیرژ به کلید API از OpenAI یا Anthropic، یا یک هوش مصنوعی محلی نیاز دارد."
+  },
+  "conciergeSetupFree": {
+    "message": "باغ، جایگاه و فعالیت بدون کلید هم کار می‌کنند."
+  },
+  "conciergeSetupButton": {
+    "message": "باز کردن تنظیمات هوش مصنوعی"
   }
 }

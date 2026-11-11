@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "O concierge precisa de uma chave de API da OpenAI ou da Anthropic, ou de uma IA local."
+  },
+  "conciergeSetupFree": {
+    "message": "Jardim, Poleiro e Atividade funcionam sem chave."
+  },
+  "conciergeSetupButton": {
+    "message": "Abrir definições de IA"
   }
 }

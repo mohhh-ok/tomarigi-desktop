@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "El conserje necesita una clave de API de OpenAI o Anthropic, o una IA local."
+  },
+  "conciergeSetupFree": {
+    "message": "Jardín, Percha y Actividad funcionan sin clave."
+  },
+  "conciergeSetupButton": {
+    "message": "Abrir ajustes de IA"
   }
 }

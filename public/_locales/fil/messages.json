@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Kailangan ng Concierge ng API key ng OpenAI o Anthropic, o ng lokal na AI."
+  },
+  "conciergeSetupFree": {
+    "message": "Gumagana ang Hardin, Tuntungan, at Galaw kahit walang key."
+  },
+  "conciergeSetupButton": {
+    "message": "Buksan ang setting ng AI"
   }
 }

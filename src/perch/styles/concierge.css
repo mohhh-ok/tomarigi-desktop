@@ -236,6 +236,34 @@
   outline-offset: 1px;
 }
 
+/* The bubble without a provider (concierge-setup-note.tsx, docs/design.md "Concierge"): what the concierge needs, as
+   the suggestions read (12px bold), then what works without it, muted like the state lines, then the one thing to do:
+   the app's own small button (button.small), dark on the light bubble so it is the part that stands out */
+.concierge-setup {
+  display: block;
+}
+
+.concierge-setup-needs {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.concierge-setup-free {
+  display: block;
+  margin-top: 4px;
+  color: #6b6456;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.concierge-setup-button {
+  display: block;
+  margin: 7px 0 2px;
+  pointer-events: auto;
+}
+
 /* Settings: the two looks side by side, each the picture with its name under it. The chosen one is framed */
 .concierge-look-choices {
   display: flex;

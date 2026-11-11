@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Der Concierge braucht einen API-Schlüssel von OpenAI oder Anthropic oder eine lokale KI."
+  },
+  "conciergeSetupFree": {
+    "message": "Garten, Sitzstange und Aktivität funktionieren ohne Schlüssel."
+  },
+  "conciergeSetupButton": {
+    "message": "KI-Einstellungen öffnen"
   }
 }

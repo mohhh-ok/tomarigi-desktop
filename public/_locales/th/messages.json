@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "คอนเซียร์จต้องใช้คีย์ API ของ OpenAI หรือ Anthropic หรือ AI ภายในเครื่อง"
+  },
+  "conciergeSetupFree": {
+    "message": "สวน คอน และกิจกรรม ใช้ได้โดยไม่ต้องมีคีย์"
+  },
+  "conciergeSetupButton": {
+    "message": "เปิดการตั้งค่า AI"
   }
 }

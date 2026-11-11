@@ -40,8 +40,9 @@ import { useConcierge } from "./use-concierge";
 import { ConciergeGlyph, ConciergeLine, ConciergeSettings } from "./concierge";
 import {
   conciergeTabCounts,
+  conciergeTabContent,
   conciergeTabLabel,
-  tabAfter,
+  conciergeWantsSuggestions,
   tabOf,
   tabsShown,
   useConciergeTab,
@@ -197,6 +198,13 @@ export default function App({
       requestAnimationFrame(() => document.querySelector(".update-settings")?.scrollIntoView({ block: "center" }));
     });
     return () => void unlisten.then((f) => f());
+  }, []);
+  // The Concierge tab without a provider opens settings at the AI section, where a key or Local is set up
+  const openAiSettings = useCallback(() => {
+    setShowDebug(false);
+    setSettingsOpen(true);
+    // After the scroll reset below runs for the newly opened settings
+    requestAnimationFrame(() => document.querySelector(".ai-keys")?.scrollIntoView({ block: "start" }));
   }, []);
   // Settings, the debug log, and the tabs share one scroll area, so start each side from the top instead of carrying over where the
   // other one was scrolled to
@@ -516,19 +524,19 @@ export default function App({
   const hasGranted = !source.usesRoots || grantedCount > 0;
 
   const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
-  // The Concierge tab is there only while the concierge is shown; once that stops while it is open, the Garden opens
-  // (and is saved), but not before the settings are loaded
-  const tab = tabAfter({ tab: chosenTab, available: concierge.available, loaded: phase === "ready" });
-  useEffect(() => {
-    if (tab !== chosenTab) setTab(tab);
-  }, [tab, chosenTab, setTab]);
+  // The Concierge tab is always there; without a provider it says what the concierge needs (docs/design.md "Concierge")
+  const tab = chosenTab;
   // The Concierge tab (concierge-tab.ts): the floating window shrinks to the concierge while it is open with nothing
   // over it; on the other tabs, settings and the debug log it is back at its frame
   const conciergeTab = useConciergeTab({
     open: showTabs && tab === "concierge",
     canShrink: windowMode === "floating" && !settingsOpen && !showDebug,
   });
-  useEffect(() => setWantSuggestions(tab === "concierge"), [tab]);
+  // Without a provider nothing is asked and the readout stays per session, as outside the tab
+  useEffect(
+    () => setWantSuggestions(conciergeWantsSuggestions({ tab, available: concierge.available })),
+    [tab, concierge.available],
+  );
   // At rest the header's empty rows fold so the concierge sits right under the handle (styles/concierge.css)
   useEffect(() => {
     const root = document.documentElement;
@@ -655,7 +663,7 @@ export default function App({
           />
         ) : (
             <div className="tabs" role="tablist">
-              {tabsShown(concierge.available).map((id) => (
+              {tabsShown().map((id) => (
                 <button
                   key={id}
                   type="button"
@@ -743,11 +751,13 @@ export default function App({
               />
               {conciergeTab.view && (
                 <ConciergeTabView
-                  concierge={
-                    concierge.shown
-                      ? { advice: concierge.advice, look: conciergeLook, suggestions: concierge.suggestions }
-                      : undefined
-                  }
+                  content={conciergeTabContent({
+                    available: concierge.available,
+                    sessions: displaySessions.length,
+                  })}
+                  look={conciergeLook}
+                  concierge={{ advice: concierge.advice, suggestions: concierge.suggestions }}
+                  onOpenAiSettings={openAiSettings}
                   hasGranted={hasGranted}
                   onFocus={onFocusSession}
                   canFocus={canFocus}

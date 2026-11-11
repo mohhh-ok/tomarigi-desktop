@@ -437,5 +437,14 @@
         "content": "$1"
       }
     }
+  },
+  "conciergeSetupNeeds": {
+    "message": "Консьержу нужен API-ключ OpenAI или Anthropic либо локальный ИИ."
+  },
+  "conciergeSetupFree": {
+    "message": "Сад, Насест и Активность работают без ключа."
+  },
+  "conciergeSetupButton": {
+    "message": "Открыть настройки ИИ"
   }
 }
