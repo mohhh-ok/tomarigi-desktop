@@ -334,6 +334,7 @@ pub fn run() {
             keys::local_models,
             keys::local_ai_import,
             keys::key_backend,
+            keys::key_webview_storage_own,
             keys::key_status,
             keys::key_set,
             keys::key_delete,

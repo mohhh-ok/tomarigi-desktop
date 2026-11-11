@@ -43,6 +43,20 @@ async function apiKeyBackend(): Promise<ApiKeyBackend> {
   return backend === "webview" || backend === "unavailable" ? backend : "keychain";
 }
 
+/**
+ * Whether keys in IndexedDB may be read and deleted. dev (webview) keeps its keys there. With the Keychain only when
+ * the WebView's storage belongs to this identifier alone (decided in Rust, webview_storage_is_own in
+ * src-tauri/src/keys.rs): a macOS binary run outside a .app bundle shares one WebKit storage with dev, so touching
+ * IndexedDB there would move or delete dev's keys (docs/design.md "BYOK API keys")
+ */
+async function idbKeysOwned(backend: ApiKeyBackend): Promise<boolean> {
+  if (backend === "webview") return true;
+  return invoke<boolean>("key_webview_storage_own").then(
+    (own) => own === true,
+    () => false,
+  );
+}
+
 /** For the settings screen. ?keystore=unavailable shows the state without a key store (for screenshot checks) */
 export async function loadApiKeyBackend(): Promise<ApiKeyBackend> {
   if (new URLSearchParams(location.search).get("keystore") === "unavailable") return "unavailable";
@@ -51,12 +65,14 @@ export async function loadApiKeyBackend(): Promise<ApiKeyBackend> {
 
 /**
  * Called once at launch. dev (webview) passes the keys in IndexedDB to Rust (Rust keeps them only in memory).
- * Keychain builds move keys that older versions left in IndexedDB to the Keychain and delete them from IndexedDB
+ * Keychain builds move keys that older versions left in IndexedDB to the Keychain and delete them from IndexedDB,
+ * only when that IndexedDB is their own (idbKeysOwned; Rust logs when it is left alone)
  */
 export async function initApiKeys(): Promise<void> {
   const backend = await apiKeyBackend();
   // Keys an older version left in IndexedDB stay there until a store can take them
   if (backend === "unavailable") return;
+  if (!(await idbKeysOwned(backend))) return;
   for (const provider of API_KEY_PROVIDERS) {
     const idbKey = API_KEY_IDB_KEYS[provider];
     const saved = (await kvGet(idbKey)) as string | undefined;
@@ -94,9 +110,12 @@ export async function loadRetiredKeysSaved(): Promise<RetiredKeyProvider[]> {
   const status = await invoke<Partial<Record<RetiredKeyProvider, boolean>>>("key_status").catch(
     () => ({}) as Partial<Record<RetiredKeyProvider, boolean>>,
   );
+  const readIdb = await apiKeyBackend().then(idbKeysOwned, () => false);
   const saved: RetiredKeyProvider[] = [];
   for (const provider of RETIRED_KEY_PROVIDERS) {
-    if (status[provider] === true || Boolean(await kvGet(RETIRED_KEY_IDB_KEYS[provider]))) saved.push(provider);
+    if (status[provider] === true || (readIdb && Boolean(await kvGet(RETIRED_KEY_IDB_KEYS[provider])))) {
+      saved.push(provider);
+    }
   }
   return saved;
 }
@@ -104,7 +123,7 @@ export async function loadRetiredKeysSaved(): Promise<RetiredKeyProvider[]> {
 /** Deletes a retired provider's key from the OS store and IndexedDB */
 export async function deleteRetiredKey(provider: RetiredKeyProvider): Promise<void> {
   await invoke("key_delete", { provider });
-  await kvDelete(RETIRED_KEY_IDB_KEYS[provider]);
+  if (await idbKeysOwned(await apiKeyBackend())) await kvDelete(RETIRED_KEY_IDB_KEYS[provider]);
 }
 
 /** Saves a key (replacing works the same way). dev also writes to IndexedDB */
@@ -117,8 +136,9 @@ export async function saveApiKey(provider: ApiKeyProvider, value: string): Promi
 
 export async function deleteApiKey(provider: ApiKeyProvider): Promise<void> {
   await invoke("key_delete", { provider });
-  // If it's still in IndexedDB (dev, or left from before migration), delete it
-  await kvDelete(API_KEY_IDB_KEYS[provider]);
+  // If it's still in IndexedDB (dev, or left from before migration), delete it. Not when IndexedDB isn't this
+  // identifier's own (idbKeysOwned)
+  if (await idbKeysOwned(await apiKeyBackend())) await kvDelete(API_KEY_IDB_KEYS[provider]);
 }
 
 /** Provider used for summaries and the concierge when more than one is set up. Saved independently of the keys themselves. */

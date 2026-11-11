@@ -77,6 +77,46 @@ mod os_store {
 }
 
 static KEY_STORE: std::sync::OnceLock<KeyStore> = std::sync::OnceLock::new();
+/// Whether the WebView's storage (IndexedDB) belongs to this identifier alone. Decided once at startup
+/// (webview_storage_is_own); JS reads and deletes keys in IndexedDB only when it does (docs/design.md "BYOK API keys")
+static WEBVIEW_STORAGE_OWN: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
+#[derive(Clone, Copy)]
+enum Os {
+    MacOs,
+    /// Windows and Linux
+    Other,
+}
+
+/// Whether the WebView's storage belongs to this identifier alone, from the OS and the path of the running
+/// executable.
+/// - macOS: WKWebView keeps its storage per bundle identifier only for a build launched from its .app bundle
+///   (`<name>.app/Contents/MacOS/<exe>`). A binary run outside a bundle (`target/debug/tomarigi-desktop`) shares one
+///   WebKit storage with every other unbundled build, whatever its identifier
+/// - Windows and Linux: Tauri sets the webview's data directory to `app_local_data_dir`
+///   (`<local data dir>/<identifier>`) when none is configured (tauri 2.12.5 `manager/webview.rs`; this app sets
+///   neither `dataDirectory` nor `appDirectoriesOverride`), so it is per identifier however the binary is run
+fn webview_storage_is_own(os: Os, exe: &std::path::Path) -> bool {
+    match os {
+        Os::Other => true,
+        Os::MacOs => {
+            let macos_dir = exe.parent();
+            let contents = macos_dir.and_then(|d| d.parent());
+            let bundle = contents.and_then(|d| d.parent());
+            macos_dir.and_then(|d| d.file_name()).is_some_and(|n| n == "MacOS")
+                && contents.and_then(|d| d.file_name()).is_some_and(|n| n == "Contents")
+                && bundle.and_then(|d| d.extension()).is_some_and(|e| e == "app")
+        }
+    }
+}
+
+fn this_os() -> Os {
+    if cfg!(target_os = "macos") {
+        Os::MacOs
+    } else {
+        Os::Other
+    }
+}
 /// Copy of keys that were read or saved (so the Keychain isn't read over and over)
 static KEY_CACHE: Mutex<Option<std::collections::HashMap<String, String>>> = Mutex::new(None);
 
@@ -86,6 +126,9 @@ fn key_store() -> &'static KeyStore {
 
 /// Called once at startup. TOMARIGI_KEY_BACKEND=webview is an override for verifying migration from IndexedDB
 pub(crate) fn init_key_store(identifier: &str) {
+    // An executable path that can't be read counts as shared storage: leaving IndexedDB alone is the safe side
+    let own = std::env::current_exe().is_ok_and(|exe| webview_storage_is_own(this_os(), &exe));
+    let _ = WEBVIEW_STORAGE_OWN.set(own);
     let store = if identifier.ends_with(".dev")
         || std::env::var("TOMARIGI_KEY_BACKEND").is_ok_and(|v| v == "webview")
     {
@@ -105,8 +148,12 @@ pub(crate) fn init_key_store(identifier: &str) {
         KeyStore::WebView => "webview".to_string(),
         KeyStore::Unavailable(reason) => format!("unavailable: {reason}"),
     };
+    let left_alone = !own && matches!(store, KeyStore::Keychain { .. });
     let _ = KEY_STORE.set(store);
     append_log(&format!("[keys] store={name}"));
+    if left_alone {
+        append_log("[keys] IndexedDB left alone: not launched from a .app bundle");
+    }
 }
 
 fn check_provider(provider: &str) -> Result<(), String> {
@@ -182,6 +229,14 @@ pub(crate) fn key_backend() -> &'static str {
         KeyStore::WebView => "webview",
         KeyStore::Unavailable(_) => "unavailable",
     }
+}
+
+/// Whether the WebView's storage belongs to this identifier alone. With the Keychain, JS moves keys left in IndexedDB
+/// and deletes keys from IndexedDB only when this is true; otherwise IndexedDB may be another build's (dev's) and is
+/// neither read nor changed
+#[tauri::command]
+pub(crate) fn key_webview_storage_own() -> bool {
+    *WEBVIEW_STORAGE_OWN.get().unwrap_or(&false)
 }
 
 /// Whether a key is saved, per provider (retired ones included, so a key left saved can be deleted). Values are not
@@ -388,7 +443,29 @@ pub(crate) fn import_key_from_stdin(app: &AppHandle) {
 
 #[cfg(test)]
 mod tests {
-    use super::{check_known_provider, check_provider, local_url};
+    use super::{check_known_provider, check_provider, local_url, webview_storage_is_own, Os};
+    use std::path::Path;
+
+    #[test]
+    fn webview_storage_is_own_only_inside_an_app_bundle_on_macos() {
+        let cases: [(Os, &str, bool); 9] = [
+            (Os::MacOs, "/Applications/tomarigi.app/Contents/MacOS/tomarigi-desktop", true),
+            (Os::MacOs, "/Users/me/repo/src-tauri/target/release/bundle/macos/tomarigi (verify).app/Contents/MacOS/tomarigi-desktop", true),
+            // target/debug, run outside a bundle: shares WebKit storage with every other unbundled build
+            (Os::MacOs, "/Users/me/repo/src-tauri/target/debug/tomarigi-desktop", false),
+            (Os::MacOs, "/Users/me/repo/src-tauri/target/release/tomarigi-desktop", false),
+            // Looks like a bundle, but isn't one
+            (Os::MacOs, "/tmp/tomarigi/Contents/MacOS/tomarigi-desktop", false),
+            (Os::MacOs, "/tmp/tomarigi.app/MacOS/tomarigi-desktop", false),
+            (Os::MacOs, "tomarigi-desktop", false),
+            // Windows and Linux: Tauri gives each identifier its own data directory
+            (Os::Other, "C:\\Users\\me\\repo\\src-tauri\\target\\debug\\tomarigi-desktop.exe", true),
+            (Os::Other, "/home/me/repo/src-tauri/target/debug/tomarigi-desktop", true),
+        ];
+        for (os, exe, expected) in cases {
+            assert_eq!(webview_storage_is_own(os, Path::new(exe)), expected, "{exe}");
+        }
+    }
 
     #[test]
     fn a_retired_provider_can_be_deleted_but_not_saved() {
