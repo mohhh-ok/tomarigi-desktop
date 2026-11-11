@@ -78,7 +78,9 @@ export function deriveSessionEvents(
         if (done) result.push(done);
       }
     } else if (event.kind === "tool_use" && (isWaitingTool(event.toolName) || event.ask)) {
-      result.push(mkSessionEvent(sessionId, project, "waiting", event.at, lastPrompt ?? snippet));
+      const waiting = mkSessionEvent(sessionId, project, "waiting", event.at, lastPrompt ?? snippet);
+      // A question tool waits on the user; a wrap_up's ask is also the session's report, so a parent can answer it
+      result.push(!isWaitingTool(event.toolName) && event.ask ? { ...waiting, wrapUpAsk: true } : waiting);
       if (event.ask) asked = true;
     }
   }

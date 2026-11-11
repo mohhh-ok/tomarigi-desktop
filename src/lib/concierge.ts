@@ -82,9 +82,9 @@ interface PayloadSession {
    * was active after this session last was. false when the parent stopped before it finished and hasn't worked since */
   result_reached_parent?: boolean;
   watch_children?: string[];
-  /** Started by another session and linked to an older one: that parent takes its results and the questions its replies
-   * ask (needs_reply false then). A permission prompt or a question tool still needs the developer (needs_reply true,
-   * source machine; docs/design.md "Watching", "Sessions started by another session") */
+  /** Started by another session and linked to an older one: that parent takes its results, the questions its replies
+   * ask, and its wrap_up's ask (needs_reply false then). A permission prompt or a question tool still needs the
+   * developer (needs_reply true, source machine; docs/design.md "Watching", "Sessions started by another session") */
   parent_takes_over?: true;
   chicks_working?: number;
 }
@@ -156,8 +156,9 @@ export function buildConciergePayload(
   const sessions = inputs.map(({ view, agent, line, parentId }): PayloadSession => {
     const chicksWorking = (view.chicks ?? []).filter((c) => c.state === "working").length;
     const ask = view.ask;
-    // A parent takes over a reply that asks it, so that doesn't wait on the developer here; a permission prompt or a
-    // question tool does (its bird gets the "?" either way; docs/design.md "Watching")
+    // A parent takes over what it can answer (a reply that asks it, a wrap_up's ask), so that doesn't wait on the
+    // developer here; a permission prompt or a question tool does (parentCanAnswer; its bird gets the "?" either way;
+    // docs/design.md "Watching")
     const needsReply = waitsOnDeveloper(view);
     // The "?" comes from the machine state (a question tool, a permission prompt) or the turn verdict; both are facts
     // (docs/design.md "Concierge")
@@ -493,8 +494,8 @@ export function dropReason(
   // Watch links (the prompt alone didn't hold): the watching parent takes a child's result, and a parent watching a
   // child that still works isn't finished
   if (action === "check_result" && (target.watch_parent || target.parent_takes_over)) return "watched";
-  // Its parent takes the questions its replies ask, but not a question tool or a permission prompt, which keep
-  // needs_reply (the prompt alone may not hold)
+  // Its parent takes what it can answer (a reply that asks it, a wrap_up's ask), but not a question tool or a
+  // permission prompt, which keep needs_reply (the prompt alone may not hold)
   if (action === "reply" && target.parent_takes_over && !target.needs_reply) return "parent_takes_over";
   if (action === "check_result" && watchesWorkingChild(target, sessions)) return "child_working";
   // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or the turn
@@ -768,8 +769,9 @@ function askable(states: ConciergeTriggerClass[]): boolean {
 
 /** Each session's class, by id. update() of ConciergeScheduler takes this on every scan */
 export function conciergeTriggerClasses(views: SessionView[]): Map<string, ConciergeTriggerClass> {
-  // A session whose reply asks the parent that takes it over waits on its parent, not the developer: it counts as
-  // working. A permission prompt or a question tool waits on the developer (waitsOnDeveloper; docs/design.md "Watching")
+  // A session whose wait the parent that takes it over can answer (a reply that asks it, a wrap_up's ask) waits on its
+  // parent, not the developer: it counts as working. A permission prompt or a question tool waits on the developer
+  // (waitsOnDeveloper; docs/design.md "Watching")
   return new Map(
     views.map((v) => [
       v.id,

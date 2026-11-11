@@ -166,6 +166,15 @@ export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState 
   }
 }
 
+/**
+ * Whether a waiting session waits on the Claude desktop app's wrap_up ask (pendingAskOf), not on a question tool or a
+ * permission prompt (Claude Code's own waiting status, liveWaiting). A parent that takes it over can answer that ask
+ * (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Watching")
+ */
+export function waitsOnWrapUpAsk(state: BirdState, liveWaiting: boolean, events: TailInfo["events"]): boolean {
+  return state === "waiting" && !liveWaiting && pendingAskOf(events) !== undefined;
+}
+
 /** What a waiting session waits on (docs/design.md "Concierge"). onQuestionTool: the transcript ends on a question tool
  * (AskUserQuestion etc.). Otherwise Claude Code's waitingFor in sessions/<pid>.json tells: it writes a question tool's
  * tool_use only after it is answered, and puts "input needed" there while the question (or an MCP input) is open and

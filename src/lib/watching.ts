@@ -3,6 +3,7 @@
 import type { BirdState } from "./sessions";
 import type { LiveSession, SessionEvent } from "./session-types";
 import type { WatchLinks } from "./session-watch";
+import { parentCanAnswer } from "./turn-verdict";
 
 /** For this long after the linked session last moved, it stays watching */
 export const WATCH_GRACE_MS = 5 * 60_000;
@@ -150,13 +151,14 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
 }
 
 /**
- * A session event as it is kept: the done of a session whose parent takes it over is silent, so it chirps and stays in
- * the log and feed but isn't read aloud; that includes a done whose reply asks its parent. Its needs reply (waiting, the
- * machine state: a permission prompt or a question tool) is read aloud, since only the user can answer it
- * (docs/design.md "Watching")
+ * A session event as it is kept: for a session whose parent takes it over, its done (including one whose reply asks
+ * its parent) and a needs reply its parent can answer (a wrap_up's ask; parentCanAnswer in lib/turn-verdict.ts) are
+ * silent, so they chirp and stay in the log and feed but aren't read aloud. A needs reply on a question tool or a
+ * permission prompt is read aloud, since only the user can answer it (docs/design.md "Watching")
  */
-export function silentForParent<E extends Pick<SessionEvent, "type" | "silent">>(event: E, takenOver: boolean): E {
-  return takenOver && event.type === "done" ? { ...event, silent: true } : event;
+export function silentForParent<E extends Pick<SessionEvent, "type" | "silent" | "wrapUpAsk">>(event: E, takenOver: boolean): E {
+  const silent = event.type === "done" || (event.type === "waiting" && parentCanAnswer("machine", event.wrapUpAsk));
+  return takenOver && silent ? { ...event, silent: true } : event;
 }
 
 /**

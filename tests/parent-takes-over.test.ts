@@ -25,6 +25,9 @@ import {
   type FirstPrompt,
 } from "../src/lib/watching.ts";
 import type { LiveSession, PeerLink } from "../src/lib/session-types.ts";
+import { deriveState, waitsOnWrapUpAsk } from "../src/lib/bird-state.ts";
+import { deriveSessionEvents } from "../src/lib/session-events.ts";
+import type { TailEvent } from "../src/lib/transcript.ts";
 import type { WatchLinks } from "../src/lib/session-watch.ts";
 import { conciergeTabCounts } from "../src/perch/concierge-tab.ts";
 
@@ -210,16 +213,54 @@ const ev = (type: SessionEvent["type"], sessionId: string, patch: Partial<Sessio
 });
 
 describe("which events of a session go silent", () => {
-  const types: SessionEvent["type"][] = ["done", "waiting", "started", "closed"];
-  const scenes: [string, boolean, SessionEvent["type"][]][] = [
-    // Its needs reply (waiting) is the machine state, a permission prompt or a question tool: only the user can answer it
-    ["a parent takes it over: its done only", true, ["done"]],
+  const events: [string, SessionEvent][] = [
+    ["done", ev("done", "s")],
+    ["waiting", ev("waiting", "s")],
+    ["waiting on a wrap_up's ask", ev("waiting", "s", { wrapUpAsk: true })],
+    ["started", ev("started", "s")],
+    ["closed", ev("closed", "s")],
+  ];
+  const scenes: [string, boolean, string[]][] = [
+    // A waiting on a question tool or a permission prompt only the user can answer; a wrap_up's ask reaches the parent
+    ["a parent takes it over: its done and a wrap_up's ask", true, ["done", "waiting on a wrap_up's ask"]],
     ["no parent takes it over: none", false, []],
   ];
   for (const [scene, takenOver, silent] of scenes) {
     test(scene, () => {
-      const got = types.filter((type) => silentForParent(ev(type, "s"), takenOver).silent);
+      const got = events.filter(([, e]) => silentForParent(e, takenOver).silent).map(([name]) => name);
       expect(got).toEqual(silent);
+    });
+  }
+});
+
+describe("a waiting on a wrap_up's ask is told from a question tool and a permission prompt", () => {
+  const WRAP_UP = "mcp__ccd_turn__wrap_up";
+  const t = (kind: TailEvent["kind"], at: number, patch: Partial<TailEvent> = {}): TailEvent => ({ kind, at, ...patch });
+  const tailOf = (events: TailEvent[]) => ({
+    kind: events.at(-1)?.kind ?? ("unknown" as const),
+    toolName: events.at(-1)?.toolName,
+    events,
+    chickSignals: new Map(),
+    backgroundTaskStarts: new Map(),
+    peerNames: new Map(),
+  });
+  const wrapUp = [t("user", 1, { text: "書いて" }), t("tool_use", 2, { toolName: WRAP_UP, ask: { question: "よいですか？" } }), t("tool_result", 3), t("assistant_text", 4)];
+  const questionTool = [t("user", 1, { text: "書いて" }), t("tool_use", 2, { toolName: "AskUserQuestion" })];
+  const scenes: [string, TailEvent[], boolean, boolean][] = [
+    // scene, transcript, Claude Code's own waiting status (a permission prompt / an open question), wrapUpAsk
+    ["a wrap_up's ask", wrapUp, false, true],
+    ["a question tool", questionTool, false, false],
+    ["a question tool still open (written after the answer)", [t("user", 1, { text: "書いて" })], true, false],
+    ["a permission prompt after a wrap_up's ask", wrapUp, true, false],
+  ];
+  for (const [scene, events, liveWaiting, want] of scenes) {
+    test(scene, () => {
+      const state = liveWaiting ? "waiting" : deriveState(tailOf(events), 60_000, false);
+      expect(state).toBe("waiting");
+      expect(waitsOnWrapUpAsk(state, liveWaiting, events)).toBe(want);
+      if (liveWaiting) return;
+      const waiting = deriveSessionEvents(tailOf(events), "s", "p", [], new Map(), undefined, 60_000).find((e) => e.type === "waiting")!;
+      expect(waiting.wrapUpAsk === true).toBe(want);
     });
   }
 });
@@ -287,6 +328,12 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
       { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
     ],
     [
+      "a child on its wrap_up's ask (its report reaches the parent)",
+      { state: "waiting", waitingOn: "question", wrapUpAsk: true, parentTakesOver: true },
+      ev("waiting", "s", { wrapUpAsk: true }),
+      { readAloud: false, needsReply: false, source: undefined, replyDrop: "parent_takes_over", status: "working", trigger: "working" },
+    ],
+    [
       "a child whose reply asks its parent",
       { state: "done", ask: asking, parentTakesOver: true },
       ev("done", "s", { ask: asking }),
@@ -302,6 +349,12 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
       "a session the user started, on a permission prompt",
       { state: "waiting", waitingOn: "permission" },
       ev("waiting", "s"),
+      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+    ],
+    [
+      "a session the user started, on its wrap_up's ask",
+      { state: "waiting", waitingOn: "question", wrapUpAsk: true },
+      ev("waiting", "s", { wrapUpAsk: true }),
       { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
     ],
     [
@@ -342,7 +395,7 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
       expect(conciergeStateOf(s)).toBe(want.needsReply ? "reply" : "stopped");
       expect(fact.parent_takes_over).toBe(s.parentTakesOver);
       // The "?" stays on its bird whenever it needs an answer
-      expect(hasQuestion(s)).toBe(want.source !== undefined || patch.ask !== undefined);
+      expect(hasQuestion(s)).toBe(s.state === "waiting" || patch.ask !== undefined);
     });
   }
 
@@ -372,10 +425,11 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
     expect(dropReason({ line: "childが終わりました。結果を確認", targetId: "child" }, "check_result", p.sessions)).toBe("watched");
   });
 
-  test("the Concierge tab counts the child on a permission prompt, not the one asking its parent", () => {
+  test("the Concierge tab counts the child on a permission prompt, not the ones its parent can answer", () => {
     const child = view("child", { state: "waiting", waitingOn: "permission", parentTakesOver: true });
     const childAsking = view("child2", { ask: asking, parentTakesOver: true });
+    const childWrapUp = view("child3", { state: "waiting", waitingOn: "question", wrapUpAsk: true, parentTakesOver: true });
     const solo = view("solo", { state: "waiting", waitingOn: "permission" });
-    expect(conciergeTabCounts([child, childAsking, solo])).toEqual({ others: 3, waiting: 2 });
+    expect(conciergeTabCounts([child, childAsking, childWrapUp, solo])).toEqual({ others: 4, waiting: 2 });
   });
 });

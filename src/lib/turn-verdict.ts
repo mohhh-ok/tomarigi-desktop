@@ -19,14 +19,22 @@ export function needsAnswer(state: BirdState, ask: AskJudgement | undefined): bo
 }
 
 /**
- * Whether the session waits on the developer's reply, as the concierge and its tab count it: it needs an answer
- * (replyWaitSource). A parent that takes it over (SessionView.parentTakesOver) takes a reply that asks it (verdict),
- * but not a permission prompt or a question tool (machine): only the user can answer those, in its pane
- * (docs/design.md "Watching"). Its bird gets the "?" either way (hasQuestion)
+ * Whether a parent that takes the session over can answer its wait (docs/design.md "Watching", "Sessions started by
+ * another session"): a reply that asks (verdict) or the desktop app's wrap_up ask (wrapUpAsk) reach the parent as the
+ * session's report. A question tool or a permission prompt (machine) doesn't: only the user can answer it, in its pane
  */
-export function waitsOnDeveloper(s: Pick<SessionView, "state" | "ask" | "parentTakesOver">): boolean {
+export function parentCanAnswer(source: "machine" | "verdict", wrapUpAsk: boolean | undefined): boolean {
+  return source === "verdict" || wrapUpAsk === true;
+}
+
+/**
+ * Whether the session waits on the developer's reply, as the concierge and its tab count it: it needs an answer
+ * (replyWaitSource), and no parent that takes it over (SessionView.parentTakesOver) can answer it (parentCanAnswer).
+ * Its bird gets the "?" either way (hasQuestion)
+ */
+export function waitsOnDeveloper(s: Pick<SessionView, "state" | "ask" | "parentTakesOver" | "wrapUpAsk">): boolean {
   const source = replyWaitSource(s.state, s.ask);
-  return source === "machine" || (source === "verdict" && !s.parentTakesOver);
+  return source !== undefined && !(s.parentTakesOver && parentCanAnswer(source, s.wrapUpAsk));
 }
 
 /**

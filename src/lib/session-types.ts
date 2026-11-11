@@ -33,7 +33,12 @@ export interface SessionEvent {
   // true when a done that was suppressed while waiting on chicks (subagents) is cancelled once the
   // suppression lifts. Kept in the log and feed, but no chirp or readout (see deriveDoneEvent)
   muted?: boolean;
-  // true for the done of a session whose parent takes it over (SessionView.parentTakesOver; not its waiting):
+  // For a waiting: true when it is the Claude desktop app's wrap_up with an ask (or blocked), not a question tool. That
+  // ask is also the session's report, which reaches a parent (SessionView.wrapUpAsk; parentCanAnswer in
+  // lib/turn-verdict.ts)
+  wrapUpAsk?: true;
+  // true for the done of a session whose parent takes it over (SessionView.parentTakesOver), and for its waiting on a
+  // wrap_up's ask (wrapUpAsk); not for its waiting on a question tool or a permission prompt:
   // it chirps and stays in the log and feed, but isn't read aloud, in or out of the Concierge tab (isReadAloudEvent in
   // lib/voice.ts)
   silent?: true;
@@ -106,6 +111,10 @@ export interface SessionView {
   // While its own state is waiting: whether it waits on a question (a question tool) or a permission prompt, when that
   // is known (waitingOnOf in lib/bird-state.ts). Passed to the concierge (docs/design.md "Concierge")
   waitingOn?: "question" | "permission";
+  // While its own state is waiting: true when it waits on the Claude desktop app's wrap_up ask (pendingAskOf in
+  // lib/transcript.ts), not a question tool or a permission prompt. That ask is also the session's report, so a parent
+  // that takes it over can answer it (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Watching")
+  wrapUpAsk?: true;
   // The question text while stopped on a question tool (AskUserQuestion / request_user_input). Taken as-is
   // from the tool input (no AI). Shown in the speech bubble (perch/bubble.tsx)
   question?: string;
@@ -121,8 +130,8 @@ export interface SessionView {
   // it since its first prompt, and it is linked to a parent (a session that started before it and either wasn't started
   // by another session or is linked to one older than itself; takenOverByParent in lib/watching.ts; docs/design.md
   // "Watching"). Its done isn't read aloud, and the concierge doesn't ask the developer to check its result or to reply
-  // to a question its reply asks the parent. A permission prompt or a question tool is read and advised as usual. Its
-  // bird gets the "?"
+  // to what its parent can answer: a question its reply asks, or its wrap_up's ask (parentCanAnswer in
+  // lib/turn-verdict.ts). A permission prompt or a question tool is read and advised as usual. Its bird gets the "?"
   parentTakesOver?: true;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)

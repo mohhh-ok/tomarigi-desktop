@@ -20,7 +20,7 @@ import { feedTurnMessages, turnUserMessages } from "./session-tail";
 import { assignSdkChicks, isSdkSession } from "./session-chicks";
 import { AGENTS, type AgentKind, type ScanListing } from "./agents";
 import { loadAgentProcesses, type AgentProcessScan } from "./agent-processes";
-import { deriveSdkChickState, deriveState, escalateWithChicks, STATE_URGENCY, waitingOnOf } from "./bird-state";
+import { deriveSdkChickState, deriveState, escalateWithChicks, STATE_URGENCY, waitingOnOf, waitsOnWrapUpAsk } from "./bird-state";
 import { extractQuestion, pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
 import { cacheEvent, recentEvents, saveEventLogIfDirty } from "./session-event-log";
@@ -198,6 +198,7 @@ function buildViews(
     const live = isSdk ? undefined : watch.liveBySessionId.get(sessionIdOfViewId(id));
     const state: BirdState = live?.status === "waiting" ? "waiting" : tailState;
     const waitingOn = state === "waiting" ? waitingOnOf(tailState === "waiting", live?.waitingFor) : undefined;
+    const wrapUpAsk = waitsOnWrapUpAsk(state, live?.status === "waiting", tail.events);
     // The display state is escalated to a chick's urgency while the chick is running (anything but done/dozing)
     const displayState = escalateWithChicks(state, chickViews);
     // Always attach the latest user message snippet ("what this session was asked to do" is the main info).
@@ -236,6 +237,7 @@ function buildViews(
       reply,
       question,
       ...(waitingOn && { waitingOn }),
+      ...(wrapUpAsk && { wrapUpAsk: true as const }),
       userMessages,
       peers: peers.length > 0 ? peers : undefined,
       watching,
@@ -264,7 +266,8 @@ function buildViews(
       snippet,
       now,
     )) {
-      // The parent takes its result, so its done isn't read aloud on its own (a permission prompt or a question tool is)
+      // The parent takes its result and its wrap_up's ask, so those aren't read aloud on their own (a permission prompt
+      // or a question tool is)
       // (silentForParent in lib/watching.ts; docs/design.md "Watching")
       cacheEvent(silentForParent(event, takenOver));
     }
