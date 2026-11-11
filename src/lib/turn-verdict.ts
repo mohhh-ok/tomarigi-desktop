@@ -10,6 +10,15 @@ export function needsAnswer(state: BirdState, ask: AskJudgement | undefined): bo
 }
 
 /**
+ * Whether the session waits on the developer's reply, as the concierge and its tab count it: it needs an answer
+ * (needsAnswer) and no parent takes it over (SessionView.parentTakesOver; docs/design.md "Watching"). Its bird still
+ * gets the "?" (hasQuestion)
+ */
+export function waitsOnDeveloper(s: Pick<SessionView, "state" | "ask" | "parentTakesOver">): boolean {
+  return !s.parentTakesOver && needsAnswer(s.state, s.ask);
+}
+
+/**
  * Whether to put a "?" on the bird. Only birds actually asking (needsAnswer). Watching birds don't get one even if the other session is asking
  * (docs/design.md "Watching")
  */

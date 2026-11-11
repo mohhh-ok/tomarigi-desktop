@@ -9,7 +9,7 @@
 import type { JudgeErrorKind, JudgeResult, JudgeTaskDefinition } from "./judge";
 import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
-import { needsAnswer, TEXT_CONTINUING_EXPIRES_MS } from "./turn-verdict";
+import { TEXT_CONTINUING_EXPIRES_MS, waitsOnDeveloper } from "./turn-verdict";
 import { DOZE_MS } from "./bird-state";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView } from "./session-types";
@@ -157,7 +157,7 @@ export function buildConciergePayload(
     const ask = view.ask;
     // A parent takes over its questions and permission prompts, so it doesn't wait on the developer here (its bird
     // still gets the "?"; docs/design.md "Watching")
-    const needsReply = !view.parentTakesOver && needsAnswer(view.state, ask);
+    const needsReply = waitsOnDeveloper(view);
     // The "?" comes from the machine state (a question tool, a permission prompt) or the turn verdict; both are facts
     // (docs/design.md "Concierge")
     const source = !needsReply ? undefined : view.state === "waiting" ? "machine" : "verdict";
@@ -742,7 +742,7 @@ export function conciergeSuggestionLogLines(c: ConciergeLogContext, result: Conc
 export type ConciergeStateClass = "reply" | "working" | "stopped";
 
 export function conciergeStateOf(v: SessionView): ConciergeStateClass {
-  return needsAnswer(v.state, v.ask) ? "reply" : v.state === "working" ? "working" : "stopped";
+  return waitsOnDeveloper(v) ? "reply" : v.state === "working" ? "working" : "stopped";
 }
 
 /**
@@ -760,16 +760,18 @@ function askable(states: ConciergeTriggerClass[]): boolean {
 
 /** Each session's class, by id. update() of ConciergeScheduler takes this on every scan */
 export function conciergeTriggerClasses(views: SessionView[]): Map<string, ConciergeTriggerClass> {
-  // needsAnswer is true for every waiting session; the state check is there only so the type leaves waiting out of the
-  // other states
+  // A session whose parent takes it over waits on its parent, not the developer: it counts as working (docs/design.md
+  // "Watching"). Every other waiting session waits on the developer
   return new Map(
     views.map((v) => [
       v.id,
-      needsAnswer(v.state, v.ask) || v.state === "waiting"
+      waitsOnDeveloper(v)
         ? "reply"
-        : v.state === "dozing" && v.continuingExpired && v.sinceMs < TEXT_CONTINUING_EXPIRES_MS + DOZE_MS
-          ? "expired"
-          : v.state,
+        : v.state === "waiting"
+          ? "working"
+          : v.state === "dozing" && v.continuingExpired && v.sinceMs < TEXT_CONTINUING_EXPIRES_MS + DOZE_MS
+            ? "expired"
+            : v.state,
     ]),
   );
 }

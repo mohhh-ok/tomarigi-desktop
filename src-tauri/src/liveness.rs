@@ -214,6 +214,10 @@ pub(crate) struct PeerScan {
     names: Vec<(String, String)>,
     /// Set when this scan read the first prompt (it starts at the top of the file)
     first_prompt: Option<FirstPrompt>,
+    /// Timestamp of the first prompt the user typed after the first prompt, in the part read (turnOrigin "human", not
+    /// a message from another session, a task notification, or the desktop app's own turns). A session started by
+    /// another session that the user talks to is no longer taken over by its parent (docs/design.md "Watching")
+    typed_after_first: Option<String>,
     /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
 }
@@ -227,6 +231,23 @@ fn peer_name_of(to: &str) -> Option<String> {
     }
     .trim();
     (!name.is_empty() && name != "main").then(|| name.to_string())
+}
+
+/// The timestamp of a prompt the user typed: a user line, not meta or a subagent's, with turnOrigin "human" (or, in
+/// transcripts without turnOrigin, origin.kind "human"). Messages from other sessions are "peer", task notifications
+/// "task_notification", and the desktop app's own turns "sdk" / "host_synthetic"
+fn typed_prompt_at(entry: &serde_json::Value) -> Option<&str> {
+    if entry.get("type").and_then(|t| t.as_str()) != Some("user")
+        || entry.get("isMeta").and_then(|v| v.as_bool()) == Some(true)
+        || entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true)
+    {
+        return None;
+    }
+    let human = match entry.get("turnOrigin").and_then(|t| t.as_str()) {
+        Some(origin) => origin == "human",
+        None => entry.pointer("/origin/kind").and_then(|k| k.as_str()) == Some("human"),
+    };
+    human.then(|| entry.get("timestamp").and_then(|t| t.as_str())).flatten()
 }
 
 /// The Claude desktop app's session id (`local_<uuid>`), the address of its sessions (docs/design.md "Watching")
@@ -266,7 +287,16 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
     let mut first_prompt = None;
     let mut named_at_launch = false;
     let mut session_start_at: Option<String> = None;
+    let mut typed_after_first: Option<String> = None;
     for line in buf[..complete].split(|&b| b == b'\n') {
+        // After the first prompt (read in an earlier scan when start isn't 0), a prompt the user typed
+        if !looking_for_first && typed_after_first.is_none() && line.windows(7).any(|w| w == b"\"human\"") {
+            if let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) {
+                if let Some(at) = typed_prompt_at(&entry) {
+                    typed_after_first = Some(at.to_string());
+                }
+            }
+        }
         if looking_for_first {
             if let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) {
                 match entry.get("type").and_then(|t| t.as_str()) {
@@ -393,7 +423,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             _ => {}
         }
     }
-    Ok(PeerScan { names, first_prompt, end: start + complete as u64 })
+    Ok(PeerScan { names, first_prompt, typed_after_first, end: start + complete as u64 })
 }
 
 #[derive(Serialize)]
@@ -926,6 +956,35 @@ mod tests {
         );
         // A scan that goes on from where the last one stopped doesn't read it again
         assert_eq!(scan_peer_names(p, 10).unwrap().first_prompt, None);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// A prompt the user typed after the first prompt, and the lines that aren't one
+    #[test]
+    fn scan_peer_names_reads_a_prompt_typed_after_the_first() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-typed-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let first = r#"{"type":"user","timestamp":"T0","turnOrigin":"sdk","message":{"content":"task"}}"#;
+        let cases: Vec<(&str, &str, Option<&str>)> = vec![
+            ("the user typed in its pane", r#"{"type":"user","timestamp":"T1","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"hi"}}"#, Some("T1")),
+            ("an older line without turnOrigin, typed", r#"{"type":"user","timestamp":"T1","origin":{"kind":"human"},"message":{"content":"hi"}}"#, Some("T1")),
+            ("a message from its parent", r#"{"type":"user","isMeta":true,"timestamp":"T1","turnOrigin":"peer","origin":{"kind":"peer","name":"p"},"message":{"content":"x"}}"#, None),
+            ("the desktop app's side-sessions-event", r#"{"type":"user","timestamp":"T1","turnOrigin":"sdk","message":{"content":"<side-sessions-event>x"}}"#, None),
+            ("a task notification", r#"{"type":"user","timestamp":"T1","turnOrigin":"task_notification","origin":{"kind":"task-notification"},"message":{"content":"x"}}"#, None),
+            ("a tool result", r#"{"type":"user","timestamp":"T1","message":{"content":[{"type":"tool_result","tool_use_id":"t","content":"human"}]}}"#, None),
+        ];
+        for (i, (scene, line, want)) in cases.iter().enumerate() {
+            let path = dir.join(format!("{i}.jsonl"));
+            std::fs::write(&path, format!("{first}\n{line}\n")).unwrap();
+            let p = path.to_str().unwrap();
+            assert_eq!(scan_peer_names(p, 0).unwrap().typed_after_first.as_deref(), *want, "{scene}");
+            // Read on from after the first prompt, as a later scan does
+            assert_eq!(scan_peer_names(p, first.len() as u64 + 1).unwrap().typed_after_first.as_deref(), *want, "{scene} (later scan)");
+        }
+        // The first prompt itself, typed by the user in a terminal, isn't one
+        let path = dir.join("only-first.jsonl");
+        std::fs::write(&path, "{\"type\":\"user\",\"timestamp\":\"T0\",\"turnOrigin\":\"human\",\"message\":{\"content\":\"task\"}}\n").unwrap();
+        assert_eq!(scan_peer_names(path.to_str().unwrap(), 0).unwrap().typed_after_first, None);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

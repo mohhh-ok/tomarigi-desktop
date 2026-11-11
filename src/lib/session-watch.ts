@@ -2,7 +2,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { isPeerActive, peerLookup, startedBySession, type FirstPrompt } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
-import { firstPromptCache, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
+import { firstPromptCache, typedAfterFirstIds, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
 import { sessionIdOfViewId } from "./session-liveness";
 
 export interface WatchLinks {
@@ -30,11 +30,17 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   await Promise.all(
     claudeEntries.map(async (f) => {
       try {
-        const scan = await invoke<{ names: [string, string][]; firstPrompt?: FirstPrompt | null; end: number }>(
+        const scan = await invoke<{
+          names: [string, string][];
+          firstPrompt?: FirstPrompt | null;
+          typedAfterFirst?: string | null;
+          end: number;
+        }>(
           "scan_peer_names",
           { path: f.file.path, start: peerScanOffset.get(f.id) ?? 0 },
         );
         if (scan.firstPrompt) firstPromptCache.set(f.id, scan.firstPrompt);
+        if (scan.typedAfterFirst) typedAfterFirstIds.add(f.id);
         // The first prompt is read from the top only, so the offset stays at the top until it has come (a session
         // just started may not have written it yet; the file is still small then)
         if (firstPromptCache.has(f.id)) peerScanOffset.set(f.id, scan.end);
@@ -91,7 +97,8 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
     // Log only the name mapping (message bodies are neither read nor logged)
     void invoke("log", { line: `[watch] links\n${watchSignature || "(none)"}` }).catch(() => {});
   }
-  const startedBySessionOf = (viewId: string) => startedBySession(firstPromptCache.get(viewId));
+  const startedBySessionOf = (viewId: string) =>
+    startedBySession(firstPromptCache.get(viewId), typedAfterFirstIds.has(viewId));
   return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf };
 }
 

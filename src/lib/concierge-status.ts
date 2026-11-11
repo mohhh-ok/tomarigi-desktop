@@ -3,7 +3,7 @@
 // advice (askConcierge with suggestions), dimmed with their session's state now once it changed
 import type { ConciergeSuggestion } from "./concierge";
 import type { SessionView } from "./session-types";
-import { needsAnswer } from "./turn-verdict";
+import { waitsOnDeveloper } from "./turn-verdict";
 
 // At most this many lines are shown; the rest is counted, and the ones cut are working ones first (Claude's own
 // decision: the bubble stays readable in a 260px window)
@@ -14,7 +14,7 @@ export const MAX_STATUS_LINES = 6;
 export type ConciergeStatus = "reply" | "done" | "working";
 
 export function conciergeStatusOf(view: SessionView): ConciergeStatus {
-  if (needsAnswer(view.state, view.ask)) return "reply";
+  if (waitsOnDeveloper(view)) return "reply";
   return (view.state === "done" || view.state === "dozing") && !view.continuing ? "done" : "working";
 }
 

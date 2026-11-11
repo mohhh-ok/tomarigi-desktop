@@ -1,7 +1,7 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
-import { parentTakesOver, watchingCount } from "./watching";
+import { parentTakesOver, silentForParent, watchingCount } from "./watching";
 import { basename } from "./paths";
 import { pendingAskOf, projectLabels } from "./transcript";
 import type {
@@ -263,8 +263,9 @@ function buildViews(
       snippet,
       now,
     )) {
-      // The parent takes the result, so the done isn't read aloud on its own (docs/design.md "Watching")
-      cacheEvent(takenOver && event.type === "done" ? { ...event, silent: true } : event);
+      // The parent takes its result and its questions, so its done and needs reply aren't read aloud on their own
+      // (silentForParent in lib/watching.ts; docs/design.md "Watching")
+      cacheEvent(silentForParent(event, takenOver));
     }
   }
   return views;

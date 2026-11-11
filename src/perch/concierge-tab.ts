@@ -6,13 +6,13 @@ import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import type { SessionView } from "@/lib/sessions";
-import { needsAnswer } from "@/lib/turn-verdict";
+import { waitsOnDeveloper } from "@/lib/turn-verdict";
 
 /** How many other birds there are, and how many of them need a reply (the same "needs reply" as their status lines) */
 export function conciergeTabCounts(sessions: SessionView[]): { others: number; waiting: number } {
   return {
     others: sessions.length,
-    waiting: sessions.filter((s) => needsAnswer(s.state, s.ask)).length,
+    waiting: sessions.filter(waitsOnDeveloper).length,
   };
 }
 

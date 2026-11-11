@@ -1,7 +1,7 @@
 // Watching detection (docs/design.md "Watching"). Keeps a grace period so a bird that handed work to another session and is waiting
 // stays watching between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
 import type { BirdState } from "./sessions";
-import type { LiveSession, PeerLink } from "./session-types";
+import type { LiveSession, PeerLink, SessionEvent } from "./session-types";
 
 /** For this long after the linked session last moved, it stays watching */
 export const WATCH_GRACE_MS = 5 * 60_000;
@@ -44,13 +44,15 @@ export interface FirstPrompt {
 }
 
 /**
- * Whether the session was started by another session, not by the user (docs/design.md "Watching", "Sessions started
- * by another session"). The Claude desktop app writes the first prompt of a session started by start_session with a
- * turnOrigin other than "human" ("sdk", "host_synthetic"); one the user started is "human". A session started in a
- * terminal writes "human" either way, so it isn't told apart here
+ * Whether the session was started by another session, not by the user, and the user hasn't talked to it since
+ * (docs/design.md "Watching", "Sessions started by another session"). The Claude desktop app writes the first prompt of
+ * a session started by start_session with a turnOrigin other than "human" ("sdk", "host_synthetic"); one the user
+ * started is "human". A session started in a terminal writes "human" either way, so it isn't told apart here.
+ * typedAfterFirst: the user typed a prompt in it after the first one (scan_peer_names in src-tauri), so the user talks
+ * to it and its parent no longer takes it over
  */
-export function startedBySession(first: FirstPrompt | undefined): boolean {
-  return typeof first?.turnOrigin === "string" && first.turnOrigin !== "human";
+export function startedBySession(first: FirstPrompt | undefined, typedAfterFirst = false): boolean {
+  return !typedAfterFirst && typeof first?.turnOrigin === "string" && first.turnOrigin !== "human";
 }
 
 /**
@@ -64,6 +66,14 @@ export function parentTakesOver(
 ): boolean {
   if (!started) return false;
   return peers.some((p) => ownStartedAt === undefined || p.startedAt === undefined || p.startedAt < ownStartedAt);
+}
+
+/**
+ * A session event as it is kept: the done and needs reply (waiting) of a session whose parent takes it over are silent,
+ * so they chirp and stay in the log and feed but aren't read aloud (docs/design.md "Watching")
+ */
+export function silentForParent<E extends Pick<SessionEvent, "type" | "silent">>(event: E, takenOver: boolean): E {
+  return takenOver && (event.type === "done" || event.type === "waiting") ? { ...event, silent: true } : event;
 }
 
 /**

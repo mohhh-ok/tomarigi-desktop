@@ -36,7 +36,7 @@ export function isReadAloudType(type: SessionEvent["type"]): boolean {
   return type === "done" || VOICE_KEY[type] !== undefined;
 }
 
-/** Whether this event is read aloud: its type is, and it isn't a done whose parent takes it over (SessionEvent.silent;
+/** Whether this event is read aloud: its type is, and it isn't a done or needs reply whose parent takes it over (SessionEvent.silent;
     docs/design.md "Watching"). It still chirps. concierge-readout.ts holds exactly these events while the Concierge
     tab is open, so a silent one isn't read when a request fails either */
 export function isReadAloudEvent(event: Pick<SessionEvent, "type" | "silent">): boolean {
