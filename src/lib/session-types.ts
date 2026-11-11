@@ -178,6 +178,8 @@ export interface LiveSession {
    * "sandbox request", "worker request", "dialog open", ... (Claude Code's own values) */
   waitingFor?: string;
   startedAt?: number;
+  /** The Claude desktop app's local_… id of the session (watching links; docs/design.md "Watching") */
+  hostSessionId?: string;
 }
 
 // One scan result inside scanSessions. The same shape is used for found, withTail, and SDK chick distribution

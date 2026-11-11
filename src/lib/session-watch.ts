@@ -1,6 +1,6 @@
 // Watching links between sessions (docs/design.md "Watching")
 import { invoke } from "@tauri-apps/api/core";
-import { isPeerActive } from "./watching";
+import { isPeerActive, peerLookup } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
 import { lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
 import { sessionIdOfViewId } from "./session-liveness";
@@ -11,15 +11,12 @@ export interface WatchLinks {
   peerLinksOf: (ownSessionId: string) => PeerLink[];
 }
 
-// Watching links (docs/design.md "Watching"). Match the names of peers exchanged with against the names of
-// running sessions to get sessionIds, and link both ways (a trace on either side counts as linked)
+// Watching links (docs/design.md "Watching"). Match the names (or desktop app ids) of peers exchanged with against
+// the running sessions to get sessionIds, and link both ways (a trace on either side counts as linked)
 export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: LiveSession[]): Promise<WatchLinks> {
-  const liveByName = new Map<string, LiveSession>();
+  const peerOf = peerLookup(liveSessions);
   const liveBySessionId = new Map<string, LiveSession>();
-  for (const live of liveSessions) {
-    if (live.name) liveByName.set(live.name, live);
-    liveBySessionId.set(live.sessionId, live);
-  }
+  for (const live of liveSessions) liveBySessionId.set(live.sessionId, live);
   const viewIdBySessionId = new Map<string, string>();
   const links = new Map<string, Set<string>>();
   const link = (a: string, b: string) => {
@@ -60,7 +57,7 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
     }
     for (const [name, at] of f.tail.peerNames) names.set(name, Math.max(names.get(name) ?? 0, at));
     for (const name of names.keys()) {
-      const peer = liveByName.get(name);
+      const peer = peerOf(name);
       if (!peer) continue;
       link(ownSessionId, peer.sessionId);
       link(peer.sessionId, ownSessionId);

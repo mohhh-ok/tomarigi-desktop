@@ -1,6 +1,7 @@
 // Watching detection (docs/design.md "Watching"). Keeps a grace period so a bird that handed work to another session and is waiting
 // stays watching between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
 import type { BirdState } from "./sessions";
+import type { LiveSession } from "./session-types";
 
 /** For this long after the linked session last moved, it stays watching */
 export const WATCH_GRACE_MS = 5 * 60_000;
@@ -28,4 +29,19 @@ export function watchingCount(
   if (moving > 0) return moving;
   const recent = peers.some((p) => p.lastActiveAt !== undefined && now - p.lastActiveAt <= WATCH_GRACE_MS);
   return recent ? 0 : undefined;
+}
+
+/**
+ * Looks up the running session a peer trace names (docs/design.md "Watching", "How links are found"). A trace is a
+ * name (matched against `name` in sessions/<pid>.json) or a Claude desktop app id `local_…` (matched against
+ * `hostSessionId`). Returns a lookup over the given running sessions
+ */
+export function peerLookup(liveSessions: readonly LiveSession[]): (trace: string) => LiveSession | undefined {
+  const byName = new Map<string, LiveSession>();
+  const byHostId = new Map<string, LiveSession>();
+  for (const live of liveSessions) {
+    if (live.name) byName.set(live.name, live);
+    if (live.hostSessionId) byHostId.set(live.hostSessionId, live);
+  }
+  return (trace) => byHostId.get(trace) ?? byName.get(trace);
 }

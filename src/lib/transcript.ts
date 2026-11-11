@@ -113,9 +113,10 @@ interface TranscriptEntry {
   // (see TailInfo.backgroundTaskStarts)
   toolUseResult?: { isAsync?: boolean; backgroundTaskId?: string };
   // Sender on the isMeta user line that received a cross-session message (kind: "peer" and name)
-  origin?: { kind?: unknown; name?: unknown };
+  // from is the sender's address; for a Claude desktop app session it is its local_… id (docs/design.md "Watching")
+  origin?: { kind?: unknown; name?: unknown; from?: unknown };
   // Cross-session messages that arrive mid-work are recorded in an attachment (queued_command) with the same origin
-  attachment?: { origin?: { kind?: unknown; name?: unknown } };
+  attachment?: { origin?: { kind?: unknown; name?: unknown; from?: unknown } };
 }
 
 interface Block {
@@ -360,6 +361,14 @@ async function readWindow(
 }
 
 const CROSS_SESSION_FROM_NAME = /<cross-session-message\b[^>]*\bfrom-name="([^"]+)"/g;
+// The Claude desktop app's session id, the address of its sessions (docs/design.md "Watching")
+const HOST_SESSION_ID = /^local_[0-9a-fA-F-]+$/;
+// The text of the desktop app's start_session result: `Started session "…" (session_id: local_…, …)`
+const STARTED_SESSION_ID = /^Started session [\s\S]*?\(session_id: (local_[0-9a-fA-F-]+)[,)]/;
+
+function hostSessionIdOf(value: unknown): string | undefined {
+  return typeof value === "string" && HOST_SESSION_ID.test(value) ? value : undefined;
+}
 
 /** Drops the display " [ref]" from a SendMessage recipient name (the ListAgents format; SendMessage in the docs) */
 function peerNameOf(to: string): string | undefined {
@@ -373,27 +382,52 @@ function peerNameOf(to: string): string | undefined {
  * Gets, from one line, the names of peers exchanged with via cross-session messages (TailInfo.peerNames).
  * Sent: input.to of the assistant's SendMessage tool_use. Received: origin.name on the isMeta user line
  * (when kind is "peer"), otherwise <cross-session-message from-name="…"> in the body. Messages that arrived
- * mid-work: origin.name of the attachment (queued_command). Same rules as scan_peer_names in src-tauri
+ * mid-work: origin.name of the attachment (queued_command). The Claude desktop app's sessions also give their
+ * local_… id: origin.from of a received message, session_id of the app's send_message, and the id in the text of
+ * its start_session result; they are matched against hostSessionId. Same rules as scan_peer_names in src-tauri
  */
 function collectPeerNames(entry: TranscriptEntry): string[] {
   const names: string[] = [];
   if (entry.type === "assistant") {
     for (const block of asBlocks(entry.message?.content)) {
-      if (block.type !== "tool_use" || block.name !== "SendMessage") continue;
-      const to = (block.input as { to?: unknown } | undefined)?.to;
-      const name = typeof to === "string" ? peerNameOf(to) : undefined;
+      if (block.type !== "tool_use") continue;
+      const input = block.input as { to?: unknown; session_id?: unknown } | undefined;
+      const name =
+        block.name === "SendMessage"
+          ? typeof input?.to === "string"
+            ? peerNameOf(input.to)
+            : undefined
+          : block.name?.endsWith("__send_message")
+            ? hostSessionIdOf(input?.session_id)
+            : undefined;
       if (name) names.push(name);
     }
   } else if (entry.type === "attachment") {
     const origin = entry.attachment?.origin;
     if (origin?.kind === "peer" && typeof origin.name === "string" && origin.name) names.push(origin.name);
+    const from = origin?.kind === "peer" ? hostSessionIdOf(origin.from) : undefined;
+    if (from) names.push(from);
   } else if (entry.type === "user" && entry.isMeta) {
     if (entry.origin?.kind === "peer" && typeof entry.origin.name === "string" && entry.origin.name) {
       names.push(entry.origin.name);
+      const from = hostSessionIdOf(entry.origin.from);
+      if (from) names.push(from);
     } else {
       const content = entry.message?.content;
       const text = typeof content === "string" ? content : asBlocks(content).map((b) => b.text ?? "").join("\n");
       for (const m of text.matchAll(CROSS_SESSION_FROM_NAME)) names.push(m[1]);
+    }
+  } else if (entry.type === "user") {
+    // The tool result that started a desktop app session carries its id in the text
+    for (const block of asBlocks(entry.message?.content)) {
+      if (block.type !== "tool_result") continue;
+      const content = (block as { content?: unknown }).content;
+      const texts =
+        typeof content === "string" ? [content] : asBlocks(content).map((b) => b.text ?? "");
+      for (const text of texts) {
+        const id = text.match(STARTED_SESSION_ID)?.[1];
+        if (id) names.push(id);
+      }
     }
   }
   return names;
