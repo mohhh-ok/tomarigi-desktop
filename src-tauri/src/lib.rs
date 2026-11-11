@@ -172,17 +172,18 @@ pub fn run() {
             // TOMARIGI_MOCK=1 enables mock mode (adds ?mock=1 to the page URL, read in src/perch/boot.tsx).
             // TOMARIGI_QUERY="tab=perch&settings=1" etc. sets the screen at launch (for screenshot checks; see the
             // initial state in App.tsx)
-            let mut query: Vec<String> = Vec::new();
-            if std::env::var("TOMARIGI_MOCK").is_ok_and(|v| v == "1") {
-                query.push("mock=1".into());
-            }
-            if let Ok(q) = std::env::var("TOMARIGI_QUERY") {
-                query.push(q);
-            }
-            if !query.is_empty() {
-                if let Ok(url) = format!("tauri://localhost/index.html?{}", query.join("&")).parse() {
-                    win.navigate(url).ok();
+            // The query is added to the URL the window is loading now: the bundled assets in a release build, the dev
+            // server (devUrl) under `bun run dev`
+            let mock = std::env::var("TOMARIGI_MOCK").is_ok_and(|v| v == "1");
+            let launch_query = std::env::var("TOMARIGI_QUERY").ok();
+            match win.url() {
+                Ok(current) => {
+                    if let Some(url) = url_with_launch_query(&current, mock, launch_query.as_deref()) {
+                        append_log(&format!("[launch-query] {current} -> {url}"));
+                        win.navigate(url).ok();
+                    }
                 }
+                Err(e) => append_log(&format!("[launch-query] couldn't read the window URL: {e}")),
             }
             let mode = load_mode(app.handle());
             *WINDOW_MODE.lock().unwrap() = mode;
@@ -347,9 +348,68 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
+/// The URL to open at launch for TOMARIGI_MOCK / TOMARIGI_QUERY: `current` (the URL the window is loading) with
+/// `mock=1` and the launch query added after any query it already has. None when there is nothing to add.
+fn url_with_launch_query(current: &tauri::Url, mock: bool, launch_query: Option<&str>) -> Option<tauri::Url> {
+    let mut parts: Vec<&str> = Vec::new();
+    if let Some(q) = current.query().filter(|q| !q.is_empty()) {
+        parts.push(q);
+    }
+    let before = parts.len();
+    if mock {
+        parts.push("mock=1");
+    }
+    if let Some(q) = launch_query.map(|q| q.trim_start_matches(['?', '&'])).filter(|q| !q.is_empty()) {
+        parts.push(q);
+    }
+    if parts.len() == before {
+        return None;
+    }
+    let mut url = current.clone();
+    // tauri:// isn't a special scheme, so `tauri://localhost` has an empty path; open the root page explicitly
+    if url.path().is_empty() {
+        url.set_path("/");
+    }
+    url.set_query(Some(&parts.join("&")));
+    Some(url)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn launch_query_is_added_to_the_url_being_loaded() {
+        // (current URL, TOMARIGI_MOCK=1, TOMARIGI_QUERY, expected URL)
+        let cases: &[(&str, bool, Option<&str>, Option<&str>)] = &[
+            // Release build on macOS / Linux: the bundled assets
+            ("tauri://localhost", false, Some("tab=concierge"), Some("tauri://localhost/?tab=concierge")),
+            // Release build on Windows
+            ("http://tauri.localhost/", false, Some("tab=concierge"), Some("http://tauri.localhost/?tab=concierge")),
+            // `bun run dev`: the dev server (devUrl)
+            ("http://localhost:4842/", false, Some("tab=concierge"), Some("http://localhost:4842/?tab=concierge")),
+            // A URL that already has a query keeps it
+            ("http://localhost:4842/?a=1", false, Some("tab=perch"), Some("http://localhost:4842/?a=1&tab=perch")),
+            // MOCK and QUERY together
+            (
+                "http://localhost:4842/",
+                true,
+                Some("tab=concierge&concierge="),
+                Some("http://localhost:4842/?mock=1&tab=concierge&concierge="),
+            ),
+            ("tauri://localhost", true, None, Some("tauri://localhost/?mock=1")),
+            // A leading ? or & in TOMARIGI_QUERY isn't doubled
+            ("http://localhost:4842/", false, Some("?tab=events"), Some("http://localhost:4842/?tab=events")),
+            // Nothing to add: no navigation
+            ("http://localhost:4842/", false, None, None),
+            ("http://localhost:4842/", false, Some(""), None),
+            ("http://localhost:4842/?a=1", false, None, None),
+        ];
+        for &(current, mock, query, expected) in cases {
+            let got = url_with_launch_query(&current.parse().unwrap(), mock, query);
+            assert_eq!(got.as_ref().map(|u| u.as_str()), expected, "{current} mock={mock} query={query:?}");
+        }
+    }
 
     #[test]
     fn app_log_rolls_over_past_its_limit() {
