@@ -1,12 +1,12 @@
 # Release
 
-Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. After that job, the Windows installer (NSIS `.exe`, unsigned) and then the Linux packages (`.deb`, `.AppImage`) are built and attached to the same draft. Each job also attaches the updater bundles with their signatures and adds its platforms to `latest.json` on the draft (the Linux job waits for the Windows job so they don't overwrite each other's `latest.json`), and a copy of its download under a name without the version (`Tomarigi-macOS.dmg`, `Tomarigi-Windows-setup.exe`, `Tomarigi-Linux.deb`, `Tomarigi-Linux.AppImage`, `Tomarigi-VSCode.vsix`), which the download page links to (docs/design.md "Download page"). Publish the draft by hand after checking it; the app's updater only sees a release once it is published (docs/design.md "Updates").
+Pushing a `v*` tag runs `.github/workflows/release.yml`. It builds a universal (Apple Silicon + Intel) .app and .dmg, signs them with the Developer ID certificate, notarizes them, and attaches them to a draft GitHub Release. After that job, the Windows installer (NSIS `.exe`, unsigned) and the Linux packages (`.deb`, `.AppImage`) are built at the same time and attached to the same draft. Each job also attaches the updater bundles with their signatures, and a copy of its download under a name without the version (`Tomarigi-macOS.dmg`, `Tomarigi-Windows-setup.exe`, `Tomarigi-Linux.deb`, `Tomarigi-Linux.AppImage`, `Tomarigi-VSCode.vsix`), which the download page links to (docs/design.md "Download page"). When all three are done, a last job (`updater-json`) writes `latest.json` for every platform onto the draft ("The updater key" below). Publish the draft by hand after checking it; the app's updater only sees a release once it is published (docs/design.md "Updates").
 
 ## Cutting a release
 
 1. Set the same version in `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `vscode-extension/package.json` (the workflow stops if any of them differ from the tag). Run `cargo metadata --manifest-path src-tauri/Cargo.toml --format-version 1 > /dev/null` so `src-tauri/Cargo.lock` picks up the new version, and commit it too
 2. Commit, then `git tag v<version>` and `git push origin v<version>`
-3. When the workflow finishes (about 8–13 minutes), verify the .dmg and the fixed-name copies as below, write release notes on the draft, and publish
+3. When the workflow finishes (not measured since Windows and Linux run at the same time; before that it took about 29 minutes, v0.15.1), verify the .dmg and the fixed-name copies as below, write release notes on the draft, and publish
 4. After publishing, check that the fixed-name links download (below)
 
 ## Building without a release
@@ -75,7 +75,7 @@ The Developer ID Application certificate can only be created by the Account Hold
 
 ### The updater key
 
-The updater (docs/design.md "Updates") only installs bundles signed with the key whose public half is `plugins.updater.pubkey` in `src-tauri/tauri.conf.json`. The tag run signs the macOS `.app.tar.gz`, the Windows `.exe`, and the Linux `.AppImage` / `.deb` with the two secrets above and writes their signatures into `latest.json` on the release. The manual run builds without updater bundles (`createUpdaterArtifacts: false` in its `--config`), since it gets no secrets.
+The updater (docs/design.md "Updates") only installs bundles signed with the key whose public half is `plugins.updater.pubkey` in `src-tauri/tauri.conf.json`. The tag run signs the macOS `.app.tar.gz`, the Windows `.exe`, and the Linux `.AppImage` / `.deb` with the two secrets above and attaches each bundle with its `.sig`. tauri-action's own `latest.json` is turned off in every job (`uploadUpdaterJson: false`), since each job would read it from the release, add its platforms, and upload it again, and the parallel Windows and Linux jobs would drop each other's entries. The `updater-json` job runs after all three and writes it once with `scripts/updater-json.ts`, from the bundles and `.sig` files on the draft, in the same shape tauri-action writes (keys `{os}-{arch}` and `{os}-{arch}-{bundle}`, the asset's API URL, the `.sig` contents; `tests/updater-json.test.ts` compares it with v0.15.3's). It fails if macOS, Windows, or Linux is missing. The manual run builds without updater bundles (`createUpdaterArtifacts: false` in its `--config`), since it gets no secrets.
 
 The key and its password are also kept in Google Secret Manager, project `<gcp-project>`, as `tomarigi-desktop-updater-private-key` and `tomarigi-desktop-updater-private-key-password` (GitHub secrets can't be read back). To restore them into the repository secrets:
 
@@ -110,7 +110,7 @@ When the extension is published, README can point to the marketplace instead of 
 
 ## Windows and Linux
 
-The Windows and Linux jobs run after the macOS job (`needs: release`), so the macOS job creates the draft and they add to it; Linux also runs after Windows, so the two don't update `latest.json` at once. They need no secrets other than the updater key. The Windows installer is not code-signed (docs/design.md "Platforms"), so SmartScreen warns on first run.
+The Windows and Linux jobs run after the macOS job (`needs: release`), so the macOS job creates the draft and they add to it. They run at the same time; neither writes `latest.json` ("The updater key" above). They need no secrets other than the updater key. The Windows installer is not code-signed (docs/design.md "Platforms"), so SmartScreen warns on first run.
 
 What has been checked without real machines (on a Mac): the Linux build, `cargo test`, and a launch under Xvfb in a Docker container (arm64, Debian bookworm; Garden, Perch, and the settings without Secret Service); the Windows build only as far as `cargo check --target x86_64-pc-windows-gnu` (rustup's windows-gnu std, zig as the C compiler, `llvm-rc` for the resources). Nothing below has been checked on a real Windows or Linux machine yet.
 

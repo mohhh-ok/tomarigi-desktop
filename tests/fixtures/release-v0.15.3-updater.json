@@ -1,0 +1,121 @@
+{
+  "assets": [
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792118",
+      "name": "tomarigi-desktop_0.15.3_amd64.AppImage"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792334",
+      "name": "tomarigi-desktop_0.15.3_amd64.AppImage.sig"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792043",
+      "name": "tomarigi-desktop_0.15.3_amd64.deb"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792097",
+      "name": "tomarigi-desktop_0.15.3_amd64.deb.sig"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727287",
+      "name": "tomarigi-desktop_0.15.3_universal.app.tar.gz"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727382",
+      "name": "tomarigi-desktop_0.15.3_universal.app.tar.gz.sig"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731728964",
+      "name": "tomarigi-desktop_0.15.3_universal.dmg"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731760559",
+      "name": "tomarigi-desktop_0.15.3_x64-setup.exe"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731760607",
+      "name": "tomarigi-desktop_0.15.3_x64-setup.exe.sig"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792547",
+      "name": "Tomarigi-Linux.AppImage"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792458",
+      "name": "Tomarigi-Linux.deb"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731729065",
+      "name": "Tomarigi-macOS.dmg"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731731938",
+      "name": "tomarigi-v0.15.3.vsix"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731731986",
+      "name": "Tomarigi-VSCode.vsix"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731761033",
+      "name": "Tomarigi-Windows-setup.exe"
+    }
+  ],
+  "signatures": {
+    "tomarigi-desktop_0.15.3_amd64.deb.sig": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek92T3R1RHArMDdEU05ueUZtaUJGTzRXbEtIdWswODlUekt3dFlMbmJiNmlCYzRmemY3ZEZVM00yNDJSNCtiNTkxeXJmZFA3eERTV2szSUxVUHhQM3drPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIyMTc3CWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfYW1kNjQuZGViCXZlcnNpb246MC4xNS4zCjVueCt2OVpJZVQzcXU3Qm9UY0c0RkNLdUFqQlp3cEQzNUJlZjdhVHIwTVp4Q1ovTFYvN2lsMFJDTGsyZy9uS2VkbStybCtCdkJHSklnWG9rM3NPaUJRPT0K",
+    "tomarigi-desktop_0.15.3_universal.app.tar.gz.sig": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek50c0VpRy8rR0kxTjVzeTVoNFcyRVZaZklBV0E4N05NVVYxU0pLdzE3dHZsRTR1VGw4UzJrdVVKN1ZuMmtLRUJkNVpTQVY2YkhvZ1B0RzhhWGhRUkFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIwOTE5CWZpbGU6dG9tYXJpZ2ktZGVza3RvcC5hcHAudGFyLmd6CXZlcnNpb246MC4xNS4zCkZSQW1NOThuVTVFdGFzS3RZc0t0VnVvSkZ4SmJhNXRIVWkydmpCRGlzRUpjQ05UK2haRXRXWm1FTXh1ekdJVkFjbExYL3JFbHRpWFFGRFFXV2hzd0FRPT0K",
+    "tomarigi-desktop_0.15.3_x64-setup.exe.sig": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek5oQXBzTjhqekR1cjFPSGxMZ0l3anZJVmpJclRnV3Z0ZGxKd3pIZWdHME9wRENDQ3pSaENZMjh4VHU5cWhOVEszZENKRndWOXRyWDA5dFVkNUhiQmdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIxNjAxCWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMTUuMwpwanZudjZEZzdpQ3Q0UjdHZU0vZE0wRW9uQjBRNzF3TERnU0s5T0tIVjI0Z25tOVBYUmpsNjA3UkVPVkRsTmlVVENRemhXS1dKLytQN0p5VUU1YllCZz09Cg==",
+    "tomarigi-desktop_0.15.3_amd64.AppImage.sig": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPekZ1SWFhc2szbnNkdDlMdnpTWVdlUzN2aWJZRFZpVlFvdXdyRjFUbWhXamJxSTJXZlk5T3Eyc24zVlJpaDlxZGpVb29YdUEydDQzTENRcytjWWQ4VFFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIyMTc3CWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfYW1kNjQuQXBwSW1hZ2UJdmVyc2lvbjowLjE1LjMKOFc3N2FSR3Qvbk93OGI4OFZWRXgyY2hIMXNEN3YyQTRPajZ1RG1SR2dqaVExdnozT09Kd2xMZEdsNEN5V2wvVVVDOHFHL0FOTkVuUHdYQUtCTHVtQ0E9PQo="
+  },
+  "latest": {
+    "version": "0.15.3",
+    "notes": "",
+    "pub_date": "2026-11-10T14:49:45.525Z",
+    "platforms": {
+      "darwin-aarch64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek50c0VpRy8rR0kxTjVzeTVoNFcyRVZaZklBV0E4N05NVVYxU0pLdzE3dHZsRTR1VGw4UzJrdVVKN1ZuMmtLRUJkNVpTQVY2YkhvZ1B0RzhhWGhRUkFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIwOTE5CWZpbGU6dG9tYXJpZ2ktZGVza3RvcC5hcHAudGFyLmd6CXZlcnNpb246MC4xNS4zCkZSQW1NOThuVTVFdGFzS3RZc0t0VnVvSkZ4SmJhNXRIVWkydmpCRGlzRUpjQ05UK2haRXRXWm1FTXh1ekdJVkFjbExYL3JFbHRpWFFGRFFXV2hzd0FRPT0K",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727287"
+      },
+      "darwin-x86_64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek50c0VpRy8rR0kxTjVzeTVoNFcyRVZaZklBV0E4N05NVVYxU0pLdzE3dHZsRTR1VGw4UzJrdVVKN1ZuMmtLRUJkNVpTQVY2YkhvZ1B0RzhhWGhRUkFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIwOTE5CWZpbGU6dG9tYXJpZ2ktZGVza3RvcC5hcHAudGFyLmd6CXZlcnNpb246MC4xNS4zCkZSQW1NOThuVTVFdGFzS3RZc0t0VnVvSkZ4SmJhNXRIVWkydmpCRGlzRUpjQ05UK2haRXRXWm1FTXh1ekdJVkFjbExYL3JFbHRpWFFGRFFXV2hzd0FRPT0K",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727287"
+      },
+      "darwin-universal": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek50c0VpRy8rR0kxTjVzeTVoNFcyRVZaZklBV0E4N05NVVYxU0pLdzE3dHZsRTR1VGw4UzJrdVVKN1ZuMmtLRUJkNVpTQVY2YkhvZ1B0RzhhWGhRUkFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIwOTE5CWZpbGU6dG9tYXJpZ2ktZGVza3RvcC5hcHAudGFyLmd6CXZlcnNpb246MC4xNS4zCkZSQW1NOThuVTVFdGFzS3RZc0t0VnVvSkZ4SmJhNXRIVWkydmpCRGlzRUpjQ05UK2haRXRXWm1FTXh1ekdJVkFjbExYL3JFbHRpWFFGRFFXV2hzd0FRPT0K",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727287"
+      },
+      "darwin-aarch64-app": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek50c0VpRy8rR0kxTjVzeTVoNFcyRVZaZklBV0E4N05NVVYxU0pLdzE3dHZsRTR1VGw4UzJrdVVKN1ZuMmtLRUJkNVpTQVY2YkhvZ1B0RzhhWGhRUkFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIwOTE5CWZpbGU6dG9tYXJpZ2ktZGVza3RvcC5hcHAudGFyLmd6CXZlcnNpb246MC4xNS4zCkZSQW1NOThuVTVFdGFzS3RZc0t0VnVvSkZ4SmJhNXRIVWkydmpCRGlzRUpjQ05UK2haRXRXWm1FTXh1ekdJVkFjbExYL3JFbHRpWFFGRFFXV2hzd0FRPT0K",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727287"
+      },
+      "darwin-x86_64-app": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek50c0VpRy8rR0kxTjVzeTVoNFcyRVZaZklBV0E4N05NVVYxU0pLdzE3dHZsRTR1VGw4UzJrdVVKN1ZuMmtLRUJkNVpTQVY2YkhvZ1B0RzhhWGhRUkFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIwOTE5CWZpbGU6dG9tYXJpZ2ktZGVza3RvcC5hcHAudGFyLmd6CXZlcnNpb246MC4xNS4zCkZSQW1NOThuVTVFdGFzS3RZc0t0VnVvSkZ4SmJhNXRIVWkydmpCRGlzRUpjQ05UK2haRXRXWm1FTXh1ekdJVkFjbExYL3JFbHRpWFFGRFFXV2hzd0FRPT0K",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727287"
+      },
+      "darwin-universal-app": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek50c0VpRy8rR0kxTjVzeTVoNFcyRVZaZklBV0E4N05NVVYxU0pLdzE3dHZsRTR1VGw4UzJrdVVKN1ZuMmtLRUJkNVpTQVY2YkhvZ1B0RzhhWGhRUkFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIwOTE5CWZpbGU6dG9tYXJpZ2ktZGVza3RvcC5hcHAudGFyLmd6CXZlcnNpb246MC4xNS4zCkZSQW1NOThuVTVFdGFzS3RZc0t0VnVvSkZ4SmJhNXRIVWkydmpCRGlzRUpjQ05UK2haRXRXWm1FTXh1ekdJVkFjbExYL3JFbHRpWFFGRFFXV2hzd0FRPT0K",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731727287"
+      },
+      "windows-x86_64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek5oQXBzTjhqekR1cjFPSGxMZ0l3anZJVmpJclRnV3Z0ZGxKd3pIZWdHME9wRENDQ3pSaENZMjh4VHU5cWhOVEszZENKRndWOXRyWDA5dFVkNUhiQmdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIxNjAxCWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMTUuMwpwanZudjZEZzdpQ3Q0UjdHZU0vZE0wRW9uQjBRNzF3TERnU0s5T0tIVjI0Z25tOVBYUmpsNjA3UkVPVkRsTmlVVENRemhXS1dKLytQN0p5VUU1YllCZz09Cg==",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731760559"
+      },
+      "windows-x86_64-nsis": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek5oQXBzTjhqekR1cjFPSGxMZ0l3anZJVmpJclRnV3Z0ZGxKd3pIZWdHME9wRENDQ3pSaENZMjh4VHU5cWhOVEszZENKRndWOXRyWDA5dFVkNUhiQmdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIxNjAxCWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMTUuMwpwanZudjZEZzdpQ3Q0UjdHZU0vZE0wRW9uQjBRNzF3TERnU0s5T0tIVjI0Z25tOVBYUmpsNjA3UkVPVkRsTmlVVENRemhXS1dKLytQN0p5VUU1YllCZz09Cg==",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731760559"
+      },
+      "linux-x86_64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPekZ1SWFhc2szbnNkdDlMdnpTWVdlUzN2aWJZRFZpVlFvdXdyRjFUbWhXamJxSTJXZlk5T3Eyc24zVlJpaDlxZGpVb29YdUEydDQzTENRcytjWWQ4VFFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIyMTc3CWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfYW1kNjQuQXBwSW1hZ2UJdmVyc2lvbjowLjE1LjMKOFc3N2FSR3Qvbk93OGI4OFZWRXgyY2hIMXNEN3YyQTRPajZ1RG1SR2dqaVExdnozT09Kd2xMZEdsNEN5V2wvVVVDOHFHL0FOTkVuUHdYQUtCTHVtQ0E9PQo=",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792118"
+      },
+      "linux-x86_64-appimage": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPekZ1SWFhc2szbnNkdDlMdnpTWVdlUzN2aWJZRFZpVlFvdXdyRjFUbWhXamJxSTJXZlk5T3Eyc24zVlJpaDlxZGpVb29YdUEydDQzTENRcytjWWQ4VFFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIyMTc3CWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfYW1kNjQuQXBwSW1hZ2UJdmVyc2lvbjowLjE1LjMKOFc3N2FSR3Qvbk93OGI4OFZWRXgyY2hIMXNEN3YyQTRPajZ1RG1SR2dqaVExdnozT09Kd2xMZEdsNEN5V2wvVVVDOHFHL0FOTkVuUHdYQUtCTHVtQ0E9PQo=",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792118"
+      },
+      "linux-x86_64-deb": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSSytGOWVUcFhPek92T3R1RHArMDdEU05ueUZtaUJGTzRXbEtIdWswODlUekt3dFlMbmJiNmlCYzRmemY3ZEZVM00yNDJSNCtiNTkxeXJmZFA3eERTV2szSUxVUHhQM3drPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzIyMTc3CWZpbGU6dG9tYXJpZ2ktZGVza3RvcF8wLjE1LjNfYW1kNjQuZGViCXZlcnNpb246MC4xNS4zCjVueCt2OVpJZVQzcXU3Qm9UY0c0RkNLdUFqQlp3cEQzNUJlZjdhVHIwTVp4Q1ovTFYvN2lsMFJDTGsyZy9uS2VkbStybCtCdkJHSklnWG9rM3NPaUJRPT0K",
+        "url": "https://api.github.com/repos/mohhh-ok/tomarigi-desktop/releases/assets/731792043"
+      }
+    }
+  }
+}
