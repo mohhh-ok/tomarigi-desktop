@@ -12,8 +12,8 @@ export function turnKey(sessionId: string, at: number): string {
   return `${sessionId}:${at}`;
 }
 
-/** Per-turn requests made from each scan (docs/design.md "Turn verdicts": one request per finished turn gives the
- * speech bubble line, the "?", and the anger mark), and the sessions with those results attached for display.
+/** Per-turn requests made from each scan (docs/design.md "Turn verdicts": one verdict per finished turn, from two
+ * requests (summarizeTurn), gives the speech bubble line, the "?", and the anger mark), and the sessions with those results attached for display.
  * summarySetUp: an OpenAI / Anthropic key is saved, or Local is set up */
 export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean) {
   // Results keyed by turn (turnKey). Turns whose request has started go into requestedRef and aren't re-requested on
