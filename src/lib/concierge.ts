@@ -268,7 +268,9 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "Good advice, most important first: a session that needs a reply and that the developer skipped (it asked, " +
     "then the developer replied to or jumped to another session while it kept waiting) — bring it back; a " +
     "session whose pending reply also holds up its parent (see holds); a session waiting longest for a " +
-    "reply; two sessions that seem to work on the same file or task.\n" +
+    "reply; two sessions that seem to work on the same file or task; when no session needs a reply, a session " +
+    "that finished with its result ready to check (state done, needs_reply false, continuing not true, no " +
+    "watch_parent, no parent_takes_over, no watch_children still working).\n" +
     "Call a session by its name in the advice. Write its id only in session_id, never in the advice. An advice " +
     "about a session must contain that session's name exactly as given; one without the name is not shown.\n" +
     "An advice is about one session only: never put another session's name or something to do in another session " +
@@ -277,8 +279,9 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "both.\n" +
     "Write one short line, about 30 full-width characters (or about 60 Latin characters), plain text, no " +
     "markdown, no quotation marks, no trailing period, in the language given by ui_language. Set session_id to " +
-    "the id of the session the advice is about, exactly as given. When nothing needs the developer (no session " +
-    "needs a reply and nothing looks wrong), return an empty advice and an empty session_id.\n" +
+    "the id of the session the advice is about, exactly as given. Return an empty advice and an empty session_id " +
+    "only when nothing needs the developer: no session needs a reply, no session finished with its result ready to " +
+    "check, and nothing looks wrong.\n" +
     "Advise only something the developer can do now. Set action to what the advice asks: reply (answer, approve, " +
     "or decide for a session that needs a reply), check_result (look at the result of a session that finished), " +
     "or none. Use none when there is nothing to do now, e.g. waiting for a report, a child session, or background " +
@@ -333,8 +336,9 @@ export const CONCIERGE_TASK_WITH_SUGGESTIONS: JudgeTaskDefinition = {
     "watch_parent, or the " +
     "result of a session whose watch_children still work; never put another session's name or id in a text. At " +
     "most one suggestion per session. Each text is about 30 full-width characters (or about 60 Latin characters), " +
-    "one line, plain text, no markdown, no quotation marks, in the language given by ui_language. When nothing " +
-    "needs the developer, return an empty list.",
+    "one line, plain text, no markdown, no quotation marks, in the language given by ui_language. When no session " +
+    "needs a reply, suggest checking the results of the sessions that finished with their result ready to check. " +
+    "Return an empty list only when no session needs a reply and none finished with its result ready to check.",
   outputFields: {
     ...CONCIERGE_TASK.outputFields,
     suggestions: {
