@@ -89,7 +89,9 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "continuing from assistant_text alone; user_messages are only for abusive.\n" +
     "line: one very short line about the turn, like a speech bubble, about 15 full-width characters (or about 30 " +
     "Latin characters). If the message ends by asking the user something (a choice, an approval, missing " +
-    "information), say what is being asked. Otherwise, say what was done. Plain text only: no markdown, no " +
+    "information), say what is being asked. Otherwise, say what was done. Never write a question, a decision, or a " +
+    "wait that assistant_text doesn't state: a step not done yet that it only reports (e.g. not pushed yet) is not " +
+    "something waiting on the user's decision or check. Plain text only: no markdown, no " +
     "quotation marks, no trailing period. Write it in the language given by the payload's ui_language field.\n" +
     "asking: true when the agent stopped in a state where it can't proceed until the user answers: it presents " +
     "options to choose from, asks for approval or confirmation, or asks for missing information. false when it only " +
@@ -101,7 +103,10 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
     "you do'), the user has nothing to answer yet: asking is false, even though the agent will need the answer " +
     "later. When the agent only passes on a question from another session or a sub-agent and tells the user to " +
     "answer it there (e.g. 'session X is waiting for your answer: please answer in that session's pane whether to " +
-    "upload these 20 words'), asking is false: the answer goes to that session, and this agent isn't waiting on it.\n" +
+    "upload these 20 words'), asking is false: the answer goes to that session, and this agent isn't waiting on it. " +
+    "A closing note on the state of things (e.g. '5 commits on main are not pushed yet', 'not deployed yet', 'the " +
+    "PR is still open') is a report, not a question, even when it is about something the user may decide later: " +
+    "asking is false unless assistant_text itself asks the user.\n" +
     "abusive: true when any of user_messages insults, demeans, or swears at the AI itself: name-calling such as " +
     "'idiot' or 'useless', contempt, or hostile profanity aimed at the AI, even when it also contains an " +
     "instruction. false for ordinary instructions, questions, and criticism of the work, including frustrated or " +
