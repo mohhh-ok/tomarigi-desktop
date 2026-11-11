@@ -176,14 +176,18 @@ pub fn run() {
             // server (devUrl) under `bun run dev`
             let mock = std::env::var("TOMARIGI_MOCK").is_ok_and(|v| v == "1");
             let launch_query = std::env::var("TOMARIGI_QUERY").ok();
-            match win.url() {
-                Ok(current) => {
-                    if let Some(url) = url_with_launch_query(&current, mock, launch_query.as_deref()) {
-                        append_log(&format!("[launch-query] {current} -> {url}"));
-                        win.navigate(url).ok();
+            // win.url() is read only when there is something to add: on macOS it panics when the webview has no URL
+            // yet (wry unwraps WKWebView.URL), so a plain launch doesn't call it at all
+            if mock || launch_query.is_some() {
+                match win.url() {
+                    Ok(current) => {
+                        if let Some(url) = url_with_launch_query(&current, mock, launch_query.as_deref()) {
+                            append_log(&format!("[launch-query] {current} -> {url}"));
+                            win.navigate(url).ok();
+                        }
                     }
+                    Err(e) => append_log(&format!("[launch-query] couldn't read the window URL: {e}")),
                 }
-                Err(e) => append_log(&format!("[launch-query] couldn't read the window URL: {e}")),
             }
             let mode = load_mode(app.handle());
             *WINDOW_MODE.lock().unwrap() = mode;
