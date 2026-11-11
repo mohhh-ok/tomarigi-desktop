@@ -2,6 +2,7 @@
 // stays watching between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
 import type { BirdState } from "./sessions";
 import type { LiveSession, SessionEvent } from "./session-types";
+import type { WatchLinks } from "./session-watch";
 
 /** For this long after the linked session last moved, it stays watching */
 export const WATCH_GRACE_MS = 5 * 60_000;
@@ -105,6 +106,23 @@ export interface LinkWorld {
   startedBySession: (sessionId: string) => boolean;
   /** The sessions it is linked to now */
   peers: (sessionId: string) => readonly string[];
+}
+
+/**
+ * The links of one scan as takenOverByParent reads them (resolveWatchLinks in lib/session-watch.ts). A linked session
+ * not on screen (no view id) isn't known to be started by another session, so it counts as a parent
+ */
+export function takenOverWorld(
+  watch: Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf">,
+): LinkWorld {
+  return {
+    startedAt: (sessionId) => watch.liveBySessionId.get(sessionId)?.startedAt,
+    startedBySession: (sessionId) => {
+      const viewId = watch.viewIdBySessionId.get(sessionId);
+      return viewId !== undefined && watch.startedBySessionOf(viewId);
+    },
+    peers: (sessionId) => watch.peerLinksOf(sessionId).map((p) => p.sessionId),
+  };
 }
 
 /** parentTakesOver for one session, with each linked session's own facts read from the links */

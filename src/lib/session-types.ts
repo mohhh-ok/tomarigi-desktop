@@ -117,9 +117,11 @@ export interface SessionView {
   // For a grace period after the peers stop (WATCH_GRACE_MS in lib/watching.ts) it is 0 and stays watching.
   // Absent when not watching
   watching?: number;
-  // A parent takes this session's results and questions: it was started by another session and is linked to one that
-  // started before it (parentTakesOver in lib/watching.ts; docs/design.md "Watching"). Its done isn't read aloud and
-  // the concierge doesn't ask the developer to reply to it or check its result
+  // A parent takes this session's results and questions: it was started by another session, the user hasn't typed in
+  // it since its first prompt, and it is linked to a parent (a session that started before it and either wasn't started
+  // by another session or is linked to one older than itself; takenOverByParent in lib/watching.ts; docs/design.md
+  // "Watching"). Its done and needs reply aren't read aloud, and the concierge doesn't ask the developer to reply to it
+  // or check its result. Its bird still gets the "?"
   parentTakesOver?: true;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)

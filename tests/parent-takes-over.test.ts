@@ -1,6 +1,7 @@
 // Sessions started by another session (docs/design.md "Watching", "Sessions started by another session"): the parent
 // takes over their results and questions, so their done isn't read aloud and the concierge asks nothing of them.
-// Each scene calls the app's own functions: the first-prompt check, the link check, the readout, and the concierge's
+// Each scene calls the app's own functions: the first-prompt check, the link check (with the same reading of the links
+// as a scan, takenOverWorld, over a small stand-in for the links a scan resolves), the readout, and the concierge's
 // payload and drop checks
 import { describe, expect, test } from "bun:test";
 import {
@@ -15,7 +16,9 @@ import { conciergeStatusOf } from "../src/lib/concierge-status.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
 import { hasQuestion, waitsOnDeveloper } from "../src/lib/turn-verdict.ts";
 import { isReadAloudEvent } from "../src/lib/voice.ts";
-import { silentForParent, startedBySession, takenOverByParent, type FirstPrompt } from "../src/lib/watching.ts";
+import { silentForParent, startedBySession, takenOverByParent, takenOverWorld, type FirstPrompt } from "../src/lib/watching.ts";
+import type { LiveSession, PeerLink } from "../src/lib/session-types.ts";
+import type { WatchLinks } from "../src/lib/session-watch.ts";
 import { conciergeTabCounts } from "../src/perch/concierge-tab.ts";
 
 const prompt = (turnOrigin: string | null | undefined, namedAtLaunch = false): FirstPrompt => ({
@@ -72,21 +75,33 @@ describe("started by another session, in a terminal", () => {
   for (const [scene, first, want] of scenes) test(scene, () => expect(startedBySession(first)).toBe(want));
 });
 
-/** A set of running sessions: when each started, its first prompt, whether the user typed in it later, and the links */
+/**
+ * A set of running sessions: when each started, its first prompt, whether the user typed in it later, whether it is on
+ * screen (has a view id; default yes), and the links. Read as a scan reads them: a stand-in for the WatchLinks that
+ * resolveWatchLinks gives, passed to the app's takenOverWorld
+ */
 interface Scene {
-  sessions: Record<string, { startedAt: number; first: FirstPrompt; typed?: boolean }>;
+  sessions: Record<string, { startedAt: number; first: FirstPrompt; typed?: boolean; onScreen?: boolean }>;
   links: [string, string][];
 }
-function takenOver(scene: Scene): Record<string, boolean> {
-  const peers = (id: string) => scene.links.flatMap(([a, b]) => (a === id ? [b] : b === id ? [a] : []));
-  const world = {
-    startedAt: (id: string) => scene.sessions[id]?.startedAt,
-    startedBySession: (id: string) => {
-      const s = scene.sessions[id];
+function watchOf(scene: Scene): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf"> {
+  const entries = Object.entries(scene.sessions);
+  const viewId = (id: string) => `root/${id}.jsonl`;
+  return {
+    liveBySessionId: new Map(entries.map(([id, s], i) => [id, { pid: i + 1, sessionId: id, startedAt: s.startedAt } as LiveSession])),
+    viewIdBySessionId: new Map(entries.filter(([, s]) => s.onScreen !== false).map(([id]) => [id, viewId(id)])),
+    peerLinksOf: (id) =>
+      scene.links
+        .flatMap(([a, b]) => (a === id ? [b] : b === id ? [a] : []))
+        .map((p) => ({ sessionId: p, name: p, startedAt: scene.sessions[p]?.startedAt, active: false }) as PeerLink),
+    startedBySessionOf: (v) => {
+      const s = entries.find(([id]) => viewId(id) === v)?.[1];
       return s !== undefined && startedBySession(s.first, s.typed);
     },
-    peers,
   };
+}
+function takenOver(scene: Scene): Record<string, boolean> {
+  const world = takenOverWorld(watchOf(scene));
   return Object.fromEntries(Object.keys(scene.sessions).map((id) => [id, takenOverByParent(id, world)]));
 }
 
@@ -134,6 +149,16 @@ describe("which sessions a parent takes over", () => {
       { P: false, Q: false },
     ],
     ["C's parent closed and nothing else is linked", { sessions: { C }, links: [] }, { C: false }],
+    [
+      "C's parent is not on screen (another watched folder): it isn't known to be started by another session, so it counts as a parent",
+      { sessions: { P: { ...C, startedAt: 100, onScreen: false }, C }, links: [["P", "C"]] },
+      { P: false, C: true },
+    ],
+    [
+      "the older linked session is on screen: whether it was started by another session is read from it (a reborn pair stays apart)",
+      { sessions: { C: { ...C, onScreen: true }, R }, links: [["C", "R"]] },
+      { C: false, R: false },
+    ],
   ];
   for (const [name, scene, want] of scenes) test(name, () => expect(takenOver(scene)).toEqual(want));
 });

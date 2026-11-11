@@ -1,7 +1,7 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
-import { silentForParent, takenOverByParent, watchingCount } from "./watching";
+import { silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
 import { basename } from "./paths";
 import { pendingAskOf, projectLabels } from "./transcript";
 import type {
@@ -158,6 +158,8 @@ function buildViews(
   now: number,
 ): SessionView[] {
   const views: SessionView[] = [];
+  // Which sessions a parent takes over (docs/design.md "Watching", "Sessions started by another session")
+  const linkWorld = takenOverWorld(watch);
 
   for (const { file, id, chicks, tail, base, slug, isSdk } of withTail) {
     // The time basis for the state check is tail.lastEventAt (the last time of a line with a timestamp).
@@ -204,15 +206,7 @@ function buildViews(
     if (snippet) snippetCache.set(id, snippet);
     const peers = watch.peerLinksOf(sessionIdOfViewId(id));
     const watching = watchingCount(displayState, peers, now);
-    const takenOver = takenOverByParent(sessionIdOfViewId(id), {
-      startedAt: (sid) => watch.liveBySessionId.get(sid)?.startedAt,
-      // A linked session not on screen isn't known to be started by another session, so it counts as a parent
-      startedBySession: (sid) => {
-        const viewId = watch.viewIdBySessionId.get(sid);
-        return viewId !== undefined && watch.startedBySessionOf(viewId);
-      },
-      peers: (sid) => watch.peerLinksOf(sid).map((p) => p.sessionId),
-    });
+    const takenOver = takenOverByParent(sessionIdOfViewId(id), linkWorld);
     const last = tail.events[tail.events.length - 1];
     const reply =
       (displayState === "done" || displayState === "dozing") &&
