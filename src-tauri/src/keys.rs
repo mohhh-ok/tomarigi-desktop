@@ -6,13 +6,13 @@ use crate::append_log;
 
 // ---- BYOK API keys and the API calls that use them ----
 // docs/design.md "BYOK API keys". Key values are handled only inside Rust and never returned to the WebView JS.
-// The store is decided once at startup from the identifier: everyday use and verify use the OS store (items per
-// identifier): the macOS Keychain, Windows Credential Manager, or Linux Secret Service (GNOME Keyring / KWallet)
-// through the keyring crate. On Linux without Secret Service keys can't be saved; there is no plaintext fallback
-// (docs/design.md "Platforms"). dev (identifier ending in .dev) uses the WebView's IndexedDB. This is because the dev
-// signature changes on every build, and Keychain permission would be asked every time. In dev, JS keeps the keys
-// in IndexedDB and passes them to Rust at startup and on save (Rust keeps them only in memory). API calls that
-// use keys are made from Rust with either store
+// The store is decided once at startup: everyday use, verify, and dev all use the OS store (items per identifier):
+// the macOS Keychain, Windows Credential Manager, or Linux Secret Service (GNOME Keyring / KWallet) through the
+// keyring crate. On Linux without Secret Service keys can't be saved; there is no plaintext fallback (docs/design.md
+// "Platforms"). dev is signed before each run by a cargo runner (scripts/dev-runner.sh) so the Keychain doesn't ask
+// after every rebuild. TOMARIGI_KEY_BACKEND=webview puts keys in the WebView's IndexedDB instead (only to check the
+// migration from it): JS keeps the keys there and passes them to Rust at startup and on save (Rust keeps them only in
+// memory). API calls that use keys are made from Rust with either store
 
 const KEY_PROVIDERS: [&str; 2] = ["anthropic", "openai"];
 /// Providers no longer used whose saved key can still be seen and deleted, never saved or sent (docs/design.md "BYOK
@@ -22,7 +22,7 @@ const RETIRED_KEY_PROVIDERS: [&str; 1] = ["typesafe"];
 enum KeyStore {
     /// OS store (Keychain generic password on macOS). service is `<identifier>.byok`, account is the provider name
     Keychain { service: String },
-    /// dev: IndexedDB is the source of truth; Rust only keeps a copy in memory
+    /// TOMARIGI_KEY_BACKEND=webview: IndexedDB is the source of truth; Rust only keeps a copy in memory
     WebView,
     /// The OS store can't be used (Linux without Secret Service). The reason is for the log only
     #[cfg_attr(target_os = "macos", allow(dead_code))]
@@ -88,17 +88,20 @@ enum Os {
     Other,
 }
 
-/// Whether the WebView's storage belongs to this identifier alone, from the OS and the path of the running
-/// executable.
+/// Whether the WebView's storage belongs to this identifier alone, from the OS, the identifier, and the path of the
+/// running executable.
 /// - macOS: WKWebView keeps its storage per bundle identifier only for a build launched from its .app bundle
 ///   (`<name>.app/Contents/MacOS/<exe>`). A binary run outside a bundle (`target/debug/tomarigi-desktop`) shares one
-///   WebKit storage with every other unbundled build, whatever its identifier
+///   WebKit storage with every other unbundled build, whatever its identifier. dev (identifier ending in .dev) counts
+///   as owning it anyway: before dev used the Keychain it was the only build that wrote keys there, so dev moves the
+///   keys it left there (docs/design.md "BYOK API keys")
 /// - Windows and Linux: Tauri sets the webview's data directory to `app_local_data_dir`
 ///   (`<local data dir>/<identifier>`) when none is configured (tauri 2.12.5 `manager/webview.rs`; this app sets
 ///   neither `dataDirectory` nor `appDirectoriesOverride`), so it is per identifier however the binary is run
-fn webview_storage_is_own(os: Os, exe: &std::path::Path) -> bool {
+fn webview_storage_is_own(os: Os, identifier: &str, exe: &std::path::Path) -> bool {
     match os {
         Os::Other => true,
+        Os::MacOs if identifier.ends_with(".dev") => true,
         Os::MacOs => {
             let macos_dir = exe.parent();
             let contents = macos_dir.and_then(|d| d.parent());
@@ -127,11 +130,9 @@ fn key_store() -> &'static KeyStore {
 /// Called once at startup. TOMARIGI_KEY_BACKEND=webview is an override for verifying migration from IndexedDB
 pub(crate) fn init_key_store(identifier: &str) {
     // An executable path that can't be read counts as shared storage: leaving IndexedDB alone is the safe side
-    let own = std::env::current_exe().is_ok_and(|exe| webview_storage_is_own(this_os(), &exe));
+    let own = std::env::current_exe().is_ok_and(|exe| webview_storage_is_own(this_os(), identifier, &exe));
     let _ = WEBVIEW_STORAGE_OWN.set(own);
-    let store = if identifier.ends_with(".dev")
-        || std::env::var("TOMARIGI_KEY_BACKEND").is_ok_and(|v| v == "webview")
-    {
+    let store = if std::env::var("TOMARIGI_KEY_BACKEND").is_ok_and(|v| v == "webview") {
         KeyStore::WebView
     } else {
         let service = format!("{identifier}.byok");
@@ -220,7 +221,7 @@ fn store_key(provider: &str, value: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// The store. JS checks this and saves to IndexedDB only for dev (webview); "unavailable" makes the settings say keys
+/// The store. JS checks this and saves to IndexedDB only for webview (TOMARIGI_KEY_BACKEND=webview); "unavailable" makes the settings say keys
 /// can't be saved
 #[tauri::command]
 pub(crate) fn key_backend() -> &'static str {
@@ -417,7 +418,7 @@ pub(crate) fn local_ai_import() -> Option<(String, String)> {
 /// For verification: when launched with TOMARIGI_IMPORT_KEY=<provider>, saves the first line of stdin as that
 /// provider's key (to verify saving, restarting, and migration in environments where settings can't be operated
 /// by hand. The value is not logged, only its length).
-/// When the store is webview, passes it to JS via "key-imported" so it goes into IndexedDB (same path as dev)
+/// When the store is webview, passes it to JS via "key-imported" so it goes into IndexedDB (same path as saving there)
 pub(crate) fn import_key_from_stdin(app: &AppHandle) {
     let Ok(provider) = std::env::var("TOMARIGI_IMPORT_KEY") else { return };
     let mut line = String::new();
@@ -447,23 +448,34 @@ mod tests {
     use std::path::Path;
 
     #[test]
-    fn webview_storage_is_own_only_inside_an_app_bundle_on_macos() {
-        let cases: [(Os, &str, bool); 9] = [
-            (Os::MacOs, "/Applications/tomarigi.app/Contents/MacOS/tomarigi-desktop", true),
-            (Os::MacOs, "/Users/me/repo/src-tauri/target/release/bundle/macos/tomarigi (verify).app/Contents/MacOS/tomarigi-desktop", true),
+    fn webview_storage_is_own_inside_an_app_bundle_or_for_dev_on_macos() {
+        const EVERYDAY: &str = "net.mohtech.tomarigi-desktop";
+        const VERIFY: &str = "net.mohtech.tomarigi-desktop.verify";
+        const DEV: &str = "net.mohtech.tomarigi-desktop.dev";
+        let cases: [(Os, &str, &str, bool); 14] = [
+            (Os::MacOs, EVERYDAY, "/Applications/tomarigi.app/Contents/MacOS/tomarigi-desktop", true),
+            (Os::MacOs, VERIFY, "/Users/me/repo/src-tauri/target/release/bundle/macos/tomarigi (verify).app/Contents/MacOS/tomarigi-desktop", true),
             // target/debug, run outside a bundle: shares WebKit storage with every other unbundled build
-            (Os::MacOs, "/Users/me/repo/src-tauri/target/debug/tomarigi-desktop", false),
-            (Os::MacOs, "/Users/me/repo/src-tauri/target/release/tomarigi-desktop", false),
+            (Os::MacOs, EVERYDAY, "/Users/me/repo/src-tauri/target/debug/tomarigi-desktop", false),
+            (Os::MacOs, VERIFY, "/Users/me/repo/src-tauri/target/debug/tomarigi-desktop", false),
+            (Os::MacOs, EVERYDAY, "/Users/me/repo/src-tauri/target/release/tomarigi-desktop", false),
+            // dev (`bun run dev`) outside a bundle: the only build that wrote keys to the shared storage, so it moves
+            // the keys it left there to the Keychain
+            (Os::MacOs, DEV, "/Users/me/repo/src-tauri/target/debug/tomarigi-desktop", true),
+            (Os::MacOs, DEV, "tomarigi-desktop", true),
+            // Only the .dev suffix counts
+            (Os::MacOs, "net.mohtech.tomarigi-desktop.devtools", "/Users/me/repo/src-tauri/target/debug/tomarigi-desktop", false),
             // Looks like a bundle, but isn't one
-            (Os::MacOs, "/tmp/tomarigi/Contents/MacOS/tomarigi-desktop", false),
-            (Os::MacOs, "/tmp/tomarigi.app/MacOS/tomarigi-desktop", false),
-            (Os::MacOs, "tomarigi-desktop", false),
+            (Os::MacOs, EVERYDAY, "/tmp/tomarigi/Contents/MacOS/tomarigi-desktop", false),
+            (Os::MacOs, EVERYDAY, "/tmp/tomarigi.app/MacOS/tomarigi-desktop", false),
+            (Os::MacOs, EVERYDAY, "tomarigi-desktop", false),
             // Windows and Linux: Tauri gives each identifier its own data directory
-            (Os::Other, "C:\\Users\\me\\repo\\src-tauri\\target\\debug\\tomarigi-desktop.exe", true),
-            (Os::Other, "/home/me/repo/src-tauri/target/debug/tomarigi-desktop", true),
+            (Os::Other, EVERYDAY, "C:\\Users\\me\\repo\\src-tauri\\target\\debug\\tomarigi-desktop.exe", true),
+            (Os::Other, EVERYDAY, "/home/me/repo/src-tauri/target/debug/tomarigi-desktop", true),
+            (Os::Other, DEV, "/home/me/repo/src-tauri/target/debug/tomarigi-desktop", true),
         ];
-        for (os, exe, expected) in cases {
-            assert_eq!(webview_storage_is_own(os, Path::new(exe)), expected, "{exe}");
+        for (os, identifier, exe, expected) in cases {
+            assert_eq!(webview_storage_is_own(os, identifier, Path::new(exe)), expected, "{identifier} {exe}");
         }
     }
 

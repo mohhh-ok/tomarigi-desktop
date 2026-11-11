@@ -1,0 +1,7 @@
+# Signs the dev binary before each run so the Keychain doesn't ask for permission after every rebuild
+# (scripts/dev-runner.sh; docs/design.md "BYOK API keys"). Only macOS targets have a runner
+[target.aarch64-apple-darwin]
+runner = "../scripts/dev-runner.sh"
+
+[target.x86_64-apple-darwin]
+runner = "../scripts/dev-runner.sh"

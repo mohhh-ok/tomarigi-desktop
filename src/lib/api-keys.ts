@@ -2,7 +2,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { kvDelete, kvGet, kvPut } from "./settings-store";
 
-// Names the API keys are saved under in IndexedDB. Used for the dev store and for migrating keys left by older versions (initApiKeys).
+// Names the API keys are saved under in IndexedDB. Used for the webview store (TOMARIGI_KEY_BACKEND=webview) and for migrating keys left by older versions and by dev before it used the Keychain (initApiKeys).
 // Anthropic keeps its old name "judgeApiKey" (so keys from older versions can be read)
 const KEY_AI_API_KEY = "judgeApiKey";
 const KEY_OPENAI_API_KEY = "openAiApiKey";
@@ -21,9 +21,9 @@ export type RetiredKeyProvider = (typeof RETIRED_KEY_PROVIDERS)[number];
 // The rows of the AI settings: the providers with a key, and Local
 export type AiSettingsProvider = ApiKeyProvider | "local";
 
-// Where keys are stored is decided by Rust at launch from the identifier (KeyStore in src-tauri/src/keys.rs). Everyday and verify builds use the Keychain,
-// dev uses IndexedDB. API calls that use keys are made from Rust, so JS never reads key values.
-// All JS does is ask Rust to save, delete, or check whether a key is saved, plus saving to IndexedDB in dev
+// Where keys are stored is decided by Rust at launch (KeyStore in src-tauri/src/keys.rs). Everyday, verify, and dev builds use the Keychain;
+// TOMARIGI_KEY_BACKEND=webview uses IndexedDB. API calls that use keys are made from Rust, so JS never reads key values.
+// All JS does is ask Rust to save, delete, or check whether a key is saved, plus saving to IndexedDB with webview
 
 const API_KEY_IDB_KEYS: Record<ApiKeyProvider, string> = {
   anthropic: KEY_AI_API_KEY,
@@ -44,10 +44,11 @@ async function apiKeyBackend(): Promise<ApiKeyBackend> {
 }
 
 /**
- * Whether keys in IndexedDB may be read and deleted. dev (webview) keeps its keys there. With the Keychain only when
+ * Whether keys in IndexedDB may be read and deleted. webview keeps its keys there. With the Keychain only when
  * the WebView's storage belongs to this identifier alone (decided in Rust, webview_storage_is_own in
  * src-tauri/src/keys.rs): a macOS binary run outside a .app bundle shares one WebKit storage with dev, so touching
- * IndexedDB there would move or delete dev's keys (docs/design.md "BYOK API keys")
+ * IndexedDB there would move or delete dev's keys. dev itself counts as owning it, so it moves the keys it left
+ * there before it used the Keychain (docs/design.md "BYOK API keys")
  */
 async function idbKeysOwned(backend: ApiKeyBackend): Promise<boolean> {
   if (backend === "webview") return true;
@@ -64,7 +65,7 @@ export async function loadApiKeyBackend(): Promise<ApiKeyBackend> {
 }
 
 /**
- * Called once at launch. dev (webview) passes the keys in IndexedDB to Rust (Rust keeps them only in memory).
+ * Called once at launch. webview passes the keys in IndexedDB to Rust (Rust keeps them only in memory).
  * Keychain builds move keys that older versions left in IndexedDB to the Keychain and delete them from IndexedDB,
  * only when that IndexedDB is their own (idbKeysOwned; Rust logs when it is left alone)
  */
@@ -84,7 +85,7 @@ export async function initApiKeys(): Promise<void> {
     }
   }
   if (backend === "webview") {
-    // Import for verification (import_key_from_stdin in src-tauri). Goes into IndexedDB, same as dev
+    // Import for verification (import_key_from_stdin in src-tauri). Goes into IndexedDB, same as saving with webview
     const { listen } = await import("@tauri-apps/api/event");
     await listen<[ApiKeyProvider, string]>("key-imported", ({ payload: [provider, value] }) => {
       void kvPut(API_KEY_IDB_KEYS[provider], value);
@@ -104,7 +105,7 @@ export async function loadApiKeyStatus(): Promise<Record<ApiKeyProvider, boolean
   };
 }
 
-/** The retired providers that still have a key saved, in the OS store or (dev, or left by an older version) in
+/** The retired providers that still have a key saved, in the OS store or (webview, or left by an older version or dev) in
  * IndexedDB. Values are not received */
 export async function loadRetiredKeysSaved(): Promise<RetiredKeyProvider[]> {
   const status = await invoke<Partial<Record<RetiredKeyProvider, boolean>>>("key_status").catch(
@@ -126,7 +127,7 @@ export async function deleteRetiredKey(provider: RetiredKeyProvider): Promise<vo
   if (await idbKeysOwned(await apiKeyBackend())) await kvDelete(RETIRED_KEY_IDB_KEYS[provider]);
 }
 
-/** Saves a key (replacing works the same way). dev also writes to IndexedDB */
+/** Saves a key (replacing works the same way). webview also writes to IndexedDB */
 export async function saveApiKey(provider: ApiKeyProvider, value: string): Promise<void> {
   await invoke("key_set", { provider, value });
   if ((await apiKeyBackend()) === "webview") {
@@ -136,7 +137,7 @@ export async function saveApiKey(provider: ApiKeyProvider, value: string): Promi
 
 export async function deleteApiKey(provider: ApiKeyProvider): Promise<void> {
   await invoke("key_delete", { provider });
-  // If it's still in IndexedDB (dev, or left from before migration), delete it. Not when IndexedDB isn't this
+  // If it's still in IndexedDB (webview, or left from before migration), delete it. Not when IndexedDB isn't this
   // identifier's own (idbKeysOwned)
   if (await idbKeysOwned(await apiKeyBackend())) await kvDelete(API_KEY_IDB_KEYS[provider]);
 }
