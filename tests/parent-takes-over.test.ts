@@ -1,5 +1,7 @@
 // Sessions started by another session (docs/design.md "Watching", "Sessions started by another session"): the parent
-// takes over their results and questions, so their done isn't read aloud and the concierge asks nothing of them.
+// takes over their results and what it can answer (a reply that asks it, a wrap_up's ask), so those aren't read aloud
+// and the concierge doesn't ask the developer about them; a question tool or a permission prompt still waits on the
+// developer.
 // Each scene calls the app's own functions: the first-prompt check, the link check (with the same reading of the links
 // as a scan, takenOverWorld, over a small stand-in for the links a scan resolves), the readout, and the concierge's
 // payload and drop checks
@@ -253,6 +255,11 @@ describe("a waiting on a wrap_up's ask is told from a question tool and a permis
     ["a question tool still open (written after the answer)", [t("user", 1, { text: "書いて" })], true, false],
     ["a permission prompt after a wrap_up's ask", wrapUp, true, false],
   ];
+  test("a permission prompt (or Claude Code's open question tool) makes no needs reply event: nothing to read", () => {
+    // Claude Code writes the tool call only after it is answered; the waiting is its own status alone
+    const open = [t("user", 1, { text: "書いて" })];
+    expect(deriveSessionEvents(tailOf(open), "s", "p", [], new Map(), undefined, 60_000).map((e) => e.type)).toEqual(["started"]);
+  });
   for (const [scene, events, liveWaiting, want] of scenes) {
     test(scene, () => {
       const state = liveWaiting ? "waiting" : deriveState(tailOf(events), 60_000, false);
@@ -301,7 +308,9 @@ const asking = { status: "asking", at: 0 } as SessionView["ask"];
 
 // Why a session stopped decides whether its parent takes it over (docs/design.md "Watching", "Sessions started by
 // another session"; the user's decision): a done, or a reply that asks its parent (the turn verdict), is the parent's;
-// a permission prompt or a question tool (the machine state) only the user can answer, so it is read and advised.
+// a permission prompt or a question tool (the machine state) only the user can answer, so the concierge advises it and
+// a question tool's needs reply is read. A permission prompt makes no event (Claude Code doesn't write it to the
+// transcript; deriveSessionEvents), so nothing is read for it, for any session: its scenes have no event.
 // Each scene runs the app's functions from the session to the readout, the concierge's facts, its drop check, and the
 // Concierge tab's status, trigger, and count
 describe("a session stopped, by why it stopped and whether a parent takes it over", () => {
@@ -314,12 +323,12 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
     status: string;
     trigger: string;
   }
-  const scenes: [string, Partial<SessionView>, SessionEvent, Want][] = [
+  const scenes: [string, Partial<SessionView>, SessionEvent | undefined, Want][] = [
     [
       "a child on a permission prompt",
       { state: "waiting", waitingOn: "permission", parentTakesOver: true },
-      ev("waiting", "s"),
-      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+      undefined,
+      { readAloud: false, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
     ],
     [
       "a child on a question tool",
@@ -348,8 +357,8 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
     [
       "a session the user started, on a permission prompt",
       { state: "waiting", waitingOn: "permission" },
-      ev("waiting", "s"),
-      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+      undefined,
+      { readAloud: false, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
     ],
     [
       "a session the user started, on its wrap_up's ask",
@@ -373,7 +382,7 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
   for (const [scene, patch, event, want] of scenes) {
     test(scene, () => {
       const s = view("s", patch);
-      const kept = silentForParent(event, s.parentTakesOver === true);
+      const kept = event && silentForParent(event, s.parentTakesOver === true);
       const p = buildConciergePayload(
         [{ view: view("parent", { state: "working" }) }, { view: s, parentId: s.parentTakesOver ? "parent" : undefined }],
         [],
@@ -383,14 +392,14 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
       );
       const fact = p.sessions.find((x) => x.id === "s")!;
       expect({
-        readAloud: isReadAloudEvent(kept),
+        readAloud: kept !== undefined && isReadAloudEvent(kept),
         needsReply: fact.needs_reply,
         source: fact.needs_reply_source,
         replyDrop: dropReason({ line: "sの許可を確認してください", targetId: "s" }, "reply", p.sessions),
         status: conciergeStatusOf(s),
         trigger: conciergeTriggerClasses([s]).get("s"),
       }).toEqual(want);
-      expect(new ConciergeReadout().event(kept)).toBe(want.readAloud ? "speak" : "skip");
+      if (kept) expect(new ConciergeReadout().event(kept)).toBe(want.readAloud ? "speak" : "skip");
       expect(waitsOnDeveloper(s)).toBe(want.needsReply);
       expect(conciergeStateOf(s)).toBe(want.needsReply ? "reply" : "stopped");
       expect(fact.parent_takes_over).toBe(s.parentTakesOver);
@@ -399,7 +408,7 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
     });
   }
 
-  test("a child's permission prompt is held in the Concierge tab like any other needs reply", () => {
+  test("a child's question tool is held in the Concierge tab like any other needs reply", () => {
     const readout = new ConciergeReadout();
     readout.opened([], false);
     expect(readout.event(silentForParent(ev("waiting", "child"), true))).toBe("held");

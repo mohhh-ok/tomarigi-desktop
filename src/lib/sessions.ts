@@ -266,8 +266,8 @@ function buildViews(
       snippet,
       now,
     )) {
-      // The parent takes its result and its wrap_up's ask, so those aren't read aloud on their own (a permission prompt
-      // or a question tool is)
+      // The parent takes its result and its wrap_up's ask, so those aren't read aloud on their own (a question tool is;
+      // a permission prompt makes no event)
       // (silentForParent in lib/watching.ts; docs/design.md "Watching")
       cacheEvent(silentForParent(event, takenOver));
     }

@@ -153,8 +153,10 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
 /**
  * A session event as it is kept: for a session whose parent takes it over, its done (including one whose reply asks
  * its parent) and a needs reply its parent can answer (a wrap_up's ask; parentCanAnswer in lib/turn-verdict.ts) are
- * silent, so they chirp and stay in the log and feed but aren't read aloud. A needs reply on a question tool or a
- * permission prompt is read aloud, since only the user can answer it (docs/design.md "Watching")
+ * silent, so they chirp and stay in the log and feed but aren't read aloud. A needs reply on a question tool is read
+ * aloud, since only the user can answer it. A permission prompt makes no event (deriveSessionEvents makes a needs reply
+ * only from a tool call in the transcript), so nothing is read for it; the concierge still counts it (docs/design.md
+ * "Watching")
  */
 export function silentForParent<E extends Pick<SessionEvent, "type" | "silent" | "wrapUpAsk">>(event: E, takenOver: boolean): E {
   const silent = event.type === "done" || (event.type === "waiting" && parentCanAnswer("machine", event.wrapUpAsk));

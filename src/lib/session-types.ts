@@ -38,7 +38,7 @@ export interface SessionEvent {
   // lib/turn-verdict.ts)
   wrapUpAsk?: true;
   // true for the done of a session whose parent takes it over (SessionView.parentTakesOver), and for its waiting on a
-  // wrap_up's ask (wrapUpAsk); not for its waiting on a question tool or a permission prompt:
+  // wrap_up's ask (wrapUpAsk); not for its waiting on a question tool (a permission prompt makes no event):
   // it chirps and stays in the log and feed, but isn't read aloud, in or out of the Concierge tab (isReadAloudEvent in
   // lib/voice.ts)
   silent?: true;
@@ -131,7 +131,7 @@ export interface SessionView {
   // by another session or is linked to one older than itself; takenOverByParent in lib/watching.ts; docs/design.md
   // "Watching"). Its done isn't read aloud, and the concierge doesn't ask the developer to check its result or to reply
   // to what its parent can answer: a question its reply asks, or its wrap_up's ask (parentCanAnswer in
-  // lib/turn-verdict.ts). A permission prompt or a question tool is read and advised as usual. Its bird gets the "?"
+  // lib/turn-verdict.ts). A permission prompt or a question tool is advised as usual, and a question tool's needs reply is read. Its bird gets the "?"
   parentTakesOver?: true;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)
