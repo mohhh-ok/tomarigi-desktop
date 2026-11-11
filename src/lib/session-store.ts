@@ -1,6 +1,7 @@
 // Module-level state of the session scan (lib/sessions.ts). Every cache and ledger kept across scans lives here,
 // so the session-*.ts modules share the same instances. Values that are reassigned on a scan are properties of
 // scanState / eventLogState, since a module can't reassign a binding it imported
+import type { FirstPrompt } from "./watching";
 import type { TailInfo } from "./transcript";
 import type { BackgroundTask, BirdState, ChickMeta, FoundEntry, SessionEvent } from "./session-types";
 
@@ -45,6 +46,9 @@ export const peerNameCache = new Map<string, Map<string, number>>();
 // How far into the transcript the exchange traces have been read (end of scan_peer_names in Rust). To pick up
 // traces outside the tail window too, the first read covers the whole file and later reads only the new part
 export const peerScanOffset = new Map<string, number>();
+// The first prompt of each session's transcript (view id), read once from the top of the file (FirstPrompt in
+// lib/watching.ts). Tells a session started by another session (docs/design.md "Watching")
+export const firstPromptCache = new Map<string, FirstPrompt>();
 // Machine state and last write time of each session (sessionId) in the previous scan. Used to decide whether
 // a peer is active, and for the watching done suppression (peers are passed in the same way as chicks)
 export const lastPeerStates = new Map<string, { state: BirdState; lastWriteAt: number }>();
@@ -125,4 +129,5 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   for (const key of chickSignalLedger.keys()) if (!liveIds.has(key)) chickSignalLedger.delete(key);
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
+  for (const key of firstPromptCache.keys()) if (!liveIds.has(key)) firstPromptCache.delete(key);
 }

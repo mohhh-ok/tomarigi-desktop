@@ -1,7 +1,7 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
-import { watchingCount } from "./watching";
+import { parentTakesOver, watchingCount } from "./watching";
 import { basename } from "./paths";
 import { pendingAskOf, projectLabels } from "./transcript";
 import type {
@@ -204,6 +204,8 @@ function buildViews(
     if (snippet) snippetCache.set(id, snippet);
     const peers = watch.peerLinksOf(sessionIdOfViewId(id));
     const watching = watchingCount(displayState, peers, now);
+    const ownStartedAt = watch.liveBySessionId.get(sessionIdOfViewId(id))?.startedAt;
+    const takenOver = parentTakesOver(watch.startedBySessionOf(id), ownStartedAt, peers);
     const last = tail.events[tail.events.length - 1];
     const reply =
       (displayState === "done" || displayState === "dozing") &&
@@ -236,6 +238,7 @@ function buildViews(
       userMessages,
       peers: peers.length > 0 ? peers : undefined,
       watching,
+      ...(takenOver && { parentTakesOver: true as const }),
       cwd: tail.cwd,
       startedAt: watch.liveBySessionId.get(sessionIdOfViewId(id))?.startedAt,
     });
@@ -260,7 +263,8 @@ function buildViews(
       snippet,
       now,
     )) {
-      cacheEvent(event);
+      // The parent takes the result, so the done isn't read aloud on its own (docs/design.md "Watching")
+      cacheEvent(takenOver && event.type === "done" ? { ...event, silent: true } : event);
     }
   }
   return views;

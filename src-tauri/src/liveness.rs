@@ -33,6 +33,9 @@ pub(crate) struct LiveSession {
     waiting_for: Option<String>,
     #[serde(default)]
     started_at: Option<f64>,
+    /// The Claude desktop app's `local_…` id of this session (watching links; docs/design.md "Watching")
+    #[serde(default)]
+    host_session_id: Option<String>,
 }
 
 /// Result of live_sessions. present is whether `<config_dir>/sessions` exists (older versions without it are not
@@ -189,10 +192,28 @@ pub(crate) mod win {
 }
 
 
+/// The transcript's first prompt, for telling a session started by another session (docs/design.md "Watching").
+/// Read only when the scan starts at the top of the file
+#[derive(Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FirstPrompt {
+    /// turnOrigin of the first prompt ("human", "sdk", "host_synthetic", ...), when written
+    turn_origin: Option<String>,
+    /// An agent-name line came before it (the session was given a name when it was launched)
+    named_at_launch: bool,
+    /// Timestamp of the SessionStart hook's line before it, when there is one
+    session_start_at: Option<String>,
+    /// Timestamp of the first prompt
+    at: String,
+}
+
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct PeerScan {
     /// (peer name, timestamp string of that trace)
     names: Vec<(String, String)>,
+    /// Set when this scan read the first prompt (it starts at the top of the file)
+    first_prompt: Option<FirstPrompt>,
     /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
 }
@@ -206,6 +227,23 @@ fn peer_name_of(to: &str) -> Option<String> {
     }
     .trim();
     (!name.is_empty() && name != "main").then(|| name.to_string())
+}
+
+/// The Claude desktop app's session id (`local_<uuid>`), the address of its sessions (docs/design.md "Watching")
+fn is_host_session_id(id: &str) -> bool {
+    id.len() > 6 && id.starts_with("local_") && id[6..].bytes().all(|b| b.is_ascii_hexdigit() || b == b'-')
+}
+
+/// The id in the text of the desktop app's start_session result: `Started session "…" (session_id: local_…, …)`
+fn started_session_id(text: &str) -> Option<String> {
+    if !text.starts_with("Started session ") {
+        return None;
+    }
+    let i = text.find("(session_id: ")?;
+    let rest = &text[i + 13..];
+    let end = rest.find(|c: char| c == ',' || c == ')').unwrap_or(rest.len());
+    let id = rest[..end].trim();
+    is_host_session_id(id).then(|| id.to_string())
 }
 
 /// Picks up, from [start, end of file) of the transcript, the names of peers exchanged with via cross-session
@@ -223,11 +261,46 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
     f.read_to_end(&mut buf).map_err(|e| io_err(&p, e))?;
     let complete = buf.iter().rposition(|&b| b == b'\n').map(|i| i + 1).unwrap_or(0);
     let mut names = Vec::new();
+    // Until the first prompt is found, every line at the top is looked at (start 0 only)
+    let mut looking_for_first = start == 0;
+    let mut first_prompt = None;
+    let mut named_at_launch = false;
+    let mut session_start_at: Option<String> = None;
     for line in buf[..complete].split(|&b| b == b'\n') {
+        if looking_for_first {
+            if let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) {
+                match entry.get("type").and_then(|t| t.as_str()) {
+                    Some("agent-name") => named_at_launch = true,
+                    Some("attachment")
+                        if session_start_at.is_none()
+                            && entry.pointer("/attachment/hookEvent").and_then(|h| h.as_str()) == Some("SessionStart") =>
+                    {
+                        session_start_at = entry.get("timestamp").and_then(|t| t.as_str()).map(str::to_string);
+                    }
+                    Some("user")
+                        if entry.get("isMeta").and_then(|v| v.as_bool()) != Some(true)
+                            && entry.get("isSidechain").and_then(|v| v.as_bool()) != Some(true) =>
+                    {
+                        if let Some(at) = entry.get("timestamp").and_then(|t| t.as_str()) {
+                            first_prompt = Some(FirstPrompt {
+                                turn_origin: entry.get("turnOrigin").and_then(|t| t.as_str()).map(str::to_string),
+                                named_at_launch,
+                                session_start_at: session_start_at.clone(),
+                                at: at.to_string(),
+                            });
+                            looking_for_first = false;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
         let is_send = line.windows(13).any(|w| w == b"\"SendMessage\"");
         let is_peer = line.windows(8).any(|w| w == b"\"origin\"")
             || line.windows(21).any(|w| w == b"cross-session-message");
-        if !is_send && !is_peer {
+        // The desktop app's traces all carry a local_… id (start_session's result, send_message's input)
+        let is_host = line.windows(6).any(|w| w == b"local_");
+        if !is_send && !is_peer && !is_host {
             continue;
         }
         let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) else { continue };
@@ -239,12 +312,23 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             Some("assistant") => {
                 let blocks = entry.pointer("/message/content").and_then(|c| c.as_array());
                 for block in blocks.into_iter().flatten() {
-                    if block.get("type").and_then(|t| t.as_str()) != Some("tool_use")
-                        || block.get("name").and_then(|n| n.as_str()) != Some("SendMessage")
-                    {
+                    if block.get("type").and_then(|t| t.as_str()) != Some("tool_use") {
                         continue;
                     }
-                    if let Some(name) = block.pointer("/input/to").and_then(|t| t.as_str()).and_then(peer_name_of) {
+                    let tool = block.get("name").and_then(|n| n.as_str()).unwrap_or_default();
+                    let name = if tool == "SendMessage" {
+                        block.pointer("/input/to").and_then(|t| t.as_str()).and_then(peer_name_of)
+                    } else if tool.ends_with("__send_message") {
+                        // The desktop app's send_message to one of its sessions
+                        block
+                            .pointer("/input/session_id")
+                            .and_then(|t| t.as_str())
+                            .filter(|id| is_host_session_id(id))
+                            .map(str::to_string)
+                    } else {
+                        None
+                    };
+                    if let Some(name) = name {
                         names.push((name, at.to_string()));
                     }
                 }
@@ -255,6 +339,9 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                     if let Some(name) = entry.pointer("/attachment/origin/name").and_then(|n| n.as_str()).filter(|n| !n.is_empty()) {
                         names.push((name.to_string(), at.to_string()));
                     }
+                    if let Some(from) = entry.pointer("/attachment/origin/from").and_then(|n| n.as_str()).filter(|n| is_host_session_id(n)) {
+                        names.push((from.to_string(), at.to_string()));
+                    }
                 }
             }
             Some("user") if entry.get("isMeta").and_then(|v| v.as_bool()) == Some(true) => {
@@ -264,6 +351,9 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                     .filter(|n| !n.is_empty());
                 if let Some(name) = origin_name {
                     names.push((name.to_string(), at.to_string()));
+                    if let Some(from) = entry.pointer("/origin/from").and_then(|n| n.as_str()).filter(|n| is_host_session_id(n)) {
+                        names.push((from.to_string(), at.to_string()));
+                    }
                     continue;
                 }
                 let text = entry.pointer("/message/content").and_then(|c| c.as_str()).unwrap_or_default();
@@ -281,10 +371,29 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                     rest = &rest[tag_end..];
                 }
             }
+            // The tool result that started a desktop app session carries its id in the text
+            Some("user") => {
+                let blocks = entry.pointer("/message/content").and_then(|c| c.as_array());
+                for block in blocks.into_iter().flatten() {
+                    if block.get("type").and_then(|t| t.as_str()) != Some("tool_result") {
+                        continue;
+                    }
+                    let texts: Vec<&str> = match block.get("content") {
+                        Some(serde_json::Value::String(t)) => vec![t.as_str()],
+                        Some(serde_json::Value::Array(items)) => {
+                            items.iter().filter_map(|i| i.get("text").and_then(|t| t.as_str())).collect()
+                        }
+                        _ => Vec::new(),
+                    };
+                    for id in texts.into_iter().filter_map(started_session_id) {
+                        names.push((id, at.to_string()));
+                    }
+                }
+            }
             _ => {}
         }
     }
-    Ok(PeerScan { names, end: start + complete as u64 })
+    Ok(PeerScan { names, first_prompt, end: start + complete as u64 })
 }
 
 #[derive(Serialize)]
@@ -726,6 +835,99 @@ fn alive_pids_blocking(pids: &[u32]) -> PidScan {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Watching links (docs/design.md "Watching"): each kind of trace, one line each, and the names it gives
+    #[test]
+    fn scan_peer_names_reads_each_kind_of_trace() {
+        const ID: &str = "local_3f97c278-cf60-45f9-b227-66ded583d16f";
+        let cases: Vec<(&str, String, Vec<&str>)> = vec![
+            (
+                "SendMessage to a name",
+                r#"{"type":"assistant","timestamp":"T","message":{"content":[{"type":"tool_use","name":"SendMessage","input":{"to":"web-build [3fa9c1]"}}]}}"#.into(),
+                vec!["web-build"],
+            ),
+            (
+                "SendMessage to the desktop app's id",
+                format!(r#"{{"type":"assistant","timestamp":"T","message":{{"content":[{{"type":"tool_use","name":"SendMessage","input":{{"to":"{ID}"}}}}]}}}}"#),
+                vec![ID],
+            ),
+            (
+                "the desktop app's send_message",
+                format!(r#"{{"type":"assistant","timestamp":"T","message":{{"content":[{{"type":"tool_use","name":"mcp__ccd_session_mgmt__send_message","input":{{"session_id":"{ID}","message":"x"}}}}]}}}}"#),
+                vec![ID],
+            ),
+            (
+                "start_session's result",
+                format!(r#"{{"type":"user","timestamp":"T","message":{{"content":[{{"type":"tool_result","tool_use_id":"t","content":[{{"type":"text","text":"Started session \"Fix it\" (session_id: {ID}, name: fix-it). It runs on its own"}}]}}]}}}}"#),
+                vec![ID],
+            ),
+            (
+                "a tool result that only mentions an id is not a start",
+                format!(r#"{{"type":"user","timestamp":"T","message":{{"content":[{{"type":"tool_result","tool_use_id":"t","content":"see {ID}"}}]}}}}"#),
+                vec![],
+            ),
+            (
+                "a received message: name and the desktop app's id",
+                format!(r#"{{"type":"user","isMeta":true,"timestamp":"T","origin":{{"kind":"peer","from":"{ID}","name":"Fix it"}},"message":{{"content":"x"}}}}"#),
+                vec!["Fix it", ID],
+            ),
+            (
+                "a received message from a terminal session: name only",
+                r#"{"type":"user","isMeta":true,"timestamp":"T","origin":{"kind":"peer","from":"uds:/tmp/cc-socks/1.sock","name":"web-build"},"message":{"content":"x"}}"#.into(),
+                vec!["web-build"],
+            ),
+            (
+                "a message that arrived mid-work",
+                format!(r#"{{"type":"attachment","timestamp":"T","attachment":{{"origin":{{"kind":"peer","from":"{ID}","name":"Fix it"}}}}}}"#),
+                vec!["Fix it", ID],
+            ),
+            (
+                "a subagent's line is not a link",
+                format!(r#"{{"type":"assistant","isSidechain":true,"timestamp":"T","message":{{"content":[{{"type":"tool_use","name":"SendMessage","input":{{"to":"{ID}"}}}}]}}}}"#),
+                vec![],
+            ),
+        ];
+        let dir = std::env::temp_dir().join(format!("tomarigi-peer-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        for (i, (scene, line, want)) in cases.iter().enumerate() {
+            let path = dir.join(format!("{i}.jsonl"));
+            std::fs::write(&path, format!("{line}\n")).unwrap();
+            let scan = scan_peer_names(path.to_str().unwrap(), 0).unwrap();
+            let got: Vec<&str> = scan.names.iter().map(|(n, _)| n.as_str()).collect();
+            assert_eq!(&got, want, "{scene}");
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// The first prompt is read from the top of the file only, with what came before it
+    #[test]
+    fn scan_peer_names_reads_the_first_prompt() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-first-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("t.jsonl");
+        let lines = [
+            r#"{"type":"agent-name","agentName":"web-build"}"#,
+            r#"{"type":"attachment","timestamp":"2026-11-09T04:45:58.312Z","attachment":{"hookEvent":"SessionStart"}}"#,
+            r#"{"type":"user","isMeta":true,"timestamp":"2026-11-09T04:45:58.320Z","message":{"content":"x"}}"#,
+            r#"{"type":"user","timestamp":"2026-11-09T04:45:58.331Z","turnOrigin":"human","message":{"content":"do it"}}"#,
+            r#"{"type":"user","timestamp":"2026-11-09T04:46:00.000Z","turnOrigin":"sdk","message":{"content":"later"}}"#,
+        ];
+        std::fs::write(&path, lines.join("\n") + "\n").unwrap();
+        let p = path.to_str().unwrap();
+        let scan = scan_peer_names(p, 0).unwrap();
+        assert_eq!(
+            scan.first_prompt,
+            Some(FirstPrompt {
+                turn_origin: Some("human".into()),
+                named_at_launch: true,
+                session_start_at: Some("2026-11-09T04:45:58.312Z".into()),
+                at: "2026-11-09T04:45:58.331Z".into(),
+            })
+        );
+        // A scan that goes on from where the last one stopped doesn't read it again
+        assert_eq!(scan_peer_names(p, 10).unwrap().first_prompt, None);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
 
     #[test]
     fn ps_lines_keep_only_processes_with_a_tty() {
