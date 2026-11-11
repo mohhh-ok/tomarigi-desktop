@@ -1,14 +1,16 @@
 // Watching links between sessions (docs/design.md "Watching")
 import { invoke } from "@tauri-apps/api/core";
-import { isPeerActive, peerLookup } from "./watching";
+import { isPeerActive, peerLookup, startedBySession, type FirstPrompt } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
-import { lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
+import { firstPromptCache, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
 import { sessionIdOfViewId } from "./session-liveness";
 
 export interface WatchLinks {
   liveBySessionId: Map<string, LiveSession>;
   viewIdBySessionId: Map<string, string>;
   peerLinksOf: (ownSessionId: string) => PeerLink[];
+  /** Whether the session (view id) was started by another session (startedBySession in lib/watching.ts) */
+  startedBySessionOf: (viewId: string) => boolean;
 }
 
 // Watching links (docs/design.md "Watching"). Match the names (or desktop app ids) of peers exchanged with against
@@ -28,11 +30,14 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   await Promise.all(
     claudeEntries.map(async (f) => {
       try {
-        const scan = await invoke<{ names: [string, string][]; end: number }>("scan_peer_names", {
-          path: f.file.path,
-          start: peerScanOffset.get(f.id) ?? 0,
-        });
-        peerScanOffset.set(f.id, scan.end);
+        const scan = await invoke<{ names: [string, string][]; firstPrompt?: FirstPrompt | null; end: number }>(
+          "scan_peer_names",
+          { path: f.file.path, start: peerScanOffset.get(f.id) ?? 0 },
+        );
+        if (scan.firstPrompt) firstPromptCache.set(f.id, scan.firstPrompt);
+        // The first prompt is read from the top only, so the offset stays at the top until it has come (a session
+        // just started may not have written it yet; the file is still small then)
+        if (firstPromptCache.has(f.id)) peerScanOffset.set(f.id, scan.end);
         let names = peerNameCache.get(f.id);
         if (!names) {
           names = new Map();
@@ -86,7 +91,8 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
     // Log only the name mapping (message bodies are neither read nor logged)
     void invoke("log", { line: `[watch] links\n${watchSignature || "(none)"}` }).catch(() => {});
   }
-  return { liveBySessionId, viewIdBySessionId, peerLinksOf };
+  const startedBySessionOf = (viewId: string) => startedBySession(firstPromptCache.get(viewId));
+  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf };
 }
 
 /** Remembers each session's state for the next scan's peer checks (lastPeerStates, peerLastActiveAt) */

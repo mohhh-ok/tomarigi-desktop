@@ -82,6 +82,9 @@ interface PayloadSession {
    * was active after this session last was. false when the parent stopped before it finished and hasn't worked since */
   result_reached_parent?: boolean;
   watch_children?: string[];
+  /** Started by another session and linked to an older one: that parent takes its results and questions, so it needs
+   * nothing from the developer (needs_reply is false; docs/design.md "Watching", "Sessions started by another session") */
+  parent_takes_over?: true;
   chicks_working?: number;
 }
 
@@ -152,7 +155,9 @@ export function buildConciergePayload(
   const sessions = inputs.map(({ view, agent, line, parentId }): PayloadSession => {
     const chicksWorking = (view.chicks ?? []).filter((c) => c.state === "working").length;
     const ask = view.ask;
-    const needsReply = needsAnswer(view.state, ask);
+    // A parent takes over its questions and permission prompts, so it doesn't wait on the developer here (its bird
+    // still gets the "?"; docs/design.md "Watching")
+    const needsReply = !view.parentTakesOver && needsAnswer(view.state, ask);
     // The "?" comes from the machine state (a question tool, a permission prompt) or the turn verdict; both are facts
     // (docs/design.md "Concierge")
     const source = !needsReply ? undefined : view.state === "waiting" ? "machine" : "verdict";
@@ -177,6 +182,7 @@ export function buildConciergePayload(
         result_reached_parent: resultReachedParent(view, byId.get(parentId)!),
       }),
       ...(children.has(view.id) && { watch_children: children.get(view.id) }),
+      ...(view.parentTakesOver && { parent_takes_over: true as const }),
       ...(chicksWorking > 0 && { chicks_working: chicksWorking }),
     };
   });
@@ -246,7 +252,8 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "When its result_reached_parent is false (the parent stopped before it finished and hasn't worked since), " +
     "advise about the parent instead, with the parent's id as session_id (e.g. in Japanese: <parent>に<child>の結果が" +
     "まだ届いていません). A session with watch_children where any of them is working is not finished yet: never " +
-    "advise checking its result.\n" +
+    "advise checking its result. A session with parent_takes_over was started by another session that takes its " +
+    "results, questions, and permission prompts: never advise about it.\n" +
     "While any session needs a reply now, advise about one of those, never about a finished or working session; " +
     "an advice about another session is not shown then.\n" +
     "Only a session whose needs_reply is true now may be advised to reply, answer, or check its question or " +
@@ -396,6 +403,7 @@ export interface DroppedConciergeAdvice extends ConciergeAdvice {
     | "not_waiting"
     | "watched"
     | "child_working"
+    | "parent_takes_over"
     | "elapsed_time";
 }
 
@@ -477,7 +485,9 @@ export function dropReason(
   if (action === "check_result" && target.continuing) return "working";
   // Watch links (the prompt alone didn't hold): the watching parent takes a child's result, and a parent watching a
   // child that still works isn't finished
-  if (action === "check_result" && target.watch_parent) return "watched";
+  if (action === "check_result" && (target.watch_parent || target.parent_takes_over)) return "watched";
+  // Its parent takes its questions and permission prompts (the prompt alone may not hold)
+  if (action === "reply" && target.parent_takes_over) return "parent_takes_over";
   if (action === "check_result" && watchesWorkingChild(target, sessions)) return "child_working";
   // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or the turn
   // verdict asking (the prompt alone didn't hold)
@@ -621,6 +631,7 @@ export function conciergeRequestLogLines(
         `continuing=${continuingExpired.has(s.id) ? "expired" : (s.continuing ?? "-")}`,
         `watch_parent=${s.watch_parent ?? "-"}`,
         `watch_children=${s.watch_children?.join(",") ?? "-"}`,
+        `parent_takes_over=${s.parent_takes_over ?? false}`,
         `chicks_working=${s.chicks_working ?? 0}`,
       ].join(" "),
     ),

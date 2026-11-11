@@ -299,7 +299,7 @@ export default function App({
             if (now - (event.firedAt ?? event.at) > EVENT_FRESHNESS_MS) continue;
             if (!mutedRef.current) EVENT_CHIRP[event.type]?.();
             void invoke("log", {
-              line: `[event] ${event.type} ${event.project} chirp=${!mutedRef.current && Boolean(EVENT_CHIRP[event.type])} voice=${voiceEnabledRef.current}`,
+              line: `[event] ${event.type} ${event.project} chirp=${!mutedRef.current && Boolean(EVENT_CHIRP[event.type])} voice=${voiceEnabledRef.current}${event.silent ? " silent=true" : ""}`,
             });
             // Readout is an opt-in setting independent of mute (chirps). See lib/voice.ts for constraints.
             // While the Concierge tab is open, done and needs reply are held and the voice reads the concierge's new

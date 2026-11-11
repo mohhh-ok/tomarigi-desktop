@@ -33,6 +33,9 @@ export interface SessionEvent {
   // true when a done that was suppressed while waiting on chicks (subagents) is cancelled once the
   // suppression lifts. Kept in the log and feed, but no chirp or readout (see deriveDoneEvent)
   muted?: boolean;
+  // true for the done of a session whose parent takes it over (SessionView.parentTakesOver): it chirps and stays in
+  // the log and feed, but isn't read aloud, in or out of the Concierge tab (isReadAloudEvent in lib/voice.ts)
+  silent?: true;
   // Actual fire time (epoch ms) when a done released from suppression fires by timeout. at stays fixed
   // as the key basis (t = the parent's turn end), so the freshness guard uses this instead
   // (App.tsx: event.firedAt ?? event.at)
@@ -113,6 +116,10 @@ export interface SessionView {
   // For a grace period after the peers stop (WATCH_GRACE_MS in lib/watching.ts) it is 0 and stays watching.
   // Absent when not watching
   watching?: number;
+  // A parent takes this session's results and questions: it was started by another session and is linked to one that
+  // started before it (parentTakesOver in lib/watching.ts; docs/design.md "Watching"). Its done isn't read aloud and
+  // the concierge doesn't ask the developer to reply to it or check its result
+  parentTakesOver?: true;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)
   cwd?: string;

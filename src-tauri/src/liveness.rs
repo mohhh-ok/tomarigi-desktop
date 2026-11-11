@@ -192,10 +192,28 @@ pub(crate) mod win {
 }
 
 
+/// The transcript's first prompt, for telling a session started by another session (docs/design.md "Watching").
+/// Read only when the scan starts at the top of the file
+#[derive(Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FirstPrompt {
+    /// turnOrigin of the first prompt ("human", "sdk", "host_synthetic", ...), when written
+    turn_origin: Option<String>,
+    /// An agent-name line came before it (the session was given a name when it was launched)
+    named_at_launch: bool,
+    /// Timestamp of the SessionStart hook's line before it, when there is one
+    session_start_at: Option<String>,
+    /// Timestamp of the first prompt
+    at: String,
+}
+
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct PeerScan {
     /// (peer name, timestamp string of that trace)
     names: Vec<(String, String)>,
+    /// Set when this scan read the first prompt (it starts at the top of the file)
+    first_prompt: Option<FirstPrompt>,
     /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
 }
@@ -243,7 +261,40 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
     f.read_to_end(&mut buf).map_err(|e| io_err(&p, e))?;
     let complete = buf.iter().rposition(|&b| b == b'\n').map(|i| i + 1).unwrap_or(0);
     let mut names = Vec::new();
+    // Until the first prompt is found, every line at the top is looked at (start 0 only)
+    let mut looking_for_first = start == 0;
+    let mut first_prompt = None;
+    let mut named_at_launch = false;
+    let mut session_start_at: Option<String> = None;
     for line in buf[..complete].split(|&b| b == b'\n') {
+        if looking_for_first {
+            if let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) {
+                match entry.get("type").and_then(|t| t.as_str()) {
+                    Some("agent-name") => named_at_launch = true,
+                    Some("attachment")
+                        if session_start_at.is_none()
+                            && entry.pointer("/attachment/hookEvent").and_then(|h| h.as_str()) == Some("SessionStart") =>
+                    {
+                        session_start_at = entry.get("timestamp").and_then(|t| t.as_str()).map(str::to_string);
+                    }
+                    Some("user")
+                        if entry.get("isMeta").and_then(|v| v.as_bool()) != Some(true)
+                            && entry.get("isSidechain").and_then(|v| v.as_bool()) != Some(true) =>
+                    {
+                        if let Some(at) = entry.get("timestamp").and_then(|t| t.as_str()) {
+                            first_prompt = Some(FirstPrompt {
+                                turn_origin: entry.get("turnOrigin").and_then(|t| t.as_str()).map(str::to_string),
+                                named_at_launch,
+                                session_start_at: session_start_at.clone(),
+                                at: at.to_string(),
+                            });
+                            looking_for_first = false;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
         let is_send = line.windows(13).any(|w| w == b"\"SendMessage\"");
         let is_peer = line.windows(8).any(|w| w == b"\"origin\"")
             || line.windows(21).any(|w| w == b"cross-session-message");
@@ -342,7 +393,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             _ => {}
         }
     }
-    Ok(PeerScan { names, end: start + complete as u64 })
+    Ok(PeerScan { names, first_prompt, end: start + complete as u64 })
 }
 
 #[derive(Serialize)]
@@ -845,6 +896,36 @@ mod tests {
             let got: Vec<&str> = scan.names.iter().map(|(n, _)| n.as_str()).collect();
             assert_eq!(&got, want, "{scene}");
         }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// The first prompt is read from the top of the file only, with what came before it
+    #[test]
+    fn scan_peer_names_reads_the_first_prompt() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-first-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("t.jsonl");
+        let lines = [
+            r#"{"type":"agent-name","agentName":"web-build"}"#,
+            r#"{"type":"attachment","timestamp":"2026-11-09T04:45:58.312Z","attachment":{"hookEvent":"SessionStart"}}"#,
+            r#"{"type":"user","isMeta":true,"timestamp":"2026-11-09T04:45:58.320Z","message":{"content":"x"}}"#,
+            r#"{"type":"user","timestamp":"2026-11-09T04:45:58.331Z","turnOrigin":"human","message":{"content":"do it"}}"#,
+            r#"{"type":"user","timestamp":"2026-11-09T04:46:00.000Z","turnOrigin":"sdk","message":{"content":"later"}}"#,
+        ];
+        std::fs::write(&path, lines.join("\n") + "\n").unwrap();
+        let p = path.to_str().unwrap();
+        let scan = scan_peer_names(p, 0).unwrap();
+        assert_eq!(
+            scan.first_prompt,
+            Some(FirstPrompt {
+                turn_origin: Some("human".into()),
+                named_at_launch: true,
+                session_start_at: Some("2026-11-09T04:45:58.312Z".into()),
+                at: "2026-11-09T04:45:58.331Z".into(),
+            })
+        );
+        // A scan that goes on from where the last one stopped doesn't read it again
+        assert_eq!(scan_peer_names(p, 10).unwrap().first_prompt, None);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

@@ -686,9 +686,9 @@ test("the app log keeps each session's facts and the advice text with its kind, 
   const lines = conciergeRequestLogLines({ req: "r1", provider: "local", model: "qwen2.5:7b-instruct" }, payload);
   expect(lines[0]).toStartWith("[concierge] request req=r1 provider=local model=qwen2.5:7b-instruct sessions=3 ");
   expect(lines.slice(1)).toEqual([
-    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- waiting_on=- verdict=not_asking continuing=true watch_parent=w watch_children=- chicks_working=0",
-    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine waiting_on=- verdict=- continuing=- watch_parent=- watch_children=t chicks_working=0",
-    "[concierge] fact req=r1 session=q agent=- state=done since=10s needs_reply=true source=verdict waiting_on=- verdict=asking continuing=false watch_parent=- watch_children=- chicks_working=0",
+    "[concierge] fact req=r1 session=t agent=claude state=done since=10s needs_reply=false source=- waiting_on=- verdict=not_asking continuing=true watch_parent=w watch_children=- parent_takes_over=false chicks_working=0",
+    "[concierge] fact req=r1 session=w agent=codex state=waiting since=10s needs_reply=true source=machine waiting_on=- verdict=- continuing=- watch_parent=- watch_children=t parent_takes_over=false chicks_working=0",
+    "[concierge] fact req=r1 session=q agent=- state=done since=10s needs_reply=true source=verdict waiting_on=- verdict=asking continuing=false watch_parent=- watch_children=- parent_takes_over=false chicks_working=0",
   ]);
   // No text from the sessions: the name, reply and question stay out
   expect(lines.join("\n")).not.toMatch(/tomarigi-desktop|後で伺います|Merge it|asker|Which one/);
