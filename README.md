@@ -71,7 +71,19 @@ bun run tauri build           # release build. Put the resulting .app at /Applic
 bun run gen:locales           # scripts/locales/*.mjs → public/_locales/*/messages.json (also runs in bun run build)
 bun run verify:locales        # checks that all 43 locales have exactly the same keys
 bun run test                  # tests/ (bun test) and the Rust unit tests (cargo test --lib)
+bun run test:llm:needed       # whether a change can change the LLM regression test's results
+bun run test:llm              # the LLM regression test with real models (needs keys; see below)
 ```
+
+### LLM regression test
+
+The turn verdicts and the concierge are checked with real models by `bun run test:llm` (tools/llm-regression; usage in
+tools/README.md, rules in docs/design.md "LLM regression test"). It costs API calls, so it isn't run every time: before
+committing, run `bun run test:llm:needed`, and when it prints `run`, run `bun run test:llm` on every provider that has
+a key, with the result before the change as `--baseline`. Both need `bun install` first (they use `zod` and
+`typescript` from the dev dependencies). It prints `run` for any change to what the test reaches
+from its files: the prompts, the output schemas, the models and how providers are called, how the payload is built,
+the checks after the answer, and the scenes.
 
 ### Releases
 

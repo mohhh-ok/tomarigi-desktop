@@ -13,6 +13,8 @@
     "tauri": "tauri",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests/ && cd src-tauri && cargo test --lib",
+    "test:llm": "bun tools/llm-regression/run.ts",
+    "test:llm:needed": "bun tools/llm-regression/needs-run.ts",
     "gen:locales": "node scripts/gen-locales.mjs",
     "verify:locales": "node scripts/verify-locales.mjs",
     "prepare": "git config core.hooksPath .githooks"
@@ -32,6 +34,7 @@
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^6.0.2",
     "typescript": "~6.0.3",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "zod": "^4.6.7"
   }
 }

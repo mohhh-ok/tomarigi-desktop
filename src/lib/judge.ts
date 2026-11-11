@@ -10,10 +10,25 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
-interface HttpReply {
+export interface HttpReply {
   status: number;
   body: string;
 }
+
+/**
+ * How a request reaches an API. The app's is Rust (TAURI_TRANSPORT): only Rust holds the keys. The LLM regression test
+ * (tools/llm-regression) sends the same bodies over fetch with keys from the environment, so it runs the app's runners
+ * (runJudge, runOpenAiJudge, runLocalJudge) as they are. keyed throws with "no-key" in its message when no key is set
+ */
+export interface JudgeTransport {
+  keyed(command: "anthropic_messages" | "openai_responses", body: string): Promise<HttpReply>;
+  local(baseUrl: string, body: string): Promise<HttpReply>;
+}
+
+export const TAURI_TRANSPORT: JudgeTransport = {
+  keyed: (command, body) => invoke<HttpReply>(command, { body }),
+  local: (baseUrl, body) => invoke<HttpReply>("local_chat", { baseUrl, body }),
+};
 
 /**
  * Has Rust call the APIs that use keys (anthropic_messages / openai_responses).
@@ -22,9 +37,10 @@ interface HttpReply {
 export async function invokeKeyedApi(
   command: "anthropic_messages" | "openai_responses",
   body: unknown,
+  transport: JudgeTransport = TAURI_TRANSPORT,
 ): Promise<{ ok: true; reply: HttpReply } | { ok: false; kind: JudgeErrorKind; message?: string }> {
   try {
-    return { ok: true, reply: await invoke<HttpReply>(command, { body: JSON.stringify(body) }) };
+    return { ok: true, reply: await transport.keyed(command, JSON.stringify(body)) };
   } catch (e) {
     const message = String(e);
     return message.includes("no-key") ? { ok: false, kind: "auth", message } : { ok: false, kind: "network", message };
@@ -129,7 +145,7 @@ export function verdictSchema(task: JudgeTaskDefinition): { properties: Record<s
   return { properties, required };
 }
 
-/** The Messages API request body for one task. tools/turn-verdict-probe.ts sends the same body */
+/** The Messages API request body for one task. The regression test sends it through runJudge */
 export function anthropicJudgeBody(task: JudgeTaskDefinition, payload: unknown): unknown {
   return {
     model: JUDGE_MODEL,
@@ -162,13 +178,14 @@ export function anthropicJudgeBody(task: JudgeTaskDefinition, payload: unknown):
 export async function runJudge<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   payload: unknown,
+  transport: JudgeTransport = TAURI_TRANSPORT,
 ): Promise<JudgeResult<V>> {
-  const sent = await invokeKeyedApi("anthropic_messages", anthropicJudgeBody(task, payload));
+  const sent = await invokeKeyedApi("anthropic_messages", anthropicJudgeBody(task, payload), transport);
   if (!sent.ok) return sent;
   return parseAnthropicJudgeReply<V>(task, sent.reply.status, sent.reply.body);
 }
 
-/** Reads a Messages API reply to anthropicJudgeBody. tools/turn-verdict-probe.ts reads its replies with this too */
+/** Reads a Messages API reply to anthropicJudgeBody.  */
 export function parseAnthropicJudgeReply<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   status: number,

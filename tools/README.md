@@ -66,32 +66,52 @@ its middle is above where the letters are. Each file's first line names the font
 comparing a canvas drawing against candidate fonts) and the primary font's ascent and descent. The ink comes from three
 shots of the page: nothing on the lines drawn, only the dots, only the text.
 
-## turn-verdict-probe.ts
+## llm-regression/
 
-Runs the turn verdict (docs/design.md "Turn verdicts") on real replies several times with OpenAI and Anthropic, with
-the app's prompt, schema, models, and settings, and counts asking and continuing per reply. Used to compare a prompt
-change before and after.
+The LLM regression test (docs/design.md "LLM regression test"): runs the turn verdict and the concierge on the scenes
+in `cases.ts` with real models and prints the pass rate per scene and provider. Not part of `bun run test`; run it
+when `bun run test:llm:needed` says a change can change its results.
 
 ```sh
-OPENAI_API_KEY=… ANTHROPIC_API_KEY=… bun tools/turn-verdict-probe.ts /tmp/tomarigi-desktop/cases.json before 8
+bun install                                   # once: zod and typescript come from the dev dependencies
+bun run test:llm:needed                       # "run" with the declarations a change touched, or "not needed"
+set -a; source .env; set +a; bun run test:llm # every provider that can run, 8 runs a scene
+bun run test:llm -- --dry-run                 # requests and rough input tokens per provider, no API call
+bun run test:llm -- --baseline /tmp/tomarigi-desktop/llm/llm-regression-<label>.json   # before → after, NG on a drop
 ```
 
-The cases file is a JSON array of `{ name, want_asking, want_continuing, file, ts, user }`: `file` and `ts` find the
-assistant line in a local transcript (its text blocks, last 2000 characters, are sent as the app does), and `user` is
-the turn's user messages (each cut to 500 characters, as the app does). It points at local transcripts, so it stays
-outside the repo. Prints one line per reply and provider, and writes every run's answer to
-`$OUT/turn-verdict-<label>.json` (`OUT` defaults to /tmp/tomarigi-desktop). Env: `PROVIDERS` (default
-`openai,anthropic`; `local` sends the app's Chat Completions body to `LOCAL_BASE_URL`, default
-`http://localhost:11434/v1`, with `LOCAL_MODEL`, default `qwen2.5:14b-instruct`), `CASES` (comma-separated names to run).
-Pass the keys as environment variables; don't print them.
-
-The request and the reading of the answer are the app's own functions (`openAiJudgeBody` / `parseOpenAiJudgeReply`,
-`anthropicJudgeBody` / `parseAnthropicJudgeReply`). A run the app would treat as failed (an HTTP error, a refusal, an
-answer cut at the token limit, an incomplete answer, no output, or output that isn't JSON) counts in `errors` and is
-kept as an `ERR` line. `asking` and `continuing` don't count `ERR` runs, though the printed denominator is still all
-runs. The verdict's fields aren't checked against the schema, so an answer missing a field counts as neither.
-A case whose `ts` finds no assistant line, or a line with no text, stops the whole run with an error before anything
-is written, so a wrong case is caught instead of being sent empty.
+- `run.ts` sends the app's own requests: `summarizeTurn` / `turnPayload` (src/lib/summarize.ts) and `askConcierge` /
+  `buildConciergePayload` (src/lib/concierge.ts), through `judgeRunnerFor` (src/lib/ai-judge.ts), so the prompts,
+  schemas, models, request bodies, the reading of answers, and the checks after the answer (dropReason) are the app's.
+  Only the transport differs: `transport.ts` posts the bodies with fetch to the URLs, headers, and timeouts of
+  src-tauri/src/keys.rs, with keys from the environment instead of the Keychain
+- Options (flags, or the env in brackets): `--providers openai,anthropic,local` (`LLM_PROVIDERS`; default all three),
+  `--runs 8` (`LLM_RUNS`), `--cases a,b` (`LLM_CASES`), `--min-pass 0.75` (`LLM_MIN_PASS`: a scene under it is NG),
+  `--baseline <json>` (`LLM_BASELINE`), `--label <name>` (`LLM_LABEL`; the result's file name), `--dry-run`. Keys:
+  `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`. Local: `LOCAL_BASE_URL` (default `http://localhost:11434/v1`) and
+  `LOCAL_MODEL` (default `qwen2.5:14b-instruct`). The environment is checked with zod at start; a key that doesn't
+  look like one stops it. Pass keys as environment variables; don't print them
+- A provider without a key, a Local server that isn't running or doesn't have the model, or Local while memory pressure
+  is at warning or above is printed as `not run (<why>)` and shown as `not run` in the table; the others still run.
+  Providers run side by side, one request at a time each
+- Prints one line per scene and provider as it goes, the table (`passed/runs`, or `before → after` with a baseline),
+  the tokens the API counted per provider, and an `NG` line for each scene under `--min-pass` or below its baseline.
+  Exits 1 when there is any. Every answer of every run is written to `$OUT/llm-regression-<label>.json` (`OUT` defaults
+  to /tmp/tomarigi-desktop/llm); pass that file as the next run's `--baseline`
+- `cases.ts` is the table: turn scenes (`user`, `reply`, and the `want`ed asking / continuing / abusive; fields left out
+  aren't checked; `lineMustNot`, a pattern the speech bubble line must not match) and concierge scenes (sessions as the
+  app's SessionView, and a `check` on the answer). A scene's own `runs` and `minPass` replace `--runs` and `--min-pass`
+  when they are stricter, for a misjudgment that comes only now and then. A scene keeps only the shape of a real reply
+  that decides the verdict; what the work was about is made up. Never point a scene at a local transcript or log, keep
+  new scenes free of anything from another project (names, features, issue numbers, files, amounts, counts, URLs,
+  accounts, ids), and have the table checked for privacy by subagents twice before committing it
+- `needs-run.ts` finds what the test reaches: every top-level declaration that tools/llm-regression/ uses, followed
+  through the TypeScript checker into src/. A change inside one of them, to the test's files, or to
+  src-tauri/src/keys.rs (whose URLs, headers, and timeouts `transport.ts` copies; `tests/llm-transport.test.ts` checks
+  they match) prints `run` with the reasons; otherwise `not needed`. The base is the merge base with the branch's
+  upstream, or origin/main when it has none (or the first argument), so commits not pushed yet count; the working tree
+  and untracked files count too
+- `run.ts` exits 1 when a scene is NG, when no provider ran, or when a provider in `--baseline` didn't run this time
 
 ## webview-mem.sh
 

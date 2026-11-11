@@ -3,7 +3,15 @@
 // Shares JudgeTaskDefinition / JudgeResult with the Anthropic version (lib/judge.ts),
 // so error semantics look the same from the settings screen and the summary code.
 
-import { httpFailure, invokeKeyedApi, verdictSchema, type JudgeResult, type JudgeTaskDefinition } from "./judge";
+import {
+  httpFailure,
+  invokeKeyedApi,
+  TAURI_TRANSPORT,
+  verdictSchema,
+  type JudgeResult,
+  type JudgeTaskDefinition,
+  type JudgeTransport,
+} from "./judge";
 
 /**
  * For summaries and the concierge (docs/design.md "BYOK API keys"). A light model that supports the Responses API,
@@ -13,7 +21,7 @@ export const OPENAI_JUDGE_MODEL = "gpt-5.6-luna";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 512;
 
-/** The Responses API request body for one task. tools/turn-verdict-probe.ts sends the same body */
+/** The Responses API request body for one task */
 export function openAiJudgeBody(task: JudgeTaskDefinition, payload: unknown): unknown {
   return {
     model: OPENAI_JUDGE_MODEL,
@@ -41,13 +49,14 @@ export function openAiJudgeBody(task: JudgeTaskDefinition, payload: unknown): un
 export async function runOpenAiJudge<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   payload: unknown,
+  transport: JudgeTransport = TAURI_TRANSPORT,
 ): Promise<JudgeResult<V>> {
-  const sent = await invokeKeyedApi("openai_responses", openAiJudgeBody(task, payload));
+  const sent = await invokeKeyedApi("openai_responses", openAiJudgeBody(task, payload), transport);
   if (!sent.ok) return sent;
   return parseOpenAiJudgeReply<V>(sent.reply.status, sent.reply.body);
 }
 
-/** Reads a Responses API reply to openAiJudgeBody. tools/turn-verdict-probe.ts reads its replies with this too */
+/** Reads a Responses API reply to openAiJudgeBody */
 export function parseOpenAiJudgeReply<V = Record<string, unknown>>(status: number, text: string): JudgeResult<V> {
   if (status < 200 || status >= 300) {
     let message: string | undefined;

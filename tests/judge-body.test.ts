@@ -1,5 +1,5 @@
-// The request bodies the app sends for a verdict task (lib/judge.ts, lib/openai-judge.ts). tools/turn-verdict-probe.ts
-// sends the same bodies, so a change here changes what the probe measures too
+// The request bodies the app sends for a verdict task (lib/judge.ts, lib/openai-judge.ts). The LLM regression test
+// (tools/llm-regression) sends the same bodies, so a change here changes what it measures too
 import { expect, test } from "bun:test";
 import { anthropicJudgeBody, JUDGE_MODEL, parseAnthropicJudgeReply, type JudgeTaskDefinition } from "../src/lib/judge.ts";
 import { OPENAI_JUDGE_MODEL, openAiJudgeBody, parseOpenAiJudgeReply } from "../src/lib/openai-judge.ts";

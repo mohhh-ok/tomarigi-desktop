@@ -11,18 +11,16 @@ import { invoke } from "@tauri-apps/api/core";
 import { loadLocalAiConfig, type LocalAiConfig } from "./api-keys";
 import {
   httpFailure,
+  TAURI_TRANSPORT,
   verdictSchema,
+  type HttpReply,
+  type JudgeTransport,
   type JudgeItem,
   type JudgeOutputField,
   type JudgeResult,
   type JudgeTaskDefinition,
   type JudgeUsage,
 } from "./judge";
-
-interface HttpReply {
-  status: number;
-  body: string;
-}
 
 /** message of a malformed result whose answer wasn't JSON matching the schema */
 export const LOCAL_NO_MATCHING_JSON = "no JSON matching the schema";
@@ -133,16 +131,14 @@ export async function runLocalJudge<V = Record<string, unknown>>(
   task: JudgeTaskDefinition,
   payload: unknown,
   config?: LocalAiConfig,
+  transport: JudgeTransport = TAURI_TRANSPORT,
 ): Promise<JudgeResult<V>> {
   const local = config ?? (await loadLocalAiConfig());
   // Not set up is shown like a missing key
   if (!local) return { ok: false, kind: "auth", message: "no-local-config" };
   let reply: HttpReply;
   try {
-    reply = await invoke<HttpReply>("local_chat", {
-      baseUrl: local.baseUrl,
-      body: JSON.stringify(localChatBody(task, payload, local.model)),
-    });
+    reply = await transport.local(local.baseUrl, JSON.stringify(localChatBody(task, payload, local.model)));
   } catch (e) {
     return { ok: false, kind: "network", message: String(e) };
   }
