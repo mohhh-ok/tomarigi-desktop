@@ -33,7 +33,7 @@ export interface SessionEvent {
   // true when a done that was suppressed while waiting on chicks (subagents) is cancelled once the
   // suppression lifts. Kept in the log and feed, but no chirp or readout (see deriveDoneEvent)
   muted?: boolean;
-  // true for the done and needs reply (waiting) of a session whose parent takes it over (SessionView.parentTakesOver):
+  // true for the done of a session whose parent takes it over (SessionView.parentTakesOver; not its waiting):
   // it chirps and stays in the log and feed, but isn't read aloud, in or out of the Concierge tab (isReadAloudEvent in
   // lib/voice.ts)
   silent?: true;
@@ -120,8 +120,9 @@ export interface SessionView {
   // A parent takes this session's results and questions: it was started by another session, the user hasn't typed in
   // it since its first prompt, and it is linked to a parent (a session that started before it and either wasn't started
   // by another session or is linked to one older than itself; takenOverByParent in lib/watching.ts; docs/design.md
-  // "Watching"). Its done and needs reply aren't read aloud, and the concierge doesn't ask the developer to reply to it
-  // or check its result. Its bird still gets the "?"
+  // "Watching"). Its done isn't read aloud, and the concierge doesn't ask the developer to check its result or to reply
+  // to a question its reply asks the parent. A permission prompt or a question tool is read and advised as usual. Its
+  // bird gets the "?"
   parentTakesOver?: true;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)

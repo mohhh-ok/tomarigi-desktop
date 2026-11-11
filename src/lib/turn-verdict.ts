@@ -3,19 +3,30 @@
 // The request itself is summarizeTurn in lib/summarize.ts
 import type { AskJudgement, BirdState, SessionView } from "./session-types";
 
+/**
+ * Where a session's need for an answer comes from: the machine state waiting (a question tool, a permission prompt),
+ * or the turn verdict of a stopped (done / dozing) turn asking. undefined when it needs none (docs/design.md
+ * "Concierge")
+ */
+export function replyWaitSource(state: BirdState, ask: AskJudgement | undefined): "machine" | "verdict" | undefined {
+  if (state === "waiting") return "machine";
+  return (state === "done" || state === "dozing") && ask?.status === "asking" ? "verdict" : undefined;
+}
+
 /** Whether to show the "?". When the machine state is waiting, or the turn verdict of a stopped (done / dozing) turn is asking */
 export function needsAnswer(state: BirdState, ask: AskJudgement | undefined): boolean {
-  if (state === "waiting") return true;
-  return (state === "done" || state === "dozing") && ask?.status === "asking";
+  return replyWaitSource(state, ask) !== undefined;
 }
 
 /**
  * Whether the session waits on the developer's reply, as the concierge and its tab count it: it needs an answer
- * (needsAnswer) and no parent takes it over (SessionView.parentTakesOver; docs/design.md "Watching"). Its bird still
- * gets the "?" (hasQuestion)
+ * (replyWaitSource). A parent that takes it over (SessionView.parentTakesOver) takes a reply that asks it (verdict),
+ * but not a permission prompt or a question tool (machine): only the user can answer those, in its pane
+ * (docs/design.md "Watching"). Its bird gets the "?" either way (hasQuestion)
  */
 export function waitsOnDeveloper(s: Pick<SessionView, "state" | "ask" | "parentTakesOver">): boolean {
-  return !s.parentTakesOver && needsAnswer(s.state, s.ask);
+  const source = replyWaitSource(s.state, s.ask);
+  return source === "machine" || (source === "verdict" && !s.parentTakesOver);
 }
 
 /**

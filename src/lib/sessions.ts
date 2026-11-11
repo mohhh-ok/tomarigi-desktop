@@ -264,7 +264,7 @@ function buildViews(
       snippet,
       now,
     )) {
-      // The parent takes its result and its questions, so its done and needs reply aren't read aloud on their own
+      // The parent takes its result, so its done isn't read aloud on its own (a permission prompt or a question tool is)
       // (silentForParent in lib/watching.ts; docs/design.md "Watching")
       cacheEvent(silentForParent(event, takenOver));
     }

@@ -9,7 +9,7 @@
 import type { JudgeErrorKind, JudgeResult, JudgeTaskDefinition } from "./judge";
 import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
-import { TEXT_CONTINUING_EXPIRES_MS, waitsOnDeveloper } from "./turn-verdict";
+import { replyWaitSource, TEXT_CONTINUING_EXPIRES_MS, waitsOnDeveloper } from "./turn-verdict";
 import { DOZE_MS } from "./bird-state";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView } from "./session-types";
@@ -82,8 +82,9 @@ interface PayloadSession {
    * was active after this session last was. false when the parent stopped before it finished and hasn't worked since */
   result_reached_parent?: boolean;
   watch_children?: string[];
-  /** Started by another session and linked to an older one: that parent takes its results and questions, so it needs
-   * nothing from the developer (needs_reply is false; docs/design.md "Watching", "Sessions started by another session") */
+  /** Started by another session and linked to an older one: that parent takes its results and the questions its replies
+   * ask (needs_reply false then). A permission prompt or a question tool still needs the developer (needs_reply true,
+   * source machine; docs/design.md "Watching", "Sessions started by another session") */
   parent_takes_over?: true;
   chicks_working?: number;
 }
@@ -155,12 +156,12 @@ export function buildConciergePayload(
   const sessions = inputs.map(({ view, agent, line, parentId }): PayloadSession => {
     const chicksWorking = (view.chicks ?? []).filter((c) => c.state === "working").length;
     const ask = view.ask;
-    // A parent takes over its questions and permission prompts, so it doesn't wait on the developer here (its bird
-    // still gets the "?"; docs/design.md "Watching")
+    // A parent takes over a reply that asks it, so that doesn't wait on the developer here; a permission prompt or a
+    // question tool does (its bird gets the "?" either way; docs/design.md "Watching")
     const needsReply = waitsOnDeveloper(view);
     // The "?" comes from the machine state (a question tool, a permission prompt) or the turn verdict; both are facts
     // (docs/design.md "Concierge")
-    const source = !needsReply ? undefined : view.state === "waiting" ? "machine" : "verdict";
+    const source = needsReply ? replyWaitSource(view.state, view.ask) : undefined;
     return {
       id: view.id,
       name: conciergeNameOf(view),
@@ -253,7 +254,9 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "advise about the parent instead, with the parent's id as session_id (e.g. in Japanese: <parent>に<child>の結果が" +
     "まだ届いていません). A session with watch_children where any of them is working is not finished yet: never " +
     "advise checking its result. A session with parent_takes_over was started by another session that takes its " +
-    "results, questions, and permission prompts: never advise about it.\n" +
+    "results and the questions its replies ask: never advise checking its result, and never advise replying to it " +
+    "while its needs_reply is false. When it stops on a question tool or a permission prompt (needs_reply true, " +
+    "needs_reply_source machine), only the developer can answer it: advise it like any other session.\n" +
     "While any session needs a reply now, advise about one of those, never about a finished or working session; " +
     "an advice about another session is not shown then.\n" +
     "Only a session whose needs_reply is true now may be advised to reply, answer, or check its question or " +
@@ -490,8 +493,9 @@ export function dropReason(
   // Watch links (the prompt alone didn't hold): the watching parent takes a child's result, and a parent watching a
   // child that still works isn't finished
   if (action === "check_result" && (target.watch_parent || target.parent_takes_over)) return "watched";
-  // Its parent takes its questions and permission prompts (the prompt alone may not hold)
-  if (action === "reply" && target.parent_takes_over) return "parent_takes_over";
+  // Its parent takes the questions its replies ask, but not a question tool or a permission prompt, which keep
+  // needs_reply (the prompt alone may not hold)
+  if (action === "reply" && target.parent_takes_over && !target.needs_reply) return "parent_takes_over";
   if (action === "check_result" && watchesWorkingChild(target, sessions)) return "child_working";
   // Replying is asked only of a session that needs a reply now: a question tool, a permission prompt, or the turn
   // verdict asking (the prompt alone didn't hold)
@@ -764,8 +768,8 @@ function askable(states: ConciergeTriggerClass[]): boolean {
 
 /** Each session's class, by id. update() of ConciergeScheduler takes this on every scan */
 export function conciergeTriggerClasses(views: SessionView[]): Map<string, ConciergeTriggerClass> {
-  // A session whose parent takes it over waits on its parent, not the developer: it counts as working (docs/design.md
-  // "Watching"). Every other waiting session waits on the developer
+  // A session whose reply asks the parent that takes it over waits on its parent, not the developer: it counts as
+  // working. A permission prompt or a question tool waits on the developer (waitsOnDeveloper; docs/design.md "Watching")
   return new Map(
     views.map((v) => [
       v.id,

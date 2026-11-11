@@ -212,7 +212,8 @@ const ev = (type: SessionEvent["type"], sessionId: string, patch: Partial<Sessio
 describe("which events of a session go silent", () => {
   const types: SessionEvent["type"][] = ["done", "waiting", "started", "closed"];
   const scenes: [string, boolean, SessionEvent["type"][]][] = [
-    ["a parent takes it over: its done and needs reply", true, ["done", "waiting"]],
+    // Its needs reply (waiting) is the machine state, a permission prompt or a question tool: only the user can answer it
+    ["a parent takes it over: its done only", true, ["done"]],
     ["no parent takes it over: none", false, []],
   ];
   for (const [scene, takenOver, silent] of scenes) {
@@ -226,7 +227,6 @@ describe("which events of a session go silent", () => {
 describe("readout of a done whose parent takes it over", () => {
   test("which events are read aloud", () => {
     expect(isReadAloudEvent(ev("done", "child", { silent: true }))).toBe(false);
-    expect(isReadAloudEvent(ev("waiting", "child", { silent: true }))).toBe(false);
     expect(isReadAloudEvent(ev("done", "solo"))).toBe(true);
     expect(isReadAloudEvent(ev("waiting", "child"))).toBe(true);
     expect(isReadAloudEvent(ev("started", "solo"))).toBe(false);
@@ -238,15 +238,10 @@ describe("readout of a done whose parent takes it over", () => {
     expect(readout.event(ev("done", "solo"))).toBe("speak");
   });
 
-  test("its needs reply isn't read outside the tab either", () => {
-    expect(new ConciergeReadout().event(ev("waiting", "child", { silent: true }))).toBe("skip");
-  });
-
   test("in the tab it isn't held, so a failed request doesn't read it", () => {
     const readout = new ConciergeReadout();
     readout.opened([], false);
     expect(readout.event(ev("done", "child", { silent: true }))).toBe("skip");
-    expect(readout.event(ev("waiting", "child", { silent: true }))).toBe("skip");
     expect(readout.event(ev("done", "solo"))).toBe("held");
     expect(readout.failed().map((e) => e.sessionId)).toEqual(["solo"]);
   });
@@ -261,74 +256,126 @@ const view = (id: string, patch: Partial<SessionView> = {}): SessionView => ({
   ...patch,
 });
 
-describe("the concierge asks nothing of a session its parent takes over", () => {
-  // parent watches child (started by it); solo is a finished session the user started
-  const inputs = (child: Partial<SessionView>): ConciergeSessionInput[] => [
-    { view: view("parent", { state: "done" }) },
-    { view: view("child", { parentTakesOver: true, ...child }), parentId: "parent" },
-    { view: view("solo") },
-  ];
-  const payloadOf = (child: Partial<SessionView>) => buildConciergePayload(inputs(child), [], [], 0, "ja");
+const asking = { status: "asking", at: 0 } as SessionView["ask"];
 
-  const scenes: [string, Partial<SessionView>][] = [
-    ["stopped on a permission prompt", { state: "waiting", waitingOn: "permission" }],
-    ["stopped on a question tool", { state: "waiting", waitingOn: "question" }],
-    ["its last reply asks its parent", { ask: { status: "asking", at: 0 } as SessionView["ask"] }],
+// Why a session stopped decides whether its parent takes it over (docs/design.md "Watching", "Sessions started by
+// another session"; the user's decision): a done, or a reply that asks its parent (the turn verdict), is the parent's;
+// a permission prompt or a question tool (the machine state) only the user can answer, so it is read and advised.
+// Each scene runs the app's functions from the session to the readout, the concierge's facts, its drop check, and the
+// Concierge tab's status, trigger, and count
+describe("a session stopped, by why it stopped and whether a parent takes it over", () => {
+  interface Want {
+    readAloud: boolean;
+    needsReply: boolean;
+    source: "machine" | "verdict" | undefined;
+    /** dropReason of a reply advice about it */
+    replyDrop: string | undefined;
+    status: string;
+    trigger: string;
+  }
+  const scenes: [string, Partial<SessionView>, SessionEvent, Want][] = [
+    [
+      "a child on a permission prompt",
+      { state: "waiting", waitingOn: "permission", parentTakesOver: true },
+      ev("waiting", "s"),
+      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+    ],
+    [
+      "a child on a question tool",
+      { state: "waiting", waitingOn: "question", parentTakesOver: true },
+      ev("waiting", "s"),
+      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+    ],
+    [
+      "a child whose reply asks its parent",
+      { state: "done", ask: asking, parentTakesOver: true },
+      ev("done", "s", { ask: asking }),
+      { readAloud: false, needsReply: false, source: undefined, replyDrop: "parent_takes_over", status: "done", trigger: "done" },
+    ],
+    [
+      "a child that finished",
+      { state: "done", parentTakesOver: true },
+      ev("done", "s"),
+      { readAloud: false, needsReply: false, source: undefined, replyDrop: "parent_takes_over", status: "done", trigger: "done" },
+    ],
+    [
+      "a session the user started, on a permission prompt",
+      { state: "waiting", waitingOn: "permission" },
+      ev("waiting", "s"),
+      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+    ],
+    [
+      "a session the user started, whose reply asks",
+      { state: "done", ask: asking },
+      ev("done", "s", { ask: asking }),
+      { readAloud: true, needsReply: true, source: "verdict", replyDrop: undefined, status: "reply", trigger: "reply" },
+    ],
+    [
+      "a session the user started, that finished",
+      { state: "done" },
+      ev("done", "s"),
+      { readAloud: true, needsReply: false, source: undefined, replyDrop: "no_reply_needed", status: "done", trigger: "done" },
+    ],
   ];
-  for (const [scene, child] of scenes) {
-    test(`${scene}: sent as needing nothing, with parent_takes_over`, () => {
-      const child0 = payloadOf(child).sessions.find((s) => s.id === "child")!;
-      expect(child0.needs_reply).toBe(false);
-      expect(child0.parent_takes_over).toBe(true);
-    });
-    test(`${scene}: a reply advice about it is dropped with its reason`, () => {
-      const p = payloadOf(child);
-      expect(dropReason({ line: "childの許可を確認してください", targetId: "child" }, "reply", p.sessions)).toBe("parent_takes_over");
-      expect(dropReason({ line: "x", targetId: "child" }, "reply", p.sessions, false, new Set(), false)).toBe("parent_takes_over");
-    });
-    test(`${scene}: it doesn't keep a finished session out of the advice`, () => {
-      const p = payloadOf(child);
-      expect(dropReason({ line: "soloが終わりました。結果を確認", targetId: "solo" }, "check_result", p.sessions)).toBeUndefined();
+  for (const [scene, patch, event, want] of scenes) {
+    test(scene, () => {
+      const s = view("s", patch);
+      const kept = silentForParent(event, s.parentTakesOver === true);
+      const p = buildConciergePayload(
+        [{ view: view("parent", { state: "working" }) }, { view: s, parentId: s.parentTakesOver ? "parent" : undefined }],
+        [],
+        [],
+        0,
+        "ja",
+      );
+      const fact = p.sessions.find((x) => x.id === "s")!;
+      expect({
+        readAloud: isReadAloudEvent(kept),
+        needsReply: fact.needs_reply,
+        source: fact.needs_reply_source,
+        replyDrop: dropReason({ line: "sの許可を確認してください", targetId: "s" }, "reply", p.sessions),
+        status: conciergeStatusOf(s),
+        trigger: conciergeTriggerClasses([s]).get("s"),
+      }).toEqual(want);
+      expect(new ConciergeReadout().event(kept)).toBe(want.readAloud ? "speak" : "skip");
+      expect(waitsOnDeveloper(s)).toBe(want.needsReply);
+      expect(conciergeStateOf(s)).toBe(want.needsReply ? "reply" : "stopped");
+      expect(fact.parent_takes_over).toBe(s.parentTakesOver);
+      // The "?" stays on its bird whenever it needs an answer
+      expect(hasQuestion(s)).toBe(want.source !== undefined || patch.ask !== undefined);
     });
   }
 
-  test("checking its result is dropped as watched", () => {
-    const p = payloadOf({});
+  test("a child's permission prompt is held in the Concierge tab like any other needs reply", () => {
+    const readout = new ConciergeReadout();
+    readout.opened([], false);
+    expect(readout.event(silentForParent(ev("waiting", "child"), true))).toBe("held");
+  });
+
+  test("a child that asks its parent doesn't keep a finished session out of the advice", () => {
+    const p = buildConciergePayload(
+      [
+        { view: view("parent") },
+        { view: view("child", { ask: asking, parentTakesOver: true }), parentId: "parent" },
+        { view: view("solo") },
+      ],
+      [],
+      [],
+      0,
+      "ja",
+    );
+    expect(dropReason({ line: "soloが終わりました。結果を確認", targetId: "solo" }, "check_result", p.sessions)).toBeUndefined();
+  });
+
+  test("checking a child's result is dropped as watched", () => {
+    const p = buildConciergePayload([{ view: view("parent") }, { view: view("child", { parentTakesOver: true }), parentId: "parent" }], [], [], 0, "ja");
     expect(dropReason({ line: "childが終わりました。結果を確認", targetId: "child" }, "check_result", p.sessions)).toBe("watched");
   });
 
-  test("a session the user started that waits on a permission prompt is still advised", () => {
-    const p = buildConciergePayload([{ view: view("solo", { state: "waiting", waitingOn: "permission" }) }], [], [], 0, "ja");
-    expect(p.sessions[0].needs_reply).toBe(true);
-    expect(p.sessions[0].parent_takes_over).toBeUndefined();
-    expect(dropReason({ line: "soloの許可を確認してください", targetId: "solo" }, "reply", p.sessions)).toBeUndefined();
-  });
-});
-
-describe("one check for waiting on the developer, everywhere the concierge counts it", () => {
-  // child waits on a permission prompt and its parent takes it over; solo waits on one the user started
-  const child = view("child", { state: "waiting", waitingOn: "permission", parentTakesOver: true });
-  const childAsking = view("child2", { state: "done", ask: { status: "asking", at: 0 } as SessionView["ask"], parentTakesOver: true });
-  const solo = view("solo", { state: "waiting", waitingOn: "permission" });
-  const scenes: [string, SessionView, { waits: boolean; status: string; state: string; trigger: string }][] = [
-    ["a child on a permission prompt", child, { waits: false, status: "working", state: "stopped", trigger: "working" }],
-    ["a child whose last reply asks its parent", childAsking, { waits: false, status: "done", state: "stopped", trigger: "done" }],
-    ["a session the user started, on a permission prompt", solo, { waits: true, status: "reply", state: "reply", trigger: "reply" }],
-  ];
-  for (const [scene, v, want] of scenes) {
-    test(scene, () => {
-      expect({
-        waits: waitsOnDeveloper(v),
-        status: conciergeStatusOf(v),
-        state: conciergeStateOf(v),
-        trigger: conciergeTriggerClasses([v]).get(v.id),
-      }).toEqual(want);
-      // The "?" stays on its bird
-      expect(hasQuestion(v)).toBe(true);
-    });
-  }
-
-  test("the Concierge tab counts only the session the user started", () => {
-    expect(conciergeTabCounts([child, childAsking, solo])).toEqual({ others: 3, waiting: 1 });
+  test("the Concierge tab counts the child on a permission prompt, not the one asking its parent", () => {
+    const child = view("child", { state: "waiting", waitingOn: "permission", parentTakesOver: true });
+    const childAsking = view("child2", { ask: asking, parentTakesOver: true });
+    const solo = view("solo", { state: "waiting", waitingOn: "permission" });
+    expect(conciergeTabCounts([child, childAsking, solo])).toEqual({ others: 3, waiting: 2 });
   });
 });

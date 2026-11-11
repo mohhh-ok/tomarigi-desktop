@@ -150,11 +150,13 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
 }
 
 /**
- * A session event as it is kept: the done and needs reply (waiting) of a session whose parent takes it over are silent,
- * so they chirp and stay in the log and feed but aren't read aloud (docs/design.md "Watching")
+ * A session event as it is kept: the done of a session whose parent takes it over is silent, so it chirps and stays in
+ * the log and feed but isn't read aloud; that includes a done whose reply asks its parent. Its needs reply (waiting, the
+ * machine state: a permission prompt or a question tool) is read aloud, since only the user can answer it
+ * (docs/design.md "Watching")
  */
 export function silentForParent<E extends Pick<SessionEvent, "type" | "silent">>(event: E, takenOver: boolean): E {
-  return takenOver && (event.type === "done" || event.type === "waiting") ? { ...event, silent: true } : event;
+  return takenOver && event.type === "done" ? { ...event, silent: true } : event;
 }
 
 /**
