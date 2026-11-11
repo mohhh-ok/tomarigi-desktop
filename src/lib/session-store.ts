@@ -49,9 +49,9 @@ export const peerScanOffset = new Map<string, number>();
 // The first prompt of each session's transcript (view id), read once from the top of the file (FirstPrompt in
 // lib/watching.ts). Tells a session started by another session (docs/design.md "Watching")
 export const firstPromptCache = new Map<string, FirstPrompt>();
-// Sessions (view id) whose transcript has a prompt the user typed after the first prompt (typedAfterFirst of
-// scan_peer_names): the user talks to it, so no parent takes it over (docs/design.md "Watching")
-export const typedAfterFirstIds = new Set<string>();
+// Sessions (view id) whose latest turn after the first prompt was started by a prompt the user typed
+// (latestTurnTypedAfterRead in lib/watching.ts): the user talks to it, so no parent takes it over (docs/design.md "Watching")
+export const latestTurnTypedIds = new Set<string>();
 // Machine state and last write time of each session (sessionId) in the previous scan. Used to decide whether
 // a peer is active, and for the watching done suppression (peers are passed in the same way as chicks)
 export const lastPeerStates = new Map<string, { state: BirdState; lastWriteAt: number }>();
@@ -133,5 +133,5 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
   for (const key of firstPromptCache.keys()) if (!liveIds.has(key)) firstPromptCache.delete(key);
-  for (const key of typedAfterFirstIds) if (!liveIds.has(key)) typedAfterFirstIds.delete(key);
+  for (const key of latestTurnTypedIds) if (!liveIds.has(key)) latestTurnTypedIds.delete(key);
 }

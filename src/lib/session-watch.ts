@@ -1,8 +1,8 @@
 // Watching links between sessions (docs/design.md "Watching")
 import { invoke } from "@tauri-apps/api/core";
-import { isPeerActive, peerLookup, startedBySession, type FirstPrompt } from "./watching";
+import { isPeerActive, latestTurnTypedAfterRead, peerLookup, startedBySession, type FirstPrompt } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
-import { firstPromptCache, typedAfterFirstIds, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
+import { firstPromptCache, latestTurnTypedIds, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
 import { sessionIdOfViewId } from "./session-liveness";
 
 export interface WatchLinks {
@@ -33,14 +33,15 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
         const scan = await invoke<{
           names: [string, string][];
           firstPrompt?: FirstPrompt | null;
-          typedAfterFirst?: string | null;
+          lastTurnTyped?: boolean | null;
           end: number;
         }>(
           "scan_peer_names",
           { path: f.file.path, start: peerScanOffset.get(f.id) ?? 0 },
         );
         if (scan.firstPrompt) firstPromptCache.set(f.id, scan.firstPrompt);
-        if (scan.typedAfterFirst) typedAfterFirstIds.add(f.id);
+        if (latestTurnTypedAfterRead(latestTurnTypedIds.has(f.id), scan.lastTurnTyped)) latestTurnTypedIds.add(f.id);
+        else latestTurnTypedIds.delete(f.id);
         // The first prompt is read from the top only, so the offset stays at the top until it has come (a session
         // just started may not have written it yet; the file is still small then)
         if (firstPromptCache.has(f.id)) peerScanOffset.set(f.id, scan.end);
@@ -98,7 +99,7 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
     void invoke("log", { line: `[watch] links\n${watchSignature || "(none)"}` }).catch(() => {});
   }
   const startedBySessionOf = (viewId: string) =>
-    startedBySession(firstPromptCache.get(viewId), typedAfterFirstIds.has(viewId));
+    startedBySession(firstPromptCache.get(viewId), latestTurnTypedIds.has(viewId));
   return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf };
 }
 

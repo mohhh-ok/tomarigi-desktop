@@ -16,7 +16,14 @@ import { conciergeStatusOf } from "../src/lib/concierge-status.ts";
 import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
 import { hasQuestion, waitsOnDeveloper } from "../src/lib/turn-verdict.ts";
 import { isReadAloudEvent } from "../src/lib/voice.ts";
-import { silentForParent, startedBySession, takenOverByParent, takenOverWorld, type FirstPrompt } from "../src/lib/watching.ts";
+import {
+  latestTurnTypedAfterRead,
+  silentForParent,
+  startedBySession,
+  takenOverByParent,
+  takenOverWorld,
+  type FirstPrompt,
+} from "../src/lib/watching.ts";
 import type { LiveSession, PeerLink } from "../src/lib/session-types.ts";
 import type { WatchLinks } from "../src/lib/session-watch.ts";
 import { conciergeTabCounts } from "../src/perch/concierge-tab.ts";
@@ -39,10 +46,10 @@ describe("started by another session, from the first prompt", () => {
   for (const [scene, first, want] of scenes) test(scene, () => expect(startedBySession(first)).toBe(want));
 });
 
-describe("the user talks to it after its first prompt", () => {
+describe("the user started its latest turn", () => {
   const scenes: [string, FirstPrompt | undefined, boolean, boolean][] = [
     ["started by start_session, only its parent's messages since", prompt("sdk"), false, true],
-    ["started by start_session, the user typed in its pane", prompt("sdk"), true, false],
+    ["started by start_session, the user typed in its pane in the latest turn", prompt("sdk"), true, false],
     ["started by the user, the user typed again", prompt("human"), true, false],
   ];
   for (const [scene, first, typed, want] of scenes) {
@@ -76,12 +83,13 @@ describe("started by another session, in a terminal", () => {
 });
 
 /**
- * A set of running sessions: when each started, its first prompt, whether the user typed in it later, whether it is on
- * screen (has a view id; default yes), and the links. Read as a scan reads them: a stand-in for the WatchLinks that
+ * A set of running sessions: when each started, its first prompt, what each read of its transcript after the first
+ * prompt said of who started the latest turn (lastTurnTyped of scan_peer_names: true typed, false its parent or the app,
+ * null no prompt in that part), whether it is on screen (has a view id; default yes), and the links. Read as a scan reads them: a stand-in for the WatchLinks that
  * resolveWatchLinks gives, passed to the app's takenOverWorld
  */
 interface Scene {
-  sessions: Record<string, { startedAt: number; first: FirstPrompt; typed?: boolean; onScreen?: boolean }>;
+  sessions: Record<string, { startedAt: number; first: FirstPrompt; reads?: (boolean | null)[]; onScreen?: boolean }>;
   links: [string, string][];
 }
 function watchOf(scene: Scene): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf"> {
@@ -96,7 +104,8 @@ function watchOf(scene: Scene): Pick<WatchLinks, "liveBySessionId" | "viewIdBySe
         .map((p) => ({ sessionId: p, name: p, startedAt: scene.sessions[p]?.startedAt, active: false }) as PeerLink),
     startedBySessionOf: (v) => {
       const s = entries.find(([id]) => viewId(id) === v)?.[1];
-      return s !== undefined && startedBySession(s.first, s.typed);
+      const typed = (s?.reads ?? []).reduce<boolean>(latestTurnTypedAfterRead, false);
+      return s !== undefined && startedBySession(s.first, typed);
     },
   };
 }
@@ -130,12 +139,12 @@ describe("which sessions a parent takes over", () => {
     ],
     [
       "the user typed in that session after its first prompt: it is no longer taken over",
-      { sessions: { P, foo: { startedAt: 200, first: TERMINAL_CHILD, typed: true } }, links: [["P", "foo"]] },
+      { sessions: { P, foo: { startedAt: 200, first: TERMINAL_CHILD, reads: [true] } }, links: [["P", "foo"]] },
       { P: false, foo: false },
     ],
     [
       "the user typed in C's pane: C is no longer taken over, and G still is (C is now a parent the user talks to)",
-      { sessions: { P, C: { ...C, typed: true }, G }, links: [["P", "C"], ["C", "G"]] },
+      { sessions: { P, C: { ...C, reads: [true] }, G }, links: [["P", "C"], ["C", "G"]] },
       { P: false, C: false, G: true },
     ],
     [
@@ -161,6 +170,29 @@ describe("which sessions a parent takes over", () => {
     ],
   ];
   for (const [name, scene, want] of scenes) test(name, () => expect(takenOver(scene)).toEqual(want));
+});
+
+describe("who started the child's latest turn", () => {
+  // Reads of the child's transcript, one per scan, in order: the first from the top (its first prompt never counts), the
+  // later ones from where the last stopped (start > 0). A task notification or a message that arrives while it works
+  // is an attachment, so a read that has only that says null
+  const scenes: [string, FirstPrompt, (boolean | null)[], boolean][] = [
+    ["desktop: only its parent's task so far", DESKTOP_CHILD, [null], true],
+    ["desktop: the user typed and the turn ended", DESKTOP_CHILD, [true], false],
+    ["desktop: then a turn started by its parent's message", DESKTOP_CHILD, [true, false], true],
+    ["desktop: typed and then its parent's message in the same read", DESKTOP_CHILD, [false], true],
+    ["desktop: a task notification arrives while it works on the typed turn (a later read with no prompt)", DESKTOP_CHILD, [true, null], false],
+    ["desktop: back with its parent, then a later read with no prompt", DESKTOP_CHILD, [true, false, null], true],
+    ["desktop: the user typed again after its parent's turn", DESKTOP_CHILD, [true, false, true], false],
+    ["ghostty: only its first prompt, human too", TERMINAL_CHILD, [null], true],
+    ["ghostty: the user typed in its pane", TERMINAL_CHILD, [null, true], false],
+    ["ghostty: then its parent's message", TERMINAL_CHILD, [null, true, false], true],
+    ["ghostty: a task notification arrives while it works on the typed turn", TERMINAL_CHILD, [true, null], false],
+  ];
+  const P = { startedAt: 100, first: TYPED };
+  for (const [scene, first, reads, want] of scenes) {
+    test(scene, () => expect(takenOver({ sessions: { P, C: { startedAt: 200, first, reads } }, links: [["P", "C"]] }).C).toBe(want));
+  }
 });
 
 const ev = (type: SessionEvent["type"], sessionId: string, patch: Partial<SessionEvent> = {}): SessionEvent => ({

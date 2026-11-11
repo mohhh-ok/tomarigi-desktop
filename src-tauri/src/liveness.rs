@@ -214,10 +214,10 @@ pub(crate) struct PeerScan {
     names: Vec<(String, String)>,
     /// Set when this scan read the first prompt (it starts at the top of the file)
     first_prompt: Option<FirstPrompt>,
-    /// Timestamp of the first prompt the user typed after the first prompt, in the part read (turnOrigin "human", not
-    /// a message from another session, a task notification, or the desktop app's own turns). A session started by
-    /// another session that the user talks to is no longer taken over by its parent (docs/design.md "Watching")
-    typed_after_first: Option<String>,
+    /// Whether the last prompt that started a turn after the first prompt, in the part read, was typed by the user
+    /// (turn_prompt_typed); None when the part read has none, so the previous answer stands. A session started by
+    /// another session whose latest turn the user started isn't taken over by its parent (docs/design.md "Watching")
+    last_turn_typed: Option<bool>,
     /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
 }
@@ -233,21 +233,33 @@ fn peer_name_of(to: &str) -> Option<String> {
     (!name.is_empty() && name != "main").then(|| name.to_string())
 }
 
-/// The timestamp of a prompt the user typed: a user line, not meta or a subagent's, with turnOrigin "human" (or, in
-/// transcripts without turnOrigin, origin.kind "human"). Messages from other sessions are "peer", task notifications
-/// "task_notification", and the desktop app's own turns "sdk" / "host_synthetic"
-fn typed_prompt_at(entry: &serde_json::Value) -> Option<&str> {
+/// Whether a line is a prompt that starts a turn, and if so whether the user typed it. A prompt is a user line, not a
+/// subagent's or a tool result, and not meta unless it is a message from another session (written as a meta line with
+/// turnOrigin "peer"). It is typed when its turnOrigin is "human" (or, in transcripts without turnOrigin, its
+/// origin.kind). Messages from other sessions are "peer", task notifications "task_notification", and the desktop
+/// app's own turns "sdk" / "host_synthetic". Messages and notifications that arrive while it works are attachments
+/// (queued_command), not prompts
+fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
     if entry.get("type").and_then(|t| t.as_str()) != Some("user")
-        || entry.get("isMeta").and_then(|v| v.as_bool()) == Some(true)
         || entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true)
     {
         return None;
     }
-    let human = match entry.get("turnOrigin").and_then(|t| t.as_str()) {
-        Some(origin) => origin == "human",
-        None => entry.pointer("/origin/kind").and_then(|k| k.as_str()) == Some("human"),
-    };
-    human.then(|| entry.get("timestamp").and_then(|t| t.as_str())).flatten()
+    let turn_origin = entry.get("turnOrigin").and_then(|t| t.as_str());
+    let origin_kind = entry.pointer("/origin/kind").and_then(|k| k.as_str());
+    if entry.get("isMeta").and_then(|v| v.as_bool()) == Some(true) && turn_origin != Some("peer") && origin_kind != Some("peer") {
+        return None;
+    }
+    let blocks = entry.pointer("/message/content").and_then(|c| c.as_array());
+    if blocks.into_iter().flatten().any(|b| b.get("type").and_then(|t| t.as_str()) == Some("tool_result")) {
+        return None;
+    }
+    match (turn_origin, origin_kind) {
+        (Some(origin), _) => Some(origin == "human"),
+        (None, Some(kind)) => Some(kind == "human"),
+        // A line that says nothing of where it came from isn't counted (as before turnOrigin was read)
+        (None, None) => None,
+    }
 }
 
 /// The Claude desktop app's session id (`local_<uuid>`), the address of its sessions (docs/design.md "Watching")
@@ -287,13 +299,16 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
     let mut first_prompt = None;
     let mut named_at_launch = false;
     let mut session_start_at: Option<String> = None;
-    let mut typed_after_first: Option<String> = None;
+    let mut last_turn_typed: Option<bool> = None;
     for line in buf[..complete].split(|&b| b == b'\n') {
-        // After the first prompt (read in an earlier scan when start isn't 0), a prompt the user typed
-        if !looking_for_first && typed_after_first.is_none() && line.windows(7).any(|w| w == b"\"human\"") {
+        // After the first prompt (read in an earlier scan when start isn't 0), the prompts that start a turn; the last
+        // one read decides
+        if !looking_for_first
+            && (line.windows(12).any(|w| w == b"\"turnOrigin\"") || line.windows(8).any(|w| w == b"\"origin\""))
+        {
             if let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) {
-                if let Some(at) = typed_prompt_at(&entry) {
-                    typed_after_first = Some(at.to_string());
+                if let Some(typed) = turn_prompt_typed(&entry) {
+                    last_turn_typed = Some(typed);
                 }
             }
         }
@@ -423,7 +438,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             _ => {}
         }
     }
-    Ok(PeerScan { names, first_prompt, typed_after_first, end: start + complete as u64 })
+    Ok(PeerScan { names, first_prompt, last_turn_typed, end: start + complete as u64 })
 }
 
 #[derive(Serialize)]
@@ -959,32 +974,57 @@ mod tests {
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
-    /// A prompt the user typed after the first prompt, and the lines that aren't one
+    /// Whether the latest turn after the first prompt was started by a prompt the user typed, scene by scene: what
+    /// a scan from the top reads, and what a later scan reads from after the first `from` lines (None: no prompt in
+    /// that part, the previous answer stands)
     #[test]
-    fn scan_peer_names_reads_a_prompt_typed_after_the_first() {
-        let dir = std::env::temp_dir().join(format!("tomarigi-typed-test-{}", std::process::id()));
+    fn scan_peer_names_reads_who_started_the_latest_turn() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-turn-test-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
-        let first = r#"{"type":"user","timestamp":"T0","turnOrigin":"sdk","message":{"content":"task"}}"#;
-        let cases: Vec<(&str, &str, Option<&str>)> = vec![
-            ("the user typed in its pane", r#"{"type":"user","timestamp":"T1","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"hi"}}"#, Some("T1")),
-            ("an older line without turnOrigin, typed", r#"{"type":"user","timestamp":"T1","origin":{"kind":"human"},"message":{"content":"hi"}}"#, Some("T1")),
-            ("a message from its parent", r#"{"type":"user","isMeta":true,"timestamp":"T1","turnOrigin":"peer","origin":{"kind":"peer","name":"p"},"message":{"content":"x"}}"#, None),
-            ("the desktop app's side-sessions-event", r#"{"type":"user","timestamp":"T1","turnOrigin":"sdk","message":{"content":"<side-sessions-event>x"}}"#, None),
-            ("a task notification", r#"{"type":"user","timestamp":"T1","turnOrigin":"task_notification","origin":{"kind":"task-notification"},"message":{"content":"x"}}"#, None),
-            ("a tool result", r#"{"type":"user","timestamp":"T1","message":{"content":[{"type":"tool_result","tool_use_id":"t","content":"human"}]}}"#, None),
+        // Lines as transcripts write them
+        const DESKTOP_FIRST: &str = r#"{"type":"user","timestamp":"T0","turnOrigin":"sdk","message":{"content":"task"}}"#;
+        const NAME: &str = r#"{"type":"agent-name","agentName":"c"}"#;
+        const SESSION_START: &str = r#"{"type":"attachment","timestamp":"T0","attachment":{"hookEvent":"SessionStart"}}"#;
+        const GHOSTTY_FIRST: &str = r#"{"type":"user","timestamp":"T0","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"task"}}"#;
+        const TYPED: &str = r#"{"type":"user","timestamp":"T1","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"hi"}}"#;
+        const TYPED_OLD: &str = r#"{"type":"user","timestamp":"T1","origin":{"kind":"human"},"message":{"content":"hi"}}"#;
+        const PEER: &str = r#"{"type":"user","isMeta":true,"timestamp":"T2","turnOrigin":"peer","origin":{"kind":"peer","name":"p"},"message":{"content":"x"}}"#;
+        const SIDE_EVENT: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"sdk","message":{"content":"<side-sessions-event>x"}}"#;
+        const HOST_SYNTHETIC: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"host_synthetic","message":{"content":"x"}}"#;
+        const TASK_TURN: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"task_notification","origin":{"kind":"task-notification"},"message":{"content":"<task-notification>x"}}"#;
+        const TASK_MIDWORK: &str = r#"{"type":"attachment","timestamp":"T2","attachment":{"type":"queued_command","commandMode":"task-notification","origin":{"kind":"task-notification"},"prompt":"x"}}"#;
+        const PEER_MIDWORK: &str = r#"{"type":"attachment","timestamp":"T2","attachment":{"type":"queued_command","origin":{"kind":"peer","name":"p"},"prompt":"x"}}"#;
+        const TOOL_RESULT: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"human","message":{"content":[{"type":"tool_result","tool_use_id":"t","content":"x"}]}}"#;
+        const META: &str = r#"{"type":"user","isMeta":true,"timestamp":"T2","turnOrigin":"system","message":{"content":"x"}}"#;
+        const SIDECHAIN: &str = r#"{"type":"user","isSidechain":true,"timestamp":"T2","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"x"}}"#;
+        const REPLY: &str = r#"{"type":"assistant","timestamp":"T3","message":{"content":[{"type":"text","text":"ok"}]}}"#;
+        // (scene, lines, from top, (from, later scan))
+        let scenes: Vec<(&str, Vec<&str>, Option<bool>, (usize, Option<bool>))> = vec![
+            ("desktop: only its parent's task so far", vec![DESKTOP_FIRST, REPLY], None, (1, None)),
+            ("desktop: the user typed and the turn ended", vec![DESKTOP_FIRST, TYPED, REPLY], Some(true), (1, Some(true))),
+            ("desktop: then a turn started by its parent's message", vec![DESKTOP_FIRST, TYPED, REPLY, PEER, REPLY], Some(false), (3, Some(false))),
+            ("desktop: a side-sessions-event starts the turn", vec![DESKTOP_FIRST, TYPED, REPLY, SIDE_EVENT, REPLY], Some(false), (3, Some(false))),
+            ("desktop: a turn the app starts (host_synthetic)", vec![DESKTOP_FIRST, TYPED, REPLY, HOST_SYNTHETIC], Some(false), (3, Some(false))),
+            ("desktop: a task notification starts the turn", vec![DESKTOP_FIRST, TYPED, REPLY, TASK_TURN, REPLY], Some(false), (3, Some(false))),
+            ("desktop: a task notification arrives while it works on a typed turn", vec![DESKTOP_FIRST, TYPED, TOOL_RESULT, TASK_MIDWORK, REPLY], Some(true), (1, Some(true))),
+            ("desktop: a later read sees only the notification while it works", vec![DESKTOP_FIRST, TYPED, TASK_MIDWORK, REPLY], Some(true), (2, None)),
+            ("desktop: its parent's message arrives while it works on a typed turn", vec![DESKTOP_FIRST, TYPED, PEER_MIDWORK, REPLY], Some(true), (2, None)),
+            ("desktop: tool results, meta lines and a subagent's lines don't start a turn", vec![DESKTOP_FIRST, PEER, TOOL_RESULT, META, SIDECHAIN], Some(false), (2, None)),
+            ("desktop: the user typed again after its parent's turn", vec![DESKTOP_FIRST, TYPED, PEER, REPLY, TYPED], Some(true), (4, Some(true))),
+            ("an older transcript without turnOrigin, typed", vec![DESKTOP_FIRST, TYPED_OLD], Some(true), (1, Some(true))),
+            ("ghostty: only its first prompt, which is human too", vec![NAME, SESSION_START, GHOSTTY_FIRST, REPLY], None, (3, None)),
+            ("ghostty: the user typed in its pane", vec![NAME, SESSION_START, GHOSTTY_FIRST, REPLY, TYPED, REPLY], Some(true), (4, Some(true))),
+            ("ghostty: then its parent's message", vec![NAME, SESSION_START, GHOSTTY_FIRST, TYPED, REPLY, PEER, REPLY], Some(false), (5, Some(false))),
+            ("ghostty: a task notification arrives while it works on a typed turn", vec![NAME, SESSION_START, GHOSTTY_FIRST, TYPED, TASK_MIDWORK, REPLY], Some(true), (4, None)),
         ];
-        for (i, (scene, line, want)) in cases.iter().enumerate() {
+        for (i, (scene, lines, want, (from, want_later))) in scenes.iter().enumerate() {
             let path = dir.join(format!("{i}.jsonl"));
-            std::fs::write(&path, format!("{first}\n{line}\n")).unwrap();
+            std::fs::write(&path, lines.join("\n") + "\n").unwrap();
             let p = path.to_str().unwrap();
-            assert_eq!(scan_peer_names(p, 0).unwrap().typed_after_first.as_deref(), *want, "{scene}");
-            // Read on from after the first prompt, as a later scan does
-            assert_eq!(scan_peer_names(p, first.len() as u64 + 1).unwrap().typed_after_first.as_deref(), *want, "{scene} (later scan)");
+            assert_eq!(scan_peer_names(p, 0).unwrap().last_turn_typed, *want, "{scene}");
+            let offset: usize = lines[..*from].iter().map(|l| l.len() + 1).sum();
+            assert_eq!(scan_peer_names(p, offset as u64).unwrap().last_turn_typed, *want_later, "{scene} (later scan from line {from})");
         }
-        // The first prompt itself, typed by the user in a terminal, isn't one
-        let path = dir.join("only-first.jsonl");
-        std::fs::write(&path, "{\"type\":\"user\",\"timestamp\":\"T0\",\"turnOrigin\":\"human\",\"message\":{\"content\":\"task\"}}\n").unwrap();
-        assert_eq!(scan_peer_names(path.to_str().unwrap(), 0).unwrap().typed_after_first, None);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
