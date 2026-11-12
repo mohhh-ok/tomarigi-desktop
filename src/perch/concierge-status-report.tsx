@@ -44,8 +44,8 @@ function Jump({ onJump, children }: { onJump: () => void; children: ReactNode })
   );
 }
 
-// A state line shows at most this many lines (docs/design.md "Concierge")
-export const STATE_LINE_MAX_LINES = 2;
+// A state line shows at most this many lines in all, name and state included (docs/design.md "Concierge")
+export const STATE_LINE_MAX_LINES = 3;
 
 /**
  * A state line's text, 「: <text>」, cut so the whole line (dot, name, text, state) fits STATE_LINE_MAX_LINES lines, with

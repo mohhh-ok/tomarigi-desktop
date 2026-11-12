@@ -912,7 +912,7 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // The Concierge tab's state lines cut at 2 lines (docs/design.md "Concierge"): a question long enough for 7 lines, a
+    // The Concierge tab's state lines cut at 3 lines (docs/design.md "Concierge"): a question long enough for 7 lines, a
     // short one, a finished turn whose summary is long and one whose summary is short, and working ones
     id: "concierge-long",
     label: "Concierge: long lines",

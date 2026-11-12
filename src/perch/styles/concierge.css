@@ -101,7 +101,7 @@
      (a UI check: 「先に返事 / を」, 「更新しまし / た 完了」). pretty is in WebKit from Safari 26 and Chromium from 130, so in
      both the app's WebViews; auto-phrase (Chromium from 119, Japanese and Korean only, by the page's lang) also keeps a
      Japanese phrase whole. WebKit has no phrase breaking yet, so there a Japanese line can still break inside a phrase.
-     balance was tried and broke the first line shorter, inside phrases more often. A state line cut at 2 lines is cut
+     balance was tried and broke the first line shorter, inside phrases more often. A state line cut at 3 lines is cut
      after this wrapping, since it is measured as laid out */
   text-wrap: pretty;
   word-break: auto-phrase;

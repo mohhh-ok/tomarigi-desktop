@@ -1,4 +1,4 @@
-// Cutting a state line's text to fit (docs/design.md "Concierge": each state line shows at most 2 lines and ends with
+// Cutting a state line's text to fit (docs/design.md "Concierge": each state line shows at most 3 lines and ends with
 // 「…」 when cut; src/lib/clamp-text.ts). Whether a text fits is the page's to say; here it is a width in characters
 import { describe, expect, test } from "bun:test";
 import { clampText, ELLIPSIS, linesIn } from "../src/lib/clamp-text.ts";
