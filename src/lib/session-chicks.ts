@@ -1,13 +1,13 @@
 // Chicks: subagents under a parent's transcript folder, and sessions started via the SDK
 import type { NativeDirectoryHandle, NativeFile, NativeFileHandle } from "./native-fs";
-import { scanChickSignals, type TailInfo } from "./transcript";
+import { lastWrittenAt, scanChickSignals, type TailInfo } from "./transcript";
 import type { ChickMeta, ChickScan, ChickView, FoundEntry } from "./session-types";
 import { chickMetaCache, chickSignalLedger } from "./session-store";
 import { readTailCached } from "./session-tail";
 import { deriveSdkChickState, deriveState } from "./bird-state";
 
 // Tolerance when comparing a chick's completion signal (chickSignals) with the chick's last conversation time
-// (tail.lastEventAt ?? file.lastModified). Normally the order is "chick's last write → notification written
+// (lastWrittenAt(tail, file.lastModified)). Normally the order is "chick's last write → notification written
 // to the parent a few seconds later", so last conversation time <= signal always holds. A resumed chick's
 // last conversation time moves clearly past the signal, so if it exceeds the signal by more than a few
 // seconds' margin we treat it as resumed and invalidate the signal (see scanChicks)
@@ -81,7 +81,7 @@ export async function scanChicks(
     const { id, file, tail, meta } = c;
     // Use tail.lastEventAt as the basis for the same reason as the parent scan's sinceMs (see the equivalent
     // place in scanSessions). sinceMs is for display, so the mtime fallback is acceptable
-    const sinceMs = now - (tail.lastEventAt ?? file.lastModified);
+    const sinceMs = now - lastWrittenAt(tail, file.lastModified);
     const chickDoneSignalAt = doneSignalOf(chickSignals, c);
     chicks.push({
       view: {
@@ -247,7 +247,7 @@ export function isSdkSession(f: FoundEntry): boolean {
 // Use the same time basis as the state check (tail.lastEventAt, else file.lastModified; see the comment on
 // TailInfo.lastEventAt) for choosing parent candidates too
 function effectiveLastEventAt(f: FoundEntry): number {
-  return f.tail.lastEventAt ?? f.file.lastModified;
+  return lastWrittenAt(f.tail, f.file.lastModified);
 }
 
 /**

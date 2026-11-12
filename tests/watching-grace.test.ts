@@ -6,9 +6,9 @@ import type { NativeFile } from "../src/lib/native-fs.ts";
 import type { BirdState, SessionView } from "../src/lib/session-types.ts";
 import { peerLastActiveAt } from "../src/lib/session-store.ts";
 import { rememberPeerStates, type WatchLinks } from "../src/lib/session-watch.ts";
-import { readTail } from "../src/lib/transcript.ts";
+import { lastWrittenAt, readTail } from "../src/lib/transcript.ts";
 import { sessionContinuing } from "../src/lib/turn-verdict.ts";
-import { lastWrittenAt, WATCH_GRACE_MS, watchingCount } from "../src/lib/watching.ts";
+import { WATCH_GRACE_MS, watchingCount } from "../src/lib/watching.ts";
 
 const SEC = 1000;
 const MIN = 60 * SEC;

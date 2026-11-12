@@ -650,3 +650,13 @@ function commonPrefix(items: string[]): string {
   }
   return prefix;
 }
+
+/**
+ * When the session last wrote: the time of the last line with a timestamp, or the file's mtime when the tail window has
+ * none. The basis of its state (sinceMs), and once it is done / dozing, when its turn ended (watchingCount's
+ * ownTurnEndedAt; docs/design.md "Watching"). Chicks use the same basis for sinceMs and
+ * for choosing parent candidates
+ */
+export function lastWrittenAt(tail: Pick<TailInfo, "lastEventAt">, lastModified: number): number {
+  return tail.lastEventAt ?? lastModified;
+}

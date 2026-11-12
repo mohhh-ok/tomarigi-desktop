@@ -1,9 +1,9 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
-import { lastWrittenAt, silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
+import { silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
 import { basename } from "./paths";
-import { pendingAskOf, projectLabels } from "./transcript";
+import { lastWrittenAt, pendingAskOf, projectLabels } from "./transcript";
 import type {
   BirdState,
   ChickScan,
