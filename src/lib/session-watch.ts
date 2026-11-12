@@ -2,7 +2,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { isPeerActive, peerLookup, rememberLatestTurnTyped, startedBySession, type FirstPrompt } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
-import { firstPromptCache, latestTurnTypedIds, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState } from "./session-store";
+import { firstPromptCache, latestTurnTypedIds, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState, startedCardCache } from "./session-store";
+import { pendingProposalsOf } from "./transcript";
+import { cardKey } from "./proposals";
 import { sessionIdOfViewId } from "./session-liveness";
 
 export interface WatchLinks {
@@ -11,9 +13,8 @@ export interface WatchLinks {
   peerLinksOf: (ownSessionId: string) => PeerLink[];
   /** Whether the session (view id) was started by another session (startedBySession in lib/watching.ts) */
   startedBySessionOf: (viewId: string) => boolean;
-  /** Whether the session (view id) was started by another session, even if the user typed in it since (its first
-   * prompt only; startedBySession in lib/watching.ts). Tells a session started from a proposal card (lib/proposals.ts) */
-  startedFromSessionOf: (viewId: string) => boolean;
+  /** The proposal cards the user started (cardKey in lib/proposals.ts), from the desktop app's records */
+  startedCards: ReadonlySet<string>;
 }
 
 // Watching links (docs/design.md "Watching"). Match the names (or desktop app ids) of peers exchanged with against
@@ -100,8 +101,8 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   }
   const startedBySessionOf = (viewId: string) =>
     startedBySession(firstPromptCache.get(viewId), latestTurnTypedIds.has(viewId));
-  const startedFromSessionOf = (viewId: string) => startedBySession(firstPromptCache.get(viewId));
-  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf, startedFromSessionOf };
+  await readStartedCards(claudeEntries, liveBySessionId);
+  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf, startedCards: startedCardCache };
 }
 
 /**
@@ -134,5 +135,36 @@ export function rememberPeerStates(views: SessionView[], watch: WatchLinks, now:
   for (const sessionId of peerLastActiveAt.keys()) if (!lastPeerStates.has(sessionId)) peerLastActiveAt.delete(sessionId);
   for (const key of lastPeerStates.keys()) {
     if (!viewIdBySessionId.has(key) && !liveBySessionId.has(key)) lastPeerStates.delete(key);
+  }
+}
+
+/**
+ * Reads, from the desktop app's records, which of the cards that sessions' last turns left the user started
+ * (desktop_spawned_from in src-tauri; docs/design.md "The "?" for sessions waiting on you"), and remembers them in
+ * startedCardCache: a started card stays started. Asks only when some card isn't known to be started yet, for records
+ * written since the oldest such card. When the records can't be read, no card counts as started (the wait then ends
+ * with the session's next turn)
+ */
+async function readStartedCards(entries: FoundEntry[], liveBySessionId: Map<string, LiveSession>): Promise<void> {
+  const parents = new Set<string>();
+  let since = Infinity;
+  for (const f of entries) {
+    const host = liveBySessionId.get(sessionIdOfViewId(f.id))?.hostSessionId;
+    if (!host) continue;
+    for (const p of pendingProposalsOf(f.tail.events)?.proposals ?? []) {
+      if (startedCardCache.has(cardKey(host, p.taskId))) continue;
+      parents.add(host);
+      since = Math.min(since, p.at);
+    }
+  }
+  if (parents.size === 0) return;
+  try {
+    const scan = await invoke<{ spawned: { parent: string; taskId: string }[]; reliable: boolean }>("desktop_spawned_from", {
+      parents: [...parents],
+      sinceMs: Math.max(0, Math.floor(since)),
+    });
+    for (const s of scan.spawned) startedCardCache.add(cardKey(s.parent, s.taskId));
+  } catch {
+    // Not read this time: the cards stay not started until a later read
   }
 }

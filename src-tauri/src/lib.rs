@@ -312,6 +312,7 @@ pub fn run() {
             focus::focus_session,
             focus::focus_codex,
             focus::desktop::open_desktop_session,
+            focus::desktop::desktop_spawned_from,
             liveness::live_codex_threads,
             window::hide_window,
             window::get_window_mode,

@@ -70,6 +70,13 @@ export interface SessionEvent {
 // answer to AskUserQuestion / ExitPlanMode / request_user_input
 export type BirdState = "working" | "waiting" | "done" | "dozing";
 
+/**
+ * What a waiting session waits on, when known (replyWaitOf and waitingOnOf in lib/bird-state.ts; passed to the concierge
+ * as waiting_on): a question (a question tool, an open question, a wrap_up's ask), a permission prompt, or a Claude
+ * desktop app proposal card the user hasn't started (docs/design.md "Concierge")
+ */
+export type WaitingOn = "question" | "permission" | "proposal";
+
 export interface SessionView {
   id: string; // <rootId>/<slug>/<file name>
   project: string; // display name
@@ -110,8 +117,7 @@ export interface SessionView {
   angry?: boolean;
   // While its own state is waiting: whether it waits on a question (a question tool) or a permission prompt, when that
   // is known (waitingOnOf in lib/bird-state.ts). Passed to the concierge (docs/design.md "Concierge")
-  // "proposal": it ended its turn leaving a Claude desktop app proposal card the user hasn't started (lib/proposals.ts)
-  waitingOn?: "question" | "permission" | "proposal";
+  waitingOn?: WaitingOn;
   // While its own state is waiting: true when it waits on the Claude desktop app's wrap_up ask (pendingAskOf in
   // lib/transcript.ts), not a question tool or a permission prompt. That ask is also the session's report, so a parent
   // that takes it over can answer it (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Watching")

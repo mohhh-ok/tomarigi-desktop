@@ -1,6 +1,8 @@
 // Machine state of a bird (BirdState) from its transcript tail
-import { pendingAskOf, type TailInfo } from "./transcript";
-import type { BirdState, ChickView } from "./session-types";
+import { pendingAskOf, type TailEvent, type TailInfo, type TurnProposals } from "./transcript";
+import type { BirdState, ChickView, WaitingOn } from "./session-types";
+import { extractQuestion } from "./session-snippet";
+import { proposalQuestion } from "./proposals";
 
 const WRITING_MS = 6_000; // recent write = working
 export const DOZE_MS = 5 * 60_000; // dozing once this long has passed since done
@@ -73,11 +75,11 @@ export function deriveState(
   // after it doesn't make it look "working". The local fact that the chick's own transcript was closed is
   // stronger information than the parent ledger's (possibly stale) signal, so it takes priority
   if (tail.kind === "closed") return "dozing";
-  // Stopped on a question tool for the user. Waiting for a reply regardless of recent writes
-  if (!isChick && tail.kind === "tool_use" && isWaitingTool(tail.toolName)) return "waiting";
-  // A Claude desktop app session that ended its turn asking the user (its wrap_up's ask), with only the closing text
-  // after it: the same fact as a question tool, before any time check or turn verdict
-  if (!isChick && pendingAskOf(tail.events)) return "waiting";
+  // Stopped on a question tool for the user, or a Claude desktop app turn that ended asking the user (its wrap_up's ask,
+  // with only the closing text after it): waiting regardless of recent writes, before any time check or turn verdict.
+  // A proposal card needs the app's records too, so replyWaitOf adds it (docs/design.md "The "?" for sessions waiting
+  // on you")
+  if (!isChick && ((tail.kind === "tool_use" && isWaitingTool(tail.toolName)) || tailWaitOf(tail.events, []))) return "waiting";
   // Chick-only priority check: if the parent ledger has a definite signal, return done/dozing regardless of
   // the tail's appearance (kind) (see the comment above). Checked before the sinceMs < WRITING_MS early return —
   // with a signal, the guess "there was a recent write, so it is working" no longer holds
@@ -167,19 +169,72 @@ export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState 
 }
 
 /**
- * Whether a waiting session waits on the Claude desktop app's wrap_up ask (pendingAskOf), not on a question tool or a
- * permission prompt (Claude Code's own waiting status, liveWaiting). A parent that takes it over can answer that ask
- * (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Watching")
+ * Where a session's wait on the user comes from (docs/design.md "The "?" for sessions waiting on you"):
+ * - claude: Claude Code's own waiting status in sessions/<pid>.json (a permission prompt, an open question)
+ * - question_tool: the transcript ends on a question tool (AskUserQuestion etc.)
+ * - proposal: a Claude desktop app turn that ended leaving proposal cards the user hasn't started
+ * - wrap_up_ask: a Claude desktop app turn that ended on its wrap_up's ask
+ * A parent that takes the session over can answer only wrap_up_ask (parentCanAnswer in lib/turn-verdict.ts): the ask is
+ * the session's report. Only the user can start a card, so a card comes before an ask in the same turn
  */
-export function waitsOnWrapUpAsk(state: BirdState, liveWaiting: boolean, events: TailInfo["events"]): boolean {
-  return state === "waiting" && !liveWaiting && pendingAskOf(events) !== undefined;
+export type ReplyWaitSource = "claude" | "question_tool" | "proposal" | "wrap_up_ask";
+
+/**
+ * The wait a transcript's events end on, from the transcript alone (no Claude Code status): the last event is a
+ * question tool, else the turn's cards not started (given by the caller: unstartedProposals in lib/proposals.ts), else
+ * a pending wrap_up's ask (pendingAskOf). Read by deriveState, replyWaitOf, and deriveSessionEvents at each event
+ */
+export function tailWaitOf(
+  events: readonly TailEvent[],
+  cards: TurnProposals["proposals"],
+): { source: Exclude<ReplyWaitSource, "claude">; question?: string } | undefined {
+  const last = events[events.length - 1];
+  if (last?.kind === "tool_use" && isWaitingTool(last.toolName)) {
+    return { source: "question_tool", question: extractQuestion(last.text) };
+  }
+  const ask = pendingAskOf(events);
+  if (cards.length > 0) return { source: "proposal", question: proposalQuestion(cards) };
+  return ask ? { source: "wrap_up_ask", question: ask.question } : undefined;
+}
+
+/** A session's wait on the user: where it comes from, what it waits on, and the bubble's question */
+export interface ReplyWait {
+  source: ReplyWaitSource;
+  waitingOn?: WaitingOn;
+  question?: string;
+}
+
+/**
+ * A session's wait on the user, the one place its state waiting, waitingOn, wrapUpAsk and question come from
+ * (lib/sessions.ts). tailState: deriveState's; live: its sessions/<pid>.json; cards: the turn's cards not started. Cards
+ * count only once the turn is over (done or dozing, or stopped on its wrap_up's ask). Claude Code's own waiting status
+ * comes first: it is what the user sees in the pane now
+ */
+export function replyWaitOf(
+  events: readonly TailEvent[],
+  tailState: BirdState,
+  live: { status?: string; waitingFor?: string } | undefined,
+  cards: TurnProposals["proposals"],
+): ReplyWait | undefined {
+  const turnOver = tailState === "done" || tailState === "dozing" || (tailState === "waiting" && pendingAskOf(events) !== undefined);
+  const tailWait = tailWaitOf(events, turnOver ? cards : []);
+  if (live?.status === "waiting") {
+    return {
+      source: "claude",
+      waitingOn: waitingOnOf(tailState === "waiting", live.waitingFor),
+      question: tailWait?.source === "proposal" ? undefined : tailWait?.question,
+    };
+  }
+  if (!tailWait) return undefined;
+  const waitingOn: WaitingOn = tailWait.source === "proposal" ? "proposal" : "question";
+  return { ...tailWait, waitingOn };
 }
 
 /** What a waiting session waits on (docs/design.md "Concierge"). onQuestionTool: the transcript ends on a question tool
  * (AskUserQuestion etc.). Otherwise Claude Code's waitingFor in sessions/<pid>.json tells: it writes a question tool's
  * tool_use only after it is answered, and puts "input needed" there while the question (or an MCP input) is open and
  * "permission prompt" (or a sandbox / worker request) while a permission prompt is (read from Claude Code 2.1.309) */
-export function waitingOnOf(onQuestionTool: boolean, waitingFor: string | undefined): "question" | "permission" | undefined {
+export function waitingOnOf(onQuestionTool: boolean, waitingFor: string | undefined): WaitingOn | undefined {
   if (onQuestionTool) return "question";
   if (waitingFor === "input needed") return "question";
   if (waitingFor === "permission prompt" || waitingFor === "sandbox request" || waitingFor === "worker request") {

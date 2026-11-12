@@ -12,7 +12,7 @@ import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
 import { replyWaitSource, TEXT_CONTINUING_EXPIRES_MS, waitsOnDeveloper } from "./turn-verdict";
 import { DOZE_MS } from "./bird-state";
 import type { AiProvider } from "./api-keys";
-import type { SessionEvent, SessionView } from "./session-types";
+import type { SessionEvent, SessionView, WaitingOn } from "./session-types";
 
 /** The concierge's looks the user picks between in settings; the same image in every icon set */
 export const CONCIERGE_LOOKS = ["owl", "penguin"] as const;
@@ -66,7 +66,7 @@ interface PayloadSession {
   needs_reply_source?: "machine" | "verdict";
   /** With needs_reply_source machine: whether the session waits on a question (a question tool) or a permission prompt,
    * when that is known */
-  waiting_on?: "question" | "permission" | "proposal";
+  waiting_on?: WaitingOn;
   seconds_since_last_activity: number;
   line?: string;
   question?: string;
@@ -651,11 +651,10 @@ export function conciergeRetryLogLine(c: ConciergeLogContext, retry: ConciergeRe
 /**
  * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
  * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
- * form to grep. source: machine is a question tool, a permission prompt or a proposal card (waiting_on says which, when
- * known), verdict is
- * the turn verdict asking; verdict
- * is the turn verdict of a stopped turn (asking / not_asking); continuing is the session's continuing (expired when the
- * turn verdict said continuing but it expired, docs/design.md "Turn verdicts"; the payload then says false)
+ * form to grep. source: machine is a question tool, a permission prompt, a wrap_up's ask or a proposal card (waiting_on
+ * says which, when known), verdict is the turn verdict asking; verdict is the turn verdict of a stopped turn (asking /
+ * not_asking); continuing is the session's continuing (expired when the turn verdict said continuing but it expired,
+ * docs/design.md "Turn verdicts"; the payload then says false)
  */
 export function conciergeRequestLogLines(
   c: ConciergeLogContext,

@@ -3,8 +3,8 @@
 import type { RootEntry } from "./settings-store";
 import { silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
 import { basename } from "./paths";
-import { lastWrittenAt, pendingAskOf, pendingProposalsOf, projectLabels } from "./transcript";
-import { proposalQuestion, unstartedProposals } from "./proposals";
+import { lastWrittenAt, pendingProposalsOf, projectLabels } from "./transcript";
+import { unstartedProposals } from "./proposals";
 import type {
   BirdState,
   ChickScan,
@@ -21,8 +21,8 @@ import { feedTurnMessages, turnUserMessages } from "./session-tail";
 import { assignSdkChicks, isSdkSession } from "./session-chicks";
 import { AGENTS, type AgentKind, type ScanListing } from "./agents";
 import { loadAgentProcesses, type AgentProcessScan } from "./agent-processes";
-import { deriveSdkChickState, deriveState, escalateWithChicks, STATE_URGENCY, waitingOnOf, waitsOnWrapUpAsk } from "./bird-state";
-import { extractQuestion, pickSnippet } from "./session-snippet";
+import { deriveSdkChickState, deriveState, escalateWithChicks, replyWaitOf, STATE_URGENCY } from "./bird-state";
+import { pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
 import { cacheEvent, recentEvents, saveEventLogIfDirty } from "./session-event-log";
 import { rememberPeerStates, resolveWatchLinks, type WatchLinks } from "./session-watch";
@@ -199,26 +199,13 @@ function buildViews(
     // becomes "waiting", so treat that as needs reply
     const live = isSdk ? undefined : watch.liveBySessionId.get(sessionIdOfViewId(id));
     const peers = watch.peerLinksOf(sessionIdOfViewId(id));
-    // A desktop app turn that ended leaving a proposal card the user hasn't started waits on them (lib/proposals.ts)
-    const proposals =
-      !isSdk && live?.status !== "waiting" && (tailState === "done" || tailState === "dozing")
-        ? unstartedProposals(
-            pendingProposalsOf(tail.events),
-            peers.map((p) => ({
-              startedAt: p.startedAt,
-              hostSessionId: watch.liveBySessionId.get(p.sessionId)?.hostSessionId,
-              startedBySession: p.viewId !== undefined && watch.startedFromSessionOf(p.viewId),
-            })),
-          )
-        : [];
-    const state: BirdState = live?.status === "waiting" || proposals.length > 0 ? "waiting" : tailState;
-    const waitingOn =
-      proposals.length > 0
-        ? "proposal"
-        : state === "waiting"
-          ? waitingOnOf(tailState === "waiting", live?.waitingFor)
-          : undefined;
-    const wrapUpAsk = waitsOnWrapUpAsk(state, live?.status === "waiting", tail.events);
+    // Where its wait on the user comes from, if it waits: Claude Code's own status, a question tool, proposal cards not
+    // started, or a wrap_up's ask (replyWaitOf in lib/bird-state.ts; docs/design.md "The "?" for sessions waiting on you")
+    const cards = isSdk ? [] : unstartedProposals(pendingProposalsOf(tail.events), live?.hostSessionId, watch.startedCards);
+    const wait = isSdk ? undefined : replyWaitOf(tail.events, tailState, live, cards);
+    const state: BirdState = wait ? "waiting" : tailState;
+    const waitingOn = wait?.waitingOn;
+    const wrapUpAsk = wait?.source === "wrap_up_ask";
     // The display state is escalated to a chick's urgency while the chick is running (anything but done/dozing)
     const displayState = escalateWithChicks(state, chickViews);
     // Always attach the latest user message snippet ("what this session was asked to do" is the main info).
@@ -236,13 +223,8 @@ function buildViews(
       last.text
         ? { at: last.at, text: last.text }
         : undefined;
-    // The question tool's question, or the desktop app's wrap_up's ask
-    const question =
-      displayState !== "waiting"
-        ? undefined
-        : proposals.length > 0
-          ? proposalQuestion(proposals)
-          : (pendingAskOf(tail.events)?.question ?? (last?.kind === "tool_use" ? extractQuestion(last.text) : undefined));
+    // The question tool's question, the desktop app's wrap_up's ask, or the titles of the cards not started
+    const question = displayState === "waiting" ? wait?.question : undefined;
     feedTurnMessages(id, tail.events);
     // The messages of the stopped turn go with its turn verdict (docs/design.md "Turn verdicts")
     const userMessages = reply ? turnUserMessages(id, reply.at) : undefined;

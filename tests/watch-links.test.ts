@@ -115,6 +115,36 @@ describe("peer traces in a transcript", () => {
   }
 });
 
+describe("the starter's notes folder links only from the first prompt", () => {
+  const firstByApp = { type: "user", timestamp: T, turnOrigin: "sdk", message: { content: `notes: /a/side-session-notes/${CHILD_OF_TOP}` } };
+  const laterNotice = {
+    type: "user",
+    timestamp: T,
+    turnOrigin: "sdk",
+    message: { content: `<side-sessions-event>notes are in /a/side-session-notes/${TOP}</side-sessions-event>` },
+  };
+  const typedFirst = { type: "user", timestamp: T, turnOrigin: "human", message: { content: "直して" } };
+  const scenes: [string, object[], string[]][] = [
+    ["a later notice naming another folder doesn't link (the first prompt's does)", [firstByApp, laterNotice], [CHILD_OF_TOP]],
+    ["a session the user started: a later notice naming a folder doesn't link", [typedFirst, laterNotice], []],
+    [
+      "a meta line before the first prompt isn't the first prompt",
+      [{ type: "user", isMeta: true, timestamp: T, message: { content: "x" } }, firstByApp],
+      [CHILD_OF_TOP],
+    ],
+    [
+      "the id is local_ and hex digits and - only (as in src-tauri)",
+      [{ ...firstByApp, message: { content: "notes: /a/side-session-notes/local_0a1b2c3dzz/x" } }],
+      ["local_0a1b2c3d"],
+    ],
+  ];
+  for (const [scene, lines, want] of scenes) {
+    test(scene, async () => {
+      expect([...(await readTail(fileOf(lines))).peerNames.keys()]).toEqual(want);
+    });
+  }
+});
+
 describe("matching a trace to a running session", () => {
   const live: LiveSession[] = [
     { pid: 1, sessionId: "parent", name: "子セッションの完了読み上げ・提案を止める", hostSessionId: "local_8850b4ff-ddab-4a58-a0ef-7f81c7313d90" },

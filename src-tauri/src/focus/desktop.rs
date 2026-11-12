@@ -108,6 +108,74 @@ pub(super) fn find_local_id(dir: &Path, session_id: &str) -> Option<String> {
     None
 }
 
+/// A record of a session another session started: whose `local_<id>` started it (`spawnedFrom.sessionId`) and, for one
+/// started from a proposal card or by start_session, the task id it came from (`spawnedFrom.taskId`)
+#[derive(serde::Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Spawned {
+    pub(crate) parent: String,
+    pub(crate) task_id: String,
+}
+
+/// The records, two folders under dir, of sessions that the given sessions started and that were written at or after
+/// since (epoch ms; a session started from a card has its record written when the user starts it). None when dir
+/// can't be read (docs/design.md "The "?" for sessions waiting on you")
+pub(crate) fn spawned_from(dir: &Path, parents: &[String], since_ms: u64) -> Option<Vec<Spawned>> {
+    let since = std::time::UNIX_EPOCH + std::time::Duration::from_millis(since_ms);
+    let mut found = Vec::new();
+    for a in std::fs::read_dir(dir).ok()?.flatten() {
+        let Ok(b_items) = std::fs::read_dir(a.path()) else { continue };
+        for b in b_items.flatten() {
+            let Ok(files) = std::fs::read_dir(b.path()) else { continue };
+            for file in files.flatten() {
+                let name = file.file_name();
+                let name = name.to_string_lossy();
+                if !name.starts_with("local_") || !name.ends_with(".json") {
+                    continue;
+                }
+                if file.metadata().and_then(|m| m.modified()).map_or(true, |m| m < since) {
+                    continue;
+                }
+                let Ok(text) = std::fs::read_to_string(file.path()) else { continue };
+                // Most records are of other sessions: parse only one that names a parent
+                if !parents.iter().any(|p| text.contains(p.as_str())) {
+                    continue;
+                }
+                let Ok(record) = serde_json::from_str::<serde_json::Value>(&text) else { continue };
+                let parent = record.pointer("/spawnedFrom/sessionId").and_then(|v| v.as_str());
+                let task_id = record.pointer("/spawnedFrom/taskId").and_then(|v| v.as_str());
+                if let (Some(parent), Some(task_id)) = (parent, task_id) {
+                    if parents.iter().any(|p| p == parent) {
+                        found.push(Spawned { parent: parent.to_string(), task_id: task_id.to_string() });
+                    }
+                }
+            }
+        }
+    }
+    Some(found)
+}
+
+#[derive(serde::Serialize)]
+pub(crate) struct SpawnedScan {
+    spawned: Vec<Spawned>,
+    /// false when the desktop app's records can't be read (no data folder, or not there)
+    reliable: bool,
+}
+
+/// The proposal cards of the given sessions (their `local_<id>`) that the user started: the records of the sessions
+/// started from them, written at or after since (epoch ms)
+#[tauri::command]
+pub(crate) async fn desktop_spawned_from(parents: Vec<String>, since_ms: u64) -> SpawnedScan {
+    tauri::async_runtime::spawn_blocking(move || {
+        match sessions_dir().and_then(|dir| spawned_from(&dir, &parents, since_ms)) {
+            Some(spawned) => SpawnedScan { spawned, reliable: true },
+            None => SpawnedScan { spawned: Vec::new(), reliable: false },
+        }
+    })
+    .await
+    .unwrap_or(SpawnedScan { spawned: Vec::new(), reliable: false })
+}
+
 /// Opens the Claude Code session in the desktop app when it is one of the app's: Pane when opened, None when it isn't
 /// a desktop session (the caller then jumps to its terminal pane as before)
 #[tauri::command]
@@ -191,6 +259,33 @@ mod tests {
     #[test]
     fn the_link_is_the_apps_own() {
         assert_eq!(session_url("local_5d22a81d"), "claude://claude.ai/epitaxy/local_5d22a81d");
+    }
+
+    #[test]
+    fn the_cards_a_session_proposed_that_were_started() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-desktop-spawned-test-{}", std::process::id()));
+        let deep = dir.join("org").join("account");
+        std::fs::create_dir_all(&deep).unwrap();
+        const P: &str = "local_0a1b2c3d-0000-4000-8000-000000000001";
+        const OTHER: &str = "local_0a1b2c3d-0000-4000-8000-000000000009";
+        let write = |name: &str, body: &str| std::fs::write(deep.join(name), body).unwrap();
+        // Started from P's card task_1
+        write("local_c1.json", &format!(r#"{{"sessionId":"local_c1","spawnedFrom":{{"sessionId":"{P}","taskId":"task_1","sideSession":true}}}}"#));
+        // Started by another session
+        write("local_c2.json", &format!(r#"{{"sessionId":"local_c2","spawnedFrom":{{"sessionId":"{OTHER}","taskId":"task_2"}}}}"#));
+        // Started by another session; its title only mentions P
+        write("local_c5.json", &format!(r#"{{"sessionId":"local_c5","title":"after {P}","spawnedFrom":{{"sessionId":"{OTHER}","taskId":"task_5"}}}}"#));
+        // The user started it; it only mentions P
+        write("local_c3.json", &format!(r#"{{"sessionId":"local_c3","title":"about {P}"}}"#));
+        // Half written
+        write("local_c4.json", &format!(r#"{{"sessionId":"local_c4","spawnedFrom":{{"sessionId":"{P}""#));
+        let got = spawned_from(&dir, &[P.to_string()], 0).unwrap();
+        // Written before since: not read
+        let later = spawned_from(&dir, &[P.to_string()], u64::MAX / 2).unwrap();
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert_eq!(got, vec![Spawned { parent: P.into(), task_id: "task_1".into() }]);
+        assert_eq!(later, vec![]);
+        assert_eq!(spawned_from(Path::new("/nonexistent-tomarigi"), &[P.to_string()], 0), None);
     }
 
     #[test]

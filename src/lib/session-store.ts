@@ -135,3 +135,7 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   for (const key of firstPromptCache.keys()) if (!liveIds.has(key)) firstPromptCache.delete(key);
   for (const key of latestTurnTypedIds) if (!liveIds.has(key)) latestTurnTypedIds.delete(key);
 }
+
+// The Claude desktop app proposal cards the user started (cardKey in lib/proposals.ts), read from the app's records
+// (readStartedCards in lib/session-watch.ts). A started card stays started
+export const startedCardCache = new Set<string>();

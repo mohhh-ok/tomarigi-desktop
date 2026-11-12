@@ -98,14 +98,13 @@ export interface TailEvent {
 /**
  * What one line says about the desktop app's session proposals (cards the user starts with a click):
  * - proposed: a start_session result `Proposed "<title>" (task_id: task_…)`, a card now shown (only an own_initiative
- *   proposal ends so; an offer waits for the user's answer within the call)
- * - started: the ids of sessions a start_session result says it started (`Started session "…" (session_id: local_…`)
+ *   proposal ends so; an offer waits for the user's answer within the call). Only the result of a start_session call
+ *   (matched by tool_use_id): the same text in another tool's result (a file read, a command's output) is no card
  * - settled: proposals withdrawn (dismiss_task's task_id) or started by the session itself (start_session's
  *   proposal_id)
  */
 export interface ProposalTrace {
   proposed?: { taskId: string; title?: string }[];
-  started?: string[];
   settled?: string[];
 }
 
@@ -141,6 +140,7 @@ interface Block {
   type?: string;
   name?: string;
   text?: string;
+  id?: string; // id of a tool_use block (a tool_result names it in tool_use_id)
   input?: unknown; // Input of a tool_use block (used by summarizeToolInput to build the input summary)
   tool_use_id?: string; // id of the tool_use a tool_result block answers. Used to match chick completion signals
 }
@@ -223,6 +223,7 @@ export async function readTail(
 export async function readEventsInRange(file: NativeFile, start: number, end: number): Promise<TailEvent[]> {
   const text = await file.slice(start, end).text();
   const events: TailEvent[] = [];
+  const startSessionCalls = new Set<string>();
   for (const line of text.split("\n")) {
     if (!line.trim()) continue;
     let entry: TranscriptEntry;
@@ -232,7 +233,7 @@ export async function readEventsInRange(file: NativeFile, start: number, end: nu
       continue;
     }
     const at = parseTimestamp(entry.timestamp);
-    const next = classify(entry, false);
+    const next = classify(entry, false, startSessionCalls);
     if (!next || at === null) continue;
     events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine, ...(next.ask && { ask: next.ask }) });
   }
@@ -313,6 +314,9 @@ async function readWindow(
   const chickSignals = new Map<string, number>();
   const backgroundTaskStarts = new Map<string, number>();
   const peerNames = new Map<string, number>();
+  // The first prompt is seen only when the window starts at the top of the file
+  let lookingForFirst = !truncated;
+  const startSessionCalls = new Set<string>();
   for (const line of lines) {
     if (!line.trim()) continue;
     let entry: TranscriptEntry;
@@ -320,6 +324,12 @@ async function readWindow(
       entry = JSON.parse(line);
     } catch {
       continue;
+    }
+    if (lookingForFirst && isFirstPromptCandidate(entry)) {
+      lookingForFirst = false;
+      const starter = firstPromptStarterOf(entry);
+      const firstAt = parseTimestamp(entry.timestamp);
+      if (starter && firstAt !== null) peerNames.set(starter, Math.max(peerNames.get(starter) ?? 0, firstAt));
     }
     // Lines without cwd (summary etc.) are mixed in, so update with the last value found regardless of
     // whether classification succeeds
@@ -355,7 +365,7 @@ async function readWindow(
     if (entry.type === "continued-in" && typeof entry.continuedInSessionId === "string") {
       continuedIn = entry.continuedInSessionId;
     }
-    const next = classify(entry, includeSidechain);
+    const next = classify(entry, includeSidechain, startSessionCalls);
     if (!next) continue;
     continuedIn = undefined;
     kind = next.kind;
@@ -397,6 +407,39 @@ const NOTES_FOLDER_ID = /side-session-notes\/(local_[0-9a-fA-F-]+)/;
 
 function hostSessionIdOf(value: unknown): string | undefined {
   return typeof value === "string" && HOST_SESSION_ID.test(value) ? value : undefined;
+}
+
+/** The text of a message's content: a string, or its text blocks joined by newlines (message_text in src-tauri) */
+function messageText(content: unknown): string {
+  return typeof content === "string" ? content : asBlocks(content).map((b) => b.text ?? "").join("\n");
+}
+
+/** The text of a tool_result block's content */
+function toolResultText(block: Block): string {
+  return messageText((block as { content?: unknown }).content);
+}
+
+/**
+ * Whether a prompt's turnOrigin says the app wrote it, not the user: anything but "human" (the desktop app's "sdk" /
+ * "host_synthetic", another session's "peer", ...). Same rule as written_by_app in src-tauri
+ */
+export function writtenByApp(turnOrigin: unknown): boolean {
+  return typeof turnOrigin === "string" && turnOrigin !== "human";
+}
+
+/**
+ * The starter's id the desktop app names in the first prompt of a session another session started: its shared notes
+ * folder, `…/side-session-notes/local_…` (docs/design.md "Watching"). Only for the transcript's first prompt (a user
+ * line that isn't meta or a subagent's), and only when the app wrote it: a later notice may quote another folder
+ */
+function firstPromptStarterOf(entry: TranscriptEntry): string | undefined {
+  if (!writtenByApp(entry.turnOrigin)) return undefined;
+  return messageText(entry.message?.content).match(NOTES_FOLDER_ID)?.[1];
+}
+
+/** Whether a line is the kind the first prompt is: a user line, not meta, not a subagent's (as scan_peer_names) */
+function isFirstPromptCandidate(entry: TranscriptEntry): boolean {
+  return entry.type === "user" && entry.isMeta !== true && entry.isSidechain !== true && typeof entry.timestamp === "string";
 }
 
 /** Drops the display " [ref]" from a SendMessage recipient name (the ListAgents format; SendMessage in the docs) */
@@ -442,29 +485,14 @@ function collectPeerNames(entry: TranscriptEntry): string[] {
       const from = hostSessionIdOf(entry.origin.from);
       if (from) names.push(from);
     } else {
-      const content = entry.message?.content;
-      const text = typeof content === "string" ? content : asBlocks(content).map((b) => b.text ?? "").join("\n");
-      for (const m of text.matchAll(CROSS_SESSION_FROM_NAME)) names.push(m[1]);
+      for (const m of messageText(entry.message?.content).matchAll(CROSS_SESSION_FROM_NAME)) names.push(m[1]);
     }
   } else if (entry.type === "user") {
-    // A prompt the desktop app wrote for a session another session started names the starter's shared notes folder,
-    // `side-session-notes/<its local_… id>` (a session started from a proposal card has no other trace of its starter)
-    if (typeof entry.turnOrigin === "string" && entry.turnOrigin !== "human") {
-      const content = entry.message?.content;
-      const text = typeof content === "string" ? content : asBlocks(content).map((b) => b.text ?? "").join("\n");
-      const id = text.match(NOTES_FOLDER_ID)?.[1];
-      if (id) names.push(id);
-    }
     // The tool result that started a desktop app session carries its id in the text
     for (const block of asBlocks(entry.message?.content)) {
       if (block.type !== "tool_result") continue;
-      const content = (block as { content?: unknown }).content;
-      const texts =
-        typeof content === "string" ? [content] : asBlocks(content).map((b) => b.text ?? "");
-      for (const text of texts) {
-        const id = text.match(STARTED_SESSION_ID)?.[1];
-        if (id) names.push(id);
-      }
+      const id = toolResultText(block).match(STARTED_SESSION_ID)?.[1];
+      if (id) names.push(id);
     }
   }
   return names;
@@ -525,6 +553,11 @@ interface Classified {
   proposal?: ProposalTrace;
 }
 
+/** A text shown on one line (a wrap_up's ask, a card's title): whitespace folded, first TEXT_FIELD_LIMIT characters */
+function oneLine(text: string): string {
+  return text.replace(/\s+/g, " ").trim().slice(0, TEXT_FIELD_LIMIT);
+}
+
 /** The tool with which a Claude desktop app session ends its turn: the app shows its `recap`, and its `ask` (the one
     question it leaves the user, with buttons) in a box; `blocked` says the work stops until the user answers */
 export const DESKTOP_WRAP_UP_TOOL = "mcp__ccd_turn__wrap_up";
@@ -537,7 +570,7 @@ export const DESKTOP_WRAP_UP_TOOL = "mcp__ccd_turn__wrap_up";
 export function desktopAskOf(toolName: string | undefined, input: unknown): { question?: string } | undefined {
   if (toolName !== DESKTOP_WRAP_UP_TOOL || typeof input !== "object" || input === null) return undefined;
   const { ask, blocked } = input as { ask?: unknown; blocked?: unknown };
-  const question = typeof ask === "string" ? ask.replace(/\s+/g, " ").trim().slice(0, TEXT_FIELD_LIMIT) : "";
+  const question = typeof ask === "string" ? oneLine(ask) : "";
   if (!question && blocked !== true) return undefined;
   return question ? { question } : {};
 }
@@ -573,35 +606,27 @@ function settledProposalOf(toolName: string | undefined, input: unknown): string
   return [];
 }
 
-/** What the tool results in one line say about proposals (ProposalTrace's proposed and started) */
-function proposalResultsOf(blocks: Block[]): ProposalTrace | undefined {
+/** The proposal cards the start_session results in one line show (ProposalTrace's proposed) */
+function proposalResultsOf(blocks: Block[], startSessionCalls: ReadonlySet<string>): ProposalTrace | undefined {
   const proposed: { taskId: string; title?: string }[] = [];
-  const started: string[] = [];
   for (const block of blocks) {
-    if (block.type !== "tool_result") continue;
-    const content = (block as { content?: unknown }).content;
-    const texts = typeof content === "string" ? [content] : asBlocks(content).map((b) => b.text ?? "");
-    for (const text of texts) {
-      const card = text.match(PROPOSED_CARD);
-      if (card) proposed.push({ taskId: card[2], ...(card[1] && { title: card[1].slice(0, TEXT_FIELD_LIMIT) }) });
-      const id = text.match(STARTED_SESSION_ID)?.[1];
-      if (id) started.push(id);
-    }
+    if (block.type !== "tool_result" || !block.tool_use_id || !startSessionCalls.has(block.tool_use_id)) continue;
+    const card = toolResultText(block).match(PROPOSED_CARD);
+    if (!card) continue;
+    const title = oneLine(card[1]);
+    proposed.push({ taskId: card[2], ...(title && { title }) });
   }
-  if (proposed.length === 0 && started.length === 0) return undefined;
-  return { ...(proposed.length > 0 && { proposed }), ...(started.length > 0 && { started }) };
+  return proposed.length > 0 ? { proposed } : undefined;
 }
 
 /** The desktop app's proposal cards the last turn left, not yet settled within it (pendingProposalsOf) */
 export interface TurnProposals {
   proposals: { taskId: string; title?: string; at: number }[];
-  /** The ids of sessions the turn's start_session calls started (they aren't from a card) */
-  startedHostIds: string[];
 }
 
 /**
  * The proposal cards (docs/design.md "The "?" for sessions waiting on you") the last turn made and didn't withdraw or
- * start itself, with the sessions it started. A turn starts at a prompt (kind user, from the user or anything else) or
+ * start itself. A turn starts at a prompt (kind user, from the user or anything else) or
  * a closing; only what came after the last one counts. undefined when it left none
  */
 export function pendingProposalsOf(events: readonly TailEvent[]): TurnProposals | undefined {
@@ -613,22 +638,25 @@ export function pendingProposalsOf(events: readonly TailEvent[]): TurnProposals 
     }
   }
   const proposals: TurnProposals["proposals"] = [];
-  const startedHostIds: string[] = [];
   for (const e of events.slice(turnStart)) {
     for (const p of e.proposal?.proposed ?? []) proposals.push({ ...p, at: e.at });
-    startedHostIds.push(...(e.proposal?.started ?? []));
     for (const taskId of e.proposal?.settled ?? []) {
       const i = proposals.findIndex((p) => p.taskId === taskId);
       if (i >= 0) proposals.splice(i, 1);
     }
   }
-  return proposals.length > 0 ? { proposals, startedHostIds } : undefined;
+  return proposals.length > 0 ? { proposals } : undefined;
 }
 
-function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified | null {
+/**
+ * startSessionCalls: the ids of the start_session calls seen so far in the read, so that only their results are read
+ * as proposal cards (classify adds to it)
+ */
+function classify(entry: TranscriptEntry, includeSidechain: boolean, startSessionCalls: Set<string>): Classified | null {
   if (entry.isSidechain && !includeSidechain) return null; // Subagent lines are not used for the main line's state
   if (entry.type === "assistant") {
     const blocks = asBlocks(entry.message?.content);
+    for (const b of blocks) if (b.type === "tool_use" && b.name === START_SESSION_TOOL && b.id) startSessionCalls.add(b.id);
     const toolUse = blocks.findLast((b) => b.type === "tool_use");
     if (toolUse) {
       // Sending input as is can get large, so trim to the first 500 chars (this just reuses the text
@@ -654,7 +682,7 @@ function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified
     }
     const blocks = asBlocks(entry.message?.content);
     if (blocks.some((b) => b.type === "tool_result")) {
-      const proposal = proposalResultsOf(blocks);
+      const proposal = proposalResultsOf(blocks, startSessionCalls);
       return proposal ? { kind: "tool_result", proposal } : { kind: "tool_result" };
     }
     if (entry.isMeta) return null;

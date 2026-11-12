@@ -2,7 +2,7 @@
 import { pendingProposalsOf, type TailInfo } from "./transcript";
 import type { BackgroundTask, ChickView, SessionEvent } from "./session-types";
 import { backgroundTaskCache } from "./session-store";
-import { isWaitingTool } from "./bird-state";
+import { isWaitingTool, tailWaitOf } from "./bird-state";
 import { formatSnippet } from "./session-snippet";
 
 const CHICK_ABANDONED_MS = 10 * 60_000; // a chick stuck in working with no writes for longer than this is treated as abandoned and not used to suppress done (threshold for abandoned chicks)
@@ -63,9 +63,9 @@ export function deriveSessionEvents(
       const next = events[i + 1];
       if (!next || (next.kind !== "tool_use" && next.kind !== "tool_result")) {
         // A desktop app turn that ends leaving a proposal card waits on the user to start it: a needs reply, like a
-        // question tool, not a done (lib/proposals.ts). Whether a card was started later isn't in the tail; the event
-        // stays as history, like an answered question
-        if (pendingProposalsOf(events.slice(0, i + 1))) {
+        // question tool, not a done (tailWaitOf in lib/bird-state.ts). Whether a card was started later isn't in the
+        // tail; the event stays as history, like an answered question
+        if (turnWaitAt(events, i)?.source === "proposal") {
           result.push(mkSessionEvent(sessionId, project, "waiting", event.at, lastPrompt ?? snippet));
           continue;
         }
@@ -87,12 +87,19 @@ export function deriveSessionEvents(
       }
     } else if (event.kind === "tool_use" && (isWaitingTool(event.toolName) || event.ask)) {
       const waiting = mkSessionEvent(sessionId, project, "waiting", event.at, lastPrompt ?? snippet);
-      // A question tool waits on the user; a wrap_up's ask is also the session's report, so a parent can answer it
-      result.push(!isWaitingTool(event.toolName) && event.ask ? { ...waiting, wrapUpAsk: true } : waiting);
+      // A question tool waits on the user; a wrap_up's ask is also the session's report, so a parent can answer it. A
+      // card left in the same turn comes first: only the user can start it
+      result.push(turnWaitAt(events, i)?.source === "wrap_up_ask" ? { ...waiting, wrapUpAsk: true } : waiting);
       if (event.ask) asked = true;
     }
   }
   return result;
+}
+
+/** The wait the events up to i end on, by the transcript alone: the cards of that turn count as not started */
+function turnWaitAt(events: TailInfo["events"], i: number): ReturnType<typeof tailWaitOf> {
+  const upTo = events.slice(0, i + 1);
+  return tailWaitOf(upTo, pendingProposalsOf(upTo)?.proposals ?? []);
 }
 
 /** Adds the starts and completions seen in the parent tail to backgroundTaskCache and returns that session's ledger */

@@ -48,6 +48,10 @@ let psFails = false;
 const openCodeDbs = new Map<string, { sessions: object[]; tails: Map<string, object[]> }>();
 // scan_peer_names answers by transcript path (the Rust command is tested in src-tauri); the rest get no traces
 const peerScans = new Map<string, object>();
+// The desktop app's records of sessions started from proposal cards, as desktop_spawned_from returns them (the Rust
+// command is tested in src-tauri); spawnedUnreadable stands for records that can't be read
+const spawnedRecords: { parent: string; taskId: string }[] = [];
+let spawnedUnreadable = false;
 
 mock.module("@tauri-apps/api/core", () => ({
   invoke: async (cmd: string, args: Record<string, never>) => {
@@ -131,6 +135,9 @@ mock.module("@tauri-apps/api/core", () => ({
         return openCodeDbs.get(args.dbPath)?.tails.get(args.sessionId) ?? null;
       case "scan_peer_names":
         return peerScans.get(args.path) ?? { names: [], end: 0 };
+      case "desktop_spawned_from":
+        if (spawnedUnreadable) return { spawned: [], reliable: false };
+        return { spawned: spawnedRecords.filter((r) => (args.parents as string[]).includes(r.parent)), reliable: true };
       case "log":
         return;
       case "focus_pid":
@@ -153,6 +160,7 @@ const { NativeDirectoryHandle } = await import("../src/lib/native-fs.ts");
 const { scanSessions, jumpPidOf } = await import("../src/lib/sessions.ts");
 const { focusTargetOf, focusSession } = await import("../src/lib/terminal-focus.ts");
 const { cursorProjectSlug } = await import("../src/lib/cursor-transcript.ts");
+const { startedCardCache } = await import("../src/lib/session-store.ts");
 type Roots = Parameters<typeof scanSessions>[0];
 
 const base = fs.mkdtempSync(path.join(os.tmpdir(), "tomarigi-test-"));
@@ -395,98 +403,118 @@ describe("Claude Code liveness reads", () => {
 });
 
 describe("a Claude desktop app session that leaves a proposal card", () => {
-  // The reported scene: the parent proposed a session as a card and ended on 「始めてください」 (docs/design.md "The "?" for
-  // sessions waiting on you"). It waits on the user until the session started from the card links to it
+  // The reported scene: the parent proposed a session as a card and ended asking the user to start it (docs/design.md "The "?"
+  // for sessions waiting on you"). It waits on the user until the desktop app's record of a session says it came from
+  // that card, and that stays after the session ends and after this app restarts
   const PARENT_HOST = "local_0a1b2c3d-0000-4000-8000-000000000001";
   const CHILD_HOST = "local_0a1b2c3d-0000-4000-8000-000000000002";
   const TITLE = "検索結果に画像を出す";
+  let scene = 0;
 
-  test("it needs a reply until the session started from the card links to it", async () => {
-    const config = path.join(base, "proposal");
-    const proj = path.join(config, "projects", "-tmp-proposal");
+  /** A parent whose last turn left the card task_id; returns how to scan it and how to start a child from the card */
+  function parentWithCard(taskId: string) {
+    const name = `proposal-${++scene}`;
+    const config = path.join(base, name);
+    const proj = path.join(config, "projects", `-tmp-${name}`);
     fs.mkdirSync(proj, { recursive: true });
-    const parentId = "99999999-0000-4000-8000-000000000001";
-    const childId = "99999999-0000-4000-8000-000000000002";
+    const parentId = `99999999-0000-4000-8000-${String(scene * 2).padStart(12, "0")}`;
+    const childId = `99999999-0000-4000-8000-${String(scene * 2 + 1).padStart(12, "0")}`;
     const parentFile = path.join(proj, `${parentId}.jsonl`);
+    const at = (msAgo: number, o: object) => line({ timestamp: iso(msAgo), cwd: `/tmp/${name}`, ...o });
     fs.writeFileSync(
       parentFile,
-      line({ type: "user", timestamp: iso(3 * MIN), cwd: "/tmp/proposal", turnOrigin: "human", message: { content: "直して" } }) +
-        line({
+      at(3 * MIN, { type: "user", turnOrigin: "human", message: { content: "直して" } }) +
+        at(2 * MIN + 10_000, {
           type: "assistant",
-          timestamp: iso(2 * MIN + 10_000),
-          cwd: "/tmp/proposal",
           message: { content: [{ type: "tool_use", id: "t1", name: "mcp__ccd_session__start_session", input: { initiation: "own_initiative", title: TITLE } }] },
         }) +
-        line({
+        at(2 * MIN + 9_000, {
           type: "user",
-          timestamp: iso(2 * MIN + 9_000),
-          cwd: "/tmp/proposal",
-          message: { content: [{ type: "tool_result", tool_use_id: "t1", content: [{ type: "text", text: `Proposed "${TITLE}" (task_id: task_0000aaaa). The user sees a card` }] }] },
+          message: { content: [{ type: "tool_result", tool_use_id: "t1", content: [{ type: "text", text: `Proposed "${TITLE}" (task_id: ${taskId}). The user sees a card` }] }] },
         }) +
-        line({ type: "assistant", timestamp: iso(2 * MIN), cwd: "/tmp/proposal", message: { content: [{ type: "text", text: "カードを出しているので、始めてください。" }] } }),
+        at(2 * MIN, { type: "assistant", message: { content: [{ type: "text", text: "カードを出しました。押してください。" }] } }),
     );
     const parentLive = { pid: 1, sessionId: parentId, status: "idle", hostSessionId: PARENT_HOST, startedAt: Date.now() - 60 * MIN };
     liveOverride.set(config, { sessions: [parentLive], reliable: true });
-    const roots = [rootOf("proposal", "claude", path.join(config, "projects"))];
-    const parentView = (r: Awaited<ReturnType<typeof scanSessions>>) => r.views.find((v) => v.id.endsWith(`${parentId}.jsonl`));
+    const roots = [rootOf(name, "claude", path.join(config, "projects"))];
+    const scan = async () => {
+      const r = await scanSessions(roots);
+      return { parent: r.views.find((v) => v.id.endsWith(`${parentId}.jsonl`)), child: r.views.find((v) => v.id.endsWith(`${childId}.jsonl`)) };
+    };
+    /** The user starts the card: the app writes the child's record and its first prompt naming the parent's notes folder */
+    const startChild = (fromTask: string) => {
+      spawnedRecords.push({ parent: PARENT_HOST, taskId: fromTask });
+      const childFile = path.join(proj, `${childId}.jsonl`);
+      fs.writeFileSync(
+        childFile,
+        at(0, {
+          type: "user",
+          turnOrigin: "host_synthetic",
+          message: { content: `Shared notes folder for this group of sessions: /Users/x/Library/Application Support/Claude/side-session-notes/${PARENT_HOST}` },
+        }),
+      );
+      peerScans.set(childFile, { names: [], firstPrompt: { turnOrigin: "host_synthetic", namedAtLaunch: false, at: iso(0) }, end: 0 });
+      const childLive = { pid: 2, sessionId: childId, status: "busy", hostSessionId: CHILD_HOST, startedAt: Date.now() - 1_000 };
+      liveOverride.set(config, { sessions: [parentLive, childLive], reliable: true });
+    };
+    const childEnds = () => liveOverride.set(config, { sessions: [parentLive], reliable: true });
+    const nextTurn = () =>
+      fs.appendFileSync(
+        parentFile,
+        at(60_000, { type: "user", turnOrigin: "human", message: { content: "ここでやって" } }) +
+          at(30_000, { type: "assistant", message: { content: [{ type: "text", text: "ここで進めました。" }] } }),
+      );
+    return { scan, startChild, childEnds, nextTurn, childId };
+  }
 
-    const waiting = parentView(await scanSessions(roots));
+  test("it needs a reply until a session started from the card; that stays after the session ends and a restart", async () => {
+    const p = parentWithCard("task_0000aaaa");
+    const waiting = (await p.scan()).parent;
     expect(waiting?.state).toBe("waiting");
     expect(waiting?.waitingOn).toBe("proposal");
     expect(waiting?.question).toBe(TITLE);
 
-    // The user starts the card: the app writes the child's first prompt naming the parent's notes folder
-    const childFile = path.join(proj, `${childId}.jsonl`);
-    fs.writeFileSync(
-      childFile,
-      line({
-        type: "user",
-        timestamp: iso(0),
-        cwd: "/tmp/proposal",
-        turnOrigin: "host_synthetic",
-        message: { content: `Shared notes folder for this group of sessions: /Users/x/Library/Application Support/Claude/side-session-notes/${PARENT_HOST}` },
-      }),
-    );
-    peerScans.set(childFile, { names: [], firstPrompt: { turnOrigin: "host_synthetic", namedAtLaunch: false, at: iso(0) }, end: 0 });
-    const childLive = { pid: 2, sessionId: childId, status: "busy", hostSessionId: CHILD_HOST, startedAt: Date.now() - 1_000 };
-    liveOverride.set(config, { sessions: [parentLive, childLive], reliable: true });
+    p.startChild("task_0000aaaa");
+    const started = await p.scan();
+    expect(started.parent?.state).toBe("done");
+    expect(started.parent?.waitingOn).toBeUndefined();
+    // The child is linked from its first prompt and taken over by its parent from its start
+    expect(started.parent?.peers?.map((x) => x.sessionId)).toEqual([p.childId]);
+    expect(started.child?.parentTakesOver).toBe(true);
 
-    const started = await scanSessions(roots);
-    const parent = parentView(started);
-    expect(parent?.state).toBe("done");
-    expect(parent?.waitingOn).toBeUndefined();
-    expect(parent?.peers?.map((p) => p.sessionId)).toEqual([childId]);
-    // The child started from the card is taken over by its parent from its start
-    expect(started.views.find((v) => v.id.endsWith(`${childId}.jsonl`))?.parentTakesOver).toBe(true);
+    // The child's process ends: the link is gone, the card stays started
+    p.childEnds();
+    // Its bird leaves after MISSES_TO_END (2) reads without it
+    await p.scan();
+    const ended = (await p.scan()).parent;
+    expect(ended?.peers).toBeUndefined();
+    expect(ended?.state).toBe("done");
+
+    // This app restarts: what it remembered is gone, the app's record is still there
+    startedCardCache.clear();
+    expect((await p.scan()).parent?.state).toBe("done");
   });
 
-  test("the next turn ends the wait even before a session from the card links", async () => {
-    const config = path.join(base, "proposal-next");
-    const proj = path.join(config, "projects", "-tmp-proposal-next");
-    fs.mkdirSync(proj, { recursive: true });
-    const parentId = "99999999-0000-4000-8000-000000000003";
-    const parentFile = path.join(proj, `${parentId}.jsonl`);
-    const at = (msAgo: number, o: object) => line({ timestamp: iso(msAgo), cwd: "/tmp/proposal-next", ...o });
-    fs.writeFileSync(
-      parentFile,
-      at(3 * MIN, { type: "user", turnOrigin: "human", message: { content: "直して" } }) +
-        at(2 * MIN + 10_000, { type: "assistant", message: { content: [{ type: "tool_use", id: "t1", name: "mcp__ccd_session__start_session", input: { initiation: "own_initiative", title: TITLE } }] } }) +
-        at(2 * MIN + 9_000, { type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", content: `Proposed "${TITLE}" (task_id: task_0000bbbb).` }] } }) +
-        at(2 * MIN, { type: "assistant", message: { content: [{ type: "text", text: "カードを出しているので、始めてください。" }] } }),
-    );
-    liveOverride.set(config, { sessions: [{ pid: 3, sessionId: parentId, status: "idle", hostSessionId: PARENT_HOST, startedAt: Date.now() - 60 * MIN }], reliable: true });
-    const roots = [rootOf("proposal-next", "claude", path.join(config, "projects"))];
-    expect((await scanSessions(roots)).views[0]?.waitingOn).toBe("proposal");
+  test("a session from another card, or linked without a record, doesn't start it", async () => {
+    const p = parentWithCard("task_0000bbbb");
+    p.startChild("task_0000cccc");
+    const r = await p.scan();
+    expect(r.parent?.peers?.map((x) => x.sessionId)).toEqual([p.childId]);
+    expect(r.parent?.waitingOn).toBe("proposal");
+  });
 
-    // The user answers in the parent instead (the app tells it there whether the card was started)
-    fs.appendFileSync(
-      parentFile,
-      at(60_000, { type: "user", turnOrigin: "human", message: { content: "やっぱりここでやって" } }) +
-        at(30_000, { type: "assistant", message: { content: [{ type: "text", text: "ここで進めました。" }] } }),
-    );
-    const next = (await scanSessions(roots)).views[0];
-    expect(next?.state).toBe("done");
-    expect(next?.waitingOn).toBeUndefined();
+  test("the next turn ends the wait, also when the app's records can't be read", async () => {
+    const p = parentWithCard("task_0000dddd");
+    spawnedUnreadable = true;
+    try {
+      expect((await p.scan()).parent?.waitingOn).toBe("proposal");
+      p.nextTurn();
+      const next = (await p.scan()).parent;
+      expect(next?.state).toBe("done");
+      expect(next?.waitingOn).toBeUndefined();
+    } finally {
+      spawnedUnreadable = false;
+    }
   });
 });
 

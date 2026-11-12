@@ -263,7 +263,7 @@ fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
         return None;
     }
     match (turn_origin, origin_kind) {
-        (Some(origin), _) => Some(origin == "human"),
+        (Some(origin), _) => Some(!written_by_app(Some(origin))),
         (None, Some(kind)) => Some(kind == "human"),
         // A line that says nothing of where it came from isn't counted (as before turnOrigin was read)
         (None, None) => None,
@@ -288,14 +288,32 @@ fn started_session_id(text: &str) -> Option<String> {
 }
 
 /// The id in the shared notes folder the desktop app names in the first prompt of a session another session started:
-/// `…/side-session-notes/local_…`, the starter's id (docs/design.md "Watching")
+/// `…/side-session-notes/local_…`, the starter's id (docs/design.md "Watching"). The id is `local_` and the hex digits
+/// and `-` after it, as NOTES_FOLDER_ID in lib/transcript.ts
 fn notes_folder_host_id(text: &str) -> Option<String> {
     const MARK: &str = "side-session-notes/";
     let i = text.find(MARK)?;
-    let rest = &text[i + MARK.len()..];
-    let end = rest.find(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '-')).unwrap_or(rest.len());
-    let id = &rest[..end];
-    is_host_session_id(id).then(|| id.to_string())
+    let rest = text[i + MARK.len()..].strip_prefix("local_")?;
+    let end = rest.find(|c: char| !(c.is_ascii_hexdigit() || c == '-')).unwrap_or(rest.len());
+    let id = format!("local_{}", &rest[..end]);
+    is_host_session_id(&id).then_some(id)
+}
+
+/// Whether a prompt's turnOrigin says the app wrote it, not the user: anything but "human" (the desktop app's "sdk" /
+/// "host_synthetic", another session's "peer", ...). Same rule as writtenByApp in lib/watching.ts
+fn written_by_app(turn_origin: Option<&str>) -> bool {
+    turn_origin.is_some_and(|o| o != "human")
+}
+
+/// The text of a message's content: a string, or its text blocks joined by newlines (messageText in lib/transcript.ts)
+fn message_text(content: Option<&serde_json::Value>) -> String {
+    match content {
+        Some(serde_json::Value::String(t)) => t.clone(),
+        Some(serde_json::Value::Array(items)) => {
+            items.iter().filter_map(|i| i.get("text").and_then(|t| t.as_str())).collect::<Vec<_>>().join("\n")
+        }
+        _ => String::new(),
+    }
 }
 
 /// Picks up, from [start, end of file) of the transcript, the names of peers exchanged with via cross-session
@@ -346,6 +364,15 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                             && entry.get("isSidechain").and_then(|v| v.as_bool()) != Some(true) =>
                     {
                         if let Some(at) = entry.get("timestamp").and_then(|t| t.as_str()) {
+                            // The first prompt of a session another session started (written by the app) names the
+                            // starter's shared notes folder: a link from the start. Only the first prompt: a later
+                            // notice may quote another session's folder
+                            let turn_origin = entry.get("turnOrigin").and_then(|t| t.as_str());
+                            if written_by_app(turn_origin) {
+                                if let Some(id) = notes_folder_host_id(&message_text(entry.pointer("/message/content"))) {
+                                    names.push((id, at.to_string()));
+                                }
+                            }
                             first_prompt = Some(FirstPrompt {
                                 turn_origin: entry.get("turnOrigin").and_then(|t| t.as_str()).map(str::to_string),
                                 named_at_launch,
@@ -420,8 +447,8 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                     }
                     continue;
                 }
-                let text = entry.pointer("/message/content").and_then(|c| c.as_str()).unwrap_or_default();
-                let mut rest = text;
+                let text = message_text(entry.pointer("/message/content"));
+                let mut rest = text.as_str();
                 while let Some(i) = rest.find("<cross-session-message") {
                     rest = &rest[i..];
                     let tag_end = rest.find('>').unwrap_or(rest.len());
@@ -437,35 +464,12 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             }
             // The tool result that started a desktop app session carries its id in the text
             Some("user") => {
-                // A prompt the desktop app wrote for a session another session started names the starter's shared
-                // notes folder, `side-session-notes/<its local_… id>`
-                if entry.get("turnOrigin").and_then(|t| t.as_str()).is_some_and(|o| o != "human") {
-                    let text = match entry.pointer("/message/content") {
-                        Some(serde_json::Value::String(t)) => t.clone(),
-                        Some(serde_json::Value::Array(items)) => items
-                            .iter()
-                            .filter_map(|i| i.get("text").and_then(|t| t.as_str()))
-                            .collect::<Vec<_>>()
-                            .join("\n"),
-                        _ => String::new(),
-                    };
-                    if let Some(id) = notes_folder_host_id(&text) {
-                        names.push((id, at.to_string()));
-                    }
-                }
                 let blocks = entry.pointer("/message/content").and_then(|c| c.as_array());
                 for block in blocks.into_iter().flatten() {
                     if block.get("type").and_then(|t| t.as_str()) != Some("tool_result") {
                         continue;
                     }
-                    let texts: Vec<&str> = match block.get("content") {
-                        Some(serde_json::Value::String(t)) => vec![t.as_str()],
-                        Some(serde_json::Value::Array(items)) => {
-                            items.iter().filter_map(|i| i.get("text").and_then(|t| t.as_str())).collect()
-                        }
-                        _ => Vec::new(),
-                    };
-                    for id in texts.into_iter().filter_map(started_session_id) {
+                    if let Some(id) = started_session_id(&message_text(block.get("content"))) {
                         names.push((id, at.to_string()));
                     }
                 }
@@ -992,6 +996,34 @@ mod tests {
         for (i, (scene, line, want)) in cases.iter().enumerate() {
             let path = dir.join(format!("{i}.jsonl"));
             std::fs::write(&path, format!("{line}\n")).unwrap();
+            let scan = scan_peer_names(path.to_str().unwrap(), 0).unwrap();
+            let got: Vec<&str> = scan.names.iter().map(|(n, _)| n.as_str()).collect();
+            assert_eq!(&got, want, "{scene}");
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// The starter's notes folder links only from the first prompt, and only when the app wrote it
+    #[test]
+    fn scan_peer_names_reads_the_notes_folder_of_the_first_prompt_only() {
+        const CHILD: &str = "local_0a1b2c3d-0000-4000-8000-0000000000bb";
+        const TOP: &str = "local_0a1b2c3d-0000-4000-8000-0000000000aa";
+        let first_by_app = format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{{"content":"notes: /a/side-session-notes/{CHILD}"}}}}"#);
+        let later_notice = format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{{"content":"<side-sessions-event>notes are in /a/side-session-notes/{TOP}</side-sessions-event>"}}}}"#);
+        let typed_first = r#"{"type":"user","timestamp":"T","turnOrigin":"human","message":{"content":"x"}}"#.to_string();
+        let meta = r#"{"type":"user","isMeta":true,"timestamp":"T","message":{"content":"x"}}"#.to_string();
+        let odd = r#"{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{"content":"notes: /a/side-session-notes/local_0a1b2c3dzz/x"}}"#.to_string();
+        let cases: Vec<(&str, Vec<String>, Vec<&str>)> = vec![
+            ("a later notice naming another folder doesn't link (the first prompt's does)", vec![first_by_app.clone(), later_notice.clone()], vec![CHILD]),
+            ("a session the user started: a later notice naming a folder doesn't link", vec![typed_first, later_notice], vec![]),
+            ("a meta line before the first prompt isn't the first prompt", vec![meta, first_by_app], vec![CHILD]),
+            ("the id is local_ and hex digits and - only (as in lib/transcript.ts)", vec![odd], vec!["local_0a1b2c3d"]),
+        ];
+        let dir = std::env::temp_dir().join(format!("tomarigi-notes-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        for (i, (scene, lines, want)) in cases.iter().enumerate() {
+            let path = dir.join(format!("{i}.jsonl"));
+            std::fs::write(&path, lines.join("\n") + "\n").unwrap();
             let scan = scan_peer_names(path.to_str().unwrap(), 0).unwrap();
             let got: Vec<&str> = scan.names.iter().map(|(n, _)| n.as_str()).collect();
             assert_eq!(&got, want, "{scene}");

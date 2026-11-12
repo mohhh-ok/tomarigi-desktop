@@ -4,6 +4,7 @@ import type { BirdState } from "./sessions";
 import type { LiveSession, SessionEvent } from "./session-types";
 import type { WatchLinks } from "./session-watch";
 import { parentCanAnswer } from "./turn-verdict";
+import { writtenByApp } from "./transcript";
 
 /** For this long after the linked session last moved, it stays watching */
 export const WATCH_GRACE_MS = 5 * 60_000;
@@ -73,7 +74,7 @@ export const PROMPT_AT_LAUNCH_MS = 2_000;
  */
 export function startedBySession(first: FirstPrompt | undefined, latestTurnTyped = false): boolean {
   if (!first || latestTurnTyped) return false;
-  if (typeof first.turnOrigin === "string" && first.turnOrigin !== "human") return true;
+  if (writtenByApp(first.turnOrigin)) return true;
   if (!first.namedAtLaunch || !first.sessionStartAt) return false;
   const gap = Date.parse(first.at) - Date.parse(first.sessionStartAt);
   return Number.isFinite(gap) && gap >= 0 && gap <= PROMPT_AT_LAUNCH_MS;

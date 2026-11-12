@@ -27,7 +27,7 @@ import {
   type FirstPrompt,
 } from "../src/lib/watching.ts";
 import type { LiveSession, PeerLink } from "../src/lib/session-types.ts";
-import { deriveState, waitsOnWrapUpAsk } from "../src/lib/bird-state.ts";
+import { deriveState, replyWaitOf } from "../src/lib/bird-state.ts";
 import { deriveSessionEvents } from "../src/lib/session-events.ts";
 import type { TailEvent } from "../src/lib/transcript.ts";
 import type { WatchLinks } from "../src/lib/session-watch.ts";
@@ -248,12 +248,23 @@ describe("a waiting on a wrap_up's ask is told from a question tool and a permis
   });
   const wrapUp = [t("user", 1, { text: "書いて" }), t("tool_use", 2, { toolName: WRAP_UP, ask: { question: "よいですか？" } }), t("tool_result", 3), t("assistant_text", 4)];
   const questionTool = [t("user", 1, { text: "書いて" }), t("tool_use", 2, { toolName: "AskUserQuestion" })];
+  // A card left in the same turn as the ask: only the user can start it, so the parent doesn't take it over
+  const card = { taskId: "task_1", title: "続き", at: 2 };
+  const cardThenAsk = [
+    t("user", 1, { text: "書いて" }),
+    t("tool_use", 2, { toolName: "mcp__ccd_session__start_session" }),
+    t("tool_result", 2, { proposal: { proposed: [{ taskId: "task_1", title: "続き" }] } }),
+    t("tool_use", 3, { toolName: WRAP_UP, ask: { question: "始めますか？" } }),
+    t("tool_result", 4),
+    t("assistant_text", 5),
+  ];
   const scenes: [string, TailEvent[], boolean, boolean][] = [
     // scene, transcript, Claude Code's own waiting status (a permission prompt / an open question), wrapUpAsk
     ["a wrap_up's ask", wrapUp, false, true],
     ["a question tool", questionTool, false, false],
     ["a question tool still open (written after the answer)", [t("user", 1, { text: "書いて" })], true, false],
     ["a permission prompt after a wrap_up's ask", wrapUp, true, false],
+    ["a card left in the same turn as a wrap_up's ask", cardThenAsk, false, false],
   ];
   test("a permission prompt (or Claude Code's open question tool) makes no needs reply event: nothing to read", () => {
     // Claude Code writes the tool call only after it is answered; the waiting is its own status alone
@@ -264,7 +275,8 @@ describe("a waiting on a wrap_up's ask is told from a question tool and a permis
     test(scene, () => {
       const state = liveWaiting ? "waiting" : deriveState(tailOf(events), 60_000, false);
       expect(state).toBe("waiting");
-      expect(waitsOnWrapUpAsk(state, liveWaiting, events)).toBe(want);
+      const cards = events === cardThenAsk ? [card] : [];
+      expect(replyWaitOf(events, state, liveWaiting ? { status: "waiting" } : undefined, cards)?.source === "wrap_up_ask").toBe(want);
       if (liveWaiting) return;
       const waiting = deriveSessionEvents(tailOf(events), "s", "p", [], new Map(), undefined, 60_000).find((e) => e.type === "waiting")!;
       expect(waiting.wrapUpAsk === true).toBe(want);

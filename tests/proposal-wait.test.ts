@@ -1,13 +1,14 @@
 // A Claude desktop app session that ends its turn leaving a proposal card (start_session's `Proposed "…" (task_id: …)`)
 // waits on the user to start it, as a question tool does (docs/design.md "The "?" for sessions waiting on you"). Before,
-// a parent ended on 「カードを出しているので、始めてください」, the turn verdict was not asking, and the concierge said nothing
-// needed a reply (the user: 「はんのうしてない」). The wait is told from the tool calls in the transcript, not the reply's
-// text, and it ends when a session started from the card links to the parent, or the next turn starts
+// a parent ended its turn asking the user to start its card, the turn verdict was not asking, and the concierge said nothing
+// needed a reply. The wait is told from the tool calls in the transcript, not the reply's text; a card is started when
+// the desktop app's record of a session says it came from that card; the next turn ends the wait too
 import { describe, expect, test } from "bun:test";
 import type { NativeFile } from "../src/lib/native-fs.ts";
 import { deriveSessionEvents } from "../src/lib/session-events.ts";
+import { deriveState, replyWaitOf } from "../src/lib/bird-state.ts";
 import { pendingProposalsOf, readTail } from "../src/lib/transcript.ts";
-import { unstartedProposals, type ProposalChild } from "../src/lib/proposals.ts";
+import { cardKey, unstartedProposals } from "../src/lib/proposals.ts";
 
 function fileOf(lines: object[]): NativeFile {
   const bytes = new TextEncoder().encode(lines.map((l) => JSON.stringify(l)).join("\n") + "\n");
@@ -24,8 +25,9 @@ function fileOf(lines: object[]): NativeFile {
 
 const START = "mcp__ccd_session__start_session";
 const DISMISS = "mcp__ccd_session__dismiss_task";
-const CHILD = "local_0a1b2c3d-0000-4000-8000-000000000002";
-const OTHER = "local_0a1b2c3d-0000-4000-8000-000000000003";
+const WRAP_UP = "mcp__ccd_turn__wrap_up";
+const PARENT = "local_0a1b2c3d-0000-4000-8000-000000000001";
+const OTHER_PARENT = "local_0a1b2c3d-0000-4000-8000-000000000009";
 const at = (s: number) => new Date(Date.parse("2026-11-12T12:50:00.000Z") + s * 1000).toISOString();
 const ms = (s: number) => Date.parse(at(s));
 
@@ -46,58 +48,45 @@ const proposed = (s: number, task: string, title: string) => [
   call(s, START, { initiation: "own_initiative", context: "fresh", title, prompt: "…" }),
   result(s + 1, `Proposed "${title}" (task_id: ${task}). The user sees a card and nothing runs until they start it`),
 ];
-const startedHere = (s: number, id: string) => [
-  call(s, START, { initiation: "user_asked", context: "fresh", title: "別件", prompt: "…" }),
-  result(s + 1, `Started session "別件" (session_id: ${id}, name: x). It runs on its own`),
-];
 
 const TITLE = "検索結果に画像を出す";
-// The reported scene: an own_initiative card, then 「始めてください」
-const reported = [prompt(0), ...proposed(10, "task_0000aaaa", TITLE), reply(20, "カードを出しているので、始めてください。")];
+// The reported scene: an own_initiative card, then a reply asking the user to start it
+const reported = [prompt(0), ...proposed(10, "task_0000aaaa", TITLE), reply(20, "カードを出しました。押してください。")];
+const startedFromCard = (parent: string, task: string) => new Set([cardKey(parent, task)]);
+const none = new Set<string>();
 
-// A session linked to the parent, as the scan sees it: started from a card (first prompt by the app) at second s
-const child = (s: number, extra: Partial<ProposalChild> = {}): ProposalChild => ({
-  startedAt: ms(s),
-  hostSessionId: CHILD,
-  startedBySession: true,
-  ...extra,
-});
-
-describe("which proposal cards the parent still waits on", () => {
-  test.each<[string, object[], ProposalChild[], string[]]>([
-    ["the reported scene: a card, nothing started from it yet", reported, [], ["task_0000aaaa"]],
-    ["the reported scene: the session started from the card linked", reported, [child(60)], []],
-    ["a linked session started before the card isn't from it", reported, [child(5)], ["task_0000aaaa"]],
-    ["a linked session the user started isn't from a card", reported, [child(60, { startedBySession: false })], ["task_0000aaaa"]],
-    ["a linked session whose start isn't known isn't counted", reported, [child(60, { startedAt: undefined })], ["task_0000aaaa"]],
-    [
-      "a session the turn's own start_session started isn't from the card",
-      [prompt(0), ...proposed(10, "task_1", TITLE), ...startedHere(12, OTHER), reply(20, "どうぞ")],
-      [child(13, { hostSessionId: OTHER })],
-      ["task_1"],
-    ],
-    ["withdrawn with dismiss_task", [prompt(0), ...proposed(10, "task_1", TITLE), call(12, DISMISS, { task_id: "task_1" }), reply(20, "取り下げました")], [], []],
+describe("which proposal cards the session still waits on", () => {
+  test.each<[string, object[], ReadonlySet<string>, string[]]>([
+    ["the reported scene: a card nobody started", reported, none, ["task_0000aaaa"]],
+    ["the reported scene: a session's record says it came from the card", reported, startedFromCard(PARENT, "task_0000aaaa"), []],
+    ["a record of another session's card with the same task id doesn't start it", reported, startedFromCard(OTHER_PARENT, "task_0000aaaa"), ["task_0000aaaa"]],
+    ["withdrawn with dismiss_task", [prompt(0), ...proposed(10, "task_1", TITLE), call(12, DISMISS, { task_id: "task_1" }), reply(20, "取り下げました")], none, []],
     [
       "withdrawn and proposed again: the new card waits",
       [prompt(0), ...proposed(10, "task_1", TITLE), call(12, DISMISS, { task_id: "task_1" }), ...proposed(14, "task_2", TITLE), reply(20, "どうぞ")],
-      [],
+      none,
       ["task_2"],
     ],
-    ["started by the session itself with proposal_id", [prompt(0), ...proposed(10, "task_1", TITLE), call(12, START, { proposal_id: "task_1" }), reply(20, "始めました")], [], []],
-    ["the next turn started: the wait is over", [...reported, prompt(30, "はい")], [], []],
+    ["started by the session itself with proposal_id", [prompt(0), ...proposed(10, "task_1", TITLE), call(12, START, { proposal_id: "task_1" }), reply(20, "始めました")], none, []],
+    ["the next turn started: the wait is over", [...reported, prompt(30, "はい")], none, []],
     [
       "a side-sessions event starts the next turn too",
       [...reported, { type: "user", timestamp: at(30), turnOrigin: "sdk", message: { content: "<side-sessions-event>x" } }],
-      [],
+      none,
       [],
     ],
     [
-      "two cards, one started: the newer still waits",
+      "two cards, one started: the other still waits",
       [prompt(0), ...proposed(10, "task_1", "A"), ...proposed(12, "task_2", "B"), reply(20, "どうぞ")],
-      [child(60)],
+      startedFromCard(PARENT, "task_1"),
       ["task_2"],
     ],
-    ["a session started right away (user_asked) is no card", [prompt(0), ...startedHere(10, OTHER), reply(20, "立てました")], [], []],
+    [
+      "a session started right away (user_asked) is no card",
+      [prompt(0), call(10, START, { initiation: "user_asked" }), result(11, `Started session "別件" (session_id: ${OTHER_PARENT}, name: x).`), reply(20, "立てました")],
+      none,
+      [],
+    ],
     [
       "an offer the user answered within the call is no card",
       [
@@ -106,23 +95,66 @@ describe("which proposal cards the parent still waits on", () => {
         result(11, `The user chose "New session" — the session is already opening for "${TITLE}" (task_id: task_1).`),
         reply(20, "立てます"),
       ],
-      [],
+      none,
       [],
     ],
     [
       "a card the app refused to make is no card",
       [prompt(0), call(10, START, { initiation: "own_initiative", cwd: "/x" }), result(11, "A proposal card cannot carry a host, folder"), reply(20, "x")],
-      [],
+      none,
       [],
     ],
-  ])("%s", async (_, lines, children, want) => {
+    [
+      "the card's text in a command's output is no card",
+      [prompt(0), call(10, "Bash", { command: "grep Proposed log.txt" }), result(11, `Proposed "${TITLE}" (task_id: task_1). The user sees a card`), reply(20, "ログにありました")],
+      none,
+      [],
+    ],
+    [
+      "the card's text in a file read is no card",
+      [prompt(0), call(10, "Read", { file_path: "/tmp/x.md" }), result(11, `Proposed "${TITLE}" (task_id: task_1).`), reply(20, "読みました")],
+      none,
+      [],
+    ],
+  ])("%s", async (_, lines, started, want) => {
     const tail = await readTail(fileOf(lines));
-    expect(unstartedProposals(pendingProposalsOf(tail.events), children).map((p) => p.taskId)).toEqual(want);
+    expect(unstartedProposals(pendingProposalsOf(tail.events), PARENT, started).map((p) => p.taskId)).toEqual(want);
   });
 
-  test("the card's title is kept for the bubble and the concierge", async () => {
-    const tail = await readTail(fileOf(reported));
-    expect(pendingProposalsOf(tail.events)?.proposals).toEqual([{ taskId: "task_0000aaaa", title: TITLE, at: ms(11) }]);
+  test("the card's title is folded onto one line, like a wrap_up's ask", async () => {
+    const tail = await readTail(fileOf([prompt(0), ...proposed(10, "task_1", "  検索結果に\n\n   画像を出す  "), reply(20, "どうぞ")]));
+    expect(pendingProposalsOf(tail.events)?.proposals).toEqual([{ taskId: "task_1", title: "検索結果に 画像を出す", at: ms(11) }]);
+  });
+});
+
+describe("where the wait comes from (replyWaitOf)", () => {
+  const card = { taskId: "task_0000aaaa", title: TITLE, at: ms(11) };
+  const cardThenAsk = [prompt(0), ...proposed(10, "task_0000aaaa", TITLE), call(15, WRAP_UP, { recap: "x", ask: "始めますか？" }), result(16, "Shown"), reply(20, "どうぞ")];
+  test.each<[string, object[], { status?: string; waitingFor?: string } | undefined, boolean, object | undefined]>([
+    ["a card not started", reported, undefined, true, { source: "proposal", waitingOn: "proposal", question: TITLE }],
+    ["the card started", reported, undefined, false, undefined],
+    ["a card and a wrap_up's ask in the same turn: the card comes first", cardThenAsk, undefined, true, { source: "proposal", waitingOn: "proposal", question: TITLE }],
+    ["the ask alone once the card started", cardThenAsk, undefined, false, { source: "wrap_up_ask", waitingOn: "question", question: "始めますか？" }],
+    [
+      "Claude Code's own permission prompt comes first",
+      reported,
+      { status: "waiting", waitingFor: "permission prompt" },
+      true,
+      { source: "claude", waitingOn: "permission", question: undefined },
+    ],
+    ["a question tool", [prompt(0), call(10, "AskUserQuestion", { questions: [{ question: "どちらにしますか" }] })], undefined, false, { source: "question_tool", waitingOn: "question" }],
+  ])("%s", async (_, lines, live, cardOpen, want) => {
+    const tail = await readTail(fileOf(lines));
+    const tailState = deriveState(tail, 10 * 60_000, false);
+    const got = replyWaitOf(tail.events, tailState, live, cardOpen ? [card] : []);
+    if (want === undefined) expect(got).toBeUndefined();
+    else expect(got).toMatchObject(want);
+  });
+
+  test("cards don't count while the turn goes on", async () => {
+    const working = [prompt(0), ...proposed(10, "task_0000aaaa", TITLE)];
+    const tail = await readTail(fileOf(working));
+    expect(replyWaitOf(tail.events, "working", undefined, [card])).toBeUndefined();
   });
 });
 
@@ -138,8 +170,19 @@ describe("Recent activity", () => {
       ["waiting", ms(20), false],
     ]);
   });
+  test("a card and a wrap_up's ask in one turn: the needs reply isn't the ask's (a parent can't start the card)", async () => {
+    const lines = [prompt(0), ...proposed(10, "task_1", TITLE), call(15, WRAP_UP, { recap: "x", ask: "始めますか？" }), result(16, "Shown"), reply(20, "どうぞ")];
+    expect(await eventsOf(lines)).toEqual([
+      ["started", ms(0), false],
+      ["waiting", ms(15), false],
+    ]);
+  });
   test("a card withdrawn within the turn leaves a done", async () => {
     const lines = [prompt(0), ...proposed(10, "task_1", TITLE), call(12, DISMISS, { task_id: "task_1" }), reply(20, "取り下げました")];
+    expect((await eventsOf(lines)).map(([type]) => type)).toEqual(["started", "done"]);
+  });
+  test("the card's text in a command's output leaves a done", async () => {
+    const lines = [prompt(0), call(10, "Bash", { command: "x" }), result(11, `Proposed "${TITLE}" (task_id: task_1).`), reply(20, "ログにありました")];
     expect((await eventsOf(lines)).map(([type]) => type)).toEqual(["started", "done"]);
   });
 });
