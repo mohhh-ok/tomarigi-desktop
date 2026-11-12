@@ -1,5 +1,5 @@
 // Transition events (started / waiting / done / closed) derived from a session's tail
-import type { TailInfo } from "./transcript";
+import { pendingProposalsOf, type TailInfo } from "./transcript";
 import type { BackgroundTask, ChickView, SessionEvent } from "./session-types";
 import { backgroundTaskCache } from "./session-store";
 import { isWaitingTool } from "./bird-state";
@@ -26,7 +26,8 @@ const BACKGROUND_TASK_STALE_MS = 30 * 60_000;
  * "come back" signal, so it is suppressed (deriveDoneEvent).
  * waiting treats a call to AskUserQuestion/ExitPlanMode as a definite wait for the user's answer, and ones
  * already answered are also emitted as history as-is (no timeout estimation). So does a Claude desktop app turn that
- * ends asking (its wrap_up's ask, TailEvent.ask): that turn's closing text is then not a done.
+ * ends asking (its wrap_up's ask, TailEvent.ask): that turn's closing text is then not a done. Nor is the closing text
+ * of a desktop app turn that leaves a proposal card (pendingProposalsOf): it is a needs reply.
  */
 export function deriveSessionEvents(
   tail: TailInfo,
@@ -61,6 +62,13 @@ export function deriveSessionEvents(
       if (asked) continue;
       const next = events[i + 1];
       if (!next || (next.kind !== "tool_use" && next.kind !== "tool_result")) {
+        // A desktop app turn that ends leaving a proposal card waits on the user to start it: a needs reply, like a
+        // question tool, not a done (lib/proposals.ts). Whether a card was started later isn't in the tail; the event
+        // stays as history, like an answered question
+        if (pendingProposalsOf(events.slice(0, i + 1))) {
+          result.push(mkSessionEvent(sessionId, project, "waiting", event.at, lastPrompt ?? snippet));
+          continue;
+        }
         // The existence of next (= some event after T) is a definitive signal that the parent has already
         // restarted/continued (used for the cancel check in deriveDoneEvent)
         const parentAdvanced = next !== undefined;

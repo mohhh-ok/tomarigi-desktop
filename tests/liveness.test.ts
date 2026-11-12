@@ -46,6 +46,8 @@ const appServerPids = new Set<number>();
 let psFails = false;
 // OpenCode's database as the Rust side returns it (src-tauri/src/opencode.rs), by dbPath
 const openCodeDbs = new Map<string, { sessions: object[]; tails: Map<string, object[]> }>();
+// scan_peer_names answers by transcript path (the Rust command is tested in src-tauri); the rest get no traces
+const peerScans = new Map<string, object>();
 
 mock.module("@tauri-apps/api/core", () => ({
   invoke: async (cmd: string, args: Record<string, never>) => {
@@ -128,7 +130,7 @@ mock.module("@tauri-apps/api/core", () => ({
       case "opencode_tail":
         return openCodeDbs.get(args.dbPath)?.tails.get(args.sessionId) ?? null;
       case "scan_peer_names":
-        return { names: [], end: 0 };
+        return peerScans.get(args.path) ?? { names: [], end: 0 };
       case "log":
         return;
       case "focus_pid":
@@ -389,6 +391,73 @@ describe("Claude Code liveness reads", () => {
     const fx = claudeFixture("doze", id, 5 * MIN + 10_000);
     liveRead(fx.config, [{ pid: 1, sessionId: id, status: "idle" }]);
     expect((await scanSessions(fx.roots)).views[0].state).toBe("dozing");
+  });
+});
+
+describe("a Claude desktop app session that leaves a proposal card", () => {
+  // The reported scene: the parent proposed a session as a card and ended on 「始めてください」 (docs/design.md "The "?" for
+  // sessions waiting on you"). It waits on the user until the session started from the card links to it
+  const PARENT_HOST = "local_0a1b2c3d-0000-4000-8000-000000000001";
+  const CHILD_HOST = "local_0a1b2c3d-0000-4000-8000-000000000002";
+  const TITLE = "検索結果に画像を出す";
+
+  test("it needs a reply until the session started from the card links to it", async () => {
+    const config = path.join(base, "proposal");
+    const proj = path.join(config, "projects", "-tmp-proposal");
+    fs.mkdirSync(proj, { recursive: true });
+    const parentId = "99999999-0000-4000-8000-000000000001";
+    const childId = "99999999-0000-4000-8000-000000000002";
+    const parentFile = path.join(proj, `${parentId}.jsonl`);
+    fs.writeFileSync(
+      parentFile,
+      line({ type: "user", timestamp: iso(3 * MIN), cwd: "/tmp/proposal", turnOrigin: "human", message: { content: "直して" } }) +
+        line({
+          type: "assistant",
+          timestamp: iso(2 * MIN + 10_000),
+          cwd: "/tmp/proposal",
+          message: { content: [{ type: "tool_use", id: "t1", name: "mcp__ccd_session__start_session", input: { initiation: "own_initiative", title: TITLE } }] },
+        }) +
+        line({
+          type: "user",
+          timestamp: iso(2 * MIN + 9_000),
+          cwd: "/tmp/proposal",
+          message: { content: [{ type: "tool_result", tool_use_id: "t1", content: [{ type: "text", text: `Proposed "${TITLE}" (task_id: task_0000aaaa). The user sees a card` }] }] },
+        }) +
+        line({ type: "assistant", timestamp: iso(2 * MIN), cwd: "/tmp/proposal", message: { content: [{ type: "text", text: "カードを出しているので、始めてください。" }] } }),
+    );
+    const parentLive = { pid: 1, sessionId: parentId, status: "idle", hostSessionId: PARENT_HOST, startedAt: Date.now() - 60 * MIN };
+    liveOverride.set(config, { sessions: [parentLive], reliable: true });
+    const roots = [rootOf("proposal", "claude", path.join(config, "projects"))];
+    const parentView = (r: Awaited<ReturnType<typeof scanSessions>>) => r.views.find((v) => v.id.endsWith(`${parentId}.jsonl`));
+
+    const waiting = parentView(await scanSessions(roots));
+    expect(waiting?.state).toBe("waiting");
+    expect(waiting?.waitingOn).toBe("proposal");
+    expect(waiting?.question).toBe(TITLE);
+
+    // The user starts the card: the app writes the child's first prompt naming the parent's notes folder
+    const childFile = path.join(proj, `${childId}.jsonl`);
+    fs.writeFileSync(
+      childFile,
+      line({
+        type: "user",
+        timestamp: iso(0),
+        cwd: "/tmp/proposal",
+        turnOrigin: "host_synthetic",
+        message: { content: `Shared notes folder for this group of sessions: /Users/x/Library/Application Support/Claude/side-session-notes/${PARENT_HOST}` },
+      }),
+    );
+    peerScans.set(childFile, { names: [], firstPrompt: { turnOrigin: "host_synthetic", namedAtLaunch: false, at: iso(0) }, end: 0 });
+    const childLive = { pid: 2, sessionId: childId, status: "busy", hostSessionId: CHILD_HOST, startedAt: Date.now() - 1_000 };
+    liveOverride.set(config, { sessions: [parentLive, childLive], reliable: true });
+
+    const started = await scanSessions(roots);
+    const parent = parentView(started);
+    expect(parent?.state).toBe("done");
+    expect(parent?.waitingOn).toBeUndefined();
+    expect(parent?.peers?.map((p) => p.sessionId)).toEqual([childId]);
+    // The child started from the card is taken over by its parent from its start
+    expect(started.views.find((v) => v.id.endsWith(`${childId}.jsonl`))?.parentTakesOver).toBe(true);
   });
 });
 

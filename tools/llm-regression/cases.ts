@@ -441,6 +441,24 @@ https://www.example.com/help
   },
   {
     kind: "concierge",
+    name: "concierge_proposal_card_not_started",
+    why:
+      "A desktop app session ended its turn leaving a proposal card the user hadn't started, and the concierge said " +
+      "nothing needed a reply. It waits on the user to start the card (waiting_on proposal); it is not a permission",
+    withSuggestions: true,
+    sessions: [
+      { view: view("s-card", { project: "app-j", state: "waiting", waitingOn: "proposal", sinceMs: 40_000, question: "検索結果に画像を出す" }), agent: "claude", line: "続きを提案" },
+      { view: view("s-w", { project: "app-a", state: "working", sinceMs: 2_000 }), agent: "claude" },
+    ],
+    check: (r) => {
+      const s = said(r).filter((x) => x.id === "s-card");
+      if (!s.some((x) => x.kind === "reply")) return "no reply for the session waiting on its proposal card";
+      const wrong = s.find((x) => /権限|許可|permission/i.test(x.text));
+      return wrong ? `called it a permission prompt: ${wrong.text}` : undefined;
+    },
+  },
+  {
+    kind: "concierge",
     name: "concierge_measurement_still_running",
     why:
       "A session whose measurement still runs was advised as finished; it waits on " +

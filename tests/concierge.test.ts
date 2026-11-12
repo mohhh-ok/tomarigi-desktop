@@ -95,6 +95,8 @@ test("a waiting session says whether it waits on a question or a permission prom
       { view: view("q", { state: "waiting", waitingOn: "question" }), agent: "claude" },
       { view: view("p", { state: "waiting", waitingOn: "permission" }), agent: "claude" },
       { view: view("u", { state: "waiting" }), agent: "claude" },
+      // A Claude desktop app proposal card the user hasn't started; its question is the card's title
+      { view: view("c", { state: "waiting", waitingOn: "proposal", question: "検索結果に画像を出す" }), agent: "claude" },
       // Only while it waits: a stale value on a working session isn't sent
       { view: view("w", { state: "working", waitingOn: "question" }), agent: "claude" },
     ],
@@ -103,7 +105,8 @@ test("a waiting session says whether it waits on a question or a permission prom
     NOW,
     "ja",
   );
-  const [q, p, u, w] = payload.sessions;
+  const [q, p, u, c, w] = payload.sessions;
+  expect(c).toMatchObject({ needs_reply: true, needs_reply_source: "machine", waiting_on: "proposal", question: "検索結果に画像を出す" });
   expect(q).toMatchObject({ needs_reply_source: "machine", waiting_on: "question" });
   expect(p).toMatchObject({ needs_reply_source: "machine", waiting_on: "permission" });
   expect(u.waiting_on).toBeUndefined();
@@ -112,8 +115,10 @@ test("a waiting session says whether it waits on a question or a permission prom
   expect(lines[0]).toContain(" source=machine waiting_on=question ");
   expect(lines[1]).toContain(" source=machine waiting_on=permission ");
   expect(lines[2]).toContain(" source=machine waiting_on=- ");
+  expect(lines[3]).toContain(" source=machine waiting_on=proposal ");
   // The prompt tells the concierge what each value means, so it doesn't call a question a permission prompt
   expect(CONCIERGE_TASK.systemPrompt).toContain("waiting_on");
+  expect(CONCIERGE_TASK.systemPrompt).toContain("proposal means");
 });
 
 test("the ? from the turn verdict is a fact with source verdict; from the machine state, source machine", () => {

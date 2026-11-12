@@ -110,7 +110,8 @@ export interface SessionView {
   angry?: boolean;
   // While its own state is waiting: whether it waits on a question (a question tool) or a permission prompt, when that
   // is known (waitingOnOf in lib/bird-state.ts). Passed to the concierge (docs/design.md "Concierge")
-  waitingOn?: "question" | "permission";
+  // "proposal": it ended its turn leaving a Claude desktop app proposal card the user hasn't started (lib/proposals.ts)
+  waitingOn?: "question" | "permission" | "proposal";
   // While its own state is waiting: true when it waits on the Claude desktop app's wrap_up ask (pendingAskOf in
   // lib/transcript.ts), not a question tool or a permission prompt. That ask is also the session's report, so a parent
   // that takes it over can answer it (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Watching")

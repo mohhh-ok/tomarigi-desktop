@@ -90,6 +90,23 @@ export interface TailEvent {
   // kind === "tool_use" only: the call ends the turn asking the user to decide (the Claude desktop app's
   // mcp__ccd_turn__wrap_up with an `ask`, see desktopAskOf); question is that `ask`
   ask?: { question?: string };
+  // The Claude desktop app's session proposals in this line (docs/design.md "The "?" for sessions waiting on you"): see
+  // ProposalTrace
+  proposal?: ProposalTrace;
+}
+
+/**
+ * What one line says about the desktop app's session proposals (cards the user starts with a click):
+ * - proposed: a start_session result `Proposed "<title>" (task_id: task_…)`, a card now shown (only an own_initiative
+ *   proposal ends so; an offer waits for the user's answer within the call)
+ * - started: the ids of sessions a start_session result says it started (`Started session "…" (session_id: local_…`)
+ * - settled: proposals withdrawn (dismiss_task's task_id) or started by the session itself (start_session's
+ *   proposal_id)
+ */
+export interface ProposalTrace {
+  proposed?: { taskId: string; title?: string }[];
+  started?: string[];
+  settled?: string[];
 }
 
 interface TranscriptEntry {
@@ -97,6 +114,7 @@ interface TranscriptEntry {
   subtype?: unknown; // On a `system` line (e.g. away_summary, see isIdleLine)
   isMeta?: boolean;
   isSidechain?: boolean;
+  turnOrigin?: unknown; // Who started the turn of a prompt ("human", "sdk", "host_synthetic", "peer", ...)
   interruptedByShutdown?: boolean;
   timestamp?: string;
   continuedInSessionId?: unknown; // On a `continued-in` line (see TailInfo.continuedIn)
@@ -343,7 +361,15 @@ async function readWindow(
     kind = next.kind;
     toolName = next.toolName;
     if (at !== null) {
-      events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine, ...(next.ask && { ask: next.ask }) });
+      events.push({
+        at,
+        kind: next.kind,
+        toolName: next.toolName,
+        text: next.text,
+        machine: next.machine,
+        ...(next.ask && { ask: next.ask }),
+        ...(next.proposal && { proposal: next.proposal }),
+      });
     }
   }
   return {
@@ -365,6 +391,9 @@ const CROSS_SESSION_FROM_NAME = /<cross-session-message\b[^>]*\bfrom-name="([^"]
 const HOST_SESSION_ID = /^local_[0-9a-fA-F-]+$/;
 // The text of the desktop app's start_session result: `Started session "…" (session_id: local_…, …)`
 const STARTED_SESSION_ID = /^Started session [\s\S]*?\(session_id: (local_[0-9a-fA-F-]+)[,)]/;
+// The shared notes folder the desktop app names in the first prompt of a session another session started:
+// `…/side-session-notes/local_…`, the starter's id
+const NOTES_FOLDER_ID = /side-session-notes\/(local_[0-9a-fA-F-]+)/;
 
 function hostSessionIdOf(value: unknown): string | undefined {
   return typeof value === "string" && HOST_SESSION_ID.test(value) ? value : undefined;
@@ -418,6 +447,14 @@ function collectPeerNames(entry: TranscriptEntry): string[] {
       for (const m of text.matchAll(CROSS_SESSION_FROM_NAME)) names.push(m[1]);
     }
   } else if (entry.type === "user") {
+    // A prompt the desktop app wrote for a session another session started names the starter's shared notes folder,
+    // `side-session-notes/<its local_… id>` (a session started from a proposal card has no other trace of its starter)
+    if (typeof entry.turnOrigin === "string" && entry.turnOrigin !== "human") {
+      const content = entry.message?.content;
+      const text = typeof content === "string" ? content : asBlocks(content).map((b) => b.text ?? "").join("\n");
+      const id = text.match(NOTES_FOLDER_ID)?.[1];
+      if (id) names.push(id);
+    }
     // The tool result that started a desktop app session carries its id in the text
     for (const block of asBlocks(entry.message?.content)) {
       if (block.type !== "tool_result") continue;
@@ -485,6 +522,7 @@ interface Classified {
   text?: string;
   machine?: boolean;
   ask?: { question?: string };
+  proposal?: ProposalTrace;
 }
 
 /** The tool with which a Claude desktop app session ends its turn: the app shows its `recap`, and its `ask` (the one
@@ -518,6 +556,75 @@ export function pendingAskOf(events: readonly TailEvent[]): { question?: string;
   return undefined;
 }
 
+/** The desktop app's tools that start a session and withdraw a proposal */
+const START_SESSION_TOOL = "mcp__ccd_session__start_session";
+const DISMISS_TASK_TOOL = "mcp__ccd_session__dismiss_task";
+// The text of start_session's result for a proposal card: `Proposed "<title>" (task_id: task_…)`
+const PROPOSED_CARD = /^Proposed "([\s\S]*?)" \(task_id: (task_[0-9A-Za-z]+)\)/;
+
+/** The proposal a tool call settles: dismiss_task withdraws its task_id; start_session with a proposal_id starts it */
+function settledProposalOf(toolName: string | undefined, input: unknown): string[] {
+  const { task_id, proposal_id } = (typeof input === "object" && input !== null ? input : {}) as {
+    task_id?: unknown;
+    proposal_id?: unknown;
+  };
+  if (toolName === DISMISS_TASK_TOOL && typeof task_id === "string" && task_id) return [task_id];
+  if (toolName === START_SESSION_TOOL && typeof proposal_id === "string" && proposal_id) return [proposal_id];
+  return [];
+}
+
+/** What the tool results in one line say about proposals (ProposalTrace's proposed and started) */
+function proposalResultsOf(blocks: Block[]): ProposalTrace | undefined {
+  const proposed: { taskId: string; title?: string }[] = [];
+  const started: string[] = [];
+  for (const block of blocks) {
+    if (block.type !== "tool_result") continue;
+    const content = (block as { content?: unknown }).content;
+    const texts = typeof content === "string" ? [content] : asBlocks(content).map((b) => b.text ?? "");
+    for (const text of texts) {
+      const card = text.match(PROPOSED_CARD);
+      if (card) proposed.push({ taskId: card[2], ...(card[1] && { title: card[1].slice(0, TEXT_FIELD_LIMIT) }) });
+      const id = text.match(STARTED_SESSION_ID)?.[1];
+      if (id) started.push(id);
+    }
+  }
+  if (proposed.length === 0 && started.length === 0) return undefined;
+  return { ...(proposed.length > 0 && { proposed }), ...(started.length > 0 && { started }) };
+}
+
+/** The desktop app's proposal cards the last turn left, not yet settled within it (pendingProposalsOf) */
+export interface TurnProposals {
+  proposals: { taskId: string; title?: string; at: number }[];
+  /** The ids of sessions the turn's start_session calls started (they aren't from a card) */
+  startedHostIds: string[];
+}
+
+/**
+ * The proposal cards (docs/design.md "The "?" for sessions waiting on you") the last turn made and didn't withdraw or
+ * start itself, with the sessions it started. A turn starts at a prompt (kind user, from the user or anything else) or
+ * a closing; only what came after the last one counts. undefined when it left none
+ */
+export function pendingProposalsOf(events: readonly TailEvent[]): TurnProposals | undefined {
+  let turnStart = 0;
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (events[i].kind === "user" || events[i].kind === "closed") {
+      turnStart = i + 1;
+      break;
+    }
+  }
+  const proposals: TurnProposals["proposals"] = [];
+  const startedHostIds: string[] = [];
+  for (const e of events.slice(turnStart)) {
+    for (const p of e.proposal?.proposed ?? []) proposals.push({ ...p, at: e.at });
+    startedHostIds.push(...(e.proposal?.started ?? []));
+    for (const taskId of e.proposal?.settled ?? []) {
+      const i = proposals.findIndex((p) => p.taskId === taskId);
+      if (i >= 0) proposals.splice(i, 1);
+    }
+  }
+  return proposals.length > 0 ? { proposals, startedHostIds } : undefined;
+}
+
 function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified | null {
   if (entry.isSidechain && !includeSidechain) return null; // Subagent lines are not used for the main line's state
   if (entry.type === "assistant") {
@@ -527,7 +634,14 @@ function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified
       // Sending input as is can get large, so trim to the first 500 chars (this just reuses the text
       // field meant for user utterances; the content is something else)
       const ask = desktopAskOf(toolUse.name, toolUse.input);
-      return { kind: "tool_use", toolName: toolUse.name, text: summarizeToolInput(toolUse.input), ...(ask && { ask }) };
+      const settled = blocks.flatMap((b) => (b.type === "tool_use" ? settledProposalOf(b.name, b.input) : []));
+      return {
+        kind: "tool_use",
+        toolName: toolUse.name,
+        text: summarizeToolInput(toolUse.input),
+        ...(ask && { ask }),
+        ...(settled.length > 0 && { proposal: { settled } }),
+      };
     }
     if (blocks.some((b) => b.type === "text")) {
       return { kind: "assistant_text", text: extractAssistantText(blocks) };
@@ -539,7 +653,10 @@ function classify(entry: TranscriptEntry, includeSidechain: boolean): Classified
       return { kind: "closed" };
     }
     const blocks = asBlocks(entry.message?.content);
-    if (blocks.some((b) => b.type === "tool_result")) return { kind: "tool_result" };
+    if (blocks.some((b) => b.type === "tool_result")) {
+      const proposal = proposalResultsOf(blocks);
+      return proposal ? { kind: "tool_result", proposal } : { kind: "tool_result" };
+    }
     if (entry.isMeta) return null;
     if (blocks.some((b) => b.type === "text" && b.text?.includes(LOCAL_COMMAND_STDOUT_TAG))) {
       return { kind: "closed" };

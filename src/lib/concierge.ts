@@ -66,7 +66,7 @@ interface PayloadSession {
   needs_reply_source?: "machine" | "verdict";
   /** With needs_reply_source machine: whether the session waits on a question (a question tool) or a permission prompt,
    * when that is known */
-  waiting_on?: "question" | "permission";
+  waiting_on?: "question" | "permission" | "proposal";
   seconds_since_last_activity: number;
   line?: string;
   question?: string;
@@ -269,11 +269,13 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "question when it waits, watch links between sessions, chicks (subagents) working), the facts about which " +
     "session is held up by which (computed for you; trust them), and the recent events oldest first " +
     "(needs_reply, user_replied, done, and jump = the developer opened that session's terminal). " +
-    "needs_reply_source tells where needs_reply came from: machine means a question tool or a permission prompt " +
-    "is open; verdict means the session's last reply was judged as waiting on the developer (asking). Both are " +
+    "needs_reply_source tells where needs_reply came from: machine means a question tool, a permission prompt " +
+    "or a proposal card is open; verdict means the session's last reply was judged as waiting on the developer (asking). Both are " +
     "facts: trust needs_reply as given. With machine, waiting_on says which, when known: question means it asks " +
     "the developer a question or a choice (say so, e.g. answer its question), permission means a permission " +
-    "prompt (e.g. allow or deny it). Without waiting_on, don't say which of the two it is.\n" +
+    "prompt (e.g. allow or deny it), proposal means it proposed a new session as a card the developer starts " +
+    "with a click in the Claude desktop app and the card isn't started yet; its question is the card's title (e.g. " +
+    "start or dismiss its proposed session). Without waiting_on, don't say which it is.\n" +
     "A stopped session may have continuing. continuing true means its turn ended but work it started goes on in " +
     "the background (e.g. a measurement, an export or a build is running and it will report or look at the log " +
     "later), or work it handed to another session is still going on; it is a fact: trust it as given. A session " +
@@ -288,8 +290,9 @@ export const CONCIERGE_TASK: JudgeTaskDefinition = {
     "まだ届いていません). A session with watch_children where any of them is working is not finished yet: never " +
     "advise checking its result. A session with parent_takes_over was started by another session that takes its " +
     "results and the questions its replies ask: never advise checking its result, and never advise replying to it " +
-    "while its needs_reply is false. When it stops on a question tool or a permission prompt (needs_reply true, " +
-    "needs_reply_source machine), only the developer can answer it: advise it like any other session.\n" +
+    "while its needs_reply is false. When it stops on a question tool, a permission prompt or a proposal card " +
+    "(needs_reply true, needs_reply_source machine), only the developer can answer it: advise it like any other " +
+    "session.\n" +
     "While any session needs a reply now, advise about one of those, never about a finished or working session; " +
     "an advice about another session is not shown then.\n" +
     "Only a session whose needs_reply is true now may be advised to reply, answer, or check its question or " +
@@ -648,7 +651,8 @@ export function conciergeRetryLogLine(c: ConciergeLogContext, retry: ConciergeRe
 /**
  * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
  * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
- * form to grep. source: machine is a question tool or a permission prompt (waiting_on says which, when known), verdict is
+ * form to grep. source: machine is a question tool, a permission prompt or a proposal card (waiting_on says which, when
+ * known), verdict is
  * the turn verdict asking; verdict
  * is the turn verdict of a stopped turn (asking / not_asking); continuing is the session's continuing (expired when the
  * turn verdict said continuing but it expired, docs/design.md "Turn verdicts"; the payload then says false)

@@ -287,6 +287,17 @@ fn started_session_id(text: &str) -> Option<String> {
     is_host_session_id(id).then(|| id.to_string())
 }
 
+/// The id in the shared notes folder the desktop app names in the first prompt of a session another session started:
+/// `…/side-session-notes/local_…`, the starter's id (docs/design.md "Watching")
+fn notes_folder_host_id(text: &str) -> Option<String> {
+    const MARK: &str = "side-session-notes/";
+    let i = text.find(MARK)?;
+    let rest = &text[i + MARK.len()..];
+    let end = rest.find(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '-')).unwrap_or(rest.len());
+    let id = &rest[..end];
+    is_host_session_id(id).then(|| id.to_string())
+}
+
 /// Picks up, from [start, end of file) of the transcript, the names of peers exchanged with via cross-session
 /// messages (watching links; same rules as collectPeerNames in lib/transcript.ts). To also catch traces outside
 /// the tail window, the caller remembers end and reads only what was added. Does not read message bodies; returns
@@ -426,6 +437,22 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             }
             // The tool result that started a desktop app session carries its id in the text
             Some("user") => {
+                // A prompt the desktop app wrote for a session another session started names the starter's shared
+                // notes folder, `side-session-notes/<its local_… id>`
+                if entry.get("turnOrigin").and_then(|t| t.as_str()).is_some_and(|o| o != "human") {
+                    let text = match entry.pointer("/message/content") {
+                        Some(serde_json::Value::String(t)) => t.clone(),
+                        Some(serde_json::Value::Array(items)) => items
+                            .iter()
+                            .filter_map(|i| i.get("text").and_then(|t| t.as_str()))
+                            .collect::<Vec<_>>()
+                            .join("\n"),
+                        _ => String::new(),
+                    };
+                    if let Some(id) = notes_folder_host_id(&text) {
+                        names.push((id, at.to_string()));
+                    }
+                }
                 let blocks = entry.pointer("/message/content").and_then(|c| c.as_array());
                 for block in blocks.into_iter().flatten() {
                     if block.get("type").and_then(|t| t.as_str()) != Some("tool_result") {
@@ -933,6 +960,21 @@ mod tests {
                 "a message that arrived mid-work",
                 format!(r#"{{"type":"attachment","timestamp":"T","attachment":{{"origin":{{"kind":"peer","from":"{ID}","name":"Fix it"}}}}}}"#),
                 vec!["Fix it", ID],
+            ),
+            (
+                "the starter's notes folder in a prompt the desktop app wrote (a session started from a proposal card)",
+                format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"host_synthetic","message":{{"content":"Shared notes folder for this group of sessions: /Users/x/Library/Application Support/Claude/side-session-notes/{ID}\n"}}}}"#),
+                vec![ID],
+            ),
+            (
+                "the notes folder in text blocks of a prompt started by start_session",
+                format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{{"content":[{{"type":"text","text":"notes: /a/side-session-notes/{ID}"}}]}}}}"#),
+                vec![ID],
+            ),
+            (
+                "the notes folder in a prompt the user typed is not a link",
+                format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"human","message":{{"content":"look at /a/side-session-notes/{ID}"}}}}"#),
+                vec![],
             ),
             (
                 "a subagent's line is not a link",

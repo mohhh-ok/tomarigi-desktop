@@ -3,7 +3,8 @@
 import type { RootEntry } from "./settings-store";
 import { silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
 import { basename } from "./paths";
-import { lastWrittenAt, pendingAskOf, projectLabels } from "./transcript";
+import { lastWrittenAt, pendingAskOf, pendingProposalsOf, projectLabels } from "./transcript";
+import { proposalQuestion, unstartedProposals } from "./proposals";
 import type {
   BirdState,
   ChickScan,
@@ -197,8 +198,26 @@ function buildViews(
     // to the transcript yet (it writes it after the answer). Instead the status in <config>/sessions/<pid>.json
     // becomes "waiting", so treat that as needs reply
     const live = isSdk ? undefined : watch.liveBySessionId.get(sessionIdOfViewId(id));
-    const state: BirdState = live?.status === "waiting" ? "waiting" : tailState;
-    const waitingOn = state === "waiting" ? waitingOnOf(tailState === "waiting", live?.waitingFor) : undefined;
+    const peers = watch.peerLinksOf(sessionIdOfViewId(id));
+    // A desktop app turn that ended leaving a proposal card the user hasn't started waits on them (lib/proposals.ts)
+    const proposals =
+      !isSdk && live?.status !== "waiting" && (tailState === "done" || tailState === "dozing")
+        ? unstartedProposals(
+            pendingProposalsOf(tail.events),
+            peers.map((p) => ({
+              startedAt: p.startedAt,
+              hostSessionId: watch.liveBySessionId.get(p.sessionId)?.hostSessionId,
+              startedBySession: p.viewId !== undefined && watch.startedFromSessionOf(p.viewId),
+            })),
+          )
+        : [];
+    const state: BirdState = live?.status === "waiting" || proposals.length > 0 ? "waiting" : tailState;
+    const waitingOn =
+      proposals.length > 0
+        ? "proposal"
+        : state === "waiting"
+          ? waitingOnOf(tailState === "waiting", live?.waitingFor)
+          : undefined;
     const wrapUpAsk = waitsOnWrapUpAsk(state, live?.status === "waiting", tail.events);
     // The display state is escalated to a chick's urgency while the chick is running (anything but done/dozing)
     const displayState = escalateWithChicks(state, chickViews);
@@ -206,7 +225,6 @@ function buildViews(
     // If there is no message in the window, use the last remembered snippet instead
     const snippet = pickSnippet(tail) ?? snippetCache.get(id);
     if (snippet) snippetCache.set(id, snippet);
-    const peers = watch.peerLinksOf(sessionIdOfViewId(id));
     // Its own turn ended at its last write (the basis of sinceMs), so the grace period ends once it finished a turn after the
     // linked sessions last wrote (docs/design.md "Watching")
     const watching = watchingCount(displayState, peers, now, writtenAt);
@@ -222,7 +240,9 @@ function buildViews(
     const question =
       displayState !== "waiting"
         ? undefined
-        : (pendingAskOf(tail.events)?.question ?? (last?.kind === "tool_use" ? extractQuestion(last.text) : undefined));
+        : proposals.length > 0
+          ? proposalQuestion(proposals)
+          : (pendingAskOf(tail.events)?.question ?? (last?.kind === "tool_use" ? extractQuestion(last.text) : undefined));
     feedTurnMessages(id, tail.events);
     // The messages of the stopped turn go with its turn verdict (docs/design.md "Turn verdicts")
     const userMessages = reply ? turnUserMessages(id, reply.at) : undefined;

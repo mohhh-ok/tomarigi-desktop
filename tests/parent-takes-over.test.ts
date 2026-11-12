@@ -337,6 +337,19 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
       { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
     ],
     [
+      // Only the user can start a card: the app refuses a start in a turn another session's message started
+      "a child that left a proposal card",
+      { state: "waiting", waitingOn: "proposal", parentTakesOver: true },
+      ev("waiting", "s"),
+      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+    ],
+    [
+      "a session the user started, that left a proposal card",
+      { state: "waiting", waitingOn: "proposal" },
+      ev("waiting", "s"),
+      { readAloud: true, needsReply: true, source: "machine", replyDrop: undefined, status: "reply", trigger: "reply" },
+    ],
+    [
       "a child on its wrap_up's ask (its report reaches the parent)",
       { state: "waiting", waitingOn: "question", wrapUpAsk: true, parentTakesOver: true },
       ev("waiting", "s", { wrapUpAsk: true }),

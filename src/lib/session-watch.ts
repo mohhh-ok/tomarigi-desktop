@@ -11,6 +11,9 @@ export interface WatchLinks {
   peerLinksOf: (ownSessionId: string) => PeerLink[];
   /** Whether the session (view id) was started by another session (startedBySession in lib/watching.ts) */
   startedBySessionOf: (viewId: string) => boolean;
+  /** Whether the session (view id) was started by another session, even if the user typed in it since (its first
+   * prompt only; startedBySession in lib/watching.ts). Tells a session started from a proposal card (lib/proposals.ts) */
+  startedFromSessionOf: (viewId: string) => boolean;
 }
 
 // Watching links (docs/design.md "Watching"). Match the names (or desktop app ids) of peers exchanged with against
@@ -97,7 +100,8 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   }
   const startedBySessionOf = (viewId: string) =>
     startedBySession(firstPromptCache.get(viewId), latestTurnTypedIds.has(viewId));
-  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf };
+  const startedFromSessionOf = (viewId: string) => startedBySession(firstPromptCache.get(viewId));
+  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf, startedFromSessionOf };
 }
 
 /**
