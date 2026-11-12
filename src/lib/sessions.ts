@@ -1,7 +1,7 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
-import { silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
+import { lastWrittenAt, silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
 import { basename } from "./paths";
 import { pendingAskOf, projectLabels } from "./transcript";
 import type {
@@ -166,7 +166,8 @@ function buildViews(
     // Later appends without a timestamp (last-prompt etc., a touch on a dead transcript hours later) only
     // advance file.lastModified, so using mtime as the basis makes ended sessions reappear (see the comment on
     // TailInfo.lastEventAt). Falls back to mtime only in the rare case where the tail window has no line with a timestamp
-    const sinceMs = now - (tail.lastEventAt ?? file.lastModified);
+    const writtenAt = lastWrittenAt(tail, file.lastModified);
+    const sinceMs = now - writtenAt;
     const project = names.get(id)?.name ?? base;
     const projectSuffix = names.get(id)?.suffix;
     // Subagent chicks (from scanChicks) and SDK chicks (those for which this session was chosen as parent
@@ -206,9 +207,9 @@ function buildViews(
     const snippet = pickSnippet(tail) ?? snippetCache.get(id);
     if (snippet) snippetCache.set(id, snippet);
     const peers = watch.peerLinksOf(sessionIdOfViewId(id));
-    // Its own turn ended at its last transcript line (the basis of sinceMs), so the grace period ends once it finished a turn
-    // after the linked sessions last moved (docs/design.md "Watching")
-    const watching = watchingCount(displayState, peers, now, now - sinceMs);
+    // Its own turn ended at its last write (the basis of sinceMs), so the grace period ends once it finished a turn after the
+    // linked sessions last moved (docs/design.md "Watching")
+    const watching = watchingCount(displayState, peers, now, writtenAt);
     const takenOver = takenOverByParent(sessionIdOfViewId(id), linkWorld);
     const last = tail.events[tail.events.length - 1];
     const reply =

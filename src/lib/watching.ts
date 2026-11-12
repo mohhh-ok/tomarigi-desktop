@@ -3,6 +3,7 @@
 import type { BirdState } from "./sessions";
 import type { LiveSession, SessionEvent } from "./session-types";
 import type { WatchLinks } from "./session-watch";
+import type { TailInfo } from "./transcript";
 import { parentCanAnswer } from "./turn-verdict";
 
 /** For this long after the linked session last moved, it stays watching */
@@ -36,6 +37,15 @@ export function watchingCount(
   if (!(now - lastMoved <= WATCH_GRACE_MS)) return undefined;
   if (ownTurnEndedAt !== undefined && ownTurnEndedAt > lastMoved) return undefined;
   return 0;
+}
+
+/**
+ * When the session last wrote: the time of the last line with a timestamp, or the file's mtime when the tail window has
+ * none. The basis of its state (sinceMs), and once it is done / dozing, when its turn ended (watchingCount's
+ * ownTurnEndedAt; docs/design.md "Watching")
+ */
+export function lastWrittenAt(tail: Pick<TailInfo, "lastEventAt">, lastModified: number): number {
+  return tail.lastEventAt ?? lastModified;
 }
 
 /** The transcript's first prompt as scan_peer_names (src-tauri) reads it */
