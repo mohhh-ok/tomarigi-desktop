@@ -1,5 +1,5 @@
-// Cutting a text short so its line fits a number of lines (docs/design.md "Concierge": each state line shows at most 2
-// lines and ends with 「…」 when cut). Whether a candidate fits is asked of the caller (the page lays it out and measures
+// Cutting a text short so its line fits a number of lines (docs/design.md "Concierge": each state line shows at most 3
+// lines in all and ends with 「…」 when cut). Whether a candidate fits is asked of the caller (the page lays it out and measures
 // it), so the choice of where to cut is kept apart from the page and tested on its own
 
 export const ELLIPSIS = "…";
