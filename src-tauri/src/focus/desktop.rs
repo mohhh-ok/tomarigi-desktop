@@ -61,7 +61,6 @@ pub(super) fn open_command(os: Os, url: &str) -> (&'static str, Vec<String>) {
     }
 }
 
-
 /// The `local_<id>` of a record whose `cliSessionId` is session_id
 pub(super) fn local_id_of(record: &serde_json::Value, session_id: &str) -> Option<String> {
     if session_id.is_empty() || record.get("cliSessionId").and_then(|v| v.as_str()) != Some(session_id) {
@@ -167,10 +166,17 @@ pub(crate) fn started_cards(dir: &Path, parents: &[CardParent], since_ms: u64, n
     let none = |read| CardScan { hosts: Vec::new(), spawned: Vec::new(), read, read_at_ms: now_ms, reliable: false };
     let mut read = 0;
     let mut hosts: Vec<(String, String)> = Vec::new();
-    let unknown: Vec<&str> = parents.iter().filter(|p| p.host.is_none()).map(|p| p.cli.as_str()).collect();
+    // Each transcript id once: two parents may share one, and one transcript may have several records (a resumed
+    // session), so the read stops once every id has a record, not after as many records as ids
+    let mut unknown: Vec<&str> = parents.iter().filter(|p| p.host.is_none()).map(|p| p.cli.as_str()).collect();
+    unknown.sort_unstable();
+    unknown.dedup();
     if !unknown.is_empty() {
         let Some(n) = each_record(dir, None, &unknown, |record| {
             for cli in &unknown {
+                if hosts.iter().any(|(c, _)| c == cli) {
+                    continue;
+                }
                 if let Some(local) = local_id_of(record, cli) {
                     hosts.push((cli.to_string(), local));
                 }
@@ -348,6 +354,22 @@ mod tests {
         let looked_up = started_cards(&dir, &unknown, 0, 10);
         assert_eq!(looked_up.hosts, vec![("t-p".to_string(), P.to_string())]);
         assert_eq!(looked_up.spawned, started);
+        // Two records with the parent's transcript id (a resumed session), and another parent: each found once, and the
+        // read doesn't stop before the other parent's record
+        let more = dir.join("org").join("other-account");
+        std::fs::create_dir_all(&more).unwrap();
+        std::fs::write(more.join("local_0a1b2c3d-0000-4000-8000-0000000000a1.json"), r#"{"sessionId":"local_0a1b2c3d-0000-4000-8000-0000000000a1","cliSessionId":"t-p"}"#).unwrap();
+        std::fs::write(more.join("local_0a1b2c3d-0000-4000-8000-0000000000a2.json"), r#"{"sessionId":"local_0a1b2c3d-0000-4000-8000-0000000000a2","cliSessionId":"t-q"}"#).unwrap();
+        let two = [
+            CardParent { cli: "t-p".into(), host: None },
+            CardParent { cli: "t-p".into(), host: None },
+            CardParent { cli: "t-q".into(), host: None },
+        ];
+        let mut found = started_cards(&dir, &two, 0, 13).hosts;
+        found.sort();
+        assert_eq!(found.iter().filter(|(c, _)| c == "t-p").count(), 1, "{found:?}");
+        assert_eq!(found.iter().filter(|(c, _)| c == "t-q").map(|(_, h)| h.as_str()).collect::<Vec<_>>(), ["local_0a1b2c3d-0000-4000-8000-0000000000a2"]);
+        std::fs::remove_dir_all(&more).unwrap();
         // A parent no record names: nothing started
         let missing = started_cards(&dir, &[CardParent { cli: "t-x".into(), host: None }], 0, 11);
         assert_eq!((missing.hosts.len(), missing.spawned.len(), missing.reliable), (0, 0, true));

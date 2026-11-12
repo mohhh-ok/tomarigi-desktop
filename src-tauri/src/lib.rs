@@ -130,7 +130,6 @@ pub(crate) fn home() -> PathBuf {
     PathBuf::from(std::env::var(var).unwrap_or_else(|_| "/".into()))
 }
 
-/// Expands a leading "~/" to the home directory
 /// The Claude desktop app's session id, `local_` and then hex digits and `-` (its sessions are addressed by it;
 /// docs/design.md "Watching"). Same rule as HOST_SESSION_ID in src/lib/transcript.ts
 pub(crate) fn is_host_session_id(id: &str) -> bool {
@@ -138,6 +137,7 @@ pub(crate) fn is_host_session_id(id: &str) -> bool {
         .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-'))
 }
 
+/// Expands a leading "~/" to the home directory
 pub(crate) fn expand(path: &str) -> PathBuf {
     match path.strip_prefix("~/") {
         Some(rest) => home().join(rest),

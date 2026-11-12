@@ -270,7 +270,6 @@ fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
     }
 }
 
-
 /// The id in the text of the desktop app's start_session result: `Started session "…" (session_id: local_…, …)`
 fn started_session_id(text: &str) -> Option<String> {
     if !text.starts_with("Started session ") {
