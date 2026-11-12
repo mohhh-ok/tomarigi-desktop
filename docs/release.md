@@ -77,11 +77,12 @@ The Developer ID Application certificate can only be created by the Account Hold
 
 The updater (docs/design.md "Updates") only installs bundles signed with the key whose public half is `plugins.updater.pubkey` in `src-tauri/tauri.conf.json`. The tag run signs the macOS `.app.tar.gz`, the Windows `.exe`, and the Linux `.AppImage` / `.deb` with the two secrets above and attaches each bundle with its `.sig`. tauri-action's own `latest.json` is turned off in every job (`uploadUpdaterJson: false`), since each job would read it from the release, add its platforms, and upload it again, and the parallel Windows and Linux jobs would drop each other's entries. The `updater-json` job runs after all three and writes it once with `scripts/updater-json.ts`, from the bundles and `.sig` files on the draft, in the same shape tauri-action writes (keys `{os}-{arch}` and `{os}-{arch}-{bundle}`, the asset's API URL, the `.sig` contents; `tests/updater-json.test.ts` compares it with v0.15.3's). It fails if macOS, Windows, or Linux is missing. The manual run builds without updater bundles (`createUpdaterArtifacts: false` in its `--config`), since it gets no secrets.
 
-The key and its password are also kept in Google Secret Manager, project `<gcp-project>`, as `tomarigi-desktop-updater-private-key` and `tomarigi-desktop-updater-private-key-password` (GitHub secrets can't be read back). To restore them into the repository secrets:
+The key and its password are also kept in Google Secret Manager, as `tomarigi-desktop-updater-private-key` and `tomarigi-desktop-updater-private-key-password` (GitHub secrets can't be read back). The GCP project is the maintainer's personal one; its id is not written in this public repo but kept as `UPDATER_KEY_GCP_PROJECT` in the local `.env` (the user's decision). To restore them into the repository secrets:
 
 ```sh
-gcloud secrets versions access latest --secret=tomarigi-desktop-updater-private-key --project <gcp-project> | gh secret set TAURI_SIGNING_PRIVATE_KEY -R mohhh-ok/tomarigi-desktop
-gcloud secrets versions access latest --secret=tomarigi-desktop-updater-private-key-password --project <gcp-project> | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD -R mohhh-ok/tomarigi-desktop
+set -a; source .env; set +a
+gcloud secrets versions access latest --secret=tomarigi-desktop-updater-private-key --project "$UPDATER_KEY_GCP_PROJECT" | gh secret set TAURI_SIGNING_PRIVATE_KEY -R mohhh-ok/tomarigi-desktop
+gcloud secrets versions access latest --secret=tomarigi-desktop-updater-private-key-password --project "$UPDATER_KEY_GCP_PROJECT" | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD -R mohhh-ok/tomarigi-desktop
 ```
 
 If the key is lost, nothing installed can update itself again: a new key pair means a new public key in the app, which the versions already installed don't have, so every user would have to replace the app by hand once more. If the key leaks, anyone with it could sign an update the app would accept; make a new pair, ship it, and ask users to replace the app by hand.
