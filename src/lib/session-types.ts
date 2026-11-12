@@ -153,6 +153,9 @@ export interface PeerLink {
   // Last time it was active (epoch ms). The newer of the last time this app saw it active and the peer's last
   // transcript write. Used for the watching grace period
   lastActiveAt?: number;
+  // Its last transcript write (epoch ms; lastWrittenAt in lib/transcript.ts, as of the previous scan). The watching
+  // grace period ends early once the watching session finished a turn after it (watchingCount in lib/watching.ts)
+  lastWriteAt?: number;
 }
 
 export interface ChickView {

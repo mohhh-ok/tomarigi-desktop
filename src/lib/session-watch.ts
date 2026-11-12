@@ -77,15 +77,13 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   const peerLinksOf = (ownSessionId: string): PeerLink[] =>
     [...(links.get(ownSessionId) ?? [])].map((sessionId) => {
       const live = liveBySessionId.get(sessionId);
-      const last = lastPeerStates.get(sessionId);
       return {
         sessionId,
         viewId: viewIdBySessionId.get(sessionId),
         name: live?.name ?? sessionId.slice(0, 8),
         cwd: live?.cwd,
         startedAt: live?.startedAt,
-        active: isPeerActive(live?.status, last?.state),
-        lastActiveAt: peerLastActiveAt.get(sessionId),
+        ...peerMotion(sessionId, live?.status),
       };
     });
   const watchSignature = [...links.entries()]
@@ -100,6 +98,20 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   const startedBySessionOf = (viewId: string) =>
     startedBySession(firstPromptCache.get(viewId), latestTurnTypedIds.has(viewId));
   return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf };
+}
+
+/**
+ * How a linked session moves, as watchingCount (lib/watching.ts) reads it: whether it moves now, the last time it moved,
+ * and its last transcript write, from what the previous scan remembered (rememberPeerStates). status is its status in
+ * sessions/<pid>.json
+ */
+export function peerMotion(sessionId: string, status: string | undefined): Pick<PeerLink, "active" | "lastActiveAt" | "lastWriteAt"> {
+  const last = lastPeerStates.get(sessionId);
+  return {
+    active: isPeerActive(status, last?.state),
+    lastActiveAt: peerLastActiveAt.get(sessionId),
+    lastWriteAt: last?.lastWriteAt,
+  };
 }
 
 /** Remembers each session's state for the next scan's peer checks (lastPeerStates, peerLastActiveAt) */

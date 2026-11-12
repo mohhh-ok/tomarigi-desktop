@@ -208,7 +208,7 @@ function buildViews(
     if (snippet) snippetCache.set(id, snippet);
     const peers = watch.peerLinksOf(sessionIdOfViewId(id));
     // Its own turn ended at its last write (the basis of sinceMs), so the grace period ends once it finished a turn after the
-    // linked sessions last moved (docs/design.md "Watching")
+    // linked sessions last wrote (docs/design.md "Watching")
     const watching = watchingCount(displayState, peers, now, writtenAt);
     const takenOver = takenOverByParent(sessionIdOfViewId(id), linkWorld);
     const last = tail.events[tail.events.length - 1];

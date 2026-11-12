@@ -20,12 +20,15 @@ export function isPeerActive(status: string | undefined, lastState: BirdState | 
  * If watching, the number of linked sessions moving now (0 or more). undefined if not watching.
  * Watching when its own machine state is done / dozing and some linked session is moving now, or one moved within WATCH_GRACE_MS
  * of now. 0 means "within the grace period, with no linked session moving now".
- * ownTurnEndedAt: when its own turn ended (its last transcript line). The grace period ends early when it is after the last time
- * a linked session moved: the session took the other session's result and finished its turn (docs/design.md "Watching")
+ * ownTurnEndedAt: when its own turn ended (its last transcript line). With no linked session moving now, the grace period ends
+ * early when it is after every linked session's last transcript write (lastWriteAt): the session took the other session's
+ * result and finished its turn. Not compared with lastActiveAt, which is the poll time while the linked session counts as
+ * working and so lags its last write by seconds. A linked session whose last write isn't known keeps the grace period
+ * (docs/design.md "Watching")
  */
 export function watchingCount(
   ownState: BirdState,
-  peers: { active: boolean; lastActiveAt?: number }[],
+  peers: { active: boolean; lastActiveAt?: number; lastWriteAt?: number }[],
   now: number,
   ownTurnEndedAt?: number,
 ): number | undefined {
@@ -34,7 +37,9 @@ export function watchingCount(
   if (moving > 0) return moving;
   const lastMoved = Math.max(...peers.map((p) => p.lastActiveAt ?? -Infinity));
   if (!(now - lastMoved <= WATCH_GRACE_MS)) return undefined;
-  if (ownTurnEndedAt !== undefined && ownTurnEndedAt > lastMoved) return undefined;
+  if (ownTurnEndedAt !== undefined && peers.every((p) => p.lastWriteAt !== undefined && ownTurnEndedAt > p.lastWriteAt)) {
+    return undefined;
+  }
   return 0;
 }
 
