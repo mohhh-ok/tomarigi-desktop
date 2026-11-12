@@ -459,6 +459,35 @@ describe("a Claude desktop app session that leaves a proposal card", () => {
     // The child started from the card is taken over by its parent from its start
     expect(started.views.find((v) => v.id.endsWith(`${childId}.jsonl`))?.parentTakesOver).toBe(true);
   });
+
+  test("the next turn ends the wait even before a session from the card links", async () => {
+    const config = path.join(base, "proposal-next");
+    const proj = path.join(config, "projects", "-tmp-proposal-next");
+    fs.mkdirSync(proj, { recursive: true });
+    const parentId = "99999999-0000-4000-8000-000000000003";
+    const parentFile = path.join(proj, `${parentId}.jsonl`);
+    const at = (msAgo: number, o: object) => line({ timestamp: iso(msAgo), cwd: "/tmp/proposal-next", ...o });
+    fs.writeFileSync(
+      parentFile,
+      at(3 * MIN, { type: "user", turnOrigin: "human", message: { content: "直して" } }) +
+        at(2 * MIN + 10_000, { type: "assistant", message: { content: [{ type: "tool_use", id: "t1", name: "mcp__ccd_session__start_session", input: { initiation: "own_initiative", title: TITLE } }] } }) +
+        at(2 * MIN + 9_000, { type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", content: `Proposed "${TITLE}" (task_id: task_0000bbbb).` }] } }) +
+        at(2 * MIN, { type: "assistant", message: { content: [{ type: "text", text: "カードを出しているので、始めてください。" }] } }),
+    );
+    liveOverride.set(config, { sessions: [{ pid: 3, sessionId: parentId, status: "idle", hostSessionId: PARENT_HOST, startedAt: Date.now() - 60 * MIN }], reliable: true });
+    const roots = [rootOf("proposal-next", "claude", path.join(config, "projects"))];
+    expect((await scanSessions(roots)).views[0]?.waitingOn).toBe("proposal");
+
+    // The user answers in the parent instead (the app tells it there whether the card was started)
+    fs.appendFileSync(
+      parentFile,
+      at(60_000, { type: "user", turnOrigin: "human", message: { content: "やっぱりここでやって" } }) +
+        at(30_000, { type: "assistant", message: { content: [{ type: "text", text: "ここで進めました。" }] } }),
+    );
+    const next = (await scanSessions(roots)).views[0];
+    expect(next?.state).toBe("done");
+    expect(next?.waitingOn).toBeUndefined();
+  });
 });
 
 describe("Codex", () => {

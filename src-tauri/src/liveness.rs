@@ -972,6 +972,11 @@ mod tests {
                 vec![ID],
             ),
             (
+                "a grandchild names only its direct starter (the child), not the session that started the child",
+                r#"{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{"content":"notes: /a/side-session-notes/local_0a1b2c3d-0000-4000-8000-0000000000bb\nThe top session is local_0a1b2c3d-0000-4000-8000-0000000000aa"}}"#.into(),
+                vec!["local_0a1b2c3d-0000-4000-8000-0000000000bb"],
+            ),
+            (
                 "the notes folder in a prompt the user typed is not a link",
                 format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"human","message":{{"content":"look at /a/side-session-notes/{ID}"}}}}"#),
                 vec![],

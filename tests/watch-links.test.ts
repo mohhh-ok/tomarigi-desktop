@@ -21,6 +21,8 @@ function fileOf(lines: object[]): NativeFile {
 }
 
 const ID = "local_3f97c278-cf60-45f9-b227-66ded583d16f";
+const TOP = "local_0a1b2c3d-0000-4000-8000-0000000000aa";
+const CHILD_OF_TOP = "local_0a1b2c3d-0000-4000-8000-0000000000bb";
 const T = "2026-11-11T03:29:26.475Z";
 const toolUse = (name: string, input: object) => ({
   type: "assistant",
@@ -78,6 +80,32 @@ describe("peer traces in a transcript", () => {
       ["web-build"],
     ],
     ["a subagent's line is not a link", { ...toolUse("SendMessage", { to: ID }), isSidechain: true }, []],
+    // A session started from a proposal card: the app names its starter's shared notes folder in its first prompt
+    [
+      "the starter's notes folder in a prompt the app wrote (started from a proposal card)",
+      { type: "user", timestamp: T, turnOrigin: "host_synthetic", message: { content: `notes: /Users/x/Library/Application Support/Claude/side-session-notes/${ID}\n` } },
+      [ID],
+    ],
+    [
+      "the notes folder in text blocks of a prompt started by start_session",
+      { type: "user", timestamp: T, turnOrigin: "sdk", message: { content: [{ type: "text", text: `notes: /a/side-session-notes/${ID}` }] } },
+      [ID],
+    ],
+    [
+      "a grandchild names only its direct starter (the child), not the session that started the child",
+      {
+        type: "user",
+        timestamp: T,
+        turnOrigin: "sdk",
+        message: { content: `notes: /a/side-session-notes/${CHILD_OF_TOP}\nThe top session is ${TOP} (not a link)` },
+      },
+      [CHILD_OF_TOP],
+    ],
+    [
+      "the notes folder in a prompt the user typed is not a link",
+      { type: "user", timestamp: T, turnOrigin: "human", message: { content: `look at /a/side-session-notes/${ID}` } },
+      [],
+    ],
   ];
   for (const [scene, line, want] of scenes) {
     test(scene, async () => {
