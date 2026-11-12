@@ -134,8 +134,18 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
   for (const key of firstPromptCache.keys()) if (!liveIds.has(key)) firstPromptCache.delete(key);
   for (const key of latestTurnTypedIds) if (!liveIds.has(key)) latestTurnTypedIds.delete(key);
+  for (const key of desktopHostByViewId.keys()) if (!liveIds.has(key)) desktopHostByViewId.delete(key);
+  // Card keys start with the view id (cardKey in lib/proposals.ts)
+  for (const key of startedCardCache) if (!liveIds.has(key.split("\n")[0])) startedCardCache.delete(key);
+  for (const key of cardReadSince.keys()) if (!liveIds.has(key.split("\n")[0])) cardReadSince.delete(key);
 }
 
-// The Claude desktop app proposal cards the user started (cardKey in lib/proposals.ts), read from the app's records
-// (readStartedCards in lib/session-watch.ts). A started card stays started
+// The Claude desktop app proposal cards the user started (cardKey in lib/proposals.ts: view id and task id), read from
+// the app's records (readStartedCards in lib/session-watch.ts). A started card stays started while its session is shown
 export const startedCardCache = new Set<string>();
+// For each card not known as started (cardKey): from when the app's records were last read for it (epoch ms), so the
+// next read asks only for records written since
+export const cardReadSince = new Map<string, number>();
+// The desktop app's `local_<id>` of a session (view id) looked up in the app's records, when its sessions/<pid>.json
+// gives none (null: no record names it)
+export const desktopHostByViewId = new Map<string, string | null>();

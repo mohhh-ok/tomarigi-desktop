@@ -5,7 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use super::{FocusLevel, FocusResult};
-use crate::{append_log, home};
+use crate::{append_log, home, is_host_session_id};
 
 /// The OS a record folder and an open command are chosen for
 #[derive(Clone, Copy, Debug)]
@@ -61,11 +61,6 @@ pub(super) fn open_command(os: Os, url: &str) -> (&'static str, Vec<String>) {
     }
 }
 
-/// A `local_<id>` a link may carry as is: letters, digits and `-` after the prefix
-fn is_local_id(id: &str) -> bool {
-    id.strip_prefix("local_")
-        .is_some_and(|rest| !rest.is_empty() && rest.chars().all(|c| c.is_ascii_alphanumeric() || c == '-'))
-}
 
 /// The `local_<id>` of a record whose `cliSessionId` is session_id
 pub(super) fn local_id_of(record: &serde_json::Value, session_id: &str) -> Option<String> {
@@ -73,7 +68,7 @@ pub(super) fn local_id_of(record: &serde_json::Value, session_id: &str) -> Optio
         return None;
     }
     let local = record.get("sessionId")?.as_str()?;
-    is_local_id(local).then(|| local.to_string())
+    is_host_session_id(local).then(|| local.to_string())
 }
 
 /// The link that opens a desktop session from outside the app (the app's own session list gives the same one)
@@ -81,8 +76,16 @@ pub(super) fn session_url(local_id: &str) -> String {
     format!("claude://claude.ai/epitaxy/{local_id}")
 }
 
-/// The `local_<id>` of the desktop session whose transcript is session_id, from the records two folders under dir
-pub(super) fn find_local_id(dir: &Path, session_id: &str) -> Option<String> {
+/// Goes through the records two folders under dir, one at a time: only those written at or after since (all with None),
+/// and, of those, only the ones whose text names one of needles are parsed (most records are of other sessions). f
+/// returns true to stop. Returns how many records were read, or None when dir can't be read
+pub(crate) fn each_record(
+    dir: &Path,
+    since: Option<std::time::SystemTime>,
+    needles: &[&str],
+    mut f: impl FnMut(&serde_json::Value) -> bool,
+) -> Option<usize> {
+    let mut read = 0;
     for a in std::fs::read_dir(dir).ok()?.flatten() {
         let Ok(b_items) = std::fs::read_dir(a.path()) else { continue };
         for b in b_items.flatten() {
@@ -93,87 +96,135 @@ pub(super) fn find_local_id(dir: &Path, session_id: &str) -> Option<String> {
                 if !name.starts_with("local_") || !name.ends_with(".json") {
                     continue;
                 }
+                if let Some(since) = since {
+                    if file.metadata().and_then(|m| m.modified()).map_or(true, |m| m < since) {
+                        continue;
+                    }
+                }
                 let Ok(text) = std::fs::read_to_string(file.path()) else { continue };
-                // Most records are of other sessions: parse only one that names this id
-                if !text.contains(session_id) {
+                read += 1;
+                if !needles.iter().any(|n| !n.is_empty() && text.contains(n)) {
                     continue;
                 }
                 let Ok(record) = serde_json::from_str::<serde_json::Value>(&text) else { continue };
-                if let Some(local) = local_id_of(&record, session_id) {
-                    return Some(local);
+                if f(&record) {
+                    return Some(read);
                 }
             }
         }
     }
-    None
+    Some(read)
 }
 
-/// A record of a session another session started: whose `local_<id>` started it (`spawnedFrom.sessionId`) and, for one
-/// started from a proposal card or by start_session, the task id it came from (`spawnedFrom.taskId`)
+/// The `local_<id>` of the desktop session whose transcript is session_id, from the records two folders under dir
+pub(super) fn find_local_id(dir: &Path, session_id: &str) -> Option<String> {
+    let mut found = None;
+    each_record(dir, None, &[session_id], |record| {
+        found = local_id_of(record, session_id);
+        found.is_some()
+    })?;
+    found
+}
+
+/// A session whose cards are asked about: its transcript's session id, and its `local_<id>` when known
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CardParent {
+    pub(crate) cli: String,
+    pub(crate) host: Option<String>,
+}
+
+/// A record of a session another session started: whose `local_<id>` started it (`spawnedFrom.sessionId`), given back
+/// as that session's transcript id (cli), and the task id it came from (`spawnedFrom.taskId`: a proposal card's, or a
+/// start_session call's)
 #[derive(serde::Serialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Spawned {
-    pub(crate) parent: String,
+    pub(crate) cli: String,
     pub(crate) task_id: String,
 }
 
-/// The records, two folders under dir, of sessions that the given sessions started and that were written at or after
-/// since (epoch ms; a session started from a card has its record written when the user starts it). None when dir
-/// can't be read (docs/design.md "The "?" for sessions waiting on you")
-pub(crate) fn spawned_from(dir: &Path, parents: &[String], since_ms: u64) -> Option<Vec<Spawned>> {
-    let since = std::time::UNIX_EPOCH + std::time::Duration::from_millis(since_ms);
-    let mut found = Vec::new();
-    for a in std::fs::read_dir(dir).ok()?.flatten() {
-        let Ok(b_items) = std::fs::read_dir(a.path()) else { continue };
-        for b in b_items.flatten() {
-            let Ok(files) = std::fs::read_dir(b.path()) else { continue };
-            for file in files.flatten() {
-                let name = file.file_name();
-                let name = name.to_string_lossy();
-                if !name.starts_with("local_") || !name.ends_with(".json") {
-                    continue;
-                }
-                if file.metadata().and_then(|m| m.modified()).map_or(true, |m| m < since) {
-                    continue;
-                }
-                let Ok(text) = std::fs::read_to_string(file.path()) else { continue };
-                // Most records are of other sessions: parse only one that names a parent
-                if !parents.iter().any(|p| text.contains(p.as_str())) {
-                    continue;
-                }
-                let Ok(record) = serde_json::from_str::<serde_json::Value>(&text) else { continue };
-                let parent = record.pointer("/spawnedFrom/sessionId").and_then(|v| v.as_str());
-                let task_id = record.pointer("/spawnedFrom/taskId").and_then(|v| v.as_str());
-                if let (Some(parent), Some(task_id)) = (parent, task_id) {
-                    if parents.iter().any(|p| p == parent) {
-                        found.push(Spawned { parent: parent.to_string(), task_id: task_id.to_string() });
-                    }
+/// What desktop_started_cards found
+#[derive(serde::Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CardScan {
+    /// The `local_<id>` of each parent asked without one, when its record was found
+    pub(crate) hosts: Vec<(String, String)>,
+    pub(crate) spawned: Vec<Spawned>,
+    /// How many records were read: the next read asks only for those written since read_at_ms
+    pub(crate) read: usize,
+    /// When this read started (epoch ms)
+    pub(crate) read_at_ms: u64,
+    /// false when the desktop app's records can't be read (no data folder, or not there)
+    pub(crate) reliable: bool,
+}
+
+/// The cards of parents that the user started, from the records under dir (docs/design.md "The "?" for sessions waiting
+/// on you"). A parent without its `local_<id>` (no `hostSessionId` in its sessions/<pid>.json, e.g. its process ended)
+/// is looked up by its transcript id in all records; then the records written at or after since_ms are read for the
+/// sessions started from the parents' cards
+pub(crate) fn started_cards(dir: &Path, parents: &[CardParent], since_ms: u64, now_ms: u64) -> CardScan {
+    let none = |read| CardScan { hosts: Vec::new(), spawned: Vec::new(), read, read_at_ms: now_ms, reliable: false };
+    let mut read = 0;
+    let mut hosts: Vec<(String, String)> = Vec::new();
+    let unknown: Vec<&str> = parents.iter().filter(|p| p.host.is_none()).map(|p| p.cli.as_str()).collect();
+    if !unknown.is_empty() {
+        let Some(n) = each_record(dir, None, &unknown, |record| {
+            for cli in &unknown {
+                if let Some(local) = local_id_of(record, cli) {
+                    hosts.push((cli.to_string(), local));
                 }
             }
-        }
+            hosts.len() == unknown.len()
+        }) else {
+            return none(read);
+        };
+        read += n;
     }
-    Some(found)
+    let by_host: Vec<(&str, &str)> = parents
+        .iter()
+        .filter_map(|p| {
+            let host = p.host.as_deref().or_else(|| hosts.iter().find(|(c, _)| c == &p.cli).map(|(_, h)| h.as_str()))?;
+            Some((host, p.cli.as_str()))
+        })
+        .collect();
+    let mut spawned = Vec::new();
+    if !by_host.is_empty() {
+        // checked_add: a since far in the future can't overflow the clock (it would panic on some platforms)
+        let since = std::time::UNIX_EPOCH
+            .checked_add(std::time::Duration::from_millis(since_ms))
+            .unwrap_or(std::time::UNIX_EPOCH);
+        let needles: Vec<&str> = by_host.iter().map(|(h, _)| *h).collect();
+        let Some(n) = each_record(dir, Some(since), &needles, |record| {
+            let parent = record.pointer("/spawnedFrom/sessionId").and_then(|v| v.as_str());
+            let task_id = record.pointer("/spawnedFrom/taskId").and_then(|v| v.as_str());
+            if let (Some(parent), Some(task_id)) = (parent, task_id) {
+                if let Some((_, cli)) = by_host.iter().find(|(h, _)| *h == parent) {
+                    spawned.push(Spawned { cli: cli.to_string(), task_id: task_id.to_string() });
+                }
+            }
+            false
+        }) else {
+            return none(read);
+        };
+        read += n;
+    }
+    CardScan { hosts, spawned, read, read_at_ms: now_ms, reliable: true }
 }
 
-#[derive(serde::Serialize)]
-pub(crate) struct SpawnedScan {
-    spawned: Vec<Spawned>,
-    /// false when the desktop app's records can't be read (no data folder, or not there)
-    reliable: bool,
-}
-
-/// The proposal cards of the given sessions (their `local_<id>`) that the user started: the records of the sessions
-/// started from them, written at or after since (epoch ms)
+/// The proposal cards of the given sessions that the user started (started_cards)
 #[tauri::command]
-pub(crate) async fn desktop_spawned_from(parents: Vec<String>, since_ms: u64) -> SpawnedScan {
-    tauri::async_runtime::spawn_blocking(move || {
-        match sessions_dir().and_then(|dir| spawned_from(&dir, &parents, since_ms)) {
-            Some(spawned) => SpawnedScan { spawned, reliable: true },
-            None => SpawnedScan { spawned: Vec::new(), reliable: false },
-        }
+pub(crate) async fn desktop_started_cards(parents: Vec<CardParent>, since_ms: u64) -> CardScan {
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_millis() as u64);
+    let unreadable = CardScan { hosts: Vec::new(), spawned: Vec::new(), read: 0, read_at_ms: now_ms, reliable: false };
+    tauri::async_runtime::spawn_blocking(move || match sessions_dir() {
+        Some(dir) => started_cards(&dir, &parents, since_ms, now_ms),
+        None => unreadable,
     })
     .await
-    .unwrap_or(SpawnedScan { spawned: Vec::new(), reliable: false })
+    .unwrap_or(CardScan { hosts: Vec::new(), spawned: Vec::new(), read: 0, read_at_ms: now_ms, reliable: false })
 }
 
 /// Opens the Claude Code session in the desktop app when it is one of the app's: Pane when opened, None when it isn't
@@ -263,12 +314,14 @@ mod tests {
 
     #[test]
     fn the_cards_a_session_proposed_that_were_started() {
-        let dir = std::env::temp_dir().join(format!("tomarigi-desktop-spawned-test-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("tomarigi-desktop-cards-test-{}", std::process::id()));
         let deep = dir.join("org").join("account");
         std::fs::create_dir_all(&deep).unwrap();
         const P: &str = "local_0a1b2c3d-0000-4000-8000-000000000001";
         const OTHER: &str = "local_0a1b2c3d-0000-4000-8000-000000000009";
         let write = |name: &str, body: &str| std::fs::write(deep.join(name), body).unwrap();
+        // The parent's own record: its transcript t-p and its local id
+        write("local_0a1b2c3d-0000-4000-8000-000000000001.json", &format!(r#"{{"sessionId":"{P}","cliSessionId":"t-p"}}"#));
         // Started from P's card task_1
         write("local_c1.json", &format!(r#"{{"sessionId":"local_c1","spawnedFrom":{{"sessionId":"{P}","taskId":"task_1","sideSession":true}}}}"#));
         // Started by another session
@@ -279,13 +332,37 @@ mod tests {
         write("local_c3.json", &format!(r#"{{"sessionId":"local_c3","title":"about {P}"}}"#));
         // Half written
         write("local_c4.json", &format!(r#"{{"sessionId":"local_c4","spawnedFrom":{{"sessionId":"{P}""#));
-        let got = spawned_from(&dir, &[P.to_string()], 0).unwrap();
-        // Written before since: not read
-        let later = spawned_from(&dir, &[P.to_string()], u64::MAX / 2).unwrap();
+        let started = vec![Spawned { cli: "t-p".into(), task_id: "task_1".into() }];
+        let known = [CardParent { cli: "t-p".into(), host: Some(P.into()) }];
+        let first = started_cards(&dir, &known, 0, 7);
+        assert_eq!((&first.spawned, first.hosts.is_empty(), first.reliable, first.read_at_ms), (&started, true, true, 7));
+        assert_eq!(first.read, 6, "the first read goes through every record written since the card");
+        // The next read asks only for records written since the last one: none were
+        let later_ms = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64 + 60_000;
+        let next = started_cards(&dir, &known, later_ms, 8);
+        assert_eq!((next.read, next.spawned.len()), (0, 0));
+        // A since too far in the future doesn't overflow the clock
+        assert_eq!(started_cards(&dir, &known, u64::MAX, 9).read, 0);
+        // A parent without its local id (its process ended): found by its transcript id in the records
+        let unknown = [CardParent { cli: "t-p".into(), host: None }];
+        let looked_up = started_cards(&dir, &unknown, 0, 10);
+        assert_eq!(looked_up.hosts, vec![("t-p".to_string(), P.to_string())]);
+        assert_eq!(looked_up.spawned, started);
+        // A parent no record names: nothing started
+        let missing = started_cards(&dir, &[CardParent { cli: "t-x".into(), host: None }], 0, 11);
+        assert_eq!((missing.hosts.len(), missing.spawned.len(), missing.reliable), (0, 0, true));
         std::fs::remove_dir_all(&dir).unwrap();
-        assert_eq!(got, vec![Spawned { parent: P.into(), task_id: "task_1".into() }]);
-        assert_eq!(later, vec![]);
-        assert_eq!(spawned_from(Path::new("/nonexistent-tomarigi"), &[P.to_string()], 0), None);
+        assert!(!started_cards(Path::new("/nonexistent-tomarigi"), &known, 0, 12).reliable);
+    }
+
+    /// A local id is `local_` and hex digits and `-`, as HOST_SESSION_ID in src/lib/transcript.ts and in liveness.rs
+    #[test]
+    fn a_record_names_a_local_id_only_in_its_one_form() {
+        let record = |local: &str| json!({ "sessionId": local, "cliSessionId": "t" });
+        assert_eq!(local_id_of(&record("local_0a1b-2c"), "t"), Some("local_0a1b-2c".into()));
+        assert_eq!(local_id_of(&record("local_zz"), "t"), None);
+        assert_eq!(local_id_of(&record("local_"), "t"), None);
+        assert_eq!(local_id_of(&record("local_ab/../x"), "t"), None);
     }
 
     #[test]

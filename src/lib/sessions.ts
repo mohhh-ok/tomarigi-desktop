@@ -201,7 +201,7 @@ function buildViews(
     const peers = watch.peerLinksOf(sessionIdOfViewId(id));
     // Where its wait on the user comes from, if it waits: Claude Code's own status, a question tool, proposal cards not
     // started, or a wrap_up's ask (replyWaitOf in lib/bird-state.ts; docs/design.md "The "?" for sessions waiting on you")
-    const cards = isSdk ? [] : unstartedProposals(pendingProposalsOf(tail.events), live?.hostSessionId, watch.startedCards);
+    const cards = isSdk ? [] : unstartedProposals(pendingProposalsOf(tail.events), id, watch.startedCards);
     const wait = isSdk ? undefined : replyWaitOf(tail.events, tailState, live, cards);
     const state: BirdState = wait ? "waiting" : tailState;
     const waitingOn = wait?.waitingOn;

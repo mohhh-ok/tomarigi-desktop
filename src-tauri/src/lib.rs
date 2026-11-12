@@ -131,6 +131,13 @@ pub(crate) fn home() -> PathBuf {
 }
 
 /// Expands a leading "~/" to the home directory
+/// The Claude desktop app's session id, `local_` and then hex digits and `-` (its sessions are addressed by it;
+/// docs/design.md "Watching"). Same rule as HOST_SESSION_ID in src/lib/transcript.ts
+pub(crate) fn is_host_session_id(id: &str) -> bool {
+    id.strip_prefix("local_")
+        .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-'))
+}
+
 pub(crate) fn expand(path: &str) -> PathBuf {
     match path.strip_prefix("~/") {
         Some(rest) => home().join(rest),
@@ -312,7 +319,7 @@ pub fn run() {
             focus::focus_session,
             focus::focus_codex,
             focus::desktop::open_desktop_session,
-            focus::desktop::desktop_spawned_from,
+            focus::desktop::desktop_started_cards,
             liveness::live_codex_threads,
             window::hide_window,
             window::get_window_mode,

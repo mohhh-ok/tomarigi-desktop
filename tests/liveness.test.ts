@@ -48,10 +48,13 @@ let psFails = false;
 const openCodeDbs = new Map<string, { sessions: object[]; tails: Map<string, object[]> }>();
 // scan_peer_names answers by transcript path (the Rust command is tested in src-tauri); the rest get no traces
 const peerScans = new Map<string, object>();
-// The desktop app's records of sessions started from proposal cards, as desktop_spawned_from returns them (the Rust
-// command is tested in src-tauri); spawnedUnreadable stands for records that can't be read
-const spawnedRecords: { parent: string; taskId: string }[] = [];
+// The desktop app's records, as desktop_started_cards reads them (the Rust command is tested in src-tauri): sessions
+// started from cards (the starter's local id and the task id, and when the record was written), and each session's
+// local id by its transcript id. spawnedUnreadable stands for records that can't be read; cardReads keeps each call
+const spawnedRecords: { parent: string; taskId: string; writtenAt: number }[] = [];
+const desktopHosts = new Map<string, string>();
 let spawnedUnreadable = false;
+const cardReads: { parents: { cli: string; host: string | null }[]; sinceMs: number }[] = [];
 
 mock.module("@tauri-apps/api/core", () => ({
   invoke: async (cmd: string, args: Record<string, never>) => {
@@ -135,9 +138,21 @@ mock.module("@tauri-apps/api/core", () => ({
         return openCodeDbs.get(args.dbPath)?.tails.get(args.sessionId) ?? null;
       case "scan_peer_names":
         return peerScans.get(args.path) ?? { names: [], end: 0 };
-      case "desktop_spawned_from":
-        if (spawnedUnreadable) return { spawned: [], reliable: false };
-        return { spawned: spawnedRecords.filter((r) => (args.parents as string[]).includes(r.parent)), reliable: true };
+      case "desktop_started_cards": {
+        const parents = args.parents as { cli: string; host: string | null }[];
+        cardReads.push({ parents, sinceMs: args.sinceMs as number });
+        if (spawnedUnreadable) return { hosts: [], spawned: [], read: 0, readAtMs: Date.now(), reliable: false };
+        const hosts: [string, string][] = parents.flatMap((p) => {
+          const host = p.host === null ? desktopHosts.get(p.cli) : undefined;
+          return host ? [[p.cli, host] as [string, string]] : [];
+        });
+        const hostOf = (p: { cli: string; host: string | null }) => p.host ?? hosts.find(([cli]) => cli === p.cli)?.[1];
+        const fresh = spawnedRecords.filter((r) => r.writtenAt >= (args.sinceMs as number));
+        const spawned = parents.flatMap((p) =>
+          fresh.filter((r) => r.parent === hostOf(p)).map((r) => ({ cli: p.cli, taskId: r.taskId })),
+        );
+        return { hosts, spawned, read: fresh.length, readAtMs: Date.now(), reliable: true };
+      }
       case "log":
         return;
       case "focus_pid":
@@ -160,7 +175,8 @@ const { NativeDirectoryHandle } = await import("../src/lib/native-fs.ts");
 const { scanSessions, jumpPidOf } = await import("../src/lib/sessions.ts");
 const { focusTargetOf, focusSession } = await import("../src/lib/terminal-focus.ts");
 const { cursorProjectSlug } = await import("../src/lib/cursor-transcript.ts");
-const { startedCardCache } = await import("../src/lib/session-store.ts");
+const { startedCardCache, cardReadSince, pruneCaches } = await import("../src/lib/session-store.ts");
+const { cardKey } = await import("../src/lib/proposals.ts");
 type Roots = Parameters<typeof scanSessions>[0];
 
 const base = fs.mkdtempSync(path.join(os.tmpdir(), "tomarigi-test-"));
@@ -412,7 +428,7 @@ describe("a Claude desktop app session that leaves a proposal card", () => {
   let scene = 0;
 
   /** A parent whose last turn left the card task_id; returns how to scan it and how to start a child from the card */
-  function parentWithCard(taskId: string) {
+  function parentWithCard(taskId: string, opts: { hostInSessionsFile?: boolean } = {}) {
     const name = `proposal-${++scene}`;
     const config = path.join(base, name);
     const proj = path.join(config, "projects", `-tmp-${name}`);
@@ -434,7 +450,14 @@ describe("a Claude desktop app session that leaves a proposal card", () => {
         }) +
         at(2 * MIN, { type: "assistant", message: { content: [{ type: "text", text: "カードを出しました。押してください。" }] } }),
     );
-    const parentLive = { pid: 1, sessionId: parentId, status: "idle", hostSessionId: PARENT_HOST, startedAt: Date.now() - 60 * MIN };
+    const parentLive = {
+      pid: 1,
+      sessionId: parentId,
+      status: "idle",
+      ...(opts.hostInSessionsFile !== false && { hostSessionId: PARENT_HOST }),
+      startedAt: Date.now() - 60 * MIN,
+    };
+    desktopHosts.set(parentId, PARENT_HOST);
     liveOverride.set(config, { sessions: [parentLive], reliable: true });
     const roots = [rootOf(name, "claude", path.join(config, "projects"))];
     const scan = async () => {
@@ -443,7 +466,7 @@ describe("a Claude desktop app session that leaves a proposal card", () => {
     };
     /** The user starts the card: the app writes the child's record and its first prompt naming the parent's notes folder */
     const startChild = (fromTask: string) => {
-      spawnedRecords.push({ parent: PARENT_HOST, taskId: fromTask });
+      spawnedRecords.push({ parent: PARENT_HOST, taskId: fromTask, writtenAt: Date.now() });
       const childFile = path.join(proj, `${childId}.jsonl`);
       fs.writeFileSync(
         childFile,
@@ -464,7 +487,7 @@ describe("a Claude desktop app session that leaves a proposal card", () => {
         at(60_000, { type: "user", turnOrigin: "human", message: { content: "ここでやって" } }) +
           at(30_000, { type: "assistant", message: { content: [{ type: "text", text: "ここで進めました。" }] } }),
       );
-    return { scan, startChild, childEnds, nextTurn, childId };
+    return { scan, startChild, childEnds, nextTurn, childId, parentId };
   }
 
   test("it needs a reply until a session started from the card; that stays after the session ends and a restart", async () => {
@@ -492,7 +515,45 @@ describe("a Claude desktop app session that leaves a proposal card", () => {
 
     // This app restarts: what it remembered is gone, the app's record is still there
     startedCardCache.clear();
+    cardReadSince.clear();
     expect((await p.scan()).parent?.state).toBe("done");
+  });
+
+  test("a parent whose sessions file has no local id (its process ended, say) is looked up in the app's records", async () => {
+    const p = parentWithCard("task_0000eeee", { hostInSessionsFile: false });
+    cardReads.length = 0;
+    expect((await p.scan()).parent?.waitingOn).toBe("proposal");
+    expect(cardReads.at(-1)?.parents).toEqual([{ cli: p.parentId, host: null }]);
+    p.startChild("task_0000eeee");
+    expect((await p.scan()).parent?.state).toBe("done");
+    // Looked up once: later reads pass the local id found
+    expect(cardReads.at(-1)?.parents).toEqual([{ cli: p.parentId, host: PARENT_HOST }]);
+  });
+
+  test("the first read goes back to the card, later ones ask only for records written since", async () => {
+    const p = parentWithCard("task_0000ffff");
+    cardReads.length = 0;
+    await p.scan();
+    await p.scan();
+    await p.scan();
+    const sinces = cardReads.map((r) => r.sinceMs);
+    expect(sinces).toHaveLength(3);
+    // The card's time first (2 minutes and 9 seconds ago), then each read's start less the overlap
+    expect(sinces[0]).toBeLessThan(Date.now() - 2 * MIN);
+    expect(sinces[1]).toBeGreaterThan(Date.now() - 10_000);
+    expect(sinces[2]).toBeGreaterThanOrEqual(sinces[1]);
+    // A record written before the last read's start, less the overlap, isn't read again
+    spawnedRecords.push({ parent: PARENT_HOST, taskId: "task_old", writtenAt: Date.now() - MIN });
+    await p.scan();
+    expect(cardReads.at(-1)?.sinceMs).toBeGreaterThan(Date.now() - MIN);
+  });
+
+  test("what is remembered about cards goes with the session's bird", () => {
+    startedCardCache.add(cardKey("gone/-tmp-gone/x.jsonl", "task_z"));
+    cardReadSince.set(cardKey("gone/-tmp-gone/x.jsonl", "task_y"), 1);
+    pruneCaches([], new Set());
+    expect(startedCardCache.has(cardKey("gone/-tmp-gone/x.jsonl", "task_z"))).toBe(false);
+    expect(cardReadSince.size).toBe(0);
   });
 
   test("a session from another card, or linked without a record, doesn't start it", async () => {

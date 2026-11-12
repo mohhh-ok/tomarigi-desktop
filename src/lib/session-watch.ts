@@ -2,7 +2,18 @@
 import { invoke } from "@tauri-apps/api/core";
 import { isPeerActive, peerLookup, rememberLatestTurnTyped, startedBySession, type FirstPrompt } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
-import { firstPromptCache, latestTurnTypedIds, lastPeerStates, peerLastActiveAt, peerNameCache, peerScanOffset, scanState, startedCardCache } from "./session-store";
+import {
+  cardReadSince,
+  desktopHostByViewId,
+  firstPromptCache,
+  latestTurnTypedIds,
+  lastPeerStates,
+  peerLastActiveAt,
+  peerNameCache,
+  peerScanOffset,
+  scanState,
+  startedCardCache,
+} from "./session-store";
 import { pendingProposalsOf } from "./transcript";
 import { cardKey } from "./proposals";
 import { sessionIdOfViewId } from "./session-liveness";
@@ -138,33 +149,59 @@ export function rememberPeerStates(views: SessionView[], watch: WatchLinks, now:
   }
 }
 
+/** Records written this long before a read's start are read again by the next one, so one written as it read isn't missed */
+const CARD_READ_OVERLAP_MS = 2_000;
+
 /**
  * Reads, from the desktop app's records, which of the cards that sessions' last turns left the user started
- * (desktop_spawned_from in src-tauri; docs/design.md "The "?" for sessions waiting on you"), and remembers them in
- * startedCardCache: a started card stays started. Asks only when some card isn't known to be started yet, for records
- * written since the oldest such card. When the records can't be read, no card counts as started (the wait then ends
- * with the session's next turn)
+ * (desktop_started_cards in src-tauri; docs/design.md "The "?" for sessions waiting on you"), and remembers them in
+ * startedCardCache: a started card stays started. Asks only when some card isn't known to be started yet. Each card
+ * remembers from when it was last read (cardReadSince), so the first read goes back to the card and later ones read only
+ * records written since. A session whose sessions/<pid>.json has no `hostSessionId` (its process ended, say) is looked
+ * up in the records by its transcript id, once. When the records can't be read, no card counts as started (the wait
+ * then ends with the session's next turn) and the next poll asks again from the same time
  */
 async function readStartedCards(entries: FoundEntry[], liveBySessionId: Map<string, LiveSession>): Promise<void> {
-  const parents = new Set<string>();
+  const parents: { cli: string; host: string | null; viewId: string }[] = [];
+  const asked: string[] = [];
   let since = Infinity;
   for (const f of entries) {
-    const host = liveBySessionId.get(sessionIdOfViewId(f.id))?.hostSessionId;
-    if (!host) continue;
+    const cli = sessionIdOfViewId(f.id);
+    const host = liveBySessionId.get(cli)?.hostSessionId ?? desktopHostByViewId.get(f.id);
+    // null: looked up before, and no record names it
+    if (host === null) continue;
+    let asks = false;
     for (const p of pendingProposalsOf(f.tail.events)?.proposals ?? []) {
-      if (startedCardCache.has(cardKey(host, p.taskId))) continue;
-      parents.add(host);
-      since = Math.min(since, p.at);
+      const key = cardKey(f.id, p.taskId);
+      if (startedCardCache.has(key)) continue;
+      asked.push(key);
+      asks = true;
+      since = Math.min(since, cardReadSince.get(key) ?? p.at);
     }
+    if (asks) parents.push({ cli, host: host ?? null, viewId: f.id });
   }
-  if (parents.size === 0) return;
+  if (parents.length === 0) return;
+  let scan: { hosts: [string, string][]; spawned: { cli: string; taskId: string }[]; readAtMs: number; reliable: boolean };
   try {
-    const scan = await invoke<{ spawned: { parent: string; taskId: string }[]; reliable: boolean }>("desktop_spawned_from", {
-      parents: [...parents],
+    scan = await invoke("desktop_started_cards", {
+      parents: parents.map(({ cli, host }) => ({ cli, host })),
       sinceMs: Math.max(0, Math.floor(since)),
     });
-    for (const s of scan.spawned) startedCardCache.add(cardKey(s.parent, s.taskId));
   } catch {
-    // Not read this time: the cards stay not started until a later read
+    return; // Not read this time: asked again on the next poll
+  }
+  if (!scan.reliable) return;
+  const viewIdOf = new Map(parents.map((p) => [p.cli, p.viewId]));
+  for (const p of parents) {
+    if (p.host !== null) continue;
+    desktopHostByViewId.set(p.viewId, scan.hosts.find(([cli]) => cli === p.cli)?.[1] ?? null);
+  }
+  for (const s of scan.spawned) {
+    const viewId = viewIdOf.get(s.cli);
+    if (viewId) startedCardCache.add(cardKey(viewId, s.taskId));
+  }
+  for (const key of asked) {
+    if (startedCardCache.has(key)) cardReadSince.delete(key);
+    else cardReadSince.set(key, scan.readAtMs - CARD_READ_OVERLAP_MS);
   }
 }

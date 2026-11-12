@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::io::{Read, Seek, SeekFrom};
 use std::process::Command;
 
-use crate::expand;
+use crate::{expand, is_host_session_id};
 use crate::fs::io_err;
 
 /// A running Claude Code session, used to look up names for watching links (docs/design.md "Watching").
@@ -270,10 +270,6 @@ fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
     }
 }
 
-/// The Claude desktop app's session id (`local_<uuid>`), the address of its sessions (docs/design.md "Watching")
-fn is_host_session_id(id: &str) -> bool {
-    id.len() > 6 && id.starts_with("local_") && id[6..].bytes().all(|b| b.is_ascii_hexdigit() || b == b'-')
-}
 
 /// The id in the text of the desktop app's start_session result: `Started session "…" (session_id: local_…, …)`
 fn started_session_id(text: &str) -> Option<String> {
@@ -291,12 +287,13 @@ fn started_session_id(text: &str) -> Option<String> {
 /// `…/side-session-notes/local_…`, the starter's id (docs/design.md "Watching"). The id is `local_` and the hex digits
 /// and `-` after it, as NOTES_FOLDER_ID in lib/transcript.ts
 fn notes_folder_host_id(text: &str) -> Option<String> {
-    const MARK: &str = "side-session-notes/";
-    let i = text.find(MARK)?;
-    let rest = text[i + MARK.len()..].strip_prefix("local_")?;
-    let end = rest.find(|c: char| !(c.is_ascii_hexdigit() || c == '-')).unwrap_or(rest.len());
-    let id = format!("local_{}", &rest[..end]);
-    is_host_session_id(&id).then_some(id)
+    // The first place the folder is named with an id, as the regex does (not only the first place it is named)
+    text.match_indices("side-session-notes/").find_map(|(i, mark)| {
+        let rest = text[i + mark.len()..].strip_prefix("local_")?;
+        let end = rest.find(|c: char| !(c.is_ascii_hexdigit() || c == '-')).unwrap_or(rest.len());
+        let id = format!("local_{}", &rest[..end]);
+        is_host_session_id(&id).then_some(id)
+    })
 }
 
 /// Whether a prompt's turnOrigin says the app wrote it, not the user: anything but "human" (the desktop app's "sdk" /
@@ -1012,12 +1009,14 @@ mod tests {
         let later_notice = format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{{"content":"<side-sessions-event>notes are in /a/side-session-notes/{TOP}</side-sessions-event>"}}}}"#);
         let typed_first = r#"{"type":"user","timestamp":"T","turnOrigin":"human","message":{"content":"x"}}"#.to_string();
         let meta = r#"{"type":"user","isMeta":true,"timestamp":"T","message":{"content":"x"}}"#.to_string();
+        let later_form = format!(r#"{{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{{"content":"see side-session-notes/README, then notes: /a/side-session-notes/{CHILD}"}}}}"#);
         let odd = r#"{"type":"user","timestamp":"T","turnOrigin":"sdk","message":{"content":"notes: /a/side-session-notes/local_0a1b2c3dzz/x"}}"#.to_string();
         let cases: Vec<(&str, Vec<String>, Vec<&str>)> = vec![
             ("a later notice naming another folder doesn't link (the first prompt's does)", vec![first_by_app.clone(), later_notice.clone()], vec![CHILD]),
             ("a session the user started: a later notice naming a folder doesn't link", vec![typed_first, later_notice], vec![]),
             ("a meta line before the first prompt isn't the first prompt", vec![meta, first_by_app], vec![CHILD]),
             ("the id is local_ and hex digits and - only (as in lib/transcript.ts)", vec![odd], vec!["local_0a1b2c3d"]),
+            ("the folder named first without an id, then with one: the one with an id (as in lib/transcript.ts)", vec![later_form], vec![CHILD]),
         ];
         let dir = std::env::temp_dir().join(format!("tomarigi-notes-test-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();

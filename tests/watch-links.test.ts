@@ -133,6 +133,11 @@ describe("the starter's notes folder links only from the first prompt", () => {
       [CHILD_OF_TOP],
     ],
     [
+      "the folder named first without an id, then with one: the one with an id (as in src-tauri)",
+      [{ ...firstByApp, message: { content: `see side-session-notes/README, then notes: /a/side-session-notes/${CHILD_OF_TOP}` } }],
+      [CHILD_OF_TOP],
+    ],
+    [
       "the id is local_ and hex digits and - only (as in src-tauri)",
       [{ ...firstByApp, message: { content: "notes: /a/side-session-notes/local_0a1b2c3dzz/x" } }],
       ["local_0a1b2c3d"],
