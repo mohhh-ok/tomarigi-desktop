@@ -23,6 +23,20 @@ describe("clampText", () => {
     expect(clampText("Publish the post now?", upTo(13))).toBe("Publish the…");
   });
 
+  test("English is cut at a word's start, not inside the word", () => {
+    // 「retries thre…」 was what a UI check found at 260px
+    expect(clampText("the job now retries three times", upTo(20))).toBe("the job now retries…");
+    expect(clampText("don't stop", upTo(4))).toBe("don…");
+    // One word longer than the room: cut inside it, since there is nothing before it
+    expect(clampText("supercalifragilistic", upTo(6))).toBe("super…");
+  });
+
+  test("kanji and kana are cut anywhere, a Latin word among them at its start", () => {
+    expect(clampText("手元にしか無い物があります", upTo(6))).toBe("手元にしか…");
+    expect(clampText("には GitHub のリモート", upTo(7))).toBe("には…");
+    expect(clampText("のリモートがなくGitHub", upTo(11))).toBe("のリモートがなく…");
+  });
+
   test("a cut never splits an emoji or a letter with its mark", () => {
     expect(clampText("ab👨‍👩‍👧cd", upTo(3))).toBe("ab…");
     expect(clampText("ab👨‍👩‍👧cd", (s) => s.length <= 11)).toBe("ab👨‍👩‍👧…");
