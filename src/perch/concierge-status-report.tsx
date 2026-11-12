@@ -2,8 +2,9 @@
 // under their heading at the top, standing out, then a line per session, 「<name>: <text> <state>」, built here from the
 // app's facts (lib/concierge-status.ts) on every render, smaller and muted as the detail to read after. Each name links to its session by id; no name is searched for in text. A suggestion
 // whose session changed since it came is dimmed with its state now
-import type { ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { t } from "@/lib/i18n";
+import { clampText, linesIn } from "@/lib/clamp-text";
 import {
   suggestionNow,
   type ConciergeStatus,
@@ -43,6 +44,37 @@ function Jump({ onJump, children }: { onJump: () => void; children: ReactNode })
   );
 }
 
+// A state line shows at most this many lines (docs/design.md "Concierge")
+export const STATE_LINE_MAX_LINES = 2;
+
+/**
+ * A state line's text, 「: <text>」, cut so the whole line (dot, name, text, state) fits STATE_LINE_MAX_LINES lines, with
+ * 「…」 where it was cut. Only the text is cut, whatever it comes from (a question, the speech bubble line, a tool), so the
+ * state word and the time after it always show. Measured after every render (the time after the state counts up, and
+ * the text changes with each poll; a change of the lines' width renders the report again), before the page is painted
+ * and before the tab measures the window's height (concierge-tab-view.tsx, a parent, so its layout effect runs after this)
+ */
+function StateLineText({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const span = ref.current;
+    const line = span?.parentElement;
+    if (!span || !line) return;
+    const lineHeight = parseFloat(getComputedStyle(line).lineHeight);
+    // The text is written straight into the span while measuring; React wrote the whole text into it and only writes it
+    // again when the text changes, so what is left here is what shows
+    span.textContent = `: ${clampText(text, (candidate) => {
+      span.textContent = `: ${candidate}`;
+      return linesIn(line.getBoundingClientRect().height, lineHeight) <= STATE_LINE_MAX_LINES;
+    })}`;
+  });
+  return (
+    <span ref={ref} className="concierge-status-text">
+      {`: ${text}`}
+    </span>
+  );
+}
+
 export function ConciergeStatusReport({
   lines,
   more,
@@ -70,6 +102,16 @@ export function ConciergeStatusReport({
       {sinceMs !== undefined && sinceAfterState(sinceMs)}
     </span>
   );
+  // The state lines' width: a change (the window resized) renders again, which cuts their texts again
+  const linesRef = useRef<HTMLSpanElement>(null);
+  const [, setLinesW] = useState(0);
+  useEffect(() => {
+    const el = linesRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => setLinesW(el.clientWidth));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   return (
     <span className="concierge-status">
       {/* None: no heading either */}
@@ -90,7 +132,7 @@ export function ConciergeStatusReport({
           })}
         </span>
       )}
-      <span className="concierge-status-lines">
+      <span ref={linesRef} className="concierge-status-lines">
         {lines.map((l) => (
           <span key={l.sessionId} className="concierge-status-line">
             {/* Every line starts with a dot whose color tells the state (docs/design.md "Concierge"); a mark, so it isn't
@@ -99,7 +141,7 @@ export function ConciergeStatusReport({
             {name(l.sessionId, l.name, true)}
             {/* The state is always the same part, so it looks the same with a text or without; a session the app has no
                 text for says only its state, once */}
-            {l.text === undefined ? ":" : `: ${l.text}`}
+            {l.text === undefined ? ":" : <StateLineText text={l.text} />}
             {state(l.status, l.sinceMs)}
           </span>
         ))}

@@ -38,8 +38,8 @@ const DOT = (status: ConciergeStatus) => `<span class="concierge-status-dot" dat
 describe("the state lines", () => {
   test("「<name>: <text>」 with the name linking to its session and the app's state after the text", () => {
     const html = render();
-    expect(html).toContain(`${LINK}blog</span>: Publish now?<span class="concierge-status-state" data-status="reply">`);
-    expect(html).toContain(`${LINK}api</span>: Fixed the links<span class="concierge-status-state" data-status="done">`);
+    expect(html).toContain(`${LINK}blog</span><span class="concierge-status-text">: Publish now?</span><span class="concierge-status-state" data-status="reply">`);
+    expect(html).toContain(`${LINK}api</span><span class="concierge-status-text">: Fixed the links</span><span class="concierge-status-state" data-status="done">`);
     // No text: 「<name>: <state>」, the state in the same part as after a text, once
     expect(html).toContain(`${LINK}web</span>:<span class="concierge-status-state" data-status="working"> </span></span>`);
   });
@@ -135,7 +135,7 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
       <ConciergeStatusReport lines={lines} more={0} suggestions={[]} sessions={[session]} canJump={() => true} />,
     );
     // The line starts with its state's dot, before the name; one dot only, the state word's part has none
-    expect(html).toContain(`<span class="concierge-status-line">${DOT(status)}${LINK}s</span>: t`);
+    expect(html).toContain(`<span class="concierge-status-line">${DOT(status)}${LINK}s</span><span class="concierge-status-text">: t</span>`);
     expect(html.match(/concierge-status-dot/g)).toHaveLength(1);
     expect(colorIn(`.concierge-status-dot[data-status="${status}"]`, "background")).toBe(dot);
     const wordRule = `.concierge-status-state[data-status="${status}"]`;

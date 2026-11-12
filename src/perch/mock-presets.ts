@@ -911,6 +911,55 @@ export const PRESETS: Preset[] = [
       };
     },
   },
+  {
+    // The Concierge tab's state lines cut at 2 lines (docs/design.md "Concierge"): a question long enough for 7 lines, a
+    // short one, a finished turn whose summary is long and one whose summary is short, and working ones
+    id: "concierge-long",
+    label: "Concierge: long lines",
+    build: () => ({
+      sessions: [
+        {
+          id: "mock/long/desk",
+          project: "desk",
+          slug: "desk",
+          state: "waiting",
+          sinceMs: 5 * 60_000,
+          question: tr(
+            "~/Dev/playground has no GitHub remote, so some things exist only here: 7 unpushed commits and 42 uncommitted or untracked files. The 42 include drafts like blog-m1-docker-remote.md and cloudflare-os-trial.md, trials like c2pa-poc (239MB), and a Remotion bug repro (repro-remotion-7172). cloudflare-os inside it is a clone of Cloudflare's repo with 3 local changes. How should these be removed?",
+            "~/Dev/playground には GitHub のリモートがなく（リモートなし）、手元にしか無い物があります。未 push のコミット 7 件と、未コミット・git 管理外の 42 件です。42 件には blog-m1-docker-remote.md・cloudflare-os-trial.md などの下書き、c2pa-poc（239MB）などの試作、Remotion の不具合の再現（repro-remotion-7172）が含まれます。中の cloudflare-os は cloudflare 社のリポの clone で、手元の変更が 3 件あります。消し方をどうしますか？",
+          ),
+        },
+        {
+          id: "mock/long/blog",
+          project: "blog",
+          slug: "blog",
+          state: "waiting",
+          sinceMs: 2 * 60_000,
+          question: tr("Publish now?", "今すぐ公開しますか？"),
+        },
+        {
+          id: "mock/long/api",
+          project: "orbit",
+          slug: "orbit",
+          state: "done",
+          ...finished(
+            3 * 60_000,
+            "Fixed the daily upload: the job now retries three times with a backoff, logs each failure with the file name, and alerts only after the last try fails, so a single network blip no longer pages anyone.",
+            "毎日のアップロードを直しました。失敗したら間を空けて 3 回までやり直し、失敗ごとにファイル名をログに出し、最後の 1 回も失敗したときだけ通知するので、一度の通信の途切れで呼び出されることはなくなりました。",
+          ),
+        },
+        {
+          id: "mock/long/readme",
+          project: "tomarigi-desktop",
+          slug: "tomarigi-desktop",
+          state: "done",
+          ...finished(12 * 60_000, "Updated the README.", "README を更新しました"),
+        },
+        { id: "mock/long/tsubai", project: "app-x", slug: "app-x", state: "working", sinceMs: 9_000, toolName: "Bash" },
+      ],
+      events: [],
+    }),
+  },
 ];
 
 export const DEFAULT_PRESET = PRESETS[1];

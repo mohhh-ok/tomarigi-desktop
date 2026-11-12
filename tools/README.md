@@ -49,7 +49,8 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
   node tools/concierge-tab-shot.mjs
 ```
 
-Env: `WIDTHS`, `HEIGHT`, `QUERY` (another mock scene), `SHOT_LANG=en`, `NAME` (the files' prefix), `LABEL` (drawn at
+Env: `WIDTHS`, `HEIGHT`, `QUERY` (another mock scene; `preset=concierge-long&tab=concierge&concierge=` has state lines
+long enough to be cut at 2 lines), `SHOT_LANG=en`, `NAME` (the files' prefix), `LABEL` (drawn at
 the top left of each image, to tell shots apart), `REST=1` (at rest), `CSS` (a style sheet added to the page, to try a
 value before writing it, e.g. `CSS='.concierge-status-lines { --dot-nudge: 1px }'`). Writes `<OUT>/<NAME>-<width>.png` at 2x.
 
