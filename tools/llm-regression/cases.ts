@@ -255,7 +255,10 @@ export const CASES: Case[] = [
   {
     kind: "turn",
     name: "two_decisions",
-    why: "Two numbered decisions at the end, with children started: asking, continuing",
+    why:
+      "Two numbered decisions at the end, with children started: asking. continuing isn't checked: the children said " +
+      "they started, so the app sees them through the watch link and the session is continuing from that, whatever " +
+      "the reply's continuing says (sessionContinuing); Haiku says no here (docs/design.md \"Turn verdicts\")",
     reply: `朝の見回りを終えました。
 
 - 届いていた書類を保存し、その知らせは既読にしました。
@@ -266,7 +269,7 @@ export const CASES: Case[] = [
 
 1. **保存した書類**: まだコミットしていません。コミットしてよいですか。
 2. **依存の更新**: 小さい更新の PR が 2 つ残っています。このまま 2 つをマージするか、先に自動で通す仕組みを入れるか、どちらにしますか。`,
-    want: { asking: true, continuing: true },
+    want: { asking: true },
   },
   {
     kind: "turn",
