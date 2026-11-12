@@ -19,18 +19,23 @@ export function isPeerActive(status: string | undefined, lastState: BirdState | 
 /**
  * If watching, the number of linked sessions moving now (0 or more). undefined if not watching.
  * Watching when its own machine state is done / dozing and some linked session is moving now, or one moved within WATCH_GRACE_MS
- * of now. 0 means "within the grace period, with no linked session moving now"
+ * of now. 0 means "within the grace period, with no linked session moving now".
+ * ownTurnEndedAt: when its own turn ended (its last transcript line). The grace period ends early when it is after the last time
+ * a linked session moved: the session took the other session's result and finished its turn (docs/design.md "Watching")
  */
 export function watchingCount(
   ownState: BirdState,
   peers: { active: boolean; lastActiveAt?: number }[],
   now: number,
+  ownTurnEndedAt?: number,
 ): number | undefined {
   if (ownState !== "done" && ownState !== "dozing") return undefined;
   const moving = peers.filter((p) => p.active).length;
   if (moving > 0) return moving;
-  const recent = peers.some((p) => p.lastActiveAt !== undefined && now - p.lastActiveAt <= WATCH_GRACE_MS);
-  return recent ? 0 : undefined;
+  const lastMoved = Math.max(...peers.map((p) => p.lastActiveAt ?? -Infinity));
+  if (!(now - lastMoved <= WATCH_GRACE_MS)) return undefined;
+  if (ownTurnEndedAt !== undefined && ownTurnEndedAt > lastMoved) return undefined;
+  return 0;
 }
 
 /** The transcript's first prompt as scan_peer_names (src-tauri) reads it */
