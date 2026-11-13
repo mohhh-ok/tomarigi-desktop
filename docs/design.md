@@ -183,6 +183,25 @@ Applies to the floating window's Garden and Concierge tabs only.
 - Avoid false removals: nothing is removed on a load where `ps` / `lsof` failed or where any `sessions/*.json` failed to parse. A bird is removed only after it is missing on two loads in a row
 - Caveat: `thread-writer-locks` is not a public Codex spec, the same as `sessions/<pid>.json` for Claude Code
 
+## Side chats and forked sessions of the Claude desktop app
+
+Issue #13. The user: 「claudecodedesktopで、サイドチャットbtwがコンシェルジュにのこりつづけるもんだい」, then, about a side chat that had stopped: 「うごいてないのについばみ虫になっとるわ」.
+
+Facts (checked on this machine on 2026-11-14 with Claude Code 2.1.321 run by the desktop app): a side chat (btw, `Cmd` `;` in the desktop app) runs as a session of its own. It has its own process (`entrypoint` `claude-desktop`), its own `sessions/<pid>.json` and its own transcript, and that transcript starts with a copy of the main session's lines (`sessionId` still the main session's; 704 of 755 lines in the side chat checked). The process stays alive after the side chat's turn ends, so its bird stayed, done and then dozing, in the birds, Perch and the concierge. The copied lines were read as the side chat's own, so it was linked to a session its main session had talked with, and the concierge status line showed it as working (watching) while it wrote nothing. The desktop docs say side chats aren't saved to disk (code.claude.com/docs/en/desktop); the real files differ. The CLI's `/btw` makes no session or transcript (code.claude.com/docs/en/commands), so it has no bird and nothing here applies to it (from the records; not checked by typing `/btw`).
+
+### Requirements
+
+- A side chat gets no bird and appears nowhere: not in the Garden or Perch, not in Recent activity, no sound or voice, no speech bubble (and so no summary request), and not in the concierge (status lines, facts sent to the provider, advice). This holds from the side chat's start, while it answers, after it finishes, and while its process lingers (the user's decision, choosing this over showing it only while it answers or counting it as a chick of the main session)
+- The main session is not shown as watching its side chat, and a side chat is not linked to any session
+- A session whose transcript starts with another session's copied lines (a side chat, or a session another session started as a fork) is judged only from its own lines: its links (Watching) and its first prompt (Sessions started by another session) never come from the copied lines (Claude's own decision: the copied lines are what made the idle side chat show as working)
+- Checked by table tests built from the real records: a side chat the user typed in and one closed without typing are excluded; the main session, sessions started by `start_session`, sessions started as forks, ordinary sessions and chicks keep their current birds, states and links; a forked transcript's links and first prompt come from its own lines only
+
+### Basic design
+
+- A side chat is told by the desktop app's record of the session (`claude-code-sessions/<…>/<…>/local_<id>.json`, the records read for jumping to the desktop app and for proposal cards) having `spawnedFrom.btw` true. The record is reached from `hostSessionId` in `sessions/<pid>.json` or from `cliSessionId`. On this machine 2 of 346 records have it, both side chats; the 238 sessions started by `start_session` and the 3 started as forks don't. `forkedFromSessionId` alone is not used (forks have it too), and neither is the name (`btw: …` is an automatic title). Like the other desktop app files, this record is not a public spec
+- Side chats are dropped where Claude Code sessions are listed, before state is derived, so every surface (current and future) misses them in one place and no request is made for them. A session whose record isn't found or can't be read yet is shown as usual (no hiding without the mark); its bird goes away on the load that reads the mark
+- A transcript line is the session's own when its `sessionId` is the session's id (the transcript's file name). Lines with another `sessionId` are skipped when links and the first prompt are read
+
 ## Display names
 
 - A session's display name is used everywhere it is named: the bird's name in the Garden, Perch, Recent activity, the concierge's request and advice, and the summary's lines
