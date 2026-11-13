@@ -3,7 +3,8 @@
 // app's facts (lib/concierge-status.ts) on every render, smaller and muted as the detail to read after. Each name links to its session by id; no name is searched for in text. A suggestion
 // whose session changed since it came is dimmed with its state now
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { t } from "@/lib/i18n";
+import { t, uiLanguage } from "@/lib/i18n";
+import { phraseBreaks } from "@/lib/phrase-break";
 import { clampText, linesIn } from "@/lib/clamp-text";
 import {
   suggestionNow,
@@ -22,6 +23,10 @@ const STATE_LABEL = {
 } as const;
 const nowLabel = (now: ConciergeStatus | "gone") =>
   now === "gone" ? t("conciergeSummaryGone") : t("conciergeSummaryNow", [t(STATE_LABEL[now])]);
+
+/** A text as drawn in the bubble: a Japanese or Chinese one with U+200B between its phrases, so a line breaks only
+    between phrases in WebKit too (lib/phrase-break.ts; styles/concierge.css keep-all). Only what is drawn here gets it */
+const drawn = (text: string) => phraseBreaks(text, typeof navigator === "undefined" ? "" : (uiLanguage() ?? ""));
 
 /** Something that jumps to a session's pane on a click or Enter, at rest too (fade-target); a span, so a long name wraps
     with the line */
@@ -63,14 +68,15 @@ function StateLineText({ text }: { text: string }) {
     const lineHeight = parseFloat(getComputedStyle(line).lineHeight);
     // The text is written straight into the span while measuring; React wrote the whole text into it and only writes it
     // again when the text changes, so what is left here is what shows
-    span.textContent = `: ${clampText(text, (candidate) => {
-      span.textContent = `: ${candidate}`;
+    // Measured as drawn, with the phrase breaks, so the cap counts the lines as they wrap
+    span.textContent = `: ${drawn(clampText(text, (candidate) => {
+      span.textContent = `: ${drawn(candidate)}`;
       return linesIn(line.getBoundingClientRect().height, lineHeight) <= STATE_LINE_MAX_LINES;
-    })}`;
+    }))}`;
   });
   return (
     <span ref={ref} className="concierge-status-text">
-      {`: ${text}`}
+      {`: ${drawn(text)}`}
     </span>
   );
 }
@@ -92,7 +98,7 @@ export function ConciergeStatusReport({
   onFocus?: (id: string) => void;
 }) {
   const name = (id: string, text: string, linked: boolean) =>
-    linked && canJump(id) ? <Jump onJump={() => onFocus?.(id)}>{text}</Jump> : text;
+    linked && canJump(id) ? <Jump onJump={() => onFocus?.(id)}>{drawn(text)}</Jump> : drawn(text);
   // The state with, for a finished line, the time since it finished, as the bird's status line shows it. One nowrap
   // part, so a line too wide wraps before it and the time is never cut off on its own
   const state = (status: ConciergeStatus, sinceMs?: number) => (
@@ -125,8 +131,8 @@ export function ConciergeStatusReport({
             return (
               <span key={s.sessionId} className={`concierge-status-line${now ? " is-stale" : ""}`}>
                 {name(s.sessionId, shown ?? s.name, now !== "gone")}
-                {`: ${s.text}`}
-                {now && <span className="concierge-status-now">{` ${nowLabel(now)}`}</span>}
+                {`: ${drawn(s.text)}`}
+                {now && <span className="concierge-status-now">{` ${drawn(nowLabel(now))}`}</span>}
               </span>
             );
           })}

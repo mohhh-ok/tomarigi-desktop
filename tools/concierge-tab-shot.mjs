@@ -15,7 +15,9 @@
 // line, and from that of its kanji and kana (dot minus text; plus is lower), in device px and CSS px, and writes the
 // same to <OUT>/<NAME>-<width>-dots.txt with the font the Japanese is drawn in. Against the x-height letters, every line
 // should be within ±0.5 device px in WebKit. For a child's dot (◎) it also prints where the filled center's ink is within
-// the ring's, across and down, and the gaps between them (README "concierge-tab-shot.mjs")
+// the ring's, across and down, and the gaps between them (README "concierge-tab-shot.mjs"). It also prints each suggestion
+// and state line as laid out, line by line, marking with MID a line that breaks inside a Japanese phrase, and writes the
+// same to <OUT>/<NAME>-<width>-lines.txt
 import { join } from "node:path";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { launch, mockPath, routeMock } from "./mock-browser.mjs";
@@ -93,6 +95,9 @@ try {
       writeFileSync(zpath, Buffer.from(zoom, "base64"));
       console.log(zpath);
     }
+    const laid = await laidOutLines(page);
+    writeFileSync(join(OUT, `${NAME}-${w}-lines.txt`), `${laid.join("\n")}\n`);
+    console.log(laid.join("\n"));
     const lines = await measureInk(page);
     const fmt = (v) => (v === null ? "   n/a" : v.toFixed(2).padStart(6));
     const dpx = (v) => `${fmt(v === null ? null : v * DPR)}dpx ${fmt(v)}px`;
@@ -110,6 +115,49 @@ try {
   }
 } finally {
   await browser.close();
+}
+
+/**
+ * Each suggestion and state line as laid out, its visual lines joined by " / ", with 「MID」 before it when a visual line
+ * breaks between two kanji or kana with no phrase break (U+200B) there: a break inside a phrase (docs/design.md
+ * "Concierge"). U+200B is dropped from what is printed
+ */
+function laidOutLines(page) {
+  return page.evaluate(() => {
+    const JA = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/u;
+    return [...document.querySelectorAll(".concierge-status-suggestions .concierge-status-line, .concierge-status-lines .concierge-status-line")].map((line) => {
+      const chars = [];
+      const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+      for (let node; (node = walker.nextNode()); ) {
+        for (let i = 0; i < node.data.length; i++) {
+          const range = document.createRange();
+          range.setStart(node, i);
+          range.setEnd(node, i + 1);
+          const r = range.getClientRects()[0];
+          chars.push({ c: node.data[i], top: r ? Math.round(r.top) : null });
+        }
+      }
+      const rows = [];
+      let mid = false;
+      let top = null;
+      chars.forEach((ch, i) => {
+        if (ch.top === null) ch.top = top;
+        if (top !== null && ch.top !== top) {
+          // The break falls before ch: inside a phrase when the last visible char before it and ch are kanji or kana
+          // with no U+200B between
+          const before = chars.slice(0, i).filter((x) => x.c !== "\u200b");
+          const prev = before[before.length - 1]?.c;
+          if (chars[i - 1].c !== "\u200b" && ch.c !== "\u200b" && prev && JA.test(prev) && JA.test(ch.c)) mid = true;
+          rows.push("");
+        }
+        if (!rows.length) rows.push("");
+        top = ch.top;
+        if (ch.c !== "\u200b") rows[rows.length - 1] += ch.c;
+      });
+      const kind = line.closest(".concierge-status-suggestions") ? "suggestion" : "state";
+      return `${mid ? "MID" : "ok "} ${kind}: ${rows.map((s) => s.trim()).join(" / ")}`;
+    });
+  });
 }
 
 /**

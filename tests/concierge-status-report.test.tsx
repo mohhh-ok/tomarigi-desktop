@@ -210,3 +210,32 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
     // The measured offset from the lowercase letters, in WebKit and Chromium: tools/concierge-tab-shot.mjs
   });
 });
+
+// A Japanese line breaks only between phrases in WebKit too (docs/design.md "Concierge"): U+200B between phrases, only in
+// what the bubble draws; the facts the lines are built from, and so speech, logs and hooks, never get it
+describe("phrase breaks", () => {
+  const ZWSP = "​";
+  const ja = view("ja", { project: "設計書の更新", state: "waiting" });
+  const built = conciergeStatusLines([ja], () => "いちばん長く待っているので先に返事を");
+  test("the built line has none; the drawn one has them between phrases", () => {
+    expect(JSON.stringify(built)).not.toContain(ZWSP);
+    const html = renderToStaticMarkup(
+      <ConciergeStatusReport
+        lines={built.lines}
+        more={0}
+        suggestions={[{ sessionId: "ja", kind: "reply", text: "先に返事をしてください", name: "設計書の更新", status: "reply" }]}
+        sessions={[ja]}
+        canJump={() => true}
+      />,
+    );
+    expect(html).toContain(`: いちばん長く${ZWSP}待っているので${ZWSP}先に${ZWSP}返事を`);
+    expect(html).toContain(`: 先に${ZWSP}返事を${ZWSP}してください`);
+  });
+  test("English is drawn as it is", () => {
+    expect(render()).not.toContain(ZWSP);
+  });
+  test("only the bubble's report draws them: nothing else in the app imports lib/phrase-break", () => {
+    const users = new Bun.Glob("src/**/*.{ts,tsx}").scanSync(".").filter((f) => readFileSync(f, "utf8").includes("phrase-break"));
+    expect([...users].sort()).toEqual(["src/perch/concierge-status-report.tsx"]);
+  });
+});

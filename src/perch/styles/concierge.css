@@ -99,12 +99,14 @@
   --concierge-working: #ffffff;
   /* A line that wraps, a suggestion or a state line, doesn't leave one word or a few characters alone on its last line
      (a UI check: 「先に返事 / を」, 「更新しまし / た 完了」). pretty is in WebKit from Safari 26 and Chromium from 130, so in
-     both the app's WebViews; auto-phrase (Chromium from 119, Japanese and Korean only, by the page's lang) also keeps a
-     Japanese phrase whole. WebKit has no phrase breaking yet, so there a Japanese line can still break inside a phrase.
-     balance was tried and broke the first line shorter, inside phrases more often. A state line cut at 3 lines is cut
-     after this wrapping, since it is measured as laid out */
+     both the app's WebViews. balance was tried and broke the first line shorter, inside phrases more often.
+     A Japanese or Chinese line breaks only between phrases, in WebKit as in Chromium (docs/design.md "Concierge"): the
+     report puts U+200B between phrases (lib/phrase-break.ts, BudouX) and keep-all breaks kanji and kana only there and at
+     spaces. One mechanism in both engines, in place of auto-phrase (Chromium only). A phrase wider than the line still
+     breaks, by the bubble's overflow-wrap: anywhere. A state line cut at 3 lines is cut after this wrapping, since it is
+     measured as laid out */
   text-wrap: pretty;
-  word-break: auto-phrase;
+  word-break: keep-all;
 }
 
 /* The suggestions at the top stand out from the state lines below them (docs/design.md "Concierge"): the heading in
