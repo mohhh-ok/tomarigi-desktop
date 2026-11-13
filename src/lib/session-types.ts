@@ -140,6 +140,9 @@ export interface SessionView {
   // to what its parent can answer: a question its reply asks, or its wrap_up's ask (parentCanAnswer in
   // lib/turn-verdict.ts). A permission prompt or a question tool is advised as usual, and a question tool's needs reply is read. Its bird gets the "?"
   parentTakesOver?: true;
+  // Started by another session, from its own first prompt (isChildSession in lib/watching.ts): its state line's dot in the
+  // Concierge tab is ◎ (docs/design.md "Concierge"). Unlike parentTakesOver, typing in it or its parent closing doesn't clear it
+  child?: true;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)
   cwd?: string;

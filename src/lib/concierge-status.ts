@@ -27,6 +27,8 @@ export interface StatusLine {
   text?: string;
   status: ConciergeStatus;
   sinceMs?: number;
+  /** A child session (SessionView.child): its dot is ◎ (docs/design.md "Concierge") */
+  child?: true;
 }
 
 /**
@@ -54,6 +56,7 @@ export function conciergeStatusLines(
       ...(text && { text }),
       status,
       ...(status === "done" && { sinceMs: v.sinceMs }),
+      ...(v.child && { child: true as const }),
     };
     return { line, at: place(v, status) };
   });

@@ -19,6 +19,7 @@ import type { SessionEvent, SessionView } from "../src/lib/session-types.ts";
 import { hasQuestion, waitsOnDeveloper } from "../src/lib/turn-verdict.ts";
 import { isReadAloudEvent } from "../src/lib/voice.ts";
 import {
+  isChildSession,
   rememberLatestTurnTyped,
   silentForParent,
   startedBySession,
@@ -177,6 +178,46 @@ describe("which sessions a parent takes over", () => {
     ],
   ];
   for (const [name, scene, want] of scenes) test(name, () => expect(takenOver(scene)).toEqual(want));
+});
+
+// A child's dot in the Concierge tab (docs/design.md "Concierge"): a session started by another session is a child from
+// its own first prompt, and stays one when the takeover is lifted by the user typing in it or by its parent closing
+describe("which sessions are children (the ◎ in the Concierge tab)", () => {
+  const P = { startedAt: 100, first: TYPED };
+  const C = { startedAt: 200, first: TERMINAL_CHILD };
+  const D = { startedAt: 200, first: DESKTOP_CHILD };
+  const L = { startedAt: 300, first: DESKTOP_USER }; // a session on its own
+  const scenes: [string, Scene, Record<string, { child: boolean; takenOver: boolean }>][] = [
+    [
+      "P started C (terminal) and D (desktop app); L is on its own",
+      { sessions: { P, C, D, L }, links: [["P", "C"], ["P", "D"]] },
+      { P: { child: false, takenOver: false }, C: { child: true, takenOver: true }, D: { child: true, takenOver: true }, L: { child: false, takenOver: false } },
+    ],
+    [
+      "the user typed in C's and D's panes: no longer taken over, still children",
+      { sessions: { P, C: { ...C, reads: [true] }, D: { ...D, reads: [true] } }, links: [["P", "C"], ["P", "D"]] },
+      { P: { child: false, takenOver: false }, C: { child: true, takenOver: false }, D: { child: true, takenOver: false } },
+    ],
+    [
+      "P closed: nothing takes C and D over, they are still children",
+      { sessions: { C, D }, links: [] },
+      { C: { child: true, takenOver: false }, D: { child: true, takenOver: false } },
+    ],
+    [
+      "known error, accepted: P's rebirth R (a name and a prompt at launch, P closed) is a child too",
+      { sessions: { C, R: { startedAt: 400, first: TERMINAL_CHILD } }, links: [["C", "R"]] },
+      { C: { child: true, takenOver: false }, R: { child: true, takenOver: false } },
+    ],
+  ];
+  for (const [name, scene, want] of scenes) {
+    test(name, () => {
+      const over = takenOver(scene);
+      const got = Object.fromEntries(
+        Object.entries(scene.sessions).map(([id, s]) => [id, { child: isChildSession(s.first), takenOver: over[id] }]),
+      );
+      expect(got).toEqual(want);
+    });
+  }
 });
 
 describe("who started the child's latest turn", () => {

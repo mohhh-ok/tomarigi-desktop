@@ -196,18 +196,43 @@
   width: var(--dot-size);
   height: var(--dot-size);
   border-radius: 50%;
+  background: var(--dot-color);
 }
 
 .concierge-status-dot[data-status="reply"] {
-  background: var(--concierge-reply);
+  --dot-color: var(--concierge-reply);
 }
 
 .concierge-status-dot[data-status="done"] {
-  background: var(--concierge-done);
+  --dot-color: var(--concierge-done);
 }
 
 .concierge-status-dot[data-status="working"] {
-  background: var(--concierge-working);
+  --dot-color: var(--concierge-working);
+}
+
+/* A child session's dot is a double circle (◎), so a child can be told from the rest without anything added to the line
+   (docs/design.md "Concierge"): a ring and a filled center in the state's color, inside the same 8px box, so its center
+   stays where the filled dot's is. The ring's 1.3px and the center's 2.4px inset are the sample the user chose */
+.concierge-status-dot[data-child] {
+  background: none;
+}
+
+.concierge-status-dot[data-child]::before,
+.concierge-status-dot[data-child]::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+
+.concierge-status-dot[data-child]::before {
+  inset: 0;
+  border: 1.3px solid var(--dot-color);
+}
+
+.concierge-status-dot[data-child]::after {
+  inset: 2.4px;
+  background: var(--dot-color);
 }
 
 .concierge-status-now {

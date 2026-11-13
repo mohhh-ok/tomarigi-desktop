@@ -81,6 +81,15 @@ export function startedBySession(first: FirstPrompt | undefined, latestTurnTyped
 }
 
 /**
+ * Whether the session is a child, for the ◎ on its state line in the Concierge tab (docs/design.md "Concierge", a child's
+ * dot): started by another session, read from its own first prompt only (startedBySession without the typed flag). So it
+ * stays a child after the user types in it and after its parent closes, unlike parentTakesOver
+ */
+export function isChildSession(first: FirstPrompt | undefined): boolean {
+  return startedBySession(first, false);
+}
+
+/**
  * Records, after one read of a session's transcript, whether its latest turn was started by a prompt the user typed:
  * typedIds holds the sessions (view id) whose latest turn the user started. read is lastTurnTyped of scan_peer_names in
  * src-tauri (the last prompt that started a turn in the part read, null when there was none); a read with no new prompt

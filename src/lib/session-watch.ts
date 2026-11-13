@@ -1,6 +1,6 @@
 // Watching links between sessions (docs/design.md "Watching")
 import { invoke } from "@tauri-apps/api/core";
-import { isPeerActive, peerLookup, rememberLatestTurnTyped, startedBySession, type FirstPrompt } from "./watching";
+import { isChildSession, isPeerActive, peerLookup, rememberLatestTurnTyped, startedBySession, type FirstPrompt } from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
 import {
   cardReadSince,
@@ -24,6 +24,8 @@ export interface WatchLinks {
   peerLinksOf: (ownSessionId: string) => PeerLink[];
   /** Whether the session (view id) was started by another session (startedBySession in lib/watching.ts) */
   startedBySessionOf: (viewId: string) => boolean;
+  /** Whether the session (view id) is a child, for its ◎ in the Concierge tab (isChildSession in lib/watching.ts) */
+  childOf: (viewId: string) => boolean;
   /** The proposal cards the user started (cardKey in lib/proposals.ts), from the desktop app's records */
   startedCards: ReadonlySet<string>;
 }
@@ -112,8 +114,9 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   }
   const startedBySessionOf = (viewId: string) =>
     startedBySession(firstPromptCache.get(viewId), latestTurnTypedIds.has(viewId));
+  const childOf = (viewId: string) => isChildSession(firstPromptCache.get(viewId));
   await readStartedCards(claudeEntries, liveBySessionId);
-  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf, startedCards: startedCardCache };
+  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf, childOf, startedCards: startedCardCache };
 }
 
 /**

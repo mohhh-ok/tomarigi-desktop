@@ -247,6 +247,7 @@ function buildViews(
       peers: peers.length > 0 ? peers : undefined,
       watching,
       ...(takenOver && { parentTakesOver: true as const }),
+      ...(watch.childOf(id) && { child: true as const }),
       cwd: tail.cwd,
       startedAt: watch.liveBySessionId.get(sessionIdOfViewId(id))?.startedAt,
     });

@@ -137,7 +137,8 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
     // The line starts with its state's dot, before the name; one dot only, the state word's part has none
     expect(html).toContain(`<span class="concierge-status-line">${DOT(status)}${LINK}s</span><span class="concierge-status-text">: t</span>`);
     expect(html.match(/concierge-status-dot/g)).toHaveLength(1);
-    expect(colorIn(`.concierge-status-dot[data-status="${status}"]`, "background")).toBe(dot);
+    expect(rule(".concierge-status-dot")).toContain("background: var(--dot-color);");
+    expect(colorIn(`.concierge-status-dot[data-status="${status}"]`, "--dot-color")).toBe(dot);
     const wordRule = `.concierge-status-state[data-status="${status}"]`;
     expect(colorIn(wordRule, "color") ?? colorIn(".concierge-status-state", "color")).toBe(word);
     expect(rule(wordRule)?.match(/font-weight: (\d+);/)?.[1]).toBe(weight);
@@ -145,6 +146,34 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
     // a word 4.5:1
     if (status !== "working") expect(contrast(dot, BUBBLE_BG)).toBeGreaterThanOrEqual(3);
     expect(contrast(word, BUBBLE_BG)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test.each([
+    ["a child needing a reply", view("s", { state: "waiting", question: "Go?", child: true }), "reply"],
+    ["a finished child", view("s", { state: "done", summary: "ok", child: true }), "done"],
+    ["a working child", view("s", { child: true }), "working"],
+  ] as const)("%s: its dot is the ◎, in its state's color, in the same box", (_, session, status) => {
+    const { lines } = conciergeStatusLines([session], () => "t");
+    const html = renderToStaticMarkup(
+      <ConciergeStatusReport lines={lines} more={0} suggestions={[]} sessions={[session]} canJump={() => true} />,
+    );
+    // The same line as any other, the dot marked as a child's; nothing else added
+    expect(html).toContain(
+      `<span class="concierge-status-line"><span class="concierge-status-dot" data-status="${status}" data-child="true" aria-hidden="true"></span>${LINK}s</span><span class="concierge-status-text">: t</span>`,
+    );
+    expect(html.match(/concierge-status-dot/g)).toHaveLength(1);
+  });
+
+  test("the ◎ is a ring and a filled center in the dot's color, inside the dot's box", () => {
+    expect(rule(".concierge-status-dot[data-child]")).toContain("background: none;");
+    expect(rule(".concierge-status-dot[data-child]::before")).toContain("inset: 0;");
+    expect(rule(".concierge-status-dot[data-child]::before")).toContain("border: 1.3px solid var(--dot-color);");
+    // The ::after's own rule, after the one it shares with ::before
+    const after = css.slice(css.lastIndexOf(".concierge-status-dot[data-child]::after {"));
+    expect(after.slice(0, after.indexOf("}"))).toContain("inset: 2.4px;");
+    expect(after.slice(0, after.indexOf("}"))).toContain("background: var(--dot-color);");
+    // The child's dot doesn't set its own size or place: those stay the filled dot's
+    expect(rule(".concierge-status-dot[data-child]")).not.toMatch(/width|height|top|left/);
   });
 
   test("a suggestion has no dot", () => {

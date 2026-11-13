@@ -112,6 +112,26 @@ describe("the state lines", () => {
     expect(after).toMatchObject({ text: "Edit", status: "working" });
   });
 
+  test("a child's line carries child, for its ◎; a parent's and a lone session's don't", () => {
+    const { lines } = conciergeStatusLines(
+      [
+        view("kid-reply", { state: "waiting", question: "Go?", child: true }),
+        view("kid-done", { state: "done", summary: "ok", child: true }),
+        view("kid-working", { toolName: "Read", child: true }),
+        view("parent", { state: "done", summary: "ok" }),
+        view("alone", { toolName: "Edit" }),
+      ],
+      bubbleOf,
+    );
+    expect(Object.fromEntries(lines.map((l) => [l.sessionId, l.child === true]))).toEqual({
+      "kid-reply": true,
+      "kid-done": true,
+      "kid-working": true,
+      parent: false,
+      alone: false,
+    });
+  });
+
   test("line breaks in a text become spaces, and the display name is the one on screen", () => {
     const { lines } = conciergeStatusLines(
       [view("root/a.jsonl", { project: "blog (2)", state: "waiting", question: "Which\n  plan?" })],
