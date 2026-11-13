@@ -312,6 +312,14 @@ fn message_text(content: Option<&serde_json::Value>) -> String {
     }
 }
 
+/// Whether a transcript line is another session's: its `sessionId` is a string other than own. A transcript started as a
+/// fork (a side chat, or a fork another session started) begins with a copy of its parent's lines, which keep the
+/// parent's `sessionId`; they aren't the session's own (docs/design.md "Side chats and forked sessions of the Claude
+/// desktop app"). A line without `sessionId` counts as own. isForeignLine in lib/transcript.ts is the same rule
+fn is_foreign_line(entry: &serde_json::Value, own: &str) -> bool {
+    entry.get("sessionId").and_then(|v| v.as_str()).is_some_and(|id| id != own)
+}
+
 /// Picks up, from [start, end of file) of the transcript, the names of peers exchanged with via cross-session
 /// messages (watching links; same rules as collectPeerNames in lib/transcript.ts). To also catch traces outside
 /// the tail window, the caller remembers end and reads only what was added. Does not read message bodies; returns
@@ -323,6 +331,8 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
     let len = f.metadata().map_err(|e| io_err(&p, e))?.len();
     let start = if start > len { 0 } else { start };
     f.seek(SeekFrom::Start(start)).map_err(|e| io_err(&p, e))?;
+    // The session's own id is the transcript's file name; only its own lines are read
+    let own = p.file_stem().and_then(|s| s.to_str()).unwrap_or_default().to_string();
     let mut buf = Vec::with_capacity((len - start) as usize);
     f.read_to_end(&mut buf).map_err(|e| io_err(&p, e))?;
     let complete = buf.iter().rposition(|&b| b == b'\n').map(|i| i + 1).unwrap_or(0);
@@ -340,6 +350,9 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             && (line.windows(12).any(|w| w == b"\"turnOrigin\"") || line.windows(8).any(|w| w == b"\"origin\""))
         {
             if let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) {
+                if is_foreign_line(&entry, &own) {
+                    continue;
+                }
                 if let Some(typed) = turn_prompt_typed(&entry) {
                     last_turn_typed = Some(typed);
                 }
@@ -347,6 +360,9 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
         }
         if looking_for_first {
             if let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) {
+                if is_foreign_line(&entry, &own) {
+                    continue;
+                }
                 match entry.get("type").and_then(|t| t.as_str()) {
                     Some("agent-name") => named_at_launch = true,
                     Some("attachment")
@@ -391,6 +407,9 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             continue;
         }
         let Ok(entry) = serde_json::from_slice::<serde_json::Value>(line) else { continue };
+        if is_foreign_line(&entry, &own) {
+            continue;
+        }
         let Some(at) = entry.get("timestamp").and_then(|t| t.as_str()) else { continue };
         if entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true) {
             continue;
@@ -1056,6 +1075,87 @@ mod tests {
         );
         // A scan that goes on from where the last one stopped doesn't read it again
         assert_eq!(scan_peer_names(p, 10).unwrap().first_prompt, None);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// A transcript started as a fork begins with its parent's lines, copied with the parent's sessionId; only the
+    /// session's own lines (sessionId = the file name) are read (docs/design.md "Side chats and forked sessions of the
+    /// Claude desktop app"). Scenes shaped like the real records on this machine, ids and names made up
+    #[test]
+    fn scan_peer_names_reads_only_the_sessions_own_lines() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-fork-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        const OWN: &str = "0a1b2c3d-0000-4000-8000-00000000f0f0";
+        const PARENT: &str = "0a1b2c3d-0000-4000-8000-00000000aaaa";
+        const SIBLING: &str = "local_0a1b2c3d-0000-4000-8000-0000000000bb";
+        const PARENT_HOST: &str = "local_0a1b2c3d-0000-4000-8000-0000000000aa";
+        // The parent's lines as a fork's transcript copies them
+        let copied = vec![
+            format!(r#"{{"type":"queue-operation","sessionId":"{PARENT}","timestamp":"2026-01-01T00:00:00.000Z"}}"#),
+            format!(r#"{{"type":"agent-name","agentName":"parent","sessionId":"{PARENT}"}}"#),
+            format!(r#"{{"type":"user","sessionId":"{PARENT}","timestamp":"2026-01-01T00:00:01.000Z","turnOrigin":"human","origin":{{"kind":"human"}},"isSidechain":false,"message":{{"content":"task"}}}}"#),
+            format!(r#"{{"type":"assistant","sessionId":"{PARENT}","timestamp":"2026-01-01T00:00:02.000Z","isSidechain":false,"message":{{"content":[{{"type":"tool_use","name":"mcp__ccd_session__send_message","input":{{"session_id":"{SIBLING}"}}}}]}}}}"#),
+            format!(r#"{{"type":"user","sessionId":"{PARENT}","timestamp":"2026-01-01T00:00:03.000Z","isSidechain":false,"message":{{"content":[{{"type":"tool_result","tool_use_id":"t","content":"Started session \"x\" (session_id: {SIBLING}, name: x)"}}]}}}}"#),
+            format!(r#"{{"type":"user","isMeta":true,"sessionId":"{PARENT}","timestamp":"2026-01-01T00:00:04.000Z","turnOrigin":"peer","origin":{{"kind":"peer","name":"sibling","from":"{SIBLING}"}},"message":{{"content":"report"}}}}"#),
+            format!(r#"{{"type":"user","sessionId":"{PARENT}","timestamp":"2026-01-01T00:00:05.000Z","turnOrigin":"human","origin":{{"kind":"human"}},"isSidechain":false,"message":{{"content":"again"}}}}"#),
+        ];
+        let own = |line: &str| line.replace("@OWN@", OWN);
+        // A side chat the user typed in: the app's notice of the parent's stopped task, then the typed question
+        let side_chat_typed = vec![
+            own(r#"{"type":"custom-title","customTitle":"side chat","sessionId":"@OWN@"}"#),
+            own(r#"{"type":"assistant","sessionId":"@OWN@","timestamp":"2026-01-01T01:00:00.000Z","isSidechain":false,"message":{"content":[{"type":"text","text":"ok"}]}}"#),
+            own(r#"{"type":"user","sessionId":"@OWN@","timestamp":"2026-01-01T01:00:01.000Z","origin":{"kind":"task-notification"},"isSidechain":false,"message":{"content":"<task-notification>x</task-notification>"}}"#),
+            own(r#"{"type":"user","sessionId":"@OWN@","timestamp":"2026-01-01T01:00:02.000Z","turnOrigin":"human","origin":{"kind":"human"},"isSidechain":false,"message":{"content":[{"type":"text","text":"<system-reminder>\n## The user forked this session from another session\n</system-reminder>\n\nwhat is X"}]}}"#),
+            own(r#"{"type":"system","subtype":"stop_hook_summary","sessionId":"@OWN@","timestamp":"2026-01-01T01:00:08.000Z"}"#),
+        ];
+        // A side chat closed without typing: only untimed lines of its own
+        let side_chat_closed = vec![
+            own(r#"{"type":"custom-title","customTitle":"side chat","sessionId":"@OWN@"}"#),
+            own(r#"{"type":"mode","mode":"normal","sessionId":"@OWN@"}"#),
+        ];
+        // A fork another session started: its own first prompt is the app's, naming the starter's notes folder
+        let fork = vec![
+            own(&format!(r#"{{"type":"user","sessionId":"@OWN@","timestamp":"2026-01-01T01:00:00.000Z","turnOrigin":"sdk","isSidechain":false,"message":{{"content":"<system-reminder>\n## You are a session started from another session\nnotes: /a/side-session-notes/{PARENT_HOST}\n</system-reminder>"}}}}"#)),
+            own(&format!(r#"{{"type":"assistant","sessionId":"@OWN@","timestamp":"2026-01-01T01:00:05.000Z","isSidechain":false,"message":{{"content":[{{"type":"tool_use","name":"mcp__ccd_session__send_message","input":{{"session_id":"{PARENT_HOST}"}}}}]}}}}"#)),
+        ];
+        let first = |origin: Option<&str>, at: &str| FirstPrompt { turn_origin: origin.map(str::to_string), named_at_launch: false, session_start_at: None, at: at.into() };
+        let names = |scan: &PeerScan| {
+            let mut n: Vec<String> = scan.names.iter().map(|(name, _)| name.clone()).collect();
+            n.sort();
+            n.dedup();
+            n
+        };
+        let cases: Vec<(&str, Vec<String>, Option<FirstPrompt>, Vec<&str>, Option<bool>)> = vec![
+            ("side chat the user typed in", [copied.clone(), side_chat_typed].concat(), Some(first(None, "2026-01-01T01:00:01.000Z")), vec![], Some(true)),
+            ("side chat closed without typing", [copied.clone(), side_chat_closed].concat(), None, vec![], None),
+            ("fork started by another session", [copied.clone(), fork].concat(), Some(first(Some("sdk"), "2026-01-01T01:00:00.000Z")), vec![PARENT_HOST], None),
+        ];
+        for (name, lines, expected_first, expected_names, expected_typed) in cases {
+            let path = dir.join(format!("{OWN}.jsonl"));
+            std::fs::write(&path, lines.join("\n") + "\n").unwrap();
+            let scan = scan_peer_names(path.to_str().unwrap(), 0).unwrap();
+            assert_eq!(scan.first_prompt, expected_first, "{name}");
+            assert_eq!(names(&scan), expected_names, "{name}");
+            assert_eq!(scan.last_turn_typed, expected_typed, "{name}");
+        }
+        // The same copied lines in the parent's own transcript are all read, as before
+        let path = dir.join(format!("{PARENT}.jsonl"));
+        std::fs::write(&path, copied.join("\n") + "\n").unwrap();
+        let scan = scan_peer_names(path.to_str().unwrap(), 0).unwrap();
+        assert_eq!(scan.first_prompt, Some(FirstPrompt { named_at_launch: true, ..first(Some("human"), "2026-01-01T00:00:01.000Z") }));
+        assert_eq!(names(&scan), vec![SIBLING, "sibling"]);
+        assert_eq!(scan.last_turn_typed, Some(true));
+        // Lines without sessionId (older transcripts, tests) are read as the session's own
+        let path = dir.join("no-ids.jsonl");
+        let unmarked: Vec<String> = copied.iter().map(|l| l.replace(&format!(r#""sessionId":"{PARENT}","#), "").replace(&format!(r#","sessionId":"{PARENT}""#), "")).collect();
+        std::fs::write(&path, unmarked.join("\n") + "\n").unwrap();
+        assert_eq!(names(&scan_peer_names(path.to_str().unwrap(), 0).unwrap()), vec![SIBLING, "sibling"]);
+        // A later scan from after the copy reads only what the fork wrote since
+        let path = dir.join(format!("{OWN}.jsonl"));
+        let copy_end = (copied.join("\n") + "\n").len() as u64;
+        let late = own(&format!(r#"{{"type":"assistant","sessionId":"@OWN@","timestamp":"2026-01-01T02:00:00.000Z","isSidechain":false,"message":{{"content":[{{"type":"tool_use","name":"SendMessage","input":{{"to":"helper"}}}}]}}}}"#));
+        std::fs::write(&path, [copied.clone(), vec![late]].concat().join("\n") + "\n").unwrap();
+        assert_eq!(names(&scan_peer_names(path.to_str().unwrap(), copy_end).unwrap()), vec!["helper"]);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
