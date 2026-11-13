@@ -485,7 +485,7 @@ An AI looks at every session together and gives the user one piece of advice abo
             | 8px, center at the same place | `[data-child]` changes only the background and adds pseudo-elements inside the same box; measured with `tools/concierge-tab-shot.mjs` before and after |
             | Ring and center in the state's color, a working child white | `--dot-color` per `data-status`, used by both pseudo-elements |
             | Nothing else changes (no text, mark, line, order, suggestions) | No change to the line's markup but the attribute, nor to the order or the suggestions |
-            | Still a child after the user types and after the parent closes | `isChildSession` takes no typed flag and no links; table test in `src/lib/watching.test.ts` |
+            | Still a child after the user types and after the parent closes | `isChildSession` takes no typed flag and no links; table test in `tests/parent-takes-over.test.ts`, carried to the line in `tests/concierge-status.test.ts` |
             | Chicks get nothing | They have no state line; nothing is added for them |
             | Checked with a parent, children in each state, and a lone session | Mock preset `concierge-children` in `src/perch/mock-presets.ts`, shot with `tools/concierge-tab-shot.mjs` |
         - Tried and dropped: a word after the name (「（子）」, 「子」 / 「親」 in a box; the user: 「文字でやるくらいならあいこんでやるからもじでやるのはやめろ」), a mark at the dot's upper right, a hollow dot (「てんのなかぬきはちょっとわかりづらい」), a branch 「└」 or the parent's name, which show whose child it is (「おやとこのかんけいはいらん」), a vertical or horizontal line left of the dot, and shifting the child's line, which moves its dot out of line with the others (「なんでおまえまるをずらすの」)
