@@ -985,6 +985,39 @@ export const PRESETS: Preset[] = [
       events: [],
     }),
   },
+  {
+    // A Japanese line with a long run of English words in it (docs/design.md "Concierge", a space inside a phrase): it
+    // wraps between the English words, not inside one
+    id: "concierge-mixed",
+    label: "Concierge: English in a Japanese line",
+    build: () => ({
+      sessions: [
+        {
+          id: "mock/mixed/app-x",
+          project: "app-x",
+          slug: "app-x",
+          state: "done",
+          ...finished(
+            2 * 60_000,
+            "Fixed it: added retry logic to the API handler and updated the tests.",
+            "Add retry logic to the API handler and update the tests を直しました",
+          ),
+        },
+        {
+          id: "mock/mixed/app-y",
+          project: "app-y",
+          slug: "app-y",
+          state: "waiting",
+          sinceMs: 60_000,
+          question: tr(
+            "Move the upload retry and backoff settings into the shared config file?",
+            "Move the upload retry and backoff settings into the shared config file にしますか？",
+          ),
+        },
+      ],
+      events: [],
+    }),
+  },
 ];
 
 export const DEFAULT_PRESET = PRESETS[1];
