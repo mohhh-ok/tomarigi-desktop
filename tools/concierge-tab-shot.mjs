@@ -119,8 +119,9 @@ try {
 
 /**
  * Each suggestion and state line as laid out, its visual lines joined by " / ", with 「MID」 before it when a visual line
- * breaks between two kanji or kana with no phrase break (U+200B) there: a break inside a phrase (docs/design.md
- * "Concierge"). U+200B is dropped from what is printed
+ * breaks between two kanji or kana with no phrase break (U+200B) there, and 「SPC」 when it breaks at a space right before
+ * a kanji or kana with no phrase break there (「README / を」): a break inside a phrase (docs/design.md "Concierge").
+ * U+200B is dropped from what is printed
  */
 function laidOutLines(page) {
   return page.evaluate(() => {
@@ -139,6 +140,7 @@ function laidOutLines(page) {
       }
       const rows = [];
       let mid = false;
+      let space = false;
       let top = null;
       chars.forEach((ch, i) => {
         if (ch.top === null) ch.top = top;
@@ -148,6 +150,8 @@ function laidOutLines(page) {
           const before = chars.slice(0, i).filter((x) => x.c !== "\u200b");
           const prev = before[before.length - 1]?.c;
           if (chars[i - 1].c !== "\u200b" && ch.c !== "\u200b" && prev && JA.test(prev) && JA.test(ch.c)) mid = true;
+          // A break at a space right before a kanji or kana that isn't a phrase's start (「README / を」, 「3 / 回まで」)
+          if (/\s/.test(prev ?? "") && JA.test(ch.c) && before.length > 1 && !/[\s\u200b]/.test(before[before.length - 2].c) && chars[i - 2]?.c !== "\u200b") space = true;
           rows.push("");
         }
         if (!rows.length) rows.push("");
@@ -155,7 +159,7 @@ function laidOutLines(page) {
         if (ch.c !== "\u200b") rows[rows.length - 1] += ch.c;
       });
       const kind = line.closest(".concierge-status-suggestions") ? "suggestion" : "state";
-      return `${mid ? "MID" : "ok "} ${kind}: ${rows.map((s) => s.trim()).join(" / ")}`;
+      return `${mid ? "MID" : space ? "SPC" : "ok "} ${kind}: ${rows.map((s) => s.trim()).join(" / ")}`;
     });
   });
 }

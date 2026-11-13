@@ -214,7 +214,8 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
 // A Japanese line breaks only between phrases in WebKit too (docs/design.md "Concierge"): U+200B between phrases, only in
 // what the bubble draws; the facts the lines are built from, and so speech, logs and hooks, never get it
 describe("phrase breaks", () => {
-  const ZWSP = "​";
+  const ZWSP = "\u200b";
+  const NBSP = "\u00a0";
   const ja = view("ja", { project: "設計書の更新", state: "waiting" });
   const built = conciergeStatusLines([ja], () => "いちばん長く待っているので先に返事を");
   test("the built line has none; the drawn one has them between phrases", () => {
@@ -228,11 +229,20 @@ describe("phrase breaks", () => {
         canJump={() => true}
       />,
     );
-    expect(html).toContain(`: いちばん長く${ZWSP}待っているので${ZWSP}先に${ZWSP}返事を`);
-    expect(html).toContain(`: 先に${ZWSP}返事を${ZWSP}してください`);
+    // keep-all only on the parts that hold phrases (styles/concierge.css [data-phrased])
+    expect(html).toContain(`<span class="concierge-status-text" data-phrased="">: いちばん長く${ZWSP}待っているので${ZWSP}先に${ZWSP}返事を</span>`);
+    expect(html).toContain(`<span data-phrased="">: 先に${ZWSP}返事を${ZWSP}してください</span>`);
+    expect(html).toContain(`<span data-phrased="">設計書の${ZWSP}更新</span>`);
   });
-  test("English is drawn as it is", () => {
+  test("English is drawn as it is, with no keep-all", () => {
     expect(render()).not.toContain(ZWSP);
+    expect(render()).not.toContain(NBSP);
+    expect(render()).not.toContain("data-phrased");
+  });
+  test("keep-all is on the phrased parts only, not on the whole bubble", () => {
+    const css = readFileSync("src/perch/styles/concierge.css", "utf8");
+    expect(css).toMatch(/\.concierge-status \[data-phrased\] \{\s*word-break: keep-all;/);
+    expect(css.match(/word-break:[^;]+;/g)).toEqual(["word-break: keep-all;"]);
   });
   test("only the bubble's report draws them: nothing else in the app imports lib/phrase-break", () => {
     const users = new Bun.Glob("src/**/*.{ts,tsx}").scanSync(".").filter((f) => readFileSync(f, "utf8").includes("phrase-break"));

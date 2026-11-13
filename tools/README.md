@@ -58,6 +58,10 @@ value before writing it, e.g. `CSS='.concierge-status-lines { --dot-nudge: 1px }
 webkit` in the Playwright directory); the default is Chromium.
 `DPR=1` shoots at 1x (a display without Retina); the default is 2.
 Run both: a dot on a fraction of a px is rounded to device px differently at each.
+It also prints each suggestion and state line as laid out, its lines joined by ` / `, with `MID` in front when a line
+breaks between two kanji or kana with no phrase break (U+200B) there (`SPC` when it breaks at a space right before a
+kanji or kana with none, 「README / を」), and writes the same to `<OUT>/<NAME>-<width>-lines.txt`
+(docs/design.md "Concierge": a Japanese line breaks only between phrases).
 
 After each shot it prints, per state line, how far the vertical center of the dot's ink (the pixels it paints) is
 from that of the ink of the lowercase x-height letters (a c e m n o r s u v w x z) on the line's first line, and from

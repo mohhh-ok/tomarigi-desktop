@@ -4,7 +4,7 @@
 // whose session changed since it came is dimmed with its state now
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { t, uiLanguage } from "@/lib/i18n";
-import { phraseBreaks } from "@/lib/phrase-break";
+import { hasPhrases, phraseBreaks } from "@/lib/phrase-break";
 import { clampText, linesIn } from "@/lib/clamp-text";
 import {
   suggestionNow,
@@ -24,9 +24,14 @@ const STATE_LABEL = {
 const nowLabel = (now: ConciergeStatus | "gone") =>
   now === "gone" ? t("conciergeSummaryGone") : t("conciergeSummaryNow", [t(STATE_LABEL[now])]);
 
-/** A text as drawn in the bubble: a Japanese or Chinese one with U+200B between its phrases, so a line breaks only
-    between phrases in WebKit too (lib/phrase-break.ts; styles/concierge.css keep-all). Only what is drawn here gets it */
+/** A text as drawn in the bubble: a Japanese or Chinese one with U+200B between its phrases and U+00A0 for a space inside
+    one, so a line breaks only between phrases in WebKit too (lib/phrase-break.ts). Only what is drawn here gets them */
 const drawn = (text: string) => phraseBreaks(text, typeof navigator === "undefined" ? "" : (uiLanguage() ?? ""));
+/** The attribute that gives a part holding such a text `word-break: keep-all` (styles/concierge.css); none for other text,
+    so English wraps as before (in WebKit keep-all also stops the break after a hyphen) */
+const phrased = (text: string) => (hasPhrases(text) ? { "data-phrased": "" } : {});
+/** A text drawn on its own, in a part of its own only when it has phrases */
+const Drawn = ({ text }: { text: string }) => (hasPhrases(text) ? <span {...phrased(text)}>{drawn(text)}</span> : text);
 
 /** Something that jumps to a session's pane on a click or Enter, at rest too (fade-target); a span, so a long name wraps
     with the line */
@@ -75,7 +80,7 @@ function StateLineText({ text }: { text: string }) {
     }))}`;
   });
   return (
-    <span ref={ref} className="concierge-status-text">
+    <span ref={ref} className="concierge-status-text" {...phrased(text)}>
       {`: ${drawn(text)}`}
     </span>
   );
@@ -98,7 +103,13 @@ export function ConciergeStatusReport({
   onFocus?: (id: string) => void;
 }) {
   const name = (id: string, text: string, linked: boolean) =>
-    linked && canJump(id) ? <Jump onJump={() => onFocus?.(id)}>{drawn(text)}</Jump> : drawn(text);
+    linked && canJump(id) ? (
+      <Jump onJump={() => onFocus?.(id)}>
+        <Drawn text={text} />
+      </Jump>
+    ) : (
+      <Drawn text={text} />
+    );
   // The state with, for a finished line, the time since it finished, as the bird's status line shows it. One nowrap
   // part, so a line too wide wraps before it and the time is never cut off on its own
   const state = (status: ConciergeStatus, sinceMs?: number) => (
@@ -131,8 +142,12 @@ export function ConciergeStatusReport({
             return (
               <span key={s.sessionId} className={`concierge-status-line${now ? " is-stale" : ""}`}>
                 {name(s.sessionId, shown ?? s.name, now !== "gone")}
-                {`: ${drawn(s.text)}`}
-                {now && <span className="concierge-status-now">{` ${drawn(nowLabel(now))}`}</span>}
+                {hasPhrases(s.text) ? <span {...phrased(s.text)}>{`: ${drawn(s.text)}`}</span> : `: ${s.text}`}
+                {now && (
+                  <span className="concierge-status-now" {...phrased(nowLabel(now))}>
+                    {` ${drawn(nowLabel(now))}`}
+                  </span>
+                )}
               </span>
             );
           })}
