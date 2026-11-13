@@ -75,6 +75,10 @@ export const transcriptAppearedAt = new Map<string, number>();
 
 export const sessionEventCache = new Map<string, SessionEvent>(); // key: SessionEvent.key. Deduplicates the same event
 
+// key: a Claude desktop app session's `local_…` id. Whether its record says it is a side chat (lib/side-chats.ts). A
+// record's spawnedFrom never changes, so an answer is kept for good: one boolean per desktop session seen
+export const sideChatByHostId = new Map<string, boolean>();
+
 // key: `<rootId>:<threadId>`. Where each live thread's rollout was found (the path never changes)
 export const codexRolloutPathCache = new Map<string, string>();
 

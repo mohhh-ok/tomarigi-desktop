@@ -55,6 +55,11 @@ const spawnedRecords: { parent: string; taskId: string; writtenAt: number }[] = 
 const desktopHosts = new Map<string, string>();
 let spawnedUnreadable = false;
 const cardReads: { parents: { cli: string; host: string | null }[]; sinceMs: number }[] = [];
+// The desktop app's records as desktop_side_chats reads them (the Rust command is tested in src-tauri): by local id,
+// whether the record is a side chat's (`spawnedFrom.btw`); an id not here has no record or can't be read yet.
+// sideChatAsks keeps the ids of each call
+const sideChatRecords = new Map<string, boolean>();
+const sideChatAsks: string[][] = [];
 
 mock.module("@tauri-apps/api/core", () => ({
   invoke: async (cmd: string, args: Record<string, never>) => {
@@ -152,6 +157,11 @@ mock.module("@tauri-apps/api/core", () => ({
           fresh.filter((r) => r.parent === hostOf(p)).map((r) => ({ cli: p.cli, taskId: r.taskId })),
         );
         return { hosts, spawned, read: fresh.length, readAtMs: Date.now(), reliable: true };
+      }
+      case "desktop_side_chats": {
+        const ids = args.ids as string[];
+        sideChatAsks.push(ids);
+        return { answers: ids.flatMap((id) => (sideChatRecords.has(id) ? [[id, sideChatRecords.get(id)]] : [])), reliable: true };
       }
       case "log":
         return;
@@ -415,6 +425,120 @@ describe("Claude Code liveness reads", () => {
     const fx = claudeFixture("doze", id, 5 * MIN + 10_000);
     liveRead(fx.config, [{ pid: 1, sessionId: id, status: "idle" }]);
     expect((await scanSessions(fx.roots)).views[0].state).toBe("dozing");
+  });
+});
+
+// docs/design.md "Side chats and forked sessions of the Claude desktop app". Shaped like the real records on this machine:
+// the side chat's transcript starts with its main session's lines copied with the main session's id, its process
+// lingers idle after its turn, and its record has spawnedFrom.btw; ids and names made up
+describe("side chats of the Claude desktop app", () => {
+  const sid = (n: number) => `5cde0000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const liveRead = (config: string, sessions: object[]) => liveOverride.set(config, { sessions, reliable: true });
+  /** A desktop app main session and, beside it, a transcript started as a fork of it (a side chat or another fork) */
+  function forkFixture(name: string, mainId: string, forkId: string) {
+    const fx = claudeFixture(name, mainId, 2 * MIN);
+    const main = fs.readFileSync(fx.transcript, "utf8")
+      .split("\n")
+      .filter(Boolean)
+      .map((l) => JSON.stringify({ ...JSON.parse(l), sessionId: mainId }));
+    fs.writeFileSync(fx.transcript, main.join("\n") + "\n");
+    const forkPath = path.join(fx.proj, `${forkId}.jsonl`);
+    const writeFork = () =>
+      fs.writeFileSync(
+        forkPath,
+        main.join("\n") +
+          "\n" +
+          line({ type: "user", sessionId: forkId, timestamp: iso(MIN + 5_000), turnOrigin: "human", origin: { kind: "human" }, cwd: `/tmp/${name}`, entrypoint: "claude-desktop", message: { role: "user", content: "what is X" } }) +
+          line({ type: "assistant", sessionId: forkId, timestamp: iso(MIN), cwd: `/tmp/${name}`, message: { role: "assistant", content: [{ type: "text", text: "X is a header" }] } }),
+      );
+    return { ...fx, forkPath, writeFork, mainView: `${name}/-tmp-${name}/${mainId}.jsonl`, forkView: `${name}/-tmp-${name}/${forkId}.jsonl` };
+  }
+  const live = (id: string, pid: number, host?: string) => ({ pid, sessionId: id, status: "idle", entrypoint: "claude-desktop", ...(host && { hostSessionId: host }) });
+
+  test("a side chat whose process lingers gets no bird, isn't linked, and its main session doesn't watch it", async () => {
+    const mainId = sid(1);
+    const sideId = sid(2);
+    const fx = forkFixture("btw", mainId, sideId);
+    fx.writeFork();
+    sideChatRecords.set(`local_${mainId}`, false);
+    sideChatRecords.set(`local_${sideId}`, true);
+    liveRead(fx.config, [live(mainId, 1, `local_${mainId}`), live(sideId, 2, `local_${sideId}`)]);
+    // The main session's traces name the side chat (as a link to it would)
+    peerScans.set(fx.transcript, { names: [[`local_${sideId}`, iso(MIN)]], end: 0 });
+    sideChatAsks.length = 0;
+    const first = await scanTwice(fx.roots);
+    expect(first.views.map((v) => v.id)).toEqual([fx.mainView]);
+    expect(first.views[0].peers ?? []).toEqual([]);
+    expect(first.views[0].watching).toBeUndefined();
+    expect(first.events.filter((e) => e.sessionId === fx.forkView)).toEqual([]);
+    // Each record is read once: the second load asks for nothing
+    expect(sideChatAsks).toEqual([[`local_${mainId}`, `local_${sideId}`]]);
+  });
+
+  test("a side chat shown before its record could be read leaves on the load that reads it, with its Recent activity rows", async () => {
+    const mainId = sid(3);
+    const sideId = sid(4);
+    const fx = forkFixture("btwlate", mainId, sideId);
+    fx.writeFork();
+    sideChatRecords.set(`local_${mainId}`, false);
+    liveRead(fx.config, [live(mainId, 3, `local_${mainId}`), live(sideId, 4, `local_${sideId}`)]);
+    const before = await scanTwice(fx.roots);
+    expect(before.views.map((v) => v.id).sort()).toEqual([fx.mainView, fx.forkView].sort());
+    expect(before.events.some((e) => e.sessionId === fx.forkView)).toBe(true);
+    // Its own lines only: its state comes from its reply, not from the main session's copied turn
+    expect(before.views.find((v) => v.id === fx.forkView)?.state).toBe("done");
+
+    sideChatRecords.set(`local_${sideId}`, true);
+    const after = await scanSessions(fx.roots);
+    expect(after.views.map((v) => v.id)).toEqual([fx.mainView]);
+    expect(after.events.filter((e) => e.sessionId === fx.forkView)).toEqual([]);
+    // Leaving made no event of its own (no ended row, nothing to read aloud)
+    expect(after.events.length).toBe(before.events.filter((e) => e.sessionId !== fx.forkView).length);
+  });
+
+  test("a new side chat whose sessions file isn't there yet is dropped on its first load by its own id", async () => {
+    const mainId = sid(5);
+    const sideId = sid(6);
+    const fx = forkFixture("btwnew", mainId, sideId);
+    sideChatRecords.set(`local_${mainId}`, false);
+    liveRead(fx.config, [live(mainId, 5, `local_${mainId}`)]);
+    await scanTwice(fx.roots);
+    // The transcript appears after the first listing (within the grace), before its process is seen
+    fx.writeFork();
+    sideChatRecords.set(`local_${sideId}`, true);
+    const shown = await scanSessions(fx.roots);
+    expect(shown.views.map((v) => v.id)).toEqual([fx.mainView]);
+  });
+
+  test("a fork another session started is shown, judged from its own lines; the main session is unchanged", async () => {
+    const mainId = sid(7);
+    const forkId = sid(8);
+    const fx = forkFixture("fork", mainId, forkId);
+    fx.writeFork();
+    sideChatRecords.set(`local_${mainId}`, false);
+    sideChatRecords.set(`local_${forkId}`, false);
+    liveRead(fx.config, [live(mainId, 7, `local_${mainId}`), live(forkId, 8, `local_${forkId}`)]);
+    const shown = await scanTwice(fx.roots);
+    expect(shown.views.map((v) => v.id).sort()).toEqual([fx.mainView, fx.forkView].sort());
+    expect(shown.views.find((v) => v.id === fx.forkView)?.state).toBe("done");
+    expect(shown.views.find((v) => v.id === fx.mainView)?.state).toBe("done");
+  });
+
+  test("a session whose record isn't found is shown as usual, and asked about again on the next load", async () => {
+    const id = sid(9);
+    const fx = claudeFixture("norecord", id, 2 * MIN);
+    liveRead(fx.config, [live(id, 9, `local_${id}`)]);
+    sideChatAsks.length = 0;
+    const shown = await scanTwice(fx.roots);
+    expect(shown.views.map((v) => v.id)).toEqual([`norecord/-tmp-norecord/${id}.jsonl`]);
+    expect(sideChatAsks).toEqual([[`local_${id}`], [`local_${id}`]]);
+    // A terminal session (no hostSessionId) is never asked about
+    const cli = sid(10);
+    const fx2 = claudeFixture("terminal", cli, 2 * MIN);
+    liveRead(fx2.config, [{ pid: 10, sessionId: cli, status: "idle" }]);
+    sideChatAsks.length = 0;
+    expect((await scanTwice(fx2.roots)).views.length).toBe(1);
+    expect(sideChatAsks).toEqual([]);
   });
 });
 

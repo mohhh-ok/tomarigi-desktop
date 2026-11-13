@@ -6,7 +6,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { NativeDirectoryHandle, NativeFile, type NativeFileHandle } from "./native-fs";
 import type { RootEntry } from "./settings-store";
 import type { LiveFoundEntry, LiveSession } from "./session-types";
-import { knownTranscriptIds, listedRootIds, scanState, transcriptAppearedAt } from "./session-store";
+import { knownTranscriptIds, listedRootIds, scanState, sideChatByHostId, transcriptAppearedAt } from "./session-store";
+import { askSideChats, forgetSideChats, hostIdOfTranscript, hostIdsToAsk, isSideChat } from "./side-chats";
 import { codexDirOf, configDirOf, inNeverSeenGrace, sessionIdOfViewId } from "./session-liveness";
 import { codexSessionsDir, codexThreadIdOf, fileAt, findCodexRollout, forgetEndedRollouts, type CodexRollout } from "./codex-rollout";
 import { readCodexTailCached, readTailCached, readTailCachedWith } from "./session-tail";
@@ -65,6 +66,8 @@ interface ClaudePrepared {
   presentConfigDirs: Set<string>;
   unreliableConfigDirs: Set<string>;
   pidBySessionId: Map<string, number>;
+  /** Every live session by its transcript's id, side chats included (isSideChat reads their desktop ids) */
+  liveBySessionId: Map<string, LiveSession>;
 }
 
 const claude: AgentAdapter = {
@@ -82,16 +85,23 @@ const claude: AgentAdapter = {
         return { configDir, ...scan };
       }),
     );
-    listing.liveSessions.push(...scans.flatMap((s) => s.sessions));
+    const live = scans.flatMap((s) => s.sessions);
+    // Side chats of the Claude desktop app appear nowhere (docs/design.md "Side chats and forked sessions of the Claude
+    // desktop app"): their records are read once, and they are kept out of the live sessions the watching links are
+    // matched against, so no session is linked to one or watches one
+    await askSideChats(hostIdsToAsk(live, sideChatByHostId));
+    const liveBySessionId = new Map(live.map((l) => [l.sessionId, l] as const));
+    listing.liveSessions.push(...live.filter((l) => !isSideChat(l.sessionId, liveBySessionId, sideChatByHostId)));
     return {
       presentConfigDirs: new Set(scans.filter((s) => s.present).map((s) => s.configDir)),
       // Reads where ps failed or sessions/*.json had an unreadable file. Birds are not removed based on this read
       unreliableConfigDirs: new Set(scans.filter((s) => !s.reliable).map((s) => s.configDir)),
       pidBySessionId: new Map(scans.flatMap((s) => s.sessions.map((l) => [l.sessionId, l.pid] as const))),
+      liveBySessionId,
     };
   },
   async list(root, { now, found, skippedIds, nextContinuedFrom }, prepared) {
-    const { presentConfigDirs, unreliableConfigDirs, pidBySessionId } = prepared as ClaudePrepared;
+    const { presentConfigDirs, unreliableConfigDirs, pidBySessionId, liveBySessionId } = prepared as ClaudePrepared;
     const configDir = configDirOf(root);
     // Older Claude Code without <config>/sessions: there is no pid to check, so no birds
     if (!presentConfigDirs.has(configDir)) return;
@@ -113,6 +123,17 @@ const claude: AgentAdapter = {
         // or the transcript appeared within NEVER_SEEN_GRACE_MS (the sessions file can lag behind it).
         // However long ago the transcript was written doesn't matter
         if (pid === undefined && !scanState.trackedIds.has(id) && !inNeverSeenGrace(id, now)) continue;
+        // A side chat of the Claude desktop app: no bird, no state, no event, no summary, no concierge fact, so its tail
+        // isn't even read. A new transcript whose process isn't seen yet is asked about by its own id first, so a side
+        // chat whose sessions/<pid>.json lags its transcript is dropped on its first load too
+        if (pid === undefined && !scanState.trackedIds.has(id) && !sideChatByHostId.has(hostIdOfTranscript(sessionId))) {
+          await askSideChats([hostIdOfTranscript(sessionId)]);
+        }
+        if (isSideChat(sessionId, liveBySessionId, sideChatByHostId)) {
+          // A bird shown before its record was read leaves with no event; its Recent activity rows go too
+          forgetSideChats(new Set([id]));
+          continue;
+        }
         // The completion check for chicks (subagents) treats the parent ledger (chickSignals in the parent
         // tail) as the source of truth, so read the parent's tail before scanChicks (see the isChick comment
         // in deriveState). The tail read here is reused when building withTail (displayNames) (to compute cwd/base
