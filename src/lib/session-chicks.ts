@@ -1,6 +1,6 @@
 // Chicks: subagents under a parent's transcript folder, and sessions started via the SDK
 import type { NativeDirectoryHandle, NativeFile, NativeFileHandle } from "./native-fs";
-import { lastWrittenAt, scanChickSignals, type TailInfo } from "./transcript";
+import { lastWrittenAt, scanChickSignals, type TailInfo, type TranscriptReadOptions } from "./transcript";
 import type { ChickMeta, ChickScan, ChickView, FoundEntry } from "./session-types";
 import { chickMetaCache, chickSignalLedger } from "./session-store";
 import { readTailCached } from "./session-tail";
@@ -47,7 +47,8 @@ export async function scanChicks(
   // Completion records from the whole parent transcript, plus the tail window (it can be ahead of the ledger by
   // lines appended between the two reads). The latest time wins, as in TailInfo.chickSignals
   const chickSignals = new Map<string, number>();
-  mergeSignals(chickSignals, await readSignalLedger(parentId, parentFile));
+  // The parent is a main transcript: only its own lines (a fork's copied lines hold its parent's chicks' records)
+  mergeSignals(chickSignals, await readSignalLedger(parentId, parentFile, { ownSessionId: sessionId }));
   mergeSignals(chickSignals, parentTailSignals);
 
   const found: FoundChick[] = [];
@@ -119,11 +120,11 @@ function mergeSignals(into: Map<string, number>, from: Map<string, number>): voi
 
 /** Completion records from the whole of one transcript (the parent's or a chick's), read only past what was read
  * before (the ledger is kept across scans under the transcript's id) */
-async function readSignalLedger(id: string, file: NativeFile): Promise<Map<string, number>> {
+async function readSignalLedger(id: string, file: NativeFile, opts?: TranscriptReadOptions): Promise<Map<string, number>> {
   let ledger = chickSignalLedger.get(id);
   if (!ledger || file.size < ledger.end) ledger = { end: 0, signals: new Map() };
   if (file.size > ledger.end) {
-    const scan = await scanChickSignals(file, ledger.end);
+    const scan = await scanChickSignals(file, ledger.end, opts);
     mergeSignals(ledger.signals, scan.signals);
     ledger.end = scan.end;
   }

@@ -1,7 +1,7 @@
 // Tail reads that reuse the cache (tailCache in lib/session-store.ts) while size and mtime are unchanged
 import type { NativeFile } from "./native-fs";
 import { readCodexTail, type CodexTailInfo } from "./codex-transcript";
-import { readEventsInRange, readTail, TAIL_BYTES, type TailEvent, type TailInfo } from "./transcript";
+import { readEventsInRange, readTail, TAIL_BYTES, type TailEvent, type TailInfo, type TranscriptReadOptions } from "./transcript";
 import { tailCache, turnMessageCache } from "./session-store";
 import { isPersonMessage } from "./session-snippet";
 
@@ -18,7 +18,7 @@ const MAX_GAP_BYTES = 2 * 1024 * 1024;
 export async function readTailCached(
   id: string,
   file: NativeFile,
-  opts?: { includeSidechain?: boolean },
+  opts?: TranscriptReadOptions & { includeSidechain?: boolean },
 ): Promise<TailInfo> {
   const cached = tailCache.get(id);
   if (cached && cached.size === file.size && cached.lastModified === file.lastModified) {
@@ -30,7 +30,7 @@ export async function readTailCached(
   if (cached && !opts?.includeSidechain && file.size - cached.size > TAIL_BYTES) {
     // Read on to the end of the file (overlapping the window) so a line cut at the window's start isn't lost
     const end = file.size - TAIL_BYTES;
-    const events = await readEventsInRange(file, Math.max(cached.size, end - MAX_GAP_BYTES), file.size);
+    const events = await readEventsInRange(file, Math.max(cached.size, end - MAX_GAP_BYTES), file.size, opts);
     feedTurnMessages(id, events);
   }
   tailCache.set(id, { size: file.size, lastModified: file.lastModified, tail });

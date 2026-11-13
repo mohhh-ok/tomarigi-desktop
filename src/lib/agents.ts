@@ -117,7 +117,8 @@ const claude: AgentAdapter = {
         // tail) as the source of truth, so read the parent's tail before scanChicks (see the isChick comment
         // in deriveState). The tail read here is reused when building withTail (displayNames) (to compute cwd/base
         // name), so it isn't read twice
-        const tail = await readTailCached(id, file);
+        // Only the session's own lines: a forked transcript starts with its parent's lines (isForeignLine)
+        const tail = await readTailCached(id, file, { ownSessionId: sessionId });
         // `claude -p` (entrypoint "sdk-cli") is out of scope for tomarigi (no birds, no events).
         // Most are started in the background by Claude Code as a command; neither child nor parent keeps the
         // other's id, so they can't be tied to a parent reliably (cwd is the launch directory too, with no

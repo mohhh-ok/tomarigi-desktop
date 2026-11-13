@@ -110,6 +110,9 @@ export interface ProposalTrace {
 
 interface TranscriptEntry {
   type?: string;
+  // The session the line was written in. A transcript started as a fork begins with its parent's lines copied with the
+  // parent's id (see isForeignLine)
+  sessionId?: unknown;
   subtype?: unknown; // On a `system` line (e.g. away_summary, see isIdleLine)
   isMeta?: boolean;
   isSidechain?: boolean;
@@ -192,6 +195,24 @@ export const TAIL_BYTES = 64 * 1024;
 // TAIL_BYTES read as before, so performance is unchanged.
 const MAX_TAIL_BYTES = 2 * 1024 * 1024;
 
+/** How a main transcript is read */
+export interface TranscriptReadOptions {
+  /** The session's own id (the transcript's file name without .jsonl): lines of another session are skipped
+      (isForeignLine). Only main transcripts are read with it; a chick's lines all carry the main session's id */
+  ownSessionId?: string;
+}
+
+/**
+ * Whether a transcript line is another session's: its `sessionId` is a string other than the session's own. A
+ * transcript started as a fork (a side chat, or a fork another session started) begins with a copy of its parent's
+ * lines, which keep the parent's `sessionId`; nothing is read from them (docs/design.md "Side chats and forked sessions
+ * of the Claude desktop app"). A line without `sessionId`, or a read without an own id, counts as own.
+ * is_foreign_line in src-tauri is the same rule
+ */
+export function isForeignLine(entry: { sessionId?: unknown }, ownSessionId: string | undefined): boolean {
+  return ownSessionId !== undefined && typeof entry.sessionId === "string" && entry.sessionId !== ownSessionId;
+}
+
 /**
  * Reads only the end of the file and classifies "the last thing that happened".
  * includeSidechain: set to true when reading a subagent transcript (every line isSidechain: true).
@@ -202,15 +223,15 @@ const MAX_TAIL_BYTES = 2 * 1024 * 1024;
  */
 export async function readTail(
   file: NativeFile,
-  opts?: { includeSidechain?: boolean },
+  opts?: TranscriptReadOptions & { includeSidechain?: boolean },
 ): Promise<TailInfo> {
   const includeSidechain = opts?.includeSidechain ?? false;
   const cap = Math.min(MAX_TAIL_BYTES, file.size);
   let windowBytes = TAIL_BYTES;
-  let result = await readWindow(file, windowBytes, includeSidechain);
+  let result = await readWindow(file, windowBytes, includeSidechain, opts?.ownSessionId);
   while (result.lastEventAt === undefined && windowBytes < cap) {
     windowBytes = Math.min(windowBytes * 2, cap);
-    result = await readWindow(file, windowBytes, includeSidechain);
+    result = await readWindow(file, windowBytes, includeSidechain, opts?.ownSessionId);
   }
   return result;
 }
@@ -220,7 +241,12 @@ export async function readTail(
  * appended between two polls but already fell out of the tail window, so the user message in them isn't
  * missed (anger mark input). A line cut at either edge fails to parse and is skipped
  */
-export async function readEventsInRange(file: NativeFile, start: number, end: number): Promise<TailEvent[]> {
+export async function readEventsInRange(
+  file: NativeFile,
+  start: number,
+  end: number,
+  opts?: TranscriptReadOptions,
+): Promise<TailEvent[]> {
   const text = await file.slice(start, end).text();
   const events: TailEvent[] = [];
   const startSessionCalls = new Set<string>();
@@ -232,6 +258,7 @@ export async function readEventsInRange(file: NativeFile, start: number, end: nu
     } catch {
       continue;
     }
+    if (isForeignLine(entry, opts?.ownSessionId)) continue;
     const at = parseTimestamp(entry.timestamp);
     const next = classify(entry, false, startSessionCalls);
     if (!next || at === null) continue;
@@ -252,6 +279,7 @@ const CHICK_SIGNAL_CHUNK_BYTES = 4 * 1024 * 1024;
 export async function scanChickSignals(
   file: NativeFile,
   start: number,
+  opts?: TranscriptReadOptions,
 ): Promise<{ signals: Map<string, number>; end: number }> {
   const signals = new Map<string, number>();
   let pos = start;
@@ -285,6 +313,7 @@ export async function scanChickSignals(
     } catch {
       return;
     }
+    if (isForeignLine(entry, opts?.ownSessionId)) return;
     const at = parseTimestamp(entry.timestamp);
     if (at !== null) collectChickSignals(entry, at, out);
   }
@@ -298,6 +327,7 @@ async function readWindow(
   file: NativeFile,
   windowBytes: number,
   includeSidechain: boolean,
+  ownSessionId: string | undefined,
 ): Promise<TailInfo> {
   const truncated = file.size > windowBytes;
   const text = await file.slice(Math.max(0, file.size - windowBytes)).text();
@@ -325,6 +355,8 @@ async function readWindow(
     } catch {
       continue;
     }
+    // A copied line of the parent's is not the session's: no state, event, time, peer or first prompt comes from it
+    if (isForeignLine(entry, ownSessionId)) continue;
     if (lookingForFirst && isFirstPromptCandidate(entry)) {
       lookingForFirst = false;
       const starter = firstPromptStarterOf(entry);
