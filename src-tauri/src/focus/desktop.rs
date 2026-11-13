@@ -218,6 +218,62 @@ pub(crate) fn started_cards(dir: &Path, parents: &[CardParent], since_ms: u64, n
     CardScan { hosts, spawned, read, read_at_ms: now_ms, reliable: true }
 }
 
+/// Whether a record is a side chat's (`btw` in the desktop app; docs/design.md "Side chats and forked sessions of the
+/// Claude desktop app"): `spawnedFrom.btw` is true. A fork another session started has `spawnedFrom` and
+/// `forkedFromSessionId` too, but no `btw`
+pub(crate) fn is_side_chat_record(record: &serde_json::Value) -> bool {
+    record.pointer("/spawnedFrom/btw").and_then(|v| v.as_bool()) == Some(true)
+}
+
+/// What desktop_side_chats found
+#[derive(serde::Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SideChatScan {
+    /// Per id asked, whether its record is a side chat's; ids whose record isn't there or couldn't be read are left out
+    pub(crate) answers: Vec<(String, bool)>,
+    /// false when the desktop app's records can't be listed (no data folder, or not there)
+    pub(crate) reliable: bool,
+}
+
+/// For each `local_<id>` in ids, whether its record (`local_<id>.json` two folders under dir) is a side chat's. The
+/// records are found by name: only the folders are listed, and only the records asked for are opened
+pub(crate) fn side_chats(dir: &Path, ids: &[String]) -> SideChatScan {
+    let wanted: Vec<&str> = ids.iter().map(String::as_str).filter(|id| is_host_session_id(id)).collect();
+    let Ok(a_items) = std::fs::read_dir(dir) else { return SideChatScan { answers: Vec::new(), reliable: false } };
+    let mut answers: Vec<(String, bool)> = Vec::new();
+    if wanted.is_empty() {
+        return SideChatScan { answers, reliable: true };
+    }
+    'folders: for a in a_items.flatten() {
+        let Ok(b_items) = std::fs::read_dir(a.path()) else { continue };
+        for b in b_items.flatten() {
+            for id in &wanted {
+                if answers.iter().any(|(done, _)| done == id) {
+                    continue;
+                }
+                let Ok(text) = std::fs::read_to_string(b.path().join(format!("{id}.json"))) else { continue };
+                let Ok(record) = serde_json::from_str::<serde_json::Value>(&text) else { continue };
+                answers.push((id.to_string(), is_side_chat_record(&record)));
+            }
+            if answers.len() == wanted.len() {
+                break 'folders;
+            }
+        }
+    }
+    SideChatScan { answers, reliable: true }
+}
+
+/// Which of the given desktop sessions (`local_<id>`) are side chats (side_chats)
+#[tauri::command]
+pub(crate) async fn desktop_side_chats(ids: Vec<String>) -> SideChatScan {
+    tauri::async_runtime::spawn_blocking(move || match sessions_dir() {
+        Some(dir) => side_chats(&dir, &ids),
+        None => SideChatScan { answers: Vec::new(), reliable: false },
+    })
+    .await
+    .unwrap_or(SideChatScan { answers: Vec::new(), reliable: false })
+}
+
 /// The proposal cards of the given sessions that the user started (started_cards)
 #[tauri::command]
 pub(crate) async fn desktop_started_cards(parents: Vec<CardParent>, since_ms: u64) -> CardScan {
@@ -403,5 +459,55 @@ mod tests {
         std::fs::remove_dir_all(&dir).unwrap();
         assert_eq!(found, [Some("local_aa".into()), Some("local_bb".into()), None, None, None]);
         assert_eq!(find_local_id(Path::new("/nonexistent-tomarigi"), "t-a"), None);
+    }
+
+    /// Side chats (docs/design.md "Side chats and forked sessions of the Claude desktop app"): records shaped like the
+    /// desktop app's, ids made up
+    #[test]
+    fn a_side_chat_is_told_by_its_record() {
+        let cases = [
+            ("side chat", json!({ "sessionId": "local_a", "cliSessionId": "a", "btwLoweredFrom": "medium", "forkedFromSessionId": "local_p",
+                "spawnedFrom": { "sessionId": "local_p", "taskId": "task_1", "sideSession": true, "userFork": true, "btw": true, "sharedFolder": true, "name": "x-fork" } }), true),
+            ("fork started by another session", json!({ "sessionId": "local_b", "forkedFromSessionId": "local_p",
+                "spawnedFrom": { "sessionId": "local_p", "taskId": "task_2", "title": "t", "sideSession": true, "sharedFolder": true, "name": "n" } }), false),
+            ("session started by start_session", json!({ "sessionId": "local_c",
+                "spawnedFrom": { "sessionId": "local_p", "taskId": "task_3", "title": "t", "sideSession": true, "name": "n" } }), false),
+            ("session the user started", json!({ "sessionId": "local_d", "cliSessionId": "d", "title": "btw: x" }), false),
+            ("btw not a bool", json!({ "spawnedFrom": { "btw": "true" } }), false),
+            ("btw false", json!({ "spawnedFrom": { "btw": false, "userFork": true } }), false),
+        ];
+        for (name, record, expected) in cases {
+            assert_eq!(is_side_chat_record(&record), expected, "{name}");
+        }
+    }
+
+    #[test]
+    fn side_chats_are_looked_up_by_their_record_name() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-desktop-side-chats-test-{}", std::process::id()));
+        let deep = dir.join("org").join("account");
+        let other = dir.join("org").join("other-account");
+        std::fs::create_dir_all(&deep).unwrap();
+        std::fs::create_dir_all(&other).unwrap();
+        const BTW: &str = "local_0a1b2c3d-0000-4000-8000-0000000000b1";
+        const FORK: &str = "local_0a1b2c3d-0000-4000-8000-0000000000f1";
+        const MAIN: &str = "local_0a1b2c3d-0000-4000-8000-0000000000a1";
+        const HALF: &str = "local_0a1b2c3d-0000-4000-8000-0000000000c1";
+        const MISSING: &str = "local_0a1b2c3d-0000-4000-8000-0000000000d1";
+        std::fs::write(deep.join(format!("{BTW}.json")), format!(r#"{{"sessionId":"{BTW}","spawnedFrom":{{"sessionId":"{MAIN}","btw":true,"userFork":true}}}}"#)).unwrap();
+        std::fs::write(other.join(format!("{FORK}.json")), format!(r#"{{"sessionId":"{FORK}","forkedFromSessionId":"{MAIN}","spawnedFrom":{{"sessionId":"{MAIN}","taskId":"task_1"}}}}"#)).unwrap();
+        std::fs::write(deep.join(format!("{MAIN}.json")), format!(r#"{{"sessionId":"{MAIN}","cliSessionId":"t"}}"#)).unwrap();
+        // Half written: no answer yet, asked again on the next load
+        std::fs::write(deep.join(format!("{HALF}.json")), r#"{"sessionId":"local_0a1b2c3d-0000-4000-8000-0000000000c1","spawnedFrom":{"btw":tr"#).unwrap();
+        // Directly under dir is not where records are
+        std::fs::write(dir.join(format!("{MISSING}.json")), r#"{"spawnedFrom":{"btw":true}}"#).unwrap();
+        let ids: Vec<String> = [BTW, FORK, MAIN, HALF, MISSING, "local_../org/account/x", "t-not-local"].iter().map(|s| s.to_string()).collect();
+        let mut scan = side_chats(&dir, &ids);
+        scan.answers.sort();
+        let mut expected = vec![(BTW.to_string(), true), (FORK.to_string(), false), (MAIN.to_string(), false)];
+        expected.sort();
+        assert_eq!(scan, SideChatScan { answers: expected, reliable: true });
+        assert_eq!(side_chats(&dir, &[]), SideChatScan { answers: Vec::new(), reliable: true });
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert_eq!(side_chats(Path::new("/nonexistent-tomarigi"), &[BTW.to_string()]), SideChatScan { answers: Vec::new(), reliable: false });
     }
 }

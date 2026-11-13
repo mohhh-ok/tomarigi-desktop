@@ -320,6 +320,7 @@ pub fn run() {
             focus::focus_codex,
             focus::desktop::open_desktop_session,
             focus::desktop::desktop_started_cards,
+            focus::desktop::desktop_side_chats,
             liveness::live_codex_threads,
             window::hide_window,
             window::get_window_mode,
