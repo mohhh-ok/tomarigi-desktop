@@ -201,6 +201,7 @@ export function ConciergeTabView({
           onClick={() => target && onFocus?.(target)}
           concierge={look}
           dragMovesWindow
+          showName={false}
           bubbleContent={report}
         />
       )}

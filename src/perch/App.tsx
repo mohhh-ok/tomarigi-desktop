@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { MdBugReport, MdClose, MdSettings, MdVolumeUp } from "react-icons/md";
+import { MdBugReport, MdClose, MdNotifications, MdNotificationsOff, MdSettings, MdVolumeUp } from "react-icons/md";
 import { t } from "@/lib/i18n";
 import { chirpDone, chirpWaiting, primeAudio } from "@/lib/chirp";
 import {
@@ -600,7 +600,8 @@ export default function App({
               onClick={toggleMuted}
               aria-label={t(muted ? "unmuteButtonAria" : "muteButtonAria")}
             >
-              {muted ? "🔕" : "🔔"}
+              {/* A single-color icon from the same set as the buttons beside it, not the emoji WebKit draws in color */}
+              {muted ? <MdNotificationsOff size={16} /> : <MdNotifications size={16} />}
             </button>
             {/* A debug-only button, so no i18n; English is hardcoded (same policy as DebugApp.tsx) */}
             <button
@@ -811,7 +812,7 @@ export default function App({
             />
             {/* The two notification toggles share one pattern: "parent checkbox + sub-rows directly below".
                 "Notify with sound" is the inverse of the existing muted state (checked = !muted). It shares
-                the same state as the header's 🔔/🔕 button (toggleMuted), so they stay in sync automatically.
+                the same state as the header's mute button (toggleMuted), so they stay in sync automatically.
                 Directly below come a volume slider only for chirps, then two preview buttons.
                 It is a setting independent of the readout (speechSynthesis) volume (the same idea as separate
                 SE/BGM volumes in games; see setChirpVolume in lib/chirp.ts).
