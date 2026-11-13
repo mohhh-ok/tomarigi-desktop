@@ -202,6 +202,48 @@ Facts (checked on this machine on 2026-11-14 with Claude Code 2.1.321 run by the
 - Side chats are dropped where Claude Code sessions are listed, before state is derived, so every surface (current and future) misses them in one place and no request is made for them. A session whose record isn't found or can't be read yet is shown as usual (no hiding without the mark); its bird goes away on the load that reads the mark
 - A transcript line is the session's own when its `sessionId` is the session's id (the transcript's file name). Lines with another `sessionId` are skipped when links and the first prompt are read
 
+### Detailed design
+
+Written by the session that implements it, after reading the code; may be changed (Claude's own decisions).
+
+Facts behind it (2026-11-14, this machine): of the 7,286 main transcripts under `~/.claude/projects` and `~/.claude2/projects`, exactly 5 have lines whose `sessionId` isn't the file name: the 2 side chats and the 3 forks. In all 5 the copied lines come first as one block and none follow the session's own (resumed and ordinary sessions have none). A subagent's transcript (`<id>/subagents/agent-*.jsonl`) has the main session's `sessionId` on every line, so the own-line rule applies to main transcripts only, never to chicks. In both side chats the record's file name is `local_<cliSessionId>.json` (its `local_` id is the transcript's id). The record exists before the side chat's `sessions/<pid>.json` (created 1794597575330, the process started 1794597576342).
+
+Telling a side chat (Rust, `src-tauri/src/focus/desktop.rs`):
+- `is_side_chat_record(record)`: `spawnedFrom.btw` is `true` (a bool; any other value or a missing key is no)
+- `side_chats(dir, host_ids)`: finds each `local_<id>.json` by its file name two folders under `dir` (the folders are listed, no file but the ones asked for is opened, unlike `each_record`, which reads every record), and returns, per id, `Some(true|false)` when the record was read and `None` when it isn't there or can't be read or parsed. `reliable` is false when `dir` can't be listed
+- Command `desktop_side_chats(host_ids)`: runs it off the main thread on the desktop app's data folder (`sessions_dir`)
+
+Dropping it (TS):
+- The cache `sideChatByHostId: Map<string, boolean>` in `src/lib/session-store.ts`. A record's `spawnedFrom` is written when the session is made and doesn't change, so an answer is kept for good and each id is read once; `None` isn't kept, so it is asked again on the next load. It isn't pruned: one boolean per desktop session seen while the app runs
+- `src/lib/side-chats.ts` (new, pure): `hostIdsToAsk(live, cache)` gives the live sessions' `hostSessionId`s not answered yet. `isSideChat(sessionId, live, cache)` says whether a transcript is one: its live session's `hostSessionId` is answered true, or, without a live session, `local_<its id>` is (a side chat's id form above; a transcript of another kind finds no record and costs one missed name lookup per load during the 15 seconds of grace)
+- In `claude.prepare` (`src/lib/agents.ts`), after `live_sessions`: ask `desktop_side_chats` for `hostIdsToAsk` (no call when the list is empty, which is every load after the first in steady state), fill the cache, then remove the side chats from `listing.liveSessions` and from `pidBySessionId`. Removing them from `liveSessions` keeps them out of watching links (`peerLookup` can't resolve a name or `local_` id to them, so the main session can't watch one) and out of `scan_peer_names`
+- In `claude.list`, a transcript for which `isSideChat` is true is skipped before `readTailCached`, like `sdk-cli` is skipped after it, but without reading the tail: no bird, no state, no event, no summary, no concierge fact. A transcript with no live session that is a candidate only by `NEVER_SEEN_GRACE_MS` (new, not yet shown) is asked about in `list` itself, right before that skip, by `local_<its id>` (one `desktop_side_chats` call per such transcript not answered yet; they are rare and only for 15 seconds), so a side chat whose `sessions/<pid>.json` lags its transcript is still dropped on its first load
+- A bird already shown (the record was unreadable on an earlier load) is not in `found` on the load that reads the mark and leaves through the same path as a bird whose process ended (`settleLiveness`). Whether that path makes a sound or a Recent activity row is checked at implementation; if it does, the side chat's id is passed so it doesn't
+- No change for the CLI, Codex or other agents: they have no desktop record, and a live session without `hostSessionId` is never asked about
+
+Reading only own lines:
+- Rust `scan_peer_names(path, start)`: the own id is the path's file stem. A line whose `sessionId` is a string other than it is skipped for everything the scan reads (the first prompt, `agent-name`, the SessionStart hook's time, the last typed turn, and every trace). A line without `sessionId` is read as before. The check is made on lines already parsed (the scan parses only lines that may carry something), so lines that are skipped today cost nothing more. `start` is unchanged: an incremental read of a fork reads only own lines anyway, since copied lines come first
+- TS `readTail(file, opts)` / `readWindow` (`src/lib/transcript.ts`): a new option `ownSessionId`. When given, a line whose `sessionId` is a string other than it gives no peer name (`collectPeerNames`) and isn't taken as the first prompt (`isFirstPromptCandidate`). Only `claude.list` passes it (through `readTailCached`), with the transcript's file stem; chick reads (`includeSidechain`) don't pass it, so their lines are read as before. The tail's state, events, chick signals and background tasks are read from every line as before (the requirement covers links and the first prompt; a fork's own lines follow the copy, so its last turn is its own once it has written one)
+
+Tests (table tests calling the same functions as the app; names and ids are made up, shaped like the records above):
+- `src-tauri/src/focus/desktop.rs`: `is_side_chat_record` over a side chat's record, a fork's (`forkedFromSessionId`, `spawnedFrom` without `btw`), a `start_session` child's, an ordinary one's, `btw` not a bool; `side_chats` over a temp folder with records two folders down, an id with no record, an unreadable file
+- `src-tauri/src/liveness.rs` `scan_peer_names`: a side chat typed in (copied first prompt `human`, copied `Started session …` and `send_message` naming a sibling; own task notification and typed prompt), a side chat closed without typing (copied lines and own untimed lines only), a fork (copied first prompt `human`, copied sibling start and peer name; own first prompt `sdk` with the notes folder, own send to the parent), a `start_session` child and an ordinary session (unchanged results), lines without `sessionId` (read as before), and an incremental read from an offset after the copy
+- `src/lib/transcript.test.ts`: `readTail` with and without `ownSessionId` over the same fork lines (peer names and first prompt only from own lines with it; unchanged without it), and a chick's lines with `includeSidechain` (unchanged)
+- `src/lib/side-chats.test.ts`: `hostIdsToAsk` and `isSideChat` over live sessions with and without `hostSessionId`, answered and unanswered ids, and a pid-less new transcript
+- A test that the listing drops a side chat end to end (`claude.list` with a fake folder) if the existing tests have a harness for it; otherwise the pure functions above carry it and the app is checked with the real side chat on this machine (the bird and its concierge line are gone, the main session no longer watches it)
+
+| Requirement / basic design | Where |
+|---|---|
+| A side chat appears nowhere (Garden, Perch, Recent activity, sound, voice, bubble, summary request, concierge) | `claude.list` skips it before the tail is read; everything shown is built from `found` (`src/lib/agents.ts`, `src/lib/side-chats.ts`) |
+| From its start, while it answers, after it finishes, while its process lingers | Decided from the record, which exists before the process and doesn't change; the pid-less grace candidates are asked by `local_<id>` (`hostIdsToAsk`) |
+| The main session isn't shown watching its side chat; a side chat is linked to no session | Side chats removed from `listing.liveSessions` before `resolveWatchLinks` (`claude.prepare`); the side chat's own transcript isn't scanned |
+| A forked transcript is judged only from its own lines: links and first prompt | `scan_peer_names` (Rust) and `readWindow` with `ownSessionId` (TS) skip lines whose `sessionId` isn't the file's |
+| Table tests from the real records, side chat typed / closed without typing excluded; main, `start_session` children, forks, ordinary sessions, chicks unchanged | The tests above |
+| Told by `spawnedFrom.btw` true, reached from `hostSessionId` or `cliSessionId`; not `forkedFromSessionId`, not the name | `is_side_chat_record`, `side_chats` by `local_<id>` file name; `hostIdsToAsk` |
+| Dropped where Claude Code sessions are listed, before state is derived | `claude.prepare` / `claude.list` |
+| A record not found or unreadable: shown as usual; the bird goes away on the load that reads the mark | `None` isn't cached and is asked again; a shown bird leaves through `settleLiveness` |
+| Own line = `sessionId` equals the file name; others skipped for links and first prompt | Same as the fourth row; chicks excluded (their lines carry the main session's id) |
+
 ## Display names
 
 - A session's display name is used everywhere it is named: the bird's name in the Garden, Perch, Recent activity, the concierge's request and advice, and the summary's lines
