@@ -52,7 +52,7 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
 Env: `WIDTHS`, `HEIGHT`, `QUERY` (another mock scene; `preset=concierge-long&tab=concierge&concierge=` has state lines
 long enough to be cut at 3 lines), `SHOT_LANG=en`, `NAME` (the files' prefix), `LABEL` (drawn at
 the top left of each image, to tell shots apart), `REST=1` (at rest), `CSS` (a style sheet added to the page, to try a
-value before writing it, e.g. `CSS='.concierge-status-lines { --dot-nudge: 1px }'`). Writes `<OUT>/<NAME>-<width>.png` at `DPR`.
+value before writing it, e.g. `CSS='.concierge-status-lines { --dot-nudge: 1px }'`). `WAIT` (the selector waited for, default the tab's bubble; `.garden-node.concierge` with `QUERY='preset=same-project&concierge='` shoots the Garden), `CLICK` (a selector clicked before the shot, e.g. the header's mute button). Writes `<OUT>/<NAME>-<width>.png` at `DPR`. It also prints the gaps between the bubble's line boxes: two suggestions, the suggestions and the state lines, two state lines.
 
 `ENGINE=webkit` shoots in Playwright's WebKit, the engine of the app's WebView on macOS (`bunx playwright install
 webkit` in the Playwright directory); the default is Chromium.

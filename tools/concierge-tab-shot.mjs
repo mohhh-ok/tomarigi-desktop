@@ -8,6 +8,9 @@
 // (ja or en, default ja), NAME (the files' prefix, default concierge), LABEL (drawn at the top left of each image, to tell
 // shots apart side by side; none by default), REST=1 (shoot at rest, data-fade="rest"), CSS (a style sheet added to the
 // page, to try a value before writing it in the app's CSS, e.g. CSS='.concierge-status-lines { --dot-nudge: 1px }').
+// WAIT (the selector waited for before shooting, default the Concierge tab's bubble; e.g. '.garden-node.concierge' for the
+// Garden with QUERY='preset=same-project&concierge='), CLICK (a selector clicked once it is there, e.g. the header's mute
+// button: '.header-controls button[aria-label]').
 // ENGINE=webkit shoots in Playwright's WebKit, the engine of the app's WebView (default chromium). DPR (device pixel ratio,
 // default 2; 1 for a 1x display).
 // Writes <OUT>/<NAME>-<width>.png at DPR and prints each path. Then, for each state line, prints how far its dot's ink
@@ -46,7 +49,8 @@ try {
     const page = await ctx.newPage();
     await routeMock(page, ORIGIN, DIST);
     await page.goto(`${ORIGIN}${mockPath(QUERY)}`);
-    await page.waitForSelector(".garden-concierge-only .speech-bubble-below", { timeout: 15000 });
+    await page.waitForSelector(process.env.WAIT ?? ".garden-concierge-only .speech-bubble-below", { timeout: 15000 });
+    if (process.env.CLICK) await page.click(process.env.CLICK);
     if (process.env.CSS) await page.addStyleTag({ content: process.env.CSS });
     if (process.env.REST === "1") await page.evaluate(() => (document.documentElement.dataset.fade = "rest"));
     // The concierge flies in and the bubble fades in
@@ -98,6 +102,7 @@ try {
     const laid = await laidOutLines(page);
     writeFileSync(join(OUT, `${NAME}-${w}-lines.txt`), `${laid.join("\n")}\n`);
     console.log(laid.join("\n"));
+    const gaps = await measureGaps(page);
     const lines = await measureInk(page);
     const fmt = (v) => (v === null ? "   n/a" : v.toFixed(2).padStart(6));
     const dpx = (v) => `${fmt(v === null ? null : v * DPR)}dpx ${fmt(v)}px`;
@@ -108,6 +113,9 @@ try {
       "",
       "child dots (◎): center's ink minus ring's ink, device px (plus is right / lower); gaps between ring and center, device px (left/right, top/bottom); the coverage across and down the dot's middle (0-9, by device px)",
       ...lines.filter((d) => d.ring).map((d) => `x ${fmt(d.ring.x.offset)}dpx y ${fmt(d.ring.y.offset)}dpx | gaps x ${fmt(d.ring.x.gapA)}/${fmt(d.ring.x.gapB)} y ${fmt(d.ring.y.gapA)}/${fmt(d.ring.y.gapB)} | across ${d.ring.x.profile} down ${d.ring.y.profile} | ${d.line}`),
+      "",
+      "gaps between line boxes, CSS px (the next one's top minus the one before's bottom): between two suggestions | between the suggestions and the first state line | between two state lines (and before 「ほか N 件」)",
+      `suggestions ${gaps.suggestions.map(fmt).join(",") || "-"} | group ${gaps.group === null ? "-" : fmt(gaps.group)} | state lines ${gaps.lines.map(fmt).join(",") || "-"}`,
     ].join("\n");
     writeFileSync(join(OUT, `${NAME}-${w}-dots.txt`), `${text}\n`);
     console.log(text);
@@ -115,6 +123,20 @@ try {
   }
 } finally {
   await browser.close();
+}
+
+/** The gaps between the line boxes of the bubble (CSS px): two suggestions, the suggestions and the state lines, two
+    state lines (and the last one and 「ほか N 件」) */
+async function measureGaps(page) {
+  return page.evaluate(() => {
+    const apart = (els) => els.slice(1).map((el, i) => el.getBoundingClientRect().top - els[i].getBoundingClientRect().bottom);
+    const suggestions = [...document.querySelectorAll(".concierge-status-suggestions .concierge-status-line")];
+    const lines = [...document.querySelectorAll(".concierge-status-lines > *")];
+    const group = suggestions.length && lines.length
+      ? lines[0].getBoundingClientRect().top - suggestions[suggestions.length - 1].getBoundingClientRect().bottom
+      : null;
+    return { suggestions: apart(suggestions), group, lines: apart(lines) };
+  });
 }
 
 /**

@@ -102,6 +102,13 @@
      both the app's WebViews. balance was tried and broke the first line shorter, inside phrases more often.
      A state line cut at 3 lines is cut after this wrapping, since it is measured as laid out */
   text-wrap: pretty;
+  /* The bubble's gaps (docs/design.md "Concierge"): two suggestions (each often wraps, so wide enough to tell from its
+     lines), two state lines (more than the none inside one wrapped line, so where one ends and the next begins shows
+     without the dots), and the suggestions and the state lines, twice the first and 3 times the second, so they read
+     as two groups */
+  --suggestion-gap: 6px;
+  --state-line-gap: 4px;
+  --group-gap: 12px;
 }
 
 /* A Japanese or Chinese text breaks only between phrases, in WebKit as in Chromium (docs/design.md "Concierge"): the
@@ -118,7 +125,7 @@
    the bubble), the suggestions bold and a step larger than a bird's bubble text (11px) */
 .concierge-status-suggestions {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: var(--group-gap);
   font-size: 12px;
   font-weight: 700;
   line-height: 1.4;
@@ -135,7 +142,7 @@
 
 /* A suggestion often wraps, so each starts a little apart from the one before */
 .concierge-status-suggestions .concierge-status-line + .concierge-status-line {
-  margin-top: 3px;
+  margin-top: var(--suggestion-gap);
 }
 
 /* The state lines: a step smaller and muted, the detail to read after. The line height and the dot's size and gap are
@@ -193,6 +200,12 @@
 .concierge-status-lines .concierge-status-line {
   position: relative;
   padding-left: calc(var(--dot-size) + var(--dot-gap));
+}
+
+/* Apart from the line before by a margin, outside the line's box: the dot is placed from the box's top, so it keeps
+   its place in the line, and the 3-line cap (concierge-status-report.tsx) measures the box alone */
+.concierge-status-lines > * + * {
+  margin-top: var(--state-line-gap);
 }
 
 .concierge-status-dot {

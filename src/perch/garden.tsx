@@ -991,6 +991,7 @@ export function GardenNode({
   onGroupDrop,
   concierge,
   dragMovesWindow = false,
+  showName = true,
   bubbleContent,
 }: {
   session: SessionView;
@@ -1031,6 +1032,9 @@ export function GardenNode({
   // Dragging it moves the floating window instead of the bird (the Concierge tab, where the window is the concierge's
   // size); in the standard window it stays put
   dragMovesWindow?: boolean;
+  // The name above the icon. The Concierge tab leaves it out, since the label under the handle already says it
+  // (docs/design.md "Concierge"); without it the bubble's placement goes by the icon's top
+  showName?: boolean;
   // What the bubble shows in place of its text (the Concierge tab: the suggestions and every session's line)
   bubbleContent?: ReactNode;
 }) {
@@ -1343,7 +1347,7 @@ export function GardenNode({
       <div className="garden-node-inner" ref={innerRef}>
         {/* Birds in a block show only what differs (path relative to the parent). If any bird in the row has a name,
             birds without one also reserve the row height */}
-        {!inBlock ? (
+        {!showName ? null : !inBlock ? (
           <span className={`garden-name${sessionNameClass(session.project, session.projectSuffix)}`} ref={nameRef}>
             <SessionName name={session.project} suffix={session.projectSuffix} />
           </span>
