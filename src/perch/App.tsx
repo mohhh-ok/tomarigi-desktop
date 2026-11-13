@@ -599,6 +599,7 @@ export default function App({
               className="small"
               onClick={toggleMuted}
               aria-label={t(muted ? "unmuteButtonAria" : "muteButtonAria")}
+              title={t(muted ? "unmuteButtonAria" : "muteButtonAria")}
             >
               {/* A single-color icon from the same set as the buttons beside it, not the emoji WebKit draws in color */}
               {muted ? <MdNotificationsOff size={16} /> : <MdNotifications size={16} />}

@@ -105,10 +105,11 @@
      after this wrapping, since it is measured as laid out */
   text-wrap: pretty;
   word-break: auto-phrase;
-  /* The bubble's gaps (docs/design.md "Concierge"): two suggestions (each often wraps), two state lines (more than the
-     none inside one wrapped line, so where one ends and the next begins shows without the dots), and the suggestions
-     and the state lines, 4 times the first and 3 times the second, so they read as two groups */
-  --suggestion-gap: 3px;
+  /* The bubble's gaps (docs/design.md "Concierge"): two suggestions (each often wraps, so wide enough to tell from its
+     lines), two state lines (more than the none inside one wrapped line, so where one ends and the next begins shows
+     without the dots), and the suggestions and the state lines, twice the first and 3 times the second, so they read
+     as two groups */
+  --suggestion-gap: 6px;
   --state-line-gap: 4px;
   --group-gap: 12px;
 }
