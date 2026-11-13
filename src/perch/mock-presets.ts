@@ -962,23 +962,23 @@ export const PRESETS: Preset[] = [
   },
   {
     // The Concierge tab's state lines with parents, their children in each state and a session on its own (docs/design.md
-    // "Concierge", a child's dot): desk and tomarigi are parents, orbit-c9, orbit 2 and ui-check children, yokai on its own
+    // "Concierge", a child's dot): app-z and tomarigi are parents, app-x-c9, app-x 2 and ui-check children, app-y on its own
     id: "concierge-children",
     label: "Concierge: parents and children",
     build: () => ({
       sessions: [
         {
-          id: "mock/kids/orbit-c9",
-          project: "orbit-c9",
+          id: "mock/kids/app-x-c9",
+          project: "app-x-c9",
           child: true,
-          slug: "orbit",
+          slug: "app-x",
           state: "waiting",
           sinceMs: 4 * 60_000,
-          question: tr("WEB-46: fix it in the API (A) or hide it on screen (B)?", "WEB-46 は A（API で直す）と B（画面で隠す）のどちらにしますか？"),
+          question: tr("ISSUE-1: fix it in the API (A) or hide it on screen (B)?", "ISSUE-1 は A（API で直す）と B（画面で隠す）のどちらにしますか？"),
         },
-        { id: "mock/kids/yokai", project: "yokai", slug: "yokai", state: "done", ...finished(3 * 60_000, "Uploaded the 20 words to R2.", "20 語を R2 に上げました") },
-        { id: "mock/kids/desk", project: "desk", slug: "desk", state: "done", ...finished(12 * 60_000, "A child fixed the last 3 audit items.", "監査の残り 3 件を子が直しました") },
-        { id: "mock/kids/orbit-2", project: "orbit 2", child: true, slug: "orbit", state: "done", ...finished(12 * 60_000 + 1_000, "Fixed the last 3 audit items.", "監査の残り 3 件を直しました") },
+        { id: "mock/kids/app-y", project: "app-y", slug: "app-y", state: "done", ...finished(3 * 60_000, "Uploaded the files.", "ファイルを上げました") },
+        { id: "mock/kids/app-z", project: "app-z", slug: "app-z", state: "done", ...finished(12 * 60_000, "A child fixed the last 3 audit items.", "監査の残り 3 件を子が直しました") },
+        { id: "mock/kids/app-x-2", project: "app-x 2", child: true, slug: "app-x", state: "done", ...finished(12 * 60_000 + 1_000, "Fixed the last 3 audit items.", "監査の残り 3 件を直しました") },
         { id: "mock/kids/tomarigi", project: "tomarigi", slug: "tomarigi", state: "working", sinceMs: 5_000, toolName: "Edit" },
         { id: "mock/kids/ui-check", project: "ui-check", child: true, slug: "ui-check", state: "working", sinceMs: 3_000, toolName: "Read" },
       ],
