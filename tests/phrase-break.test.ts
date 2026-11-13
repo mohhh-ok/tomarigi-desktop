@@ -14,6 +14,15 @@ describe("phraseBreaks", () => {
     ["Japanese with a path and English words", "app-x の設計書を docs/design.md に書いて push しました", "ja", ["app-x\u00a0の", "設計書を", " docs/design.md\u00a0に", "書いて", " push\u00a0しました"]],
     ["Japanese with a number and a word apart", "間を空けて 3 回までやり直し、README を更新しました", "ja", ["間を", "空けて", " 3\u00a0回まで", "やり直し、", "README\u00a0を", "更新しました"]],
     ["a cut line: no break before 「…」", "いちばん長く待っているので…", "ja", ["いちばん長く", "待っているので…"]],
+    // A space between English words stays a space, so a long English run wraps between its words, not inside one
+    [
+      "a long English run with Japanese",
+      "Add retry logic to the API handler and update the tests を直した",
+      "ja",
+      ["Add retry logic to the API handler and update the tests\u00a0を", "直した"],
+    ],
+    ["English words before a particle", "Fix the bug in parser.ts のテスト", "ja", ["Fix the bug in parser.ts\u00a0の", "テスト"]],
+    ["a cut line ending in English", "README を更新して push の…", "ja", ["README\u00a0を", "更新して", " push\u00a0の…"]],
     ["Simplified Chinese", "等待时间最长，所以请先回复", "zh-CN", ["等待", "时间", "最长，", "所以", "请", "先", "回复"]],
   ])("%s", (_what, text, lang, expected) => {
     expect(phrases(text, lang)).toEqual(expected);

@@ -2,7 +2,7 @@
 // under their heading at the top, standing out, then a line per session, 「<name>: <text> <state>」, built here from the
 // app's facts (lib/concierge-status.ts) on every render, smaller and muted as the detail to read after. Each name links to its session by id; no name is searched for in text. A suggestion
 // whose session changed since it came is dimmed with its state now
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from "react";
 import { t, uiLanguage } from "@/lib/i18n";
 import { hasPhrases, phraseBreaks } from "@/lib/phrase-break";
 import { clampText, linesIn } from "@/lib/clamp-text";
@@ -24,14 +24,39 @@ const STATE_LABEL = {
 const nowLabel = (now: ConciergeStatus | "gone") =>
   now === "gone" ? t("conciergeSummaryGone") : t("conciergeSummaryNow", [t(STATE_LABEL[now])]);
 
-/** A text as drawn in the bubble: a Japanese or Chinese one with U+200B between its phrases and U+00A0 for a space inside
-    one, so a line breaks only between phrases in WebKit too (lib/phrase-break.ts). Only what is drawn here gets them */
-const drawn = (text: string) => phraseBreaks(text, typeof navigator === "undefined" ? "" : (uiLanguage() ?? ""));
-/** The attribute that gives a part holding such a text `word-break: keep-all` (styles/concierge.css); none for other text,
-    so English wraps as before (in WebKit keep-all also stops the break after a hyphen) */
-const phrased = (text: string) => (hasPhrases(text) ? { "data-phrased": "" } : {});
-/** A text drawn on its own, in a part of its own only when it has phrases */
-const Drawn = ({ text }: { text: string }) => (hasPhrases(text) ? <span {...phrased(text)}>{drawn(text)}</span> : text);
+/** `text` after `prefix` (「: 」, a space) as drawn in the bubble: a Japanese or Chinese text with U+200B between its
+    phrases and U+00A0 for a space inside one next to a kana or kanji, so a line breaks only between phrases in WebKit too
+    (lib/phrase-break.ts). Only what is drawn here gets them */
+const drawn = (text: string, prefix = "") => `${prefix}${phraseBreaks(text, uiLanguage())}`;
+
+// What comes before a suggestion's or a state line's text, after the name
+const TEXT_PREFIX = ": ";
+
+/**
+ * Every text the bubble draws goes through here, so none misses the attribute: a text with phrases is in a part with
+ * `data-phrased`, which gives it `word-break: keep-all` (styles/concierge.css); other text gets none, so English wraps as
+ * before (in WebKit keep-all also stops the break after a hyphen). A part of its own only when it has phrases, or when
+ * `className` or `spanRef` asks for one
+ */
+function Phrase({
+  text,
+  prefix,
+  className,
+  spanRef,
+}: {
+  text: string;
+  prefix?: string;
+  className?: string;
+  spanRef?: Ref<HTMLSpanElement>;
+}) {
+  const phrases = hasPhrases(text);
+  if (!phrases && !className && !spanRef) return drawn(text, prefix);
+  return (
+    <span ref={spanRef} className={className} data-phrased={phrases ? "" : undefined}>
+      {drawn(text, prefix)}
+    </span>
+  );
+}
 
 /** Something that jumps to a session's pane on a click or Enter, at rest too (fade-target); a span, so a long name wraps
     with the line */
@@ -74,16 +99,15 @@ function StateLineText({ text }: { text: string }) {
     // The text is written straight into the span while measuring; React wrote the whole text into it and only writes it
     // again when the text changes, so what is left here is what shows
     // Measured as drawn, with the phrase breaks, so the cap counts the lines as they wrap
-    span.textContent = `: ${drawn(clampText(text, (candidate) => {
-      span.textContent = `: ${drawn(candidate)}`;
-      return linesIn(line.getBoundingClientRect().height, lineHeight) <= STATE_LINE_MAX_LINES;
-    }))}`;
+    span.textContent = drawn(
+      clampText(text, (candidate) => {
+        span.textContent = drawn(candidate, TEXT_PREFIX);
+        return linesIn(line.getBoundingClientRect().height, lineHeight) <= STATE_LINE_MAX_LINES;
+      }),
+      TEXT_PREFIX,
+    );
   });
-  return (
-    <span ref={ref} className="concierge-status-text" {...phrased(text)}>
-      {`: ${drawn(text)}`}
-    </span>
-  );
+  return <Phrase text={text} prefix={TEXT_PREFIX} className="concierge-status-text" spanRef={ref} />;
 }
 
 export function ConciergeStatusReport({
@@ -105,10 +129,10 @@ export function ConciergeStatusReport({
   const name = (id: string, text: string, linked: boolean) =>
     linked && canJump(id) ? (
       <Jump onJump={() => onFocus?.(id)}>
-        <Drawn text={text} />
+        <Phrase text={text} />
       </Jump>
     ) : (
-      <Drawn text={text} />
+      <Phrase text={text} />
     );
   // The state with, for a finished line, the time since it finished, as the bird's status line shows it. One nowrap
   // part, so a line too wide wraps before it and the time is never cut off on its own
@@ -142,12 +166,8 @@ export function ConciergeStatusReport({
             return (
               <span key={s.sessionId} className={`concierge-status-line${now ? " is-stale" : ""}`}>
                 {name(s.sessionId, shown ?? s.name, now !== "gone")}
-                {hasPhrases(s.text) ? <span {...phrased(s.text)}>{`: ${drawn(s.text)}`}</span> : `: ${s.text}`}
-                {now && (
-                  <span className="concierge-status-now" {...phrased(nowLabel(now))}>
-                    {` ${drawn(nowLabel(now))}`}
-                  </span>
-                )}
+                <Phrase text={s.text} prefix={TEXT_PREFIX} />
+                {now && <Phrase text={nowLabel(now)} prefix=" " className="concierge-status-now" />}
               </span>
             );
           })}
