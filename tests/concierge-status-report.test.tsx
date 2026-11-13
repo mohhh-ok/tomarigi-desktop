@@ -164,16 +164,27 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
     expect(html.match(/concierge-status-dot/g)).toHaveLength(1);
   });
 
-  test("the ◎ is a ring and a filled center in the dot's color, inside the dot's box", () => {
-    expect(rule(".concierge-status-dot[data-child]")).toContain("background: none;");
-    expect(rule(".concierge-status-dot[data-child]::before")).toContain("inset: 0;");
-    expect(rule(".concierge-status-dot[data-child]::before")).toContain("border: 1.3px solid var(--dot-color);");
-    // The ::after's own rule, after the one it shares with ::before
-    const after = css.slice(css.lastIndexOf(".concierge-status-dot[data-child]::after {"));
-    expect(after.slice(0, after.indexOf("}"))).toContain("inset: 2.4px;");
-    expect(after.slice(0, after.indexOf("}"))).toContain("background: var(--dot-color);");
+  test("the ◎ is a ring and a filled center in the dot's color, cut out of the dot's box as one image", () => {
+    const child = rule(".concierge-status-dot[data-child]") ?? "";
+    // The box keeps the state's color (no background of its own) and one mask cuts the ring and the center out of it,
+    // so the two can't be rounded to device px apart (docs/design.md "Concierge")
+    expect(child).not.toContain("background");
+    expect(child).toContain("-webkit-mask: var(--child-dot-mask) center / 100% 100% no-repeat;");
+    expect(child).toContain("mask: var(--child-dot-mask) center / 100% 100% no-repeat;");
+    expect(css).not.toContain("[data-child]::before");
+    expect(css).not.toContain("[data-child]::after");
+    // At 2x and more: the user's sample, a 1.3px ring and the center inset 2.4px (radius 1.6px) in the 8px box
+    expect(child).toContain("r='3.35' fill='none' stroke='%23000' stroke-width='1.3'");
+    expect(child).toContain("r='1.6'");
+    // At 1x: whole px, a 1px ring, a 1px gap, a 4px center
+    const oneX = css.slice(css.indexOf("@media (max-resolution: 1.5dppx) {"));
+    const oneXRule = oneX.slice(0, oneX.indexOf("}"));
+    expect(oneXRule).toContain(".concierge-status-dot[data-child]");
+    expect(oneXRule).toContain("r='3.5' fill='none' stroke='%23000' stroke-width='1'");
+    expect(oneXRule).toContain("r='2'");
     // The child's dot doesn't set its own size or place: those stay the filled dot's
-    expect(rule(".concierge-status-dot[data-child]")).not.toMatch(/width|height|top|left/);
+    const properties = child.split("\n").map((l) => l.trim().split(":")[0]);
+    expect(properties.filter((p) => /^(width|height|top|left|inset|position)$/.test(p))).toEqual([]);
   });
 
   test("a suggestion has no dot", () => {
