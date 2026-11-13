@@ -625,6 +625,7 @@ export default function App({
                 setSettingsOpen((v) => !v);
               }}
               aria-label={t("tabSettingsLabel")}
+              title={t("tabSettingsLabel")}
               aria-pressed={settingsOpen}
             >
               <MdSettings size={16} />
