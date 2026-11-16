@@ -85,6 +85,17 @@
    suggestions under their heading and then a line per session */
 .speech-bubble-below.concierge-report {
   --bubble-max: 240px;
+  /* Its own padding, wider than a bird's one-line bubble's 2px / 7px, so a bubble of one line doesn't look cramped
+     (docs/design.md "Concierge", the bubble's own padding). The bottom is a little more than the top: the rounded
+     corners and the shadow below make the bottom read narrower */
+  --report-pad-top: 6px;
+  --report-pad-side: 9px;
+  --report-pad-bottom: 7px;
+}
+
+/* On the body, the box with the background; the frame around it (.speech-bubble-below) is transparent */
+.speech-bubble-below.concierge-report > .speech-bubble {
+  padding: var(--report-pad-top) var(--report-pad-side) var(--report-pad-bottom);
 }
 
 /* With the state colors of the state lines (docs/design.md "Concierge"), each kept at one place: the state lines'
