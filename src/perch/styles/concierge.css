@@ -90,7 +90,7 @@
      corners and the shadow below make the bottom read narrower */
   --report-pad-top: 6px;
   --report-pad-side: 9px;
-  --report-pad-bottom: 8px;
+  --report-pad-bottom: 6px;
 }
 
 /* On the body, the box with the background; the frame around it (.speech-bubble-below) is transparent */
