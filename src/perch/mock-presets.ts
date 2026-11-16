@@ -986,8 +986,7 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // The Concierge tab with one finished session: one suggestion and one state line, or with ?conciergeSuggestions=none
-    // one state line only (docs/design.md "Concierge", the bubble's own padding)
+    // With ?conciergeSuggestions=none, one state line only (docs/design.md "Concierge", the bubble's own padding)
     id: "concierge-one",
     label: "Concierge: one session",
     build: () => ({

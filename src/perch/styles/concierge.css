@@ -85,8 +85,8 @@
    suggestions under their heading and then a line per session */
 .speech-bubble-below.concierge-report {
   --bubble-max: 240px;
-  /* Always this wide, whatever it holds (docs/design.md "Concierge", the bubble's width); a bird's bubble is as wide as
-     its text. Still capped by the frame's max-width in a garden narrower than this */
+  /* docs/design.md "Concierge", the bubble's width; a bird's bubble is as wide as its text. Still capped by the frame's
+     max-width in a garden narrower than this */
   width: var(--bubble-max);
   /* Its own padding, wider than a bird's one-line bubble's 2px / 7px, so a bubble of one line doesn't look cramped
      (docs/design.md "Concierge", the bubble's own padding) */
