@@ -592,6 +592,7 @@ An AI looks at every session together and gives the user one piece of advice abo
             | Birds' bubbles and the Garden's concierge bubble keep 2px / 7px | They have no `concierge-report`; `.speech-bubble` in `speech-bubble.css` unchanged |
             | WebKit and Chromium | The tool with `ENGINE=webkit` and the default Chromium, before and after |
 
+        - The bubble's width is not fitted to its widest line: a wrapped bubble keeps the width before wrapping, so a right gap is left when lines break at phrases (31.5px against 8px on the left in one shot). Fitting it would take measuring the laid-out lines in script; the user, asked whether to do it for the Concierge tab only or for the Garden's bubbles too: 「はばはどうてきにしない」
         - How the numbers were reached (each set shown to the user as screenshots):
           - The user: 「コンシェルジュの吹き出し、したのpaddingが狭すぎんかなどうおもう？1つだけ表示されてる時とかめっちゃひんそうにみえるんだけど」. The bubble then had the bird's bubble's 2px / 7px, and the text sat on its bottom edge (2–3px from the bottom edge to the ink)
           - Claude proposed widening the Concierge tab's bubble only, to about 6px / 9px / 7px, keeping the birds' bubbles and the Garden's concierge bubble; the user: 「うん」
