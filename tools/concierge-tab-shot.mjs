@@ -34,6 +34,9 @@ const QUERY = process.env.QUERY ?? "preset=same-project&tab=concierge&concierge=
 const LANG = process.env.SHOT_LANG === "en" ? "en" : "ja";
 const NAME = process.env.NAME ?? "concierge";
 const ORIGIN = "http://tomarigi.concierge-shot";
+// A pixel is ink when the sum of its RGB differences (0 to 765) from the shot without that ink is at least this: the
+// padding's edges are at the outermost such pixels, and a dot or letters with none are not found. One value for both
+const INK_MIN = 48;
 mkdirSync(OUT, { recursive: true });
 
 const ENGINE = process.env.ENGINE ?? "chromium";
@@ -129,6 +132,42 @@ try {
   await browser.close();
 }
 
+/**
+ * Shots of the page with parts of the bubble's ink taken away, for measuring that ink by what differs between them: one
+ * shot per mode, with `data-<attr>` on <html> set to the mode. In the modes of `noText`, the text and underlines in
+ * `scope` are transparent; in those of `noDot`, the state lines' dots in it are hidden. A mode in
+ * neither shows everything. Also puts the page-side helpers in `window.__ink`: `pixels` (a shot's base64 PNG to its
+ * ImageData) and `diff` (the sum of the RGB differences of two ImageData at a byte index)
+ */
+async function inkShots(page, attr, { scope, noText, noDot }, modes) {
+  const at = (ms) => `html:is(${ms.map((m) => `[data-${attr}="${m}"]`).join(", ")}) ${scope}`;
+  await page.addStyleTag({
+    content: `${at(noText)} :is(*, *::before, *::after) { color: transparent !important; text-decoration-color: transparent !important; }
+${at(noDot)} .concierge-status-dot { visibility: hidden !important; }`,
+  });
+  await page.evaluate(() => {
+    window.__ink = {
+      pixels: async (b64) => {
+        const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
+        const c = new OffscreenCanvas(bmp.width, bmp.height);
+        const g = c.getContext("2d");
+        g.drawImage(bmp, 0, 0);
+        return g.getImageData(0, 0, bmp.width, bmp.height);
+      },
+      diff: (a, b, i) =>
+        Math.abs(a.data[i] - b.data[i]) + Math.abs(a.data[i + 1] - b.data[i + 1]) + Math.abs(a.data[i + 2] - b.data[i + 2]),
+    };
+  });
+  const shots = {};
+  for (const mode of modes) {
+    await page.evaluate(([a, m]) => (document.documentElement.dataset[a] = m), [attr, mode]);
+    await page.waitForTimeout(100);
+    shots[mode] = (await page.screenshot()).toString("base64");
+  }
+  await page.evaluate((a) => delete document.documentElement.dataset[a], attr);
+  return shots;
+}
+
 /** The bubble body's padding, and how far the ink of what is in it (text, underlines, dots) is from each of its edges
     (CSS px): a shot with all of it transparent against one with it */
 async function measurePadding(page) {
@@ -144,35 +183,18 @@ async function measurePadding(page) {
       boxBottom: r.bottom - Math.max(...[...el.querySelectorAll("*")].map((e) => e.getBoundingClientRect().bottom)),
     };
   }, BODY);
-  await page.addStyleTag({
-    content: `html[data-pad="base"] ${BODY} :is(*, *::before, *::after) { color: transparent !important; text-decoration-color: transparent !important; }
-html[data-pad="base"] ${BODY} .concierge-status-dot { visibility: hidden !important; }`,
-  });
-  await page.evaluate(() => (document.documentElement.dataset.pad = "base"));
-  await page.waitForTimeout(100);
-  const base = (await page.screenshot()).toString("base64");
-  await page.evaluate(() => delete document.documentElement.dataset.pad);
-  await page.waitForTimeout(100);
-  const ink = (await page.screenshot()).toString("base64");
+  const shots = await inkShots(page, "pad", { scope: BODY, noText: ["base"], noDot: ["base"] }, ["base", "ink"]);
   return page.evaluate(
-    async ([g, base, ink, S]) => {
-      const pixels = async (b64) => {
-        const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
-        const c = new OffscreenCanvas(bmp.width, bmp.height);
-        const ctx = c.getContext("2d");
-        ctx.drawImage(bmp, 0, 0);
-        return ctx.getImageData(0, 0, bmp.width, bmp.height);
-      };
-      const a = await pixels(base);
-      const b = await pixels(ink);
+    async ([g, shots, S, MIN]) => {
+      const { pixels, diff } = window.__ink;
+      const a = await pixels(shots.base);
+      const b = await pixels(shots.ink);
       const x0 = Math.round(g.box.left * S), x1 = Math.round(g.box.right * S);
       const y0 = Math.round(g.box.top * S), y1 = Math.round(g.box.bottom * S);
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
       for (let y = y0; y < y1; y++)
         for (let x = x0; x < x1; x++) {
-          const i = (y * a.width + x) * 4;
-          const d = Math.abs(a.data[i] - b.data[i]) + Math.abs(a.data[i + 1] - b.data[i + 1]) + Math.abs(a.data[i + 2] - b.data[i + 2]);
-          if (d < 48) continue;
+          if (diff(b, a, (y * a.width + x) * 4) < MIN) continue;
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
           if (y < minY) minY = y;
@@ -190,7 +212,7 @@ html[data-pad="base"] ${BODY} .concierge-status-dot { visibility: hidden !import
         right: found ? (x1 - 1 - maxX) / S : null,
       };
     },
-    [geometry, base, ink, DPR],
+    [geometry, shots, DPR, INK_MIN],
   );
 }
 
@@ -294,26 +316,15 @@ async function measureInk(page) {
       return { line: line.textContent, child, dot: dot && box(dot), first: first && box(first), lineTop: line.getBoundingClientRect().top, lh, ja, xh };
     });
   });
-  await page.addStyleTag({
-    content: `html:is([data-ink="base"], [data-ink="dot"]) .concierge-status-lines :is(*, *::before, *::after) { color: transparent !important; text-decoration-color: transparent !important; }
-html[data-ink="base"] .concierge-status-dot, html[data-ink="text"] .concierge-status-dot { visibility: hidden !important; }`,
-  });
-  const shots = {};
-  for (const mode of ["base", "dot", "text"]) {
-    await page.evaluate((m) => (document.documentElement.dataset.ink = m), mode);
-    await page.waitForTimeout(100);
-    shots[mode] = (await page.screenshot()).toString("base64");
-  }
-  await page.evaluate(() => delete document.documentElement.dataset.ink);
+  const shots = await inkShots(
+    page,
+    "ink",
+    { scope: ".concierge-status-lines", noText: ["base", "dot"], noDot: ["base", "text"] },
+    ["base", "dot", "text"],
+  );
   return page.evaluate(
-    async ([geometry, shots, S]) => {
-      const pixels = async (b64) => {
-        const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
-        const c = new OffscreenCanvas(bmp.width, bmp.height);
-        const g = c.getContext("2d");
-        g.drawImage(bmp, 0, 0);
-        return g.getImageData(0, 0, bmp.width, bmp.height);
-      };
+    async ([geometry, shots, S, MIN]) => {
+      const { pixels, diff } = window.__ink;
       const base = await pixels(shots.base);
       const dotImg = await pixels(shots.dot);
       const textImg = await pixels(shots.text);
@@ -324,8 +335,7 @@ html[data-ink="base"] .concierge-status-dot, html[data-ink="text"] .concierge-st
           let m = 0;
           for (const [x0, x1] of xs)
             for (let x = x0; x < x1; x++) {
-              const i = (y * base.width + x) * 4;
-              const d = Math.abs(img.data[i] - base.data[i]) + Math.abs(img.data[i + 1] - base.data[i + 1]) + Math.abs(img.data[i + 2] - base.data[i + 2]);
+              const d = diff(img, base, (y * base.width + x) * 4);
               if (d > m) m = d;
             }
           out.push(m);
@@ -335,7 +345,7 @@ html[data-ink="base"] .concierge-status-dot, html[data-ink="text"] .concierge-st
       // The ink's vertical center in device px from y0, with partly painted edge rows counting by their coverage
       const center = (r, y0) => {
         const max = Math.max(...r);
-        if (max < 30) return null;
+        if (max < MIN) return null;
         const c = r.map((v) => Math.min(1, v / max));
         const top = c.findIndex((v) => v > 0.05);
         let bottom = c.length - 1;
@@ -372,8 +382,7 @@ html[data-ink="base"] .concierge-status-dot, html[data-ink="text"] .concierge-st
         const m0 = Math.floor(mid * S - 0.5), m1 = m0 + 1;
         const at = (a, b) => {
           const [x, y] = across ? [a, b] : [b, a];
-          const i = (y * base.width + x) * 4;
-          return Math.abs(dotImg.data[i] - base.data[i]) + Math.abs(dotImg.data[i + 1] - base.data[i + 1]) + Math.abs(dotImg.data[i + 2] - base.data[i + 2]);
+          return diff(dotImg, base, (y * base.width + x) * 4);
         };
         let max = 0;
         for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) max = Math.max(max, across ? at(x, y) : at(y, x));
@@ -422,7 +431,7 @@ html[data-ink="base"] .concierge-status-dot, html[data-ink="text"] .concierge-st
         };
       });
     },
-    [geometry, shots, DPR],
+    [geometry, shots, DPR, INK_MIN],
   );
 }
 
