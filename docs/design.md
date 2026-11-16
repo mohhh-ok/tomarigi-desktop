@@ -592,6 +592,12 @@ An AI looks at every session together and gives the user one piece of advice abo
             | Birds' bubbles and the Garden's concierge bubble keep 2px / 7px | They have no `concierge-report`; `.speech-bubble` in `speech-bubble.css` unchanged |
             | WebKit and Chromium | The tool with `ENGINE=webkit` and the default Chromium, before and after |
 
+        - How the numbers were reached (each set shown to the user as screenshots):
+          - The user: 「コンシェルジュの吹き出し、したのpaddingが狭すぎんかなどうおもう？1つだけ表示されてる時とかめっちゃひんそうにみえるんだけど」. The bubble then had the bird's bubble's 2px / 7px, and the text sat on its bottom edge (2–3px from the bottom edge to the ink)
+          - Claude proposed widening the Concierge tab's bubble only, to about 6px / 9px / 7px, keeping the birds' bubbles and the Garden's concierge bubble; the user: 「うん」
+          - The bottom went to 8px so the space under the ink matched the sides (the parent session's decision, from a requirement Claude had worded as "the bottom reads as wide as the sides or wider"). Shown 8px, the user: 「した、もうちょっとちいさくして」, so the bottom is 6px, the same as the top, and that requirement was dropped
+          - Shown 9px sides, the user: 「左右をもうちょっとせまくして」, then 「さゆうを1pxくらい」, so the sides are 8px
+
       - The bubble's width (the user, on a screenshot of the Concierge tab's bubble with its text to the left and a gap on the right: 「なんかかたよってる」; asked whether to fit the bubble to its widest line in the Concierge tab only or in the Garden too: 「はばはどうてきにしない」, then 「こんしぇるじゅのはなしやぞさっきのは」, 「はばのはなしどうてきにしないってはなし」):
         - Requirement: in the Concierge tab, the concierge's bubble is always the same width, whatever it holds (one short line or many lines). Checked by looking at the tab with one suggestion only, one state line only, several suggestions and state lines, and the note shown without a provider, in WebKit and Chromium: the bubble's width is the same in all of them
         - Basic design: the Concierge tab's bubble is 240px wide (its max width so far), not as wide as its text. The window, which shrinks to the concierge at rest, follows the bubble as before. The birds' bubbles and the Garden's concierge bubble keep their width as wide as the text up to their max (the user's request was about the concierge's bubble in the tab; the 240px is the parent session's decision)
@@ -613,11 +619,6 @@ An AI looks at every session together and gives the user one piece of advice abo
             | Checked in the four scenes in WebKit and Chromium | `tools/concierge-tab-shot.mjs` prints the body's width per shot |
             | The window follows the bubble as before | No change: `ConciergeTabView` measures the frame's `offsetWidth` and sends it to `concierge_only_fit` |
             | Birds' bubbles and the Garden's concierge bubble keep their width | They have no `concierge-report` (only `ConciergeTabView` passes `content`); `.speech-bubble-below` in `speech-bubble.css` unchanged |
-        - How the numbers were reached (each set shown to the user as screenshots):
-          - The user: 「コンシェルジュの吹き出し、したのpaddingが狭すぎんかなどうおもう？1つだけ表示されてる時とかめっちゃひんそうにみえるんだけど」. The bubble then had the bird's bubble's 2px / 7px, and the text sat on its bottom edge (2–3px from the bottom edge to the ink)
-          - Claude proposed widening the Concierge tab's bubble only, to about 6px / 9px / 7px, keeping the birds' bubbles and the Garden's concierge bubble; the user: 「うん」
-          - The bottom went to 8px so the space under the ink matched the sides (the parent session's decision, from a requirement Claude had worded as "the bottom reads as wide as the sides or wider"). Shown 8px, the user: 「した、もうちょっとちいさくして」, so the bottom is 6px, the same as the top, and that requirement was dropped
-          - Shown 9px sides, the user: 「左右をもうちょっとせまくして」, then 「さゆうを1pxくらい」, so the sides are 8px
 
       - Not changed (Claude's own decisions): needs reply keeps its red-brown bold word while done and working are grey, since it is the one state that asks the user something; a working line gets no elapsed time, which would add a number to every working line in a tab meant to stay quiet; the space under the bubble in the standard window is the window's own height (the floating window shrinks to the concierge at rest); the state lines' grey (#5d5546, 5.9:1; state words #6b6456, 4.7:1) is above 4.5:1 at 1x too
     - The state words are the birds' own (needs reply, done, and the working bird's word, ja: ついばみ中), from the same keys, so a state reads the same in the tab as at the bird in every language. A session classed as working since it is continuing says the working word too (Claude's own decision, after a review found the tab's own words translated differently from the birds' in 41 of 43 languages; no rule in this document sets a separate word for working)
