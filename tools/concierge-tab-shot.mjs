@@ -104,6 +104,7 @@ try {
     console.log(laid.join("\n"));
     const gaps = await measureGaps(page);
     const lines = await measureInk(page);
+    const pad = await measurePadding(page);
     const fmt = (v) => (v === null ? "   n/a" : v.toFixed(2).padStart(6));
     const dpx = (v) => `${fmt(v === null ? null : v * DPR)}dpx ${fmt(v)}px`;
     const text = [
@@ -116,6 +117,9 @@ try {
       "",
       "gaps between line boxes, CSS px (the next one's top minus the one before's bottom): between two suggestions | between the suggestions and the first state line | between two state lines (and before 「ほか N 件」)",
       `suggestions ${gaps.suggestions.map(fmt).join(",") || "-"} | group ${gaps.group === null ? "-" : fmt(gaps.group)} | state lines ${gaps.lines.map(fmt).join(",") || "-"}`,
+      "",
+      "the bubble's body: its padding as laid out (top right bottom left), and from each edge of the body to the ink of everything in it (text, underlines, dots), CSS px",
+      `padding ${pad.padding} | ink from the edge: top ${fmt(pad.top)} right ${fmt(pad.right)} bottom ${fmt(pad.bottom)} left ${fmt(pad.left)} | lowest box to the bottom ${fmt(pad.boxBottom)} | body ${pad.width}x${pad.height}px`,
     ].join("\n");
     writeFileSync(join(OUT, `${NAME}-${w}-dots.txt`), `${text}\n`);
     console.log(text);
@@ -123,6 +127,71 @@ try {
   }
 } finally {
   await browser.close();
+}
+
+/** The bubble body's padding, and how far the ink of what is in it (text, underlines, dots) is from each of its edges
+    (CSS px): a shot with all of it transparent against one with it */
+async function measurePadding(page) {
+  const BODY = ".garden-concierge-only .speech-bubble-below > .speech-bubble";
+  const geometry = await page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    return {
+      box: { left: r.left, top: r.top, right: r.right, bottom: r.bottom },
+      padding: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].join(" "),
+      // The lowest box drawn in the body (the setup note's button has a background, so its edge is what shows)
+      boxBottom: r.bottom - Math.max(...[...el.querySelectorAll("*")].map((e) => e.getBoundingClientRect().bottom)),
+    };
+  }, BODY);
+  await page.addStyleTag({
+    content: `html[data-pad="base"] ${BODY} :is(*, *::before, *::after) { color: transparent !important; text-decoration-color: transparent !important; }
+html[data-pad="base"] ${BODY} .concierge-status-dot { visibility: hidden !important; }`,
+  });
+  await page.evaluate(() => (document.documentElement.dataset.pad = "base"));
+  await page.waitForTimeout(100);
+  const base = (await page.screenshot()).toString("base64");
+  await page.evaluate(() => delete document.documentElement.dataset.pad);
+  await page.waitForTimeout(100);
+  const ink = (await page.screenshot()).toString("base64");
+  return page.evaluate(
+    async ([g, base, ink, S]) => {
+      const pixels = async (b64) => {
+        const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
+        const c = new OffscreenCanvas(bmp.width, bmp.height);
+        const ctx = c.getContext("2d");
+        ctx.drawImage(bmp, 0, 0);
+        return ctx.getImageData(0, 0, bmp.width, bmp.height);
+      };
+      const a = await pixels(base);
+      const b = await pixels(ink);
+      const x0 = Math.round(g.box.left * S), x1 = Math.round(g.box.right * S);
+      const y0 = Math.round(g.box.top * S), y1 = Math.round(g.box.bottom * S);
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (let y = y0; y < y1; y++)
+        for (let x = x0; x < x1; x++) {
+          const i = (y * a.width + x) * 4;
+          const d = Math.abs(a.data[i] - b.data[i]) + Math.abs(a.data[i + 1] - b.data[i + 1]) + Math.abs(a.data[i + 2] - b.data[i + 2]);
+          if (d < 48) continue;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      const found = minX !== Infinity;
+      return {
+        padding: g.padding,
+        boxBottom: g.boxBottom,
+        width: (g.box.right - g.box.left).toFixed(1),
+        height: (g.box.bottom - g.box.top).toFixed(1),
+        top: found ? (minY - y0) / S : null,
+        bottom: found ? (y1 - 1 - maxY) / S : null,
+        left: found ? (minX - x0) / S : null,
+        right: found ? (x1 - 1 - maxX) / S : null,
+      };
+    },
+    [geometry, base, ink, DPR],
+  );
 }
 
 /** The gaps between the line boxes of the bubble (CSS px): two suggestions, the suggestions and the state lines, two

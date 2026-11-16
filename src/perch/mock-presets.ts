@@ -986,6 +986,18 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
+    // The Concierge tab with one finished session: one suggestion and one state line, or with ?conciergeSuggestions=none
+    // one state line only (docs/design.md "Concierge", the bubble's own padding)
+    id: "concierge-one",
+    label: "Concierge: one session",
+    build: () => ({
+      sessions: [
+        { id: "mock/one/app-x", project: "app-x", slug: "app-x", state: "done", ...finished(3 * 60_000, "Uploaded the files.", "ファイルを上げました") },
+      ],
+      events: [],
+    }),
+  },
+  {
     // A Japanese line with a long run of English words in it (docs/design.md "Concierge", a space inside a phrase): it
     // wraps between the English words, not inside one
     id: "concierge-mixed",
