@@ -193,30 +193,37 @@ describe("who started a turn", () => {
 
   test("reads replace the turn when one starts, and add the senders that arrive meanwhile", () => {
     const turns = new Map<string, LatestTurn>();
-    rememberLatestTurn(turns, "v", { lastTurnStarter: TYPED, turnPeers: [] }, true);
-    rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }] }, false);
+    rememberLatestTurn(turns, "v", { start: 0, lastTurnStarter: TYPED, turnPeers: [] });
+    rememberLatestTurn(turns, "v", { start: 1, lastTurnStarter: null, turnPeers: [{ pid: 111 }] });
     expect(turns.get("v")).toEqual({ starter: TYPED, peers: [{ pid: 111 }] });
-    rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [] }, false);
+    rememberLatestTurn(turns, "v", { start: 1, lastTurnStarter: null, turnPeers: [] });
     expect(turns.get("v")).toEqual({ starter: TYPED, peers: [{ pid: 111 }] });
-    rememberLatestTurn(turns, "v", { lastTurnStarter: { kind: "peer", pid: 333 }, turnPeers: [], turnStarted: true }, false);
+    rememberLatestTurn(turns, "v", { start: 1, lastTurnStarter: { kind: "peer", pid: 333 }, turnPeers: [], turnStarted: true });
     expect(turns.get("v")).toEqual({ starter: { kind: "peer", pid: 333 }, peers: [] });
     // A read from the top again (only while the first prompt hasn't come) replaces, so senders aren't counted twice
-    rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }] }, true);
-    rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }] }, true);
+    rememberLatestTurn(turns, "v", { start: 0, lastTurnStarter: null, turnPeers: [{ pid: 111 }] });
+    rememberLatestTurn(turns, "v", { start: 0, lastTurnStarter: null, turnPeers: [{ pid: 111 }] });
     expect(turns.get("v")).toEqual({ peers: [{ pid: 111 }] });
   });
 
   test("the user types into it while it works: the senders that arrived earlier in the turn stay", () => {
     const turns = new Map<string, LatestTurn>();
-    rememberLatestTurn(turns, "v", { lastTurnStarter: TYPED, turnPeers: [{ pid: 111 }] }, true);
-    rememberLatestTurn(turns, "v", { lastTurnStarter: TYPED, turnPeers: [] }, false);
+    rememberLatestTurn(turns, "v", { start: 0, lastTurnStarter: TYPED, turnPeers: [{ pid: 111 }] });
+    rememberLatestTurn(turns, "v", { start: 1, lastTurnStarter: TYPED, turnPeers: [] });
     expect(latestTurnBy(turns.get("v"), own, lookup)).toBe("self");
+  });
+
+  test("a read the transcript's shrinking sent back to the top replaces the turn, though a later read was asked for", () => {
+    const turns = new Map<string, LatestTurn>();
+    rememberLatestTurn(turns, "v", { start: 0, lastTurnStarter: TYPED, turnPeers: [{ pid: 111 }], turnStarted: true });
+    rememberLatestTurn(turns, "v", { start: 0, lastTurnStarter: null, turnPeers: [{ pid: 333 }], turnStarted: false });
+    expect(turns.get("v")).toEqual({ peers: [{ pid: 333 }] });
   });
 
   test("a sender that sends several messages during the turn is kept once", () => {
     const turns = new Map<string, LatestTurn>();
-    rememberLatestTurn(turns, "v", { lastTurnStarter: TYPED, turnPeers: [{ pid: 111 }, { pid: 111 }] }, true);
-    rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }, { pid: 333 }] }, false);
+    rememberLatestTurn(turns, "v", { start: 0, lastTurnStarter: TYPED, turnPeers: [{ pid: 111 }, { pid: 111 }] });
+    rememberLatestTurn(turns, "v", { start: 1, lastTurnStarter: null, turnPeers: [{ pid: 111 }, { pid: 333 }] });
     expect(turns.get("v")).toEqual({ starter: TYPED, peers: [{ pid: 111 }, { pid: 333 }] });
   });
 });

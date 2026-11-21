@@ -108,7 +108,7 @@ function watchOf(
   const starterOf = (read: boolean | null): TurnStarter | null =>
     read === null ? null : read ? { kind: "typed" } : { kind: "other" };
   for (const [id, s] of entries) {
-    (s.reads ?? []).forEach((read, i) => rememberLatestTurn(turns, viewId(id), { lastTurnStarter: starterOf(read), turnPeers: [] }, i === 0));
+    (s.reads ?? []).forEach((read, i) => rememberLatestTurn(turns, viewId(id), { start: i, lastTurnStarter: starterOf(read), turnPeers: [] }));
   }
   return {
     liveBySessionId: new Map(entries.map(([id, s], i) => [id, { pid: i + 1, sessionId: id, startedAt: s.startedAt } as LiveSession])),

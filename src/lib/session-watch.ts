@@ -57,7 +57,7 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
           { path: f.file.path, start },
         );
         if (scan.firstPrompt) firstPromptCache.set(f.id, scan.firstPrompt);
-        rememberLatestTurn(latestTurns, f.id, scan, start === 0);
+        rememberLatestTurn(latestTurns, f.id, scan);
         // The first prompt is read from the top only, so the offset stays at the top until it has come (a session
         // just started may not have written it yet; the file is still small then)
         if (firstPromptCache.has(f.id)) peerScanOffset.set(f.id, scan.end);

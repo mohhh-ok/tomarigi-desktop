@@ -23,6 +23,8 @@ export interface LatestTurn {
 
 /** What one read of a transcript (scan_peer_names in src-tauri) says of its latest turn */
 export interface TurnRead {
+  /** Where the read started: 0 when it read from the top (also when the file had shrunk below the position asked for) */
+  start: number;
   lastTurnStarter?: TurnStarter | null;
   turnPeers?: PeerRef[] | null;
   /** The part read has a prompt that starts a turn, so turnPeers are all of the latest turn's. A prompt the user typed
@@ -41,7 +43,8 @@ function uniquePeers(peers: readonly PeerRef[]): PeerRef[] {
  * top replaces it; a later read with a new turn replaces it, and one without adds the senders that arrived meanwhile
  * (its starter, if any, is a prompt the user typed while it worked)
  */
-export function rememberLatestTurn(turns: Map<string, LatestTurn>, viewId: string, read: TurnRead, fromTop: boolean): void {
+export function rememberLatestTurn(turns: Map<string, LatestTurn>, viewId: string, read: TurnRead): void {
+  const fromTop = read.start === 0;
   const peers = read.turnPeers ?? [];
   const previous = fromTop ? undefined : turns.get(viewId);
   const replace = fromTop || read.turnStarted === true;

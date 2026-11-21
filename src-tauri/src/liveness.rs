@@ -226,6 +226,9 @@ pub(crate) struct PeerScan {
     /// the user typed into it while it worked sets last_turn_starter without this: it is handled in the running turn,
     /// whose senders stay
     turn_started: bool,
+    /// Position the read started at: the one asked for, or 0 when the file had shrunk below it and was read again from
+    /// the top. A read from the top replaces what earlier reads left (rememberLatestTurn in lib/watching-turns.ts)
+    start: u64,
     /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
 }
@@ -563,7 +566,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             _ => {}
         }
     }
-    Ok(PeerScan { names, first_prompt, last_turn_starter, turn_peers, turn_started, end: start + complete as u64 })
+    Ok(PeerScan { names, first_prompt, last_turn_starter, turn_peers, turn_started, start, end: start + complete as u64 })
 }
 
 #[derive(Serialize)]
@@ -1339,6 +1342,12 @@ mod tests {
         let offset: usize = lines[..3].iter().map(|l| l.len() + 1).sum();
         let later = scan_peer_names(p, offset as u64).unwrap();
         assert_eq!((later.last_turn_starter, later.turn_peers, later.turn_started), (Some(TurnStarter::Typed), vec![], false));
+        // A transcript that shrank below where the last read stopped is read again from the top, and the scan says so
+        let shrunk = [FIRST, FROM_A, REPLY];
+        std::fs::write(&path, shrunk.join("\n") + "\n").unwrap();
+        let again = scan_peer_names(p, 10_000).unwrap();
+        assert_eq!((again.start, again.last_turn_starter), (0, Some(TurnStarter::Peer(a.clone()))));
+        assert_eq!(scan_peer_names(p, offset as u64).unwrap().start, offset as u64);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
