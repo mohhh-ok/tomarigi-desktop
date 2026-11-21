@@ -60,8 +60,8 @@ const said = (r: Extract<ConciergeResult, { ok: true }>) => [
   ...(r.verdict?.targetId ? [{ id: r.verdict.targetId, kind: r.action ?? "none", text: r.verdict.line }] : []),
 ];
 
-/** A reason in an advice or a suggestion (docs/design.md "No reasons in the text"). 先に says the order, not why */
-const REASON = /ので|ため|から[、,]|スキップ|待たせ|待って|待ち続|長く|何度|繰り返|ずっと|止ま|because|since|skip|wait|again|long|held|block/i;
+/** A reason or a state in an advice or a suggestion (docs/design.md "No reasons in the text"). 先に says the order, not why */
+const REASON = /ので|ため|から[、,]|スキップ|待たせ|待って|待ち|待機|長く|何度|繰り返|ずっと|止ま|because|since|skip|wait|again|long|held|block|stopped/i;
 
 export const CASES: Case[] = [
   // ---- Turn verdicts ----
