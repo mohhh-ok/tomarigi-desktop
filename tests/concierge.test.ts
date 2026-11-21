@@ -366,9 +366,12 @@ describe("skippedWhileWaiting: a waiting session the developer left for another,
     expect(answered.sessions[0].skipped).toBeUndefined();
   });
 
-  test("the prompt takes skips only from the fact", () => {
+  test("the prompt orders by the skipped fact and never writes a skip or another reason, skipped or not", () => {
     expect(CONCIERGE_TASK.systemPrompt).toContain("a session with skipped true");
-    expect(CONCIERGE_TASK.systemPrompt).toContain("unless its skipped is true");
+    expect(CONCIERGE_TASK.systemPrompt).not.toContain("unless its skipped is true");
+    expect(CONCIERGE_TASK.systemPrompt).toContain("never why it comes first or why now");
+    expect(CONCIERGE_TASK.systemPrompt).toContain("whatever its skipped says");
+    expect(CONCIERGE_TASK_WITH_SUGGESTIONS.systemPrompt).not.toMatch(/and why|待っているので/);
   });
 });
 
