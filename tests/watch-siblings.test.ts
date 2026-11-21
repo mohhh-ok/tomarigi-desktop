@@ -188,12 +188,19 @@ describe("who started a turn", () => {
     expect(turns.get("v")).toEqual({ starter: TYPED, peers: [{ pid: 111 }] });
     rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [] }, false);
     expect(turns.get("v")).toEqual({ starter: TYPED, peers: [{ pid: 111 }] });
-    rememberLatestTurn(turns, "v", { lastTurnStarter: { kind: "peer", pid: 333 }, turnPeers: [] }, false);
+    rememberLatestTurn(turns, "v", { lastTurnStarter: { kind: "peer", pid: 333 }, turnPeers: [], turnStarted: true }, false);
     expect(turns.get("v")).toEqual({ starter: { kind: "peer", pid: 333 }, peers: [] });
     // A read from the top again (only while the first prompt hasn't come) replaces, so senders aren't counted twice
     rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }] }, true);
     rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }] }, true);
     expect(turns.get("v")).toEqual({ peers: [{ pid: 111 }] });
+  });
+
+  test("the user types into it while it works: the senders that arrived earlier in the turn stay", () => {
+    const turns = new Map<string, LatestTurn>();
+    rememberLatestTurn(turns, "v", { lastTurnStarter: TYPED, turnPeers: [{ pid: 111 }] }, true);
+    rememberLatestTurn(turns, "v", { lastTurnStarter: TYPED, turnPeers: [] }, false);
+    expect(latestTurnBy(turns.get("v"), own, lookup)).toBe("self");
   });
 
   test("a sender that sends several messages during the turn is kept once", () => {
