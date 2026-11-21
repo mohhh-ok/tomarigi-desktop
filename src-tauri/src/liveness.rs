@@ -279,26 +279,32 @@ fn peer_ref(origin: Option<&serde_json::Value>) -> PeerRef {
     }
 }
 
-/// A message from another session that arrived while the session worked (a queued_command attachment with origin.kind
-/// "peer"); it is handled in the running turn
-fn queued_peer(entry: &serde_json::Value) -> Option<PeerRef> {
-    if entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true)
+fn is_sidechain(entry: &serde_json::Value) -> bool {
+    entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true)
+}
+
+/// The origin of what arrived while the session worked (a queued_command attachment, not a subagent's)
+fn queued_origin(entry: &serde_json::Value) -> Option<&serde_json::Value> {
+    if is_sidechain(entry)
         || entry.get("type").and_then(|t| t.as_str()) != Some("attachment")
         || entry.pointer("/attachment/type").and_then(|t| t.as_str()) != Some("queued_command")
-        || entry.pointer("/attachment/origin/kind").and_then(|k| k.as_str()) != Some("peer")
     {
         return None;
     }
-    Some(peer_ref(entry.pointer("/attachment/origin")))
+    entry.pointer("/attachment/origin")
+}
+
+/// A message from another session that arrived while the session worked (a queued_command attachment with origin.kind
+/// "peer"); it is handled in the running turn
+fn queued_peer(entry: &serde_json::Value) -> Option<PeerRef> {
+    let origin = queued_origin(entry)?;
+    (origin.get("kind").and_then(|k| k.as_str()) == Some("peer")).then(|| peer_ref(Some(origin)))
 }
 
 /// A prompt the user typed into the session while it worked (a queued_command attachment with origin.kind "human"):
 /// the user now talks to it, but it is handled in the running turn
 fn typed_midwork(entry: &serde_json::Value) -> bool {
-    entry.get("isSidechain").and_then(|v| v.as_bool()) != Some(true)
-        && entry.get("type").and_then(|t| t.as_str()) == Some("attachment")
-        && entry.pointer("/attachment/type").and_then(|t| t.as_str()) == Some("queued_command")
-        && entry.pointer("/attachment/origin/kind").and_then(|k| k.as_str()) == Some("human")
+    queued_origin(entry).and_then(|o| o.get("kind")).and_then(|k| k.as_str()) == Some("human")
 }
 
 /// Whether a line is a prompt that starts a turn, and if so who started it (TurnStarter). A prompt is a user line, not a
@@ -309,7 +315,7 @@ fn typed_midwork(entry: &serde_json::Value) -> bool {
 /// an attachment (queued_command) and doesn't start a turn: a prompt the user typed then is typed_midwork, messages from
 /// other sessions are queued_peer
 fn turn_starter(entry: &serde_json::Value) -> Option<TurnStarter> {
-    if entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true)
+    if is_sidechain(entry)
         || entry.get("type").and_then(|t| t.as_str()) != Some("user")
     {
         return None;
@@ -447,7 +453,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                     }
                     Some("user")
                         if entry.get("isMeta").and_then(|v| v.as_bool()) != Some(true)
-                            && entry.get("isSidechain").and_then(|v| v.as_bool()) != Some(true) =>
+                            && !is_sidechain(&entry) =>
                     {
                         if let Some(at) = entry.get("timestamp").and_then(|t| t.as_str()) {
                             // The first prompt of a session another session started (written by the app) names the
@@ -485,7 +491,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             continue;
         }
         let Some(at) = entry.get("timestamp").and_then(|t| t.as_str()) else { continue };
-        if entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true) {
+        if is_sidechain(&entry) {
             continue;
         }
         match entry.get("type").and_then(|t| t.as_str()) {
