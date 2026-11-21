@@ -20,7 +20,6 @@ import { hasQuestion, waitsOnDeveloper } from "../src/lib/turn-verdict.ts";
 import { isReadAloudEvent } from "../src/lib/voice.ts";
 import {
   isChildSession,
-  rememberLatestTurnTyped,
   silentForParent,
   startedBySession,
   takenOverByParent,
@@ -32,6 +31,7 @@ import { deriveState, replyWaitOf } from "../src/lib/bird-state.ts";
 import { deriveSessionEvents } from "../src/lib/session-events.ts";
 import type { TailEvent } from "../src/lib/transcript.ts";
 import type { WatchLinks } from "../src/lib/session-watch.ts";
+import { rememberLatestTurn, type LatestTurn, type TurnStarter } from "../src/lib/watching-turns.ts";
 import { conciergeTabCounts } from "../src/perch/concierge-tab.ts";
 
 const prompt = (turnOrigin: string | null | undefined, namedAtLaunch = false): FirstPrompt => ({
@@ -90,8 +90,8 @@ describe("started by another session, in a terminal", () => {
 
 /**
  * A set of running sessions: when each started, its first prompt, what each read of its transcript after the first
- * prompt said of who started the latest turn (lastTurnTyped of scan_peer_names: true typed, false its parent or the app,
- * null no prompt in that part), whether it is on screen (has a view id; default yes), and the links. Read as a scan reads them: a stand-in for the WatchLinks that
+ * prompt said of who started the latest turn (lastTurnStarter of scan_peer_names: true typed, false its parent or the
+ * app, null no prompt in that part; the first read is from the top), whether it is on screen (has a view id; default yes), and the links. Read as a scan reads them: a stand-in for the WatchLinks that
  * resolveWatchLinks gives, passed to the app's takenOverWorld
  */
 interface Scene {
@@ -100,12 +100,16 @@ interface Scene {
 }
 function watchOf(
   scene: Scene,
-): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf"> {
+): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf" | "latestTurnOf"> {
   const entries = Object.entries(scene.sessions);
   const viewId = (id: string) => `root/${id}.jsonl`;
   // Each read of a session's transcript recorded as a scan records it
-  const typedIds = new Set<string>();
-  for (const [id, s] of entries) for (const read of s.reads ?? []) rememberLatestTurnTyped(typedIds, viewId(id), read);
+  const turns = new Map<string, LatestTurn>();
+  const starterOf = (read: boolean | null): TurnStarter | null =>
+    read === null ? null : read ? { kind: "typed" } : { kind: "other" };
+  for (const [id, s] of entries) {
+    (s.reads ?? []).forEach((read, i) => rememberLatestTurn(turns, viewId(id), { lastTurnStarter: starterOf(read), turnPeers: [] }, i === 0));
+  }
   return {
     liveBySessionId: new Map(entries.map(([id, s], i) => [id, { pid: i + 1, sessionId: id, startedAt: s.startedAt } as LiveSession])),
     viewIdBySessionId: new Map(entries.filter(([, s]) => s.onScreen !== false).map(([id]) => [id, viewId(id)])),
@@ -115,12 +119,13 @@ function watchOf(
         .map((p) => ({ sessionId: p, name: p, startedAt: scene.sessions[p]?.startedAt, active: false }) as PeerLink),
     startedBySessionOf: (v) => {
       const s = entries.find(([id]) => viewId(id) === v)?.[1];
-      return s !== undefined && startedBySession(s.first, typedIds.has(v));
+      return s !== undefined && startedBySession(s.first, turns.get(v)?.starter?.kind === "typed");
     },
     childOf: (v) => {
       const s = entries.find(([id]) => viewId(id) === v)?.[1];
       return s !== undefined && isChildSession(s.first);
     },
+    latestTurnOf: (v) => turns.get(v),
   };
 }
 function takenOver(scene: Scene): Record<string, boolean> {

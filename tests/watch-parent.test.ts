@@ -31,9 +31,7 @@ const NOW = 10_000_000;
 interface Session {
   startedAt: number;
   first: FirstPrompt;
-  /** Its latest turn was started by a prompt the user typed */
   typed?: boolean;
-  /** It moves now */
   active?: boolean;
 }
 type Scene = { sessions: Record<string, Session>; links: [string, string][] };
@@ -42,7 +40,7 @@ const viewId = (id: string) => `root/${id}.jsonl`;
 
 function watchOf(
   scene: Scene,
-): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf"> {
+): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf" | "latestTurnOf"> {
   const entries = Object.entries(scene.sessions);
   const byView = (v: string) => entries.find(([id]) => viewId(id) === v)?.[1];
   return {
@@ -57,6 +55,7 @@ function watchOf(
       const s = byView(v);
       return s !== undefined && isChildSession(s.first);
     },
+    latestTurnOf: (v) => (byView(v)?.typed ? { starter: { kind: "typed" }, peers: [] } : undefined),
   };
 }
 

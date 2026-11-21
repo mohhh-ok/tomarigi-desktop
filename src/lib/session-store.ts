@@ -1,7 +1,8 @@
 // Module-level state of the session scan (lib/sessions.ts). Every cache and ledger kept across scans lives here,
 // so the session-*.ts modules share the same instances. Values that are reassigned on a scan are properties of
 // scanState / eventLogState, since a module can't reassign a binding it imported
-import type { FirstPrompt, LatestTurn } from "./watching";
+import type { FirstPrompt } from "./watching";
+import type { LatestTurn } from "./watching-turns";
 import type { TailInfo } from "./transcript";
 import type { BackgroundTask, BirdState, ChickMeta, FoundEntry, SessionEvent } from "./session-types";
 
@@ -49,11 +50,8 @@ export const peerScanOffset = new Map<string, number>();
 // The first prompt of each session's transcript (view id), read once from the top of the file (FirstPrompt in
 // lib/watching.ts). Tells a session started by another session (docs/design.md "Watching")
 export const firstPromptCache = new Map<string, FirstPrompt>();
-// Sessions (view id) whose latest turn after the first prompt was started by a prompt the user typed
-// (rememberLatestTurnTyped in lib/watching.ts): the user talks to it, so no parent takes it over (docs/design.md "Watching")
-export const latestTurnTypedIds = new Set<string>();
 /** Each session's (view id) latest turn: who started it and whose messages arrived during it (rememberLatestTurn in
- * lib/watching.ts; docs/design.md "Watching") */
+ * lib/watching-turns.ts; docs/design.md "Watching") */
 export const latestTurns = new Map<string, LatestTurn>();
 // Machine state and last write time of each session (sessionId) in the previous scan. Used to decide whether
 // a peer is active, and for the watching done suppression (peers are passed in the same way as chicks)
@@ -140,7 +138,6 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
   for (const key of firstPromptCache.keys()) if (!liveIds.has(key)) firstPromptCache.delete(key);
-  for (const key of latestTurnTypedIds) if (!liveIds.has(key)) latestTurnTypedIds.delete(key);
   for (const key of latestTurns.keys()) if (!liveIds.has(key)) latestTurns.delete(key);
   for (const key of desktopHostByViewId.keys()) if (!liveIds.has(key)) desktopHostByViewId.delete(key);
   // Card keys start with the view id (cardKey in lib/proposals.ts)

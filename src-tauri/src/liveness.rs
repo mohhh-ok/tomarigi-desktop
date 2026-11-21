@@ -214,13 +214,10 @@ pub(crate) struct PeerScan {
     names: Vec<(String, String)>,
     /// Set when this scan read the first prompt (it starts at the top of the file)
     first_prompt: Option<FirstPrompt>,
-    /// Whether the last prompt that started a turn after the first prompt, in the part read, was typed by the user
-    /// (turn_starter); None when the part read has none, so the previous answer stands. A session started by
-    /// another session whose latest turn the user started isn't taken over by its parent (docs/design.md "Watching")
-    last_turn_typed: Option<bool>,
     /// Who started the last turn after the first prompt in the part read (turn_starter); None when the part read has
-    /// none, so the previous one stands. Between two sessions neither started, one watches the other only while the
-    /// other works on what it sent (docs/design.md "Watching")
+    /// none, so the previous one stands. A session started by another session whose latest turn the user started isn't
+    /// taken over by its parent, and between two sessions neither started, one watches the other only while the other
+    /// works on what it sent (docs/design.md "Watching")
     last_turn_starter: Option<TurnStarter>,
     /// The other sessions whose messages arrived while the last turn ran (queued_command), in the part read after the
     /// last turn's start (or from the start of the read when it has no new turn: they add to the previous ones)
@@ -556,8 +553,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             _ => {}
         }
     }
-    let last_turn_typed = last_turn_starter.as_ref().map(|s| *s == TurnStarter::Typed);
-    Ok(PeerScan { names, first_prompt, last_turn_typed, last_turn_starter, turn_peers, end: start + complete as u64 })
+    Ok(PeerScan { names, first_prompt, last_turn_starter, turn_peers, end: start + complete as u64 })
 }
 
 #[derive(Serialize)]
@@ -1184,6 +1180,7 @@ mod tests {
             own(&format!(r#"{{"type":"assistant","sessionId":"@OWN@","timestamp":"2026-01-01T01:00:05.000Z","isSidechain":false,"message":{{"content":[{{"type":"tool_use","name":"mcp__ccd_session__send_message","input":{{"session_id":"{PARENT_HOST}"}}}}]}}}}"#)),
         ];
         let first = |origin: Option<&str>, at: &str| FirstPrompt { turn_origin: origin.map(str::to_string), named_at_launch: false, session_start_at: None, at: at.into() };
+        let typed = |scan: &PeerScan| scan.last_turn_starter.as_ref().map(|s| *s == TurnStarter::Typed);
         let names = |scan: &PeerScan| {
             let mut n: Vec<String> = scan.names.iter().map(|(name, _)| name.clone()).collect();
             n.sort();
@@ -1201,7 +1198,7 @@ mod tests {
             let scan = scan_peer_names(path.to_str().unwrap(), 0).unwrap();
             assert_eq!(scan.first_prompt, expected_first, "{name}");
             assert_eq!(names(&scan), expected_names, "{name}");
-            assert_eq!(scan.last_turn_typed, expected_typed, "{name}");
+            assert_eq!(typed(&scan), expected_typed, "{name}");
         }
         // The same copied lines in the parent's own transcript are all read, as before
         let path = dir.join(format!("{PARENT}.jsonl"));
@@ -1209,7 +1206,7 @@ mod tests {
         let scan = scan_peer_names(path.to_str().unwrap(), 0).unwrap();
         assert_eq!(scan.first_prompt, Some(FirstPrompt { named_at_launch: true, ..first(Some("human"), "2026-01-01T00:00:01.000Z") }));
         assert_eq!(names(&scan), vec![SIBLING, "sibling"]);
-        assert_eq!(scan.last_turn_typed, Some(true));
+        assert_eq!(scan.last_turn_starter, Some(TurnStarter::Typed));
         // Lines without sessionId (older transcripts, tests) are read as the session's own
         let path = dir.join("no-ids.jsonl");
         let unmarked: Vec<String> = copied.iter().map(|l| l.replace(&format!(r#""sessionId":"{PARENT}","#), "").replace(&format!(r#","sessionId":"{PARENT}""#), "")).collect();
@@ -1224,9 +1221,9 @@ mod tests {
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
-    /// Whether the latest turn after the first prompt was started by a prompt the user typed, scene by scene: what
-    /// a scan from the top reads, and what a later scan reads from after the first `from` lines (None: no prompt in
-    /// that part, the previous answer stands)
+    /// Whether the latest turn after the first prompt was started by a prompt the user typed (last_turn_starter is
+    /// Typed), scene by scene: what a scan from the top reads, and what a later scan reads from after the first `from`
+    /// lines (None: no prompt in that part, the previous answer stands)
     #[test]
     fn scan_peer_names_reads_who_started_the_latest_turn() {
         let dir = std::env::temp_dir().join(format!("tomarigi-turn-test-{}", std::process::id()));
@@ -1271,13 +1268,14 @@ mod tests {
             ("ghostty: the user typed into it while it worked on its parent's turn", vec![NAME, SESSION_START, GHOSTTY_FIRST, PEER, TYPED_MIDWORK, REPLY], Some(true), (4, Some(true))),
             ("ghostty: a task notification arrives while it works on a typed turn", vec![NAME, SESSION_START, GHOSTTY_FIRST, TYPED, TASK_MIDWORK, REPLY], Some(true), (4, None)),
         ];
+        let typed = |scan: PeerScan| scan.last_turn_starter.map(|s| s == TurnStarter::Typed);
         for (i, (scene, lines, want, (from, want_later))) in scenes.iter().enumerate() {
             let path = dir.join(format!("{i}.jsonl"));
             std::fs::write(&path, lines.join("\n") + "\n").unwrap();
             let p = path.to_str().unwrap();
-            assert_eq!(scan_peer_names(p, 0).unwrap().last_turn_typed, *want, "{scene}");
+            assert_eq!(typed(scan_peer_names(p, 0).unwrap()), *want, "{scene}");
             let offset: usize = lines[..*from].iter().map(|l| l.len() + 1).sum();
-            assert_eq!(scan_peer_names(p, offset as u64).unwrap().last_turn_typed, *want_later, "{scene} (later scan from line {from})");
+            assert_eq!(typed(scan_peer_names(p, offset as u64).unwrap()), *want_later, "{scene} (later scan from line {from})");
         }
         std::fs::remove_dir_all(&dir).unwrap();
     }

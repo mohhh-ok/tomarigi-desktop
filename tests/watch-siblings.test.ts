@@ -14,20 +14,22 @@ import type { TailEvent } from "../src/lib/transcript.ts";
 import { sessionContinuing } from "../src/lib/turn-verdict.ts";
 import {
   isChildSession,
-  latestTurnBy,
   peerHoldChicks,
   peerLookup,
   peersWatchedBy,
-  rememberLatestTurn,
   startedBySession,
   takenOverWorld,
-  turnStarterSession,
   watchingCount,
   type FirstPrompt,
+} from "../src/lib/watching.ts";
+import {
+  latestTurnBy,
+  rememberLatestTurn,
+  turnStarterSession,
   type LatestTurn,
   type PeerRef,
   type TurnStarter,
-} from "../src/lib/watching.ts";
+} from "../src/lib/watching-turns.ts";
 
 const AT = "2026-01-01T00:00:00.400Z";
 /** A session the user started in a terminal: no name at launch, its first prompt typed */
@@ -192,5 +194,12 @@ describe("who started a turn", () => {
     rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }] }, true);
     rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }] }, true);
     expect(turns.get("v")).toEqual({ peers: [{ pid: 111 }] });
+  });
+
+  test("a sender that sends several messages during the turn is kept once", () => {
+    const turns = new Map<string, LatestTurn>();
+    rememberLatestTurn(turns, "v", { lastTurnStarter: TYPED, turnPeers: [{ pid: 111 }, { pid: 111 }] }, true);
+    rememberLatestTurn(turns, "v", { lastTurnStarter: null, turnPeers: [{ pid: 111 }, { pid: 333 }] }, false);
+    expect(turns.get("v")).toEqual({ starter: TYPED, peers: [{ pid: 111 }, { pid: 333 }] });
   });
 });
