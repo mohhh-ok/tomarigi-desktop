@@ -173,6 +173,16 @@ describe("who started a turn", () => {
     expect(turnStarterSession({}, own, lookup)).toBe("unknown");
   });
 
+  test("a message own sent before it was resumed under another pid: matched by its name or desktop app id", () => {
+    const resumed = [{ pid: 555, sessionId: "A", name: "repo-a1", hostSessionId: "local_0000-a" }, { pid: 222, sessionId: "B", name: "repo-b2" }] as LiveSession[];
+    const after = { sessionId: "A", pid: 555 };
+    expect(turnStarterSession({ pid: 111, name: "repo-a1" }, after, peerLookup(resumed))).toBe("self");
+    expect(turnStarterSession({ pid: 111, from: "local_0000-a" }, after, peerLookup(resumed))).toBe("self");
+    expect(turnStarterSession({ pid: 111, name: "repo-b2" }, after, peerLookup(resumed))).toBe("other");
+    expect(turnStarterSession({ pid: 111, name: "gone" }, after, peerLookup(resumed))).toBe("other");
+    expect(turnStarterSession({ pid: 111 }, after, peerLookup(resumed))).toBe("other");
+  });
+
   test("a message from own during the turn counts as own's turn; the desktop app's own turn isn't known", () => {
     expect(latestTurnBy({ starter: TYPED, peers: [{ pid: 111 }] }, own, lookup)).toBe("self");
     expect(latestTurnBy({ starter: TYPED, peers: [{ pid: 333 }] }, own, lookup)).toBe("typed");

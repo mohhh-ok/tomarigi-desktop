@@ -62,8 +62,9 @@ function pidOfSocket(from: string | undefined): number | undefined {
 
 /**
  * Whether a message came from the session own: by the sender's pid (`verifiedPeerPid`, else the pid in its socket
- * path) against own's pid in sessions/<pid>.json; without a pid, by its name or desktop app id (peerLookup). "unknown"
- * when neither tells (docs/design.md "Watching")
+ * path) against own's pid in sessions/<pid>.json, and by its name or desktop app id (peerLookup). Own's pid changes
+ * when it is resumed, so a pid that differs still counts as own's when the name or id names own. "unknown" when
+ * neither tells (docs/design.md "Watching")
  */
 export function turnStarterSession(
   ref: PeerRef,
@@ -71,10 +72,11 @@ export function turnStarterSession(
   lookup: (trace: string) => LiveSession | undefined,
 ): "self" | "other" | "unknown" {
   const pid = ref.pid ?? pidOfSocket(ref.from);
-  if (pid !== undefined && own.pid !== undefined) return pid === own.pid ? "self" : "other";
+  const pidKnown = pid !== undefined && own.pid !== undefined;
+  if (pidKnown && pid === own.pid) return "self";
   const live = (ref.from !== undefined ? lookup(ref.from) : undefined) ?? (ref.name !== undefined ? lookup(ref.name) : undefined);
-  if (!live) return "unknown";
-  return live.sessionId === own.sessionId ? "self" : "other";
+  if (live) return live.sessionId === own.sessionId ? "self" : "other";
+  return pidKnown ? "other" : "unknown";
 }
 
 /** Who started a session's latest turn, as seen from own (latestTurnBy in LinkWorld) */
