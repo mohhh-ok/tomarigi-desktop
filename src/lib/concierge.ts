@@ -380,7 +380,8 @@ export const CONCIERGE_TASK_WITH_SUGGESTIONS: JudgeTaskDefinition = {
     "never suggest a working session, the result of a session with continuing true, the result of a session with " +
     "watch_parent, or the " +
     "result of a session whose watch_children still work; never put another session's name or id in a text. At " +
-    "most one suggestion per session. Each text is about 30 full-width characters (or about 60 Latin characters), " +
+    "most one suggestion per session. Each text is only the action, like the advice: no reason (no ので, ため, " +
+    "because) and no state (no 待ち, 待っています, 待機中); e.g. 結果を確認, not 直しが入ったので結果を確認. Each text is about 30 full-width characters (or about 60 Latin characters), " +
     "one line, plain text, no markdown, no quotation marks, in the language given by ui_language. When no session " +
     "needs a reply, suggest checking the results of the sessions that finished with their result ready to check. " +
     "Return an empty list only when no session needs a reply and none finished with its result ready to check.",
