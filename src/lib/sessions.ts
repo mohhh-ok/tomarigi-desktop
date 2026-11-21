@@ -1,14 +1,13 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
-import { silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
+import { peerHoldChicks, silentForParent, startersOf, takenOverByParent, takenOverWorld, watchedPeers, watchingCount } from "./watching";
 import { basename } from "./paths";
 import { lastWrittenAt, pendingProposalsOf, projectLabels } from "./transcript";
 import { unstartedProposals } from "./proposals";
 import type {
   BirdState,
   ChickScan,
-  ChickView,
   FoundEntry,
   LiveFoundEntry,
   LiveSession,
@@ -214,7 +213,9 @@ function buildViews(
     if (snippet) snippetCache.set(id, snippet);
     // Its own turn ended at its last write (the basis of sinceMs), so the grace period ends once it finished a turn after the
     // linked sessions last wrote (docs/design.md "Watching")
-    const watching = watchingCount(displayState, peers, now, writtenAt);
+    // A child doesn't watch the session that started it (docs/design.md "Watching")
+    const watched = watchedPeers(peers, startersOf(sessionIdOfViewId(id), linkWorld));
+    const watching = watchingCount(displayState, watched, now, writtenAt);
     const takenOver = takenOverByParent(sessionIdOfViewId(id), linkWorld);
     const last = tail.events[tail.events.length - 1];
     const reply =
@@ -254,15 +255,8 @@ function buildViews(
     // Only done also looks at the chicks' (subagents') status: while a chick is running it is still too early
     // as a "come back" signal. SDK chicks are not included here (see the comment above)
     const backgroundTasks = updateBackgroundTasks(id, tail);
-    // A watching session's done is not emitted until all linked peers have stopped. Peers are passed to the
-    // deriveDoneEvent suppression the same way as chicks (active peers as running chicks, stopped peers with
-    // their last write time)
-    const peerChicks: ChickView[] = peers.flatMap((p) => {
-      const lastState = lastPeerStates.get(p.sessionId);
-      if (p.active) return [{ id: `peer:${p.sessionId}`, name: p.name, state: "working" as const, sinceMs: 0 }];
-      if (!lastState) return [];
-      return [{ id: `peer:${p.sessionId}`, name: p.name, state: lastState.state, sinceMs: now - lastState.lastWriteAt }];
-    });
+    // A watching session's done is not emitted until all the linked sessions it watches (not its starters) have stopped
+    const peerChicks = peerHoldChicks(watched, (sessionId) => lastPeerStates.get(sessionId), now);
     for (const event of deriveSessionEvents(
       tail,
       id,

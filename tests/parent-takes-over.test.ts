@@ -98,7 +98,9 @@ interface Scene {
   sessions: Record<string, { startedAt: number; first: FirstPrompt; reads?: (boolean | null)[]; onScreen?: boolean }>;
   links: [string, string][];
 }
-function watchOf(scene: Scene): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf"> {
+function watchOf(
+  scene: Scene,
+): Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf"> {
   const entries = Object.entries(scene.sessions);
   const viewId = (id: string) => `root/${id}.jsonl`;
   // Each read of a session's transcript recorded as a scan records it
@@ -114,6 +116,10 @@ function watchOf(scene: Scene): Pick<WatchLinks, "liveBySessionId" | "viewIdBySe
     startedBySessionOf: (v) => {
       const s = entries.find(([id]) => viewId(id) === v)?.[1];
       return s !== undefined && startedBySession(s.first, typedIds.has(v));
+    },
+    childOf: (v) => {
+      const s = entries.find(([id]) => viewId(id) === v)?.[1];
+      return s !== undefined && isChildSession(s.first);
     },
   };
 }

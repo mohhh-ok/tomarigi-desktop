@@ -1,7 +1,7 @@
 // Watching detection (docs/design.md "Watching"). Keeps a grace period so a bird that handed work to another session and is waiting
 // stays watching between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
 import type { BirdState } from "./sessions";
-import type { LiveSession, SessionEvent } from "./session-types";
+import type { ChickView, LiveSession, PeerLink, SessionEvent } from "./session-types";
 import type { WatchLinks } from "./session-watch";
 import { parentCanAnswer } from "./turn-verdict";
 import { writtenByApp } from "./transcript";
@@ -128,7 +128,12 @@ export function parentTakesOver(
   peers: readonly ParentCandidate[],
 ): boolean {
   if (!started) return false;
-  return peers.some((p) => startedBefore(p.startedAt, ownStartedAt) && (!p.startedBySession || p.linkedToOlder));
+  return peers.some((p) => isParentOf(p, ownStartedAt));
+}
+
+/** Whether a linked session counts as the parent of a session started at ownStartedAt (parentTakesOver, startersOf) */
+export function isParentOf(p: ParentCandidate, ownStartedAt: number | undefined): boolean {
+  return startedBefore(p.startedAt, ownStartedAt) && (!p.startedBySession || p.linkedToOlder);
 }
 
 /** The linked sessions as takenOverByParent reads them, by sessionId */
@@ -138,6 +143,8 @@ export interface LinkWorld {
   startedBySession: (sessionId: string) => boolean;
   /** The sessions it is linked to now */
   peers: (sessionId: string) => readonly string[];
+  /** Whether it is a child (isChildSession); false when it isn't known */
+  isChild: (sessionId: string) => boolean;
 }
 
 /**
@@ -145,8 +152,9 @@ export interface LinkWorld {
  * not on screen (no view id) isn't known to be started by another session, so it counts as a parent
  */
 export function takenOverWorld(
-  watch: Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf">,
+  watch: Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf">,
 ): LinkWorld {
+  const viewIdOf = (sessionId: string) => watch.viewIdBySessionId.get(sessionId);
   return {
     startedAt: (sessionId) => watch.liveBySessionId.get(sessionId)?.startedAt,
     startedBySession: (sessionId) => {
@@ -154,6 +162,10 @@ export function takenOverWorld(
       return viewId !== undefined && watch.startedBySessionOf(viewId);
     },
     peers: (sessionId) => watch.peerLinksOf(sessionId).map((p) => p.sessionId),
+    isChild: (sessionId) => {
+      const viewId = viewIdOf(sessionId);
+      return viewId !== undefined && watch.childOf(viewId);
+    },
   };
 }
 
@@ -162,12 +174,49 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
   return parentTakesOver(
     world.startedBySession(sessionId),
     world.startedAt(sessionId),
-    world.peers(sessionId).map((p) => ({
-      startedAt: world.startedAt(p),
-      startedBySession: world.startedBySession(p),
-      linkedToOlder: world.peers(p).some((q) => q !== sessionId && startedBefore(world.startedAt(q), world.startedAt(p))),
-    })),
+    world.peers(sessionId).map((p) => candidateOf(p, sessionId, world)),
   );
+}
+
+function candidateOf(peer: string, sessionId: string, world: LinkWorld): ParentCandidate {
+  return {
+    startedAt: world.startedAt(peer),
+    startedBySession: world.startedBySession(peer),
+    linkedToOlder: world.peers(peer).some((q) => q !== sessionId && startedBefore(world.startedAt(q), world.startedAt(peer))),
+  };
+}
+
+/**
+ * The linked sessions that started this one, which it doesn't watch (docs/design.md "Watching"): for a child
+ * (isChildSession, so also after the user typed in it, unlike takenOverByParent), the linked sessions that count as its
+ * parent (isParentOf). Empty for a session no other session started
+ */
+export function startersOf(sessionId: string, world: LinkWorld): Set<string> {
+  if (!world.isChild(sessionId)) return new Set();
+  const own = world.startedAt(sessionId);
+  return new Set(world.peers(sessionId).filter((p) => isParentOf(candidateOf(p, sessionId, world), own)));
+}
+
+/** The linked sessions it watches: all but its starters (startersOf). Feeds watchingCount and the done hold (peerHoldChicks) */
+export function watchedPeers<P extends Pick<PeerLink, "sessionId">>(peers: readonly P[], starters: ReadonlySet<string>): P[] {
+  return peers.filter((p) => !starters.has(p.sessionId));
+}
+
+/**
+ * The watched linked sessions as chicks for the done hold (deriveDoneEvent in lib/session-events.ts): a moving one as a
+ * running chick, a stopped one with its last write as of the previous scan (lastStateOf), one not seen yet left out
+ */
+export function peerHoldChicks(
+  peers: readonly Pick<PeerLink, "sessionId" | "name" | "active">[],
+  lastStateOf: (sessionId: string) => { state: BirdState; lastWriteAt: number } | undefined,
+  now: number,
+): ChickView[] {
+  return peers.flatMap((p) => {
+    const lastState = lastStateOf(p.sessionId);
+    if (p.active) return [{ id: `peer:${p.sessionId}`, name: p.name, state: "working" as const, sinceMs: 0 }];
+    if (!lastState) return [];
+    return [{ id: `peer:${p.sessionId}`, name: p.name, state: lastState.state, sinceMs: now - lastState.lastWriteAt }];
+  });
 }
 
 /**
