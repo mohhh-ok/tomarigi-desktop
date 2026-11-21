@@ -195,21 +195,32 @@ export function startersOf(sessionId: string, world: LinkWorld): Set<string> {
   return new Set(world.peers(sessionId).filter((p) => isParentOf(candidateOf(p, sessionId, world), own)));
 }
 
+/** How a linked session stands to this one: it started this one, this one started it, or neither */
+export type LinkRelation = "starter" | "child" | "unrelated";
+
+/** Who started the linked session's latest turn (latestTurnBy), or "firstOnly" while it has only its first prompt */
+export type WatchTurnBy = TurnBy | "firstOnly";
+
 /**
- * The linked sessions it watches (docs/design.md "Watching"). Feeds watchingCount (and so continuing) and the done hold
- * (peerHoldChicks); the links themselves (peers) stay
+ * Whether a session watches a linked session, by how the linked one stands to it and who started the linked one's
+ * latest turn (docs/design.md "Watching"). A parent watches its own child whatever started the child's turn (it may be
+ * woken by its own child's report). Between unrelated sessions, "unknown" and "firstOnly" are on the safe side
+ */
+export const WATCHES: Readonly<Record<LinkRelation, Readonly<Record<WatchTurnBy, boolean>>>> = {
+  starter: { self: false, typed: false, other: false, unknown: false, firstOnly: false },
+  child: { self: true, typed: true, other: true, unknown: true, firstOnly: true },
+  unrelated: { self: true, typed: false, other: false, unknown: true, firstOnly: true },
+};
+
+/**
+ * The linked sessions it watches (docs/design.md "Watching"), by WATCHES. Feeds watchingCount (and so continuing) and
+ * the done hold (peerHoldChicks); the links themselves (peers) stay
  */
 export function peersWatchedBy<P extends Pick<PeerLink, "sessionId">>(sessionId: string, peers: readonly P[], world: LinkWorld): P[] {
   const starters = startersOf(sessionId, world);
-  return peers.filter((p) => {
-    // A child doesn't watch the session that started it
-    if (starters.has(p.sessionId)) return false;
-    // A parent watches its own child whatever started the child's turn (it may be woken by its own child's report)
-    if (startersOf(p.sessionId, world).has(sessionId)) return true;
-    // Neither started the other: only while the other works on what this one sent, or its starter isn't known
-    const by = world.latestTurnBy(p.sessionId, sessionId);
-    return by !== "typed" && by !== "other";
-  });
+  const relationOf = (peer: string): LinkRelation =>
+    starters.has(peer) ? "starter" : startersOf(peer, world).has(sessionId) ? "child" : "unrelated";
+  return peers.filter((p) => WATCHES[relationOf(p.sessionId)][world.latestTurnBy(p.sessionId, sessionId) ?? "firstOnly"]);
 }
 
 /**
