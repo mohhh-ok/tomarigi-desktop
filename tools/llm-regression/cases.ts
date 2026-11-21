@@ -60,6 +60,9 @@ const said = (r: Extract<ConciergeResult, { ok: true }>) => [
   ...(r.verdict?.targetId ? [{ id: r.verdict.targetId, kind: r.action ?? "none", text: r.verdict.line }] : []),
 ];
 
+/** A reason in an advice or a suggestion (docs/design.md "No reasons in the text"). 先に says the order, not why */
+const REASON = /ので|ため|から[、,]|スキップ|待たせ|待って|待ち続|長く|何度|繰り返|ずっと|止ま|because|since|skip|wait|again|long|held|block/i;
+
 export const CASES: Case[] = [
   // ---- Turn verdicts ----
   {
@@ -527,6 +530,30 @@ https://www.example.com/help
       if (!said(r).some((x) => x.id === "s-ask" && x.kind === "reply")) return "the session asking isn't advised as reply";
       const bad = texts.find((t) => /何度|繰り返し|ずっと|待たせ|again|repeated/.test(t));
       return bad ? `says it was kept waiting: ${bad}` : undefined;
+    },
+  },
+  {
+    kind: "concierge",
+    name: "concierge_skipped_no_reason",
+    why:
+      "A skipped session was suggested with its reason (「スキップされて待たせているので、先にプランを返信」). skipped " +
+      "only orders the advice; texts say only what to do",
+    withSuggestions: true,
+    sessions: [
+      { view: view("s-skip", { project: "app-s", state: "waiting", waitingOn: "question", sinceMs: 200_000, question: "どちらのプランで進めますか" }), agent: "claude", line: "プランの選択" },
+      { view: view("s-t", { project: "app-t", state: "working", sinceMs: 100_000 }), agent: "claude", line: "実装中" },
+      { view: view("s-u", { project: "app-u", state: "waiting", waitingOn: "question", sinceMs: 60_000, question: "テストを足しますか" }), agent: "claude", line: "テストの確認" },
+    ],
+    events: [
+      { key: "a", sessionId: "s-t", project: "app-t", type: "waiting", at: CASE_NOW - 260_000 },
+      { key: "b", sessionId: "s-skip", project: "app-s", type: "waiting", at: CASE_NOW - 200_000 },
+      { key: "c", sessionId: "s-t", project: "app-t", type: "started", at: CASE_NOW - 100_000 },
+      { key: "d", sessionId: "s-u", project: "app-u", type: "waiting", at: CASE_NOW - 60_000 },
+    ],
+    check: (r) => {
+      if (!said(r).some((x) => x.id === "s-skip" && x.kind === "reply")) return "the skipped session isn't advised as reply";
+      const bad = said(r).find((x) => REASON.test(x.text));
+      return bad ? `gives a reason: ${bad.text}` : undefined;
     },
   },
 ];

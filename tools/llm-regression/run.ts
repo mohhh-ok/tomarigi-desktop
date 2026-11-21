@@ -106,7 +106,7 @@ interface Run {
   /** Every request body one run sends to the provider (Anthropic's shape, or OpenAI's for the others), for the dry run's count and size */
   bodies: (provider: AiProvider) => unknown[];
   /** undefined when the answer passes, otherwise why not, and the answer in one line */
-  once: (runner: JudgeRunner, provider: AiProvider) => Promise<{ fail?: string; line: string; usage?: { input: number; output: number } }>;
+  once: (runner: JudgeRunner, provider: AiProvider) => Promise<{ fail?: string; line: string; usage?: { input: number; output: number }; empty?: boolean }>;
 }
 
 const bodyFor = (p: AiProvider, task: JudgeTaskDefinition, payload: unknown) =>
@@ -138,7 +138,9 @@ function runOf(c: Case): Run {
       const shown = (r.suggestions ?? []).map((s) => `${s.kind}:${s.sessionId} ${s.text}`);
       const line = `advice=${r.verdict ? `${r.action}:${r.verdict.targetId ?? "?"} ${r.verdict.line}` : "-"} | ${shown.join(" | ")}`;
       const fail = c.check(r);
-      return { ...(fail && { fail }), line, usage: r.usage };
+      // Measured against the run before a prompt change, since a prompt change once tripled these (docs/design.md "No reasons in the text")
+      const empty = !r.verdict && (r.suggestions ?? []).length === 0;
+      return { ...(fail && { fail }), line, usage: r.usage, empty };
     },
   };
 }
@@ -182,6 +184,8 @@ interface Row {
   runs: number;
   lines: string[];
   usage: { input: number; output: number };
+  /** Concierge answers with no advice and no suggestions */
+  empty: number;
 }
 
 async function runProvider(provider: AiProvider): Promise<Row[]> {
@@ -194,11 +198,12 @@ async function runProvider(provider: AiProvider): Promise<Row[]> {
   for (const c of cases) {
     const run = runOf(c);
     const runs = runsOf(c);
-    const row: Row = { case: c.name, provider, passed: 0, runs, lines: [], usage: { input: 0, output: 0 } };
+    const row: Row = { case: c.name, provider, passed: 0, runs, lines: [], usage: { input: 0, output: 0 }, empty: 0 };
     for (let i = 0; i < runs; i++) {
       try {
         const r = await run.once(runner, provider);
         if (!r.fail) row.passed++;
+        if (r.empty) row.empty++;
         row.lines.push(`${r.fail ? `NG(${r.fail})` : "OK"} ${r.line}`);
         if (r.usage) {
           row.usage.input += r.usage.input;
@@ -246,6 +251,16 @@ console.log(`\n${lines.join("\n")}\n`);
 for (const p of providers) {
   const u = rows.filter((r) => r.provider === p).reduce((a, r) => ({ input: a.input + r.usage.input, output: a.output + r.usage.output }), { input: 0, output: 0 });
   console.log(`${p}: ${u.input} input tokens, ${u.output} output tokens`);
+  const own = rows.filter((r) => r.provider === p && cases.find((c) => c.name === r.case)?.kind === "concierge");
+  if (own.length) {
+    const empty = own.reduce((n, r) => n + r.empty, 0);
+    const all = own.reduce((n, r) => n + r.runs, 0);
+    const was = baseline?.rows.filter((r) => r.provider === p && own.some((o) => o.case === r.case));
+    const wasText = was?.length && was.every((r) => r.empty !== undefined)
+      ? ` (baseline ${was.reduce((n, r) => n + r.empty, 0)}/${was.reduce((n, r) => n + r.runs, 0)})`
+      : "";
+    console.log(`${p}: ${empty}/${all} concierge answers with no advice and no suggestions${wasText}`);
+  }
 }
 for (const p of problems) console.log(`NG ${p}`);
 

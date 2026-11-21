@@ -1589,3 +1589,12 @@ test("an advice or a suggestion that writes an elapsed time it was given is not 
   ]);
   expect(conciergeResultLogLine({ req: "r1", provider: "openai", model: "m" }, result)).toContain("reason=elapsed_time");
 });
+
+test("the regression scene of a skipped session sends skipped for it, and only for it", async () => {
+  const { CASES, CASE_NOW } = await import("../tools/llm-regression/cases.ts");
+  const scene = CASES.find((c) => c.name === "concierge_skipped_no_reason");
+  if (scene?.kind !== "concierge") throw new Error("no concierge_skipped_no_reason scene");
+  const payload = buildConciergePayload(scene.sessions, scene.events ?? [], [], CASE_NOW, "ja");
+  expect(payload.sessions.filter((s) => s.skipped).map((s) => s.id)).toEqual(["s-skip"]);
+  expect(payload.sessions.filter((s) => s.needs_reply).map((s) => s.id)).toEqual(["s-skip", "s-u"]);
+});
