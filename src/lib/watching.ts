@@ -136,6 +136,91 @@ export function isParentOf(p: ParentCandidate, ownStartedAt: number | undefined)
   return startedBefore(p.startedAt, ownStartedAt) && (!p.startedBySession || p.linkedToOlder);
 }
 
+/** The session a message from another session came from, as its transcript line names it (PeerRef in src-tauri):
+ * `origin.name`, `origin.verifiedPeerPid`, `origin.from` (`uds:/tmp/cc-socks/<pid>.sock` or a desktop app `local_…` id) */
+export interface PeerRef {
+  name?: string;
+  pid?: number;
+  from?: string;
+}
+
+/** Who started a turn (TurnStarter in src-tauri): a typed prompt, another session's message, or anything else (the
+ * desktop app's own turns, whose send_message leaves no sender, task notifications, ...) */
+export type TurnStarter = { kind: "typed" } | ({ kind: "peer" } & PeerRef) | { kind: "other" };
+
+/** A session's latest turn after its first prompt: who started it (undefined while only the first prompt has come) and
+ * the sessions whose messages arrived while it ran */
+export interface LatestTurn {
+  starter?: TurnStarter;
+  peers: PeerRef[];
+}
+
+/**
+ * Records, after one read of a session's transcript (scan_peer_names in src-tauri), its latest turn: a read from the
+ * top replaces it; a later read with a new turn replaces it, and one without adds the senders that arrived meanwhile
+ */
+export function rememberLatestTurn(
+  turns: Map<string, LatestTurn>,
+  viewId: string,
+  read: { lastTurnStarter?: TurnStarter | null; turnPeers?: PeerRef[] | null },
+  fromTop: boolean,
+): void {
+  const peers = read.turnPeers ?? [];
+  if (read.lastTurnStarter) turns.set(viewId, { starter: read.lastTurnStarter, peers });
+  else if (fromTop) {
+    if (peers.length > 0) turns.set(viewId, { peers });
+    else turns.delete(viewId);
+  } else if (peers.length > 0) {
+    const turn = turns.get(viewId);
+    turns.set(viewId, { starter: turn?.starter, peers: [...(turn?.peers ?? []), ...peers] });
+  }
+}
+
+/** The pid in a Claude Code messaging socket path, `…/<pid>.sock` */
+function pidOfSocket(from: string | undefined): number | undefined {
+  const m = from?.match(/\/(\d+)\.sock$/);
+  return m ? Number(m[1]) : undefined;
+}
+
+/**
+ * Whether a message came from the session own: by the sender's pid (`verifiedPeerPid`, else the pid in its socket
+ * path) against own's pid in sessions/<pid>.json; without a pid, by its name or desktop app id (peerLookup). "unknown"
+ * when neither tells (docs/design.md "Watching")
+ */
+export function turnStarterSession(
+  ref: PeerRef,
+  own: { sessionId: string; pid?: number },
+  lookup: (trace: string) => LiveSession | undefined,
+): "self" | "other" | "unknown" {
+  const pid = ref.pid ?? pidOfSocket(ref.from);
+  if (pid !== undefined && own.pid !== undefined) return pid === own.pid ? "self" : "other";
+  const live = (ref.from !== undefined ? lookup(ref.from) : undefined) ?? (ref.name !== undefined ? lookup(ref.name) : undefined);
+  if (!live) return "unknown";
+  return live.sessionId === own.sessionId ? "self" : "other";
+}
+
+/** Who started a session's latest turn, as seen from own (latestTurnBy in LinkWorld) */
+export type TurnBy = "self" | "typed" | "other" | "unknown";
+
+/**
+ * Who started peer's latest turn as seen from own: "self" when own's message started it or arrived during it, "typed"
+ * for the user's input, "other" for a third session's message, "unknown" when it isn't known who; undefined while peer
+ * has only its first prompt
+ */
+export function latestTurnBy(
+  turn: LatestTurn | undefined,
+  own: { sessionId: string; pid?: number },
+  lookup: (trace: string) => LiveSession | undefined,
+): TurnBy | undefined {
+  if (!turn) return undefined;
+  if (turn.peers.some((p) => turnStarterSession(p, own, lookup) === "self")) return "self";
+  const starter = turn.starter;
+  if (!starter) return undefined;
+  if (starter.kind === "typed") return "typed";
+  if (starter.kind === "other") return "unknown";
+  return turnStarterSession(starter, own, lookup);
+}
+
 /** The linked sessions as takenOverByParent reads them, by sessionId */
 export interface LinkWorld {
   startedAt: (sessionId: string) => number | undefined;
@@ -145,6 +230,8 @@ export interface LinkWorld {
   peers: (sessionId: string) => readonly string[];
   /** Whether it is a child (isChildSession); false when it isn't known */
   isChild: (sessionId: string) => boolean;
+  /** Who started peer's latest turn as seen from own (latestTurnBy); undefined when it isn't known */
+  latestTurnBy: (peer: string, own: string) => TurnBy | undefined;
 }
 
 /**
@@ -152,10 +239,17 @@ export interface LinkWorld {
  * not on screen (no view id) isn't known to be started by another session, so it counts as a parent
  */
 export function takenOverWorld(
-  watch: Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf">,
+  watch: Pick<WatchLinks, "liveBySessionId" | "viewIdBySessionId" | "peerLinksOf" | "startedBySessionOf" | "childOf"> &
+    Partial<Pick<WatchLinks, "latestTurnOf">>,
 ): LinkWorld {
   const viewIdOf = (sessionId: string) => watch.viewIdBySessionId.get(sessionId);
+  const lookup = peerLookup([...watch.liveBySessionId.values()]);
   return {
+    latestTurnBy: (peer, own) => {
+      const viewId = viewIdOf(peer);
+      if (viewId === undefined || !watch.latestTurnOf) return undefined;
+      return latestTurnBy(watch.latestTurnOf(viewId), { sessionId: own, pid: watch.liveBySessionId.get(own)?.pid }, lookup);
+    },
     startedAt: (sessionId) => watch.liveBySessionId.get(sessionId)?.startedAt,
     startedBySession: (sessionId) => {
       const viewId = watch.viewIdBySessionId.get(sessionId);
@@ -197,10 +291,23 @@ export function startersOf(sessionId: string, world: LinkWorld): Set<string> {
   return new Set(world.peers(sessionId).filter((p) => isParentOf(candidateOf(p, sessionId, world), own)));
 }
 
-/** The linked sessions it watches: all but its starters (startersOf). Feeds watchingCount and the done hold (peerHoldChicks) */
-export function watchedPeers<P extends Pick<PeerLink, "sessionId">>(peers: readonly P[], starters: ReadonlySet<string>): P[] {
-  return peers.filter((p) => !starters.has(p.sessionId));
+/**
+ * The linked sessions it watches (docs/design.md "Watching"). Feeds watchingCount (and so continuing) and the done hold
+ * (peerHoldChicks); the links themselves (peers) stay
+ */
+export function peersWatchedBy<P extends Pick<PeerLink, "sessionId">>(sessionId: string, peers: readonly P[], world: LinkWorld): P[] {
+  const starters = startersOf(sessionId, world);
+  return peers.filter((p) => {
+    // A child doesn't watch the session that started it
+    if (starters.has(p.sessionId)) return false;
+    // A parent watches its own child whatever started the child's turn (it may be woken by its own child's report)
+    if (startersOf(p.sessionId, world).has(sessionId)) return true;
+    // Neither started the other: only while the other works on what this one sent, or its starter isn't known
+    const by = world.latestTurnBy(p.sessionId, sessionId);
+    return by !== "typed" && by !== "other";
+  });
 }
+
 
 /**
  * The watched linked sessions as chicks for the done hold (deriveDoneEvent in lib/session-events.ts): a moving one as a

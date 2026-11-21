@@ -1,11 +1,23 @@
 // Watching links between sessions (docs/design.md "Watching")
 import { invoke } from "@tauri-apps/api/core";
-import { isChildSession, isPeerActive, peerLookup, rememberLatestTurnTyped, startedBySession, type FirstPrompt } from "./watching";
+import {
+  isChildSession,
+  isPeerActive,
+  peerLookup,
+  rememberLatestTurn,
+  rememberLatestTurnTyped,
+  startedBySession,
+  type FirstPrompt,
+  type LatestTurn,
+  type PeerRef,
+  type TurnStarter,
+} from "./watching";
 import type { FoundEntry, LiveSession, PeerLink, SessionView } from "./session-types";
 import {
   cardReadSince,
   desktopHostByViewId,
   firstPromptCache,
+  latestTurns,
   latestTurnTypedIds,
   lastPeerStates,
   peerLastActiveAt,
@@ -26,6 +38,9 @@ export interface WatchLinks {
   startedBySessionOf: (viewId: string) => boolean;
   /** Whether the session (view id) is a child, for its ◎ in the Concierge tab (isChildSession in lib/watching.ts) */
   childOf: (viewId: string) => boolean;
+  /** The session's (view id) latest turn: who started it and whose messages arrived during it (rememberLatestTurn in
+   * lib/watching.ts) */
+  latestTurnOf: (viewId: string) => LatestTurn | undefined;
   /** The proposal cards the user started (cardKey in lib/proposals.ts), from the desktop app's records */
   startedCards: ReadonlySet<string>;
 }
@@ -46,18 +61,22 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
   const claudeEntries = withTail.filter((f) => f.agent === "claude");
   await Promise.all(
     claudeEntries.map(async (f) => {
+      const start = peerScanOffset.get(f.id) ?? 0;
       try {
         const scan = await invoke<{
           names: [string, string][];
           firstPrompt?: FirstPrompt | null;
           lastTurnTyped?: boolean | null;
+          lastTurnStarter?: TurnStarter | null;
+          turnPeers?: PeerRef[] | null;
           end: number;
         }>(
           "scan_peer_names",
-          { path: f.file.path, start: peerScanOffset.get(f.id) ?? 0 },
+          { path: f.file.path, start },
         );
         if (scan.firstPrompt) firstPromptCache.set(f.id, scan.firstPrompt);
         rememberLatestTurnTyped(latestTurnTypedIds, f.id, scan.lastTurnTyped);
+        rememberLatestTurn(latestTurns, f.id, scan, start === 0);
         // The first prompt is read from the top only, so the offset stays at the top until it has come (a session
         // just started may not have written it yet; the file is still small then)
         if (firstPromptCache.has(f.id)) peerScanOffset.set(f.id, scan.end);
@@ -116,7 +135,8 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
     startedBySession(firstPromptCache.get(viewId), latestTurnTypedIds.has(viewId));
   const childOf = (viewId: string) => isChildSession(firstPromptCache.get(viewId));
   await readStartedCards(claudeEntries, liveBySessionId);
-  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf, childOf, startedCards: startedCardCache };
+  const latestTurnOf = (viewId: string) => latestTurns.get(viewId);
+  return { liveBySessionId, viewIdBySessionId, peerLinksOf, startedBySessionOf, childOf, latestTurnOf, startedCards: startedCardCache };
 }
 
 /**

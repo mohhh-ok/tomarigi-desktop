@@ -215,9 +215,16 @@ pub(crate) struct PeerScan {
     /// Set when this scan read the first prompt (it starts at the top of the file)
     first_prompt: Option<FirstPrompt>,
     /// Whether the last prompt that started a turn after the first prompt, in the part read, was typed by the user
-    /// (turn_prompt_typed); None when the part read has none, so the previous answer stands. A session started by
+    /// (turn_starter); None when the part read has none, so the previous answer stands. A session started by
     /// another session whose latest turn the user started isn't taken over by its parent (docs/design.md "Watching")
     last_turn_typed: Option<bool>,
+    /// Who started the last turn after the first prompt in the part read (turn_starter); None when the part read has
+    /// none, so the previous one stands. Between two sessions neither started, one watches the other only while the
+    /// other works on what it sent (docs/design.md "Watching")
+    last_turn_starter: Option<TurnStarter>,
+    /// The other sessions whose messages arrived while the last turn ran (queued_command), in the part read after the
+    /// last turn's start (or from the start of the read when it has no new turn: they add to the previous ones)
+    turn_peers: Vec<PeerRef>,
     /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
 }
@@ -233,14 +240,62 @@ fn peer_name_of(to: &str) -> Option<String> {
     (!name.is_empty() && name != "main").then(|| name.to_string())
 }
 
-/// Whether a line is a prompt that starts a turn, and if so whether the user typed it. A prompt is a user line, not a
+/// The session a message from another session came from, as its line names it: `origin.name` (its name when it sent),
+/// `origin.verifiedPeerPid`, and `origin.from` (`uds:/tmp/cc-socks/<pid>.sock` or a desktop app `local_…` id)
+#[derive(Serialize, Debug, PartialEq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PeerRef {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pid: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    from: Option<String>,
+}
+
+/// Who started a turn (turn_starter)
+#[derive(Serialize, Debug, PartialEq, Clone)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub(crate) enum TurnStarter {
+    /// A prompt the user typed
+    Typed,
+    /// A message from another session
+    Peer(PeerRef),
+    /// Anything else: the desktop app's own turns ("sdk", "host_synthetic"; its send_message leaves no sender), task
+    /// notifications, ...
+    Other,
+}
+
+fn peer_ref(origin: Option<&serde_json::Value>) -> PeerRef {
+    let get = |k: &str| origin.and_then(|o| o.get(k));
+    PeerRef {
+        name: get("name").and_then(|v| v.as_str()).filter(|n| !n.is_empty()).map(str::to_string),
+        pid: get("verifiedPeerPid").and_then(|v| v.as_u64()),
+        from: get("from").and_then(|v| v.as_str()).filter(|n| !n.is_empty()).map(str::to_string),
+    }
+}
+
+/// A message from another session that arrived while the session worked (a queued_command attachment with origin.kind
+/// "peer"); it is handled in the running turn
+fn queued_peer(entry: &serde_json::Value) -> Option<PeerRef> {
+    if entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true)
+        || entry.get("type").and_then(|t| t.as_str()) != Some("attachment")
+        || entry.pointer("/attachment/type").and_then(|t| t.as_str()) != Some("queued_command")
+        || entry.pointer("/attachment/origin/kind").and_then(|k| k.as_str()) != Some("peer")
+    {
+        return None;
+    }
+    Some(peer_ref(entry.pointer("/attachment/origin")))
+}
+
+/// Whether a line is a prompt that starts a turn, and if so who started it (TurnStarter). A prompt is a user line, not a
 /// subagent's or a tool result, and not meta unless it is a message from another session (written as a meta line with
 /// turnOrigin "peer"). It is typed when its turnOrigin is "human" (or, in transcripts without turnOrigin, its
-/// origin.kind). Messages from other sessions are "peer", task notifications "task_notification", and the desktop
-/// app's own turns "sdk" / "host_synthetic". What arrives while it works is an attachment (queued_command): a prompt
-/// the user typed into it then (origin.kind "human") counts as typed; messages from other sessions and task
-/// notifications don't count
-fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
+/// origin.kind). Messages from other sessions are "peer" (Peer, with the sender its origin names), task notifications
+/// "task_notification", and the desktop app's own turns "sdk" / "host_synthetic" (Other). What arrives while it works is
+/// an attachment (queued_command): a prompt the user typed into it then (origin.kind "human") counts as typed; messages
+/// from other sessions (queued_peer reads them for the running turn) and task notifications don't start a turn
+fn turn_starter(entry: &serde_json::Value) -> Option<TurnStarter> {
     if entry.get("isSidechain").and_then(|v| v.as_bool()) == Some(true) {
         return None;
     }
@@ -249,7 +304,7 @@ fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
         Some("attachment") => {
             let typed = entry.pointer("/attachment/type").and_then(|t| t.as_str()) == Some("queued_command")
                 && entry.pointer("/attachment/origin/kind").and_then(|k| k.as_str()) == Some("human");
-            return typed.then_some(true);
+            return typed.then_some(TurnStarter::Typed);
         }
         _ => return None,
     }
@@ -262,9 +317,14 @@ fn turn_prompt_typed(entry: &serde_json::Value) -> Option<bool> {
     if blocks.into_iter().flatten().any(|b| b.get("type").and_then(|t| t.as_str()) == Some("tool_result")) {
         return None;
     }
+    let starter = |kind: &str| match kind {
+        "human" => TurnStarter::Typed,
+        "peer" => TurnStarter::Peer(peer_ref(entry.get("origin"))),
+        _ => TurnStarter::Other,
+    };
     match (turn_origin, origin_kind) {
-        (Some(origin), _) => Some(!written_by_app(Some(origin))),
-        (None, Some(kind)) => Some(kind == "human"),
+        (Some(origin), _) => Some(starter(origin)),
+        (None, Some(kind)) => Some(starter(kind)),
         // A line that says nothing of where it came from isn't counted (as before turnOrigin was read)
         (None, None) => None,
     }
@@ -342,7 +402,8 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
     let mut first_prompt = None;
     let mut named_at_launch = false;
     let mut session_start_at: Option<String> = None;
-    let mut last_turn_typed: Option<bool> = None;
+    let mut last_turn_starter: Option<TurnStarter> = None;
+    let mut turn_peers: Vec<PeerRef> = Vec::new();
     for line in buf[..complete].split(|&b| b == b'\n') {
         // After the first prompt (read in an earlier scan when start isn't 0), the prompts that start a turn; the last
         // one read decides
@@ -353,8 +414,11 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                 if is_foreign_line(&entry, &own) {
                     continue;
                 }
-                if let Some(typed) = turn_prompt_typed(&entry) {
-                    last_turn_typed = Some(typed);
+                if let Some(starter) = turn_starter(&entry) {
+                    last_turn_starter = Some(starter);
+                    turn_peers.clear();
+                } else if let Some(peer) = queued_peer(&entry) {
+                    turn_peers.push(peer);
                 }
             }
         }
@@ -492,7 +556,8 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             _ => {}
         }
     }
-    Ok(PeerScan { names, first_prompt, last_turn_typed, end: start + complete as u64 })
+    let last_turn_typed = last_turn_starter.as_ref().map(|s| *s == TurnStarter::Typed);
+    Ok(PeerScan { names, first_prompt, last_turn_typed, last_turn_starter, turn_peers, end: start + complete as u64 })
 }
 
 #[derive(Serialize)]
@@ -1213,6 +1278,46 @@ mod tests {
             assert_eq!(scan_peer_names(p, 0).unwrap().last_turn_typed, *want, "{scene}");
             let offset: usize = lines[..*from].iter().map(|l| l.len() + 1).sum();
             assert_eq!(scan_peer_names(p, offset as u64).unwrap().last_turn_typed, *want_later, "{scene} (later scan from line {from})");
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// Who started the latest turn and which sessions' messages arrived during it, read from lines shaped as Claude Code
+    /// writes them: a message from another session that starts a turn (a meta user line, turnOrigin "peer", whose origin
+    /// names the sender), one that arrives while it works (a queued_command attachment), a typed prompt, and the desktop
+    /// app's own turn (docs/design.md "Watching")
+    #[test]
+    fn scan_peer_names_reads_the_latest_turns_starter_and_senders() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-starter-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        const FIRST: &str = r#"{"type":"user","timestamp":"T0","turnOrigin":"human","origin":{"kind":"human"},"promptSource":"typed","message":{"content":"go on"}}"#;
+        const TYPED: &str = r#"{"type":"user","timestamp":"T1","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"hi"}}"#;
+        const FROM_A: &str = r#"{"type":"user","isMeta":true,"timestamp":"T2","turnOrigin":"peer","origin":{"kind":"peer","from":"uds:/tmp/cc-socks/111.sock","verifiedPeerPid":111,"name":"a","fromMode":"prompting"},"message":{"content":"done, go ahead"}}"#;
+        const FROM_C_MIDWORK: &str = r#"{"type":"attachment","timestamp":"T3","attachment":{"type":"queued_command","origin":{"kind":"peer","from":"uds:/tmp/cc-socks/333.sock","verifiedPeerPid":333,"name":"c"},"prompt":"report"}}"#;
+        const FROM_A_MIDWORK: &str = r#"{"type":"attachment","timestamp":"T3","attachment":{"type":"queued_command","origin":{"kind":"peer","from":"uds:/tmp/cc-socks/111.sock","verifiedPeerPid":111,"name":"a"},"prompt":"one more"}}"#;
+        const DESKTOP_TURN: &str = r#"{"type":"user","timestamp":"T2","turnOrigin":"sdk","message":{"content":"x"}}"#;
+        const REPLY: &str = r#"{"type":"assistant","timestamp":"T4","message":{"content":[{"type":"text","text":"ok"}]}}"#;
+        let a = PeerRef { name: Some("a".into()), pid: Some(111), from: Some("uds:/tmp/cc-socks/111.sock".into()) };
+        let c = PeerRef { name: Some("c".into()), pid: Some(333), from: Some("uds:/tmp/cc-socks/333.sock".into()) };
+        // (scene, lines, starter and senders from the top, (from line, starter and senders of a later scan))
+        type Want = (Option<TurnStarter>, Vec<PeerRef>);
+        let scenes: Vec<(&str, Vec<&str>, Want, (usize, Want))> = vec![
+            ("only the first prompt", vec![FIRST, REPLY], (None, vec![]), (1, (None, vec![]))),
+            ("a turn started by a's message", vec![FIRST, REPLY, FROM_A, REPLY], (Some(TurnStarter::Peer(a.clone())), vec![]), (2, (Some(TurnStarter::Peer(a.clone())), vec![]))),
+            ("a typed turn during which c's message arrives", vec![FIRST, REPLY, TYPED, FROM_C_MIDWORK, REPLY], (Some(TurnStarter::Typed), vec![c.clone()]), (3, (None, vec![c.clone()]))),
+            ("a typed turn during which a's message arrives", vec![FIRST, TYPED, FROM_A_MIDWORK, REPLY], (Some(TurnStarter::Typed), vec![a.clone()]), (1, (Some(TurnStarter::Typed), vec![a.clone()]))),
+            ("a message that arrived in an earlier turn doesn't stay", vec![FIRST, TYPED, FROM_A_MIDWORK, REPLY, TYPED, REPLY], (Some(TurnStarter::Typed), vec![]), (3, (Some(TurnStarter::Typed), vec![]))),
+            ("the desktop app's own turn", vec![FIRST, FROM_A, REPLY, DESKTOP_TURN], (Some(TurnStarter::Other), vec![]), (3, (Some(TurnStarter::Other), vec![]))),
+        ];
+        for (i, (scene, lines, want, (from, want_later))) in scenes.iter().enumerate() {
+            let path = dir.join(format!("{i}.jsonl"));
+            std::fs::write(&path, lines.join("\n") + "\n").unwrap();
+            let p = path.to_str().unwrap();
+            let scan = scan_peer_names(p, 0).unwrap();
+            assert_eq!((scan.last_turn_starter, scan.turn_peers), want.clone(), "{scene}");
+            let offset: usize = lines[..*from].iter().map(|l| l.len() + 1).sum();
+            let later = scan_peer_names(p, offset as u64).unwrap();
+            assert_eq!((later.last_turn_starter, later.turn_peers), want_later.clone(), "{scene} (later scan from line {from})");
         }
         std::fs::remove_dir_all(&dir).unwrap();
     }

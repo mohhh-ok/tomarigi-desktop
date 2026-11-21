@@ -2,7 +2,7 @@
 // watching or continuing and don't hold its done, also after the user typed in it. The parent watches the child as
 // before, and two sessions neither started stay as they were.
 // Each scene reads the links as a scan does (takenOverWorld over a stand-in for resolveWatchLinks) and calls the
-// functions buildViews in lib/sessions.ts calls: startersOf, watchedPeers, watchingCount, sessionContinuing,
+// functions buildViews in lib/sessions.ts calls: peersWatchedBy, watchingCount, sessionContinuing,
 // peerHoldChicks and deriveSessionEvents
 import { describe, expect, test } from "bun:test";
 import { deriveSessionEvents } from "../src/lib/session-events.ts";
@@ -17,7 +17,7 @@ import {
   startersOf,
   takenOverByParent,
   takenOverWorld,
-  watchedPeers,
+  peersWatchedBy,
   watchingCount,
   type FirstPrompt,
 } from "../src/lib/watching.ts";
@@ -72,7 +72,7 @@ function peersOf(scene: Scene, id: string): PeerLink[] {
 /** What buildViews makes of a done / dozing session: its watching and its continuing for a reply verdict */
 function watchOfSession(scene: Scene, id: string, verdict: boolean | undefined) {
   const world = takenOverWorld(watchOf(scene));
-  const watched = watchedPeers(peersOf(scene, id), startersOf(id, world));
+  const watched = peersWatchedBy(id, peersOf(scene, id), world);
   const watching = watchingCount("done", watched, NOW, NOW - 1_000);
   return { watching, continuing: sessionContinuing(verdict, watching, 1_000).continuing, takenOver: takenOverByParent(id, world) };
 }
@@ -126,7 +126,7 @@ describe("the done hold and the session that started it", () => {
   };
   const doneOf = (scene: Scene, id: string) => {
     const world = takenOverWorld(watchOf(scene));
-    const chicks = peerHoldChicks(watchedPeers(peersOf(scene, id), startersOf(id, world)), () => undefined, NOW);
+    const chicks = peerHoldChicks(peersWatchedBy(id, peersOf(scene, id), world), () => undefined, NOW);
     return deriveSessionEvents(tail, viewId(id), id, chicks, new Map(), undefined, NOW).some((e) => e.type === "done");
   };
 

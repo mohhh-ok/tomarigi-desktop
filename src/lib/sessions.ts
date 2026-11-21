@@ -1,7 +1,7 @@
 // Scans the watched folders for sessions (birds), their chicks, and their transition events. The steps live in
 // the session-*.ts modules; the state kept across scans is in lib/session-store.ts
 import type { RootEntry } from "./settings-store";
-import { peerHoldChicks, silentForParent, startersOf, takenOverByParent, takenOverWorld, watchedPeers, watchingCount } from "./watching";
+import { peerHoldChicks, peersWatchedBy, silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
 import { basename } from "./paths";
 import { lastWrittenAt, pendingProposalsOf, projectLabels } from "./transcript";
 import { unstartedProposals } from "./proposals";
@@ -213,8 +213,7 @@ function buildViews(
     if (snippet) snippetCache.set(id, snippet);
     // Its own turn ended at its last write (the basis of sinceMs), so the grace period ends once it finished a turn after the
     // linked sessions last wrote (docs/design.md "Watching")
-    // A child doesn't watch the session that started it (docs/design.md "Watching")
-    const watched = watchedPeers(peers, startersOf(sessionIdOfViewId(id), linkWorld));
+    const watched = peersWatchedBy(sessionIdOfViewId(id), peers, linkWorld);
     const watching = watchingCount(displayState, watched, now, writtenAt);
     const takenOver = takenOverByParent(sessionIdOfViewId(id), linkWorld);
     const last = tail.events[tail.events.length - 1];
