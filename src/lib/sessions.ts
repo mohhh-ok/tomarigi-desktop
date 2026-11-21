@@ -254,7 +254,6 @@ function buildViews(
     // Only done also looks at the chicks' (subagents') status: while a chick is running it is still too early
     // as a "come back" signal. SDK chicks are not included here (see the comment above)
     const backgroundTasks = updateBackgroundTasks(id, tail);
-    // A watching session's done is not emitted until all the linked sessions it watches (not its starters) have stopped
     const peerChicks = peerHoldChicks(watched, (sessionId) => lastPeerStates.get(sessionId), now);
     for (const event of deriveSessionEvents(
       tail,

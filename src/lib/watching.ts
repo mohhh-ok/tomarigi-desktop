@@ -121,7 +121,6 @@ export function parentTakesOver(
   return peers.some((p) => isParentOf(p, ownStartedAt));
 }
 
-/** Whether a linked session counts as the parent of a session started at ownStartedAt (parentTakesOver, startersOf) */
 export function isParentOf(p: ParentCandidate, ownStartedAt: number | undefined): boolean {
   return startedBefore(p.startedAt, ownStartedAt) && (!p.startedBySession || p.linkedToOlder);
 }
@@ -135,7 +134,6 @@ export interface LinkWorld {
   peers: (sessionId: string) => readonly string[];
   /** False when it isn't known */
   isChild: (sessionId: string) => boolean;
-  /** Who started peer's latest turn as seen from own (latestTurnBy); undefined when it isn't known */
   latestTurnBy: (peer: string, own: string) => TurnBy | undefined;
 }
 
@@ -195,10 +193,8 @@ export function startersOf(sessionId: string, world: LinkWorld): Set<string> {
   return new Set(world.peers(sessionId).filter((p) => isParentOf(candidateOf(p, sessionId, world), own)));
 }
 
-/** How a linked session stands to this one: it started this one, this one started it, or neither */
 export type LinkRelation = "starter" | "child" | "unrelated";
 
-/** Who started the linked session's latest turn (latestTurnBy), or "firstOnly" while it has only its first prompt */
 export type WatchTurnBy = TurnBy | "firstOnly";
 
 /**

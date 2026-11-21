@@ -82,7 +82,6 @@ export function turnStarterSession(
   return pidKnown ? "other" : "unknown";
 }
 
-/** Who started a session's latest turn, as seen from own (latestTurnBy in LinkWorld) */
 export type TurnBy = "self" | "typed" | "other" | "unknown";
 
 /**

@@ -22,7 +22,7 @@ import {
   type FirstPrompt,
 } from "../src/lib/watching.ts";
 
-const AT = "2026-11-21T03:00:00.000Z";
+const AT = "2026-01-01T00:00:00.000Z";
 const DESKTOP_CHILD: FirstPrompt = { turnOrigin: "sdk", namedAtLaunch: false, at: AT };
 const DESKTOP_USER: FirstPrompt = { turnOrigin: "human", namedAtLaunch: false, at: AT };
 

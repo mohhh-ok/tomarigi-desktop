@@ -32,9 +32,7 @@ import {
 } from "../src/lib/watching-turns.ts";
 
 const AT = "2026-01-01T00:00:00.400Z";
-/** A session the user started in a terminal: no name at launch, its first prompt typed */
 const TERMINAL_USER: FirstPrompt = { turnOrigin: "human", namedAtLaunch: false, sessionStartAt: "2026-01-01T00:00:00.000Z", at: AT };
-/** A session another session started in a terminal (`claude --name <name> "<prompt>"`) */
 const TERMINAL_CHILD: FirstPrompt = { turnOrigin: "human", namedAtLaunch: true, sessionStartAt: "2026-01-01T00:00:00.000Z", at: AT };
 
 const NOW = 10_000_000;
@@ -44,14 +42,12 @@ interface Session {
   name: string;
   startedAt: number;
   first: FirstPrompt;
-  /** Its latest turn as scan_peer_names' reads leave it (rememberLatestTurn) */
   turn?: LatestTurn;
   active?: boolean;
 }
 type Scene = { sessions: Record<string, Session>; links: [string, string][] };
 
 const viewId = (id: string) => `root/${id}.jsonl`;
-/** A message from a session, as its transcript line names the sender (origin.name, verifiedPeerPid, from) */
 const from = (s: Session): PeerRef => ({ name: s.name, pid: s.pid, from: `uds:/tmp/cc-socks/${s.pid}.sock` });
 const byPeer = (s: Session): TurnStarter => ({ kind: "peer", ...from(s) });
 const TYPED: TurnStarter = { kind: "typed" };
@@ -93,8 +89,6 @@ const tail = {
   peerNames: new Map(),
 };
 
-/** What buildViews makes of a done session: its watching, its continuing for a reply that doesn't continue, whether
- * its done is emitted (not held), and its links */
 function viewOf(scene: Scene, id: string) {
   const world = takenOverWorld(watchOf(scene));
   const peers = peersOf(scene, id);

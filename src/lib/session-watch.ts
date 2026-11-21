@@ -27,8 +27,6 @@ export interface WatchLinks {
   startedBySessionOf: (viewId: string) => boolean;
   /** Whether the session (view id) is a child, for its ◎ in the Concierge tab (isChildSession in lib/watching.ts) */
   childOf: (viewId: string) => boolean;
-  /** The session's (view id) latest turn: who started it and whose messages arrived during it (rememberLatestTurn in
-   * lib/watching-turns.ts) */
   latestTurnOf: (viewId: string) => LatestTurn | undefined;
   /** The proposal cards the user started (cardKey in lib/proposals.ts), from the desktop app's records */
   startedCards: ReadonlySet<string>;
