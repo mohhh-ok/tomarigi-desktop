@@ -109,7 +109,10 @@ bun run test:llm -- --baseline /tmp/tomarigi-desktop/llm/llm-regression-<label>.
   is at warning or above is printed as `not run (<why>)` and shown as `not run` in the table; the others still run.
   Providers run side by side, one request at a time each
 - Prints one line per scene and provider as it goes, the table (`passed/runs`, or `before → after` with a baseline),
-  the tokens the API counted per provider, and an `NG` line for each scene under `--min-pass` or below its baseline.
+  the tokens the API counted per provider, how many concierge answers per provider had no advice and no suggestions
+  (`<provider>: N/M concierge answers with no advice and no suggestions`, with `(baseline N/M)` when the baseline has
+  the count; each row of the json carries it as `empty`), and an `NG` line for each scene under `--min-pass` or below
+  its baseline.
   Exits 1 when there is any. Every answer of every run is written to `$OUT/llm-regression-<label>.json` (`OUT` defaults
   to /tmp/tomarigi-desktop/llm); pass that file as the next run's `--baseline`
 - `cases.ts` is the table: turn scenes (`user`, `reply`, and the `want`ed asking / continuing / abusive; fields left out
