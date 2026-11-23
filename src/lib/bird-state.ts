@@ -11,9 +11,7 @@ export const DOZE_MS = 5 * 60_000; // dozing once this long has passed since don
 // (chickSignals) has no signal. The harmless pauses observed in real data ("wrote only text for a moment
 // while working") were 36 seconds, and could exceed 60 seconds with long thinking, so we use 2 minutes, well
 // above that (with a signal, done is set immediately without going through this value; see deriveState).
-// If it still stays false (no notification, the chick died silently), eventually the existing
-// CHICK_ABANDONED_MS (10 minutes, releases suppression in deriveDoneEvent) applies separately and treats it
-// as an abandoned chick
+// A chick that never gets there (no notification, it died silently) is dozing once abandoned() holds
 const CHICK_TEXT_DONE_MS = 2 * 60_000;
 
 // Urgency order of BirdState (smaller = more urgent). Both the views sort (end of scanSessions) and
@@ -141,7 +139,8 @@ export function deriveState(
  * deriveState(isChick=true) is not reused as-is, because of a difference in premises confirmed in real data:
  *
  * deriveState's isChick fallback (CHICK_TEXT_DONE_MS) only switches to the time basis when
- * tail.kind === "assistant_text", and always returns working when tail.kind is "user"/"tool_result".
+ * tail.kind === "assistant_text", and returns working when tail.kind is "user"/"tool_result" until abandoned()
+ * (CHICK_ABANDONED_MS).
  * This relies on the premise that "a real subagent started by the Task tool always ends with assistant_text
  * right before stopping, since Task's return value is the assistant's text".
  *
@@ -153,9 +152,8 @@ export function deriveState(
  * In addition, SDK chicks structurally have no completion signal from the parent ledger (chickSignals)
  * (chickDoneSignalAt is always undefined; it is a mechanism via queue-operation/tool_result on the parent
  * transcript side, so it doesn't appear in the SDK session's own tail). Using deriveState as-is with no signal
- * override would keep an SDK chick ending on tool_result stuck in working for as long as its process lives,
- * keep the parent looking working via escalateWithChicks, and also wrongly feed into
- * deriveDoneEvent's suppression check (CHICK_ABANDONED_MS=10 minutes).
+ * override would keep an SDK chick ending on tool_result working for CHICK_ABANDONED_MS (10 minutes) after
+ * it has finished, keeping the parent looking working via escalateWithChicks for that long.
  *
  * So every idle state other than a running tool_use (kind==="tool_use") is brought under the
  * CHICK_TEXT_DONE_MS fallback (assistant_text/user/tool_result treated alike). tool_use, closed, and unknown

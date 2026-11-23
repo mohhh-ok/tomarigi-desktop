@@ -119,9 +119,8 @@ export function updateBackgroundTasks(sessionId: string, tail: TailInfo): Map<st
  * suppressed for now (the suppression lifts on the scan where all are done/dozing or treated as abandoned).
  * Whether a chick is really running or stopped can't be decided from its ordering relative to T alone
  * (chicks commonly go tens of seconds without writing, e.g. while running Bash, so a running chick that just
- * happens to have no write at the moment of T would be misjudged as "stopped"). Instead, decide by the
- * freshness of the time since its last write (sinceMs) itself: if sinceMs is under CHICK_ABANDONED_MS it is
- * still alive (suppressed even when stuck in working); otherwise it is treated as abandoned and ignored.
+ * happens to have no write at the moment of T would be misjudged as "stopped"). Instead, decide by the chick's
+ * state (isChickRunning): a chick with no write for long enough is already dozing in deriveState (abandoned).
  * T is an immutable past event in the tail, so while suppressed this function keeps being re-evaluated every
  * scan, and the suppression lifts naturally once the chicks are all finished.
  *
