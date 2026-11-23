@@ -605,6 +605,13 @@ const TASK_NOTIFICATION_TAG = "<task-notification>";
 const TASK_STATUS_TAG = "<status>";
 const TASK_ID_PATTERN = /<task-id>([^<]+)<\/task-id>/;
 
+/** The task-id of a <task-notification> text, and whether it carries a <status> (a monitor's events come without one) */
+function taskNotificationOf(text: unknown): { taskId: string; hasStatus: boolean } | undefined {
+  if (typeof text !== "string" || !text.includes(TASK_NOTIFICATION_TAG)) return undefined;
+  const taskId = text.match(TASK_ID_PATTERN)?.[1];
+  return taskId ? { taskId, hasStatus: text.includes(TASK_STATUS_TAG) } : undefined;
+}
+
 const finiteNumber = (v: unknown): number | undefined => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
 const nonEmptyString = (v: unknown): string | undefined => (typeof v === "string" && v ? v : undefined);
 
@@ -619,11 +626,8 @@ function collectWakes(
   ends: Map<string, number>,
 ): void {
   if (entry.type === "queue-operation" || (entry.type === "user" && typeof entry.message?.content === "string")) {
-    const text = entry.type === "queue-operation" ? entry.content : entry.message?.content;
-    if (typeof text === "string" && text.includes(TASK_NOTIFICATION_TAG) && text.includes(TASK_STATUS_TAG)) {
-      const taskId = text.match(TASK_ID_PATTERN)?.[1];
-      if (taskId) ends.set(`monitor:${taskId}`, at);
-    }
+    const n = taskNotificationOf(entry.type === "queue-operation" ? entry.content : entry.message?.content);
+    if (n?.hasStatus) ends.set(`monitor:${n.taskId}`, at);
     return;
   }
   if (entry.type === "assistant") {
@@ -677,11 +681,8 @@ function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string
     // Completion notices of background commands such as Bash (task-notification itself is not specific
     // to Task/Agent) also pass through here. scanChicks ignores them because there is no chick file, and
     // backgroundTaskCache in lib/session-store.ts uses them as background task completion
-    const content = entry.content;
-    if (typeof content === "string" && content.includes(TASK_NOTIFICATION_TAG)) {
-      const taskId = content.match(TASK_ID_PATTERN)?.[1];
-      if (taskId) out.set(taskId, at);
-    }
+    const n = taskNotificationOf(entry.content);
+    if (n) out.set(n.taskId, at);
     return;
   }
   if (entry.type === "user") {
