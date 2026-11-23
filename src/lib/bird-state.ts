@@ -140,7 +140,7 @@ export function deriveState(
  *
  * deriveState's isChick fallback (CHICK_TEXT_DONE_MS) only switches to the time basis when
  * tail.kind === "assistant_text", and returns working when tail.kind is "user"/"tool_result" until abandoned()
- * (CHICK_ABANDONED_MS).
+ * (CHICK_ABANDONED_MS, or CHICK_TOOL_ABANDONED_MS while a tool is open).
  * This relies on the premise that "a real subagent started by the Task tool always ends with assistant_text
  * right before stopping, since Task's return value is the assistant's text".
  *
