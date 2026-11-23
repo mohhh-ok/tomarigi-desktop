@@ -379,6 +379,22 @@ https://www.example.com/help
     want: { asking: true, continuing: false },
   },
   {
+    // asking is not checked: Haiku said yes in 6 of 16 runs (2026-11-23, prompt unchanged), and a check that fails on
+    // every run of the test would hide the other scenes' results. It is kept to measure that rate when the prompt
+    // changes (docs/design.md "Turn verdicts", one verdict per turn)
+    kind: "turn",
+    name: "reminder_of_earlier_sign_in",
+    why:
+      "A report on a child's work that ends by saying it still waits on the user to allow a sign-in at a URL it sent " +
+      "in an earlier reply: the user can do it now, so asking. The child still works, so continuing",
+    reply: `ベースラインの結果が子から届きました。上げる前の時点で、型チェックとビルドは同じ 1 件で落ちています。lint は 0 errors です。子はこれから依存を上げます。
+
+落ちる件で分かったことを補足します。CI のビルドは別の install の設定を使うので、その 1 件は解決でき、前回のデプロイは通っていました。手元の通常の install では解決できないので、子が依存を足して直します。
+
+エラー監視のサービスはまだ未認証のままです。前に送った URL で許可していただくのを待っています。`,
+    want: { continuing: true },
+  },
+  {
     // asking is not checked: Haiku says yes here (docs/design.md "Turn verdicts", the step only the user can take)
     kind: "turn",
     name: "type_approval_in_child_pane",
