@@ -387,11 +387,11 @@ https://www.example.com/help
     why:
       "A report on a child's work that ends by saying it still waits on the user to allow a sign-in at a URL it sent " +
       "in an earlier reply: the user can do it now, so asking. The child still works, so continuing",
-    reply: `ベースラインの結果が子から届きました。上げる前の時点で、型チェックとビルドは同じ 1 件で落ちています。lint は 0 errors です。子はこれから依存を上げます。
+    reply: `子から最初の結果が届きました。画像の書き出しは 3 枚のうち 2 枚が終わり、残りの 1 枚は色の設定が読めずに止まっています。子は今、その読み方を直しています。
 
-落ちる件で分かったことを補足します。CI のビルドは別の install の設定を使うので、その 1 件は解決でき、前回のデプロイは通っていました。手元の通常の install では解決できないので、子が依存を足して直します。
+止まった 1 枚について補足します。見本の画像は色の設定を別のファイルに持っているので、そちらでは止まりませんでした。直したら、子が 3 枚とも書き出し直して確かめます。
 
-エラー監視のサービスはまだ未認証のままです。前に送った URL で許可していただくのを待っています。`,
+翻訳の API へのサインインは、まだ済んでいません。前回お送りした URL から許可していただけるのを待っています。`,
     want: { continuing: true },
   },
   {
