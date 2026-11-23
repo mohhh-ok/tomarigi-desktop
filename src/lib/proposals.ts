@@ -1,6 +1,6 @@
 // The Claude desktop app's session proposal cards a session waits on the user to start (docs/design.md "The "?" for
 // sessions waiting on you"). Doesn't depend on UI components or Tauri
-import type { TurnProposals } from "./transcript";
+import type { TurnProposals } from "./transcript-desktop";
 
 /** How a started card is remembered: the proposing session (its view id) and the card's task id */
 export function cardKey(viewId: string, taskId: string): string {

@@ -1,6 +1,7 @@
 // Chicks: subagents under a parent's transcript folder, and sessions started via the SDK
 import type { NativeDirectoryHandle, NativeFile, NativeFileHandle } from "./native-fs";
-import { lastWrittenAt, scanChickSignals, type TailInfo, type TranscriptReadOptions } from "./transcript";
+import { lastWrittenAt, type TailInfo, type TranscriptReadOptions } from "./transcript";
+import { scanChickSignals } from "./transcript-chicks";
 import type { ChickMeta, ChickScan, ChickView, FoundEntry } from "./session-types";
 import { chickMetaCache, chickSignalLedger } from "./session-store";
 import { readTailCached } from "./session-tail";

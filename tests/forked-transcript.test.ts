@@ -4,7 +4,9 @@
 // sessions of the Claude desktop app"). Lines shaped like the real records on this machine, ids and names made up
 import { describe, expect, test } from "bun:test";
 import type { NativeFile } from "../src/lib/native-fs.ts";
-import { isForeignLine, readEventsInRange, readTail, scanChickSignals } from "../src/lib/transcript.ts";
+import { readEventsInRange, readTail } from "../src/lib/transcript.ts";
+import { scanChickSignals } from "../src/lib/transcript-chicks.ts";
+import { isForeignLine } from "../src/lib/transcript-entry.ts";
 import { deriveState } from "../src/lib/bird-state.ts";
 
 const OWN = "0a1b2c3d-0000-4000-8000-00000000f0f0";

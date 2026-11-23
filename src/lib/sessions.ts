@@ -3,7 +3,8 @@
 import type { RootEntry } from "./settings-store";
 import { askSentToParent, peerHoldChicks, peersWatchedBy, silentForParent, takenOverByParent, takenOverWorld, watchingCount } from "./watching";
 import { basename } from "./paths";
-import { lastWrittenAt, pendingProposalsOf, projectLabels } from "./transcript";
+import { lastWrittenAt, projectLabels } from "./transcript";
+import { pendingProposalsOf } from "./transcript-desktop";
 import { unstartedProposals } from "./proposals";
 import type {
   BirdState,

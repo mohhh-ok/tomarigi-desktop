@@ -3,7 +3,8 @@
 // the user, at working, so the concierge didn't tell the user to answer (docs/design.md "Chicks that have finished")
 import { describe, expect, test } from "bun:test";
 import type { NativeDirectoryHandle, NativeFile } from "../src/lib/native-fs.ts";
-import { HAND_BACK_MARKER, readTail, scanChickSignals } from "../src/lib/transcript.ts";
+import { readTail } from "../src/lib/transcript.ts";
+import { HAND_BACK_MARKER, scanChickSignals } from "../src/lib/transcript-chicks.ts";
 import { scanChicks } from "../src/lib/session-chicks.ts";
 import { escalateWithChicks } from "../src/lib/bird-state.ts";
 import { buildConciergePayload } from "../src/lib/concierge.ts";

@@ -6,7 +6,8 @@ import { describe, expect, test } from "bun:test";
 import type { NativeFile } from "../src/lib/native-fs.ts";
 import { deriveState } from "../src/lib/bird-state.ts";
 import { deriveSessionEvents } from "../src/lib/session-events.ts";
-import { desktopAskOf, pendingAskOf, readTail, type TailEvent } from "../src/lib/transcript.ts";
+import { readTail, type TailEvent } from "../src/lib/transcript.ts";
+import { desktopAskOf, pendingAskOf } from "../src/lib/transcript-desktop.ts";
 
 const WRAP_UP = "mcp__ccd_turn__wrap_up";
 const ASK = "この中身で試しを打ってよいですか？";

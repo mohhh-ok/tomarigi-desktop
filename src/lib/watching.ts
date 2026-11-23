@@ -4,7 +4,7 @@ import type { BirdState } from "./sessions";
 import type { ChickView, LiveSession, PeerLink, SessionEvent } from "./session-types";
 import type { WatchLinks } from "./session-watch";
 import { parentCanAnswer } from "./turn-verdict";
-import { writtenByApp } from "./transcript";
+import { writtenByApp } from "./transcript-peers";
 import { latestTurnBy, type TurnBy } from "./watching-turns";
 
 /** For this long after the linked session last moved, it stays watching */

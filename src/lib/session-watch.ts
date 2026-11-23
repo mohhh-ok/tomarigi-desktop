@@ -15,7 +15,7 @@ import {
   scanState,
   startedCardCache,
 } from "./session-store";
-import { pendingProposalsOf } from "./transcript";
+import { pendingProposalsOf } from "./transcript-desktop";
 import { cardKey } from "./proposals";
 import { sessionIdOfViewId } from "./session-liveness";
 

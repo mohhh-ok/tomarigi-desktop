@@ -1,5 +1,6 @@
 // Machine state of a bird (BirdState) from its transcript tail
-import { pendingAskOf, type TailEvent, type TailInfo, type TailKind, type TurnProposals } from "./transcript";
+import type { TailEvent, TailInfo, TailKind } from "./transcript";
+import { pendingAskOf, type TurnProposals } from "./transcript-desktop";
 import type { BirdState, ChickView, WaitingOn } from "./session-types";
 import { extractQuestion } from "./session-snippet";
 import { proposalQuestion } from "./proposals";

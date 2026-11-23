@@ -7,7 +7,8 @@ import { describe, expect, test } from "bun:test";
 import type { NativeFile } from "../src/lib/native-fs.ts";
 import { deriveSessionEvents } from "../src/lib/session-events.ts";
 import { deriveState, replyWaitOf } from "../src/lib/bird-state.ts";
-import { pendingProposalsOf, readTail } from "../src/lib/transcript.ts";
+import { readTail } from "../src/lib/transcript.ts";
+import { pendingProposalsOf } from "../src/lib/transcript-desktop.ts";
 import { cardKey, unstartedProposals } from "../src/lib/proposals.ts";
 
 function fileOf(lines: object[]): NativeFile {

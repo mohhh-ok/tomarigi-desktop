@@ -1,5 +1,6 @@
 // Transition events (started / waiting / done / closed) derived from a session's tail
-import { pendingProposalsOf, type TailInfo } from "./transcript";
+import type { TailInfo } from "./transcript";
+import { pendingProposalsOf } from "./transcript-desktop";
 import type { BackgroundTask, ChickView, SessionEvent } from "./session-types";
 import { backgroundTaskCache } from "./session-store";
 import { isWaitingTool, tailWaitOf } from "./bird-state";

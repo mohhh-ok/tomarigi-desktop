@@ -1,9 +1,16 @@
 import type { NativeFile } from "./native-fs";
 import { isAbsolutePath } from "./paths";
+import { asBlocks, isForeignLine, parseTimestamp, TEXT_FIELD_LIMIT, type Block, type TranscriptEntry } from "./transcript-entry";
+import { collectChickSignals, handBackOf, trackTools } from "./transcript-chicks";
+import { collectWakes } from "./transcript-wakes";
+import { collectPeerNames, firstPromptStarterOf, isFirstPromptCandidate, sentPeerNamesOf, startsTurn } from "./transcript-peers";
+import { desktopAskOf, proposalResultsOf, settledProposalOf, START_SESSION_TOOL } from "./transcript-desktop";
 // Reads Claude Code transcripts (~/.claude/projects/<slug>/<sessionId>.jsonl).
 // The format is a Claude Code internal detail and can change without notice, so parsing is
-// confined to this file. Codex is converted to the same TailInfo by a separate adapter in
-// lib/codex-transcript.ts.
+// confined to this file and the transcript-*.ts files it reads lines with (transcript-entry.ts: a line's shape;
+// transcript-chicks.ts: a chick's end; transcript-wakes.ts: wakes; transcript-peers.ts: peers and turn starts;
+// transcript-desktop.ts: the desktop app's asks and proposal cards). Codex is converted to the same TailInfo by a
+// separate adapter in lib/codex-transcript.ts.
 
 export type TailKind =
   | "user"
@@ -131,59 +138,6 @@ export interface ProposalTrace {
   settled?: string[];
 }
 
-interface TranscriptEntry {
-  type?: string;
-  // The session the line was written in. A transcript started as a fork begins with its parent's lines copied with the
-  // parent's id (see isForeignLine)
-  sessionId?: unknown;
-  subtype?: unknown; // On a `system` line (e.g. away_summary, see isIdleLine)
-  isMeta?: boolean;
-  isSidechain?: boolean;
-  turnOrigin?: unknown; // Who started the turn of a prompt ("human", "sdk", "host_synthetic", "peer", ...)
-  interruptedByShutdown?: boolean;
-  timestamp?: string;
-  continuedInSessionId?: unknown; // On a `continued-in` line (see TailInfo.continuedIn)
-  message?: { role?: string; content?: unknown };
-  cwd?: unknown;
-  entrypoint?: unknown; // Internal field on user/assistant/attachment/system lines. See the TailInfo.entrypoint comment
-  content?: unknown; // Body of a queue-operation line (raw task-notification text, a string). Unused for other types
-  // Execution metadata on tool_result entries. Used only for the chick completion signal
-  // (collectChickSignals). isAsync:true means "async launch confirmation of the Agent tool", which comes
-  // back right after launch with the same tool_use_id as the launching tool_use (confirmed on real data).
-  // It is not a completion and must be excluded (otherwise a background chick is misjudged as "done" a few
-  // seconds after launch)
-  // backgroundTaskId is the task-id on the launch confirmation of a command started with run_in_background
-  // (see TailInfo.backgroundTaskStarts)
-  // scheduledFor / stopped are on a ScheduleWakeup result, id / nextFireAt / recurring on a CronCreate result, and taskId /
-  // timeoutMs / persistent on a Monitor result (see TailInfo.wakes)
-  toolUseResult?: {
-    isAsync?: boolean;
-    backgroundTaskId?: string;
-    scheduledFor?: unknown;
-    stopped?: unknown;
-    id?: unknown;
-    nextFireAt?: unknown;
-    recurring?: unknown;
-    taskId?: unknown;
-    timeoutMs?: unknown;
-    persistent?: unknown;
-  };
-  // Sender on the isMeta user line that received a cross-session message (kind: "peer" and name)
-  // from is the sender's address; for a Claude desktop app session it is its local_… id (docs/design.md "Watching")
-  origin?: { kind?: unknown; name?: unknown; from?: unknown };
-  // Cross-session messages that arrive mid-work are recorded in an attachment (queued_command) with the same origin
-  attachment?: { origin?: { kind?: unknown; name?: unknown; from?: unknown } };
-}
-
-interface Block {
-  type?: string;
-  name?: string;
-  text?: string;
-  id?: string; // id of a tool_use block (a tool_result names it in tool_use_id)
-  input?: unknown; // Input of a tool_use block (used by summarizeToolInput to build the input summary)
-  tool_use_id?: string; // id of the tool_use a tool_result block answers. Used to match chick completion signals
-}
-
 // user message left behind when a session closes via /clear, Ctrl+C, or shutdown.
 // Missing it leads to misjudging "no response to input = stuck"
 const INTERRUPTED_PREFIX = "[Request interrupted by user";
@@ -245,17 +199,6 @@ export interface TranscriptReadOptions {
 }
 
 /**
- * Whether a transcript line is another session's: its `sessionId` is a string other than the session's own. A
- * transcript started as a fork (a side chat, or a fork another session started) begins with a copy of its parent's
- * lines, which keep the parent's `sessionId`; nothing is read from them (docs/design.md "Side chats and forked sessions
- * of the Claude desktop app"). A line without `sessionId`, or a read without an own id, counts as own.
- * is_foreign_line in src-tauri is the same rule
- */
-export function isForeignLine(entry: { sessionId?: unknown }, ownSessionId: string | undefined): boolean {
-  return ownSessionId !== undefined && typeof entry.sessionId === "string" && entry.sessionId !== ownSessionId;
-}
-
-/**
  * Reads only the end of the file and classifies "the last thing that happened".
  * includeSidechain: set to true when reading a subagent transcript (every line isSidechain: true).
  * Defaults to false (the existing behavior for the main transcript).
@@ -307,57 +250,6 @@ export async function readEventsInRange(
     events.push({ at, kind: next.kind, toolName: next.toolName, text: next.text, machine: next.machine, ...(next.ask && { ask: next.ask }) });
   }
   return events;
-}
-
-const CHICK_SIGNAL_CHUNK_BYTES = 4 * 1024 * 1024;
-
-/**
- * Collects chick completion signals (the same collectChickSignals as TailInfo.chickSignals) from the whole
- * transcript from start, not just the tail window. A long-lived parent's completion records scroll out of the
- * tail window, and a chick is shown until its completion is recorded (docs/design.md "Removing birds of ended
- * sessions"), so scanChicks (lib/session-chicks.ts) keeps the result across scans and reads only what was appended. end is the
- * position read up to; a last line cut off midway is left for the next read
- */
-export async function scanChickSignals(
-  file: NativeFile,
-  start: number,
-  opts?: TranscriptReadOptions,
-): Promise<{ signals: Map<string, number>; end: number }> {
-  const signals = new Map<string, number>();
-  let pos = start;
-  while (pos < file.size) {
-    const text = await file.slice(pos, Math.min(file.size, pos + CHICK_SIGNAL_CHUNK_BYTES)).text();
-    const cut = text.lastIndexOf("\n");
-    if (cut < 0) {
-      // A single line longer than the chunk: read it whole
-      if (pos + CHICK_SIGNAL_CHUNK_BYTES < file.size) {
-        const whole = await file.slice(pos).text();
-        const lineEnd = whole.indexOf("\n");
-        if (lineEnd < 0) break;
-        collectLine(whole.slice(0, lineEnd), signals);
-        pos += new TextEncoder().encode(whole.slice(0, lineEnd + 1)).length;
-        continue;
-      }
-      break;
-    }
-    const complete = text.slice(0, cut + 1);
-    for (const line of complete.split("\n")) collectLine(line, signals);
-    pos += new TextEncoder().encode(complete).length;
-  }
-  return { signals, end: pos };
-
-  function collectLine(line: string, out: Map<string, number>): void {
-    if (!mayCarryChickSignal(line)) return;
-    let entry: TranscriptEntry;
-    try {
-      entry = JSON.parse(line);
-    } catch {
-      return;
-    }
-    if (isForeignLine(entry, opts?.ownSessionId)) return;
-    const at = parseTimestamp(entry.timestamp);
-    if (at !== null) collectChickSignals(entry, at, out);
-  }
 }
 
 /**
@@ -488,273 +380,6 @@ async function readWindow(
   };
 }
 
-const CROSS_SESSION_FROM_NAME = /<cross-session-message\b[^>]*\bfrom-name="([^"]+)"/g;
-// The Claude desktop app's session id, the address of its sessions (docs/design.md "Watching")
-const HOST_SESSION_ID = /^local_[0-9a-fA-F-]+$/;
-// The text of the desktop app's start_session result: `Started session "…" (session_id: local_…, …)`
-const STARTED_SESSION_ID = /^Started session [\s\S]*?\(session_id: (local_[0-9a-fA-F-]+)[,)]/;
-// The shared notes folder the desktop app names in the first prompt of a session another session started:
-// `…/side-session-notes/local_…`, the starter's id
-const NOTES_FOLDER_ID = /side-session-notes\/(local_[0-9a-fA-F-]+)/;
-
-function hostSessionIdOf(value: unknown): string | undefined {
-  return typeof value === "string" && HOST_SESSION_ID.test(value) ? value : undefined;
-}
-
-/** The text of a message's content: a string, or its text blocks joined by newlines (message_text in src-tauri) */
-function messageText(content: unknown): string {
-  return typeof content === "string" ? content : asBlocks(content).map((b) => b.text ?? "").join("\n");
-}
-
-/** The text of a tool_result block's content */
-function toolResultText(block: Block): string {
-  return messageText((block as { content?: unknown }).content);
-}
-
-/**
- * Whether a prompt's turnOrigin says the app wrote it, not the user: anything but "human" (the desktop app's "sdk" /
- * "host_synthetic", another session's "peer", ...). Same rule as written_by_app in src-tauri
- */
-export function writtenByApp(turnOrigin: unknown): boolean {
-  return typeof turnOrigin === "string" && turnOrigin !== "human";
-}
-
-/**
- * The starter's id the desktop app names in the first prompt of a session another session started: its shared notes
- * folder, `…/side-session-notes/local_…` (docs/design.md "Watching"). Only for the transcript's first prompt (a user
- * line that isn't meta or a subagent's), and only when the app wrote it: a later notice may quote another folder
- */
-function firstPromptStarterOf(entry: TranscriptEntry): string | undefined {
-  if (!writtenByApp(entry.turnOrigin)) return undefined;
-  return messageText(entry.message?.content).match(NOTES_FOLDER_ID)?.[1];
-}
-
-/** Whether a line is the kind the first prompt is: a user line, not meta, not a subagent's (as scan_peer_names) */
-function isFirstPromptCandidate(entry: TranscriptEntry): boolean {
-  return entry.type === "user" && entry.isMeta !== true && entry.isSidechain !== true && typeof entry.timestamp === "string";
-}
-
-/** Drops the display " [ref]" from a SendMessage recipient name (the ListAgents format; SendMessage in the docs) */
-function peerNameOf(to: string): string | undefined {
-  const name = to.replace(/\s*\[[^\]]*\]\s*$/, "").trim();
-  // "main" (the parent conversation) and agent ids (a...-...) are not cross-session links
-  if (!name || name === "main") return undefined;
-  return name;
-}
-
-/**
- * Gets, from one line, the names of peers exchanged with via cross-session messages (TailInfo.peerNames).
- * Sent: input.to of the assistant's SendMessage tool_use. Received: origin.name on the isMeta user line
- * (when kind is "peer"), otherwise <cross-session-message from-name="…"> in the body. Messages that arrived
- * mid-work: origin.name of the attachment (queued_command). The Claude desktop app's sessions also give their
- * local_… id: origin.from of a received message, session_id of the app's send_message, and the id in the text of
- * its start_session result; they are matched against hostSessionId. Same rules as scan_peer_names in src-tauri
- */
-function collectPeerNames(entry: TranscriptEntry): string[] {
-  const names: string[] = [];
-  if (entry.type === "assistant") {
-    names.push(...sentPeerNamesOf(entry));
-  } else if (entry.type === "attachment") {
-    const origin = entry.attachment?.origin;
-    if (origin?.kind === "peer" && typeof origin.name === "string" && origin.name) names.push(origin.name);
-    const from = origin?.kind === "peer" ? hostSessionIdOf(origin.from) : undefined;
-    if (from) names.push(from);
-  } else if (entry.type === "user" && entry.isMeta) {
-    if (entry.origin?.kind === "peer" && typeof entry.origin.name === "string" && entry.origin.name) {
-      names.push(entry.origin.name);
-      const from = hostSessionIdOf(entry.origin.from);
-      if (from) names.push(from);
-    } else {
-      for (const m of messageText(entry.message?.content).matchAll(CROSS_SESSION_FROM_NAME)) names.push(m[1]);
-    }
-  } else if (entry.type === "user") {
-    // The tool result that started a desktop app session carries its id in the text
-    for (const block of asBlocks(entry.message?.content)) {
-      if (block.type !== "tool_result") continue;
-      const id = toolResultText(block).match(STARTED_SESSION_ID)?.[1];
-      if (id) names.push(id);
-    }
-  }
-  return names;
-}
-
-/** The sessions an assistant line sends a message to: input.to of SendMessage, session_id of the desktop app's
- * send_message (collectPeerNames, TailInfo.lastTurnSentTo) */
-function sentPeerNamesOf(entry: TranscriptEntry): string[] {
-  if (entry.type !== "assistant") return [];
-  const names: string[] = [];
-  for (const block of asBlocks(entry.message?.content)) {
-    if (block.type !== "tool_use") continue;
-    const input = block.input as { to?: unknown; session_id?: unknown } | undefined;
-    const name =
-      block.name === "SendMessage"
-        ? typeof input?.to === "string"
-          ? peerNameOf(input.to)
-          : undefined
-        : block.name?.endsWith("__send_message")
-          ? hostSessionIdOf(input?.session_id)
-          : undefined;
-    if (name) names.push(name);
-  }
-  return names;
-}
-
-/**
- * Whether a line is a prompt that starts a turn, as turn_starter in src-tauri reads it: a user line, not a subagent's
- * or a tool result, and not meta unless it is a message from another session; a line that says nothing of where it came
- * from (no turnOrigin, no origin.kind) isn't counted. What arrives while it works is an attachment and doesn't start one
- */
-function startsTurn(entry: TranscriptEntry): boolean {
-  if (entry.type !== "user" || entry.isSidechain) return false;
-  const turnOrigin = typeof entry.turnOrigin === "string" ? entry.turnOrigin : undefined;
-  const originKind = typeof entry.origin?.kind === "string" ? entry.origin.kind : undefined;
-  if (entry.isMeta && turnOrigin !== "peer" && originKind !== "peer") return false;
-  if (asBlocks(entry.message?.content).some((b) => b.type === "tool_result")) return false;
-  return turnOrigin !== undefined || originKind !== undefined;
-}
-
-const TASK_NOTIFICATION_TAG = "<task-notification>";
-const TASK_STATUS_TAG = "<status>";
-const TASK_ID_PATTERN = /<task-id>([^<]+)<\/task-id>/;
-
-/** The task-id of a <task-notification> text, and whether it carries a <status> (a monitor's events come without one) */
-function taskNotificationOf(text: unknown): { taskId: string; hasStatus: boolean } | undefined {
-  if (typeof text !== "string" || !text.includes(TASK_NOTIFICATION_TAG)) return undefined;
-  const taskId = text.match(TASK_ID_PATTERN)?.[1];
-  return taskId ? { taskId, hasStatus: text.includes(TASK_STATUS_TAG) } : undefined;
-}
-
-const finiteNumber = (v: unknown): number | undefined => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
-const nonEmptyString = (v: unknown): string | undefined => (typeof v === "string" && v ? v : undefined);
-
-/**
- * Picks up what the session set up to wake itself and what cancelled or ended it (see TailInfo.wakes). Each result is
- * told by its own fields, as Claude Code writes them in toolUseResult; the cancelling calls by their tool_use input
- */
-function collectWakes(
-  entry: TranscriptEntry,
-  at: number,
-  starts: Map<string, { at: number; until?: number }>,
-  ends: Map<string, number>,
-): void {
-  if (entry.type === "queue-operation" || (entry.type === "user" && typeof entry.message?.content === "string")) {
-    const n = taskNotificationOf(entry.type === "queue-operation" ? entry.content : entry.message?.content);
-    if (n?.hasStatus) ends.set(`monitor:${n.taskId}`, at);
-    return;
-  }
-  if (entry.type === "assistant") {
-    for (const b of asBlocks(entry.message?.content)) {
-      if (b.type !== "tool_use") continue;
-      const input = (typeof b.input === "object" && b.input !== null ? b.input : {}) as Record<string, unknown>;
-      if (b.name === "CronDelete") {
-        const id = nonEmptyString(input.id);
-        if (id) ends.set(`cron:${id}`, at);
-      } else if (b.name === "TaskStop") {
-        const id = nonEmptyString(input.task_id) ?? nonEmptyString(input.shell_id);
-        if (id) ends.set(`monitor:${id}`, at);
-      }
-    }
-    return;
-  }
-  const r = entry.type === "user" ? entry.toolUseResult : undefined;
-  if (!r || typeof r !== "object") return;
-  const scheduledFor = finiteNumber(r.scheduledFor);
-  if (scheduledFor !== undefined) {
-    if (r.stopped === true || scheduledFor <= 0) ends.set("wakeup", at);
-    else starts.set("wakeup", { at, until: scheduledFor });
-    return;
-  }
-  const cronId = nonEmptyString(r.id);
-  const nextFireAt = finiteNumber(r.nextFireAt);
-  if (cronId && nextFireAt !== undefined) {
-    starts.set(`cron:${cronId}`, r.recurring === true ? { at } : { at, until: nextFireAt });
-    return;
-  }
-  const monitorId = nonEmptyString(r.taskId);
-  const timeoutMs = finiteNumber(r.timeoutMs);
-  if (monitorId && timeoutMs !== undefined) {
-    starts.set(`monitor:${monitorId}`, r.persistent === true ? { at } : { at, until: at + timeoutMs });
-  }
-}
-
-/** The tool a chick calls to hand its report back to its caller and stop (Claude Code, docs/design.md "Chicks that
-    have finished") */
-const HAND_BACK_TOOL = "SubagentHandback";
-// The parent's record of a chick's hand-back: a queue-operation whose content starts with
-// `<agent-message from="<the chick's id>">` and this
-export const HAND_BACK_MARKER = "[Subagent hand-back]";
-const HAND_BACK_MESSAGE = new RegExp(`^<agent-message from="([^"]+)">\\s*${HAND_BACK_MARKER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
-
-// What a line has to contain for collectChickSignals to find a signal in it, so the whole-transcript scan skips JSON.parse
-// for the rest. Kept next to collectChickSignals: a signal it learns has to be added here too, or the scan misses it
-// once the line leaves the tail window
-const CHICK_SIGNAL_MARKERS = [TASK_NOTIFICATION_TAG, "tool_result", HAND_BACK_MARKER];
-
-function mayCarryChickSignal(line: string): boolean {
-  return CHICK_SIGNAL_MARKERS.some((m) => line.includes(m));
-}
-
-/**
- * Picks up definitive signals that a chick (subagent) has stopped from queue-operation lines and
- * user (tool_result) lines, and adds them to out (key = chick identifier, value = its timestamp).
- * Uses the at (= entry.timestamp) computed by the caller (readTail) as is.
- */
-function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string, number>): void {
-  if (entry.type === "queue-operation") {
-    // Signal that a background chick finished. <task-notification> fires every time an agent stops
-    // (after a resume it can fire multiple times with the same task-id), so always overwrite with the
-    // latest at. The status value is not checked (anything other than completed is also treated as a
-    // "that chick stopped" signal. See the TailInfo.chickSignals comment for details).
-    // content can be present on any of the enqueue/remove/dequeue operations (dequeue is often empty,
-    // but if absent nothing happens, so no harm).
-    // Completion notices of background commands such as Bash (task-notification itself is not specific
-    // to Task/Agent) also pass through here. scanChicks ignores them because there is no chick file, and
-    // backgroundTaskCache in lib/session-store.ts uses them as background task completion
-    const n = taskNotificationOf(entry.content);
-    if (n) out.set(n.taskId, at);
-    const handBack = typeof entry.content === "string" ? entry.content.match(HAND_BACK_MESSAGE)?.[1] : undefined;
-    if (handBack) out.set(handBack, at);
-    return;
-  }
-  if (entry.type === "user") {
-    // Signal that a synchronous call (a blocking Task/Agent call) finished. The time a tool_result arrives
-    // whose tool_use_id matches toolUseId in the chick's meta.json is the completion time as is.
-    // However, the Agent tool's async launch confirmation (toolUseResult.isAsync===true) returns right
-    // after launch with the same tool_use_id but is not a completion, so it is excluded (see the
-    // TranscriptEntry.toolUseResult comment)
-    if (entry.toolUseResult?.isAsync) return;
-    const blocks = asBlocks(entry.message?.content);
-    for (const b of blocks) {
-      if (b.type === "tool_result" && typeof b.tool_use_id === "string") out.set(b.tool_use_id, at);
-    }
-  }
-}
-
-function trackTools(entry: TranscriptEntry, open: Set<string>): void {
-  for (const b of asBlocks(entry.message?.content)) {
-    if (entry.type === "assistant" && b.type === "tool_use" && b.id) open.add(b.id);
-    else if (entry.type === "user" && b.type === "tool_result" && b.tool_use_id) open.delete(b.tool_use_id);
-  }
-}
-
-/** The id of the hand-back the conversation ends on after this line, or undefined */
-function handBackOf(entry: TranscriptEntry, kind: TailKind, current: string | undefined): string | undefined {
-  const blocks = asBlocks(entry.message?.content);
-  if (kind === "tool_use") {
-    const call = blocks.findLast((b) => b.type === "tool_use");
-    return call?.name === HAND_BACK_TOOL ? (call.id ?? "") : undefined;
-  }
-  // Only the hand-back's own result keeps it; a result of another call means the chick went on
-  if (kind === "tool_result" && current !== undefined && blocks.every((b) => b.type !== "tool_result" || b.tool_use_id === current)) return current;
-  return undefined;
-}
-
-function parseTimestamp(timestamp: string | undefined): number | null {
-  if (!timestamp) return null;
-  const at = Date.parse(timestamp);
-  return Number.isNaN(at) ? null : at;
-}
-
 interface Classified {
   kind: TailKind;
   toolName?: string;
@@ -762,101 +387,6 @@ interface Classified {
   machine?: boolean;
   ask?: { question?: string };
   proposal?: ProposalTrace;
-}
-
-/** A text shown on one line (a wrap_up's ask, a card's title): whitespace folded, first TEXT_FIELD_LIMIT characters */
-function oneLine(text: string): string {
-  return text.replace(/\s+/g, " ").trim().slice(0, TEXT_FIELD_LIMIT);
-}
-
-/** The tool with which a Claude desktop app session ends its turn: the app shows its `recap`, and its `ask` (the one
-    question it leaves the user, with buttons) in a box; `blocked` says the work stops until the user answers */
-export const DESKTOP_WRAP_UP_TOOL = "mcp__ccd_turn__wrap_up";
-
-/**
- * Whether a tool call asks the user to decide before the session goes on (docs/design.md "The "?" for sessions
- * waiting on you"): the desktop app's wrap_up with an `ask` that isn't blank, or with `blocked: true`. The desktop app
- * puts its question there, not in the reply's text. question is the `ask`, first 500 characters
- */
-export function desktopAskOf(toolName: string | undefined, input: unknown): { question?: string } | undefined {
-  if (toolName !== DESKTOP_WRAP_UP_TOOL || typeof input !== "object" || input === null) return undefined;
-  const { ask, blocked } = input as { ask?: unknown; blocked?: unknown };
-  const question = typeof ask === "string" ? oneLine(ask) : "";
-  if (!question && blocked !== true) return undefined;
-  return question ? { question } : {};
-}
-
-/**
- * The ask the session's last turn ended on, while nothing has moved since: the newest tool call that asks
- * (desktopAskOf), with only the reply's text and tool results after it. A message (from the user or anything else that
- * starts a turn), a closing, or another tool call after it means the session went on
- */
-export function pendingAskOf(events: readonly TailEvent[]): { question?: string; at: number } | undefined {
-  for (let i = events.length - 1; i >= 0; i--) {
-    const e = events[i];
-    if (e.kind === "assistant_text" || e.kind === "tool_result") continue;
-    return e.kind === "tool_use" && e.ask ? { ...e.ask, at: e.at } : undefined;
-  }
-  return undefined;
-}
-
-/** The desktop app's tools that start a session and withdraw a proposal */
-const START_SESSION_TOOL = "mcp__ccd_session__start_session";
-const DISMISS_TASK_TOOL = "mcp__ccd_session__dismiss_task";
-// The text of start_session's result for a proposal card: `Proposed "<title>" (task_id: task_…)`
-const PROPOSED_CARD = /^Proposed "([\s\S]*?)" \(task_id: (task_[0-9A-Za-z]+)\)/;
-
-/** The proposal a tool call settles: dismiss_task withdraws its task_id; start_session with a proposal_id starts it */
-function settledProposalOf(toolName: string | undefined, input: unknown): string[] {
-  const { task_id, proposal_id } = (typeof input === "object" && input !== null ? input : {}) as {
-    task_id?: unknown;
-    proposal_id?: unknown;
-  };
-  if (toolName === DISMISS_TASK_TOOL && typeof task_id === "string" && task_id) return [task_id];
-  if (toolName === START_SESSION_TOOL && typeof proposal_id === "string" && proposal_id) return [proposal_id];
-  return [];
-}
-
-/** The proposal cards the start_session results in one line show (ProposalTrace's proposed) */
-function proposalResultsOf(blocks: Block[], startSessionCalls: ReadonlySet<string>): ProposalTrace | undefined {
-  const proposed: { taskId: string; title?: string }[] = [];
-  for (const block of blocks) {
-    if (block.type !== "tool_result" || !block.tool_use_id || !startSessionCalls.has(block.tool_use_id)) continue;
-    const card = toolResultText(block).match(PROPOSED_CARD);
-    if (!card) continue;
-    const title = oneLine(card[1]);
-    proposed.push({ taskId: card[2], ...(title && { title }) });
-  }
-  return proposed.length > 0 ? { proposed } : undefined;
-}
-
-/** The desktop app's proposal cards the last turn left, not yet settled within it (pendingProposalsOf) */
-export interface TurnProposals {
-  proposals: { taskId: string; title?: string; at: number }[];
-}
-
-/**
- * The proposal cards (docs/design.md "The "?" for sessions waiting on you") the last turn made and didn't withdraw or
- * start itself. A turn starts at a prompt (kind user, from the user or anything else) or
- * a closing; only what came after the last one counts. undefined when it left none
- */
-export function pendingProposalsOf(events: readonly TailEvent[]): TurnProposals | undefined {
-  let turnStart = 0;
-  for (let i = events.length - 1; i >= 0; i--) {
-    if (events[i].kind === "user" || events[i].kind === "closed") {
-      turnStart = i + 1;
-      break;
-    }
-  }
-  const proposals: TurnProposals["proposals"] = [];
-  for (const e of events.slice(turnStart)) {
-    for (const p of e.proposal?.proposed ?? []) proposals.push({ ...p, at: e.at });
-    for (const taskId of e.proposal?.settled ?? []) {
-      const i = proposals.findIndex((p) => p.taskId === taskId);
-      if (i >= 0) proposals.splice(i, 1);
-    }
-  }
-  return proposals.length > 0 ? { proposals } : undefined;
 }
 
 /**
@@ -911,9 +441,6 @@ function classify(entry: TranscriptEntry, includeSidechain: boolean, startSessio
   return null; // summary / file-history-snapshot etc. are ignored
 }
 
-// Limit shared across TailEvent.text (used for both user utterances and tool_use input summaries)
-const TEXT_FIELD_LIMIT = 500;
-
 function extractUserText(blocks: Block[]): string | undefined {
   const parts = blocks.filter((b) => b.type === "text" && b.text).map((b) => b.text as string);
   if (parts.length === 0) return undefined;
@@ -966,15 +493,6 @@ function isInterruptedMessage(content: unknown): boolean {
   return (content as Block[]).some(
     (b) => b.type === "text" && (b.text ?? "").startsWith(INTERRUPTED_PREFIX),
   );
-}
-
-function asBlocks(content: unknown): Block[] {
-  // When content comes as a plain string (a simple user utterance), fill in text too. Previously only type
-  // was set and text was dropped, so the user utterance input (extractUserText) was always empty in
-  // this case
-  if (typeof content === "string") return content ? [{ type: "text", text: content }] : [];
-  if (Array.isArray(content)) return content as Block[];
-  return [];
 }
 
 /**

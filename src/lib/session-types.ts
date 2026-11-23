@@ -125,7 +125,7 @@ export interface SessionView {
   // is known (waitingOnOf in lib/bird-state.ts). Passed to the concierge (docs/design.md "Concierge")
   waitingOn?: WaitingOn;
   // While its own state is waiting: true when it waits on the Claude desktop app's wrap_up ask (pendingAskOf in
-  // lib/transcript.ts), not a question tool or a permission prompt. That ask is also the session's report, so a parent
+  // lib/transcript-desktop.ts), not a question tool or a permission prompt. That ask is also the session's report, so a parent
   // that takes it over can answer it (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Watching")
   wrapUpAsk?: true;
   // The question text while stopped on a question tool (AskUserQuestion / request_user_input). Taken as-is
