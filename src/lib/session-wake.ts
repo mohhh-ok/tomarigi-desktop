@@ -73,7 +73,7 @@ export function rootsWithFreshUnlinkedChild(candidates: ChildCandidate[], now: n
 export function wakeSourceOf(input: {
   backgroundTasks: ReadonlyMap<string, BackgroundTask>;
   wakes: ReadonlyMap<string, Wake>;
-  chicks: Pick<ChickView, "state" | "sinceMs">[];
+  chicks: Pick<ChickView, "state">[];
   freshUnlinkedChild: boolean;
   now: number;
 }): boolean {
