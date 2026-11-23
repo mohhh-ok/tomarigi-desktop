@@ -185,6 +185,44 @@ Applies to the floating window's Garden and Concierge tabs only.
 - Avoid false removals: nothing is removed on a load where `ps` / `lsof` failed or where any `sessions/*.json` failed to parse. A bird is removed only after it is missing on two loads in a row
 - Caveat: `thread-writer-locks` is not a public Codex spec, the same as `sessions/<pid>.json` for Claude Code
 
+## Chicks that have finished
+
+### Requirements
+
+- A session that ended its turn asking the user is one the concierge tells the user to answer, unless a chick of it is really running
+- A chick that has finished (a foreground chick whose result reached the parent, a background chick whose completion notice came) doesn't count as running
+- Other ways a finished chick can look running are closed too, by how it is built rather than one place at a time: when Claude Code changes how a chick reports its end again, the chick stops counting as running after a bounded time instead of for as long as the parent lives
+
+### Basic design
+
+Decided by the parent session (A, B and C together; `meta.json`'s `finished` is not used, Claude's own decision: whether it goes back to false when a chick is resumed wasn't seen in real data):
+- A. The chick's own transcript is a fact of its end: a chick whose last act is a hand-back to its caller (`SubagentHandback` and its result, nothing after) is done
+- B. The parent's record of a hand-back (`<agent-message from="<id>">` with `[Subagent hand-back]`) is a completion record of that chick, next to `<task-notification>` and the Agent call's `tool_result`
+- C. Whether a chick is running is one judgment (`isChickRunning`), used by holding back done, by what can wake the session, by the parent's displayed state (`escalateWithChicks`) and by the concierge's `chicks_working`. A chick with no write for a while is abandoned, with the time chosen by what its transcript ends on
+
+What happened: a parent called a foreground chick, the chick handed back its report, the parent sent it one more request with SendMessage, and the chick resumed and handed back again, 18 seconds after the parent's Agent `tool_result`. The only completion record read was that `tool_result`; the chick's later writes made it a resumed chick (`resolveChickDoneSignalAt`, more than `CHICK_SIGNAL_EPSILON_MS` after the record), and its tail, the hand-back's `tool_result`, is always working in `deriveState`. `escalateWithChicks` and `chicks_working` read the raw state, which has no abandonment, so the parent stayed working (「ついばみ中」) and the concierge didn't tell the user to answer it (the user: 「こんしぇるじゅがはんのうしてない」). Claude Code writes, when a chick hands back: in the chick, a `SubagentHandback` tool_use and its `tool_result` (`{"success":true,"message":"Report delivered to your caller."}`); in the parent, a `queue-operation` (enqueue, then remove) whose content starts `<agent-message from="<id>">\n[Subagent hand-back]`, `<id>` being the chick's file name without `agent-`; on a SendMessage resume, the SendMessage `tool_result` says `Resumed agent. Its final report follows this JSON` (its tool_use_id is SendMessage's, not the chick's, so it isn't used)
+
+### Detailed design
+
+How long a chick goes without writing while it is still running, counted on the chick transcripts of this machine (both config dirs, 10,103 files): gaps of more than 10 minutes between two lines with a time that are conversation (assistant / user / tool_result):
+- after a tool call (a tool running): 12, 10.0 to 66.8 minutes (10.0, 10.0, 12.2, 13.9, 26.0, 30.0 ×6, 66.8); every one went on with that tool's result. Abandoning these at 10 minutes, as `isChickRunning` does today for done and wakes, would count them as stopped
+- after a tool result, a user line or the assistant's text: 28, 10.0 to 202.1 minutes; 27 went on with a new user line (the chick had stopped and was resumed), 1 with another tool's result 30.0 minutes later (calls made in parallel: the tail was one call's result while another call still ran)
+
+So the abandonment time depends on whether a tool is still open, not on the tail's kind alone:
+- `TailInfo.toolOpen` (new, `src/lib/transcript.ts`): within the tail window, a tool_use with no `tool_result` for its id after it. It covers the parallel case above, where the tail's kind is `tool_result`
+- `TailInfo.handedBack` (new, A): the last conversation line with a time is the `tool_result` of a `SubagentHandback` tool_use, or that tool_use itself (Claude Code writes the result about 0.1 to 0.5 seconds later). Any later conversation line (the resume's user line, the assistant) clears it. Read only from chick transcripts (`includeSidechain`)
+- `collectChickSignals` (B): a `queue-operation` whose content matches `^<agent-message from="([^"]+)">` and contains `[Subagent hand-back]` sets the signal of that id at the line's time, the latest winning as for `<task-notification>`. Both the enqueue and the remove carry it, so on a resume the remove comes after the chick's last write. The id is the chick's task-id (its file name), so `resolveChickDoneSignalAt` finds it and the chick is removed from the parent as a completed one (see "Removing birds of ended sessions")
+- `deriveState(isChick)`: after `closed`, `handedBack` gives done (dozing past `DOZE_MS`) as a completion signal does. Then, with no signal: a chick with no write for `CHICK_ABANDONED_MS` (10 minutes) and no open tool is dozing; one with an open tool is dozing after `CHICK_TOOL_ABANDONED_MS` (new, 2 hours: above the longest 66.8 minutes seen, so a chick that died in a tool doesn't hold its parent forever; Claude's own decision). Abandonment is in the state, so every reader of the state sees the same answer
+- `deriveSdkChickState`: the same `CHICK_TOOL_ABANDONED_MS` for a tool still open (it already gives done after `CHICK_TEXT_DONE_MS` otherwise)
+- `isChickRunning(chick)` (`src/lib/session-activity.ts`) becomes `chick.state === "working"`; the `sinceMs` check moves into the state above. Its readers: `deriveDoneEvent`, `wakeSourceOf`, `escalateWithChicks` (a chick makes its parent working only when `isChickRunning`), and the concierge's `chicks_working` (`src/lib/concierge.ts`), which counted `state === "working"` directly
+- What the user sees: a chick abandoned this way shows dozing, and its parent no longer shows working because of it
+
+Tests:
+- `tests/transcript*.test.ts`: `handedBack` set on a chick tail ending on the hand-back's result and on the hand-back's tool_use alone, cleared by a later user line; `toolOpen` for a tail of one result while another parallel call has none; `collectChickSignals` takes the hand-back `queue-operation` by its id and ignores an `<agent-message>` without `[Subagent hand-back]`
+- `tests/session-chicks*.test.ts` or a new one: the scene above with relative times (Agent call, hand-back, parent `tool_result`, SendMessage, chick resumes, hand-back 18 seconds after the parent's `tool_result`): the chick is done, and with only the parent's records (no `handedBack`) it is done too
+- `deriveState`: a chick on `tool_result` with no write for 10 minutes and no open tool is dozing; with an open tool it stays working until 2 hours
+- concierge payload: a parent ending its turn on a question with that chick gives no `chicks_working` and `needs_reply` true; `escalateWithChicks` keeps the parent's own state
+
 ## Side chats and forked sessions of the Claude desktop app
 
 Issue #13. The user: 「claudecodedesktopで、サイドチャットbtwがコンシェルジュにのこりつづけるもんだい」, then, about a side chat that had stopped: 「うごいてないのについばみ虫になっとるわ」.
