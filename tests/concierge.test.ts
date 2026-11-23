@@ -6,6 +6,7 @@ import {
   adviceNamesTarget,
   adviceTargetChanged,
   askConcierge,
+  withTargetName,
   buildConciergePayload,
   CONCIERGE_DEBOUNCE_MS,
   CONCIERGE_EVENT_LIMIT,
@@ -447,7 +448,7 @@ test("the name check: compared after NFKC and lower case, a cut name without its
   expect(adviceNamesTarget("確認", "")).toBe(false);
 });
 
-test("an advice about a session without its name is not shown, and is kept as dropped for the debug log", async () => {
+test("an advice about a session without its name is shown with the name put in front", async () => {
   const payload = buildConciergePayload(
     [{ view: view("y", { project: "yokai-no-sensei", state: "done" }) }, { view: view("a", { state: "working" }) }],
     [], [], NOW, "ja",
@@ -456,8 +457,7 @@ test("an advice about a session without its name is not shown, and is kept as dr
   const unnamed = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: answer as V });
   expect(await askConcierge("openai", payload, unnamed)).toEqual({
     ok: true,
-    verdict: null,
-    dropped: { line: answer.advice, targetId: "y", reason: "no_name" },
+    verdict: { line: "yokai-no-sensei: 完了したセッションの成果物を順に確認してください", targetId: "y" },
     answer,
   });
   // Without a target (none, or an id that wasn't sent) the advice is shown as before
@@ -1464,6 +1464,7 @@ test("sessions told apart by a number: an advice is checked against the numbered
     verdict: null,
     dropped: { targetId: "b1", reason: "other_session" },
   });
+  // Without its own name and with another session's, it isn't clear which session it is about: no name is put in
   const plainForSecond = { advice: "orbitの結果を確認してください", session_id: "b2", action: "check_result" };
   expect(await askConcierge("openai", payload, answering(plainForSecond))).toMatchObject({
     verdict: null,
@@ -1600,4 +1601,22 @@ test("the regression scene of a skipped session sends skipped for it, and only f
   const payload = buildConciergePayload(scene.sessions, scene.events ?? [], [], CASE_NOW, "ja");
   expect(payload.sessions.filter((s) => s.skipped).map((s) => s.id)).toEqual(["s-skip"]);
   expect(payload.sessions.filter((s) => s.needs_reply).map((s) => s.id)).toEqual(["s-skip", "s-u"]);
+});
+
+test("the reported reply advice without its session's name is shown with the name, not dropped", async () => {
+  // The app log: the session needing a reply was advised without its name and nothing was shown (made-up texts)
+  const payload = buildConciergePayload(
+    [
+      { view: view("k", { project: "app-x-chores-daily", state: "done", ask: { status: "asking" } }) },
+      { view: view("d", { project: "hub 2", state: "working" }) },
+    ],
+    [], [], NOW, "ja",
+  );
+  const answer = { advice: "古いマシンから鍵を移すのを許可して返信", session_id: "k", action: "reply" };
+  const run = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: answer as V });
+  expect(await askConcierge("openai", payload, run)).toMatchObject({
+    verdict: { line: "app-x-chores-daily: 古いマシンから鍵を移すのを許可して返信", targetId: "k" },
+    action: "reply",
+  });
+  expect(withTargetName({ line: "hub 2で返信", targetId: "k" }, payload.sessions)).toEqual({ line: "hub 2で返信", targetId: "k" });
 });

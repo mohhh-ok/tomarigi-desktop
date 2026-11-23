@@ -478,6 +478,18 @@ function adviceNamesOtherSession(line: string, target: PayloadSession, sessions:
   );
 }
 
+/**
+ * The advice with its session's name put in front ("<name>: <text>") when the AI left the name out, so it is shown
+ * rather than dropped (docs/design.md "Concierge"). Not when the text names another session sent: then it isn't clear
+ * which session it is about, and it is dropped as before (no_name). Without a target, or with the name, it is as given
+ */
+export function withTargetName(advice: ConciergeAdvice, sessions: PayloadSession[]): ConciergeAdvice {
+  const target = sessions.find((s) => s.id === advice.targetId);
+  if (!target || !unclip(target.name) || adviceNamesTarget(advice.line, target.name)) return advice;
+  if (sessions.some((s) => s.id !== target.id && adviceNamesTarget(advice.line, s.name))) return advice;
+  return { ...advice, line: `${target.name}: ${advice.line}` };
+}
+
 /** Numbers under this aren't taken as an elapsed time: session names carry small numbers ("orbit 2", "Claude
  * Code 2"), and so do choices ("A/B", two options), which would drop good text (Claude's own decision) */
 const MIN_ELAPSED_NUMBER = 10;
@@ -756,7 +768,8 @@ export async function askConcierge(
             : raw.suggestions,
         }
       : raw;
-  const parsed = parseConciergeVerdict(answer, new Set(payload.sessions.map((s) => s.id)));
+  const given = parseConciergeVerdict(answer, new Set(payload.sessions.map((s) => s.id)));
+  const parsed = given && withTargetName(given, payload.sessions);
   const action = actionOf(answer);
   const elapsed = elapsedNumbers(payload);
   const reason = parsed && dropReason(parsed, action, payload.sessions, true, elapsed);
