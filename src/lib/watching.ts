@@ -185,17 +185,19 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
  */
 export function askSentToParent(sessionId: string, sentTo: readonly string[] | undefined, world: LinkWorld): boolean {
   if (!sentTo || sentTo.length === 0) return false;
-  const peers = world.peers(sessionId);
-  const own = world.startedAt(sessionId);
+  const parents = parentsOf(sessionId, world);
   return sentTo.some((trace) => {
     const peer = world.sessionOf(trace);
-    return (
-      peer !== undefined &&
-      peer !== sessionId &&
-      peers.includes(peer) &&
-      isParentOf(candidateOf(peer, sessionId, world), own)
-    );
+    return peer !== undefined && parents.has(peer);
   });
+}
+
+/** The linked sessions that count as its parent (isParentOf), whether or not it is a child */
+function parentsOf(sessionId: string, world: LinkWorld): Set<string> {
+  const own = world.startedAt(sessionId);
+  return new Set(
+    world.peers(sessionId).filter((p) => p !== sessionId && isParentOf(candidateOf(p, sessionId, world), own)),
+  );
 }
 
 function candidateOf(peer: string, sessionId: string, world: LinkWorld): ParentCandidate {
@@ -213,8 +215,7 @@ function candidateOf(peer: string, sessionId: string, world: LinkWorld): ParentC
  */
 export function startersOf(sessionId: string, world: LinkWorld): Set<string> {
   if (!world.isChild(sessionId)) return new Set();
-  const own = world.startedAt(sessionId);
-  return new Set(world.peers(sessionId).filter((p) => isParentOf(candidateOf(p, sessionId, world), own)));
+  return parentsOf(sessionId, world);
 }
 
 export type LinkRelation = "starter" | "child" | "unrelated";
