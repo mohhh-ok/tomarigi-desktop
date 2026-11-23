@@ -3,6 +3,7 @@ import { pendingAskOf, type TailEvent, type TailInfo, type TurnProposals } from 
 import type { BirdState, ChickView, WaitingOn } from "./session-types";
 import { extractQuestion } from "./session-snippet";
 import { proposalQuestion } from "./proposals";
+import { CHICK_ABANDONED_MS, CHICK_TOOL_ABANDONED_MS } from "./session-activity";
 
 const WRITING_MS = 6_000; // recent write = working
 export const DOZE_MS = 5 * 60_000; // dozing once this long has passed since done
@@ -54,6 +55,15 @@ export function isWaitingTool(toolName: string | undefined): boolean {
 }
 
 /**
+ * A chick with no write for a while has stopped, whatever its tail looks like: when Claude Code reports a chick's end in a
+ * way the app doesn't read, this bounds how long it can look running. A chick with a tool open waits longer, as long tool
+ * runs are silent (docs/design.md "Chicks that have finished")
+ */
+function abandoned(tail: TailInfo, sinceMs: number): boolean {
+  return sinceMs >= (tail.toolOpen ? CHICK_TOOL_ABANDONED_MS : CHICK_ABANDONED_MS);
+}
+
+/**
  * chickDoneSignalAt: a chick's done/dozing check treats the parent ledger (chickSignals taken from
  * queue-operation/tool_result in the parent transcript, resolved by resolveChickDoneSignalAt in the caller
  * scanChicks) as the source of truth, not the tail's appearance (kind). This is the fix for an actual problem:
@@ -83,9 +93,12 @@ export function deriveState(
   // Chick-only priority check: if the parent ledger has a definite signal, return done/dozing regardless of
   // the tail's appearance (kind) (see the comment above). Checked before the sinceMs < WRITING_MS early return —
   // with a signal, the guess "there was a recent write, so it is working" no longer holds
-  if (isChick && chickDoneSignalAt !== undefined) {
+  // A chick that handed its report back to its caller has finished, by its own transcript (docs/design.md "Chicks that
+  // have finished")
+  if (isChick && (chickDoneSignalAt !== undefined || tail.handedBack)) {
     return sinceMs >= DOZE_MS ? "dozing" : "done";
   }
+  if (isChick && abandoned(tail, sinceMs)) return "dozing";
   // A turn Claude Code marked as over is done at once: a recent write is no sign of work then (docs/design.md "Bird
   // states")
   const ended = !isChick && tail.turnEnded === true && tail.kind === "assistant_text";
@@ -155,6 +168,7 @@ export function deriveState(
  */
 export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState {
   if (tail.kind === "closed") return "dozing";
+  if (tail.toolOpen && sinceMs >= CHICK_TOOL_ABANDONED_MS) return "dozing";
   if (sinceMs < WRITING_MS) return "working";
   switch (tail.kind) {
     case "tool_use":

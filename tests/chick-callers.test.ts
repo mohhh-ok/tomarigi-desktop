@@ -156,13 +156,13 @@ describe("scanChicks: where a chick's completion record is", () => {
       want: { a: "dozing", b: "dozing" },
     },
     {
-      name: "no record anywhere: the grandchild is still working",
+      name: "no record anywhere: the chick with a tool open is working, the grandchild silent for an hour is abandoned",
       parent: [agentCall(T0, "tu-a", false)],
       chicks: [
         { id: "a", depth: 1, toolUseId: "tu-a", lines: [agentCall(T0 + 1000, "tu-b", true)] },
         { id: "b", depth: 2, toolUseId: "tu-b", lines: endsOnToolResult(T0 + 59_000) },
       ],
-      want: { a: "working", b: "working" },
+      want: { a: "working", b: "dozing" },
     },
     {
       name: "a great-grandchild: the record is in the grandchild's transcript",

@@ -17,14 +17,17 @@ const WRITING_MS = 6 * SEC;
 const CHICK_TEXT_DONE_MS = 2 * MIN;
 const DOZE_MS = 5 * MIN;
 const CHICK_ABANDONED_MS = 10 * MIN;
+const CHICK_TOOL_ABANDONED_MS = 120 * MIN;
 const DONE_GRACE_MS = 30 * SEC;
 const BACKGROUND_TASK_STALE_MS = 30 * MIN;
 const CHICK_SIGNAL_EPSILON_MS = 5 * SEC;
 
+// A tail ending on a tool call has that tool open, as readTail gives it
 const tailOf = (kind: TailKind, toolName?: string, events: TailEvent[] = []): TailInfo => ({
   kind,
   toolName,
   events,
+  ...(kind === "tool_use" && { toolOpen: true as const }),
   chickSignals: new Map(),
   backgroundTaskStarts: new Map(),
   peerNames: new Map(),
@@ -79,7 +82,7 @@ describe("deriveState (chick)", () => {
 
   test("a question tool does not make a chick waiting", () => {
     expect(chickState("tool_use", 0, undefined, "AskUserQuestion")).toBe("working");
-    expect(chickState("tool_use", 60 * MIN, undefined, "AskUserQuestion")).toBe("working");
+    expect(chickState("tool_use", CHICK_TOOL_ABANDONED_MS - 1, undefined, "AskUserQuestion")).toBe("working");
   });
 
   test("with a completion signal it is done even right after a write, dozing from DOZE_MS", () => {
@@ -99,9 +102,25 @@ describe("deriveState (chick)", () => {
     expect(chickState("assistant_text", DOZE_MS)).toBe("dozing");
   });
 
-  test("without a signal, user / tool_result stay working", () => {
-    expect(chickState("user", 60 * MIN)).toBe("working");
-    expect(chickState("tool_result", 60 * MIN)).toBe("working");
+  test("without a signal, user / tool_result are working until CHICK_ABANDONED_MS, then abandoned (dozing)", () => {
+    for (const kind of ["user", "tool_result"] as const) {
+      expect(chickState(kind, CHICK_ABANDONED_MS - 1)).toBe("working");
+      expect(chickState(kind, CHICK_ABANDONED_MS)).toBe("dozing");
+    }
+  });
+
+  test("a chick with a tool open is abandoned only from CHICK_TOOL_ABANDONED_MS, whatever its tail's kind", () => {
+    expect(chickState("tool_use", CHICK_TOOL_ABANDONED_MS - 1, undefined, "Bash")).toBe("working");
+    expect(chickState("tool_use", CHICK_TOOL_ABANDONED_MS, undefined, "Bash")).toBe("dozing");
+    // calls made in parallel: the tail is one call's result while another still runs
+    const parallel: TailInfo = { ...tailOf("tool_result"), toolOpen: true };
+    expect(deriveState(parallel, 60 * MIN, true)).toBe("working");
+  });
+
+  test("a chick that handed back its report is done at once, dozing from DOZE_MS", () => {
+    const handedBack: TailInfo = { ...tailOf("tool_result"), handedBack: true };
+    expect(deriveState(handedBack, 0, true)).toBe("done");
+    expect(deriveState(handedBack, DOZE_MS, true)).toBe("dozing");
   });
 });
 
@@ -113,8 +132,9 @@ describe("deriveSdkChickState", () => {
     expect(sdk("tool_result", WRITING_MS - 1)).toBe("working");
   });
 
-  test("a running tool is working however long it is idle", () => {
-    expect(sdk("tool_use", 3 * 60 * MIN)).toBe("working");
+  test("a running tool is working until CHICK_TOOL_ABANDONED_MS", () => {
+    expect(sdk("tool_use", CHICK_TOOL_ABANDONED_MS - 1)).toBe("working");
+    expect(sdk("tool_use", CHICK_TOOL_ABANDONED_MS)).toBe("dozing");
   });
 
   test("assistant_text / user / tool_result: working, done from CHICK_TEXT_DONE_MS, dozing from DOZE_MS", () => {
@@ -202,11 +222,11 @@ describe("deriveDoneEvent", () => {
     expect(done({ chicks: [chick("done", now - t + 1)] })?.muted).toBeUndefined();
   });
 
-  test("a running chick suppresses it until it is abandoned (CHICK_ABANDONED_MS)", () => {
+  test("a running chick suppresses it until it is abandoned (deriveState makes it dozing)", () => {
     expect(done({ chicks: [chick("working", 0)] })).toBeNull();
     expect(done({ chicks: [chick("waiting", CHICK_ABANDONED_MS - 1)] })).toBeNull();
     // abandoned, and its last write was before the turn end: the normal path
-    const abandoned = done({ chicks: [chick("working", CHICK_ABANDONED_MS)] });
+    const abandoned = done({ chicks: [chick("dozing", CHICK_ABANDONED_MS)] });
     expect(abandoned?.type).toBe("done");
     expect(abandoned?.firedAt).toBeUndefined();
   });

@@ -208,7 +208,7 @@ export function deriveDoneEvent(
   // If this came after the wasAnyChickAliveAfterT check, on the first scan right after the parent's turn end
   // there is a moment where even a running chick's last write is still before T, and just at that moment
   // wasAnyChickAliveAfterT would be misjudged as false and fall through to the normal immediate-fire path
-  // Chicks stuck in working with no writes for CHICK_ABANDONED_MS are treated as abandoned and ignored
+  // An abandoned chick is already dozing (deriveState), so it doesn't hold done back
   if (chicks.some(isChickRunning)) return null;
 
   // A background task finished after T. As with chick release: muted if the parent has resumed; while waiting

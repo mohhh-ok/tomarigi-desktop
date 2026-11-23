@@ -11,6 +11,7 @@ import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
 import { replyWaitSource, waitsOnDeveloper } from "./turn-verdict";
 import { DOZE_MS } from "./bird-state";
+import { isChickRunning } from "./session-activity";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView, WaitingOn } from "./session-types";
 
@@ -195,7 +196,8 @@ export function buildConciergePayload(
   );
 
   const sessions = inputs.map(({ view, agent, line, parentId }): PayloadSession => {
-    const chicksWorking = (view.chicks ?? []).filter((c) => c.state === "working").length;
+    // A chick waiting on a reply is not counted here: it goes to holds below
+    const chicksWorking = (view.chicks ?? []).filter((c) => isChickRunning(c) && c.state !== "waiting").length;
     const ask = view.ask;
     // A parent takes over what it can answer (a reply that asks in a turn that sent the parent a message, a wrap_up's
     // ask), so that doesn't wait on the developer here; a permission prompt or a question tool does (parentCanAnswer;

@@ -114,8 +114,8 @@ describe("continuing from the reply's text and what can wake the session", () =>
     expect(wakeSourceOf({ ...(await ledgersOf(saysNextStep)), ...stopped, chicks: [{ state: "done", sinceMs: MIN }] })).toBe(false);
   });
 
-  test("an abandoned chick (its last line a tool_use, unwritten for over 10 minutes) doesn't hold it: continuing ends", async () => {
-    const abandoned = { state: "working" as const, sinceMs: 10 * MIN + 1 };
+  test("an abandoned chick (deriveState shows it dozing) doesn't hold it: continuing ends", async () => {
+    const abandoned = { state: "dozing" as const, sinceMs: 10 * MIN + 1 };
     const wakeable = wakeSourceOf({ ...(await ledgersOf(saysNextStep)), ...stopped, chicks: [abandoned] });
     expect(wakeable).toBe(false);
     const unwakeableForMs = unwakeableForMsOf("v", wakeable, T0 + 60_100, NOW);

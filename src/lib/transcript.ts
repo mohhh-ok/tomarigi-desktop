@@ -78,6 +78,13 @@ export interface TailInfo {
   // in lib/bird-state.ts). Any later line with a time clears it (a queued message, another session's message, the next
   // prompt may start the next turn). Absent for agents that write no such line, which keep the WRITING_MS rule
   turnEnded?: true;
+  // A tool call in the window has no result yet (a tool still running, also when the tail is the result of another call
+  // made in parallel). A chick with an open tool is abandoned only after CHICK_TOOL_ABANDONED_MS (deriveState in
+  // lib/bird-state.ts; docs/design.md "Chicks that have finished")
+  toolOpen?: true;
+  // The last conversation line is a hand-back to the caller (Claude Code's SubagentHandback tool_use, or its result):
+  // a chick that did this has finished, whatever the parent's records say. A later conversation line (a resume) clears it
+  handedBack?: true;
   // The session was handed over to another session (a `continued-in` line naming continuedInSessionId, written
   // when Claude Code moves the conversation to a background process). The old process can stay alive after
   // this, so lib/sessions.ts removes the bird as if the session had ended. Cleared if a user/assistant line
@@ -340,8 +347,7 @@ export async function scanChickSignals(
   return { signals, end: pos };
 
   function collectLine(line: string, out: Map<string, number>): void {
-    // Only these two kinds of line can carry a signal; skip JSON.parse for the rest
-    if (!line.includes(TASK_NOTIFICATION_TAG) && !line.includes("tool_result")) return;
+    if (!mayCarryChickSignal(line)) return;
     let entry: TranscriptEntry;
     try {
       entry = JSON.parse(line);
@@ -386,6 +392,8 @@ async function readWindow(
   const startSessionCalls = new Set<string>();
   let turnSentTo: string[] | undefined;
   let turnEnded = false;
+  const openTools = new Set<string>();
+  let handBackId: string | undefined;
   for (const line of lines) {
     if (!line.trim()) continue;
     let entry: TranscriptEntry;
@@ -444,6 +452,8 @@ async function readWindow(
     if (at !== null && !isIdleLine(entry) && !(entry.isSidechain && !includeSidechain)) turnEnded = isTurnEndLine(entry);
     const next = classify(entry, includeSidechain, startSessionCalls);
     if (!next) continue;
+    trackTools(entry, openTools);
+    handBackId = handBackOf(entry, next.kind, handBackId);
     continuedIn = undefined;
     kind = next.kind;
     toolName = next.toolName;
@@ -470,6 +480,8 @@ async function readWindow(
     peerNames,
     ...(turnSentTo && { lastTurnSentTo: [...new Set(turnSentTo)] }),
     ...(turnEnded && { turnEnded: true as const }),
+    ...(openTools.size > 0 && { toolOpen: true as const }),
+    ...(handBackId !== undefined && { handedBack: true as const }),
     lastEventAt,
     entrypoint,
     ...(continuedIn && { continuedIn }),
@@ -665,6 +677,15 @@ function collectWakes(
   }
 }
 
+// What a line has to contain for collectChickSignals to find a signal in it, so the whole-transcript scan skips JSON.parse
+// for the rest. Kept next to collectChickSignals: a signal it learns has to be added here too, or the scan misses it
+// once the line leaves the tail window
+const CHICK_SIGNAL_MARKERS = [TASK_NOTIFICATION_TAG, "tool_result", "[Subagent hand-back]"];
+
+function mayCarryChickSignal(line: string): boolean {
+  return CHICK_SIGNAL_MARKERS.some((m) => line.includes(m));
+}
+
 /**
  * Picks up definitive signals that a chick (subagent) has stopped from queue-operation lines and
  * user (tool_result) lines, and adds them to out (key = chick identifier, value = its timestamp).
@@ -683,6 +704,8 @@ function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string
     // backgroundTaskCache in lib/session-store.ts uses them as background task completion
     const n = taskNotificationOf(entry.content);
     if (n) out.set(n.taskId, at);
+    const handBack = typeof entry.content === "string" ? entry.content.match(HAND_BACK_MESSAGE)?.[1] : undefined;
+    if (handBack) out.set(handBack, at);
     return;
   }
   if (entry.type === "user") {
@@ -697,6 +720,31 @@ function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string
       if (b.type === "tool_result" && typeof b.tool_use_id === "string") out.set(b.tool_use_id, at);
     }
   }
+}
+
+/** The tool a chick calls to hand its report back to its caller and stop (Claude Code, docs/design.md "Chicks that
+    have finished") */
+const HAND_BACK_TOOL = "SubagentHandback";
+// The parent's record of a chick's hand-back: a queue-operation whose content starts with this, the chick's id in from
+const HAND_BACK_MESSAGE = /^<agent-message from="([^"]+)">\s*\[Subagent hand-back\]/;
+
+function trackTools(entry: TranscriptEntry, open: Set<string>): void {
+  for (const b of asBlocks(entry.message?.content)) {
+    if (entry.type === "assistant" && b.type === "tool_use" && b.id) open.add(b.id);
+    else if (entry.type === "user" && b.type === "tool_result" && b.tool_use_id) open.delete(b.tool_use_id);
+  }
+}
+
+/** The id of the hand-back the conversation ends on after this line, or undefined */
+function handBackOf(entry: TranscriptEntry, kind: TailKind, current: string | undefined): string | undefined {
+  const blocks = asBlocks(entry.message?.content);
+  if (kind === "tool_use") {
+    const call = blocks.findLast((b) => b.type === "tool_use");
+    return call?.name === HAND_BACK_TOOL ? (call.id ?? "") : undefined;
+  }
+  // Only the hand-back's own result keeps it; a result of another call means the chick went on
+  if (kind === "tool_result" && current !== undefined && blocks.every((b) => b.type !== "tool_result" || b.tool_use_id === current)) return current;
+  return undefined;
 }
 
 function parseTimestamp(timestamp: string | undefined): number | null {
