@@ -74,7 +74,7 @@ export function sessionContinuing(
   watching: number | undefined,
   sinceMs: number,
   unwakeableForMs?: number,
-): { continuing: boolean | undefined; expired: boolean; expiredForMs?: number } {
+): { continuing: boolean | undefined; expired: false } | { continuing: false; expired: true; expiredForMs: number } {
   if (watching !== undefined) return { continuing: true, expired: false };
   if (verdict === true && (sinceMs >= TEXT_CONTINUING_EXPIRES_MS || unwakeableForMs !== undefined)) {
     const expiredForMs = Math.max(sinceMs - TEXT_CONTINUING_EXPIRES_MS, unwakeableForMs ?? -Infinity);
@@ -97,12 +97,7 @@ export function withTurnVerdict(
       ? { continuing: s.continuing, expired: false }
       : sessionContinuing(turn?.continuing, s.watching, s.sinceMs, s.unwakeableForMs);
   const { continuing } = derived;
-  const expired = derived.expired
-    ? {
-        continuingExpired: true as const,
-        ...(derived.expiredForMs !== undefined && { continuingExpiredForMs: derived.expiredForMs }),
-      }
-    : {};
+  const expired = derived.expired ? { continuingExpired: { forMs: derived.expiredForMs } } : {};
   if (!s.reply) return continuing === undefined ? s : { ...s, continuing, ...expired };
   return {
     ...s,

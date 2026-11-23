@@ -9,7 +9,7 @@
 import type { JudgeErrorKind, JudgeResult, JudgeTaskDefinition } from "./judge";
 import { judgeRunnerFor, type JudgeRunner } from "./ai-judge";
 import { LOCAL_NO_MATCHING_JSON } from "./local-judge";
-import { replyWaitSource, TEXT_CONTINUING_EXPIRES_MS, waitsOnDeveloper } from "./turn-verdict";
+import { replyWaitSource, waitsOnDeveloper } from "./turn-verdict";
 import { DOZE_MS } from "./bird-state";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView, WaitingOn } from "./session-types";
@@ -837,9 +837,7 @@ export function conciergeTriggerClasses(views: SessionView[]): Map<string, Conci
         ? "reply"
         : v.state === "waiting"
           ? "working"
-          : v.state === "dozing" &&
-              v.continuingExpired &&
-              (v.continuingExpiredForMs ?? v.sinceMs - TEXT_CONTINUING_EXPIRES_MS) < DOZE_MS
+          : v.state === "dozing" && v.continuingExpired && v.continuingExpired.forMs < DOZE_MS
             ? "expired"
             : v.state,
     ]),

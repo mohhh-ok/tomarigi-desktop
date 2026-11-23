@@ -107,11 +107,9 @@ export interface SessionView {
   // The turn verdict said continuing, but TEXT_CONTINUING_EXPIRES_MS (lib/turn-verdict.ts) passed since the last write, or
   // nothing can wake the session (unwakeableForMs), so continuing is false. Asks the concierge once while dozing (the "expired" class of conciergeTriggerClasses in
   // lib/concierge.ts) and shows as continuing=expired in the app log; the concierge's payload only says continuing false.
-  // Set by App
-  continuingExpired?: true;
-  // How long ago continuing expired (with continuingExpired): the concierge counts the expiry as a finished turn for
-  // DOZE_MS after it (conciergeTriggerClasses in lib/concierge.ts). Set by App
-  continuingExpiredForMs?: number;
+  // Set by App. forMs is how long ago it expired: the concierge counts the expiry as a finished turn for DOZE_MS after it
+  // (conciergeTriggerClasses in lib/concierge.ts)
+  continuingExpired?: { forMs: number };
   // Claude Code only: nothing the app sees can start the session's next turn without the user (wakeSourceOf in
   // lib/session-wake.ts), and for this long (since its last write, or since the last thing that could wake it went).
   // Makes continuing from the reply's text false at once (sessionContinuing in lib/turn-verdict.ts). Absent while
