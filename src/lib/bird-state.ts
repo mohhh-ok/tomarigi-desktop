@@ -86,7 +86,10 @@ export function deriveState(
   if (isChick && chickDoneSignalAt !== undefined) {
     return sinceMs >= DOZE_MS ? "dozing" : "done";
   }
-  if (sinceMs < WRITING_MS) return "working";
+  // A turn Claude Code marked as over is done at once: a recent write is no sign of work then (docs/design.md "Bird
+  // states")
+  const ended = !isChick && tail.turnEnded === true && tail.kind === "assistant_text";
+  if (sinceMs < WRITING_MS && !ended) return "working";
   switch (tail.kind) {
     case "tool_use":
       // While a tool runs it is working regardless of how long it is idle (guessing a pending permission prompt was removed)

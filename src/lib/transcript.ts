@@ -66,6 +66,11 @@ export interface TailInfo {
   // peerNames names them; undefined when the window doesn't reach the prompt that started the turn. A parent takes over
   // the question a reply asks only when the turn sent it a message (askSentToParent in lib/watching.ts)
   lastTurnSentTo?: string[];
+  // The last line with a time (the away recap aside) is the one Claude Code writes when a turn is over (`system` /
+  // `turn_duration`): the session is done at once rather than working for WRITING_MS after its last write (deriveState
+  // in lib/bird-state.ts). Any later line with a time clears it (a queued message, another session's message, the next
+  // prompt may start the next turn). Absent for agents that write no such line, which keep the WRITING_MS rule
+  turnEnded?: true;
   // The session was handed over to another session (a `continued-in` line naming continuedInSessionId, written
   // when Claude Code moves the conversation to a background process). The old process can stay alive after
   // this, so lib/sessions.ts removes the bird as if the session had ended. Cleared if a user/assistant line
@@ -178,6 +183,12 @@ const CLOSING_SLASH_COMMANDS = ["/clear"];
 // 3,942 away_summary lines came more than 6 seconds after the last user / assistant line and were not followed by one
 // within 30 seconds. Other lines written late (queue-operation, api_error, ...) mostly start or belong to a turn and
 // still count (docs/design.md "Bird states")
+/** The line Claude Code writes once a turn is over. In the local transcripts it always came right after the turn's last
+ * assistant text (docs/design.md "Bird states") */
+function isTurnEndLine(entry: TranscriptEntry): boolean {
+  return entry.type === "system" && entry.subtype === "turn_duration";
+}
+
 function isIdleLine(entry: TranscriptEntry): boolean {
   return entry.type === "system" && entry.subtype === "away_summary";
 }
@@ -352,6 +363,7 @@ async function readWindow(
   let lookingForFirst = !truncated;
   const startSessionCalls = new Set<string>();
   let turnSentTo: string[] | undefined;
+  let turnEnded = false;
   for (const line of lines) {
     if (!line.trim()) continue;
     let entry: TranscriptEntry;
@@ -404,6 +416,9 @@ async function readWindow(
     if (entry.type === "continued-in" && typeof entry.continuedInSessionId === "string") {
       continuedIn = entry.continuedInSessionId;
     }
+    // Any later line with a time (a queued message, another session's message, the next prompt) may start the next
+    // turn; only the away recap doesn't count, as for lastEventAt
+    if (at !== null && !isIdleLine(entry) && !(entry.isSidechain && !includeSidechain)) turnEnded = isTurnEndLine(entry);
     const next = classify(entry, includeSidechain, startSessionCalls);
     if (!next) continue;
     continuedIn = undefined;
@@ -430,6 +445,7 @@ async function readWindow(
     backgroundTaskStarts,
     peerNames,
     ...(turnSentTo && { lastTurnSentTo: [...new Set(turnSentTo)] }),
+    ...(turnEnded && { turnEnded: true as const }),
     lastEventAt,
     entrypoint,
     ...(continuedIn && { continuedIn }),
