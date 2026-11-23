@@ -677,10 +677,18 @@ function collectWakes(
   }
 }
 
+/** The tool a chick calls to hand its report back to its caller and stop (Claude Code, docs/design.md "Chicks that
+    have finished") */
+const HAND_BACK_TOOL = "SubagentHandback";
+// The parent's record of a chick's hand-back: a queue-operation whose content starts with
+// `<agent-message from="<the chick's id>">` and this
+export const HAND_BACK_MARKER = "[Subagent hand-back]";
+const HAND_BACK_MESSAGE = new RegExp(`^<agent-message from="([^"]+)">\\s*${HAND_BACK_MARKER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
+
 // What a line has to contain for collectChickSignals to find a signal in it, so the whole-transcript scan skips JSON.parse
 // for the rest. Kept next to collectChickSignals: a signal it learns has to be added here too, or the scan misses it
 // once the line leaves the tail window
-const CHICK_SIGNAL_MARKERS = [TASK_NOTIFICATION_TAG, "tool_result", "[Subagent hand-back]"];
+const CHICK_SIGNAL_MARKERS = [TASK_NOTIFICATION_TAG, "tool_result", HAND_BACK_MARKER];
 
 function mayCarryChickSignal(line: string): boolean {
   return CHICK_SIGNAL_MARKERS.some((m) => line.includes(m));
@@ -721,12 +729,6 @@ function collectChickSignals(entry: TranscriptEntry, at: number, out: Map<string
     }
   }
 }
-
-/** The tool a chick calls to hand its report back to its caller and stop (Claude Code, docs/design.md "Chicks that
-    have finished") */
-const HAND_BACK_TOOL = "SubagentHandback";
-// The parent's record of a chick's hand-back: a queue-operation whose content starts with this, the chick's id in from
-const HAND_BACK_MESSAGE = /^<agent-message from="([^"]+)">\s*\[Subagent hand-back\]/;
 
 function trackTools(entry: TranscriptEntry, open: Set<string>): void {
   for (const b of asBlocks(entry.message?.content)) {

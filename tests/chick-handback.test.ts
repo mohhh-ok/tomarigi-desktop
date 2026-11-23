@@ -3,7 +3,7 @@
 // the user, at working, so the concierge didn't tell the user to answer (docs/design.md "Chicks that have finished")
 import { describe, expect, test } from "bun:test";
 import type { NativeDirectoryHandle, NativeFile } from "../src/lib/native-fs.ts";
-import { readTail } from "../src/lib/transcript.ts";
+import { HAND_BACK_MARKER, readTail, scanChickSignals } from "../src/lib/transcript.ts";
 import { scanChicks } from "../src/lib/session-chicks.ts";
 import { escalateWithChicks } from "../src/lib/bird-state.ts";
 import { buildConciergePayload } from "../src/lib/concierge.ts";
@@ -71,7 +71,7 @@ const handBackNotice = (at: number, operation: string, from: string) => ({
   type: "queue-operation",
   operation,
   timestamp: iso(at),
-  content: `<agent-message from="${from}">\n[Subagent hand-back] The text below is the final report of a subagent.`,
+  content: `<agent-message from="${from}">\n${HAND_BACK_MARKER} The text below is the final report of a subagent.`,
 });
 // Lines Claude Code writes with no time; they must not change anything
 const untimed = [
@@ -188,5 +188,11 @@ describe("readTail: hand-back, open tools and the hand-back notice", () => {
     expect(tail.chickSignals.get("x1")).toBe(T0 + SEC);
     const other = { type: "queue-operation", operation: "enqueue", timestamp: iso(T0), content: '<agent-message from="x2">\nhello' };
     expect((await readTail(fileOf("p.jsonl", [other]))).chickSignals.has("x2")).toBe(false);
+  });
+
+  test("the tail window and the whole-transcript scan read the hand-back notice alike", async () => {
+    const file = fileOf("p.jsonl", [handBackNotice(T0, "enqueue", "x1")]);
+    expect((await readTail(file)).chickSignals.get("x1")).toBe(T0);
+    expect((await scanChickSignals(file, 0)).signals.get("x1")).toBe(T0);
   });
 });
