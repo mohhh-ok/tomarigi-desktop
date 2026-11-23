@@ -61,8 +61,8 @@ test("a question passed on from another session, to be answered there, isn't ask
 });
 
 test("work handed to another session that is still going on is continuing, with no exceptions in the prompt", () => {
-  // The user: 「子がすすめてるならcontinuingにすべきやとおもうんやが？」. desk's reply ending with 「残りの audit 対応は、
-  // 今も子の `orbit-c9` が進めています。」 is continuing; before, the prompt said it wasn't, and Haiku said it was
+  // The user: 「子がすすめてるならcontinuingにすべきやとおもうんやが？」. app-o's reply ending with 「残りの audit 対応は、
+  // 今も子の `app-p-c9` が進めています。」 is continuing; before, the prompt said it wasn't, and Haiku said it was
   // in 15 of 16 runs anyway
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
     "work it handed to another session or a sub-agent is still going on (e.g. 'the rest is still being done by the child session')",

@@ -493,7 +493,7 @@ export function withTargetName(advice: ConciergeAdvice, sessions: PayloadSession
   return { ...advice, line: `${target.name}: ${advice.line}` };
 }
 
-/** Numbers under this aren't taken as an elapsed time: session names carry small numbers ("orbit 2", "Claude
+/** Numbers under this aren't taken as an elapsed time: session names carry small numbers ("app-p 2", "Claude
  * Code 2"), and so do choices ("A/B", two options), which would drop good text (Claude's own decision) */
 const MIN_ELAPSED_NUMBER = 10;
 

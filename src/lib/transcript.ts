@@ -499,7 +499,7 @@ function isInterruptedMessage(content: unknown): boolean {
  * Gets display names from slugs (the path with `/`→`-`). Not used for sessions whose cwd was read from
  * the tail (the primary approach is basename(cwd)). As a fallback when cwd is unavailable, it builds the
  * display name by stripping the prefix common to all slugs
- * (e.g. -Users-x-Dev-gyokan and -Users-x-Dev-ai-tools → gyokan / ai-tools).
+ * (e.g. -Users-x-Dev-app-r and -Users-x-Dev-ai-tools → app-r / ai-tools).
  * Known limits: separators cannot be told apart from hyphens inside words, and nothing is stripped when
  * only one slug is active under the root.
  */

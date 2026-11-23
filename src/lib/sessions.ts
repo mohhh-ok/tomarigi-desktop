@@ -99,7 +99,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
         rootId: f.rootId,
         rootLabel: f.rootLabel,
         // Only a name the user gave (Claude Code's /rename or --name). The one Claude Code makes up itself is the
-        // project's name with a random suffix (e.g. 「orbit-cc」), which says nothing about the session
+        // project's name with a random suffix (e.g. 「app-p-cc」), which says nothing about the session
         // (Claude's own decision, docs/design.md "Display names")
         sessionName: live?.nameSource === "user" ? live.name : undefined,
         startedAt: live?.startedAt,

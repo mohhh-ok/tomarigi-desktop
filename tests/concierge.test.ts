@@ -205,7 +205,7 @@ test("the system prompt asks for a reply only about a session that needs one now
 });
 
 test("watch links come from the caller; a linked session that needs a reply doesn't hold up the session watching it", () => {
-  // Whether the watcher waits on that answer depends on the work: desk that finished its daily and left orbit
+  // Whether the watcher waits on that answer depends on the work: app-o that finished its daily and left app-p
   // to ask in its own pane doesn't (the user: 「コンシェルジュがへんなことをいってる」). The linked session is advised
   // on its own as needing a reply
   const parent = view("p", {
@@ -223,33 +223,33 @@ test("watch links come from the caller; a linked session that needs a reply does
 });
 
 test("a watching parent whose turn ended with continuing no isn't held up, and an advice naming it is dropped for every provider", async () => {
-  // The user's case: desk finished its daily, said no decision was needed and left orbit to ask in its own
-  // pane; the concierge said 「orbitのWEB-46対応方法を選び、deskの作業を進めてください」
+  // The user's case: app-o finished its daily, said no decision was needed and left app-p to ask in its own
+  // pane; the concierge said 「app-pのWEB-46対応方法を選び、app-oの作業を進めてください」
   const payload = buildConciergePayload(
     [
       {
         view: view("1aeffcbc", {
-          project: "orbit",
+          project: "app-p",
           state: "done",
           sinceMs: 93_000,
           ask: { status: "asking" },
           continuing: true,
-          peers: [{ sessionId: "a752ec82", viewId: "a752ec82", name: "desk-1b", active: false }],
+          peers: [{ sessionId: "a752ec82", viewId: "a752ec82", name: "app-o-1b", active: false }],
         }),
         parentId: "a752ec82",
       },
       {
         view: view("a752ec82", {
-          project: "desk",
+          project: "app-o",
           state: "dozing",
           sinceMs: 622_000,
           ask: { status: "not_asking" },
           continuing: false,
           watching: 0,
-          peers: [{ sessionId: "1aeffcbc", viewId: "1aeffcbc", name: "orbit-be", active: false, lastActiveAt: NOW - 93_000 }],
+          peers: [{ sessionId: "1aeffcbc", viewId: "1aeffcbc", name: "app-p-be", active: false, lastActiveAt: NOW - 93_000 }],
         }),
       },
-      { view: view("3c25d1bb", { project: "orbit", state: "working", sinceMs: 6_000 }) },
+      { view: view("3c25d1bb", { project: "app-p", state: "working", sinceMs: 6_000 }) },
     ],
     [],
     [],
@@ -263,7 +263,7 @@ test("a watching parent whose turn ended with continuing no isn't held up, and a
     verdict: answer as V,
   });
   for (const provider of ["openai", "anthropic", "local"] as const) {
-    const mixed = { advice: "orbitのWEB-46対応方法を選び、deskの作業を進めてください", session_id: "1aeffcbc", action: "reply" };
+    const mixed = { advice: "app-pのWEB-46対応方法を選び、app-oの作業を進めてください", session_id: "1aeffcbc", action: "reply" };
     expect(await askConcierge(provider, payload, answering(mixed))).toEqual({
       ok: true,
       verdict: null,
@@ -272,7 +272,7 @@ test("a watching parent whose turn ended with continuing no isn't held up, and a
       answer: mixed,
     });
     // Another session with the same name doesn't count
-    const own = { advice: "orbitにWEB-46の対応方法を選んで返信してください", session_id: "1aeffcbc", action: "reply" };
+    const own = { advice: "app-pにWEB-46の対応方法を選んで返信してください", session_id: "1aeffcbc", action: "reply" };
     expect(await askConcierge(provider, payload, answering(own))).toMatchObject({
       verdict: { line: own.advice, targetId: "1aeffcbc" },
     });
@@ -421,7 +421,7 @@ test("the answer: empty advice is no advice; an id that wasn't sent leaves no ju
 
 test("while a session needs a reply, an advice about another session is not shown, and is kept as dropped", async () => {
   const payload = buildConciergePayload(
-    [{ view: view("t", { project: "tomarigi-desktop", state: "done" }) }, { view: view("b", { project: "orbit", state: "waiting" }) }],
+    [{ view: view("t", { project: "tomarigi-desktop", state: "done" }) }, { view: view("b", { project: "app-p", state: "waiting" }) }],
     [], [], NOW, "ja",
   );
   const answer = { advice: "完了したtomarigi-desktopの結果を確認", session_id: "t" };
@@ -432,8 +432,8 @@ test("while a session needs a reply, an advice about another session is not show
     dropped: { line: answer.advice, targetId: "t", reason: "not_waiting" },
     answer,
   });
-  const waiting = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "orbitの質問に答える", session_id: "b" } as V });
-  expect(await askConcierge("openai", payload, waiting)).toMatchObject({ verdict: { line: "orbitの質問に答える", targetId: "b" } });
+  const waiting = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "app-pの質問に答える", session_id: "b" } as V });
+  expect(await askConcierge("openai", payload, waiting)).toMatchObject({ verdict: { line: "app-pの質問に答える", targetId: "b" } });
   // With no session needing a reply, a finished session may be advised about
   const none = buildConciergePayload([{ view: view("t", { project: "tomarigi-desktop", state: "done" }) }], [], [], NOW, "ja");
   expect(await askConcierge("openai", none, finished)).toMatchObject({ verdict: { line: answer.advice, targetId: "t" } });
@@ -607,7 +607,7 @@ test("an advice to check the result of a session whose work goes on in the backg
 });
 
 test("an advice to check the result of a watched child, or of a parent watching a working child, is dropped for every provider", async () => {
-  // The user's cases: idle-render finished and its watching parent was already working on its report; orbit
+  // The user's cases: idle-render finished and its watching parent was already working on its report; app-p
   // finished its turn while the child it watches was still deploying
   const payload = buildConciergePayload(
     [
@@ -616,8 +616,8 @@ test("an advice to check the result of a watched child, or of a parent watching 
         view: view("idle", { project: "idle-render", state: "done", sinceMs: 30_000, ask: { status: "not_asking" } }),
         parentId: "1611c5c4",
       },
-      { view: view("2e080ac8", { project: "orbit", state: "done", sinceMs: 60_000, ask: { status: "not_asking" } }) },
-      { view: view("2cff8604", { project: "orbit-deploy", state: "working", sinceMs: 5_000 }), parentId: "2e080ac8" },
+      { view: view("2e080ac8", { project: "app-p", state: "done", sinceMs: 60_000, ask: { status: "not_asking" } }) },
+      { view: view("2cff8604", { project: "app-p-deploy", state: "working", sinceMs: 5_000 }), parentId: "2e080ac8" },
     ],
     [],
     [],
@@ -641,7 +641,7 @@ test("an advice to check the result of a watched child, or of a parent watching 
       action: "check_result",
       answer: child,
     });
-    const parent = { advice: "orbitのstagingデプロイ結果を確認してください", session_id: "2e080ac8", action: "check_result" };
+    const parent = { advice: "app-pのstagingデプロイ結果を確認してください", session_id: "2e080ac8", action: "check_result" };
     expect(await askConcierge(provider, payload, answering(parent))).toEqual({
       ok: true,
       verdict: null,
@@ -698,7 +698,7 @@ test("an advice that asks to reply about a session that doesn't need a reply is 
           ask: { status: "not_asking" },
         }),
       },
-      { view: view("q", { project: "orbit", state: "done", ask: { status: "asking" } }) },
+      { view: view("q", { project: "app-p", state: "done", ask: { status: "asking" } }) },
       { view: view("p", { project: "app-v", state: "waiting" }) },
     ],
     [],
@@ -720,7 +720,7 @@ test("an advice that asks to reply about a session that doesn't need a reply is 
       answer: reply,
     });
     // A "?" from the turn verdict and a session the machine says waits do need a reply
-    const asking = { advice: "orbitの質問に答える", session_id: "q", action: "reply" };
+    const asking = { advice: "app-pの質問に答える", session_id: "q", action: "reply" };
     expect(await askConcierge(provider, payload, answering(asking))).toMatchObject({
       verdict: { line: asking.advice, targetId: "q" },
     });
@@ -1190,7 +1190,7 @@ const suggestionPayload = () =>
       { view: view("root/d.jsonl", { project: "api", state: "done" }) },
       { view: view("root/k.jsonl", { project: "web" }) },
       { view: view("root/c.jsonl", { project: "render", state: "done", continuing: true }) },
-      { view: view("root/p.jsonl", { project: "desk", state: "done" }) },
+      { view: view("root/p.jsonl", { project: "app-o", state: "done" }) },
       { view: view("root/ch.jsonl", { project: "child", state: "done" }), parentId: "root/p.jsonl" },
     ],
     [],
@@ -1356,7 +1356,7 @@ describe("suggestions while a session needs a reply: replies first, then results
         { view: view("d", { project: "api", state: "done" }) },
         { view: view("e", { project: "docs", state: "done" }) },
         { view: view("c", { project: "render", state: "done", continuing: true }) },
-        { view: view("p", { project: "desk", state: "done" }) },
+        { view: view("p", { project: "app-o", state: "done" }) },
         { view: view("ch", { project: "child", state: "done" }), parentId: "p" },
         { view: view("q", { project: "lead", state: "done" }) },
         { view: view("qc", { project: "worker" }), parentId: "q" },
@@ -1446,8 +1446,8 @@ test("the tab asks no more often: what only changes a state line (a tool, a line
 test("sessions told apart by a number: an advice is checked against the numbered name (docs/design.md \"Display names\")", async () => {
   const payload = buildConciergePayload(
     [
-      { view: view("b1", { project: "orbit", state: "done" }) },
-      { view: view("b2", { project: "orbit 2", state: "done" }) },
+      { view: view("b1", { project: "app-p", state: "done" }) },
+      { view: view("b2", { project: "app-p 2", state: "done" }) },
     ],
     [], [], NOW, "ja",
   );
@@ -1455,17 +1455,17 @@ test("sessions told apart by a number: an advice is checked against the numbered
     ok: true,
     verdict: answer as V,
   });
-  const second = { advice: "orbit 2の結果を確認してください", session_id: "b2", action: "check_result" };
+  const second = { advice: "app-p 2の結果を確認してください", session_id: "b2", action: "check_result" };
   expect(await askConcierge("openai", payload, answering(second))).toMatchObject({ verdict: { line: second.advice, targetId: "b2" } });
-  const first = { advice: "orbitの結果を確認してください", session_id: "b1", action: "check_result" };
+  const first = { advice: "app-pの結果を確認してください", session_id: "b1", action: "check_result" };
   expect(await askConcierge("openai", payload, answering(first))).toMatchObject({ verdict: { line: first.advice, targetId: "b1" } });
-  const wrongName = { advice: "orbit 2の結果を確認してください", session_id: "b1", action: "check_result" };
+  const wrongName = { advice: "app-p 2の結果を確認してください", session_id: "b1", action: "check_result" };
   expect(await askConcierge("openai", payload, answering(wrongName))).toMatchObject({
     verdict: null,
     dropped: { targetId: "b1", reason: "other_session" },
   });
   // Without its own name and with another session's, it isn't clear which session it is about: no name is put in
-  const plainForSecond = { advice: "orbitの結果を確認してください", session_id: "b2", action: "check_result" };
+  const plainForSecond = { advice: "app-pの結果を確認してください", session_id: "b2", action: "check_result" };
   expect(await askConcierge("openai", payload, answering(plainForSecond))).toMatchObject({
     verdict: null,
     dropped: { targetId: "b2", reason: "no_name" },
@@ -1556,7 +1556,7 @@ test("a text with an elapsed number as a number of its own, in any language; not
   expect(writesElapsedTime("build 17701 is out", numbers)).toBe(false);
   expect(writesElapsedTime("tomarigi-desktopのv0.12.2公開を承認してください", numbers)).toBe(false);
   expect(writesElapsedTime("TikTok #186を今日投稿するか決めてください", numbers)).toBe(false);
-  expect(writesElapsedTime("orbit 2の結果を確認", new Set())).toBe(false);
+  expect(writesElapsedTime("app-p 2の結果を確認", new Set())).toBe(false);
 });
 
 test("an advice or a suggestion that writes an elapsed time it was given is not shown, and is logged with the reason", async () => {

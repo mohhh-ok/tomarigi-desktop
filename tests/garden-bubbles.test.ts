@@ -100,11 +100,11 @@ describe("layoutBubbles: max width", () => {
 
 describe("layoutBubbles: moving bubbles at the floor apart sideways", () => {
   test("the user's layout at 16:08: two bubbles 99.6px apart move apart and keep the 8px gap", () => {
-    const list = [bird("owl", 182.8, 300, 19.3), bird("desk", 282.4, 300, 17.7, true)];
+    const list = [bird("owl", 182.8, 300, 19.3), bird("app-o", 282.4, 300, 17.7, true)];
     const out = lay(list);
     expect(gap(out, list[0], list[1])).toBeCloseTo(8, 1);
     expect(out.get("owl")!.shift).toBeCloseTo(-14.2, 0);
-    expect(out.get("desk")!.shift).toBeCloseTo(14.2, 0);
+    expect(out.get("app-o")!.shift).toBeCloseTo(14.2, 0);
     for (const b of list) expect(Math.abs(out.get(b.id)!.shift)).toBeLessThanOrEqual(out.get(b.id)!.w / 2 - 12);
   });
 
@@ -229,14 +229,14 @@ describe("layoutBubbles: watch blocks", () => {
 
   test("bubble-long-watch at 749x442: a pair that can't be moved apart doesn't push a third bubble into an overlap", () => {
     // Measured in the DOM (garden px): block 2's parent stands right under block 1's parent, and its 5-line bubble goes
-    // above its icon onto block 1's. Before, that pair pushed orbit' bubble 48px left, 22px over desk's, which is
+    // above its icon onto block 1's. Before, that pair pushed app-p' bubble 48px left, 22px over app-o's, which is
     // held at the garden's left edge (26px apart without the push)
-    const heights: Record<string, number> = { desk: 63.4, orbit: 93.1, clips: 78.2, tomarigi: 93.1, "app-v": 78.2 };
+    const heights: Record<string, number> = { "app-o": 63.4, "app-p": 93.1, "app-q": 78.2, tomarigi: 93.1, "app-v": 78.2 };
     const place = (id: string, x: number, y: number) => ({ id, x, y, iconTop: 20, iconBottom: 50, inBlock: true });
     const list: LaidBird[] = [
-      place("desk", 78, 12),
-      place("orbit", 210, 12),
-      place("clips", 342, 12),
+      place("app-o", 78, 12),
+      place("app-p", 210, 12),
+      place("app-q", 342, 12),
       place("tomarigi", 210, 159),
       place("app-v", 493, 12),
       { id: "concierge", x: 491, y: 176, iconTop: 20, iconBottom: 50 },
@@ -247,11 +247,11 @@ describe("layoutBubbles: watch blocks", () => {
     );
     expect(out.get("tomarigi")!.above).toBe(true);
     const at = (id: string) => list.find((b) => b.id === id)!;
-    expect(gap(out, at("desk"), at("orbit"))).toBeGreaterThanOrEqual(8 - 1e-6);
-    expect(gap(out, at("tomarigi"), at("clips"))).toBeGreaterThanOrEqual(8 - 1e-6);
-    expect(gap(out, at("clips"), at("app-v"))).toBeGreaterThanOrEqual(8 - 1e-6);
-    // The pair itself still moves apart as far as the others let it: orbit by its 18px of room, tomarigi by 48px
-    expect(out.get("orbit")!.shift).toBeCloseTo(-18, 1);
+    expect(gap(out, at("app-o"), at("app-p"))).toBeGreaterThanOrEqual(8 - 1e-6);
+    expect(gap(out, at("tomarigi"), at("app-q"))).toBeGreaterThanOrEqual(8 - 1e-6);
+    expect(gap(out, at("app-q"), at("app-v"))).toBeGreaterThanOrEqual(8 - 1e-6);
+    // The pair itself still moves apart as far as the others let it: app-p by its 18px of room, tomarigi by 48px
+    expect(out.get("app-p")!.shift).toBeCloseTo(-18, 1);
     expect(out.get("tomarigi")!.shift).toBeCloseTo(48, 1);
     tailKept(out, list);
   });
@@ -296,8 +296,8 @@ const at = (id: string, x: number, y: number, inBlock = true): LaidBird => ({ id
 
 describe("layoutBubbles: past the garden's bottom, the window grows instead of hiding the bubble", () => {
   test("bubble-long-watch: a bubble past the bottom whose place above is taken stays below while the window can grow", () => {
-    const list = [at("desk", 78, 12), at("orbit", 210, 12), at("clips", 342, 12), at("tomarigi", 210, 159), at("app-v", 493, 12), at("concierge", 491, 176, false)];
-    const heights = { desk: 63.4, orbit: 93.1, clips: 78.2, tomarigi: 93.1, "app-v": 78.2 };
+    const list = [at("app-o", 78, 12), at("app-p", 210, 12), at("app-q", 342, 12), at("tomarigi", 210, 159), at("app-v", 493, 12), at("concierge", 491, 176, false)];
+    const heights = { "app-o": 63.4, "app-p": 93.1, "app-q": 78.2, tomarigi: 93.1, "app-v": 78.2 };
     const out = layoutBubbles(list, { w: 701, h: 310, growH: 720 }, watchMeasure(heights));
     expect(out.get("tomarigi")!.above).toBe(false);
     expect(allOverlap(out, list)).toBe(0);
@@ -338,8 +338,8 @@ describe("layoutBubbles: a pair that can't be moved apart sideways goes above", 
   });
 
   test("the user's 16:08 layout: the three crowded bubbles no longer overlap (53px before)", () => {
-    const list = [at("orbit", 318, 169), at("clips", 450, 169), at("desk", 186, 169), at("tomarigi", 493, 96), at("app-v", 158, 38), at("concierge", 549, 176, false)];
-    const heights = { orbit: 93.1, clips: 78.2, desk: 63.4, tomarigi: 93.1, "app-v": 78.2 };
+    const list = [at("app-p", 318, 169), at("app-q", 450, 169), at("app-o", 186, 169), at("tomarigi", 493, 96), at("app-v", 158, 38), at("concierge", 549, 176, false)];
+    const heights = { "app-p": 93.1, "app-q": 78.2, "app-o": 63.4, tomarigi: 93.1, "app-v": 78.2 };
     const out = layoutBubbles(list, { w: 701, h: 310 }, watchMeasure(heights));
     expect(allOverlap(out, list)).toBe(0);
     tailKept(out, list);
@@ -385,8 +385,8 @@ describe("layoutBubbles: above the name", () => {
 describe("layoutBubbles: past the garden's top, the window grows upward instead of leaving the overlap", () => {
   // The user's 16:08 layout, measured in the DOM (garden 701x310 in a 749x442 window): names 3px below each bird's top
   const at1608 = (id: string, x: number, y: number, inBlock = true): LaidBird => ({ ...at(id, x, y, inBlock), nameTop: 3 });
-  const list = [at1608("orbit", 318, 169), at1608("clips", 450, 169), at1608("desk", 186, 169), at1608("tomarigi", 493, 96), at1608("app-v", 158, 38), at1608("concierge", 549, 176, false)];
-  const heights = { orbit: 93.1, clips: 78.2, desk: 63.4, tomarigi: 93.1, "app-v": 78.2 };
+  const list = [at1608("app-p", 318, 169), at1608("app-q", 450, 169), at1608("app-o", 186, 169), at1608("tomarigi", 493, 96), at1608("app-v", 158, 38), at1608("concierge", 549, 176, false)];
+  const heights = { "app-p": 93.1, "app-q": 78.2, "app-o": 63.4, tomarigi: 93.1, "app-v": 78.2 };
 
   test("16:08: above its name tomarigi's bubble reaches 5px past the top; with room up there it goes there and nothing overlaps", () => {
     // Without room above (the window can't grow up), the overlap is left, the name not hidden

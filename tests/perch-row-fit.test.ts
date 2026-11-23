@@ -7,7 +7,7 @@ import { needsTwoLines, toolFits, type RowFit } from "../src/perch/perch-row-fit
 const row = (more: Partial<RowFit>): RowFit => ({ rowWidth: 278, nameLeft: 45, nameWidth: 100, statusWidth: 72, gap: 10, toolWidth: 0, ...more });
 
 test("a short name and its state fit on one line", () => {
-  expect(needsTwoLines(row({ nameWidth: 106, statusWidth: 55 }))).toBe(false); // orbit 2 · 完了 · 2分
+  expect(needsTwoLines(row({ nameWidth: 106, statusWidth: 55 }))).toBe(false); // app-p 2 · 完了 · 2分
 });
 
 test("a long name and its state don't", () => {
@@ -25,7 +25,7 @@ test("a fraction of a pixel over counts as not fitting, so the name is never cut
 });
 
 test("the same widths give the same answer for a narrower row", () => {
-  expect(needsTwoLines(row({ rowWidth: 198, nameWidth: 90, statusWidth: 79 }))).toBe(true); // orbit · 返事待ち · 1分 at 260px
+  expect(needsTwoLines(row({ rowWidth: 198, nameWidth: 90, statusWidth: 79 }))).toBe(true); // app-p · 返事待ち · 1分 at 260px
   expect(needsTwoLines(row({ rowWidth: 258, nameWidth: 90, statusWidth: 79 }))).toBe(false);
 });
 

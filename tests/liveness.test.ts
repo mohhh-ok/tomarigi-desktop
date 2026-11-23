@@ -310,19 +310,19 @@ describe("Claude Code", () => {
 
   test("a session of the Claude desktop app opens there before any terminal is looked for; its chick opens it too", async () => {
     const sid = "88888888-0000-4000-8000-000000000008";
-    const fx = claudeFixture("desk", sid, 2 * MIN);
+    const fx = claudeFixture("app-o", sid, 2 * MIN);
     fx.live(startProcess().pid!);
     await scanSessions(fx.roots);
     desktopSessions.add(sid);
     focusCalls.length = 0;
-    await focusSession(`desk/-tmp-desk/${sid}.jsonl`, fx.roots);
-    await focusSession(`desk/-tmp-desk/${sid}.jsonl/agent-a1.jsonl`, fx.roots);
+    await focusSession(`app-o/-tmp-app-o/${sid}.jsonl`, fx.roots);
+    await focusSession(`app-o/-tmp-app-o/${sid}.jsonl/agent-a1.jsonl`, fx.roots);
     expect(focusCalls).toEqual([`desktop:${sid}`, `desktop:${sid}`]);
     // Not one of the app's: its terminal pane, as before
     desktopSessions.delete(sid);
     focusResults.set(sid, "pane");
     focusCalls.length = 0;
-    await focusSession(`desk/-tmp-desk/${sid}.jsonl`, fx.roots);
+    await focusSession(`app-o/-tmp-app-o/${sid}.jsonl`, fx.roots);
     expect(focusCalls).toEqual([`${sid}+app`]);
   });
 

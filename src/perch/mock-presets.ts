@@ -425,9 +425,9 @@ export const PRESETS: Preset[] = [
     id: "bubble-long-watch",
     label: "Long speech bubbles (watching)",
     build: () => longWatch([
-      ["orbit", "Split the upload into chunks and retried the failed ones; the last 2 clips still need a check", [
-        ["clips-api", "Rewrote the retry so a timed-out chunk is sent again from where it stopped"],
-        ["desk", "Updated node and committed, watching bun and macOS"],
+      ["app-p", "Split the upload into chunks and retried the failed ones; the last 2 clips still need a check", [
+        ["app-q-api", "Rewrote the retry so a timed-out chunk is sent again from where it stopped"],
+        ["app-o", "Updated node and committed, watching bun and macOS"],
       ]],
       ["tomarigi-desktop", "Two sessions are fixing the garden's bubbles; I'll merge them when both are done", [
         ["bubbles", undefined],
@@ -845,8 +845,8 @@ export const PRESETS: Preset[] = [
       const raw: (Omit<SessionView, "project"> & { base: string; sessionName?: string })[] = [
         {
           id: "mock/same/bc-a",
-          base: "orbit",
-          slug: "orbit",
+          base: "app-p",
+          slug: "app-p",
           startedAt: BASE - 40 * 60_000,
           state: "waiting",
           sinceMs: 70_000,
@@ -854,8 +854,8 @@ export const PRESETS: Preset[] = [
         },
         {
           id: "mock/same/bc-b",
-          base: "orbit",
-          slug: "orbit",
+          base: "app-p",
+          slug: "app-p",
           startedAt: BASE - 20 * 60_000,
           state: "done",
           sinceMs: 2 * 60_000,
@@ -919,9 +919,9 @@ export const PRESETS: Preset[] = [
     build: () => ({
       sessions: [
         {
-          id: "mock/long/desk",
-          project: "desk",
-          slug: "desk",
+          id: "mock/long/app-o",
+          project: "app-o",
+          slug: "app-o",
           state: "waiting",
           sinceMs: 5 * 60_000,
           question: tr(
@@ -939,8 +939,8 @@ export const PRESETS: Preset[] = [
         },
         {
           id: "mock/long/api",
-          project: "orbit",
-          slug: "orbit",
+          project: "app-p",
+          slug: "app-p",
           state: "done",
           ...finished(
             3 * 60_000,
