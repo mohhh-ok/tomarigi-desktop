@@ -37,11 +37,11 @@ export function keptAnger(list: Iterable<[string, TurnOutcome]>, sessionId: stri
   return latest;
 }
 
-/** The anger of the newer turn */
+/** The anger of the newer turn. For the same turn the later answer, b, is taken */
 export function newerAnger(a: Anger | undefined, b: Anger | undefined): Anger | undefined {
   if (!a) return b;
   if (!b) return a;
-  return b.at > a.at ? b : a;
+  return b.at >= a.at ? b : a;
 }
 
 /** The list with key's verdict added last. A key already kept keeps its first verdict */

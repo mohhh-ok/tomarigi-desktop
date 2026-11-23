@@ -93,4 +93,9 @@ describe("anger mark from kept verdicts", () => {
     expect(newerAnger(undefined, kept)).toEqual(kept);
     expect(newerAnger(kept, undefined)).toEqual(kept);
   });
+
+  test("for the same turn, the later answer is taken", () => {
+    const later = { at: 100, angry: false };
+    expect(newerAnger({ at: 100, angry: true }, later)).toBe(later);
+  });
 });

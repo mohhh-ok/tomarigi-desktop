@@ -111,8 +111,8 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         setAnger((current) => {
           const before = current[id];
           // An answer for an older turn that comes after a newer one doesn't overwrite it
-          if (before && before.at > reply.at) return current;
-          return { ...current, [id]: { at: reply.at, angry: nextAngry(before?.angry ?? false, outcome) } };
+          const after = newerAnger(before, { at: reply.at, angry: nextAngry(before?.angry ?? false, outcome) });
+          return after === before ? current : { ...current, [id]: after! };
         });
       })();
     }
