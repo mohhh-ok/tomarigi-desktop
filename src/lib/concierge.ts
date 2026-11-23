@@ -836,7 +836,9 @@ export function conciergeTriggerClasses(views: SessionView[]): Map<string, Conci
         ? "reply"
         : v.state === "waiting"
           ? "working"
-          : v.state === "dozing" && v.continuingExpired && v.sinceMs < TEXT_CONTINUING_EXPIRES_MS + DOZE_MS
+          : v.state === "dozing" &&
+              v.continuingExpired &&
+              (v.continuingExpiredForMs ?? v.sinceMs - TEXT_CONTINUING_EXPIRES_MS) < DOZE_MS
             ? "expired"
             : v.state,
     ]),

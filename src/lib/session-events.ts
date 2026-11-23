@@ -17,7 +17,7 @@ const DONE_GRACE_MS = 30_000;
 // An escape hatch for when the notification line is missed (more than 64KB written between 3-second polls,
 // timers throttled in a hidden tab, etc.) and suppression would never lift. A done released this way has an
 // old at=T, so App.tsx's freshness guard keeps it silent (i.e. this value doesn't cause false fires)
-const BACKGROUND_TASK_STALE_MS = 30 * 60_000;
+export const BACKGROUND_TASK_STALE_MS = 30 * 60_000;
 
 /**
  * Derives a session's transition events (started, waiting for reply, done, closed) from the tail's event list.

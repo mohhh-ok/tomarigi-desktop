@@ -55,6 +55,13 @@ export interface TailInfo {
   // the tail window within tens of seconds, so the ledger is kept across scans in lib/session-store.ts
   // (backgroundTaskCache)
   backgroundTaskStarts: Map<string, number>;
+  // What the session set up to wake itself later, Claude Code's own tools (docs/design.md "Turn verdicts"): a
+  // ScheduleWakeup (key "wakeup": one pending at a time, a new one replaces it), a CronCreate ("cron:<id>") and a Monitor
+  // ("monitor:<task id>"), from the results confirming them. until is when it fires or expires (absent for a recurring
+  // cron or a persistent monitor). ends are when one was cancelled or stopped: ScheduleWakeup's stop, CronDelete, TaskStop,
+  // or a monitor's <task-notification> with a <status> (its events come without one). Absent when there is none. Like
+  // backgroundTaskStarts, these lines leave the tail window, so lib/session-store.ts keeps a ledger (wakeCache)
+  wakes?: { starts: Map<string, { at: number; until?: number }>; ends: Map<string, number> };
   // Names of the peers exchanged with via cross-session messages (Claude Code's cross-session messaging).
   // On the sending side it is the recipient of the SendMessage tool call (input.to); on the receiving side
   // it is origin.name on the isMeta user line (or <cross-session-message from-name="…"> in the body if
@@ -140,7 +147,20 @@ interface TranscriptEntry {
   // seconds after launch)
   // backgroundTaskId is the task-id on the launch confirmation of a command started with run_in_background
   // (see TailInfo.backgroundTaskStarts)
-  toolUseResult?: { isAsync?: boolean; backgroundTaskId?: string };
+  // scheduledFor / stopped are on a ScheduleWakeup result, id / nextFireAt / recurring on a CronCreate result, and taskId /
+  // timeoutMs / persistent on a Monitor result (see TailInfo.wakes)
+  toolUseResult?: {
+    isAsync?: boolean;
+    backgroundTaskId?: string;
+    scheduledFor?: unknown;
+    stopped?: unknown;
+    id?: unknown;
+    nextFireAt?: unknown;
+    recurring?: unknown;
+    taskId?: unknown;
+    timeoutMs?: unknown;
+    persistent?: unknown;
+  };
   // Sender on the isMeta user line that received a cross-session message (kind: "peer" and name)
   // from is the sender's address; for a Claude desktop app session it is its local_… id (docs/design.md "Watching")
   origin?: { kind?: unknown; name?: unknown; from?: unknown };
@@ -359,6 +379,8 @@ async function readWindow(
   const chickSignals = new Map<string, number>();
   const backgroundTaskStarts = new Map<string, number>();
   const peerNames = new Map<string, number>();
+  const wakeStarts = new Map<string, { at: number; until?: number }>();
+  const wakeEnds = new Map<string, number>();
   // The first prompt is seen only when the window starts at the top of the file
   let lookingForFirst = !truncated;
   const startSessionCalls = new Set<string>();
@@ -405,6 +427,7 @@ async function readWindow(
     if (at !== null && typeof backgroundTaskId === "string" && backgroundTaskId) {
       backgroundTaskStarts.set(backgroundTaskId, at);
     }
+    if (at !== null && !(entry.isSidechain && !includeSidechain)) collectWakes(entry, at, wakeStarts, wakeEnds);
     // Traces of cross-session messages are picked up separately from classify() (which skips isMeta)
     if (at !== null && !(entry.isSidechain && !includeSidechain)) {
       for (const name of collectPeerNames(entry)) {
@@ -443,6 +466,7 @@ async function readWindow(
     cwd,
     chickSignals,
     backgroundTaskStarts,
+    ...((wakeStarts.size > 0 || wakeEnds.size > 0) && { wakes: { starts: wakeStarts, ends: wakeEnds } }),
     peerNames,
     ...(turnSentTo && { lastTurnSentTo: [...new Set(turnSentTo)] }),
     ...(turnEnded && { turnEnded: true as const }),
@@ -578,7 +602,64 @@ function startsTurn(entry: TranscriptEntry): boolean {
 }
 
 const TASK_NOTIFICATION_TAG = "<task-notification>";
+const TASK_STATUS_TAG = "<status>";
 const TASK_ID_PATTERN = /<task-id>([^<]+)<\/task-id>/;
+
+const finiteNumber = (v: unknown): number | undefined => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
+const nonEmptyString = (v: unknown): string | undefined => (typeof v === "string" && v ? v : undefined);
+
+/**
+ * Picks up what the session set up to wake itself and what cancelled or ended it (see TailInfo.wakes). Each result is
+ * told by its own fields, as Claude Code writes them in toolUseResult; the cancelling calls by their tool_use input
+ */
+function collectWakes(
+  entry: TranscriptEntry,
+  at: number,
+  starts: Map<string, { at: number; until?: number }>,
+  ends: Map<string, number>,
+): void {
+  if (entry.type === "queue-operation" || (entry.type === "user" && typeof entry.message?.content === "string")) {
+    const text = entry.type === "queue-operation" ? entry.content : entry.message?.content;
+    if (typeof text === "string" && text.includes(TASK_NOTIFICATION_TAG) && text.includes(TASK_STATUS_TAG)) {
+      const taskId = text.match(TASK_ID_PATTERN)?.[1];
+      if (taskId) ends.set(`monitor:${taskId}`, at);
+    }
+    return;
+  }
+  if (entry.type === "assistant") {
+    for (const b of asBlocks(entry.message?.content)) {
+      if (b.type !== "tool_use") continue;
+      const input = (typeof b.input === "object" && b.input !== null ? b.input : {}) as Record<string, unknown>;
+      if (b.name === "CronDelete") {
+        const id = nonEmptyString(input.id);
+        if (id) ends.set(`cron:${id}`, at);
+      } else if (b.name === "TaskStop") {
+        const id = nonEmptyString(input.task_id) ?? nonEmptyString(input.shell_id);
+        if (id) ends.set(`monitor:${id}`, at);
+      }
+    }
+    return;
+  }
+  const r = entry.type === "user" ? entry.toolUseResult : undefined;
+  if (!r || typeof r !== "object") return;
+  const scheduledFor = finiteNumber(r.scheduledFor);
+  if (scheduledFor !== undefined) {
+    if (r.stopped === true || scheduledFor <= 0) ends.set("wakeup", at);
+    else starts.set("wakeup", { at, until: scheduledFor });
+    return;
+  }
+  const cronId = nonEmptyString(r.id);
+  const nextFireAt = finiteNumber(r.nextFireAt);
+  if (cronId && nextFireAt !== undefined) {
+    starts.set(`cron:${cronId}`, r.recurring === true ? { at } : { at, until: nextFireAt });
+    return;
+  }
+  const monitorId = nonEmptyString(r.taskId);
+  const timeoutMs = finiteNumber(r.timeoutMs);
+  if (monitorId && timeoutMs !== undefined) {
+    starts.set(`monitor:${monitorId}`, r.persistent === true ? { at } : { at, until: at + timeoutMs });
+  }
+}
 
 /**
  * Picks up definitive signals that a chick (subagent) has stopped from queue-operation lines and

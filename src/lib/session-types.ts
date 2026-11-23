@@ -104,11 +104,19 @@ export interface SessionView {
   // The turn verdict's continuing for the reply's turn: the session's work goes on in the background after the turn
   // (docs/design.md "Turn verdicts"). A fact for the concierge only; the bird's look doesn't change. Set by App
   continuing?: boolean;
-  // The turn verdict said continuing, but TEXT_CONTINUING_EXPIRES_MS (lib/turn-verdict.ts) passed since the last write,
-  // so continuing is false. Asks the concierge once while dozing (the "expired" class of conciergeTriggerClasses in
+  // The turn verdict said continuing, but TEXT_CONTINUING_EXPIRES_MS (lib/turn-verdict.ts) passed since the last write, or
+  // nothing can wake the session (unwakeableForMs), so continuing is false. Asks the concierge once while dozing (the "expired" class of conciergeTriggerClasses in
   // lib/concierge.ts) and shows as continuing=expired in the app log; the concierge's payload only says continuing false.
   // Set by App
   continuingExpired?: true;
+  // How long ago continuing expired (with continuingExpired): the concierge counts the expiry as a finished turn for
+  // DOZE_MS after it (conciergeTriggerClasses in lib/concierge.ts). Set by App
+  continuingExpiredForMs?: number;
+  // Claude Code only: nothing the app sees can start the session's next turn without the user (wakeSourceOf in
+  // lib/session-wake.ts), and for this long (since its last write, or since the last thing that could wake it went).
+  // Makes continuing from the reply's text false at once (sessionContinuing in lib/turn-verdict.ts). Absent while
+  // something can wake it, and where the app can't tell (Codex, SDK sessions)
+  unwakeableForMs?: number;
   // The messages a person typed in the stopped turn, oldest first (turnUserMessages in lib/session-tail.ts). Input
   // for the abuse verdict (docs/design.md "Anger mark for abuse toward the AI"). Untrusted input; never shown
   userMessages?: { at: number; text: string }[];
@@ -202,6 +210,10 @@ export interface ChickScan {
 
 // A background task (run_in_background) in the parent's ledger (backgroundTaskCache in lib/session-store.ts)
 export type BackgroundTask = { startedAt: number; endedAt?: number };
+
+// Something the session set up to wake itself (ScheduleWakeup, CronCreate, Monitor) in its ledger (wakeCache in
+// lib/session-store.ts): when it was set up, when it fires or expires (absent: no end of its own), and when it was cancelled
+export type Wake = { at: number; until?: number; endedAt?: number };
 
 export interface LiveSession {
   pid: number;

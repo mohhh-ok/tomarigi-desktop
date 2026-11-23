@@ -23,6 +23,7 @@ import { loadAgentProcesses, type AgentProcessScan } from "./agent-processes";
 import { deriveSdkChickState, deriveState, escalateWithChicks, replyWaitOf, STATE_URGENCY } from "./bird-state";
 import { pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
+import { rootsWithFreshUnlinkedChild, unwakeableForMsOf, updateWakes, wakeSourceOf } from "./session-wake";
 import { cacheEvent, recentEvents, saveEventLogIfDirty } from "./session-event-log";
 import { rememberPeerStates, resolveWatchLinks, type WatchLinks } from "./session-watch";
 import { displayNamesOf, type DisplayName } from "./display-names";
@@ -160,8 +161,24 @@ function buildViews(
   const views: SessionView[] = [];
   // Which sessions a parent takes over (docs/design.md "Watching", "Sessions started by another session")
   const linkWorld = takenOverWorld(watch);
+  // Where a child started by another session isn't linked to anyone yet (docs/design.md "Turn verdicts")
+  const freshChildRoots = rootsWithFreshUnlinkedChild(
+    withTail
+      .filter((f) => f.agent === "claude" && !f.isSdk)
+      .map((f) => {
+        const sessionId = sessionIdOfViewId(f.id);
+        return {
+          rootId: f.rootId,
+          sessionId,
+          startedBySession: watch.childOf(f.id),
+          linked: watch.peerLinksOf(sessionId).length > 0,
+          startedAt: watch.liveBySessionId.get(sessionId)?.startedAt,
+        };
+      }),
+    now,
+  );
 
-  for (const { file, id, chicks, tail, base, slug, isSdk } of withTail) {
+  for (const { file, id, chicks, tail, base, slug, isSdk, agent, rootId } of withTail) {
     // The time basis for the state check is tail.lastEventAt (the last time of a line with a timestamp).
     // Later appends without a timestamp (last-prompt etc., a touch on a dead transcript hours later) only
     // advance file.lastModified, so using mtime as the basis makes ended sessions reappear (see the comment on
@@ -229,6 +246,21 @@ function buildViews(
     feedTurnMessages(id, tail.events);
     // The messages of the stopped turn go with its turn verdict (docs/design.md "Turn verdicts")
     const userMessages = reply ? turnUserMessages(id, reply.at) : undefined;
+    const backgroundTasks = updateBackgroundTasks(id, tail);
+    const wakes = updateWakes(id, tail);
+    // Only Claude Code's own sessions: a Codex session's wakes aren't read, and an SDK session is run by its caller
+    const wakeable =
+      agent === "claude" && !isSdk
+        ? wakeSourceOf({
+            backgroundTasks,
+            wakes,
+            // Not SDK chicks: they are processes running alongside, not work the session started (see subagentChickViews)
+            chicks: subagentChickViews.filter((c) => !completedChickIds.has(c.id)),
+            freshUnlinkedChild: freshChildRoots.has(rootId),
+            now,
+          })
+        : undefined;
+    const unwakeableForMs = wakeable === undefined ? undefined : unwakeableForMsOf(id, wakeable, writtenAt, now);
     views.push({
       id,
       project,
@@ -252,10 +284,10 @@ function buildViews(
       ...(watch.childOf(id) && { child: true as const }),
       cwd: tail.cwd,
       startedAt: watch.liveBySessionId.get(sessionIdOfViewId(id))?.startedAt,
+      ...(unwakeableForMs !== undefined && { unwakeableForMs }),
     });
     // Only done also looks at the chicks' (subagents') status: while a chick is running it is still too early
     // as a "come back" signal. SDK chicks are not included here (see the comment above)
-    const backgroundTasks = updateBackgroundTasks(id, tail);
     const peerChicks = peerHoldChicks(watched, (sessionId) => lastPeerStates.get(sessionId), now);
     for (const event of deriveSessionEvents(
       tail,

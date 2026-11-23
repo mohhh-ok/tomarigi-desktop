@@ -63,17 +63,23 @@ export const TEXT_CONTINUING_EXPIRES_MS = 30 * 60_000;
  * Whether the session's work goes on after its turn (a fact for the concierge). A watching session (a linked session
  * moves, or moved within the grace period) is continuing whatever its reply says; otherwise it is the turn verdict's
  * continuing, absent when there is none. continuing from the verdict (the reply's text) expires
- * TEXT_CONTINUING_EXPIRES_MS after the last write (sinceMs): then continuing is false and expired is true, so the app
- * log can tell it from a verdict of no (docs/design.md "Turn verdicts"). Rebuilt on every poll, so it expires as time
- * passes, without a new write
+ * TEXT_CONTINUING_EXPIRES_MS after the last write (sinceMs), and at once when nothing the app sees can wake the session
+ * (unwakeableForMs given: a Claude Code session doesn't go on by itself after its turn; wakeSourceOf in
+ * lib/session-wake.ts). Then continuing is false, expired is true (so the app log can tell it from a verdict of no), and
+ * expiredForMs is how long ago the earlier of the two came (docs/design.md "Turn verdicts"). Rebuilt on every poll, so it
+ * expires as time passes, without a new write
  */
 export function sessionContinuing(
   verdict: boolean | undefined,
   watching: number | undefined,
   sinceMs: number,
-): { continuing: boolean | undefined; expired: boolean } {
+  unwakeableForMs?: number,
+): { continuing: boolean | undefined; expired: boolean; expiredForMs?: number } {
   if (watching !== undefined) return { continuing: true, expired: false };
-  if (verdict === true && sinceMs >= TEXT_CONTINUING_EXPIRES_MS) return { continuing: false, expired: true };
+  if (verdict === true && (sinceMs >= TEXT_CONTINUING_EXPIRES_MS || unwakeableForMs !== undefined)) {
+    const expiredForMs = Math.max(sinceMs - TEXT_CONTINUING_EXPIRES_MS, unwakeableForMs ?? -Infinity);
+    return { continuing: false, expired: true, expiredForMs };
+  }
   return { continuing: verdict, expired: false };
 }
 
@@ -86,12 +92,17 @@ export function withTurnVerdict(
   s: SessionView,
   turn: { ask?: AskJudgement; line?: string; continuing?: boolean } | undefined,
 ): SessionView {
-  const derived =
+  const derived: ReturnType<typeof sessionContinuing> =
     s.continuing !== undefined
       ? { continuing: s.continuing, expired: false }
-      : sessionContinuing(turn?.continuing, s.watching, s.sinceMs);
+      : sessionContinuing(turn?.continuing, s.watching, s.sinceMs, s.unwakeableForMs);
   const { continuing } = derived;
-  const expired = derived.expired ? { continuingExpired: true as const } : {};
+  const expired = derived.expired
+    ? {
+        continuingExpired: true as const,
+        ...(derived.expiredForMs !== undefined && { continuingExpiredForMs: derived.expiredForMs }),
+      }
+    : {};
   if (!s.reply) return continuing === undefined ? s : { ...s, continuing, ...expired };
   return {
     ...s,

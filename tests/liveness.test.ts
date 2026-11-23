@@ -357,6 +357,24 @@ describe("Claude Code", () => {
   });
 });
 
+describe("Claude Code: whether something can wake a stopped session", () => {
+  test("nothing running gives unwakeableForMs; a background command started in the session clears it", async () => {
+    const sid = "66666666-0000-4000-8000-000000000006";
+    const fx = claudeFixture("wake", sid, 2 * MIN);
+    const proc = startProcess();
+    fx.live(proc.pid!);
+    expect((await scanTwice(fx.roots)).views[0].unwakeableForMs).toBeGreaterThanOrEqual(2 * MIN);
+
+    fs.appendFileSync(
+      fx.transcript,
+      line({ type: "user", timestamp: iso(MIN), toolUseResult: { backgroundTaskId: "bgwake1" }, message: { role: "user", content: [{ type: "tool_result", tool_use_id: "tw1", content: "started" }] } }) +
+        line({ type: "assistant", timestamp: iso(MIN), message: { role: "assistant", content: [{ type: "text", text: "It runs in the background." }] } }),
+    );
+    setMtime(fx.transcript, MIN);
+    expect((await scanSessions(fx.roots)).views[0].unwakeableForMs).toBeUndefined();
+  });
+});
+
 describe("Claude Code liveness reads", () => {
   const sid = (n: number) => `88888888-0000-4000-8000-${String(n).padStart(12, "0")}`;
   const liveRead = (config: string, sessions: object[], reliable = true) =>

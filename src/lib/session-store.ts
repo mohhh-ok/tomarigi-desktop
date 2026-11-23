@@ -4,7 +4,7 @@
 import type { FirstPrompt } from "./watching";
 import type { LatestTurn } from "./watching-turns";
 import type { TailInfo } from "./transcript";
-import type { BackgroundTask, BirdState, ChickMeta, FoundEntry, SessionEvent } from "./session-types";
+import type { BackgroundTask, BirdState, ChickMeta, FoundEntry, SessionEvent, Wake } from "./session-types";
 
 interface CacheEntry {
   size: number;
@@ -40,6 +40,13 @@ export const turnMessageCache = new Map<
 // Completion is filled from the parent tail's chickSignals (task-id → time from <task-notification>).
 // Used for the suppression check in deriveDoneEvent
 export const backgroundTaskCache = new Map<string, Map<string, BackgroundTask>>();
+// key: session id. Ledger of what the session set up to wake itself (TailInfo.wakes; key as there), kept for the same
+// reason as backgroundTaskCache. Used for sessionContinuing in lib/turn-verdict.ts (pendingWakeOf in lib/session-wake.ts)
+export const wakeCache = new Map<string, Map<string, Wake>>();
+// key: session (view id). Since when nothing can wake the session, for the write it has made last (writtenAt): lostAt is
+// that write when nothing could wake it from the first scan that saw it, or the first scan that found the last wake gone.
+// Absent lostAt: something could wake it at that write. Gives SessionView.unwakeableForMs
+export const unwakeableCache = new Map<string, { writtenAt: number; lostAt?: number }>();
 
 // Watching (docs/design.md "Watching"): per session (view id), the names of peers it exchanged inter-session
 // messages with and the latest time for each. Kept across scans so that traces that left the tail window remain
@@ -132,6 +139,8 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   for (const key of snippetCache.keys()) if (!liveIds.has(key)) snippetCache.delete(key);
   for (const key of turnMessageCache.keys()) if (!liveIds.has(key)) turnMessageCache.delete(key);
   for (const key of backgroundTaskCache.keys()) if (!liveIds.has(key)) backgroundTaskCache.delete(key);
+  for (const key of wakeCache.keys()) if (!liveIds.has(key)) wakeCache.delete(key);
+  for (const key of unwakeableCache.keys()) if (!liveIds.has(key)) unwakeableCache.delete(key);
   for (const key of chickSignalLedger.keys()) if (!liveIds.has(key)) chickSignalLedger.delete(key);
   for (const key of peerNameCache.keys()) if (!liveIds.has(key)) peerNameCache.delete(key);
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
