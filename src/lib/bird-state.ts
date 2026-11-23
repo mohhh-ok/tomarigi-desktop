@@ -1,5 +1,5 @@
 // Machine state of a bird (BirdState) from its transcript tail
-import { pendingAskOf, type TailEvent, type TailInfo, type TurnProposals } from "./transcript";
+import { pendingAskOf, type TailEvent, type TailInfo, type TailKind, type TurnProposals } from "./transcript";
 import type { BirdState, ChickView, WaitingOn } from "./session-types";
 import { extractQuestion } from "./session-snippet";
 import { proposalQuestion } from "./proposals";
@@ -101,23 +101,24 @@ export function deriveState(
   if (isChick && (chickDoneSignalAt !== undefined || tail.handedBack)) {
     return sinceMs >= DOZE_MS ? "dozing" : "done";
   }
-  if (isChick && abandoned(tail, sinceMs)) return "dozing";
+  if (isChick) {
+    if (abandoned(tail, sinceMs)) return "dozing";
+    // Fallback when the parent ledger has no signal (see the comment above). The tail's appearance alone can't tell
+    // "really finished" from "briefly wrote only text without a tool_use in between", so it is done/dozing only when
+    // there has been no write for longer than CHICK_TEXT_DONE_MS, and until then it stays working and suppression
+    // continues (this is the fix for the bug itself). user / tool_result wait for the assistant's next output, as for a
+    // parent, until abandoned() holds
+    return chickTailState(tail, sinceMs, ["assistant_text"]);
+  }
   // A turn Claude Code marked as over is done at once: a recent write is no sign of work then (docs/design.md "Bird
   // states")
-  const ended = !isChick && tail.turnEnded === true && tail.kind === "assistant_text";
+  const ended = tail.turnEnded === true && tail.kind === "assistant_text";
   if (sinceMs < WRITING_MS && !ended) return "working";
   switch (tail.kind) {
     case "tool_use":
       // While a tool runs it is working regardless of how long it is idle (guessing a pending permission prompt was removed)
       return "working";
     case "assistant_text":
-      if (isChick) {
-        // Fallback when the parent ledger has no signal (see the comment above). The tail's appearance alone
-        // can't tell "really finished" from "briefly wrote only text without a tool_use in between", so it is
-        // done/dozing only when there has been no write for longer than CHICK_TEXT_DONE_MS, and until then it
-        // stays working and suppression continues (this is the fix for the bug itself)
-        return sinceMs >= CHICK_TEXT_DONE_MS ? (sinceMs >= DOZE_MS ? "dozing" : "done") : "working";
-      }
       return sinceMs >= DOZE_MS ? "dozing" : "done";
     case "user":
     case "tool_result":
@@ -135,8 +136,25 @@ export function deriveState(
       // Note: for unknown, the caller's sinceMs comes from the mtime fallback (no lastEventAt). The mtime
       // dependency removed in 10f0aa5 remains only in this branch, but it is accepted because reaching it is
       // limited to the extreme case of "zero timestamp lines even in a 2MB window".
-      return sinceMs >= DOZE_MS ? "dozing" : "working";
+      return unknownState(sinceMs);
   }
+}
+
+function unknownState(sinceMs: number): BirdState {
+  return sinceMs >= DOZE_MS ? "dozing" : "working";
+}
+
+/**
+ * A chick's state from its tail once closed, a completion signal and abandonment are ruled out, shared by deriveState
+ * and deriveSdkChickState: working while it writes or a tool runs; a tail of one of doneKinds is done once no write
+ * came for CHICK_TEXT_DONE_MS (dozing from DOZE_MS); unknown as for a parent; any other tail is working
+ */
+function chickTailState(tail: TailInfo, sinceMs: number, doneKinds: readonly TailKind[]): BirdState {
+  if (sinceMs < WRITING_MS) return "working";
+  if (doneKinds.includes(tail.kind)) {
+    return sinceMs >= CHICK_TEXT_DONE_MS ? (sinceMs >= DOZE_MS ? "dozing" : "done") : "working";
+  }
+  return tail.kind === "unknown" ? unknownState(sinceMs) : "working";
 }
 
 /**
@@ -172,20 +190,7 @@ export function deriveState(
 export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState {
   if (tail.kind === "closed") return "dozing";
   if (toolAbandoned(tail, sinceMs)) return "dozing";
-  if (sinceMs < WRITING_MS) return "working";
-  switch (tail.kind) {
-    case "tool_use":
-      return "working";
-    case "assistant_text":
-    case "user":
-    case "tool_result":
-      return sinceMs >= CHICK_TEXT_DONE_MS ? (sinceMs >= DOZE_MS ? "dozing" : "done") : "working";
-    default:
-      // Doesn't go through done, for the same reason as deriveState's default branch (unknown = the tail
-      // window just couldn't be read; no basis for "finished"). See the MAX_TAIL_BYTES comment in
-      // lib/transcript.ts and the comment on deriveState's default branch.
-      return sinceMs >= DOZE_MS ? "dozing" : "working";
-  }
+  return chickTailState(tail, sinceMs, ["assistant_text", "user", "tool_result"]);
 }
 
 /**
