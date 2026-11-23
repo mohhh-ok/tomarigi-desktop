@@ -6,6 +6,7 @@ import { loadActiveAiProvider } from "@/lib/api-keys";
 import { appendConciergeLog } from "@/lib/concierge";
 import { recordTurnVerdict, type SessionView } from "@/lib/sessions";
 import { withTurnVerdict } from "@/lib/turn-verdict";
+import { keepTurnVerdict, loadTurnVerdicts, saveTurnVerdicts, shouldAskTurn, type KeptTurnVerdicts } from "@/lib/turn-verdict-store";
 
 /** Identifies a turn for the turn verdict. Same basis as the done event key (sessionId + time of the last response) */
 export function turnKey(sessionId: string, at: number): string {
@@ -29,6 +30,20 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
   useEffect(() => {
     setUpRef.current = summarySetUp;
   }, [summarySetUp]);
+  // The verdicts already answered, kept in the settings store: a turn in it isn't asked about again after a reload or a
+  // restart, and its first answer stays (docs/design.md "Turn verdicts"). null until loaded; nothing is asked before
+  const keptRef = useRef<KeptTurnVerdicts | null>(null);
+  const [kept, setKept] = useState<ReadonlyMap<string, TurnOutcome>>(new Map());
+  useEffect(() => {
+    void loadTurnVerdicts()
+      .catch(() => [] as KeptTurnVerdicts)
+      .then((list) => {
+        // An answer that came while loading is kept too
+        const merged = (keptRef.current ?? []).reduce((all, [key, outcome]) => keepTurnVerdict(all, key, outcome), list);
+        keptRef.current = merged;
+        setKept(new Map(merged));
+      });
+  }, []);
 
   // Ask once about a stopped turn (done / dozing with a reply), including those on screen at launch. The done chirp
   // and readout don't wait for it
@@ -41,7 +56,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
       if (!view.reply || view.summary || view.ask) continue;
       const key = turnKey(view.id, view.reply.at);
       liveTurns.add(key);
-      if (!setUpRef.current || requestedRef.current.has(key)) continue;
+      if (!shouldAskTurn(key, setUpRef.current, requestedRef.current, keptRef.current)) continue;
       requestedRef.current.add(key);
       const { id, project, reply, userMessages = [] } = view;
       setTurns((current) => ({ ...current, [key]: { ask: { status: "pending" } } }));
@@ -76,6 +91,13 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
           });
         }
         recordTurnVerdict(id, reply.at, outcome.ask, outcome.abusive, outcome.continuing);
+        // Only an answer is kept: a failed request is asked again after a reload or a restart
+        if (result.ok) {
+          const next = keepTurnVerdict(keptRef.current ?? [], key, outcome);
+          keptRef.current = next;
+          setKept(new Map(next));
+          void saveTurnVerdicts(next).catch((e) => console.warn("[tomarigi] failed to save turn verdicts", e));
+        }
         setTurns((current) => (requestedRef.current.has(key) ? { ...current, [key]: outcome } : current));
         if (outcome.abusive === undefined) return;
         setAnger((current) => {
@@ -113,10 +135,11 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         // The anger mark only works while a summary provider is set up, so removing it clears the mark
         const angry = s.angry ?? (summarySetUp ? anger[s.id]?.angry : undefined);
         if (angry !== undefined && s.angry === undefined) s = { ...s, angry };
-        const turn = s.reply ? turns[turnKey(s.id, s.reply.at)] : undefined;
+        const key = s.reply ? turnKey(s.id, s.reply.at) : undefined;
+        const turn = key ? (kept.get(key) ?? turns[key]) : undefined;
         return withTurnVerdict(s, turn);
       }),
-    [sessions, turns, anger, summarySetUp],
+    [sessions, turns, kept, anger, summarySetUp],
   );
 
   return { requestJudgements, displaySessions };

@@ -118,6 +118,8 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly, or
 
 ### Other notes
 
+The dev server doesn't watch `src-tauri` (cargo rebuilds it) or `.claude` (agents' worktrees: adding or removing one used to reload the dev app's page; `server.watch.ignored` in vite.config.ts).
+
 Where BYOK API keys are stored is decided at launch (KeyStore in src-tauri/src/keys.rs); see "BYOK API keys" in docs/design.md.
 
 Logs are appended to `~/Library/Logs/tomarigi-desktop/app-log.txt` (`~/.local/state/tomarigi-desktop/app-log.txt` on Linux, `%TEMP%\tomarigi-desktop\app-log.txt` on Windows). Past 10 MB the file becomes `app-log.1.txt` and a new one starts.
