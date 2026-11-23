@@ -62,6 +62,10 @@ export interface TailInfo {
   // window, lib/session-store.ts (peerNameCache) keeps it across scans.
   // Used to decide the link for watching (docs/design.md "Watching")
   peerNames: Map<string, number>;
+  // The sessions its latest turn sent a message to (SendMessage's to, the desktop app's send_message's session_id), as
+  // peerNames names them; undefined when the window doesn't reach the prompt that started the turn. A parent takes over
+  // the question a reply asks only when the turn sent it a message (askSentToParent in lib/watching.ts)
+  lastTurnSentTo?: string[];
   // The session was handed over to another session (a `continued-in` line naming continuedInSessionId, written
   // when Claude Code moves the conversation to a background process). The old process can stay alive after
   // this, so lib/sessions.ts removes the bird as if the session had ended. Cleared if a user/assistant line
@@ -347,6 +351,7 @@ async function readWindow(
   // The first prompt is seen only when the window starts at the top of the file
   let lookingForFirst = !truncated;
   const startSessionCalls = new Set<string>();
+  let turnSentTo: string[] | undefined;
   for (const line of lines) {
     if (!line.trim()) continue;
     let entry: TranscriptEntry;
@@ -394,6 +399,8 @@ async function readWindow(
         peerNames.set(name, Math.max(peerNames.get(name) ?? 0, at));
       }
     }
+    if (startsTurn(entry)) turnSentTo = [];
+    else if (turnSentTo && !(entry.isSidechain && !includeSidechain)) turnSentTo.push(...sentPeerNamesOf(entry));
     if (entry.type === "continued-in" && typeof entry.continuedInSessionId === "string") {
       continuedIn = entry.continuedInSessionId;
     }
@@ -422,6 +429,7 @@ async function readWindow(
     chickSignals,
     backgroundTaskStarts,
     peerNames,
+    ...(turnSentTo && { lastTurnSentTo: [...new Set(turnSentTo)] }),
     lastEventAt,
     entrypoint,
     ...(continuedIn && { continuedIn }),
@@ -493,19 +501,7 @@ function peerNameOf(to: string): string | undefined {
 function collectPeerNames(entry: TranscriptEntry): string[] {
   const names: string[] = [];
   if (entry.type === "assistant") {
-    for (const block of asBlocks(entry.message?.content)) {
-      if (block.type !== "tool_use") continue;
-      const input = block.input as { to?: unknown; session_id?: unknown } | undefined;
-      const name =
-        block.name === "SendMessage"
-          ? typeof input?.to === "string"
-            ? peerNameOf(input.to)
-            : undefined
-          : block.name?.endsWith("__send_message")
-            ? hostSessionIdOf(input?.session_id)
-            : undefined;
-      if (name) names.push(name);
-    }
+    names.push(...sentPeerNamesOf(entry));
   } else if (entry.type === "attachment") {
     const origin = entry.attachment?.origin;
     if (origin?.kind === "peer" && typeof origin.name === "string" && origin.name) names.push(origin.name);
@@ -528,6 +524,41 @@ function collectPeerNames(entry: TranscriptEntry): string[] {
     }
   }
   return names;
+}
+
+/** The sessions an assistant line sends a message to: input.to of SendMessage, session_id of the desktop app's
+ * send_message (collectPeerNames, TailInfo.lastTurnSentTo) */
+function sentPeerNamesOf(entry: TranscriptEntry): string[] {
+  if (entry.type !== "assistant") return [];
+  const names: string[] = [];
+  for (const block of asBlocks(entry.message?.content)) {
+    if (block.type !== "tool_use") continue;
+    const input = block.input as { to?: unknown; session_id?: unknown } | undefined;
+    const name =
+      block.name === "SendMessage"
+        ? typeof input?.to === "string"
+          ? peerNameOf(input.to)
+          : undefined
+        : block.name?.endsWith("__send_message")
+          ? hostSessionIdOf(input?.session_id)
+          : undefined;
+    if (name) names.push(name);
+  }
+  return names;
+}
+
+/**
+ * Whether a line is a prompt that starts a turn, as turn_starter in src-tauri reads it: a user line, not a subagent's
+ * or a tool result, and not meta unless it is a message from another session; a line that says nothing of where it came
+ * from (no turnOrigin, no origin.kind) isn't counted. What arrives while it works is an attachment and doesn't start one
+ */
+function startsTurn(entry: TranscriptEntry): boolean {
+  if (entry.type !== "user" || entry.isSidechain) return false;
+  const turnOrigin = typeof entry.turnOrigin === "string" ? entry.turnOrigin : undefined;
+  const originKind = typeof entry.origin?.kind === "string" ? entry.origin.kind : undefined;
+  if (entry.isMeta && turnOrigin !== "peer" && originKind !== "peer") return false;
+  if (asBlocks(entry.message?.content).some((b) => b.type === "tool_result")) return false;
+  return turnOrigin !== undefined || originKind !== undefined;
 }
 
 const TASK_NOTIFICATION_TAG = "<task-notification>";

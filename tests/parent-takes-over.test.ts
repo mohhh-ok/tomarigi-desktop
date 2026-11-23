@@ -420,10 +420,18 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
       { readAloud: false, needsReply: false, source: undefined, replyDrop: "parent_takes_over", status: "working", trigger: "working" },
     ],
     [
-      "a child whose reply asks its parent",
-      { state: "done", ask: asking, parentTakesOver: true },
+      "a child whose reply asks its parent (the turn sent the parent a message)",
+      { state: "done", ask: asking, parentTakesOver: true, askSentToParent: true },
       ev("done", "s", { ask: asking }),
       { readAloud: false, needsReply: false, source: undefined, replyDrop: "parent_takes_over", status: "done", trigger: "done" },
+    ],
+    [
+      // The question is in its pane only: the parent never got it (docs/design.md "Sessions started by another
+      // session")
+      "a child whose reply asks without a message to its parent",
+      { state: "done", ask: asking, parentTakesOver: true },
+      ev("done", "s", { ask: asking }),
+      { readAloud: false, needsReply: true, source: "verdict", replyDrop: undefined, status: "reply", trigger: "reply" },
     ],
     [
       "a child that finished",
@@ -495,7 +503,7 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
     const p = buildConciergePayload(
       [
         { view: view("parent") },
-        { view: view("child", { ask: asking, parentTakesOver: true }), parentId: "parent" },
+        { view: view("child", { ask: asking, parentTakesOver: true, askSentToParent: true }), parentId: "parent" },
         { view: view("solo") },
       ],
       [],
@@ -513,7 +521,7 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
 
   test("the Concierge tab counts the child on a permission prompt, not the ones its parent can answer", () => {
     const child = view("child", { state: "waiting", waitingOn: "permission", parentTakesOver: true });
-    const childAsking = view("child2", { ask: asking, parentTakesOver: true });
+    const childAsking = view("child2", { ask: asking, parentTakesOver: true, askSentToParent: true });
     const childWrapUp = view("child3", { state: "waiting", waitingOn: "question", wrapUpAsk: true, parentTakesOver: true });
     const solo = view("solo", { state: "waiting", waitingOn: "permission" });
     expect(conciergeTabCounts([child, childAsking, childWrapUp, solo])).toEqual({ others: 4, waiting: 2 });

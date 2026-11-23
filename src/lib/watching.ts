@@ -135,6 +135,8 @@ export interface LinkWorld {
   /** False when it isn't known */
   isChild: (sessionId: string) => boolean;
   latestTurnBy: (peer: string, own: string) => TurnBy | undefined;
+  /** The running session a trace (a name or a desktop app id, as a message names it) names; undefined when none does */
+  sessionOf: (trace: string) => string | undefined;
 }
 
 /**
@@ -153,6 +155,7 @@ export function takenOverWorld(
       return latestTurnBy(watch.latestTurnOf(viewId), { sessionId: own, pid: watch.liveBySessionId.get(own)?.pid }, lookup);
     },
     startedAt: (sessionId) => watch.liveBySessionId.get(sessionId)?.startedAt,
+    sessionOf: (trace) => lookup(trace)?.sessionId,
     startedBySession: (sessionId) => {
       const viewId = watch.viewIdBySessionId.get(sessionId);
       return viewId !== undefined && watch.startedBySessionOf(viewId);
@@ -172,6 +175,27 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
     world.startedAt(sessionId),
     world.peers(sessionId).map((p) => candidateOf(p, sessionId, world)),
   );
+}
+
+/**
+ * Whether a message the session's latest turn sent (TailInfo.lastTurnSentTo) went to a linked session that counts as
+ * its parent (isParentOf): then the question its reply asks reached the parent, which takes it over (parentCanAnswer
+ * in lib/turn-verdict.ts; docs/design.md "Sessions started by another session"). A message to another session (its own
+ * child, a sibling) doesn't count
+ */
+export function askSentToParent(sessionId: string, sentTo: readonly string[] | undefined, world: LinkWorld): boolean {
+  if (!sentTo || sentTo.length === 0) return false;
+  const peers = world.peers(sessionId);
+  const own = world.startedAt(sessionId);
+  return sentTo.some((trace) => {
+    const peer = world.sessionOf(trace);
+    return (
+      peer !== undefined &&
+      peer !== sessionId &&
+      peers.includes(peer) &&
+      isParentOf(candidateOf(peer, sessionId, world), own)
+    );
+  });
 }
 
 function candidateOf(peer: string, sessionId: string, world: LinkWorld): ParentCandidate {
@@ -245,7 +269,7 @@ export function peerHoldChicks(
  * "Watching")
  */
 export function silentForParent<E extends Pick<SessionEvent, "type" | "silent" | "wrapUpAsk">>(event: E, takenOver: boolean): E {
-  const silent = event.type === "done" || (event.type === "waiting" && parentCanAnswer("machine", event.wrapUpAsk));
+  const silent = event.type === "done" || (event.type === "waiting" && parentCanAnswer("machine", event.wrapUpAsk, undefined));
   return takenOver && silent ? { ...event, silent: true } : event;
 }
 

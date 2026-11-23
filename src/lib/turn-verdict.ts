@@ -20,11 +20,17 @@ export function needsAnswer(state: BirdState, ask: AskJudgement | undefined): bo
 
 /**
  * Whether a parent that takes the session over can answer its wait (docs/design.md "Watching", "Sessions started by
- * another session"): a reply that asks (verdict) or the desktop app's wrap_up ask (wrapUpAsk) reach the parent as the
- * session's report. A question tool or a permission prompt (machine) doesn't: only the user can answer it, in its pane
+ * another session"): a reply that asks, when the turn sent the parent a message (askSentToParent: the question reached
+ * it), or the desktop app's wrap_up ask (wrapUpAsk), which reaches the parent as the session's report. A reply that asks
+ * without a message to the parent asks whoever reads its pane, and a question tool or a permission prompt (machine) is
+ * answered only in its pane: only the user can answer those
  */
-export function parentCanAnswer(source: "machine" | "verdict", wrapUpAsk: boolean | undefined): boolean {
-  return source === "verdict" || wrapUpAsk === true;
+export function parentCanAnswer(
+  source: "machine" | "verdict",
+  wrapUpAsk: boolean | undefined,
+  askSentToParent: boolean | undefined,
+): boolean {
+  return source === "verdict" ? askSentToParent === true : wrapUpAsk === true;
 }
 
 /**
@@ -32,9 +38,11 @@ export function parentCanAnswer(source: "machine" | "verdict", wrapUpAsk: boolea
  * (replyWaitSource), and no parent that takes it over (SessionView.parentTakesOver) can answer it (parentCanAnswer).
  * Its bird gets the "?" either way (hasQuestion)
  */
-export function waitsOnDeveloper(s: Pick<SessionView, "state" | "ask" | "parentTakesOver" | "wrapUpAsk">): boolean {
+export function waitsOnDeveloper(
+  s: Pick<SessionView, "state" | "ask" | "parentTakesOver" | "wrapUpAsk" | "askSentToParent">,
+): boolean {
   const source = replyWaitSource(s.state, s.ask);
-  return source !== undefined && !(s.parentTakesOver && parentCanAnswer(source, s.wrapUpAsk));
+  return source !== undefined && !(s.parentTakesOver && parentCanAnswer(source, s.wrapUpAsk, s.askSentToParent));
 }
 
 /**

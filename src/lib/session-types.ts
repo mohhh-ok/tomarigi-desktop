@@ -137,9 +137,13 @@ export interface SessionView {
   // it since its first prompt, and it is linked to a parent (a session that started before it and either wasn't started
   // by another session or is linked to one older than itself; takenOverByParent in lib/watching.ts; docs/design.md
   // "Watching"). Its done isn't read aloud, and the concierge doesn't ask the developer to check its result or to reply
-  // to what its parent can answer: a question its reply asks, or its wrap_up's ask (parentCanAnswer in
+  // to what its parent can answer: a question its reply asks when the turn sent it a message (askSentToParent), or its wrap_up's ask (parentCanAnswer in
   // lib/turn-verdict.ts). A permission prompt or a question tool is advised as usual, and a question tool's needs reply is read. Its bird gets the "?"
   parentTakesOver?: true;
+  // With parentTakesOver: its latest turn sent a message to its parent (askSentToParent in lib/watching.ts), so the
+  // question its reply asks reached the parent, which takes it over. Without it, a reply that asks waits on the user
+  // like any other session's (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Sessions started by another session")
+  askSentToParent?: true;
   // Started by another session, from its own first prompt (isChildSession in lib/watching.ts): its state line's dot in the
   // Concierge tab is ◎ (docs/design.md "Concierge"). Unlike parentTakesOver, typing in it or its parent closing doesn't clear it
   child?: true;
