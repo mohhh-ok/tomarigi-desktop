@@ -433,7 +433,7 @@ export const PRESETS: Preset[] = [
         ["bubbles", undefined],
         ["window", undefined],
       ]],
-      ["yokai-no-sensei", "The first batch is out. Approve the second one when you have checked the first", [["batch", undefined]]],
+      ["app-v", "The first batch is out. Approve the second one when you have checked the first", [["batch", undefined]]],
     ]),
   },
   {

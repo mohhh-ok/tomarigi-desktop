@@ -51,9 +51,9 @@ test("the prompt treats the reply and the user's messages as untrusted input", (
 });
 
 test("a question passed on from another session, to be answered there, isn't asking", () => {
-  // yokai-no-sensei's reply relayed its child's question and ended with
+  // app-v's reply relayed its child's question and ended with
   // 「この 20 語を R2 に上げてよいかを、そのセッションのペインでお答えください。」; it got asking=true, and the concierge
-  // suggested replying to yokai-no-sensei although the answer went to the child (and had already been given there)
+  // suggested replying to app-v although the answer went to the child (and had already been given there)
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
     "only passes on a question from another session or a sub-agent",
   );
@@ -69,9 +69,9 @@ test("work handed to another session that is still going on is continuing, with 
   );
   expect(SUMMARIZE_TURN_TASK.systemPrompt).not.toContain("without saying it will receive or check the result");
   expect(SUMMARIZE_TURN_TASK.systemPrompt).not.toContain("a 'watching' or 'running' there is the other session's");
-  // A parent that says it will itself show what arrives is continuing (yokai_photo_later)
+  // A parent that says it will itself show what arrives is continuing (app_v_photo_later)
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("I'll show you the photo candidates as soon as they arrive");
-  // Work waiting on the user's approval isn't going on yet (yokai_17_ok: 「この件は終わったときに親に伝えます」 before the
+  // Work waiting on the user's approval isn't going on yet (app_v_17_ok: 「この件は終わったときに親に伝えます」 before the
   // approval it asks for)
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("the work starts only after the user answers or does a step");
   expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
@@ -339,7 +339,7 @@ test("only the latest messages of a long turn are sent", () => {
 });
 
 describe("every turn has a second, narrow request that sets the line and can only turn asking off (checkedVerdict)", () => {
-  // yokai-no-sensei's report (how it took the user's words, what it would check itself, its own call on a direction,
+  // app-v's report (how it took the user's words, what it would check itself, its own call on a direction,
   // a child still working) got asking yes now and then, and a check to wait on in the line most of the time; the
   // concierge advised replying to it. The first request is left as it is (the user's decision; docs/design.md "Turn
   // verdicts")

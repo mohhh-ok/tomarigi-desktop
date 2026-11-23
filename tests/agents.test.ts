@@ -246,7 +246,7 @@ describe("Cursor CLI", () => {
   });
 
   test("the project folder name is the cwd with each run of non-alphanumeric characters as one -", () => {
-    expect(cursorProjectSlug("/Users/me/Dev/yokai-no-sensei")).toBe("Users-me-Dev-yokai-no-sensei");
+    expect(cursorProjectSlug("/Users/me/Dev/app-v")).toBe("Users-me-Dev-app-v");
     expect(cursorProjectSlug("/var/folders/jw/x_y/T/abc.d")).toBe("var-folders-jw-x-y-T-abc-d");
     expect(cursorProjectSlug("/Users/me/.config/my - app_")).toBe("Users-me-config-my-app");
   });

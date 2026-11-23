@@ -305,7 +305,7 @@ test("a chick waiting on a reply holds up its parent", () => {
 });
 
 describe("skippedWhileWaiting: a waiting session the developer left for another, as a fact", () => {
-  // yokai-no-sensei asked on a question tool twice in one turn and was answered each time, then its report got asking
+  // app-v asked on a question tool twice in one turn and was answered each time, then its report got asking
   // (wrongly); the concierge read the three needs_reply events as one long wait and wrote 「何度も待たせています」
   // (docs/design.md "Concierge")
   type E = { kind: "needs_reply" | "user_replied" | "done" | "jump"; session: string };
@@ -441,9 +441,9 @@ test("while a session needs a reply, an advice about another session is not show
 });
 
 test("the name check: compared after NFKC and lower case, a cut name without its cut mark", () => {
-  expect(adviceNamesTarget("yokai-no-senseiが終わりました。結果を確認", "yokai-no-sensei")).toBe(true);
-  expect(adviceNamesTarget("Ｙｏｋａｉ-No-Senseiが終わりました", "yokai-no-sensei")).toBe(true);
-  expect(adviceNamesTarget("完了したセッションの成果物を順に確認してください", "yokai-no-sensei")).toBe(false);
+  expect(adviceNamesTarget("app-vが終わりました。結果を確認", "app-v")).toBe(true);
+  expect(adviceNamesTarget("Ａｐｐ-Vが終わりました", "app-v")).toBe(true);
+  expect(adviceNamesTarget("完了したセッションの成果物を順に確認してください", "app-v")).toBe(false);
   expect(adviceNamesTarget("abcdeを確認", "abcde…")).toBe(true);
   expect(adviceNamesTarget("確認", "")).toBe(false);
 });
@@ -699,7 +699,7 @@ test("an advice that asks to reply about a session that doesn't need a reply is 
         }),
       },
       { view: view("q", { project: "orbit", state: "done", ask: { status: "asking" } }) },
-      { view: view("p", { project: "yokai-no-sensei", state: "waiting" }) },
+      { view: view("p", { project: "app-v", state: "waiting" }) },
     ],
     [],
     [],
@@ -724,7 +724,7 @@ test("an advice that asks to reply about a session that doesn't need a reply is 
     expect(await askConcierge(provider, payload, answering(asking))).toMatchObject({
       verdict: { line: asking.advice, targetId: "q" },
     });
-    const machine = { advice: "yokai-no-senseiの許可に答える", session_id: "p", action: "reply" };
+    const machine = { advice: "app-vの許可に答える", session_id: "p", action: "reply" };
     expect(await askConcierge(provider, payload, answering(machine))).toMatchObject({
       verdict: { line: machine.advice, targetId: "p" },
     });
