@@ -2,14 +2,18 @@
 // prints each chick's state, the time of the first scan and of a second one (incremental), and the peak RSS.
 // Files are read through stand-ins of NativeFile / NativeDirectoryHandle backed by node:fs instead of Tauri's fs_read.
 // With --at <ISO time>, it also prints, as of that time, each chick's state, the parent's own state and displayed state
-// (escalateWithChicks) and the concierge's chicks_working (buildConciergePayload), the functions the app runs
+// and the concierge's chicks_working, through the functions scanSessions runs (readTailCached, scanChicks, chickListsOf,
+// birdStateOf, buildConciergePayload). What it can't read here is left out: Claude Code's own waiting status
+// (sessions/<pid>.json) and which proposal cards were started (the desktop app's records), so a parent waiting only on
+// those shows its tail's state. The transcript is read as it is now: for a past time, use a copy cut at that time
 // Usage: bun tools/chick-scan-measure.ts <path to the parent's .jsonl> [--at <ISO time>]
 import { closeSync, openSync, readSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import type { NativeDirectoryHandle, NativeFile } from "../src/lib/native-fs.ts";
-import { scanChicks } from "../src/lib/session-chicks.ts";
-import { lastWrittenAt, readTail } from "../src/lib/transcript.ts";
-import { deriveState, escalateWithChicks } from "../src/lib/bird-state.ts";
+import { chickListsOf, scanChicks } from "../src/lib/session-chicks.ts";
+import { readTailCached } from "../src/lib/session-tail.ts";
+import { lastWrittenAt } from "../src/lib/transcript.ts";
+import { birdStateOf } from "../src/lib/bird-state.ts";
 import { buildConciergePayload } from "../src/lib/concierge.ts";
 
 function fileAt(path: string): NativeFile {
@@ -91,17 +95,17 @@ if (atIndex !== -1) {
     process.exit(2);
   }
   const parentFile = fileAt(parentPath);
-  const tail = await readTail(parentFile);
+  const sessionId = fileName.slice(0, -".jsonl".length);
+  const tail = await readTailCached(parentId, parentFile, { ownSessionId: sessionId });
   const sinceMs = now - lastWrittenAt(tail, parentFile.lastModified);
-  const own = deriveState(tail, sinceMs, false);
   const chicks = await scanChicks(projectDir, fileName, parentId, now, tail.chickSignals, parentFile);
   for (const c of chicks) {
     console.log(`chick ${c.view.id.split("/").pop()}: state=${c.view.state} since=${Math.round(c.view.sinceMs / 1000)}s completed=${c.completed}`);
   }
-  const views = chicks.map((c) => c.view);
-  const state = escalateWithChicks(own, views);
+  const { chickViews, shownChickViews } = chickListsOf(chicks, []);
+  const { state: own, displayState: state } = birdStateOf({ tail, sinceMs, isSdk: false, live: undefined, cards: [], chickViews });
   const [session] = buildConciergePayload(
-    [{ view: { id: "p", project: "p", slug: "p", state, sinceMs, chicks: views }, agent: "claude" }],
+    [{ view: { id: "p", project: "p", slug: "p", state, sinceMs, chicks: shownChickViews }, agent: "claude" }],
     [],
     [],
     now,

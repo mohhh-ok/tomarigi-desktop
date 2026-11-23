@@ -317,3 +317,24 @@ export function assignSdkChicks(
   const displayEntries = [...nonSdkEntries, ...orphanSdkEntries];
   return { displayEntries, sdkChicksByParentId };
 }
+
+/**
+ * A parent's chicks as each reader takes them. Subagent chicks (from scanChicks) and SDK chicks (those for which this
+ * session was chosen as parent candidate) are used differently depending on the destination:
+ * - subagentChickViews (without SDK): holding done back (deriveSessionEvents) and what can wake the session
+ *   (wakeSourceOf). SDK chicks are not children the parent started but unrelated processes running alongside, so an SDK
+ *   chick merely running must not trigger the parent's done suppression (see the deriveDoneEvent comment; the
+ *   suppression premise "a child the parent started" doesn't hold for SDK chicks)
+ * - chickViews (merged with SDK, newest write first): escalateWithChicks (display escalation). Excluding SDK chicks
+ *   from escalation would show the parent dozing while its SDK chick is running, a regression compared to before they
+ *   became chicks (when they were visible as adult birds), so they are deliberately kept on the display side
+ * - shownChickViews: listed under the parent (SessionView.chicks): chicks whose completion the parent hasn't recorded
+ *   yet (completedChickIds)
+ */
+export function chickListsOf(chicks: ChickScan[], sdkChicks: ChickScan[]) {
+  const subagentChickViews = chicks.map((c) => c.view);
+  const chickViews = [...subagentChickViews, ...sdkChicks.map((c) => c.view)].sort((a, b) => a.sinceMs - b.sinceMs);
+  const completedChickIds = new Set(chicks.filter((c) => c.completed).map((c) => c.view.id));
+  const shownChickViews = chickViews.filter((c) => !completedChickIds.has(c.id));
+  return { subagentChickViews, chickViews, completedChickIds, shownChickViews };
+}

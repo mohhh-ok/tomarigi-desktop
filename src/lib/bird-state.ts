@@ -195,6 +195,32 @@ export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState 
 }
 
 /**
+ * A bird's own state and the state it is shown with:
+ * - tailState: from its tail. deriveState is the only source for the "appearance (bird)"; SDK orphans (SDK sessions
+ *   with no parent candidate that fell back to adult display, isSdk) use deriveSdkChickState, as deriveState still gets
+ *   stuck in working when they end on a structured output tool (tool_result; see the deriveSdkChickState comment)
+ * - wait: where its wait on the user comes from, if it waits: Claude Code's own status (live), a question tool, proposal
+ *   cards not started (cards), or a wrap_up's ask (replyWaitOf; docs/design.md "The "?" for sessions waiting on you").
+ *   Not for an SDK session
+ * - state: waiting when it waits, else tailState
+ * - displayState: state escalated to a chick's urgency while the chick is running (escalateWithChicks)
+ */
+export function birdStateOf(input: {
+  tail: TailInfo;
+  sinceMs: number;
+  isSdk: boolean;
+  live: { status?: string; waitingFor?: string } | undefined;
+  cards: TurnProposals["proposals"];
+  chickViews: ChickView[];
+}): { tailState: BirdState; wait: ReplyWait | undefined; state: BirdState; displayState: BirdState } {
+  const { tail, sinceMs, isSdk, live, cards, chickViews } = input;
+  const tailState = isSdk ? deriveSdkChickState(tail, sinceMs) : deriveState(tail, sinceMs, false);
+  const wait = isSdk ? undefined : replyWaitOf(tail.events, tailState, live, cards);
+  const state: BirdState = wait ? "waiting" : tailState;
+  return { tailState, wait, state, displayState: escalateWithChicks(state, chickViews) };
+}
+
+/**
  * Where a session's wait on the user comes from (docs/design.md "The "?" for sessions waiting on you"):
  * - claude: Claude Code's own waiting status in sessions/<pid>.json (a permission prompt, an open question)
  * - question_tool: the transcript ends on a question tool (AskUserQuestion etc.)

@@ -7,7 +7,6 @@ import { lastWrittenAt, projectLabels } from "./transcript";
 import { pendingProposalsOf } from "./transcript-desktop";
 import { unstartedProposals } from "./proposals";
 import type {
-  BirdState,
   ChickScan,
   FoundEntry,
   LiveFoundEntry,
@@ -18,10 +17,10 @@ import type {
 import { lastPeerStates, pruneCaches, scanState, snippetCache } from "./session-store";
 import { sessionIdOfViewId, settleLiveness } from "./session-liveness";
 import { feedTurnMessages, turnUserMessages } from "./session-tail";
-import { assignSdkChicks, isSdkSession } from "./session-chicks";
+import { assignSdkChicks, chickListsOf, isSdkSession } from "./session-chicks";
 import { AGENTS, type AgentKind, type ScanListing } from "./agents";
 import { loadAgentProcesses, type AgentProcessScan } from "./agent-processes";
-import { deriveSdkChickState, deriveState, escalateWithChicks, replyWaitOf, STATE_URGENCY } from "./bird-state";
+import { birdStateOf, STATE_URGENCY } from "./bird-state";
 import { pickSnippet } from "./session-snippet";
 import { deriveSessionEvents, updateBackgroundTasks } from "./session-events";
 import { rootsWithFreshUnlinkedChild, unwakeableForMsOf, updateWakes, wakeSourceOf } from "./session-wake";
@@ -188,45 +187,19 @@ function buildViews(
     const sinceMs = now - writtenAt;
     const project = names.get(id)?.name ?? base;
     const projectSuffix = names.get(id)?.suffix;
-    // Subagent chicks (from scanChicks) and SDK chicks (those for which this session was chosen as parent
-    // candidate) are carried as separate lists and used differently depending on the destination.
-    // - subagentChickViews (without SDK): passed only to deriveSessionEvents (done suppression check).
-    //   SDK chicks are not children the parent started but unrelated processes running alongside, so an SDK
-    //   chick merely running must not trigger the parent's done suppression (see the deriveDoneEvent comment;
-    //   the suppression premise "a child the parent started" doesn't hold for SDK chicks).
-    // - chickViews (merged with SDK): passed with SDK chicks included, as before, to escalateWithChicks
-    //   (display escalation) and SessionView.chicks (display). Excluding them from escalation would show the
-    //   parent dozing while its SDK chick is running, a regression compared to before they became chicks (when
-    //   they were visible as adult birds), so they are deliberately kept on the display side.
-    const subagentChickViews = chicks.map((c) => c.view);
-    const sdkChickViews = (sdkChicksByParentId.get(id) ?? []).map((c) => c.view);
-    const chickViews = [...subagentChickViews, ...sdkChickViews].sort(
-      (a, b) => a.sinceMs - b.sinceMs,
+    const { subagentChickViews, chickViews, completedChickIds, shownChickViews } = chickListsOf(
+      chicks,
+      sdkChicksByParentId.get(id) ?? [],
     );
-    // Listed under the parent: chicks whose completion the parent hasn't recorded yet
-    const completedChickIds = new Set(chicks.filter((c) => c.completed).map((c) => c.view.id));
-    const shownChickViews = chickViews.filter((c) => !completedChickIds.has(c.id));
-    // deriveState is the only source for the "appearance (bird)". However, SDK orphans (SDK sessions with no
-    // parent candidate that fell back to adult display, isSdk===true) use deriveSdkChickState —
-    // the problem of getting stuck in working when ending on a structured output tool (tool_result) is still
-    // unfixed in deriveState (see the deriveSdkChickState comment)
-    const tailState = isSdk ? deriveSdkChickState(tail, sinceMs) : deriveState(tail, sinceMs, false);
     // While Claude Code shows choices (AskUserQuestion) or a permission prompt, it doesn't write that tool_use
     // to the transcript yet (it writes it after the answer). Instead the status in <config>/sessions/<pid>.json
     // becomes "waiting", so treat that as needs reply
     const live = isSdk ? undefined : watch.liveBySessionId.get(sessionIdOfViewId(id));
     const peers = watch.peerLinksOf(sessionIdOfViewId(id));
-    // Where its wait on the user comes from, if it waits: Claude Code's own status, a question tool, proposal cards not
-    // started, or a wrap_up's ask (replyWaitOf in lib/bird-state.ts; docs/design.md "The "?" for sessions waiting on you")
     const cards = isSdk ? [] : unstartedProposals(pendingProposalsOf(tail.events), id, watch.startedCards);
-    const wait = isSdk ? undefined : replyWaitOf(tail.events, tailState, live, cards);
-    const state: BirdState = wait ? "waiting" : tailState;
+    const { wait, displayState } = birdStateOf({ tail, sinceMs, isSdk, live, cards, chickViews });
     const waitingOn = wait?.waitingOn;
     const wrapUpAsk = wait?.source === "wrap_up_ask";
-    // The display state is escalated to a chick's urgency while the chick is running (anything but done/dozing)
-    const displayState = escalateWithChicks(state, chickViews);
-    // Always attach the latest user message snippet ("what this session was asked to do" is the main info).
-    // If there is no message in the window, use the last remembered snippet instead
     const snippet = pickSnippet(tail) ?? snippetCache.get(id);
     if (snippet) snippetCache.set(id, snippet);
     // Its own turn ended at its last write (the basis of sinceMs), so the grace period ends once it finished a turn after the

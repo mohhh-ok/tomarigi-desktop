@@ -4,9 +4,9 @@
 import { describe, expect, test } from "bun:test";
 import type { TailEvent, TailInfo, TailKind } from "../src/lib/transcript.ts";
 import type { BirdState, ChickView } from "../src/lib/session-types.ts";
-import { deriveSdkChickState, deriveState, escalateWithChicks, waitingOnOf } from "../src/lib/bird-state.ts";
+import { birdStateOf, deriveSdkChickState, deriveState, escalateWithChicks, waitingOnOf } from "../src/lib/bird-state.ts";
 import { deriveDoneEvent } from "../src/lib/session-events.ts";
-import { resolveChickDoneSignalAt } from "../src/lib/session-chicks.ts";
+import { chickListsOf, resolveChickDoneSignalAt } from "../src/lib/session-chicks.ts";
 import { extractQuestion, formatSnippet } from "../src/lib/session-snippet.ts";
 
 const SEC = 1_000;
@@ -165,6 +165,34 @@ describe("escalateWithChicks", () => {
   test("dozing chicks are ignored", () => {
     expect(escalateWithChicks("dozing", [chick("dozing", 0)])).toBe("dozing");
     expect(escalateWithChicks("dozing", [])).toBe("dozing");
+  });
+});
+
+describe("chickListsOf", () => {
+  test("SDK chicks raise the parent but don't hold it; completed chicks aren't listed under it", () => {
+    const sub = { view: chick("working", 3 * SEC, "sub"), completed: false };
+    const finished = { view: chick("done", 1 * SEC, "finished"), completed: true };
+    const sdkChick = { view: chick("working", 2 * SEC, "sdk"), completed: false };
+    const lists = chickListsOf([sub, finished], [sdkChick]);
+    expect(lists.subagentChickViews.map((c) => c.id)).toEqual(["sub", "finished"]);
+    expect(lists.chickViews.map((c) => c.id)).toEqual(["finished", "sdk", "sub"]);
+    expect([...lists.completedChickIds]).toEqual(["finished"]);
+    expect(lists.shownChickViews.map((c) => c.id)).toEqual(["sdk", "sub"]);
+  });
+});
+
+describe("birdStateOf", () => {
+  const base = { sinceMs: DOZE_MS, isSdk: false, live: undefined, cards: [], chickViews: [] };
+  test("own state from the tail, waiting from Claude Code's status, displayed state raised by a running chick", () => {
+    expect(birdStateOf({ ...base, tail: tailOf("assistant_text") })).toMatchObject({ tailState: "dozing", state: "dozing", displayState: "dozing" });
+    expect(birdStateOf({ ...base, tail: tailOf("assistant_text"), live: { status: "waiting" } })).toMatchObject({ tailState: "dozing", state: "waiting" });
+    expect(birdStateOf({ ...base, tail: tailOf("assistant_text"), chickViews: [chick("working", 0)] })).toMatchObject({ state: "dozing", displayState: "working" });
+  });
+
+  test("an SDK session is read by deriveSdkChickState and never waits", () => {
+    const sdkTail = tailOf("tool_result");
+    expect(birdStateOf({ ...base, tail: sdkTail, isSdk: true, live: { status: "waiting" } })).toMatchObject({ state: "dozing", wait: undefined });
+    expect(birdStateOf({ ...base, tail: sdkTail }).state).toBe("working");
   });
 });
 
