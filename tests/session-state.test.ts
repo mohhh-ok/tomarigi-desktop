@@ -109,9 +109,7 @@ describe("deriveState (chick)", () => {
     }
   });
 
-  test("a chick with a tool open is abandoned only from CHICK_TOOL_ABANDONED_MS, whatever its tail's kind", () => {
-    expect(chickState("tool_use", CHICK_TOOL_ABANDONED_MS - 1, undefined, "Bash")).toBe("working");
-    expect(chickState("tool_use", CHICK_TOOL_ABANDONED_MS, undefined, "Bash")).toBe("dozing");
+  test("a chick with a tool open is not abandoned at CHICK_ABANDONED_MS, whatever its tail's kind", () => {
     // calls made in parallel: the tail is one call's result while another still runs
     const parallel: TailInfo = { ...tailOf("tool_result"), toolOpen: true };
     expect(deriveState(parallel, 60 * MIN, true)).toBe("working");
@@ -132,11 +130,6 @@ describe("deriveSdkChickState", () => {
     expect(sdk("tool_result", WRITING_MS - 1)).toBe("working");
   });
 
-  test("a running tool is working until CHICK_TOOL_ABANDONED_MS", () => {
-    expect(sdk("tool_use", CHICK_TOOL_ABANDONED_MS - 1)).toBe("working");
-    expect(sdk("tool_use", CHICK_TOOL_ABANDONED_MS)).toBe("dozing");
-  });
-
   test("assistant_text / user / tool_result: working, done from CHICK_TEXT_DONE_MS, dozing from DOZE_MS", () => {
     for (const kind of ["assistant_text", "user", "tool_result"] as const) {
       expect(sdk(kind, CHICK_TEXT_DONE_MS - 1)).toBe("working");
@@ -148,6 +141,16 @@ describe("deriveSdkChickState", () => {
   test("unknown never goes through done", () => {
     expect(sdk("unknown", DOZE_MS - 1)).toBe("working");
     expect(sdk("unknown", DOZE_MS)).toBe("dozing");
+  });
+});
+
+describe("a chick with a tool open is abandoned by one rule", () => {
+  test("deriveState (chick) and deriveSdkChickState turn dozing at the same CHICK_TOOL_ABANDONED_MS", () => {
+    const open = tailOf("tool_use", "Bash");
+    for (const derive of [(t: TailInfo, s: number) => deriveState(t, s, true), deriveSdkChickState]) {
+      expect(derive(open, CHICK_TOOL_ABANDONED_MS - 1)).toBe("working");
+      expect(derive(open, CHICK_TOOL_ABANDONED_MS)).toBe("dozing");
+    }
   });
 });
 

@@ -58,7 +58,12 @@ export function isWaitingTool(toolName: string | undefined): boolean {
  * runs are silent (docs/design.md "Chicks that have finished")
  */
 function abandoned(tail: TailInfo, sinceMs: number): boolean {
-  return sinceMs >= (tail.toolOpen ? CHICK_TOOL_ABANDONED_MS : CHICK_ABANDONED_MS);
+  return toolAbandoned(tail, sinceMs) || (!tail.toolOpen && sinceMs >= CHICK_ABANDONED_MS);
+}
+
+/** A chick (a subagent or an SDK session) that died in a tool: it has had a tool open for CHICK_TOOL_ABANDONED_MS */
+function toolAbandoned(tail: TailInfo, sinceMs: number): boolean {
+  return tail.toolOpen === true && sinceMs >= CHICK_TOOL_ABANDONED_MS;
 }
 
 /**
@@ -166,7 +171,7 @@ export function deriveState(
  */
 export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState {
   if (tail.kind === "closed") return "dozing";
-  if (tail.toolOpen && sinceMs >= CHICK_TOOL_ABANDONED_MS) return "dozing";
+  if (toolAbandoned(tail, sinceMs)) return "dozing";
   if (sinceMs < WRITING_MS) return "working";
   switch (tail.kind) {
     case "tool_use":
