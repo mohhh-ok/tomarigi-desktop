@@ -91,6 +91,7 @@ bun install                                   # once: zod and typescript come fr
 bun run test:llm:needed                       # "run" with the declarations a change touched, or "not needed"
 set -a; source .env; set +a; bun run test:llm # every provider that can run, 8 runs a scene
 bun run test:llm -- --dry-run                 # requests and rough input tokens per provider, no API call
+bun run test:llm -- --dump-bodies /tmp/tomarigi-desktop/llm/bodies.json   # every scene's request bodies, no key or API call
 bun run test:llm -- --baseline /tmp/tomarigi-desktop/llm/llm-regression-<label>.json   # before → after, NG on a drop
 ```
 
@@ -115,6 +116,10 @@ bun run test:llm -- --baseline /tmp/tomarigi-desktop/llm/llm-regression-<label>.
   its baseline.
   Exits 1 when there is any. Every answer of every run is written to `$OUT/llm-regression-<label>.json` (`OUT` defaults
   to /tmp/tomarigi-desktop/llm); pass that file as the next run's `--baseline`
+- When `test:llm:needed` says run but the change may not touch what is sent, dump the bodies on the base commit and on
+  the change (`--dump-bodies`, per provider in `--providers`, default all three) and compare them: identical bodies
+  can't change an answer, and the checks after the answer (`dropReason`) read the same payload. Run the copy of
+  run.ts with the option on the base commit if that commit's run.ts doesn't have it
 - `cases.ts` is the table: turn scenes (`user`, `reply`, and the `want`ed asking / continuing / abusive; fields left out
   aren't checked; `lineMustNot`, a pattern the speech bubble line must not match) and concierge scenes (sessions as the
   app's SessionView, and a `check` on the answer). A scene's own `runs` and `minPass` replace `--runs` and `--min-pass`

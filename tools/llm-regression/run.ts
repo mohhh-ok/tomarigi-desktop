@@ -31,6 +31,7 @@ const { values: args } = parseArgs({
     baseline: { type: "string" },
     label: { type: "string" },
     "dry-run": { type: "boolean" },
+    "dump-bodies": { type: "string" },
   },
 });
 
@@ -46,6 +47,7 @@ const Options = z.object({
   baseline: z.string().optional(),
   label: z.string().regex(/^[\w.-]+$/).default(new Date().toISOString().replace(/[:.]/g, "-")),
   dryRun: z.boolean().default(false),
+  dumpBodies: z.string().optional(),
   openaiKey: z.string().regex(/^sk-/, "OPENAI_API_KEY doesn't start with sk-").optional(),
   anthropicKey: z.string().regex(/^sk-ant-/, "ANTHROPIC_API_KEY doesn't start with sk-ant-").optional(),
   localBaseUrl: z.url().default(DEFAULT_LOCAL_BASE_URL),
@@ -62,6 +64,7 @@ const opts = Options.parse({
   baseline: args.baseline ?? blank(env.LLM_BASELINE),
   label: args.label ?? blank(env.LLM_LABEL),
   dryRun: args["dry-run"] ?? false,
+  dumpBodies: args["dump-bodies"],
   openaiKey: blank(env.OPENAI_API_KEY),
   anthropicKey: blank(env.ANTHROPIC_API_KEY),
   localBaseUrl: blank(env.LOCAL_BASE_URL),
@@ -155,6 +158,17 @@ function roughTokens(body: unknown): number {
   let ascii = 0;
   for (const ch of s) if (ch.charCodeAt(0) < 128) ascii++;
   return Math.round(ascii / 4 + (s.length - ascii));
+}
+
+// Every request body of every scene, per provider, without keys or an API call: diff two of these to see whether a
+// change can change the test's results at all (the bodies are all the provider gets)
+if (opts.dumpBodies) {
+  const dump = Object.fromEntries(
+    (opts.providers ?? PROVIDERS).map((p) => [p, Object.fromEntries(cases.map((c) => [c.name, runOf(c).bodies(p)]))]),
+  );
+  writeFileSync(opts.dumpBodies, JSON.stringify(dump, null, 2));
+  console.log(`wrote ${opts.dumpBodies}`);
+  process.exit(0);
 }
 
 const { run: providers, skipped } = await pickProviders();
