@@ -6,12 +6,19 @@ import { loadActiveAiProvider } from "@/lib/api-keys";
 import { appendConciergeLog } from "@/lib/concierge";
 import { recordTurnVerdict, type SessionView } from "@/lib/sessions";
 import { withTurnVerdict } from "@/lib/turn-verdict";
-import { keepTurnVerdict, loadTurnVerdicts, saveTurnVerdicts, shouldAskTurn, type KeptTurnVerdicts } from "@/lib/turn-verdict-store";
+import {
+  keepTurnVerdict,
+  keptAnger,
+  loadTurnVerdicts,
+  newerAnger,
+  saveTurnVerdicts,
+  shouldAskTurn,
+  turnKey,
+  type Anger,
+  type KeptTurnVerdicts,
+} from "@/lib/turn-verdict-store";
 
-/** Identifies a turn for the turn verdict. Same basis as the done event key (sessionId + time of the last response) */
-export function turnKey(sessionId: string, at: number): string {
-  return `${sessionId}:${at}`;
-}
+export { turnKey };
 
 /** Per-turn requests made from each scan (docs/design.md "Turn verdicts": one verdict per finished turn, from two
  * requests (summarizeTurn), gives the speech bubble line, the "?", and the anger mark), and the sessions with those results attached for display.
@@ -24,8 +31,9 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
   const requestedRef = useRef(new Set<string>());
   // The anger mark, keyed by session id: whether the latest judged turn had an abusive message, with that turn's reply
   // time. It stays until the next turn's verdict, also while the next turn is working, and isn't changed by a failed
-  // request (docs/design.md "Anger mark for abuse toward the AI")
-  const [anger, setAnger] = useState<Record<string, { at: number; angry: boolean }>>({});
+  // request (docs/design.md "Anger mark for abuse toward the AI"). A kept turn isn't asked again, so its mark comes
+  // from the kept answers (keptAnger) and the newer of the two is shown
+  const [anger, setAnger] = useState<Record<string, Anger>>({});
   const setUpRef = useRef(false);
   useEffect(() => {
     setUpRef.current = summarySetUp;
@@ -133,7 +141,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
     () =>
       sessions.map((s) => {
         // The anger mark only works while a summary provider is set up, so removing it clears the mark
-        const angry = s.angry ?? (summarySetUp ? anger[s.id]?.angry : undefined);
+        const angry = s.angry ?? (summarySetUp ? newerAnger(keptAnger(kept, s.id), anger[s.id])?.angry : undefined);
         if (angry !== undefined && s.angry === undefined) s = { ...s, angry };
         const key = s.reply ? turnKey(s.id, s.reply.at) : undefined;
         const turn = key ? (kept.get(key) ?? turns[key]) : undefined;

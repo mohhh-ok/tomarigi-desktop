@@ -411,7 +411,7 @@ Tests (table tests calling the same functions as the app; names and ids are made
 ## Anger mark for abuse toward the AI
 
 - The summary request of a turn also gets the user's messages sent since the previous turn ended (see "Turn verdicts") and answers whether any of them is abusive toward the AI. If one is, an anger mark is put on that session's bird when the turn ends
-- The mark stays until the next turn's verdict. The mark is shown when the turn ends, not right after the message is sent: the user looks at the bird to read the bubble when the turn ends, before writing the next message, and this costs no extra request (the user chose this over a separate request per message: 「1でいいかもな」, then 「いいよ」)
+- The mark stays until the next turn's verdict, also after a reload or a restart: a turn with a kept answer isn't asked again (see "Turn verdicts"), so the mark comes from the kept answer of the session's latest turn (`keptAnger` in `src/lib/turn-verdict-store.ts`). The mark is shown when the turn ends, not right after the message is sent: the user looks at the bird to read the bubble when the turn ends, before writing the next message, and this costs no extra request (the user chose this over a separate request per message: 「1でいいかもな」, then 「いいよ」)
 - The anger mark is another kind of the same badge component as the "?", shared by all icon sets
 - No separate on/off setting: it is used whenever a summary provider is set up. The settings screen's AI section says that the user's own messages are sent too (all locales)
 - When the "?" is shown at the same time, both are shown: the "?" stays at the top right, the anger mark goes at the top left

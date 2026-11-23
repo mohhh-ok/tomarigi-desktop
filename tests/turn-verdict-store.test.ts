@@ -4,7 +4,9 @@ import { describe, expect, test } from "bun:test";
 import type { TurnOutcome } from "../src/lib/summarize.ts";
 import {
   keepTurnVerdict,
+  keptAnger,
   MAX_KEPT_TURN_VERDICTS,
+  newerAnger,
   parseKeptTurnVerdicts,
   shouldAskTurn,
   type KeptTurnVerdicts,
@@ -54,5 +56,41 @@ describe("kept turn verdicts", () => {
     expect(shouldAskTurn("s:2", true, new Set(), null)).toBe(false);
     expect(shouldAskTurn("s:2", true, new Set(["s:2"]), kept)).toBe(false);
     expect(shouldAskTurn("s:2", false, new Set(), kept)).toBe(false);
+  });
+});
+
+// A kept turn isn't asked again, so after a reload or a restart the anger mark comes from the kept answers
+// (docs/design.md "Anger mark for abuse toward the AI": it stays until the next turn's verdict)
+describe("anger mark from kept verdicts", () => {
+  const abusive: TurnOutcome = { ...notAsking, abusive: true };
+
+  test("the latest kept turn of the session decides, whatever order they were kept in", () => {
+    const list: KeptTurnVerdicts = [
+      ["s:300", abusive],
+      ["s:100", notAsking],
+      ["other:400", notAsking],
+    ];
+    expect(keptAnger(list, "s")).toEqual({ at: 300, angry: true });
+    expect(keptAnger([...list, ["s:500", notAsking]], "s")).toEqual({ at: 500, angry: false });
+  });
+
+  test("turns of another session, or a session whose id starts the same, don't count", () => {
+    const list: KeptTurnVerdicts = [["s:x:200", abusive], ["sx:300", abusive]];
+    expect(keptAnger(list, "s")).toBeUndefined();
+    expect(keptAnger(list, "s:x")).toEqual({ at: 200, angry: true });
+  });
+
+  test("a verdict without abusive leaves the earlier turn's mark", () => {
+    const { abusive: _, ...noAbusive } = notAsking;
+    const list: KeptTurnVerdicts = [["s:100", abusive], ["s:200", noAbusive]];
+    expect(keptAnger(list, "s")).toEqual({ at: 100, angry: true });
+  });
+
+  test("the newer of the kept and the just answered turn is shown", () => {
+    const kept = { at: 100, angry: true };
+    expect(newerAnger(kept, { at: 200, angry: false })).toEqual({ at: 200, angry: false });
+    expect(newerAnger({ at: 300, angry: true }, { at: 200, angry: false })).toEqual({ at: 300, angry: true });
+    expect(newerAnger(undefined, kept)).toEqual(kept);
+    expect(newerAnger(kept, undefined)).toEqual(kept);
   });
 });

@@ -8,8 +8,41 @@ export const MAX_KEPT_TURN_VERDICTS = 200;
 
 const KEY_TURN_VERDICTS = "turnVerdicts";
 
-/** Turn key (turnKey in perch/use-turn-judgements.ts) and its verdict, oldest first */
+/** Identifies a turn for the turn verdict. Same basis as the done event key (sessionId + time of the last response) */
+export function turnKey(sessionId: string, at: number): string {
+  return `${sessionId}:${at}`;
+}
+
+/** Turn key (turnKey) and its verdict, oldest first */
 export type KeptTurnVerdicts = [string, TurnOutcome][];
+
+/** Whether a session's bird has the anger mark, from the verdict of the turn whose last reply was at `at` */
+export type Anger = { at: number; angry: boolean };
+
+/**
+ * The anger mark from a session's kept verdicts: abusive of its latest turn (by reply time) whose verdict has it. A kept
+ * turn isn't asked again, so after a reload or a restart the mark comes from here, and it stays until the next turn's
+ * verdict (docs/design.md "Anger mark for abuse toward the AI")
+ */
+export function keptAnger(list: Iterable<[string, TurnOutcome]>, sessionId: string): Anger | undefined {
+  const prefix = `${sessionId}:`;
+  let latest: Anger | undefined;
+  for (const [key, outcome] of list) {
+    if (!key.startsWith(prefix) || outcome.abusive === undefined) continue;
+    const rest = key.slice(prefix.length);
+    const at = Number(rest);
+    if (rest === "" || !Number.isFinite(at)) continue;
+    if (!latest || at > latest.at) latest = { at, angry: outcome.abusive };
+  }
+  return latest;
+}
+
+/** The anger of the newer turn */
+export function newerAnger(a: Anger | undefined, b: Anger | undefined): Anger | undefined {
+  if (!a) return b;
+  if (!b) return a;
+  return b.at > a.at ? b : a;
+}
 
 /** The list with key's verdict added last. A key already kept keeps its first verdict */
 export function keepTurnVerdict(list: KeptTurnVerdicts, key: string, outcome: TurnOutcome): KeptTurnVerdicts {
