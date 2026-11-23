@@ -92,7 +92,7 @@ test("a watching session is continuing whatever its reply says; otherwise the tu
 });
 
 test("continuing from the reply's text expires 30 minutes after the last write; continuing from watching doesn't", () => {
-  // The user: 「30min」. kigen-card-inputs2 waited 46 hours on a parent that had gone
+  // The user: 「30min」. app-w waited 46 hours on a parent that had gone
   const MIN = 60_000;
   expect(TEXT_CONTINUING_EXPIRES_MS).toBe(30 * MIN);
   const rows: [
