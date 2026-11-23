@@ -5,7 +5,7 @@
 import type { TailInfo } from "./transcript";
 import type { BackgroundTask, ChickView, Wake } from "./session-types";
 import { unwakeableCache, wakeCache } from "./session-store";
-import { BACKGROUND_TASK_STALE_MS } from "./session-events";
+import { isBackgroundTaskRunning, isChickRunning } from "./session-activity";
 
 /**
  * How long after its start a session another session started from a terminal, still linked to no one, counts as one that
@@ -42,14 +42,6 @@ export function pendingWakeOf(wakes: ReadonlyMap<string, Wake>, now: number): bo
   return false;
 }
 
-/** Whether a background command is still running (no completion notification, and not stale; see deriveDoneEvent) */
-export function runningBackgroundTaskOf(tasks: ReadonlyMap<string, BackgroundTask>, now: number): boolean {
-  for (const t of tasks.values()) {
-    if (t.endedAt === undefined && now - t.startedAt < BACKGROUND_TASK_STALE_MS) return true;
-  }
-  return false;
-}
-
 /** A session another session started, as freshUnlinkedChild sees it */
 export interface ChildCandidate {
   rootId: string;
@@ -75,20 +67,20 @@ export function rootsWithFreshUnlinkedChild(candidates: ChildCandidate[], now: n
 
 /**
  * Whether anything the app sees can start the session's next turn without the user: a running background command, a
- * working chick, a pending wakeup / cron / monitor, or, in its config root, a child started by another session that is
+ * running chick (not abandoned), a pending wakeup / cron / monitor, or, in its config root, a child started by another session that is
  * linked to no one yet. Watching is handled by sessionContinuing itself
  */
 export function wakeSourceOf(input: {
   backgroundTasks: ReadonlyMap<string, BackgroundTask>;
   wakes: ReadonlyMap<string, Wake>;
-  chicks: Pick<ChickView, "state">[];
+  chicks: Pick<ChickView, "state" | "sinceMs">[];
   freshUnlinkedChild: boolean;
   now: number;
 }): boolean {
   const { backgroundTasks, wakes, chicks, freshUnlinkedChild, now } = input;
   return (
-    runningBackgroundTaskOf(backgroundTasks, now) ||
-    chicks.some((c) => c.state !== "done" && c.state !== "dozing") ||
+    [...backgroundTasks.values()].some((t) => isBackgroundTaskRunning(t, now)) ||
+    chicks.some(isChickRunning) ||
     pendingWakeOf(wakes, now) ||
     freshUnlinkedChild
   );

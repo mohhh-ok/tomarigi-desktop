@@ -4,8 +4,8 @@ import type { BackgroundTask, ChickView, SessionEvent } from "./session-types";
 import { backgroundTaskCache } from "./session-store";
 import { isWaitingTool, tailWaitOf } from "./bird-state";
 import { formatSnippet } from "./session-snippet";
+import { isBackgroundTaskRunning, isChickRunning } from "./session-activity";
 
-const CHICK_ABANDONED_MS = 10 * 60_000; // a chick stuck in working with no writes for longer than this is treated as abandoned and not used to suppress done (threshold for abandoned chicks)
 // Grace period, after a done suppressed while waiting on chicks is released, to wait for the parent to
 // restart (cancel). The harness auto-restart after a background chick finishes was measured at about 3
 // seconds after completion, so 30 seconds covers the normal case. If a known harness notification-delay bug
@@ -13,11 +13,6 @@ const CHICK_ABANDONED_MS = 10 * 60_000; // a chick stuck in working with no writ
 // the later restarted turn, but we accept that as a better degradation than staying silent (a recurrence of
 // the actual problem)
 const DONE_GRACE_MS = 30_000;
-// Background tasks older than this with no completion notification are not used to suppress done.
-// An escape hatch for when the notification line is missed (more than 64KB written between 3-second polls,
-// timers throttled in a hidden tab, etc.) and suppression would never lift. A done released this way has an
-// old at=T, so App.tsx's freshness guard keeps it silent (i.e. this value doesn't cause false fires)
-export const BACKGROUND_TASK_STALE_MS = 30 * 60_000;
 
 /**
  * Derives a session's transition events (started, waiting for reply, done, closed) from the tail's event list.
@@ -203,10 +198,8 @@ export function deriveDoneEvent(
   let lastTaskEndAfterT: number | undefined;
   for (const task of backgroundTasks.values()) {
     if (task.startedAt > t) continue;
-    if (task.endedAt === undefined) {
-      if (now - task.startedAt < BACKGROUND_TASK_STALE_MS) return null; // running → suppress
-      continue; // the notification may have been missed (see BACKGROUND_TASK_STALE_MS)
-    }
+    if (isBackgroundTaskRunning(task, now)) return null; // running → suppress
+    if (task.endedAt === undefined) continue; // the notification may have been missed (see BACKGROUND_TASK_STALE_MS)
     if (task.endedAt > t) lastTaskEndAfterT = Math.max(lastTaskEndAfterT ?? 0, task.endedAt);
   }
 
@@ -215,11 +208,8 @@ export function deriveDoneEvent(
   // If this came after the wasAnyChickAliveAfterT check, on the first scan right after the parent's turn end
   // there is a moment where even a running chick's last write is still before T, and just at that moment
   // wasAnyChickAliveAfterT would be misjudged as false and fall through to the normal immediate-fire path
-  for (const chick of chicks) {
-    if (chick.state === "done" || chick.state === "dozing") continue; // finished chicks don't matter
-    if (chick.sinceMs < CHICK_ABANDONED_MS) return null; // suppress if even one chick looks like it is running
-    // sinceMs >= CHICK_ABANDONED_MS: stuck in working with no writes for a long time = treated as abandoned and ignored
-  }
+  // Chicks stuck in working with no writes for CHICK_ABANDONED_MS are treated as abandoned and ignored
+  if (chicks.some(isChickRunning)) return null;
 
   // A background task finished after T. As with chick release: muted if the parent has resumed; while waiting
   // for it to resume, grace up to DONE_GRACE_MS; if it still hasn't resumed, timeout fire

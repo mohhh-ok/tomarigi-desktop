@@ -109,9 +109,17 @@ describe("continuing from the reply's text and what can wake the session", () =>
   });
 
   test("a chick still works: continuing holds", async () => {
-    const wakeable = wakeSourceOf({ ...(await ledgersOf(saysNextStep)), ...stopped, chicks: [{ state: "working" }] });
+    const wakeable = wakeSourceOf({ ...(await ledgersOf(saysNextStep)), ...stopped, chicks: [{ state: "working", sinceMs: MIN }] });
     expect(wakeable).toBe(true);
-    expect(wakeSourceOf({ ...(await ledgersOf(saysNextStep)), ...stopped, chicks: [{ state: "done" }] })).toBe(false);
+    expect(wakeSourceOf({ ...(await ledgersOf(saysNextStep)), ...stopped, chicks: [{ state: "done", sinceMs: MIN }] })).toBe(false);
+  });
+
+  test("an abandoned chick (its last line a tool_use, unwritten for over 10 minutes) doesn't hold it: continuing ends", async () => {
+    const abandoned = { state: "working" as const, sinceMs: 10 * MIN + 1 };
+    const wakeable = wakeSourceOf({ ...(await ledgersOf(saysNextStep)), ...stopped, chicks: [abandoned] });
+    expect(wakeable).toBe(false);
+    const unwakeableForMs = unwakeableForMsOf("v", wakeable, T0 + 60_100, NOW);
+    expect(sessionContinuing(true, undefined, 4 * MIN, unwakeableForMs)).toEqual({ continuing: false, expired: true, expiredForMs: NOW - (T0 + 60_100) });
   });
 
   test("a scheduled wakeup that hasn't fired holds it; one that fired or was stopped doesn't", async () => {
