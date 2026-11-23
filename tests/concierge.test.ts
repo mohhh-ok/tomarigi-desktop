@@ -450,21 +450,21 @@ test("the name check: compared after NFKC and lower case, a cut name without its
 
 test("an advice about a session without its name is shown with the name put in front", async () => {
   const payload = buildConciergePayload(
-    [{ view: view("y", { project: "yokai-no-sensei", state: "done" }) }, { view: view("a", { state: "working" }) }],
+    [{ view: view("y", { project: "app-x-render", state: "done" }) }, { view: view("a", { state: "working" }) }],
     [], [], NOW, "ja",
   );
   const answer = { advice: "完了したセッションの成果物を順に確認してください", session_id: "y" };
   const unnamed = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: answer as V });
   expect(await askConcierge("openai", payload, unnamed)).toEqual({
     ok: true,
-    verdict: { line: "yokai-no-sensei: 完了したセッションの成果物を順に確認してください", targetId: "y" },
+    verdict: { line: "app-x-render: 完了したセッションの成果物を順に確認してください", targetId: "y" },
     answer,
   });
   // Without a target (none, or an id that wasn't sent) the advice is shown as before
   const noTarget = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "全体を見直す", session_id: "" } as V });
   expect(await askConcierge("openai", payload, noTarget)).toMatchObject({ verdict: { line: "全体を見直す" } });
-  const named = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "yokai-no-senseiが終わりました", session_id: "y" } as V });
-  expect(await askConcierge("openai", payload, named)).toMatchObject({ verdict: { line: "yokai-no-senseiが終わりました", targetId: "y" } });
+  const named = async <V>(): Promise<JudgeResult<V>> => ({ ok: true, verdict: { advice: "app-x-renderが終わりました", session_id: "y" } as V });
+  expect(await askConcierge("openai", payload, named)).toMatchObject({ verdict: { line: "app-x-renderが終わりました", targetId: "y" } });
   expect(CONCIERGE_TASK.systemPrompt).toContain("one without the name is not shown");
 });
 

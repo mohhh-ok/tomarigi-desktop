@@ -20,13 +20,16 @@ function fileOf(lines: object[]): NativeFile {
   } as unknown as NativeFile;
 }
 
+const BASE = Date.parse("2026-01-01T00:00:00.000Z");
+const at = (ms: number) => new Date(BASE + ms).toISOString();
+
 const reply = {
   type: "assistant",
-  timestamp: "2026-11-23T00:51:50.853Z",
-  message: { content: [{ type: "text", text: "手元のターミナルでコマンドを打ち、パスワードを入れてください。" }] },
+  timestamp: at(0),
+  message: { content: [{ type: "text", text: "コマンドを実行したら教えてください。" }] },
 };
-const hook = { type: "system", subtype: "stop_hook_summary", timestamp: "2026-11-23T00:51:51.451Z" };
-const end = { type: "system", subtype: "turn_duration", timestamp: "2026-11-23T00:51:51.453Z" };
+const hook = { type: "system", subtype: "stop_hook_summary", timestamp: at(600) };
+const end = { type: "system", subtype: "turn_duration", timestamp: at(602) };
 const stateAfter = async (lines: object[], ms: number) => {
   const tail = await readTail(fileOf(lines));
   return deriveState(tail, ms, false);
@@ -44,7 +47,7 @@ describe("a turn marked as over", () => {
   });
 
   test("the next prompt after it is working again", async () => {
-    const prompt = { type: "user", timestamp: "2026-11-23T00:52:50.000Z", origin: { kind: "human" }, message: { content: "打ちました" } };
+    const prompt = { type: "user", timestamp: at(60_000), origin: { kind: "human" }, message: { content: "打ちました" } };
     expect(await stateAfter([reply, hook, end, prompt], 1_000)).toBe("working");
   });
 
@@ -52,17 +55,17 @@ describe("a turn marked as over", () => {
     const peer = {
       type: "user",
       isMeta: true,
-      timestamp: "2026-11-23T00:52:00.000Z",
+      timestamp: at(10_000),
       origin: { kind: "peer", name: "hub-1" },
       message: { content: "Another Claude session sent a message: …" },
     };
-    const queued = { type: "queue-operation", operation: "enqueue", timestamp: "2026-11-23T00:52:00.000Z", content: "x" };
+    const queued = { type: "queue-operation", operation: "enqueue", timestamp: at(10_000), content: "x" };
     expect(await stateAfter([reply, hook, end, peer], 1_000)).toBe("working");
     expect(await stateAfter([reply, hook, end, queued], 1_000)).toBe("working");
   });
 
   test("the away recap after it doesn't undo it", async () => {
-    const away = { type: "system", subtype: "away_summary", timestamp: "2026-11-23T00:55:00.000Z", content: "x" };
+    const away = { type: "system", subtype: "away_summary", timestamp: at(190_000), content: "x" };
     const tail = await readTail(fileOf([reply, hook, end, away]));
     expect(tail.turnEnded).toBe(true);
   });

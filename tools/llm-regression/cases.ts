@@ -379,7 +379,7 @@ https://www.example.com/help
     want: { asking: true, continuing: false },
   },
   {
-    // asking is not checked: Haiku said yes in 6 of 16 runs (2026-11-23, prompt unchanged), and a check that fails on
+    // asking is not checked: Haiku said yes in 6 of 16 runs (prompt unchanged), and a check that fails on
     // every run of the test would hide the other scenes' results. It is kept to measure that rate when the prompt
     // changes (docs/design.md "Turn verdicts", one verdict per turn)
     kind: "turn",

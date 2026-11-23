@@ -26,7 +26,7 @@ function fileOf(lines: object[]): NativeFile {
   } as unknown as NativeFile;
 }
 
-const at = (s: number) => `2026-11-23T00:${String(8 + Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}.000Z`;
+const at = (s: number) => `2026-01-01T00:${String(8 + Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}.000Z`;
 const say = (s: number, text: string) => ({ type: "assistant", timestamp: at(s), message: { content: [{ type: "text", text }] } });
 const tool = (s: number, name: string, input: object) => ({
   type: "assistant",
