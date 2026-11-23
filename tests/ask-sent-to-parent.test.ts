@@ -51,15 +51,15 @@ const CHILD_LINES = [
   { type: "user", timestamp: at(0), turnOrigin: "peer", origin: { kind: "human" }, message: { content: "# 担当: app-x-chores\n親のセッション名: hub-1" } },
   tool(10, "SendMessage", { to: "hub-1", message: "起動しました" }),
   result(11),
-  say(60, "エラーの一覧を取るには、次の URL をブラウザで開いて許可してください。\nhttps://login.example.com/authorize?state=x"),
+  say(60, "続きにはサインインが要ります。下の URL で許可をお願いします。\nhttps://login.example.com/authorize?state=x"),
   fromPeer(400, GRANDCHILD.name, GRANDCHILD.pid),
-  tool(410, "SendMessage", { to: GRANDCHILD.name, message: "コンテナは立てない" }),
+  tool(410, "SendMessage", { to: GRANDCHILD.name, message: "まず一覧だけ見てください" }),
   result(411),
-  say(418, "まだ未認証です。前のメッセージの URL を開いて許可していただければ、一覧に進みます。"),
+  say(418, "まだサインインできていません。先ほど貼った URL を開いて許可してもらえたら、続きに進みます。"),
   fromPeer(419, GRANDCHILD.name, GRANDCHILD.pid),
   tool(425, "Bash", { command: "ls" }),
   result(426),
-  say(443, "まだ未認証のままです。前に送った URL で許可していただくのを待っています。"),
+  say(443, "サインインはまだ終わっていません。先ほどの URL から許可してもらえるのを待っています。"),
 ];
 
 function watchOf(): Pick<
