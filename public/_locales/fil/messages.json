@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "I-on ang \"Basahin gamit ang boses\" sa itaas para marinig ang pagbasa."
+  },
+  "agentAccessHeading": {
+    "message": "AI agent"
+  },
+  "agentAccessEnable": {
+    "message": "Hayaang baguhin ng AI agent ang mga setting"
+  },
+  "agentAccessDescription": {
+    "message": "Mababasa at mababago ng iyong coding agent (Claude Code o iba pang gumagamit ng MCP) ang mga setting sa screen na ito, masusubok ang koneksyon, at makapagpapatugtog ng sample. Nananatili rito ang mga API key: hindi ito mababasa o maitatakda ng agent."
+  },
+  "agentAccessCommandHint": {
+    "message": "Patakbuhin ito nang isang beses sa terminal. Pagkatapos ay sabihin sa agent, halimbawa: “Gawing VOICEVOX ang boses ng pagbasa”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Nagbago ang command, kaya hindi na gagana ang pinatakbo mo dati. Alisin muna ang lumang rehistro, saka patakbuhin ang command sa itaas:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopyahin ang command"
+  },
+  "agentAccessCopied": {
+    "message": "Nakopya"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Maglagay ng port mula 1024 hanggang 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "May ibang app na gumagamit ng port na ito. Pumili ng ibang port."
+  },
+  "agentAccessRenewButton": {
+    "message": "I-renew ang token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Kailangan ang key store ng system para itago ang token, at walang available sa computer na ito."
+  },
+  "agentAccessStartFailed": {
+    "message": "Hindi masimulan ang server. Nasa log ng app ang dahilan."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Binago ng agent"
+  },
+  "agentNoteTitle": {
+    "message": "Binago ng AI agent ang isang setting"
+  },
+  "agentNoteOn": {
+    "message": "Naka-on"
+  },
+  "agentNoteOff": {
+    "message": "Naka-off"
+  },
+  "agentNoteNotSet": {
+    "message": "Hindi nakatakda"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI para sa mga buod"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Lakas ng tunog"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Lakas ng pagbasa"
   }
 }

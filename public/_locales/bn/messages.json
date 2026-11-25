@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "পড়ে শোনানো শুনতে উপরের \"কণ্ঠে পড়ে শোনানো\" চালু করুন।"
+  },
+  "agentAccessHeading": {
+    "message": "AI এজেন্ট"
+  },
+  "agentAccessEnable": {
+    "message": "AI এজেন্টকে সেটিংস বদলাতে দিন"
+  },
+  "agentAccessDescription": {
+    "message": "আপনার কোডিং এজেন্ট (Claude Code বা MCP ব্যবহার করে এমন অন্য কেউ) এই স্ক্রিনের সেটিংস পড়তে ও বদলাতে, সংযোগ পরীক্ষা করতে এবং নমুনা বাজাতে পারে। API কী এখানেই থাকে: এজেন্ট সেগুলো পড়তে বা সেট করতে পারে না।"
+  },
+  "agentAccessCommandHint": {
+    "message": "টার্মিনালে এটি একবার চালান। তারপর এজেন্টকে বলুন, যেমন “পড়ার কণ্ঠ VOICEVOX করে দাও”।"
+  },
+  "agentAccessReplaceHint": {
+    "message": "কমান্ড বদলে গেছে, আগেরটি আর কাজ করবে না। আগে পুরোনো নিবন্ধন সরান, তারপর উপরের কমান্ডটি চালান:"
+  },
+  "agentAccessCopyButton": {
+    "message": "কমান্ড কপি করুন"
+  },
+  "agentAccessCopied": {
+    "message": "কপি হয়েছে"
+  },
+  "agentAccessPortLabel": {
+    "message": "পোর্ট"
+  },
+  "agentAccessPortInvalid": {
+    "message": "1024 থেকে 65535-এর মধ্যে একটি পোর্ট লিখুন।"
+  },
+  "agentAccessPortInUse": {
+    "message": "অন্য একটি অ্যাপ এই পোর্ট ব্যবহার করছে। অন্য পোর্ট বেছে নিন।"
+  },
+  "agentAccessRenewButton": {
+    "message": "টোকেন নতুন করুন"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "টোকেন রাখতে সিস্টেমের কী স্টোর দরকার, যা এই কম্পিউটারে নেই।"
+  },
+  "agentAccessStartFailed": {
+    "message": "সার্ভার চালু করা যায়নি। কারণ অ্যাপ লগে আছে।"
+  },
+  "agentAccessRecentHeading": {
+    "message": "এজেন্ট যা বদলেছে"
+  },
+  "agentNoteTitle": {
+    "message": "AI এজেন্ট একটি সেটিং বদলেছে"
+  },
+  "agentNoteOn": {
+    "message": "চালু"
+  },
+  "agentNoteOff": {
+    "message": "বন্ধ"
+  },
+  "agentNoteNotSet": {
+    "message": "সেট করা নেই"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "সারাংশের জন্য AI"
+  },
+  "agentNoteChirpVolume": {
+    "message": "শব্দের ভলিউম"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "পড়ার ভলিউম"
   }
 }

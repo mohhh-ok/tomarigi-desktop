@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Kad girdėtumėte skaitymą, viršuje įjunkite „Skaityti balsu“."
+  },
+  "agentAccessHeading": {
+    "message": "DI agentas"
+  },
+  "agentAccessEnable": {
+    "message": "Leisti DI agentui keisti nustatymus"
+  },
+  "agentAccessDescription": {
+    "message": "Jūsų programavimo agentas (Claude Code ar kitas, palaikantis MCP) gali skaityti ir keisti šio ekrano nustatymus, tikrinti ryšį ir paleisti pavyzdį. API raktai lieka čia: agentas negali jų skaityti ar nustatyti."
+  },
+  "agentAccessCommandHint": {
+    "message": "Paleiskite tai vieną kartą terminale. Tada paprašykite agento, pvz., „Perjunk skaitymo balsą į VOICEVOX“."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Komanda pasikeitė, todėl ankstesnė nebeveikia. Pirmiausia pašalinkite seną registraciją, tada paleiskite komandą viršuje:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopijuoti komandą"
+  },
+  "agentAccessCopied": {
+    "message": "Nukopijuota"
+  },
+  "agentAccessPortLabel": {
+    "message": "Prievadas"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Įveskite prievadą nuo 1024 iki 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Šį prievadą naudoja kita programa. Pasirinkite kitą prievadą."
+  },
+  "agentAccessRenewButton": {
+    "message": "Atnaujinti prieigos raktą"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Prieigos raktui laikyti reikia sistemos raktų saugyklos, o šiame kompiuteryje jos nėra."
+  },
+  "agentAccessStartFailed": {
+    "message": "Nepavyko paleisti serverio. Priežastis yra programos žurnale."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Pakeitė agentas"
+  },
+  "agentNoteTitle": {
+    "message": "DI agentas pakeitė nustatymą"
+  },
+  "agentNoteOn": {
+    "message": "Įj."
+  },
+  "agentNoteOff": {
+    "message": "Išj."
+  },
+  "agentNoteNotSet": {
+    "message": "Nenustatyta"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "DI santraukoms"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Garso garsumas"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Skaitymo garsumas"
   }
 }

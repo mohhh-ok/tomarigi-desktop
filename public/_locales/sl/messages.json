@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Če želite slišati branje, zgoraj vklopite »Preberi z glasom«."
+  },
+  "agentAccessHeading": {
+    "message": "Agent UI"
+  },
+  "agentAccessEnable": {
+    "message": "Dovoli agentu UI spreminjati nastavitve"
+  },
+  "agentAccessDescription": {
+    "message": "Vaš agent za programiranje (Claude Code ali drug, ki podpira MCP) lahko bere in spreminja nastavitve na tem zaslonu, preizkusi povezavo in predvaja vzorec. Ključi API ostanejo tukaj: agent jih ne more brati ali nastaviti."
+  },
+  "agentAccessCommandHint": {
+    "message": "To enkrat zaženite v terminalu. Nato agenta prosite, npr. »Preklopi glas branja na VOICEVOX«."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Ukaz se je spremenil, zato prejšnji ne deluje več. Najprej odstranite staro registracijo, nato zaženite zgornji ukaz:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopiraj ukaz"
+  },
+  "agentAccessCopied": {
+    "message": "Kopirano"
+  },
+  "agentAccessPortLabel": {
+    "message": "Vrata"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Vnesite vrata od 1024 do 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Ta vrata uporablja druga aplikacija. Izberite druga vrata."
+  },
+  "agentAccessRenewButton": {
+    "message": "Obnovi žeton"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Za hrambo žetona je potrebna sistemska shramba ključev, ki pa v tem računalniku ni na voljo."
+  },
+  "agentAccessStartFailed": {
+    "message": "Strežnika ni bilo mogoče zagnati. Razlog je v dnevniku aplikacije."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Spremenil agent"
+  },
+  "agentNoteTitle": {
+    "message": "Agent UI je spremenil nastavitev"
+  },
+  "agentNoteOn": {
+    "message": "Vklop"
+  },
+  "agentNoteOff": {
+    "message": "Izklop"
+  },
+  "agentNoteNotSet": {
+    "message": "Ni nastavljeno"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "UI za povzetke"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Glasnost zvoka"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Glasnost branja"
   }
 }

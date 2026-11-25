@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Activa «Leer en voz alta» arriba para escuchar las lecturas."
+  },
+  "agentAccessHeading": {
+    "message": "Agente de IA"
+  },
+  "agentAccessEnable": {
+    "message": "Permitir que un agente de IA cambie la configuración"
+  },
+  "agentAccessDescription": {
+    "message": "Tu agente de programación (Claude Code u otro que use MCP) puede leer y cambiar la configuración de esta pantalla, probar la conexión y reproducir una muestra. Las claves de API se quedan aquí: el agente no puede leerlas ni configurarlas."
+  },
+  "agentAccessCommandHint": {
+    "message": "Ejecuta esto una vez en una terminal. Después pídeselo al agente, por ejemplo: “Cambia la voz de lectura a VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "El comando cambió, así que el que ejecutaste antes ya no funciona. Quita primero el registro anterior y luego ejecuta el comando de arriba:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Copiar comando"
+  },
+  "agentAccessCopied": {
+    "message": "Copiado"
+  },
+  "agentAccessPortLabel": {
+    "message": "Puerto"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Ingresa un puerto entre 1024 y 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Otra app está usando este puerto. Elige otro puerto."
+  },
+  "agentAccessRenewButton": {
+    "message": "Renovar token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Necesita el almacén de claves del sistema para guardar su token, y no hay ninguno disponible en esta computadora."
+  },
+  "agentAccessStartFailed": {
+    "message": "No se pudo iniciar el servidor. El motivo está en el registro de la app."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Cambiado por el agente"
+  },
+  "agentNoteTitle": {
+    "message": "El agente de IA cambió una configuración"
+  },
+  "agentNoteOn": {
+    "message": "Activado"
+  },
+  "agentNoteOff": {
+    "message": "Desactivado"
+  },
+  "agentNoteNotSet": {
+    "message": "Sin configurar"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "IA para resúmenes"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volumen del sonido"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Volumen de lectura"
   }
 }

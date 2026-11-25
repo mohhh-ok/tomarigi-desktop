@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Ενεργοποιήστε παραπάνω το «Ανάγνωση με φωνή» για να ακούτε τις αναγνώσεις."
+  },
+  "agentAccessHeading": {
+    "message": "Πράκτορας AI"
+  },
+  "agentAccessEnable": {
+    "message": "Να επιτρέπεται σε πράκτορα AI να αλλάζει τις ρυθμίσεις"
+  },
+  "agentAccessDescription": {
+    "message": "Ο πράκτορας προγραμματισμού σας (Claude Code ή άλλος που υποστηρίζει MCP) μπορεί να διαβάζει και να αλλάζει τις ρυθμίσεις αυτής της οθόνης, να ελέγχει τη σύνδεση και να παίζει δείγμα. Τα κλειδιά API μένουν εδώ: ο πράκτορας δεν μπορεί να τα διαβάσει ή να τα ορίσει."
+  },
+  "agentAccessCommandHint": {
+    "message": "Εκτελέστε το μία φορά σε ένα τερματικό. Μετά ζητήστε από τον πράκτορα, π.χ. «Άλλαξε τη φωνή ανάγνωσης σε VOICEVOX»."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Η εντολή άλλαξε, οπότε αυτή που εκτελέσατε πριν δεν λειτουργεί πια. Αφαιρέστε πρώτα την παλιά καταχώριση και μετά εκτελέστε την παραπάνω εντολή:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Αντιγραφή εντολής"
+  },
+  "agentAccessCopied": {
+    "message": "Αντιγράφηκε"
+  },
+  "agentAccessPortLabel": {
+    "message": "Θύρα"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Εισαγάγετε θύρα από 1024 έως 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Αυτή τη θύρα τη χρησιμοποιεί άλλη εφαρμογή. Επιλέξτε άλλη θύρα."
+  },
+  "agentAccessRenewButton": {
+    "message": "Ανανέωση token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Χρειάζεται το χώρο κλειδιών του συστήματος για να κρατήσει το token, και δεν υπάρχει διαθέσιμος σε αυτόν τον υπολογιστή."
+  },
+  "agentAccessStartFailed": {
+    "message": "Δεν ήταν δυνατή η εκκίνηση του διακομιστή. Η αιτία είναι στο αρχείο καταγραφής της εφαρμογής."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Αλλαγές από τον πράκτορα"
+  },
+  "agentNoteTitle": {
+    "message": "Ο πράκτορας AI άλλαξε μια ρύθμιση"
+  },
+  "agentNoteOn": {
+    "message": "Ενεργό"
+  },
+  "agentNoteOff": {
+    "message": "Ανενεργό"
+  },
+  "agentNoteNotSet": {
+    "message": "Δεν έχει οριστεί"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI για περιλήψεις"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Ένταση ήχου"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Ένταση ανάγνωσης"
   }
 }

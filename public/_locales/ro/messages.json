@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Activează „Citește cu voce” de mai sus ca să auzi citirile."
+  },
+  "agentAccessHeading": {
+    "message": "Agent AI"
+  },
+  "agentAccessEnable": {
+    "message": "Permite unui agent AI să modifice setările"
+  },
+  "agentAccessDescription": {
+    "message": "Agentul tău de programare (Claude Code sau altul care folosește MCP) poate citi și modifica setările de pe acest ecran, poate testa conexiunea și poate reda o mostră. Cheile API rămân aici: agentul nu le poate citi sau seta."
+  },
+  "agentAccessCommandHint": {
+    "message": "Rulează asta o dată într-un terminal. Apoi cere-i agentului, de exemplu: „Schimbă vocea de citire pe VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Comanda s-a schimbat, deci cea rulată înainte nu mai funcționează. Elimină mai întâi vechea înregistrare, apoi rulează comanda de mai sus:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Copiază comanda"
+  },
+  "agentAccessCopied": {
+    "message": "Copiat"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Introdu un port între 1024 și 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Altă aplicație folosește acest port. Alege alt port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Reînnoiește tokenul"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Are nevoie de depozitul de chei al sistemului pentru token, iar pe acest computer nu există unul disponibil."
+  },
+  "agentAccessStartFailed": {
+    "message": "Serverul nu a putut porni. Motivul este în jurnalul aplicației."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Modificat de agent"
+  },
+  "agentNoteTitle": {
+    "message": "Agentul AI a modificat o setare"
+  },
+  "agentNoteOn": {
+    "message": "Pornit"
+  },
+  "agentNoteOff": {
+    "message": "Oprit"
+  },
+  "agentNoteNotSet": {
+    "message": "Nesetat"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI pentru rezumate"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volumul sunetului"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Volumul citirii"
   }
 }

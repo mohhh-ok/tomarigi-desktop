@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Activez « Lire à voix haute » ci-dessus pour entendre les lectures."
+  },
+  "agentAccessHeading": {
+    "message": "Agent IA"
+  },
+  "agentAccessEnable": {
+    "message": "Autoriser un agent IA à modifier les réglages"
+  },
+  "agentAccessDescription": {
+    "message": "Votre agent de code (Claude Code ou un autre qui parle MCP) peut lire et modifier les réglages de cet écran, tester la connexion et jouer un extrait. Les clés d'API restent ici : l'agent ne peut ni les lire ni les définir."
+  },
+  "agentAccessCommandHint": {
+    "message": "Exécutez ceci une fois dans un terminal. Ensuite, demandez à l'agent, par exemple : « Passe la voix de lecture sur VOICEVOX »."
+  },
+  "agentAccessReplaceHint": {
+    "message": "La commande a changé : celle exécutée avant ne fonctionne plus. Supprimez d'abord l'ancien enregistrement, puis exécutez la commande ci-dessus :"
+  },
+  "agentAccessCopyButton": {
+    "message": "Copier la commande"
+  },
+  "agentAccessCopied": {
+    "message": "Copié"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Saisissez un port entre 1024 et 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Une autre app utilise ce port. Choisissez un autre port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Renouveler le jeton"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Il faut le trousseau du système pour garder le jeton, et aucun n'est disponible sur cet ordinateur."
+  },
+  "agentAccessStartFailed": {
+    "message": "Impossible de démarrer le serveur. La raison figure dans le journal de l'app."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Modifié par l'agent"
+  },
+  "agentNoteTitle": {
+    "message": "L'agent IA a modifié un réglage"
+  },
+  "agentNoteOn": {
+    "message": "Activé"
+  },
+  "agentNoteOff": {
+    "message": "Désactivé"
+  },
+  "agentNoteNotSet": {
+    "message": "Non défini"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "IA des résumés"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volume du son"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Volume de lecture"
   }
 }

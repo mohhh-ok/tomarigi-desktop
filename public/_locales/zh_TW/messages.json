@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "要聽到朗讀，請開啟上方的「用語音朗讀」。"
+  },
+  "agentAccessHeading": {
+    "message": "AI 代理"
+  },
+  "agentAccessEnable": {
+    "message": "允許 AI 代理變更設定"
+  },
+  "agentAccessDescription": {
+    "message": "你的程式設計代理（Claude Code 或其他支援 MCP 的代理）可以讀取和變更此頁面上的設定，執行連線測試並試聽。API 金鑰只在這裡管理，代理無法讀取或設定。"
+  },
+  "agentAccessCommandHint": {
+    "message": "在終端機中執行一次此指令。之後就可以對代理說，例如「把朗讀的聲音換成 VOICEVOX」。"
+  },
+  "agentAccessReplaceHint": {
+    "message": "指令已變更，之前執行的指令不再有效。請先刪除舊的註冊，然後執行上面的指令："
+  },
+  "agentAccessCopyButton": {
+    "message": "複製指令"
+  },
+  "agentAccessCopied": {
+    "message": "已複製"
+  },
+  "agentAccessPortLabel": {
+    "message": "連接埠"
+  },
+  "agentAccessPortInvalid": {
+    "message": "請輸入 1024 到 65535 之間的連接埠。"
+  },
+  "agentAccessPortInUse": {
+    "message": "此連接埠已被其他應用程式使用。請換一個連接埠。"
+  },
+  "agentAccessRenewButton": {
+    "message": "重新產生權杖"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "需要系統的金鑰儲存區來保存權杖，但這台電腦上沒有可用的。"
+  },
+  "agentAccessStartFailed": {
+    "message": "無法啟動伺服器。原因請見應用程式記錄。"
+  },
+  "agentAccessRecentHeading": {
+    "message": "代理變更的設定"
+  },
+  "agentNoteTitle": {
+    "message": "AI 代理變更了設定"
+  },
+  "agentNoteOn": {
+    "message": "開"
+  },
+  "agentNoteOff": {
+    "message": "關"
+  },
+  "agentNoteNotSet": {
+    "message": "未設定"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "用於摘要的 AI"
+  },
+  "agentNoteChirpVolume": {
+    "message": "提示音音量"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "朗讀音量"
   }
 }

@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "כדי לשמוע הקראות, הפעילו למעלה את „הקראה בקול”."
+  },
+  "agentAccessHeading": {
+    "message": "סוכן AI"
+  },
+  "agentAccessEnable": {
+    "message": "לאפשר לסוכן AI לשנות הגדרות"
+  },
+  "agentAccessDescription": {
+    "message": "סוכן הקוד שלך (Claude Code או אחר שתומך ב-MCP) יכול לקרוא ולשנות את ההגדרות במסך הזה, לבדוק את החיבור ולהשמיע דוגמה. מפתחות API נשארים כאן: הסוכן לא יכול לקרוא או להגדיר אותם."
+  },
+  "agentAccessCommandHint": {
+    "message": "הריצו את זה פעם אחת בטרמינל. אחר כך בקשו מהסוכן, למשל: ״תחליף את קול ההקראה ל-VOICEVOX״."
+  },
+  "agentAccessReplaceHint": {
+    "message": "הפקודה השתנתה, והקודמת כבר לא עובדת. הסירו קודם את הרישום הישן, ואז הריצו את הפקודה שלמעלה:"
+  },
+  "agentAccessCopyButton": {
+    "message": "העתקת הפקודה"
+  },
+  "agentAccessCopied": {
+    "message": "הועתק"
+  },
+  "agentAccessPortLabel": {
+    "message": "פורט"
+  },
+  "agentAccessPortInvalid": {
+    "message": "הזינו פורט בין 1024 ל-65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "אפליקציה אחרת משתמשת בפורט הזה. בחרו פורט אחר."
+  },
+  "agentAccessRenewButton": {
+    "message": "חידוש האסימון"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "כדי לשמור את האסימון צריך את מאגר המפתחות של המערכת, ואין כזה זמין במחשב הזה."
+  },
+  "agentAccessStartFailed": {
+    "message": "לא ניתן היה להפעיל את השרת. הסיבה מופיעה ביומן האפליקציה."
+  },
+  "agentAccessRecentHeading": {
+    "message": "שונה על ידי הסוכן"
+  },
+  "agentNoteTitle": {
+    "message": "סוכן ה-AI שינה הגדרה"
+  },
+  "agentNoteOn": {
+    "message": "פועל"
+  },
+  "agentNoteOff": {
+    "message": "כבוי"
+  },
+  "agentNoteNotSet": {
+    "message": "לא הוגדר"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI לסיכומים"
+  },
+  "agentNoteChirpVolume": {
+    "message": "עוצמת הצליל"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "עוצמת ההקראה"
   }
 }

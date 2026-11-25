@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { t, uiLanguage } from "@/lib/i18n";
 import { primeAudio } from "@/lib/chirp";
 import { pickLocalModel } from "@/lib/local-judge";
-import { checkLocalTts, isValidBaseUrl } from "@/lib/settings-checks";
+import { checkLocalTts, isValidBaseUrl, TTS_TEST_FAILURE_MESSAGE } from "@/lib/settings-checks";
 import {
   baseUrlForKind,
   DEFAULT_TTS_BASE_URL,
@@ -27,14 +27,6 @@ import { speechAvailable, type ReadoutTestResult } from "@/lib/voice";
 import { BusyButton } from "./busy-button";
 import { CancelEditButton, CardNote } from "./card-parts";
 
-const TEST_FAILURE_TEXT: Record<TtsTestFailure | "audio", Parameters<typeof t>[0]> = {
-  unreachable: "readoutTestUnreachable",
-  "wrong-server": "readoutTestWrongServer",
-  "no-voice": "readoutTestNoVoice",
-  timeout: "readoutTestTimeout",
-  server: "readoutTestServerError",
-  audio: "readoutTestAudio",
-};
 
 // Servers of each kind, shown under the type as product names (the same in every language)
 const KIND_EXAMPLES: Record<TtsKind, string> = {
@@ -424,7 +416,7 @@ function LocalTtsCard({
         </p>
       )}
       {shownTest.phase === "failure" && (
-        <p className="judge-status judge-status-error">{t(TEST_FAILURE_TEXT[shownTest.reason])}</p>
+        <p className="judge-status judge-status-error">{t(TTS_TEST_FAILURE_MESSAGE[shownTest.reason])}</p>
       )}
       {/* The sample plays either way; readouts are heard only with "Read aloud" on. Last in the card, apart from the
           server's own notes, so what was set is read first */}

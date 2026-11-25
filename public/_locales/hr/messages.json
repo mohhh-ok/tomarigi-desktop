@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Uključite gore „Čitaj naglas” da biste čuli čitanje."
+  },
+  "agentAccessHeading": {
+    "message": "AI agent"
+  },
+  "agentAccessEnable": {
+    "message": "Dopusti AI agentu da mijenja postavke"
+  },
+  "agentAccessDescription": {
+    "message": "Vaš agent za programiranje (Claude Code ili drugi koji podržava MCP) može čitati i mijenjati postavke na ovom zaslonu, testirati vezu i reproducirati uzorak. API ključevi ostaju ovdje: agent ih ne može čitati ni postaviti."
+  },
+  "agentAccessCommandHint": {
+    "message": "Pokrenite ovo jednom u terminalu. Zatim zamolite agenta, npr. „Prebaci glas čitanja na VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Naredba se promijenila pa ona koju ste prije pokrenuli više ne radi. Najprije uklonite staru registraciju, a zatim pokrenite naredbu iznad:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopiraj naredbu"
+  },
+  "agentAccessCopied": {
+    "message": "Kopirano"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Unesite vrata od 1024 do 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Ova vrata koristi druga aplikacija. Odaberite druga vrata."
+  },
+  "agentAccessRenewButton": {
+    "message": "Obnovi token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Za čuvanje tokena potrebna je sistemska pohrana ključeva, a na ovom računalu je nema."
+  },
+  "agentAccessStartFailed": {
+    "message": "Poslužitelj se nije mogao pokrenuti. Razlog je u zapisniku aplikacije."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Promijenio agent"
+  },
+  "agentNoteTitle": {
+    "message": "AI agent je promijenio postavku"
+  },
+  "agentNoteOn": {
+    "message": "Uklj."
+  },
+  "agentNoteOff": {
+    "message": "Isklj."
+  },
+  "agentNoteNotSet": {
+    "message": "Nije postavljeno"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI za sažetke"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Glasnoća zvuka"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Glasnoća čitanja"
   }
 }

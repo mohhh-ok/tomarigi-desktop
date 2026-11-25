@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "読み上げを聞くには、上の「声で読み上げる」をオンにしてください。"
+  },
+  "agentAccessHeading": {
+    "message": "AI エージェント"
+  },
+  "agentAccessEnable": {
+    "message": "AI エージェントに設定を変えさせる"
+  },
+  "agentAccessDescription": {
+    "message": "コーディングエージェント（Claude Code など MCP を使えるもの）が、この画面の設定を読み書きし、接続テストや試しの読み上げを行えます。API キーはこの画面だけで扱い、エージェントは読むことも設定することもできません。"
+  },
+  "agentAccessCommandHint": {
+    "message": "ターミナルでこれを 1 回実行してください。あとはエージェントに「読み上げの声を VOICEVOX にして」のように頼めます。"
+  },
+  "agentAccessReplaceHint": {
+    "message": "コマンドが変わったので、前に実行したものはもう使えません。先に古い登録を消してから、上のコマンドを実行してください:"
+  },
+  "agentAccessCopyButton": {
+    "message": "コマンドをコピー"
+  },
+  "agentAccessCopied": {
+    "message": "コピーしました"
+  },
+  "agentAccessPortLabel": {
+    "message": "ポート"
+  },
+  "agentAccessPortInvalid": {
+    "message": "1024〜65535 のポートを入力してください。"
+  },
+  "agentAccessPortInUse": {
+    "message": "このポートは別のアプリが使っています。別のポートにしてください。"
+  },
+  "agentAccessRenewButton": {
+    "message": "トークンを作り直す"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "トークンを置くのにシステムの鍵置き場が要りますが、このコンピューターでは使えません。"
+  },
+  "agentAccessStartFailed": {
+    "message": "サーバーを起動できませんでした。理由はアプリのログにあります。"
+  },
+  "agentAccessRecentHeading": {
+    "message": "エージェントが変えた設定"
+  },
+  "agentNoteTitle": {
+    "message": "AI エージェントが設定を変えました"
+  },
+  "agentNoteOn": {
+    "message": "オン"
+  },
+  "agentNoteOff": {
+    "message": "オフ"
+  },
+  "agentNoteNotSet": {
+    "message": "未設定"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "要約に使う AI"
+  },
+  "agentNoteChirpVolume": {
+    "message": "音の音量"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "読み上げの音量"
   }
 }

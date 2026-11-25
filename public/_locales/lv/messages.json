@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Lai dzirdētu lasīšanu, augšā ieslēdziet “Lasīt ar balsi”."
+  },
+  "agentAccessHeading": {
+    "message": "MI aģents"
+  },
+  "agentAccessEnable": {
+    "message": "Ļaut MI aģentam mainīt iestatījumus"
+  },
+  "agentAccessDescription": {
+    "message": "Jūsu programēšanas aģents (Claude Code vai cits, kas atbalsta MCP) var lasīt un mainīt šī ekrāna iestatījumus, pārbaudīt savienojumu un atskaņot paraugu. API atslēgas paliek šeit: aģents tās nevar nolasīt vai iestatīt."
+  },
+  "agentAccessCommandHint": {
+    "message": "Palaidiet šo vienreiz terminālī. Pēc tam palūdziet aģentam, piem., “Pārslēdz lasīšanas balsi uz VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Komanda ir mainījusies, tāpēc iepriekšējā vairs nedarbojas. Vispirms noņemiet veco reģistrāciju, tad palaidiet augstāk esošo komandu:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopēt komandu"
+  },
+  "agentAccessCopied": {
+    "message": "Nokopēts"
+  },
+  "agentAccessPortLabel": {
+    "message": "Ports"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Ievadiet portu no 1024 līdz 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Šo portu izmanto cita lietotne. Izvēlieties citu portu."
+  },
+  "agentAccessRenewButton": {
+    "message": "Atjaunot marķieri"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Marķiera glabāšanai vajag sistēmas atslēgu krātuvi, bet šajā datorā tās nav."
+  },
+  "agentAccessStartFailed": {
+    "message": "Serveri neizdevās palaist. Iemesls ir lietotnes žurnālā."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Mainījis aģents"
+  },
+  "agentNoteTitle": {
+    "message": "MI aģents mainīja iestatījumu"
+  },
+  "agentNoteOn": {
+    "message": "Iesl."
+  },
+  "agentNoteOff": {
+    "message": "Izsl."
+  },
+  "agentNoteNotSet": {
+    "message": "Nav iestatīts"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "MI kopsavilkumiem"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Skaņas skaļums"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Lasīšanas skaļums"
   }
 }

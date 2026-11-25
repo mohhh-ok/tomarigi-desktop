@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Ak chcete počuť čítanie, zapnite vyššie „Čítať nahlas“."
+  },
+  "agentAccessHeading": {
+    "message": "AI agent"
+  },
+  "agentAccessEnable": {
+    "message": "Povoliť AI agentovi meniť nastavenia"
+  },
+  "agentAccessDescription": {
+    "message": "Váš programovací agent (Claude Code alebo iný, ktorý ovláda MCP) môže čítať a meniť nastavenia na tejto obrazovke, testovať pripojenie a prehrať ukážku. Kľúče API zostávajú tu: agent ich nemôže čítať ani nastaviť."
+  },
+  "agentAccessCommandHint": {
+    "message": "Spustite to raz v termináli. Potom agenta požiadajte, napr. „Prepni hlas predčítania na VOICEVOX“."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Príkaz sa zmenil, takže ten predchádzajúci už nefunguje. Najprv odstráňte starú registráciu a potom spustite príkaz vyššie:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopírovať príkaz"
+  },
+  "agentAccessCopied": {
+    "message": "Skopírované"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Zadajte port od 1024 do 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Tento port používa iná aplikácia. Zvoľte iný port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Obnoviť token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Na uloženie tokenu je potrebné systémové úložisko kľúčov a na tomto počítači žiadne nie je."
+  },
+  "agentAccessStartFailed": {
+    "message": "Server sa nepodarilo spustiť. Dôvod je v protokole aplikácie."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Zmenené agentom"
+  },
+  "agentNoteTitle": {
+    "message": "AI agent zmenil nastavenie"
+  },
+  "agentNoteOn": {
+    "message": "Zap."
+  },
+  "agentNoteOff": {
+    "message": "Vyp."
+  },
+  "agentNoteNotSet": {
+    "message": "Nenastavené"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI na zhrnutia"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Hlasitosť zvuku"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Hlasitosť predčítania"
   }
 }

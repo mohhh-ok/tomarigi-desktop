@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Attiva «Leggi ad alta voce» qui sopra per sentire le letture."
+  },
+  "agentAccessHeading": {
+    "message": "Agente IA"
+  },
+  "agentAccessEnable": {
+    "message": "Consenti a un agente IA di modificare le impostazioni"
+  },
+  "agentAccessDescription": {
+    "message": "Il tuo agente di programmazione (Claude Code o un altro che usa MCP) può leggere e modificare le impostazioni di questa schermata, provare la connessione e riprodurre un esempio. Le chiavi API restano qui: l'agente non può leggerle né impostarle."
+  },
+  "agentAccessCommandHint": {
+    "message": "Esegui questo comando una volta in un terminale. Poi chiedi all'agente, ad esempio: «Passa la voce di lettura a VOICEVOX»."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Il comando è cambiato, quindi quello eseguito prima non funziona più. Rimuovi prima la vecchia registrazione, poi esegui il comando qui sopra:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Copia comando"
+  },
+  "agentAccessCopied": {
+    "message": "Copiato"
+  },
+  "agentAccessPortLabel": {
+    "message": "Porta"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Inserisci una porta da 1024 a 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Un'altra app sta usando questa porta. Scegli un'altra porta."
+  },
+  "agentAccessRenewButton": {
+    "message": "Rinnova token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Serve l'archivio chiavi del sistema per conservare il token, e su questo computer non ce n'è uno disponibile."
+  },
+  "agentAccessStartFailed": {
+    "message": "Impossibile avviare il server. Il motivo è nel registro dell'app."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Modificato dall'agente"
+  },
+  "agentNoteTitle": {
+    "message": "L'agente IA ha modificato un'impostazione"
+  },
+  "agentNoteOn": {
+    "message": "Attivo"
+  },
+  "agentNoteOff": {
+    "message": "Disattivo"
+  },
+  "agentNoteNotSet": {
+    "message": "Non impostato"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "IA per i riepiloghi"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volume del suono"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Volume di lettura"
   }
 }

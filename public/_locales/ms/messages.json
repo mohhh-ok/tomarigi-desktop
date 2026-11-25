@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Hidupkan \"Baca dengan suara\" di atas untuk mendengar bacaan."
+  },
+  "agentAccessHeading": {
+    "message": "Ejen AI"
+  },
+  "agentAccessEnable": {
+    "message": "Benarkan ejen AI menukar tetapan"
+  },
+  "agentAccessDescription": {
+    "message": "Ejen pengekodan anda (Claude Code atau yang lain yang menyokong MCP) boleh membaca dan menukar tetapan pada skrin ini, menguji sambungan dan memainkan sampel. Kunci API kekal di sini: ejen tidak boleh membaca atau menetapkannya."
+  },
+  "agentAccessCommandHint": {
+    "message": "Jalankan ini sekali dalam terminal. Kemudian minta ejen, contohnya: “Tukar suara bacaan kepada VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Arahan telah berubah, jadi yang dijalankan sebelum ini tidak berfungsi lagi. Buang pendaftaran lama dahulu, kemudian jalankan arahan di atas:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Salin arahan"
+  },
+  "agentAccessCopied": {
+    "message": "Disalin"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Masukkan port dari 1024 hingga 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Aplikasi lain sedang menggunakan port ini. Pilih port lain."
+  },
+  "agentAccessRenewButton": {
+    "message": "Perbaharui token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Ini memerlukan stor kunci sistem untuk menyimpan token, dan tiada yang tersedia pada komputer ini."
+  },
+  "agentAccessStartFailed": {
+    "message": "Pelayan tidak dapat dimulakan. Sebabnya ada dalam log aplikasi."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Ditukar oleh ejen"
+  },
+  "agentNoteTitle": {
+    "message": "Ejen AI menukar tetapan"
+  },
+  "agentNoteOn": {
+    "message": "Hidup"
+  },
+  "agentNoteOff": {
+    "message": "Mati"
+  },
+  "agentNoteNotSet": {
+    "message": "Belum ditetapkan"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI untuk ringkasan"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Kelantangan bunyi"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Kelantangan bacaan"
   }
 }

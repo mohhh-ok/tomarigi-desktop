@@ -1,6 +1,7 @@
 // The rules a setting must pass before it is saved, one function per rule, shared by the settings screen and the AI
 // agent's tools (docs/design.md "Settings by an AI agent (MCP)"). Each returns a problem code, or undefined when the
-// value passes; PROBLEM_MESSAGE says it in words (the screen in the UI language, the tools in English)
+// value passes; problemText says it in English for the tools
+import { englishText, type MessageName } from "./i18n";
 import { isAbsolutePath, samePath } from "./paths";
 
 export type SettingsProblem =
@@ -20,24 +21,34 @@ export type SettingsProblem =
   | "builtin"
   | "unknown-option";
 
-/** The message key that says each problem: the screen's own message where it has one */
-export const PROBLEM_MESSAGE = {
-  "url-invalid": "localAiUrlInvalid",
-  "model-missing": "localAiNeedsModel",
-  "tts-model-missing": "readoutNeedsModel",
-  "voice-missing": "readoutNeedsVoice",
-  "no-voice": "readoutTestNoVoice",
-  "no-key": "agentProblemNoKey",
-  "local-not-set-up": "agentProblemLocalNotSetUp",
-  "volume-range": "agentProblemVolumeRange",
-  duplicate: "duplicateRootMessage",
-  "path-not-absolute": "agentProblemPathNotAbsolute",
-  "network-path": "agentProblemNetworkPath",
-  "not-readable": "agentProblemNotReadable",
-  "label-empty": "agentProblemLabelEmpty",
-  builtin: "agentProblemBuiltinRoot",
-  "unknown-option": "agentProblemUnknownOption",
-} as const satisfies Record<SettingsProblem, string>;
+/** What each problem says: the screen's own message where the screen can meet it (the tool answers with its English
+ * text), else an English sentence for the agent alone, since the screen can't hit it (a path typed, a value outside
+ * the choices, a provider without a key, which the screen's radio doesn't offer) */
+const PROBLEM_MESSAGE: Record<SettingsProblem, { key: MessageName } | { en: string }> = {
+  "url-invalid": { key: "localAiUrlInvalid" },
+  "model-missing": { key: "localAiNeedsModel" },
+  "tts-model-missing": { key: "readoutNeedsModel" },
+  "voice-missing": { key: "readoutNeedsVoice" },
+  "no-voice": { key: "readoutTestNoVoice" },
+  duplicate: { key: "duplicateRootMessage" },
+  "no-key": {
+    en: "No API key is saved for this provider. Ask the user to paste it in Tomarigi's settings (Settings → AI); keys can't be set through these tools.",
+  },
+  "local-not-set-up": { en: "Local AI isn't set up yet. Set its server URL and model first (set_local_ai)." },
+  "volume-range": { en: "A volume is a whole number from 0 to 100 (percent, as the slider shows)." },
+  "path-not-absolute": { en: "Give the folder as an absolute path without \"..\" (e.g. /Users/me/.claude-work/projects)." },
+  "network-path": { en: "Network paths can't be watched. Give a folder on this computer." },
+  "not-readable": { en: "That folder doesn't exist or can't be read." },
+  "label-empty": { en: "A label can't be empty." },
+  builtin: { en: "The default folders are always watched and can't be removed. Their label can be changed." },
+  "unknown-option": { en: "That isn't one of the choices. get_settings lists them." },
+};
+
+/** The problem in English, for the AI agent's tools */
+export function problemText(problem: SettingsProblem): string {
+  const message = PROBLEM_MESSAGE[problem];
+  return "key" in message ? englishText(message.key) : message.en;
+}
 
 /** http(s), with no user name, password, query, or fragment. The same check as local_url in src-tauri/src/keys.rs */
 export function isValidBaseUrl(value: string): boolean {
@@ -118,3 +129,22 @@ export function checkRootRemovable(root: { builtin: boolean }): SettingsProblem 
 export function checkOption<T extends string>(value: unknown, options: readonly T[]): SettingsProblem | undefined {
   return typeof value === "string" && (options as readonly string[]).includes(value) ? undefined : "unknown-option";
 }
+
+/** What a failed connection test says, by the failure kind of lib/judge.ts (the screen's line and the tool's answer) */
+export const AI_TEST_FAILURE_MESSAGE = {
+  auth: "byokTestFailedAuth",
+  rate_limit: "byokTestFailedRateLimit",
+  server: "byokTestFailedServer",
+  network: "byokTestFailedNetwork",
+  malformed: "byokTestFailedMalformed",
+} as const;
+
+/** What a failed "Play a sample" says, by classifyTestError's reason in lib/tts-server.ts, or "audio" */
+export const TTS_TEST_FAILURE_MESSAGE = {
+  unreachable: "readoutTestUnreachable",
+  "wrong-server": "readoutTestWrongServer",
+  "no-voice": "readoutTestNoVoice",
+  timeout: "readoutTestTimeout",
+  server: "readoutTestServerError",
+  audio: "readoutTestAudio",
+} as const;

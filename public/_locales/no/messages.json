@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Slå på «Les opp med stemme» over for å høre opplesningene."
+  },
+  "agentAccessHeading": {
+    "message": "KI-agent"
+  },
+  "agentAccessEnable": {
+    "message": "La en KI-agent endre innstillinger"
+  },
+  "agentAccessDescription": {
+    "message": "Kodeagenten din (Claude Code eller en annen som bruker MCP) kan lese og endre innstillingene på denne skjermen, teste tilkoblingen og spille av en prøve. API-nøkler blir her: agenten kan ikke lese eller angi dem."
+  },
+  "agentAccessCommandHint": {
+    "message": "Kjør dette én gang i en terminal. Be deretter agenten, f.eks. «Bytt opplesningsstemmen til VOICEVOX»."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Kommandoen er endret, så den du kjørte før virker ikke lenger. Fjern først den gamle registreringen, og kjør deretter kommandoen over:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopier kommando"
+  },
+  "agentAccessCopied": {
+    "message": "Kopiert"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Skriv inn en port fra 1024 til 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "En annen app bruker denne porten. Velg en annen port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Forny token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Dette krever systemets nøkkellager for å lagre tokenet, og det finnes ikke på denne datamaskinen."
+  },
+  "agentAccessStartFailed": {
+    "message": "Serveren kunne ikke starte. Årsaken står i appens logg."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Endret av agenten"
+  },
+  "agentNoteTitle": {
+    "message": "KI-agenten endret en innstilling"
+  },
+  "agentNoteOn": {
+    "message": "På"
+  },
+  "agentNoteOff": {
+    "message": "Av"
+  },
+  "agentNoteNotSet": {
+    "message": "Ikke angitt"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "KI for sammendrag"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Lydvolum"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Opplesningsvolum"
   }
 }

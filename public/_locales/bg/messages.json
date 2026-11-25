@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Включете „Прочитане на глас“ по-горе, за да чувате прочитанията."
+  },
+  "agentAccessHeading": {
+    "message": "AI агент"
+  },
+  "agentAccessEnable": {
+    "message": "Позволи на AI агент да променя настройките"
+  },
+  "agentAccessDescription": {
+    "message": "Вашият агент за програмиране (Claude Code или друг, който поддържа MCP) може да чете и променя настройките на този екран, да тества връзката и да пуска мостра. API ключовете остават тук: агентът не може да ги чете или задава."
+  },
+  "agentAccessCommandHint": {
+    "message": "Изпълнете това веднъж в терминал. След това помолете агента, напр. „Смени гласа за четене на VOICEVOX“."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Командата се промени и предишната вече не работи. Първо премахнете старата регистрация, после изпълнете командата отгоре:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Копиране на командата"
+  },
+  "agentAccessCopied": {
+    "message": "Копирано"
+  },
+  "agentAccessPortLabel": {
+    "message": "Порт"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Въведете порт от 1024 до 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Друго приложение използва този порт. Изберете друг порт."
+  },
+  "agentAccessRenewButton": {
+    "message": "Подновяване на токена"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Нужно е системното хранилище за ключове, за да се пази токенът, а на този компютър няма такова."
+  },
+  "agentAccessStartFailed": {
+    "message": "Сървърът не можа да стартира. Причината е в дневника на приложението."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Променено от агента"
+  },
+  "agentNoteTitle": {
+    "message": "AI агентът промени настройка"
+  },
+  "agentNoteOn": {
+    "message": "Вкл."
+  },
+  "agentNoteOff": {
+    "message": "Изкл."
+  },
+  "agentNoteNotSet": {
+    "message": "Не е зададено"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI за обобщения"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Сила на звука"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Сила на четенето"
   }
 }

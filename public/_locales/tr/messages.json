@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Okumaları duymak için yukarıdaki \"Sesli oku\"yu açın."
+  },
+  "agentAccessHeading": {
+    "message": "Yapay zekâ ajanı"
+  },
+  "agentAccessEnable": {
+    "message": "Bir yapay zekâ ajanının ayarları değiştirmesine izin ver"
+  },
+  "agentAccessDescription": {
+    "message": "Kodlama ajanınız (Claude Code veya MCP kullanan başka bir ajan) bu ekrandaki ayarları okuyup değiştirebilir, bağlantıyı test edebilir ve örnek çalabilir. API anahtarları burada kalır: ajan bunları okuyamaz veya ayarlayamaz."
+  },
+  "agentAccessCommandHint": {
+    "message": "Bunu bir terminalde bir kez çalıştırın. Sonra ajandan isteyin, örneğin: “Okuma sesini VOICEVOX yap”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Komut değişti, daha önce çalıştırdığınız artık çalışmıyor. Önce eski kaydı kaldırın, sonra yukarıdaki komutu çalıştırın:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Komutu kopyala"
+  },
+  "agentAccessCopied": {
+    "message": "Kopyalandı"
+  },
+  "agentAccessPortLabel": {
+    "message": "Bağlantı noktası"
+  },
+  "agentAccessPortInvalid": {
+    "message": "1024 ile 65535 arasında bir bağlantı noktası girin."
+  },
+  "agentAccessPortInUse": {
+    "message": "Bu bağlantı noktasını başka bir uygulama kullanıyor. Başka bir bağlantı noktası seçin."
+  },
+  "agentAccessRenewButton": {
+    "message": "Belirteci yenile"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Belirteci saklamak için sistemin anahtar deposu gerekir ve bu bilgisayarda kullanılabilir değil."
+  },
+  "agentAccessStartFailed": {
+    "message": "Sunucu başlatılamadı. Nedeni uygulama günlüğünde."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Ajanın değiştirdikleri"
+  },
+  "agentNoteTitle": {
+    "message": "Yapay zekâ ajanı bir ayarı değiştirdi"
+  },
+  "agentNoteOn": {
+    "message": "Açık"
+  },
+  "agentNoteOff": {
+    "message": "Kapalı"
+  },
+  "agentNoteNotSet": {
+    "message": "Ayarlanmadı"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "Özetler için yapay zekâ"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Ses düzeyi"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Okuma ses düzeyi"
   }
 }

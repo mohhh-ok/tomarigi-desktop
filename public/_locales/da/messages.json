@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Slå \"Læs højt\" til ovenfor for at høre oplæsningerne."
+  },
+  "agentAccessHeading": {
+    "message": "AI-agent"
+  },
+  "agentAccessEnable": {
+    "message": "Lad en AI-agent ændre indstillinger"
+  },
+  "agentAccessDescription": {
+    "message": "Din kodeagent (Claude Code eller en anden, der bruger MCP) kan læse og ændre indstillingerne på denne skærm, teste forbindelsen og afspille en prøve. API-nøgler bliver her: agenten kan ikke læse eller angive dem."
+  },
+  "agentAccessCommandHint": {
+    "message": "Kør dette én gang i en terminal. Bed derefter agenten, f.eks. »Skift oplæsningsstemmen til VOICEVOX«."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Kommandoen er ændret, så den, du kørte før, virker ikke længere. Fjern først den gamle registrering, og kør derefter kommandoen ovenfor:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopiér kommando"
+  },
+  "agentAccessCopied": {
+    "message": "Kopieret"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Angiv en port fra 1024 til 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "En anden app bruger denne port. Vælg en anden port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Forny token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Dette kræver systemets nøglelager til at gemme tokenet, og der er ikke noget tilgængeligt på denne computer."
+  },
+  "agentAccessStartFailed": {
+    "message": "Serveren kunne ikke starte. Årsagen står i appens log."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Ændret af agenten"
+  },
+  "agentNoteTitle": {
+    "message": "AI-agenten ændrede en indstilling"
+  },
+  "agentNoteOn": {
+    "message": "Til"
+  },
+  "agentNoteOff": {
+    "message": "Fra"
+  },
+  "agentNoteNotSet": {
+    "message": "Ikke angivet"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI til resuméer"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Lydstyrke"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Oplæsningslydstyrke"
   }
 }

@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "A felolvasások hallásához kapcsold be fent a „Felolvasás hanggal” beállítást."
+  },
+  "agentAccessHeading": {
+    "message": "MI-ügynök"
+  },
+  "agentAccessEnable": {
+    "message": "MI-ügynök módosíthatja a beállításokat"
+  },
+  "agentAccessDescription": {
+    "message": "A kódoló ügynököd (Claude Code vagy más, MCP-t használó ügynök) olvashatja és módosíthatja ennek a képernyőnek a beállításait, tesztelheti a kapcsolatot és lejátszhat egy mintát. Az API-kulcsok itt maradnak: az ügynök nem olvashatja és nem állíthatja be őket."
+  },
+  "agentAccessCommandHint": {
+    "message": "Futtasd ezt egyszer egy terminálban. Utána kérd meg az ügynököt, pl. „Állítsd a felolvasó hangot VOICEVOX-ra”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "A parancs megváltozott, a korábbi már nem működik. Előbb töröld a régi regisztrációt, aztán futtasd a fenti parancsot:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Parancs másolása"
+  },
+  "agentAccessCopied": {
+    "message": "Másolva"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Adj meg egy portot 1024 és 65535 között."
+  },
+  "agentAccessPortInUse": {
+    "message": "Ezt a portot egy másik alkalmazás használja. Válassz másik portot."
+  },
+  "agentAccessRenewButton": {
+    "message": "Token megújítása"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "A token tárolásához a rendszer kulcstárolója kell, és ezen a gépen nincs ilyen."
+  },
+  "agentAccessStartFailed": {
+    "message": "A szervert nem sikerült elindítani. Az ok az alkalmazás naplójában van."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Az ügynök módosításai"
+  },
+  "agentNoteTitle": {
+    "message": "Az MI-ügynök módosított egy beállítást"
+  },
+  "agentNoteOn": {
+    "message": "Be"
+  },
+  "agentNoteOff": {
+    "message": "Ki"
+  },
+  "agentNoteNotSet": {
+    "message": "Nincs beállítva"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "MI az összefoglalókhoz"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Hangerő"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Felolvasás hangereje"
   }
 }

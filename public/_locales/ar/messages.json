@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "فعّل «القراءة بصوت عالٍ» في الأعلى لسماع القراءة."
+  },
+  "agentAccessHeading": {
+    "message": "وكيل الذكاء الاصطناعي"
+  },
+  "agentAccessEnable": {
+    "message": "السماح لوكيل ذكاء اصطناعي بتغيير الإعدادات"
+  },
+  "agentAccessDescription": {
+    "message": "يمكن لوكيل البرمجة لديك (Claude Code أو غيره ممن يدعم MCP) قراءة الإعدادات في هذه الشاشة وتغييرها، واختبار الاتصال، وتشغيل عينة. تبقى مفاتيح API هنا: لا يستطيع الوكيل قراءتها أو تعيينها."
+  },
+  "agentAccessCommandHint": {
+    "message": "شغّل هذا مرة واحدة في الطرفية. ثم اطلب من الوكيل مثلاً: «غيّر صوت القراءة إلى VOICEVOX»."
+  },
+  "agentAccessReplaceHint": {
+    "message": "تغيّر الأمر، فلم يعد الأمر السابق يعمل. أزل التسجيل القديم أولاً، ثم شغّل الأمر أعلاه:"
+  },
+  "agentAccessCopyButton": {
+    "message": "نسخ الأمر"
+  },
+  "agentAccessCopied": {
+    "message": "تم النسخ"
+  },
+  "agentAccessPortLabel": {
+    "message": "المنفذ"
+  },
+  "agentAccessPortInvalid": {
+    "message": "أدخل منفذًا من 1024 إلى 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "يستخدم تطبيق آخر هذا المنفذ. اختر منفذًا آخر."
+  },
+  "agentAccessRenewButton": {
+    "message": "تجديد الرمز"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "يحتاج هذا إلى مخزن مفاتيح النظام لحفظ الرمز، ولا يتوفر أي مخزن على هذا الحاسوب."
+  },
+  "agentAccessStartFailed": {
+    "message": "تعذّر تشغيل الخادم. السبب موجود في سجل التطبيق."
+  },
+  "agentAccessRecentHeading": {
+    "message": "ما غيّره الوكيل"
+  },
+  "agentNoteTitle": {
+    "message": "غيّر وكيل الذكاء الاصطناعي إعدادًا"
+  },
+  "agentNoteOn": {
+    "message": "تشغيل"
+  },
+  "agentNoteOff": {
+    "message": "إيقاف"
+  },
+  "agentNoteNotSet": {
+    "message": "غير معيّن"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "الذكاء الاصطناعي للملخصات"
+  },
+  "agentNoteChirpVolume": {
+    "message": "مستوى الصوت"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "مستوى صوت القراءة"
   }
 }

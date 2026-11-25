@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Activa «Llegeix amb veu» a dalt per sentir les lectures."
+  },
+  "agentAccessHeading": {
+    "message": "Agent d'IA"
+  },
+  "agentAccessEnable": {
+    "message": "Permet que un agent d'IA canviï la configuració"
+  },
+  "agentAccessDescription": {
+    "message": "El teu agent de programació (Claude Code o un altre que faci servir MCP) pot llegir i canviar la configuració d'aquesta pantalla, provar la connexió i reproduir una mostra. Les claus d'API es queden aquí: l'agent no les pot llegir ni definir."
+  },
+  "agentAccessCommandHint": {
+    "message": "Executa això una vegada en un terminal. Després demana-ho a l'agent, per exemple: «Canvia la veu de lectura a VOICEVOX»."
+  },
+  "agentAccessReplaceHint": {
+    "message": "L'ordre ha canviat, així que la que vas executar abans ja no funciona. Treu primer el registre antic i després executa l'ordre de dalt:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Copia l'ordre"
+  },
+  "agentAccessCopied": {
+    "message": "Copiat"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Introdueix un port entre 1024 i 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Una altra app fa servir aquest port. Tria un altre port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Renova el testimoni"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Cal el magatzem de claus del sistema per guardar el testimoni, i no n'hi ha cap disponible en aquest ordinador."
+  },
+  "agentAccessStartFailed": {
+    "message": "No s'ha pogut iniciar el servidor. El motiu és al registre de l'app."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Canviat per l'agent"
+  },
+  "agentNoteTitle": {
+    "message": "L'agent d'IA ha canviat una configuració"
+  },
+  "agentNoteOn": {
+    "message": "Activat"
+  },
+  "agentNoteOff": {
+    "message": "Desactivat"
+  },
+  "agentNoteNotSet": {
+    "message": "Sense definir"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "IA per als resums"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volum del so"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Volum de lectura"
   }
 }

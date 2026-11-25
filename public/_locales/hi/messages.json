@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "पढ़कर सुनाना सुनने के लिए ऊपर \"आवाज़ से पढ़ें\" चालू करें।"
+  },
+  "agentAccessHeading": {
+    "message": "AI एजेंट"
+  },
+  "agentAccessEnable": {
+    "message": "AI एजेंट को सेटिंग बदलने दें"
+  },
+  "agentAccessDescription": {
+    "message": "आपका कोडिंग एजेंट (Claude Code या MCP इस्तेमाल करने वाला कोई और) इस स्क्रीन की सेटिंग पढ़ और बदल सकता है, कनेक्शन टेस्ट कर सकता है और नमूना चला सकता है। API कुंजियाँ यहीं रहती हैं: एजेंट उन्हें पढ़ या सेट नहीं कर सकता।"
+  },
+  "agentAccessCommandHint": {
+    "message": "इसे टर्मिनल में एक बार चलाएँ। फिर एजेंट से कहें, जैसे “पढ़ने की आवाज़ VOICEVOX कर दो”।"
+  },
+  "agentAccessReplaceHint": {
+    "message": "कमांड बदल गया है, पहले वाला अब काम नहीं करेगा। पहले पुराना रजिस्ट्रेशन हटाएँ, फिर ऊपर वाला कमांड चलाएँ:"
+  },
+  "agentAccessCopyButton": {
+    "message": "कमांड कॉपी करें"
+  },
+  "agentAccessCopied": {
+    "message": "कॉपी हो गया"
+  },
+  "agentAccessPortLabel": {
+    "message": "पोर्ट"
+  },
+  "agentAccessPortInvalid": {
+    "message": "1024 से 65535 के बीच का पोर्ट डालें।"
+  },
+  "agentAccessPortInUse": {
+    "message": "यह पोर्ट कोई और ऐप इस्तेमाल कर रहा है। दूसरा पोर्ट चुनें।"
+  },
+  "agentAccessRenewButton": {
+    "message": "टोकन नया बनाएँ"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "टोकन रखने के लिए सिस्टम का की स्टोर चाहिए, जो इस कंप्यूटर पर उपलब्ध नहीं है।"
+  },
+  "agentAccessStartFailed": {
+    "message": "सर्वर शुरू नहीं हो सका। वजह ऐप लॉग में है।"
+  },
+  "agentAccessRecentHeading": {
+    "message": "एजेंट ने बदला"
+  },
+  "agentNoteTitle": {
+    "message": "AI एजेंट ने एक सेटिंग बदली"
+  },
+  "agentNoteOn": {
+    "message": "चालू"
+  },
+  "agentNoteOff": {
+    "message": "बंद"
+  },
+  "agentNoteNotSet": {
+    "message": "सेट नहीं"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "सारांश के लिए AI"
+  },
+  "agentNoteChirpVolume": {
+    "message": "आवाज़ का वॉल्यूम"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "पढ़ने का वॉल्यूम"
   }
 }

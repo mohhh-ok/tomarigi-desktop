@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "要听到朗读，请打开上方的“用语音朗读”。"
+  },
+  "agentAccessHeading": {
+    "message": "AI 代理"
+  },
+  "agentAccessEnable": {
+    "message": "允许 AI 代理更改设置"
+  },
+  "agentAccessDescription": {
+    "message": "你的编程代理（Claude Code 或其他支持 MCP 的代理）可以读取和更改此页面上的设置，运行连接测试并试听。API 密钥只在这里管理，代理无法读取或设置。"
+  },
+  "agentAccessCommandHint": {
+    "message": "在终端中运行一次此命令。之后就可以对代理说，例如“把朗读的声音换成 VOICEVOX”。"
+  },
+  "agentAccessReplaceHint": {
+    "message": "命令已更改，之前运行的命令不再有效。请先删除旧的注册，然后运行上面的命令："
+  },
+  "agentAccessCopyButton": {
+    "message": "复制命令"
+  },
+  "agentAccessCopied": {
+    "message": "已复制"
+  },
+  "agentAccessPortLabel": {
+    "message": "端口"
+  },
+  "agentAccessPortInvalid": {
+    "message": "请输入 1024 到 65535 之间的端口。"
+  },
+  "agentAccessPortInUse": {
+    "message": "此端口已被其他应用占用。请换一个端口。"
+  },
+  "agentAccessRenewButton": {
+    "message": "重新生成令牌"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "需要系统的密钥存储来保存令牌，但这台电脑上没有可用的。"
+  },
+  "agentAccessStartFailed": {
+    "message": "无法启动服务器。原因见应用日志。"
+  },
+  "agentAccessRecentHeading": {
+    "message": "代理更改的设置"
+  },
+  "agentNoteTitle": {
+    "message": "AI 代理更改了设置"
+  },
+  "agentNoteOn": {
+    "message": "开"
+  },
+  "agentNoteOff": {
+    "message": "关"
+  },
+  "agentNoteNotSet": {
+    "message": "未设置"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "用于摘要的 AI"
+  },
+  "agentNoteChirpVolume": {
+    "message": "提示音音量"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "朗读音量"
   }
 }

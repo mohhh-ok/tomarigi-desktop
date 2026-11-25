@@ -10,14 +10,14 @@ import {
 } from "@/lib/api-keys";
 import type { JudgeErrorKind } from "@/lib/judge";
 import { fetchLocalModels, pickLocalModel } from "@/lib/local-judge";
-import { checkLocalAi, isValidBaseUrl } from "@/lib/settings-checks";
+import { AI_TEST_FAILURE_MESSAGE, checkLocalAi, isValidBaseUrl } from "@/lib/settings-checks";
 import { BusyButton } from "./busy-button";
 import { CancelEditButton, CardNote } from "./card-parts";
 
 // Product names of the retired providers, shown as is in every locale
 const RETIRED_KEY_NAMES: Record<RetiredKeyProvider, string> = { typesafe: "TypeSafe" };
 
-// Display state of the connection test button. reason picks the failure line (TEST_FAILURE_TEXT); it isn't shown
+// Display state of the connection test button. reason picks the failure line (AI_TEST_FAILURE_MESSAGE); it isn't shown
 // The key isn't only for judging, so the type name isn't limited to Judge either (JudgeErrorKind itself
 // just reuses the existing name in lib/judge.ts)
 export type ApiKeyTestState =
@@ -127,14 +127,6 @@ function ProviderChoice({ selected, onSelect }: { selected: boolean; onSelect: (
 }
 
 /** What a failed connection test says, by why it failed: what happened and what to check, never the internal kind */
-const TEST_FAILURE_TEXT: Record<JudgeErrorKind, Parameters<typeof t>[0]> = {
-  auth: "byokTestFailedAuth",
-  rate_limit: "byokTestFailedRateLimit",
-  server: "byokTestFailedServer",
-  network: "byokTestFailedNetwork",
-  malformed: "byokTestFailedMalformed",
-};
-
 /** The connection test button and its result. Shared by the key rows and Local */
 function ConnectionTest({
   enabled,
@@ -162,7 +154,7 @@ function ConnectionTest({
       />
       {testState.phase === "success" && <p className="judge-status judge-status-ok">{t("byokTestResultSuccess")}</p>}
       {testState.phase === "failure" && (
-        <p className="judge-status judge-status-error">{failureText ?? t(TEST_FAILURE_TEXT[testState.reason])}</p>
+        <p className="judge-status judge-status-error">{failureText ?? t(AI_TEST_FAILURE_MESSAGE[testState.reason])}</p>
       )}
       {testState.phase === "no-key" && <p className="judge-status judge-status-error">{t("byokNoKeyMessage")}</p>}
     </>

@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Aktifkan \"Bacakan dengan suara\" di atas untuk mendengar bacaan."
+  },
+  "agentAccessHeading": {
+    "message": "Agen AI"
+  },
+  "agentAccessEnable": {
+    "message": "Izinkan agen AI mengubah pengaturan"
+  },
+  "agentAccessDescription": {
+    "message": "Agen coding Anda (Claude Code atau lainnya yang mendukung MCP) dapat membaca dan mengubah pengaturan di layar ini, menguji koneksi, dan memutar contoh. Kunci API tetap di sini: agen tidak dapat membaca atau mengaturnya."
+  },
+  "agentAccessCommandHint": {
+    "message": "Jalankan ini sekali di terminal. Lalu minta agen, misalnya: “Ganti suara pembaca ke VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Perintahnya berubah, jadi yang dijalankan sebelumnya tidak berfungsi lagi. Hapus dulu pendaftaran lama, lalu jalankan perintah di atas:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Salin perintah"
+  },
+  "agentAccessCopied": {
+    "message": "Disalin"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Masukkan port dari 1024 sampai 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Aplikasi lain sedang memakai port ini. Pilih port lain."
+  },
+  "agentAccessRenewButton": {
+    "message": "Perbarui token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Ini memerlukan penyimpanan kunci sistem untuk menyimpan token, dan tidak tersedia di komputer ini."
+  },
+  "agentAccessStartFailed": {
+    "message": "Server tidak dapat dimulai. Alasannya ada di log aplikasi."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Diubah oleh agen"
+  },
+  "agentNoteTitle": {
+    "message": "Agen AI mengubah pengaturan"
+  },
+  "agentNoteOn": {
+    "message": "Aktif"
+  },
+  "agentNoteOff": {
+    "message": "Nonaktif"
+  },
+  "agentNoteNotSet": {
+    "message": "Belum diatur"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI untuk ringkasan"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volume suara"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Volume pembacaan"
   }
 }

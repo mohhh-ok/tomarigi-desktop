@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Kytke yllä ”Lue ääneen” päälle, niin kuulet lukemiset."
+  },
+  "agentAccessHeading": {
+    "message": "Tekoälyagentti"
+  },
+  "agentAccessEnable": {
+    "message": "Salli tekoälyagentin muuttaa asetuksia"
+  },
+  "agentAccessDescription": {
+    "message": "Koodausagenttisi (Claude Code tai muu MCP:tä käyttävä) voi lukea ja muuttaa tämän näkymän asetuksia, testata yhteyden ja toistaa näytteen. API-avaimet pysyvät täällä: agentti ei voi lukea tai asettaa niitä."
+  },
+  "agentAccessCommandHint": {
+    "message": "Suorita tämä kerran päätteessä. Pyydä sitten agenttia, esim. ”Vaihda lukuääni VOICEVOXiin”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Komento muuttui, joten aiemmin suorittamasi ei enää toimi. Poista ensin vanha rekisteröinti ja suorita sitten yllä oleva komento:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopioi komento"
+  },
+  "agentAccessCopied": {
+    "message": "Kopioitu"
+  },
+  "agentAccessPortLabel": {
+    "message": "Portti"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Anna portti väliltä 1024–65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Toinen sovellus käyttää tätä porttia. Valitse toinen portti."
+  },
+  "agentAccessRenewButton": {
+    "message": "Uusi tunnus"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Tunnuksen säilyttämiseen tarvitaan järjestelmän avainsäilö, eikä sellaista ole tällä tietokoneella."
+  },
+  "agentAccessStartFailed": {
+    "message": "Palvelinta ei voitu käynnistää. Syy on sovelluksen lokissa."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Agentin muuttamat"
+  },
+  "agentNoteTitle": {
+    "message": "Tekoälyagentti muutti asetusta"
+  },
+  "agentNoteOn": {
+    "message": "Päällä"
+  },
+  "agentNoteOff": {
+    "message": "Pois"
+  },
+  "agentNoteNotSet": {
+    "message": "Ei asetettu"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "Tekoäly yhteenvetoihin"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Äänen voimakkuus"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Lukuäänen voimakkuus"
   }
 }

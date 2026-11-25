@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Ative \"Ler em voz alta\" acima para ouvir as leituras."
+  },
+  "agentAccessHeading": {
+    "message": "Agente de IA"
+  },
+  "agentAccessEnable": {
+    "message": "Permitir que um agente de IA altere as configurações"
+  },
+  "agentAccessDescription": {
+    "message": "Seu agente de programação (Claude Code ou outro que use MCP) pode ler e alterar as configurações desta tela, testar a conexão e tocar uma amostra. As chaves de API ficam aqui: o agente não pode lê-las nem defini-las."
+  },
+  "agentAccessCommandHint": {
+    "message": "Execute isto uma vez em um terminal. Depois peça ao agente, por exemplo: “Mude a voz de leitura para VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "O comando mudou, então o que você executou antes não funciona mais. Remova primeiro o registro antigo e depois execute o comando acima:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Copiar comando"
+  },
+  "agentAccessCopied": {
+    "message": "Copiado"
+  },
+  "agentAccessPortLabel": {
+    "message": "Porta"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Digite uma porta de 1024 a 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Outro app está usando esta porta. Escolha outra porta."
+  },
+  "agentAccessRenewButton": {
+    "message": "Renovar token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "É preciso o armazenamento de chaves do sistema para guardar o token, e não há nenhum disponível neste computador."
+  },
+  "agentAccessStartFailed": {
+    "message": "Não foi possível iniciar o servidor. O motivo está no log do app."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Alterado pelo agente"
+  },
+  "agentNoteTitle": {
+    "message": "O agente de IA alterou uma configuração"
+  },
+  "agentNoteOn": {
+    "message": "Ligado"
+  },
+  "agentNoteOff": {
+    "message": "Desligado"
+  },
+  "agentNoteNotSet": {
+    "message": "Não definido"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "IA para resumos"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volume do som"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Volume da leitura"
   }
 }

@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Bật \"Đọc bằng giọng nói\" ở trên để nghe đọc."
+  },
+  "agentAccessHeading": {
+    "message": "Tác nhân AI"
+  },
+  "agentAccessEnable": {
+    "message": "Cho phép tác nhân AI thay đổi cài đặt"
+  },
+  "agentAccessDescription": {
+    "message": "Tác nhân lập trình của bạn (Claude Code hoặc tác nhân khác dùng MCP) có thể đọc và thay đổi cài đặt trên màn hình này, kiểm tra kết nối và phát thử. Khóa API vẫn ở đây: tác nhân không thể đọc hay đặt chúng."
+  },
+  "agentAccessCommandHint": {
+    "message": "Chạy lệnh này một lần trong terminal. Sau đó nhờ tác nhân, ví dụ: “Đổi giọng đọc sang VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Lệnh đã thay đổi nên lệnh bạn chạy trước đây không còn dùng được. Hãy xóa đăng ký cũ trước, rồi chạy lệnh ở trên:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Sao chép lệnh"
+  },
+  "agentAccessCopied": {
+    "message": "Đã sao chép"
+  },
+  "agentAccessPortLabel": {
+    "message": "Cổng"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Nhập cổng từ 1024 đến 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Một ứng dụng khác đang dùng cổng này. Hãy chọn cổng khác."
+  },
+  "agentAccessRenewButton": {
+    "message": "Tạo lại mã"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Cần kho khóa của hệ thống để lưu mã, nhưng máy tính này không có."
+  },
+  "agentAccessStartFailed": {
+    "message": "Không khởi động được máy chủ. Lý do có trong nhật ký ứng dụng."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Tác nhân đã đổi"
+  },
+  "agentNoteTitle": {
+    "message": "Tác nhân AI đã đổi một cài đặt"
+  },
+  "agentNoteOn": {
+    "message": "Bật"
+  },
+  "agentNoteOff": {
+    "message": "Tắt"
+  },
+  "agentNoteNotSet": {
+    "message": "Chưa đặt"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI để tóm tắt"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Âm lượng âm báo"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Âm lượng đọc"
   }
 }

@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Schalte oben „Mit Stimme vorlesen“ ein, um die Ansagen zu hören."
+  },
+  "agentAccessHeading": {
+    "message": "KI-Agent"
+  },
+  "agentAccessEnable": {
+    "message": "Einem KI-Agenten erlauben, Einstellungen zu ändern"
+  },
+  "agentAccessDescription": {
+    "message": "Dein Coding-Agent (Claude Code oder ein anderer mit MCP) kann die Einstellungen auf dieser Seite lesen und ändern, die Verbindung testen und eine Probe abspielen. API-Schlüssel bleiben hier: Der Agent kann sie weder lesen noch setzen."
+  },
+  "agentAccessCommandHint": {
+    "message": "Führe das einmal in einem Terminal aus. Danach bitte den Agenten, z. B. „Stell die Vorlesestimme auf VOICEVOX um“."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Der Befehl hat sich geändert, der frühere funktioniert nicht mehr. Entferne zuerst die alte Registrierung und führe dann den Befehl oben aus:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Befehl kopieren"
+  },
+  "agentAccessCopied": {
+    "message": "Kopiert"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Gib einen Port von 1024 bis 65535 ein."
+  },
+  "agentAccessPortInUse": {
+    "message": "Eine andere App verwendet diesen Port. Wähle einen anderen Port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Token erneuern"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Dafür wird der Schlüsselspeicher des Systems für das Token gebraucht, und auf diesem Computer ist keiner verfügbar."
+  },
+  "agentAccessStartFailed": {
+    "message": "Der Server konnte nicht starten. Der Grund steht im App-Protokoll."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Vom Agenten geändert"
+  },
+  "agentNoteTitle": {
+    "message": "Der KI-Agent hat eine Einstellung geändert"
+  },
+  "agentNoteOn": {
+    "message": "An"
+  },
+  "agentNoteOff": {
+    "message": "Aus"
+  },
+  "agentNoteNotSet": {
+    "message": "Nicht festgelegt"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "KI für Zusammenfassungen"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Lautstärke der Töne"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Vorlese-Lautstärke"
   }
 }

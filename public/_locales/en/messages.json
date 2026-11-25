@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Turn on \"Read aloud with voice\" above to hear readouts."
+  },
+  "agentAccessHeading": {
+    "message": "AI agent"
+  },
+  "agentAccessEnable": {
+    "message": "Let an AI agent change settings"
+  },
+  "agentAccessDescription": {
+    "message": "Your coding agent (Claude Code, or another that speaks MCP) can read and change the settings on this screen, run the connection test and play a sample. API keys stay here: the agent can't read or set them."
+  },
+  "agentAccessCommandHint": {
+    "message": "Run this once in a terminal. Then ask the agent, e.g. “Switch the readout voice to VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "The command changed, so the one you ran before no longer works. Remove the old registration first, then run the command above:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Copy command"
+  },
+  "agentAccessCopied": {
+    "message": "Copied"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Enter a port from 1024 to 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Another app is using this port. Choose another port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Renew token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "This needs the system's key store to keep its token, and none is available on this computer."
+  },
+  "agentAccessStartFailed": {
+    "message": "Couldn't start the server. The app log has the reason."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Changed by the agent"
+  },
+  "agentNoteTitle": {
+    "message": "The AI agent changed a setting"
+  },
+  "agentNoteOn": {
+    "message": "On"
+  },
+  "agentNoteOff": {
+    "message": "Off"
+  },
+  "agentNoteNotSet": {
+    "message": "Not set"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI for summaries"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Sound volume"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Readout volume"
   }
 }

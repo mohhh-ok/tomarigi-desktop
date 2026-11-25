@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Щоб чути читання, увімкніть вище «Читати вголос»."
+  },
+  "agentAccessHeading": {
+    "message": "ШІ-агент"
+  },
+  "agentAccessEnable": {
+    "message": "Дозволити ШІ-агенту змінювати налаштування"
+  },
+  "agentAccessDescription": {
+    "message": "Ваш агент для програмування (Claude Code або інший із підтримкою MCP) може читати й змінювати налаштування на цьому екрані, перевіряти з'єднання та відтворювати зразок. API-ключі лишаються тут: агент не може їх читати чи задавати."
+  },
+  "agentAccessCommandHint": {
+    "message": "Виконайте це один раз у терміналі. Потім попросіть агента, наприклад: «Перемкни голос озвучення на VOICEVOX»."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Команда змінилася, попередня більше не працює. Спочатку видаліть стару реєстрацію, потім виконайте команду вище:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Скопіювати команду"
+  },
+  "agentAccessCopied": {
+    "message": "Скопійовано"
+  },
+  "agentAccessPortLabel": {
+    "message": "Порт"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Введіть порт від 1024 до 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Цей порт зайнятий іншим застосунком. Виберіть інший порт."
+  },
+  "agentAccessRenewButton": {
+    "message": "Оновити токен"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Для зберігання токена потрібне системне сховище ключів, а на цьому комп'ютері його немає."
+  },
+  "agentAccessStartFailed": {
+    "message": "Не вдалося запустити сервер. Причина — у журналі застосунку."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Змінено агентом"
+  },
+  "agentNoteTitle": {
+    "message": "ШІ-агент змінив налаштування"
+  },
+  "agentNoteOn": {
+    "message": "Увімк."
+  },
+  "agentNoteOff": {
+    "message": "Вимк."
+  },
+  "agentNoteNotSet": {
+    "message": "Не задано"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "ШІ для підсумків"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Гучність звуку"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Гучність озвучення"
   }
 }

@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Чтобы слышать чтение, включите выше «Читать вслух»."
+  },
+  "agentAccessHeading": {
+    "message": "ИИ-агент"
+  },
+  "agentAccessEnable": {
+    "message": "Разрешить ИИ-агенту менять настройки"
+  },
+  "agentAccessDescription": {
+    "message": "Ваш агент для программирования (Claude Code или другой с поддержкой MCP) может читать и менять настройки на этом экране, проверять подключение и воспроизводить образец. API-ключи остаются здесь: агент не может их читать или задавать."
+  },
+  "agentAccessCommandHint": {
+    "message": "Выполните это один раз в терминале. Потом попросите агента, например: «Переключи голос озвучки на VOICEVOX»."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Команда изменилась, прежняя больше не работает. Сначала удалите старую регистрацию, затем выполните команду выше:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Скопировать команду"
+  },
+  "agentAccessCopied": {
+    "message": "Скопировано"
+  },
+  "agentAccessPortLabel": {
+    "message": "Порт"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Введите порт от 1024 до 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Этот порт занят другим приложением. Выберите другой порт."
+  },
+  "agentAccessRenewButton": {
+    "message": "Обновить токен"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Для хранения токена нужно системное хранилище ключей, а на этом компьютере его нет."
+  },
+  "agentAccessStartFailed": {
+    "message": "Не удалось запустить сервер. Причина — в журнале приложения."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Изменено агентом"
+  },
+  "agentNoteTitle": {
+    "message": "ИИ-агент изменил настройку"
+  },
+  "agentNoteOn": {
+    "message": "Вкл."
+  },
+  "agentNoteOff": {
+    "message": "Выкл."
+  },
+  "agentNoteNotSet": {
+    "message": "Не задано"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "ИИ для сводок"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Громкость звука"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Громкость озвучки"
   }
 }

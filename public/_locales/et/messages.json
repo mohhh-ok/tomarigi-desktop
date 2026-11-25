@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Ettelugemise kuulmiseks lülita ülal sisse „Loe häälega ette”."
+  },
+  "agentAccessHeading": {
+    "message": "Tehisintellekti agent"
+  },
+  "agentAccessEnable": {
+    "message": "Luba tehisintellekti agendil seadeid muuta"
+  },
+  "agentAccessDescription": {
+    "message": "Sinu kodeerimisagent (Claude Code või muu MCP-d toetav) saab selle ekraani seadeid lugeda ja muuta, ühendust testida ja näidist esitada. API-võtmed jäävad siia: agent ei saa neid lugeda ega määrata."
+  },
+  "agentAccessCommandHint": {
+    "message": "Käivitage see terminalis üks kord. Seejärel paluge agendil näiteks: „Vaheta ettelugemise hääl VOICEVOX-i vastu“."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Käsk muutus, nii et varem käivitatud käsk enam ei tööta. Eemaldage kõigepealt vana registreering ja käivitage siis ülalolev käsk:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopeeri käsk"
+  },
+  "agentAccessCopied": {
+    "message": "Kopeeritud"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Sisestage port vahemikus 1024–65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Seda porti kasutab teine rakendus. Valige teine port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Uuenda luba"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Loa hoidmiseks on vaja süsteemi võtmehoidlat, aga selles arvutis seda pole."
+  },
+  "agentAccessStartFailed": {
+    "message": "Serverit ei õnnestunud käivitada. Põhjus on rakenduse logis."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Agendi muudetud"
+  },
+  "agentNoteTitle": {
+    "message": "Tehisintellekti agent muutis seadet"
+  },
+  "agentNoteOn": {
+    "message": "Sees"
+  },
+  "agentNoteOff": {
+    "message": "Väljas"
+  },
+  "agentNoteNotSet": {
+    "message": "Määramata"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "Tehisintellekt kokkuvõteteks"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Heli tugevus"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Ettelugemise tugevus"
   }
 }

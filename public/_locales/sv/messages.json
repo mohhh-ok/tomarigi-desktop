@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Slå på ”Läs upp med röst” ovan för att höra uppläsningarna."
+  },
+  "agentAccessHeading": {
+    "message": "AI-agent"
+  },
+  "agentAccessEnable": {
+    "message": "Låt en AI-agent ändra inställningar"
+  },
+  "agentAccessDescription": {
+    "message": "Din kodagent (Claude Code eller en annan som talar MCP) kan läsa och ändra inställningarna på den här skärmen, testa anslutningen och spela upp ett prov. API-nycklar stannar här: agenten kan inte läsa eller ange dem."
+  },
+  "agentAccessCommandHint": {
+    "message": "Kör detta en gång i en terminal. Be sedan agenten, t.ex. ”Byt uppläsningsrösten till VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Kommandot har ändrats, så det du körde tidigare fungerar inte längre. Ta först bort den gamla registreringen och kör sedan kommandot ovan:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopiera kommando"
+  },
+  "agentAccessCopied": {
+    "message": "Kopierat"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Ange en port från 1024 till 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "En annan app använder den här porten. Välj en annan port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Förnya token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Det här kräver systemets nyckelförråd för att spara token, och inget finns tillgängligt på den här datorn."
+  },
+  "agentAccessStartFailed": {
+    "message": "Servern kunde inte starta. Orsaken finns i appens logg."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Ändrat av agenten"
+  },
+  "agentNoteTitle": {
+    "message": "AI-agenten ändrade en inställning"
+  },
+  "agentNoteOn": {
+    "message": "På"
+  },
+  "agentNoteOff": {
+    "message": "Av"
+  },
+  "agentNoteNotSet": {
+    "message": "Inte angivet"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI för sammanfattningar"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Ljudvolym"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Uppläsningsvolym"
   }
 }

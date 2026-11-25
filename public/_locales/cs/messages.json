@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Abyste slyšeli čtení, zapněte výše „Číst nahlas“."
+  },
+  "agentAccessHeading": {
+    "message": "AI agent"
+  },
+  "agentAccessEnable": {
+    "message": "Povolit AI agentovi měnit nastavení"
+  },
+  "agentAccessDescription": {
+    "message": "Váš programovací agent (Claude Code nebo jiný, který umí MCP) může číst a měnit nastavení na této obrazovce, testovat připojení a přehrát ukázku. Klíče API zůstávají tady: agent je nemůže číst ani nastavit."
+  },
+  "agentAccessCommandHint": {
+    "message": "Spusťte to jednou v terminálu. Pak agenta požádejte, např. „Přepni hlas předčítání na VOICEVOX“."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Příkaz se změnil, takže ten dřívější už nefunguje. Nejdřív odstraňte starou registraci a pak spusťte příkaz výše:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopírovat příkaz"
+  },
+  "agentAccessCopied": {
+    "message": "Zkopírováno"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Zadejte port od 1024 do 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Tento port používá jiná aplikace. Zvolte jiný port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Obnovit token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "K uložení tokenu je potřeba systémové úložiště klíčů, a na tomto počítači žádné není."
+  },
+  "agentAccessStartFailed": {
+    "message": "Server se nepodařilo spustit. Důvod je v protokolu aplikace."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Změněno agentem"
+  },
+  "agentNoteTitle": {
+    "message": "AI agent změnil nastavení"
+  },
+  "agentNoteOn": {
+    "message": "Zap."
+  },
+  "agentNoteOff": {
+    "message": "Vyp."
+  },
+  "agentNoteNotSet": {
+    "message": "Nenastaveno"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI pro shrnutí"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Hlasitost zvuku"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Hlasitost předčítání"
   }
 }

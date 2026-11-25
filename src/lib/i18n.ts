@@ -6,14 +6,14 @@
 // call t() at module evaluation to build their dictionaries. The await of initI18n() must have
 // completed before they are imported (see src/perch/main.tsx).
 
-import type en from "../../public/_locales/en/messages.json";
+import en from "../../public/_locales/en/messages.json";
 
 type MessagePlaceholder = { content: string; description?: string };
 type MessageEntry = { message: string; placeholders?: Record<string, MessagePlaceholder> };
 type MessageDict = Record<string, MessageEntry>;
 
 // Keys are restricted to the key set of the generated en/messages.json (typos in key names are caught at compile time)
-type MessageName = keyof typeof en;
+export type MessageName = keyof typeof en;
 
 // Dictionary. initI18n() sets it here once loading completes. While initI18n() hasn't been called or all locales failed,
 // it stays empty and t() just returns "", the same as Chrome
@@ -30,7 +30,13 @@ let fallbackDict: MessageDict = {};
  * (verify:locales only checks the dictionaries against each other, not references from code).
  */
 export function t(key: MessageName, substitutions?: string | string[]): string {
-  return resolveFallback(key, substitutions);
+  return resolveIn(fallbackDict, key, substitutions);
+}
+
+/** The English message whatever the UI language: what the AI agent's tools answer with, so a refused change says the
+ * sentence the English settings screen shows (docs/design.md "Settings by an AI agent (MCP)") */
+export function englishText(key: MessageName, substitutions?: string | string[]): string {
+  return resolveIn(en as MessageDict, key, substitutions);
 }
 
 /** The UI language (navigator.language) */
@@ -84,8 +90,8 @@ async function tryFetchDict(locale: string): Promise<MessageDict | null> {
 // ASCII letters, digits, and underscores only
 const PLACEHOLDER_RE = /\$\$|\$([A-Za-z0-9_]+)\$/g;
 
-function resolveFallback(key: string, substitutions?: string | string[]): string {
-  const entry = fallbackDict[key];
+function resolveIn(dict: MessageDict, key: string, substitutions?: string | string[]): string {
+  const entry = dict[key];
   if (!entry) return ""; // Chrome also returns "" for unknown keys (verify:locales guarantees every key exists)
   const subs = substitutions === undefined ? [] : Array.isArray(substitutions) ? substitutions : [substitutions];
   const placeholders = entry.placeholders ?? {};

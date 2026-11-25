@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Włącz powyżej „Czytaj na głos”, aby słyszeć odczyty."
+  },
+  "agentAccessHeading": {
+    "message": "Agent AI"
+  },
+  "agentAccessEnable": {
+    "message": "Pozwól agentowi AI zmieniać ustawienia"
+  },
+  "agentAccessDescription": {
+    "message": "Twój agent programistyczny (Claude Code lub inny obsługujący MCP) może odczytywać i zmieniać ustawienia z tego ekranu, testować połączenie i odtwarzać próbkę. Klucze API zostają tutaj: agent nie może ich odczytać ani ustawić."
+  },
+  "agentAccessCommandHint": {
+    "message": "Uruchom to raz w terminalu. Potem poproś agenta, np. „Zmień głos czytania na VOICEVOX”."
+  },
+  "agentAccessReplaceHint": {
+    "message": "Polecenie się zmieniło, więc poprzednie już nie działa. Najpierw usuń starą rejestrację, a potem uruchom polecenie powyżej:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Kopiuj polecenie"
+  },
+  "agentAccessCopied": {
+    "message": "Skopiowano"
+  },
+  "agentAccessPortLabel": {
+    "message": "Port"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Wpisz port od 1024 do 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Inna aplikacja używa tego portu. Wybierz inny port."
+  },
+  "agentAccessRenewButton": {
+    "message": "Odnów token"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Do przechowania tokenu potrzebny jest systemowy magazyn kluczy, a na tym komputerze go nie ma."
+  },
+  "agentAccessStartFailed": {
+    "message": "Nie udało się uruchomić serwera. Przyczyna jest w dzienniku aplikacji."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Zmienione przez agenta"
+  },
+  "agentNoteTitle": {
+    "message": "Agent AI zmienił ustawienie"
+  },
+  "agentNoteOn": {
+    "message": "Wł."
+  },
+  "agentNoteOff": {
+    "message": "Wył."
+  },
+  "agentNoteNotSet": {
+    "message": "Nie ustawiono"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI do podsumowań"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Głośność dźwięku"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Głośność czytania"
   }
 }

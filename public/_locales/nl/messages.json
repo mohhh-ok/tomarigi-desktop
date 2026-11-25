@@ -529,5 +529,68 @@
   },
   "readoutNeedsReadAloud": {
     "message": "Zet \"Voorlezen met stem\" hierboven aan om het voorlezen te horen."
+  },
+  "agentAccessHeading": {
+    "message": "AI-agent"
+  },
+  "agentAccessEnable": {
+    "message": "Een AI-agent instellingen laten wijzigen"
+  },
+  "agentAccessDescription": {
+    "message": "Je codeeragent (Claude Code of een andere die MCP spreekt) kan de instellingen op dit scherm lezen en wijzigen, de verbinding testen en een voorbeeld afspelen. API-sleutels blijven hier: de agent kan ze niet lezen of instellen."
+  },
+  "agentAccessCommandHint": {
+    "message": "Voer dit één keer uit in een terminal. Vraag de agent daarna bijvoorbeeld: ‘Zet de voorleesstem op VOICEVOX’."
+  },
+  "agentAccessReplaceHint": {
+    "message": "De opdracht is gewijzigd, dus de vorige werkt niet meer. Verwijder eerst de oude registratie en voer dan de opdracht hierboven uit:"
+  },
+  "agentAccessCopyButton": {
+    "message": "Opdracht kopiëren"
+  },
+  "agentAccessCopied": {
+    "message": "Gekopieerd"
+  },
+  "agentAccessPortLabel": {
+    "message": "Poort"
+  },
+  "agentAccessPortInvalid": {
+    "message": "Voer een poort in van 1024 tot 65535."
+  },
+  "agentAccessPortInUse": {
+    "message": "Een andere app gebruikt deze poort. Kies een andere poort."
+  },
+  "agentAccessRenewButton": {
+    "message": "Token vernieuwen"
+  },
+  "agentAccessNoKeyStore": {
+    "message": "Hiervoor is de sleutelopslag van het systeem nodig om het token te bewaren, en die is op deze computer niet beschikbaar."
+  },
+  "agentAccessStartFailed": {
+    "message": "De server kon niet starten. De reden staat in het app-logboek."
+  },
+  "agentAccessRecentHeading": {
+    "message": "Gewijzigd door de agent"
+  },
+  "agentNoteTitle": {
+    "message": "De AI-agent heeft een instelling gewijzigd"
+  },
+  "agentNoteOn": {
+    "message": "Aan"
+  },
+  "agentNoteOff": {
+    "message": "Uit"
+  },
+  "agentNoteNotSet": {
+    "message": "Niet ingesteld"
+  },
+  "agentNoteSummaryProvider": {
+    "message": "AI voor samenvattingen"
+  },
+  "agentNoteChirpVolume": {
+    "message": "Volume van geluid"
+  },
+  "agentNoteReadAloudVolume": {
+    "message": "Voorleesvolume"
   }
 }
