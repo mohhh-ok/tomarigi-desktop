@@ -2,13 +2,13 @@
 // called: the request body and the reading of reply bodies are checked as plain functions
 import { expect, test } from "bun:test";
 import {
-  isValidBaseUrl,
   LOCAL_NO_MATCHING_JSON,
   localChatBody,
   parseLocalChatReply,
   pickLocalModel,
   stripThinking,
 } from "../src/lib/local-judge";
+import { isValidBaseUrl } from "../src/lib/settings-checks";
 import { anyAiProviderSetUp, resolveAiProvider } from "../src/lib/api-keys";
 import { askConcierge, buildConciergePayload } from "../src/lib/concierge";
 import type { JudgeResult, JudgeTaskDefinition } from "../src/lib/judge";

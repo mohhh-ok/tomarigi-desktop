@@ -5,14 +5,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MdBugReport, MdClose, MdNotifications, MdNotificationsOff, MdSettings, MdVolumeUp } from "react-icons/md";
 import { t } from "@/lib/i18n";
 import { chirpDone, chirpWaiting, primeAudio } from "@/lib/chirp";
-import {
-  loadRoots,
-  pickNewRoot,
-  queryRead,
-  saveRoots,
-  type RootEntry,
-  type RootKind,
-} from "@/lib/settings-store";
+import type { RootEntry } from "@/lib/settings-store";
 import { focusSession, focusTargetOf } from "@/lib/terminal-focus";
 import { isAngry } from "@/lib/turn-verdict";
 import type { AskJudgement, SessionEvent, SessionView } from "@/lib/sessions";
@@ -36,6 +29,7 @@ import { RootAddDialog } from "./settings/root-add-dialog";
 import { RootManager, type Editing } from "./settings/root-manager";
 import { UpdateSettings } from "./settings/update-settings";
 import { useSettings } from "./use-settings";
+import { useRoots } from "./use-roots";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
 import { ConciergeGlyph, ConciergeLine, ConciergeSettings } from "./concierge";
@@ -99,8 +93,8 @@ export default function App({
   extraPanel?: ReactNode;
 }) {
   const [phase, setPhase] = useState<Phase>("loading");
-  const [roots, setRoots] = useState<RootEntry[]>([]);
-  const [perms, setPerms] = useState<Record<string, PermissionState>>({});
+  const rootsApi = useRoots(source);
+  const { roots, perms, addMessage, addRoot, removeRoot, renameRoot } = rootsApi;
   const [brokenIds, setBrokenIds] = useState<string[]>([]);
   const [sessions, setSessions] = useState<SessionView[]>([]);
   const [events, setEvents] = useState<SessionEvent[]>([]);
@@ -132,7 +126,6 @@ export default function App({
     document.querySelector(`.${target}`)?.scrollIntoView({ block: "center" });
   }, [phase]);
   const [editing, setEditing] = useState<Editing | null>(null);
-  const [addMessage, setAddMessage] = useState<string | null>(null);
   const [windowMode, setWindowMode] = useWindowMode();
   const updates = useUpdates();
   const {
@@ -236,20 +229,9 @@ export default function App({
 
   useEffect(() => {
     void (async () => {
-      // The mock source (source.usesRoots === false) doesn't use the roots/perms subsystem at all.
-      // It leaves roots=[] and perms={} (the useState initial values) and skips the setup screen, watched
-      // folder settings, and permission checks entirely
-      if (source.usesRoots) {
-        const loaded = await loadRoots();
-        setRoots(loaded);
-        const entries = await Promise.all(
-          loaded.map(async (r) => [r.id, await queryRead(r)] as const),
-        );
-        setPerms(Object.fromEntries(entries));
-      } else if (source.displayRoots) {
-        setRoots(source.displayRoots);
-        setPerms(Object.fromEntries(source.displayRoots.map((r) => [r.id, "granted" as const])));
-      }
+      // The mock source (source.usesRoots === false) doesn't use the roots/perms subsystem at all; it skips the
+      // setup screen, watched folder settings, and permission checks entirely (use-roots.ts)
+      await rootsApi.loadAll();
       await loadSettings();
       setPhase("ready");
     })();
@@ -361,48 +343,12 @@ export default function App({
     };
   }, [phase, roots, perms, source]);
 
-  /** So that state and persistence don't silently diverge on failure, it warns and shows a message on screen */
-  const persistRoots = useCallback(async (next: RootEntry[]) => {
-    // Folders shown by mock are not saved
-    if (!source.usesRoots) return;
-    try {
-      await saveRoots(next);
-    } catch (e) {
-      console.warn("[tomarigi] failed to save", e);
-      setAddMessage(t("saveFailedMessage"));
-    }
-  }, []);
-
-  const addRoot = useCallback(async (kind: RootKind) => {
-    // mock has no folder picker
-    if (!source.usesRoots) return;
-    const result = await pickNewRoot(roots, kind);
-    if (result === "cancelled") return;
-    if (result === "duplicate") {
-      setAddMessage(t("duplicateRootMessage"));
-      return;
-    }
-    setAddMessage(null);
-    const next = [...roots, result];
-    setRoots(next);
-    await persistRoots(next);
-    const perm = await queryRead(result);
-    setPerms((prev) => ({ ...prev, [result.id]: perm }));
-  }, [roots, persistRoots]);
-
-  const removeRoot = useCallback(
+  const removeRootRow = useCallback(
     async (id: string) => {
-      const next = roots.filter((r) => r.id !== id);
-      setRoots(next);
-      await persistRoots(next);
-      setPerms((prev) => {
-        const rest = { ...prev };
-        delete rest[id];
-        return rest;
-      });
+      await removeRoot(id);
       setEditing((prev) => (prev?.id === id ? null : prev));
     },
-    [roots, persistRoots],
+    [removeRoot],
   );
 
   const startEdit = useCallback((root: RootEntry) => {
@@ -415,12 +361,9 @@ export default function App({
     if (!editing) return;
     const { id, draft } = editing;
     setEditing(null);
-    const trimmed = draft.trim();
-    if (!trimmed) return; // If empty, keep the original value
-    const next = roots.map((r) => (r.id === id ? { ...r, label: trimmed } : r));
-    setRoots(next);
-    await persistRoots(next);
-  }, [editing, roots, persistRoots]);
+    // An empty label keeps the original value (renameRoot refuses it)
+    await renameRoot(id, draft);
+  }, [editing, renameRoot]);
 
   // Preview the three chirps individually (played in a row, you can't tell which sound is which state)
   const previewChirp = useCallback((chirp: () => void) => {
@@ -791,7 +734,7 @@ export default function App({
                 editing={editing}
                 addMessage={addMessage}
                 onRequestAdd={() => setRootDialogOpen(true)}
-                onRemove={removeRoot}
+                onRemove={(id) => void removeRootRow(id)}
                 onStartEdit={startEdit}
                 onEditChange={(draft) => setEditing((prev) => (prev ? { ...prev, draft } : prev))}
                 onCommitEdit={commitEdit}

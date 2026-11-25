@@ -4,7 +4,8 @@
 import { useEffect, useRef, useState } from "react";
 import { t, uiLanguage } from "@/lib/i18n";
 import { primeAudio } from "@/lib/chirp";
-import { isValidBaseUrl, pickLocalModel } from "@/lib/local-judge";
+import { pickLocalModel } from "@/lib/local-judge";
+import { checkLocalTts, isValidBaseUrl } from "@/lib/settings-checks";
 import {
   baseUrlForKind,
   DEFAULT_TTS_BASE_URL,
@@ -145,10 +146,12 @@ function LocalTtsCard({
   current.current = { voiceValue, model };
 
   const showForm = config === null || editing;
-  const urlInvalid = !isValidBaseUrl(baseUrl);
-  const needsModel = kind === "openai" && model.trim() === "";
-  const needsVoice = voiceValue.trim() === "";
-  const canRun = !urlInvalid && !needsModel && !needsVoice;
+  // The same rule as the AI agent's tools (lib/settings-checks.ts); the first problem is the one the card says
+  const problem = checkLocalTts({ kind, baseUrl, voice: voiceValue, model });
+  const urlInvalid = problem === "url-invalid";
+  const needsModel = problem === "tts-model-missing";
+  const needsVoice = problem === "voice-missing";
+  const canRun = problem === undefined;
 
   const voiceOptions = Array.isArray(lists?.voices) ? lists.voices : undefined;
   const chosenOption = voiceOptions?.find((o) => o.value === voiceValue);

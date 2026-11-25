@@ -188,18 +188,6 @@ export async function fetchLocalModels(baseUrl: string): Promise<string[] | unde
   }
 }
 
-/** The same check as local_url in src-tauri/src/keys.rs: http(s), with no user name, password, query, or fragment */
-export function isValidBaseUrl(value: string): boolean {
-  const trimmed = value.trim();
-  if (trimmed.includes("?") || trimmed.includes("#")) return false;
-  try {
-    const url = new URL(trimmed);
-    return ["http:", "https:"].includes(url.protocol) && url.username === "" && url.password === "";
-  } catch {
-    return false;
-  }
-}
-
 /**
  * The model to select once a server's list is read. The current model stays when the list has it. A saved model the
  * list doesn't have stays too, as the first option, so it isn't swapped for another without the user choosing

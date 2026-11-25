@@ -9,7 +9,8 @@ import {
   type RetiredKeyProvider,
 } from "@/lib/api-keys";
 import type { JudgeErrorKind } from "@/lib/judge";
-import { fetchLocalModels, isValidBaseUrl, pickLocalModel } from "@/lib/local-judge";
+import { fetchLocalModels, pickLocalModel } from "@/lib/local-judge";
+import { checkLocalAi, isValidBaseUrl } from "@/lib/settings-checks";
 import { BusyButton } from "./busy-button";
 import { CancelEditButton, CardNote } from "./card-parts";
 
@@ -207,8 +208,8 @@ function LocalAiSettings({
   modelRef.current = model;
   // Said under the URL field as soon as the URL is wrong; it's also why Save and the test can't be pressed
   const urlInvalid = !isValidBaseUrl(baseUrl);
-  // One rule for Save and the connection test (docs/design.md, Local AI)
-  const canRun = !urlInvalid && model.trim() !== "";
+  // One rule for Save and the connection test (docs/design.md, Local AI), shared with the AI agent's tools
+  const canRun = checkLocalAi({ baseUrl, model }) === undefined;
   const showForm = config === null || editing;
   // What the last test ran on: the base URL and model in the form, or "saved". A result for anything else (other values
   // in the form, or the saved ones once the form opens) isn't shown

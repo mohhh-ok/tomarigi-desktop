@@ -3,7 +3,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { openDB, type IDBPDatabase } from "idb";
 import { isReadableDir, NativeDirectoryHandle } from "./native-fs";
 import { AGENTS, agentOf, type AgentKind } from "./agents";
-import { pathKey, samePath } from "./paths";
+import { pathKey } from "./paths";
+import { checkNewRoot } from "./settings-checks";
 import { CONCIERGE_LOOKS, DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "./concierge";
 
 const DB_NAME = "tomarigi";
@@ -123,11 +124,17 @@ export async function pickNewRoot(
     defaultPath: `~/${agentOf(kind).home}`,
   });
   if (!path) return "cancelled";
-  if (existing.some((root) => samePath(root.path, path))) return "duplicate";
+  if (checkNewRoot(existing, path, true) === "duplicate") return "duplicate";
+  return newRoot(existing, kind, path);
+}
+
+/** A folder added by the user (from the picker, or a path the AI agent gives). The label defaults to the agent's name,
+ * numbered when taken. Doesn't check or save: the caller runs checkNewRoot and saveRoots */
+export function newRoot(existing: RootEntry[], kind: RootKind, path: string, label?: string): RootEntry {
   return withHandle({
     id: crypto.randomUUID(),
     kind,
-    label: nextAutomaticLabel(existing, kind),
+    label: label?.trim() || nextAutomaticLabel(existing, kind),
     path,
     builtin: false,
   });
