@@ -478,10 +478,13 @@
     "message": "Vælg eller skriv en model for at gemme og afspille en prøve."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX-kompatible servere læser kun japansk. Så længe appen ikke er på japansk, bruges systemstemmen til oplæsning."
+    "message": "VOICEVOX-kompatible servere læser kun japansk. Appens sprog følger systemets; så længe det ikke er japansk, bruges systemstemmen til oplæsning. Prøven afspilles på japansk i begge tilfælde."
   },
   "readoutFallbackNote": {
     "message": "Hvis serveren ikke svarer inden for 5 sekunder, bruges systemstemmen til den oplæsning."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Hvis serveren ikke svarer inden for 5 sekunder, springes den oplæsning over, da systemet ikke har talesyntese."
   },
   "readoutTestButton": {
     "message": "Afspil en prøve"

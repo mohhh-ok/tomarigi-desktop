@@ -478,10 +478,13 @@
     "message": "Alege sau introdu un model pentru a salva și a reda un exemplu."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Serverele compatibile VOICEVOX citesc doar japoneza. Cât timp aplicația nu este în japoneză, citirea folosește vocea sistemului."
+    "message": "Serverele compatibile VOICEVOX citesc doar japoneza. Limba aplicației urmează limba sistemului; cât timp nu este japoneza, citirea folosește vocea sistemului. Eșantionul se redă oricum în japoneză."
   },
   "readoutFallbackNote": {
     "message": "Dacă serverul nu răspunde în 5 secunde, acea citire folosește vocea sistemului."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Dacă serverul nu răspunde în 5 secunde, acea citire este omisă, deoarece acest sistem nu are motor de vorbire."
   },
   "readoutTestButton": {
     "message": "Redă un exemplu"

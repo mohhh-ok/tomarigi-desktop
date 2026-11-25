@@ -478,10 +478,13 @@
     "message": "Choisissez ou saisissez un modèle pour enregistrer et lire un échantillon."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Les serveurs compatibles VOICEVOX ne lisent que le japonais. Tant que l’app n’est pas en japonais, la lecture utilise la voix du système."
+    "message": "Les serveurs compatibles VOICEVOX ne lisent que le japonais. La langue de l’app suit celle du système ; tant qu’elle n’est pas le japonais, la lecture utilise la voix du système. L’échantillon est lu en japonais dans les deux cas."
   },
   "readoutFallbackNote": {
     "message": "Si le serveur ne répond pas en 5 secondes, cette lecture utilise la voix du système."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Si le serveur ne répond pas en 5 secondes, cette lecture est ignorée, car ce système n’a pas de moteur vocal."
   },
   "readoutTestButton": {
     "message": "Lire un échantillon"

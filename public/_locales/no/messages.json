@@ -478,10 +478,13 @@
     "message": "Velg eller skriv inn en modell for å lagre og spille av et eksempel."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX-kompatible tjenere leser bare japansk. Så lenge appen ikke er på japansk, brukes systemstemmen ved opplesing."
+    "message": "VOICEVOX-kompatible tjenere leser bare japansk. Appens språk følger systemets; så lenge det ikke er japansk, brukes systemstemmen ved opplesing. Prøven spilles av på japansk uansett."
   },
   "readoutFallbackNote": {
     "message": "Hvis tjeneren ikke svarer innen 5 sekunder, brukes systemstemmen for den opplesingen."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Hvis tjeneren ikke svarer innen 5 sekunder, hoppes den opplesingen over, siden systemet mangler talesyntese."
   },
   "readoutTestButton": {
     "message": "Spill av et eksempel"

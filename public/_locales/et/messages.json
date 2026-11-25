@@ -478,10 +478,13 @@
     "message": "Salvestamiseks ja näidise esitamiseks vali või sisesta mudel."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX-iga ühilduvad serverid loevad ette ainult jaapani keelt. Kuni rakenduse keel pole jaapani, kasutatakse ettelugemisel süsteemi häält."
+    "message": "VOICEVOX-iga ühilduvad serverid loevad ette ainult jaapani keelt. Rakenduse keel järgib süsteemi keelt; kuni see pole jaapani, kasutatakse ettelugemisel süsteemi häält. Näidis kõlab mõlemal juhul jaapani keeles."
   },
   "readoutFallbackNote": {
     "message": "Kui server ei vasta 5 sekundi jooksul, kasutab see ettelugemine süsteemi häält."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Kui server ei vasta 5 sekundi jooksul, jäetakse see ettelugemine vahele, kuna selles süsteemis pole kõnesünteesi."
   },
   "readoutTestButton": {
     "message": "Esita näidis"

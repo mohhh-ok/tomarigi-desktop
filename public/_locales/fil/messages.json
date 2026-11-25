@@ -478,10 +478,13 @@
     "message": "Pumili o mag-type ng model para mag-save at mag-play ng sample."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Japanese lang ang binabasa ng mga server na compatible sa VOICEVOX. Habang hindi Japanese ang wika ng app, boses ng system ang gagamitin sa pagbasa."
+    "message": "Japanese lang ang binabasa ng mga server na compatible sa VOICEVOX. Sinusunod ng wika ng app ang wika ng system; habang hindi ito Japanese, boses ng system ang gagamitin sa pagbasa. Sa Japanese palaging tumutugtog ang sample."
   },
   "readoutFallbackNote": {
     "message": "Kapag hindi sumagot ang server sa loob ng 5 segundo, boses ng system ang gagamitin sa pagbasang iyon."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Kapag hindi sumagot ang server sa loob ng 5 segundo, lalaktawan ang pagbasang iyon, dahil walang speech engine ang system na ito."
   },
   "readoutTestButton": {
     "message": "I-play ang sample"

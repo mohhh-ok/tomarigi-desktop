@@ -478,10 +478,13 @@
     "message": "Vyberte alebo zadajte model, aby ste mohli uložiť a prehrať ukážku."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Servery kompatibilné s VOICEVOX čítajú iba po japonsky. Kým aplikácia nie je v japončine, čítanie používa systémový hlas."
+    "message": "Servery kompatibilné s VOICEVOX čítajú iba po japonsky. Jazyk aplikácie sa riadi jazykom systému; kým to nie je japončina, čítanie používa systémový hlas. Ukážka sa v oboch prípadoch prehrá po japonsky."
   },
   "readoutFallbackNote": {
     "message": "Ak server neodpovie do 5 sekúnd, dané čítanie použije systémový hlas."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Ak server neodpovie do 5 sekúnd, dané čítanie sa preskočí, pretože tento systém nemá rečový modul."
   },
   "readoutTestButton": {
     "message": "Prehrať ukážku"

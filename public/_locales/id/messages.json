@@ -478,10 +478,13 @@
     "message": "Pilih atau ketik model untuk menyimpan dan memutar contoh."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Server yang kompatibel dengan VOICEVOX hanya membaca bahasa Jepang. Selama bahasa aplikasi bukan Jepang, pembacaan memakai suara sistem."
+    "message": "Server yang kompatibel dengan VOICEVOX hanya membaca bahasa Jepang. Bahasa aplikasi mengikuti bahasa sistem; selama bukan bahasa Jepang, pembacaan memakai suara sistem. Contoh selalu diputar dalam bahasa Jepang."
   },
   "readoutFallbackNote": {
     "message": "Jika server tidak menjawab dalam 5 detik, pembacaan itu memakai suara sistem."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Jika server tidak menjawab dalam 5 detik, pembacaan itu dilewati, karena sistem ini tidak memiliki mesin suara."
   },
   "readoutTestButton": {
     "message": "Putar contoh"

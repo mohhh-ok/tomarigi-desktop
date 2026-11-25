@@ -478,10 +478,13 @@
     "message": "Pilih atau taip model untuk menyimpan dan memainkan sampel."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Pelayan serasi VOICEVOX hanya membaca bahasa Jepun. Selagi bahasa aplikasi bukan bahasa Jepun, bacaan menggunakan suara sistem."
+    "message": "Pelayan serasi VOICEVOX hanya membaca bahasa Jepun. Bahasa aplikasi mengikut bahasa sistem; selagi bukan bahasa Jepun, bacaan menggunakan suara sistem. Sampel dimainkan dalam bahasa Jepun dalam kedua-dua keadaan."
   },
   "readoutFallbackNote": {
     "message": "Jika pelayan tidak menjawab dalam 5 saat, bacaan itu menggunakan suara sistem."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Jika pelayan tidak menjawab dalam 5 saat, bacaan itu dilangkau, kerana sistem ini tiada enjin pertuturan."
   },
   "readoutTestButton": {
     "message": "Mainkan sampel"

@@ -478,10 +478,13 @@
     "message": "モデルを選ぶか入力すると、保存と試しの読み上げができます。"
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX 互換のサーバーは日本語だけを読みます。アプリの言語が日本語でない間は、OS の音声で読み上げます。"
+    "message": "VOICEVOX 互換のサーバーは日本語だけを読みます。アプリの言語は OS の言語に合わせているので、日本語でない間は OS の音声で読み上げます。試しの読み上げは日本語で鳴ります。"
   },
   "readoutFallbackNote": {
     "message": "サーバーが 5 秒以内に答えないときは、その読み上げを OS の音声で読みます。"
+  },
+  "readoutFallbackNoSystem": {
+    "message": "サーバーが 5 秒以内に答えないときは、その読み上げを飛ばします（このシステムには音声合成の機能が無いため）。"
   },
   "readoutTestButton": {
     "message": "試しに読み上げる"

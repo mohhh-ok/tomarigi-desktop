@@ -478,10 +478,13 @@
     "message": "Escolha ou escreva um modelo para guardar e reproduzir uma amostra."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Os servidores compatíveis com VOICEVOX só leem japonês. Enquanto a app não estiver em japonês, a leitura usa a voz do sistema."
+    "message": "Os servidores compatíveis com VOICEVOX só leem japonês. O idioma da app segue o do sistema; enquanto não for japonês, a leitura usa a voz do sistema. A amostra toca em japonês de qualquer forma."
   },
   "readoutFallbackNote": {
     "message": "Se o servidor não responder em 5 segundos, essa leitura usa a voz do sistema."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Se o servidor não responder em 5 segundos, essa leitura é ignorada, porque este sistema não tem motor de voz."
   },
   "readoutTestButton": {
     "message": "Reproduzir uma amostra"

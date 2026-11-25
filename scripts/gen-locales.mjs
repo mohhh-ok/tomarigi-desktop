@@ -192,6 +192,7 @@ export const KEYS = [
   "readoutNeedsModel",
   "readoutVoicevoxJaOnly",
   "readoutFallbackNote",
+  "readoutFallbackNoSystem",
   "readoutTestButton",
   "readoutTestingLabel",
   "readoutTestOk",

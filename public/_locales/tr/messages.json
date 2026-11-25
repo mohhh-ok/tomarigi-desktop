@@ -478,10 +478,13 @@
     "message": "Kaydetmek ve örnek çalmak için bir model seçin veya yazın."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX uyumlu sunucular yalnızca Japonca okur. Uygulama Japonca olmadığı sürece okuma sistem sesini kullanır."
+    "message": "VOICEVOX uyumlu sunucular yalnızca Japonca okur. Uygulamanın dili sistemin diline uyar; Japonca olmadığı sürece okuma sistem sesini kullanır. Örnek her durumda Japonca çalınır."
   },
   "readoutFallbackNote": {
     "message": "Sunucu 5 saniye içinde yanıt vermezse o okuma sistem sesini kullanır."
+  },
+  "readoutFallbackNoSystem": {
+    "message": "Sunucu 5 saniye içinde yanıt vermezse o okuma atlanır, çünkü bu sistemde konuşma motoru yoktur."
   },
   "readoutTestButton": {
     "message": "Örnek çal"

@@ -262,9 +262,22 @@ function LocalTtsCard({
   const listFailed =
     voicesListed !== null && (voicesListed.voices === "failed" || voicesListed.models === "failed");
 
+  // Next to Save in the form, next to Change / Delete on the saved card: the actions of the card in one row
+  const sampleButton = (
+    <BusyButton
+      label={t("readoutTestButton")}
+      busyLabel={t("readoutTestingLabel")}
+      busy={shownTest.phase === "testing"}
+      disabled={showForm ? !canRun : false}
+      onClick={runTest}
+    />
+  );
+
   return (
     <div className="ai-key-provider readout-voice-card">
-      <p className="judge-description">{t("readoutFallbackNote")}</p>
+      {/* The sample plays either way; readouts are heard only with "Read aloud" on, so it is said before anything else */}
+      {!readAloud && <p className="readout-voice-warning">{t("readoutNeedsReadAloud")}</p>}
+      <p className="judge-description">{t(speechAvailable() ? "readoutFallbackNote" : "readoutFallbackNoSystem")}</p>
       {showForm ? (
         <>
           <div className="local-ai-fields">
@@ -363,6 +376,7 @@ function LocalTtsCard({
                 }}
               />
             )}
+            {sampleButton}
           </div>
         </>
       ) : (
@@ -372,7 +386,9 @@ function LocalTtsCard({
               {config.voiceLabel ?? config.voice}
               {config.model ? ` · ${config.model}` : ""}
             </span>
-            <span className="local-ai-current-url">{config.baseUrl}</span>
+            <span className="local-ai-current-url">
+              {t(config.kind === "openai" ? "readoutKindOpenAi" : "readoutKindVoicevox")} · {config.baseUrl}
+            </span>
             {credit && <span className="readout-voice-credit">{credit}</span>}
           </span>
           {jaOnly && <p className="readout-voice-warning">{t("readoutVoicevoxJaOnly")}</p>}
@@ -395,16 +411,10 @@ function LocalTtsCard({
           >
             {t("byokDeleteButton")}
           </button>
+          {sampleButton}
           </div>
         </>
       )}
-      <BusyButton
-        label={t("readoutTestButton")}
-        busyLabel={t("readoutTestingLabel")}
-        busy={shownTest.phase === "testing"}
-        disabled={showForm ? !canRun : false}
-        onClick={runTest}
-      />
       {shownTest.phase === "success" && (
         <p className="judge-status judge-status-ok">
           {/* The number and its unit stay on one line */}
@@ -415,8 +425,6 @@ function LocalTtsCard({
       {shownTest.phase === "failure" && (
         <p className="judge-status judge-status-error">{t(TEST_FAILURE_TEXT[shownTest.reason])}</p>
       )}
-      {/* The sample plays either way; readouts are heard only with "Read aloud" on */}
-      {!readAloud && config !== null && !showForm && <p className="readout-voice-warning">{t("readoutNeedsReadAloud")}</p>}
     </div>
   );
 }
