@@ -478,7 +478,7 @@
     "message": "Válassz vagy írj be egy modellt a mentéshez és a minta lejátszásához."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "A VOICEVOX-kompatibilis kiszolgálók csak japánul olvasnak fel. Az alkalmazás nyelve a rendszer nyelvét követi; amíg az nem japán, a felolvasás a rendszerhangot használja. A minta mindkét esetben japánul szólal meg."
+    "message": "A VOICEVOX-kompatibilis kiszolgálók csak japánul olvasnak fel. Az alkalmazás nyelve a rendszer nyelvét követi; amíg az nem japán, a felolvasás a rendszerhangot használja."
   },
   "readoutFallbackNote": {
     "message": "Ha a kiszolgáló 5 másodpercen belül nem válaszol, az a felolvasás a rendszerhangot használja."

@@ -478,7 +478,7 @@
     "message": "Vyberte alebo zadajte model, aby ste mohli uložiť a prehrať ukážku."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Servery kompatibilné s VOICEVOX čítajú iba po japonsky. Jazyk aplikácie sa riadi jazykom systému; kým to nie je japončina, čítanie používa systémový hlas. Ukážka sa v oboch prípadoch prehrá po japonsky."
+    "message": "Servery kompatibilné s VOICEVOX čítajú iba po japonsky. Jazyk aplikácie sa riadi jazykom systému; kým to nie je japončina, čítanie používa systémový hlas."
   },
   "readoutFallbackNote": {
     "message": "Ak server neodpovie do 5 sekúnd, dané čítanie použije systémový hlas."

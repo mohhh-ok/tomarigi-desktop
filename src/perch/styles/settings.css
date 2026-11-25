@@ -662,8 +662,8 @@ button.update-install:hover {
   color: #6f6b61;
 }
 
-/* What keeps readouts from being heard as set (VOICEVOX-compatible outside Japanese, "Read aloud" off): amber, so it
-   isn't read as a quiet explanation */
+/* Something the user has to do for readouts to be heard ("Read aloud" off): amber, so it isn't read as a quiet
+   explanation */
 .readout-voice-warning {
   margin: 0;
   font-size: 12px;
@@ -689,10 +689,20 @@ button.update-install:hover {
   border-top: 1px solid #343128;
 }
 
-.local-ai-field .readout-voice-warning {
+/* A fact with nothing to do about it (VOICEVOX-compatible outside Japanese reads with the system voice): grey, like the
+   card's other explanations */
+.readout-voice-info {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #8d887c;
+}
+
+.local-ai-field .readout-voice-info {
   margin-top: 4px;
 }
 
-.readout-voice-current + .readout-voice-warning {
+.readout-voice-current + .readout-voice-info {
   margin-bottom: 10px;
 }
+

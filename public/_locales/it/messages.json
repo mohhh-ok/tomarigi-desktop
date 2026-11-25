@@ -478,7 +478,7 @@
     "message": "Scegli o digita un modello per salvare e riprodurre un campione."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "I server compatibili con VOICEVOX leggono solo il giapponese. La lingua dell’app segue quella del sistema; finché non è il giapponese, la lettura usa la voce di sistema. Il campione viene riprodotto comunque in giapponese."
+    "message": "I server compatibili con VOICEVOX leggono solo il giapponese. La lingua dell’app segue quella del sistema; finché non è il giapponese, la lettura usa la voce di sistema."
   },
   "readoutFallbackNote": {
     "message": "Se il server non risponde entro 5 secondi, quella lettura usa la voce di sistema."

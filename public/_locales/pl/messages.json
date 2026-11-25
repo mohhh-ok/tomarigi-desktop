@@ -478,7 +478,7 @@
     "message": "Wybierz lub wpisz model, aby zapisać i odtworzyć próbkę."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Serwery zgodne z VOICEVOX czytają tylko po japońsku. Język aplikacji podąża za językiem systemu; dopóki nie jest japoński, czytanie używa głosu systemowego. Próbka jest odtwarzana po japońsku w obu przypadkach."
+    "message": "Serwery zgodne z VOICEVOX czytają tylko po japońsku. Język aplikacji podąża za językiem systemu; dopóki nie jest japoński, czytanie używa głosu systemowego."
   },
   "readoutFallbackNote": {
     "message": "Jeśli serwer nie odpowie w ciągu 5 sekund, to czytanie użyje głosu systemowego."

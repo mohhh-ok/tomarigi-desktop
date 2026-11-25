@@ -478,7 +478,7 @@
     "message": "Izberite ali vnesite model, da shranite in predvajate vzorec."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Strežniki, združljivi z VOICEVOX, berejo samo japonsko. Jezik aplikacije sledi jeziku sistema; dokler ni japonščina, branje uporablja sistemski glas. Vzorec se v vsakem primeru predvaja v japonščini."
+    "message": "Strežniki, združljivi z VOICEVOX, berejo samo japonsko. Jezik aplikacije sledi jeziku sistema; dokler ni japonščina, branje uporablja sistemski glas."
   },
   "readoutFallbackNote": {
     "message": "Če strežnik ne odgovori v 5 sekundah, to branje uporabi sistemski glas."

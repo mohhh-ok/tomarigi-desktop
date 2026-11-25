@@ -297,7 +297,7 @@ function LocalTtsCard({
                 <option value="voicevox">{t("readoutKindVoicevox")}</option>
               </select>
               <span className="readout-voice-examples">{KIND_EXAMPLES[kind]}</span>
-              {jaOnly && <span className="readout-voice-warning">{t("readoutVoicevoxJaOnly")}</span>}
+              {jaOnly && <span className="readout-voice-info">{t("readoutVoicevoxJaOnly")}</span>}
             </label>
             <label className="local-ai-field">
               <span className="local-ai-field-label">{t("localAiBaseUrlLabel")}</span>
@@ -389,7 +389,7 @@ function LocalTtsCard({
             </span>
             {credit && <span className="readout-voice-credit">{credit}</span>}
           </span>
-          {jaOnly && <p className="readout-voice-warning">{t("readoutVoicevoxJaOnly")}</p>}
+          {jaOnly && <p className="readout-voice-info">{t("readoutVoicevoxJaOnly")}</p>}
           <div className="readout-voice-actions">
           <button
             className="small"

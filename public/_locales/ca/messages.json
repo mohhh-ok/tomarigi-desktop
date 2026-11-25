@@ -478,7 +478,7 @@
     "message": "Tria o escriu un model per desar i reproduir una mostra."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Els servidors compatibles amb VOICEVOX només llegeixen japonès. La llengua de l’app segueix la del sistema; mentre no sigui el japonès, la lectura fa servir la veu del sistema. La mostra sona en japonès en qualsevol cas."
+    "message": "Els servidors compatibles amb VOICEVOX només llegeixen japonès. La llengua de l’app segueix la del sistema; mentre no sigui el japonès, la lectura fa servir la veu del sistema."
   },
   "readoutFallbackNote": {
     "message": "Si el servidor no respon en 5 segons, aquesta lectura fa servir la veu del sistema."

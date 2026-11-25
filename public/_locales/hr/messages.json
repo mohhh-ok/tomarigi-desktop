@@ -478,7 +478,7 @@
     "message": "Odaberi ili upiši model za spremanje i reprodukciju uzorka."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Poslužitelji kompatibilni s VOICEVOX-om čitaju samo japanski. Jezik aplikacije prati jezik sustava; dok nije japanski, čitanje koristi glas sustava. Uzorak se u svakom slučaju reproducira na japanskom."
+    "message": "Poslužitelji kompatibilni s VOICEVOX-om čitaju samo japanski. Jezik aplikacije prati jezik sustava; dok nije japanski, čitanje koristi glas sustava."
   },
   "readoutFallbackNote": {
     "message": "Ako poslužitelj ne odgovori u 5 sekundi, to čitanje koristi glas sustava."

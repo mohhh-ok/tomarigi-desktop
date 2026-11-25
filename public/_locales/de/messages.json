@@ -478,7 +478,7 @@
     "message": "Wähle oder gib ein Modell ein, um zu speichern und eine Probe abzuspielen."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX-kompatible Server lesen nur Japanisch vor. Die Sprache der App folgt der des Systems; solange sie nicht Japanisch ist, wird die Systemstimme verwendet. Die Probe wird in jedem Fall auf Japanisch abgespielt."
+    "message": "VOICEVOX-kompatible Server lesen nur Japanisch vor. Die Sprache der App folgt der des Systems; solange sie nicht Japanisch ist, wird die Systemstimme verwendet."
   },
   "readoutFallbackNote": {
     "message": "Antwortet der Server nicht innerhalb von 5 Sekunden, wird dieses Vorlesen mit der Systemstimme ausgegeben."

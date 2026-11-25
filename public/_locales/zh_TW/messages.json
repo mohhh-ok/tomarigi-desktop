@@ -478,7 +478,7 @@
     "message": "選擇或輸入一個模型後，即可儲存並試聽。"
   },
   "readoutVoicevoxJaOnly": {
-    "message": "相容 VOICEVOX 的伺服器只能朗讀日語。應用程式語言跟隨系統語言；不是日語時，將使用系統語音朗讀。試聽一律以日語播放。"
+    "message": "相容 VOICEVOX 的伺服器只能朗讀日語。應用程式語言跟隨系統語言；不是日語時，將使用系統語音朗讀。"
   },
   "readoutFallbackNote": {
     "message": "伺服器在 5 秒內沒有回應時，該次朗讀會使用系統語音。"

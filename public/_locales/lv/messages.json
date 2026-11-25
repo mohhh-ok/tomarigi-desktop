@@ -478,7 +478,7 @@
     "message": "Izvēlieties vai ierakstiet modeli, lai saglabātu un atskaņotu paraugu."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX saderīgie serveri lasa tikai japāņu valodā. Lietotnes valoda seko sistēmas valodai; kamēr tā nav japāņu, lasīšanai tiek izmantota sistēmas balss. Paraugs abos gadījumos skan japāņu valodā."
+    "message": "VOICEVOX saderīgie serveri lasa tikai japāņu valodā. Lietotnes valoda seko sistēmas valodai; kamēr tā nav japāņu, lasīšanai tiek izmantota sistēmas balss."
   },
   "readoutFallbackNote": {
     "message": "Ja serveris neatbild 5 sekunžu laikā, šī lasīšana izmanto sistēmas balsi."

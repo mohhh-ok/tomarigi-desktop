@@ -478,7 +478,7 @@
     "message": "Kies of typ een model om op te slaan en een voorbeeld af te spelen."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX-compatibele servers lezen alleen Japans voor. De taal van de app volgt die van het systeem; zolang die niet Japans is, wordt de systeemstem gebruikt. Het voorbeeld wordt hoe dan ook in het Japans afgespeeld."
+    "message": "VOICEVOX-compatibele servers lezen alleen Japans voor. De taal van de app volgt die van het systeem; zolang die niet Japans is, wordt de systeemstem gebruikt."
   },
   "readoutFallbackNote": {
     "message": "Als de server niet binnen 5 seconden antwoordt, gebruikt die voorlezing de systeemstem."

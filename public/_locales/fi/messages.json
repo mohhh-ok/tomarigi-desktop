@@ -478,7 +478,7 @@
     "message": "Valitse tai kirjoita malli, niin voit tallentaa ja toistaa näytteen."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX-yhteensopivat palvelimet lukevat vain japania. Sovelluksen kieli noudattaa järjestelmän kieltä; kun se ei ole japani, luku käyttää järjestelmän ääntä. Näyte soi japaniksi joka tapauksessa."
+    "message": "VOICEVOX-yhteensopivat palvelimet lukevat vain japania. Sovelluksen kieli noudattaa järjestelmän kieltä; kun se ei ole japani, luku käyttää järjestelmän ääntä."
   },
   "readoutFallbackNote": {
     "message": "Jos palvelin ei vastaa 5 sekunnissa, kyseinen luku käyttää järjestelmän ääntä."

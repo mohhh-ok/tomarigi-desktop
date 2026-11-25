@@ -478,7 +478,7 @@
     "message": "Choose or type a model to save and play a sample."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX-compatible servers read Japanese only. This app's language follows your system's; while it isn't Japanese, readouts use the system voice. The sample plays in Japanese either way."
+    "message": "VOICEVOX-compatible servers read Japanese only. This app's language follows your system's; while it isn't Japanese, readouts use the system voice."
   },
   "readoutFallbackNote": {
     "message": "When the server doesn't answer within 5 seconds, that readout uses the system voice."

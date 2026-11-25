@@ -478,7 +478,7 @@
     "message": "Pasirinkite arba įveskite modelį, kad išsaugotumėte ir paleistumėte pavyzdį."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "VOICEVOX suderinami serveriai skaito tik japoniškai. Programos kalba seka sistemos kalbą; kol ji nėra japonų, skaitoma sistemos balsu. Pavyzdys abiem atvejais skamba japoniškai."
+    "message": "VOICEVOX suderinami serveriai skaito tik japoniškai. Programos kalba seka sistemos kalbą; kol ji nėra japonų, skaitoma sistemos balsu."
   },
   "readoutFallbackNote": {
     "message": "Jei serveris neatsako per 5 sekundes, tas skaitymas naudoja sistemos balsą."

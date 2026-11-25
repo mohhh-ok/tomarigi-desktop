@@ -478,7 +478,7 @@
     "message": "Alege sau introdu un model pentru a salva și a reda un exemplu."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Serverele compatibile VOICEVOX citesc doar japoneza. Limba aplicației urmează limba sistemului; cât timp nu este japoneza, citirea folosește vocea sistemului. Eșantionul se redă oricum în japoneză."
+    "message": "Serverele compatibile VOICEVOX citesc doar japoneza. Limba aplicației urmează limba sistemului; cât timp nu este japoneza, citirea folosește vocea sistemului."
   },
   "readoutFallbackNote": {
     "message": "Dacă serverul nu răspunde în 5 secunde, acea citire folosește vocea sistemului."

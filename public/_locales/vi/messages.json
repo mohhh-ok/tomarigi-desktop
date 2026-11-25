@@ -478,7 +478,7 @@
     "message": "Hãy chọn hoặc nhập một mô hình để lưu và phát thử."
   },
   "readoutVoicevoxJaOnly": {
-    "message": "Máy chủ tương thích VOICEVOX chỉ đọc tiếng Nhật. Ngôn ngữ của ứng dụng theo ngôn ngữ của hệ thống; khi không phải tiếng Nhật, việc đọc sẽ dùng giọng của hệ thống. Bản đọc thử luôn phát bằng tiếng Nhật."
+    "message": "Máy chủ tương thích VOICEVOX chỉ đọc tiếng Nhật. Ngôn ngữ của ứng dụng theo ngôn ngữ của hệ thống; khi không phải tiếng Nhật, việc đọc sẽ dùng giọng của hệ thống."
   },
   "readoutFallbackNote": {
     "message": "Nếu máy chủ không phản hồi trong 5 giây, lần đọc đó sẽ dùng giọng của hệ thống."
