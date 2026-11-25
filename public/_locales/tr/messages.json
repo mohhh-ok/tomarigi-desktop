@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Simge kümesini değiştir"
   },
+  "iconSetUseButton": {
+    "message": "$SET$ kullan",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Yolu kopyala"
   },
@@ -295,7 +303,7 @@
     "message": "Bu bilgisayarda çalışan bir anahtarlık (GNOME Keyring veya KWallet) olmadığı için API anahtarları kaydedilemiyor. Birini başlatıp tomarigi'yi yeniden açın."
   },
   "voiceUnavailable": {
-    "message": "Bu sistemde konuşma motoru olmadığı için sesli okuma yalnızca yerel bir TTS sunucusuyla çalışır."
+    "message": "Bu sistemde konuşma motoru olmadığı için sesli okuma yalnızca yerel bir ses sunucusuyla çalışır."
   },
   "conciergeName": {
     "message": "Konsiyerj"
@@ -304,7 +312,7 @@
     "message": "Tüm oturumlarına bakar ve sırada ne yapacağını söyler. O oturumu açmak için tıkla"
   },
   "conciergeSettingsNote": {
-    "message": "Tüm oturumlarına bakar ve sırada hangisiyle ilgilenmen gerektiğini söyler. O oturumun paneline gitmek için tıkla. Bir OpenAI veya Anthropic anahtarı kayıtlıyken ya da Yerel ayarlanmışken görünür. Görünümünü seç"
+    "message": "Tüm oturumlarına bakar ve sırada hangisiyle ilgilenmen gerektiğini söyler. O oturumun terminaline geçmek için tıkla. Bir OpenAI veya Anthropic anahtarı kayıtlıyken ya da Yerel ayarlanmışken görünür. Görünümünü aşağıdan seç."
   },
   "conciergeLookOwl": {
     "message": "Baykuş"
@@ -392,7 +400,7 @@
     "message": "Kaydetmek ve bağlantıyı test etmek için bir model seçin veya yazın."
   },
   "aiUserMessagesNote": {
-    "message": "Her tur bittiğinde ajanın son yanıtı ve o turda gönderdiğin mesajlar gönderilir. Yanıtını bekleyen kuşlardaki “?” ve yapay zekâya hakaret için öfke işareti de bunlarla belirlenir."
+    "message": "Ajan her yanıtını bitirdiğinde o yanıt ve bir önceki yanıtından beri gönderdiğin mesajlar gönderilir. Yanıtını bekleyen kuşlardaki “?” ve yapay zekâya hakaret için öfke işareti de bunlarla belirlenir."
   },
   "retiredKeyNote": {
     "message": "Artık kullanılmıyor. Kayıtlı bu anahtarı silebilirsin."
@@ -454,7 +462,7 @@
     "message": "Sistem sesi"
   },
   "readoutVoiceLocal": {
-    "message": "Yerel TTS sunucusu"
+    "message": "Yerel ses sunucusu"
   },
   "readoutKindLabel": {
     "message": "Sunucu türü"
@@ -537,7 +545,7 @@
     "message": "Bir yapay zekâ ajanının ayarları değiştirmesine izin ver"
   },
   "agentAccessDescription": {
-    "message": "Kodlama ajanınız (Claude Code veya MCP kullanan başka bir ajan) bu ekrandaki ayarları okuyup değiştirebilir, bağlantıyı test edebilir ve örnek çalabilir. API anahtarları burada kalır: ajan bunları okuyamaz veya ayarlayamaz."
+    "message": "Kodlama ajanınız (Claude Code veya ajanları uygulamalara bağlamanın yaygın yolu olan MCP’yi destekleyen başka bir ajan) bu ekrandaki ayarları okuyup değiştirebilir, bağlantıyı test edebilir ve örnek çalabilir. API anahtarları burada kalır: ajan bunları okuyamaz veya ayarlayamaz."
   },
   "agentAccessCommandHint": {
     "message": "Bunu bir terminalde bir kez çalıştırın. Sonra ajandan isteyin, örneğin: “Okuma sesini VOICEVOX yap”."

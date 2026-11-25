@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Ikonkészlet váltása"
   },
+  "iconSetUseButton": {
+    "message": "Legyen: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Útvonal másolása"
   },
@@ -295,7 +303,7 @@
     "message": "Az API-kulcsok nem menthetők, mert ezen a számítógépen nem fut kulcstartó (GNOME Keyring vagy KWallet). Indítson el egyet, majd nyissa meg újra a tomarigit."
   },
   "voiceUnavailable": {
-    "message": "Ezen a rendszeren nincs beszédmotor, ezért a felolvasás csak helyi TTS-kiszolgálóval működik."
+    "message": "Ezen a rendszeren nincs beszédmotor, ezért a felolvasás csak helyi beszédkiszolgálóval működik."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Átnézi az összes munkamenetet, és javasolja, mi legyen a következő lépés. Kattints a munkamenet megnyitásához"
   },
   "conciergeSettingsNote": {
-    "message": "Átnézi az összes munkamenetet, és megmondja, melyikkel foglalkozz következőként. Kattints, hogy a munkamenet paneljére ugorj. Akkor jelenik meg, ha el van mentve OpenAI- vagy Anthropic-kulcs, vagy be van állítva a Helyi. Válaszd ki a kinézetét"
+    "message": "Átnézi az összes munkamenetet, és megmondja, melyikkel foglalkozz következőként. Kattints, hogy a munkamenet termináljára válts. Akkor jelenik meg, ha el van mentve OpenAI- vagy Anthropic-kulcs, vagy be van állítva a Helyi. A kinézetét lent választhatod ki."
   },
   "conciergeLookOwl": {
     "message": "Bagoly"
@@ -392,7 +400,7 @@
     "message": "Válasszon vagy írjon be egy modellt a mentéshez és a kapcsolat teszteléséhez."
   },
   "aiUserMessagesNote": {
-    "message": "Minden befejezett kör után elküldjük az ügynök utolsó válaszát és a körben általad küldött üzeneteket. Ezek alapján dől el a válaszodra váró madarak „?” jele és az MI-vel szembeni sértésért járó dühjel is."
+    "message": "Valahányszor az ügynök befejez egy választ, elküldjük ezt a választ és az előző válasza óta általad küldött üzeneteket. Ezek alapján dől el a válaszodra váró madarak „?” jele és az MI-vel szembeni sértésért járó dühjel is."
   },
   "retiredKeyNote": {
     "message": "Már nincs használatban. A mentett kulcsot törölheted."
@@ -454,7 +462,7 @@
     "message": "Rendszerhang"
   },
   "readoutVoiceLocal": {
-    "message": "Helyi TTS-kiszolgáló"
+    "message": "Helyi beszédkiszolgáló"
   },
   "readoutKindLabel": {
     "message": "Kiszolgáló típusa"
@@ -537,7 +545,7 @@
     "message": "MI-ügynök módosíthatja a beállításokat"
   },
   "agentAccessDescription": {
-    "message": "A kódoló ügynököd (Claude Code vagy más, MCP-t használó ügynök) olvashatja és módosíthatja ennek a képernyőnek a beállításait, tesztelheti a kapcsolatot és lejátszhat egy mintát. Az API-kulcsok itt maradnak: az ügynök nem olvashatja és nem állíthatja be őket."
+    "message": "A kódoló ügynököd (Claude Code vagy más ügynök, amely támogatja az MCP-t, az ügynökök és alkalmazások összekötésének szokásos módját) olvashatja és módosíthatja ennek a képernyőnek a beállításait, tesztelheti a kapcsolatot és lejátszhat egy mintát. Az API-kulcsok itt maradnak: az ügynök nem olvashatja és nem állíthatja be őket."
   },
   "agentAccessCommandHint": {
     "message": "Futtasd ezt egyszer egy terminálban. Utána kérd meg az ügynököt, pl. „Állítsd a felolvasó hangot VOICEVOX-ra”."

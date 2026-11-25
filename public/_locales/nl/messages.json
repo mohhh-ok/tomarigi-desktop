@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Pictogramset wisselen"
   },
+  "iconSetUseButton": {
+    "message": "$SET$ gebruiken",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Pad kopiëren"
   },
@@ -295,7 +303,7 @@
     "message": "API-sleutels kunnen niet worden opgeslagen omdat er op deze computer geen sleutelbos (GNOME Keyring of KWallet) draait. Start er een en open tomarigi opnieuw."
   },
   "voiceUnavailable": {
-    "message": "Dit systeem heeft geen spraakengine, dus voorlezen werkt alleen via een lokale TTS-server."
+    "message": "Dit systeem heeft geen spraakengine, dus voorlezen werkt alleen via een lokale spraakserver."
   },
   "conciergeName": {
     "message": "Conciërge"
@@ -304,7 +312,7 @@
     "message": "Bekijkt al je sessies en zegt wat je hierna kunt doen. Klik om die sessie te openen"
   },
   "conciergeSettingsNote": {
-    "message": "Bekijkt al je sessies en zegt welke je hierna kunt oppakken. Klik om naar het paneel van die sessie te gaan. Verschijnt zolang er een OpenAI- of Anthropic-sleutel is opgeslagen of Lokaal is ingesteld. Kies hoe hij eruitziet"
+    "message": "Bekijkt al je sessies en zegt welke je hierna kunt oppakken. Klik om naar de terminal van die sessie te gaan. Verschijnt zolang er een OpenAI- of Anthropic-sleutel is opgeslagen of Lokaal is ingesteld. Kies hieronder hoe hij eruitziet."
   },
   "conciergeLookOwl": {
     "message": "Uil"
@@ -392,7 +400,7 @@
     "message": "Kies of typ een model om op te slaan en de verbinding te testen."
   },
   "aiUserMessagesNote": {
-    "message": "Telkens als een beurt klaar is, worden het laatste antwoord van de agent en de berichten die je in die beurt hebt gestuurd verzonden. Ze bepalen ook het ‘?’ bij vogels die op je antwoord wachten en het boosheidsteken bij beledigingen tegenover de AI."
+    "message": "Telkens als de agent een antwoord af heeft, worden dat antwoord en de berichten die je sinds zijn vorige antwoord hebt gestuurd verzonden. Ze bepalen ook het ‘?’ bij vogels die op je antwoord wachten en het boosheidsteken bij beledigingen tegenover de AI."
   },
   "retiredKeyNote": {
     "message": "Wordt niet meer gebruikt. Je kunt deze opgeslagen sleutel verwijderen."
@@ -454,7 +462,7 @@
     "message": "Systeemstem"
   },
   "readoutVoiceLocal": {
-    "message": "Lokale TTS-server"
+    "message": "Lokale spraakserver"
   },
   "readoutKindLabel": {
     "message": "Servertype"
@@ -537,7 +545,7 @@
     "message": "Een AI-agent instellingen laten wijzigen"
   },
   "agentAccessDescription": {
-    "message": "Je codeeragent (Claude Code of een andere die MCP spreekt) kan de instellingen op dit scherm lezen en wijzigen, de verbinding testen en een voorbeeld afspelen. API-sleutels blijven hier: de agent kan ze niet lezen of instellen."
+    "message": "Je codeeragent (Claude Code of een andere die MCP ondersteunt, de gangbare manier om agents met apps te verbinden) kan de instellingen op dit scherm lezen en wijzigen, de verbinding testen en een voorbeeld afspelen. API-sleutels blijven hier: de agent kan ze niet lezen of instellen."
   },
   "agentAccessCommandHint": {
     "message": "Voer dit één keer uit in een terminal. Vraag de agent daarna bijvoorbeeld: ‘Zet de voorleesstem op VOICEVOX’."

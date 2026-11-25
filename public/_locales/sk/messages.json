@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Prepnúť sadu ikon"
   },
+  "iconSetUseButton": {
+    "message": "Použiť: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopírovať cestu"
   },
@@ -295,7 +303,7 @@
     "message": "Kľúče API nemožno uložiť, pretože na tomto počítači nebeží žiadna kľúčenka (GNOME Keyring alebo KWallet). Spustite ju a znova otvorte tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Tento systém nemá rečový modul, takže čítanie nahlas funguje iba cez lokálny server TTS."
+    "message": "Tento systém nemá rečový modul, takže čítanie nahlas funguje iba cez lokálny rečový server."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Prezerá všetky relácie a radí, čo robiť ďalej. Kliknutím túto reláciu otvoríte"
   },
   "conciergeSettingsNote": {
-    "message": "Prezerá všetky relácie a radí, ktorej sa venovať ďalej. Kliknutím prejdete na panel tej relácie. Zobrazí sa, kým je uložený kľúč OpenAI alebo Anthropic alebo je nastavená lokálna AI. Vyberte jeho vzhľad"
+    "message": "Prezerá všetky relácie a radí, ktorej sa venovať ďalej. Kliknutím prejdete do terminálu tej relácie. Zobrazí sa, kým je uložený kľúč OpenAI alebo Anthropic alebo je nastavená lokálna AI. Jeho vzhľad vyberte nižšie."
   },
   "conciergeLookOwl": {
     "message": "Sova"
@@ -392,7 +400,7 @@
     "message": "Vyberte alebo zadajte model, aby ste ho mohli uložiť a otestovať pripojenie."
   },
   "aiUserMessagesNote": {
-    "message": "Po každom dokončenom ťahu sa odošle posledná odpoveď agenta a správy, ktoré ste počas neho poslali. Rozhodujú aj o „?“ pri vtákoch, ktoré čakajú na vašu odpoveď, a o značke hnevu za urážky voči AI."
+    "message": "Vždy, keď agent dokončí odpoveď, odošle sa táto odpoveď a správy, ktoré ste poslali od jeho predchádzajúcej odpovede. Rozhodujú aj o „?“ pri vtákoch, ktoré čakajú na vašu odpoveď, a o značke hnevu za urážky voči AI."
   },
   "retiredKeyNote": {
     "message": "Už sa nepoužíva. Uložený kľúč môžete odstrániť."
@@ -454,7 +462,7 @@
     "message": "Systémový hlas"
   },
   "readoutVoiceLocal": {
-    "message": "Lokálny server TTS"
+    "message": "Lokálny rečový server"
   },
   "readoutKindLabel": {
     "message": "Typ servera"
@@ -537,7 +545,7 @@
     "message": "Povoliť AI agentovi meniť nastavenia"
   },
   "agentAccessDescription": {
-    "message": "Váš programovací agent (Claude Code alebo iný, ktorý ovláda MCP) môže čítať a meniť nastavenia na tejto obrazovke, testovať pripojenie a prehrať ukážku. Kľúče API zostávajú tu: agent ich nemôže čítať ani nastaviť."
+    "message": "Váš programovací agent (Claude Code alebo iný, ktorý ovláda MCP, bežný spôsob prepojenia agentov s aplikáciami) môže čítať a meniť nastavenia na tejto obrazovke, testovať pripojenie a prehrať ukážku. Kľúče API zostávajú tu: agent ich nemôže čítať ani nastaviť."
   },
   "agentAccessCommandHint": {
     "message": "Spustite to raz v termináli. Potom agenta požiadajte, napr. „Prepni hlas predčítania na VOICEVOX“."

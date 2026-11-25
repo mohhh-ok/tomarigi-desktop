@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Perjungti piktogramų rinkinį"
   },
+  "iconSetUseButton": {
+    "message": "Naudoti: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopijuoti kelią"
   },
@@ -295,7 +303,7 @@
     "message": "API raktų išsaugoti negalima, nes šiame kompiuteryje neveikia raktinė (GNOME Keyring arba KWallet). Paleiskite ją ir vėl atidarykite tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Šioje sistemoje nėra kalbos sintezatoriaus, todėl skaitymas balsu veikia tik per vietinį TTS serverį."
+    "message": "Šioje sistemoje nėra kalbos sintezatoriaus, todėl skaitymas balsu veikia tik per vietinį kalbos serverį."
   },
   "conciergeName": {
     "message": "Konsjeržas"
@@ -304,7 +312,7 @@
     "message": "Peržiūri visas sesijas ir pasiūlo, ką daryti toliau. Spustelėkite, kad atidarytumėte tą sesiją"
   },
   "conciergeSettingsNote": {
-    "message": "Peržiūri visas sesijas ir pasako, kuria verta užsiimti toliau. Spustelėkite, kad pereitumėte į tos sesijos sritį. Rodomas, kol išsaugotas OpenAI arba Anthropic raktas arba nustatytas Vietinis. Pasirinkite jo išvaizdą"
+    "message": "Peržiūri visas sesijas ir pasako, kuria verta užsiimti toliau. Spustelėkite, kad pereitumėte į tos sesijos terminalą. Rodomas, kol išsaugotas OpenAI arba Anthropic raktas arba nustatytas Vietinis. Jo išvaizdą pasirinkite žemiau."
   },
   "conciergeLookOwl": {
     "message": "Pelėda"
@@ -392,7 +400,7 @@
     "message": "Pasirinkite arba įveskite modelį, kad galėtumėte išsaugoti ir patikrinti ryšį."
   },
   "aiUserMessagesNote": {
-    "message": "Kiekvieną kartą, kai baigiasi ėjimas, siunčiamas paskutinis agento atsakymas ir per tą ėjimą jūsų išsiųstos žinutės. Pagal jas taip pat nustatomas „?“ ant paukščių, laukiančių jūsų atsakymo, ir pykčio ženklas už įžeidimus DI."
+    "message": "Kiekvieną kartą, kai agentas baigia atsakymą, siunčiamas tas atsakymas ir žinutės, kurias išsiuntėte po jo ankstesnio atsakymo. Pagal jas taip pat nustatomas „?“ ant paukščių, laukiančių jūsų atsakymo, ir pykčio ženklas už įžeidimus DI."
   },
   "retiredKeyNote": {
     "message": "Nebenaudojamas. Šį išsaugotą raktą galite ištrinti."
@@ -454,7 +462,7 @@
     "message": "Sistemos balsas"
   },
   "readoutVoiceLocal": {
-    "message": "Vietinis TTS serveris"
+    "message": "Vietinis kalbos serveris"
   },
   "readoutKindLabel": {
     "message": "Serverio tipas"
@@ -537,7 +545,7 @@
     "message": "Leisti DI agentui keisti nustatymus"
   },
   "agentAccessDescription": {
-    "message": "Jūsų programavimo agentas (Claude Code ar kitas, palaikantis MCP) gali skaityti ir keisti šio ekrano nustatymus, tikrinti ryšį ir paleisti pavyzdį. API raktai lieka čia: agentas negali jų skaityti ar nustatyti."
+    "message": "Jūsų programavimo agentas (Claude Code ar kitas, palaikantis MCP – įprastą būdą sujungti agentus su programomis) gali skaityti ir keisti šio ekrano nustatymus, tikrinti ryšį ir paleisti pavyzdį. API raktai lieka čia: agentas negali jų skaityti ar nustatyti."
   },
   "agentAccessCommandHint": {
     "message": "Paleiskite tai vieną kartą terminale. Tada paprašykite agento, pvz., „Perjunk skaitymo balsą į VOICEVOX“."

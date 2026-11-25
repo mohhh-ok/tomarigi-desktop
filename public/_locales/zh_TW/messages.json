@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "切換圖示集"
   },
+  "iconSetUseButton": {
+    "message": "改為$SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "複製路徑"
   },
@@ -295,7 +303,7 @@
     "message": "此電腦上沒有執行金鑰圈（GNOME Keyring 或 KWallet），因此無法儲存 API 金鑰。請啟動金鑰圈後重新開啟 tomarigi。"
   },
   "voiceUnavailable": {
-    "message": "此系統沒有語音合成功能，因此只有選擇本機 TTS 伺服器時才能朗讀。"
+    "message": "此系統沒有語音合成功能，因此只有選擇本機朗讀伺服器時才能朗讀。"
   },
   "conciergeName": {
     "message": "禮賓員"
@@ -304,7 +312,7 @@
     "message": "查看所有工作階段，告訴你下一步該做什麼。點擊開啟那個工作階段"
   },
   "conciergeSettingsNote": {
-    "message": "查看你所有的工作階段，告訴你下一步該處理哪一個。點擊即可跳到那個工作階段的窗格。儲存了 OpenAI 或 Anthropic 金鑰，或設定了本機時出現。可以選擇它的樣子"
+    "message": "查看你所有的工作階段，告訴你下一步該處理哪一個。點擊即可切換到那個工作階段的終端機。儲存了 OpenAI 或 Anthropic 金鑰，或設定了本機時出現。可以在下方選擇它的樣子。"
   },
   "conciergeLookOwl": {
     "message": "貓頭鷹"
@@ -392,7 +400,7 @@
     "message": "選擇或輸入模型後，即可儲存並測試連線。"
   },
   "aiUserMessagesNote": {
-    "message": "每當一輪結束，會傳送代理的最後一則回覆，以及你在這一輪中傳送的發言。它們也用來判斷等你回覆的鳥的「?」，以及對 AI 辱罵時的怒氣標記。"
+    "message": "每當代理答完一次，會傳送這次回覆，以及你在它上一次回覆之後傳送的發言。它們也用來判斷等你回覆的鳥的「?」，以及對 AI 辱罵時的怒氣標記。"
   },
   "retiredKeyNote": {
     "message": "已不再使用。可以刪除這個已儲存的金鑰。"
@@ -454,7 +462,7 @@
     "message": "系統語音"
   },
   "readoutVoiceLocal": {
-    "message": "本機 TTS 伺服器"
+    "message": "本機朗讀伺服器"
   },
   "readoutKindLabel": {
     "message": "伺服器類型"
@@ -537,7 +545,7 @@
     "message": "允許 AI 代理變更設定"
   },
   "agentAccessDescription": {
-    "message": "你的程式設計代理（Claude Code 或其他支援 MCP 的代理）可以讀取和變更此頁面上的設定，執行連線測試並試聽。API 金鑰只在這裡管理，代理無法讀取或設定。"
+    "message": "你的程式設計代理（Claude Code 或其他支援 MCP（代理連接應用程式的通用方式）的代理）可以讀取和變更此頁面上的設定，執行連線測試並試聽。API 金鑰只在這裡管理，代理無法讀取或設定。"
   },
   "agentAccessCommandHint": {
     "message": "在終端機中執行一次此指令。之後就可以對代理說，例如「把朗讀的聲音換成 VOICEVOX」。"

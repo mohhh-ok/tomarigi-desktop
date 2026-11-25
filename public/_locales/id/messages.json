@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Ganti set ikon"
   },
+  "iconSetUseButton": {
+    "message": "Pakai $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Salin jalur"
   },
@@ -295,7 +303,7 @@
     "message": "Kunci API tidak dapat disimpan karena tidak ada keyring (GNOME Keyring atau KWallet) yang berjalan di komputer ini. Jalankan salah satunya, lalu buka ulang tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Sistem ini tidak memiliki mesin suara, jadi pembacaan dengan suara hanya berfungsi lewat server TTS lokal."
+    "message": "Sistem ini tidak memiliki mesin suara, jadi pembacaan dengan suara hanya berfungsi lewat server suara lokal."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Melihat semua sesimu dan menyarankan langkah berikutnya. Klik untuk membuka sesi itu"
   },
   "conciergeSettingsNote": {
-    "message": "Melihat semua sesimu dan memberi tahu mana yang sebaiknya ditangani berikutnya. Klik untuk pindah ke panel sesi itu. Muncul selama kunci OpenAI atau Anthropic tersimpan atau Lokal sudah diatur. Pilih tampilannya"
+    "message": "Melihat semua sesimu dan memberi tahu mana yang sebaiknya ditangani berikutnya. Klik untuk pindah ke terminal sesi itu. Muncul selama kunci OpenAI atau Anthropic tersimpan atau Lokal sudah diatur. Pilih tampilannya di bawah."
   },
   "conciergeLookOwl": {
     "message": "Burung hantu"
@@ -392,7 +400,7 @@
     "message": "Pilih atau ketik model untuk menyimpan dan menguji koneksi."
   },
   "aiUserMessagesNote": {
-    "message": "Setiap kali satu giliran selesai, balasan terakhir agen dan pesan yang kamu kirim selama giliran itu dikirim. Keduanya juga menentukan “?” pada burung yang menunggu balasanmu dan tanda marah untuk pesan kasar terhadap AI."
+    "message": "Setiap kali agen selesai membalas, balasan itu dan pesan yang kamu kirim sejak balasan sebelumnya dikirim. Keduanya juga menentukan “?” pada burung yang menunggu balasanmu dan tanda marah untuk pesan kasar terhadap AI."
   },
   "retiredKeyNote": {
     "message": "Tidak dipakai lagi. Kamu bisa menghapus kunci tersimpan ini."
@@ -454,7 +462,7 @@
     "message": "Suara sistem"
   },
   "readoutVoiceLocal": {
-    "message": "Server TTS lokal"
+    "message": "Server suara lokal"
   },
   "readoutKindLabel": {
     "message": "Jenis server"
@@ -537,7 +545,7 @@
     "message": "Izinkan agen AI mengubah pengaturan"
   },
   "agentAccessDescription": {
-    "message": "Agen coding Anda (Claude Code atau lainnya yang mendukung MCP) dapat membaca dan mengubah pengaturan di layar ini, menguji koneksi, dan memutar contoh. Kunci API tetap di sini: agen tidak dapat membaca atau mengaturnya."
+    "message": "Agen coding Anda (Claude Code atau lainnya yang mendukung MCP, cara umum menghubungkan agen ke aplikasi) dapat membaca dan mengubah pengaturan di layar ini, menguji koneksi, dan memutar contoh. Kunci API tetap di sini: agen tidak dapat membaca atau mengaturnya."
   },
   "agentAccessCommandHint": {
     "message": "Jalankan ini sekali di terminal. Lalu minta agen, misalnya: “Ganti suara pembaca ke VOICEVOX”."

@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Chuyển bộ biểu tượng"
   },
+  "iconSetUseButton": {
+    "message": "Dùng $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Sao chép đường dẫn"
   },
@@ -295,7 +303,7 @@
     "message": "Không thể lưu khóa API vì máy tính này không chạy trình quản lý khóa nào (GNOME Keyring hoặc KWallet). Hãy khởi động một trình rồi mở lại tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Hệ thống này không có công cụ tổng hợp giọng nói, nên việc đọc bằng giọng nói chỉ hoạt động qua máy chủ TTS cục bộ."
+    "message": "Hệ thống này không có công cụ tổng hợp giọng nói, nên việc đọc bằng giọng nói chỉ hoạt động qua máy chủ đọc giọng nói cục bộ."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Xem tất cả phiên và gợi ý việc nên làm tiếp. Bấm để mở phiên đó"
   },
   "conciergeSettingsNote": {
-    "message": "Xem tất cả phiên và cho bạn biết nên xử lý phiên nào tiếp theo. Bấm để chuyển tới khung của phiên đó. Xuất hiện khi đã lưu khóa OpenAI hoặc Anthropic, hoặc đã thiết lập Cục bộ. Chọn hình dạng của nó"
+    "message": "Xem tất cả phiên và cho bạn biết nên xử lý phiên nào tiếp theo. Bấm để chuyển tới terminal của phiên đó. Xuất hiện khi đã lưu khóa OpenAI hoặc Anthropic, hoặc đã thiết lập Cục bộ. Chọn hình dạng của nó ở bên dưới."
   },
   "conciergeLookOwl": {
     "message": "Cú mèo"
@@ -392,7 +400,7 @@
     "message": "Chọn hoặc nhập mô hình để lưu và kiểm tra kết nối."
   },
   "aiUserMessagesNote": {
-    "message": "Mỗi khi một lượt kết thúc, câu trả lời cuối của tác tử và các tin nhắn bạn gửi trong lượt đó sẽ được gửi đi. Chúng cũng dùng để quyết định dấu “?” trên những chú chim đang chờ bạn trả lời và dấu giận khi có lời xúc phạm AI."
+    "message": "Mỗi khi tác tử trả lời xong, câu trả lời đó và các tin nhắn bạn gửi kể từ câu trả lời trước của nó sẽ được gửi đi. Chúng cũng dùng để quyết định dấu “?” trên những chú chim đang chờ bạn trả lời và dấu giận khi có lời xúc phạm AI."
   },
   "retiredKeyNote": {
     "message": "Không còn được dùng. Bạn có thể xóa khóa đã lưu này."
@@ -454,7 +462,7 @@
     "message": "Giọng của hệ thống"
   },
   "readoutVoiceLocal": {
-    "message": "Máy chủ TTS cục bộ"
+    "message": "Máy chủ đọc giọng nói cục bộ"
   },
   "readoutKindLabel": {
     "message": "Loại máy chủ"
@@ -537,7 +545,7 @@
     "message": "Cho phép tác nhân AI thay đổi cài đặt"
   },
   "agentAccessDescription": {
-    "message": "Tác nhân lập trình của bạn (Claude Code hoặc tác nhân khác dùng MCP) có thể đọc và thay đổi cài đặt trên màn hình này, kiểm tra kết nối và phát thử. Khóa API vẫn ở đây: tác nhân không thể đọc hay đặt chúng."
+    "message": "Tác nhân lập trình của bạn (Claude Code hoặc tác nhân khác hỗ trợ MCP, cách phổ biến để kết nối tác nhân với ứng dụng) có thể đọc và thay đổi cài đặt trên màn hình này, kiểm tra kết nối và phát thử. Khóa API vẫn ở đây: tác nhân không thể đọc hay đặt chúng."
   },
   "agentAccessCommandHint": {
     "message": "Chạy lệnh này một lần trong terminal. Sau đó nhờ tác nhân, ví dụ: “Đổi giọng đọc sang VOICEVOX”."

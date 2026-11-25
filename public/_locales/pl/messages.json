@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Przełącz zestaw ikon"
   },
+  "iconSetUseButton": {
+    "message": "Użyj: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopiuj ścieżkę"
   },
@@ -295,7 +303,7 @@
     "message": "Nie można zapisać kluczy API, ponieważ na tym komputerze nie działa żaden pęk kluczy (GNOME Keyring lub KWallet). Uruchom go i otwórz tomarigi ponownie."
   },
   "voiceUnavailable": {
-    "message": "Ten system nie ma syntezatora mowy, więc czytanie na głos działa tylko przez lokalny serwer TTS."
+    "message": "Ten system nie ma syntezatora mowy, więc czytanie na głos działa tylko przez lokalny serwer mowy."
   },
   "conciergeName": {
     "message": "Konsjerż"
@@ -304,7 +312,7 @@
     "message": "Przegląda wszystkie sesje i podpowiada, co zrobić dalej. Kliknij, aby otworzyć tę sesję"
   },
   "conciergeSettingsNote": {
-    "message": "Przegląda wszystkie sesje i podpowiada, którą zająć się teraz. Kliknij, aby przejść do panelu tej sesji. Pojawia się, gdy zapisany jest klucz OpenAI lub Anthropic albo skonfigurowano tryb lokalny. Wybierz jego wygląd"
+    "message": "Przegląda wszystkie sesje i podpowiada, którą zająć się teraz. Kliknij, aby przejść do terminala tej sesji. Pojawia się, gdy zapisany jest klucz OpenAI lub Anthropic albo skonfigurowano tryb lokalny. Wybierz jego wygląd poniżej."
   },
   "conciergeLookOwl": {
     "message": "Sowa"
@@ -392,7 +400,7 @@
     "message": "Wybierz lub wpisz model, aby zapisać i przetestować połączenie."
   },
   "aiUserMessagesNote": {
-    "message": "Po każdej zakończonej turze wysyłana jest ostatnia odpowiedź agenta i wiadomości, które wysłałeś w tej turze. Decydują one też o „?” przy ptakach czekających na twoją odpowiedź i o znaku złości za obraźliwe wiadomości wobec AI."
+    "message": "Za każdym razem, gdy agent skończy odpowiedź, wysyłana jest ta odpowiedź i wiadomości, które wysłałeś od jego poprzedniej odpowiedzi. Decydują one też o „?” przy ptakach czekających na twoją odpowiedź i o znaku złości za obraźliwe wiadomości wobec AI."
   },
   "retiredKeyNote": {
     "message": "Nie jest już używany. Możesz usunąć ten zapisany klucz."
@@ -454,7 +462,7 @@
     "message": "Głos systemowy"
   },
   "readoutVoiceLocal": {
-    "message": "Lokalny serwer TTS"
+    "message": "Lokalny serwer mowy"
   },
   "readoutKindLabel": {
     "message": "Typ serwera"
@@ -537,7 +545,7 @@
     "message": "Pozwól agentowi AI zmieniać ustawienia"
   },
   "agentAccessDescription": {
-    "message": "Twój agent programistyczny (Claude Code lub inny obsługujący MCP) może odczytywać i zmieniać ustawienia z tego ekranu, testować połączenie i odtwarzać próbkę. Klucze API zostają tutaj: agent nie może ich odczytać ani ustawić."
+    "message": "Twój agent programistyczny (Claude Code lub inny obsługujący MCP, czyli typowy sposób łączenia agentów z aplikacjami) może odczytywać i zmieniać ustawienia z tego ekranu, testować połączenie i odtwarzać próbkę. Klucze API zostają tutaj: agent nie może ich odczytać ani ustawić."
   },
   "agentAccessCommandHint": {
     "message": "Uruchom to raz w terminalu. Potem poproś agenta, np. „Zmień głos czytania na VOICEVOX”."

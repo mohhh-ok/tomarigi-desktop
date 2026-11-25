@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Tukar set ikon"
   },
+  "iconSetUseButton": {
+    "message": "Guna $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Salin laluan"
   },
@@ -295,7 +303,7 @@
     "message": "Kunci API tidak dapat disimpan kerana tiada keyring (GNOME Keyring atau KWallet) berjalan pada komputer ini. Mulakan satu, kemudian buka semula tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Sistem ini tiada enjin pertuturan, jadi bacaan dengan suara hanya berfungsi melalui pelayan TTS tempatan."
+    "message": "Sistem ini tiada enjin pertuturan, jadi bacaan dengan suara hanya berfungsi melalui pelayan suara tempatan."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Melihat semua sesi anda dan mencadangkan langkah seterusnya. Klik untuk membuka sesi itu"
   },
   "conciergeSettingsNote": {
-    "message": "Melihat semua sesi anda dan memberitahu yang mana patut diuruskan seterusnya. Klik untuk pergi ke panel sesi itu. Muncul selagi kunci OpenAI atau Anthropic disimpan atau Tempatan ditetapkan. Pilih rupanya"
+    "message": "Melihat semua sesi anda dan memberitahu yang mana patut diuruskan seterusnya. Klik untuk beralih ke terminal sesi itu. Muncul selagi kunci OpenAI atau Anthropic disimpan atau Tempatan ditetapkan. Pilih rupanya di bawah."
   },
   "conciergeLookOwl": {
     "message": "Burung hantu"
@@ -392,7 +400,7 @@
     "message": "Pilih atau taip model untuk menyimpan dan menguji sambungan."
   },
   "aiUserMessagesNote": {
-    "message": "Setiap kali satu giliran selesai, balasan terakhir ejen dan mesej yang anda hantar sepanjang giliran itu dihantar. Ia juga menentukan “?” pada burung yang menunggu balasan anda dan tanda marah untuk mesej kasar terhadap AI."
+    "message": "Setiap kali ejen selesai membalas, balasan itu dan mesej yang anda hantar sejak balasan sebelumnya dihantar. Ia juga menentukan “?” pada burung yang menunggu balasan anda dan tanda marah untuk mesej kasar terhadap AI."
   },
   "retiredKeyNote": {
     "message": "Tidak digunakan lagi. Anda boleh memadam kunci yang disimpan ini."
@@ -454,7 +462,7 @@
     "message": "Suara sistem"
   },
   "readoutVoiceLocal": {
-    "message": "Pelayan TTS tempatan"
+    "message": "Pelayan suara tempatan"
   },
   "readoutKindLabel": {
     "message": "Jenis pelayan"
@@ -537,7 +545,7 @@
     "message": "Benarkan ejen AI menukar tetapan"
   },
   "agentAccessDescription": {
-    "message": "Ejen pengekodan anda (Claude Code atau yang lain yang menyokong MCP) boleh membaca dan menukar tetapan pada skrin ini, menguji sambungan dan memainkan sampel. Kunci API kekal di sini: ejen tidak boleh membaca atau menetapkannya."
+    "message": "Ejen pengekodan anda (Claude Code atau yang lain yang menyokong MCP, cara biasa menghubungkan ejen dengan aplikasi) boleh membaca dan menukar tetapan pada skrin ini, menguji sambungan dan memainkan sampel. Kunci API kekal di sini: ejen tidak boleh membaca atau menetapkannya."
   },
   "agentAccessCommandHint": {
     "message": "Jalankan ini sekali dalam terminal. Kemudian minta ejen, contohnya: “Tukar suara bacaan kepada VOICEVOX”."

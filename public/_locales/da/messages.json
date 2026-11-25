@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Skift ikonsæt"
   },
+  "iconSetUseButton": {
+    "message": "Brug $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopiér sti"
   },
@@ -295,7 +303,7 @@
     "message": "API-nøgler kan ikke gemmes, fordi der ikke kører en nøglering (GNOME Keyring eller KWallet) på denne computer. Start en, og åbn tomarigi igen."
   },
   "voiceUnavailable": {
-    "message": "Systemet har ikke talesyntese, så oplæsning fungerer kun via en lokal TTS-server."
+    "message": "Systemet har ikke talesyntese, så oplæsning fungerer kun via en lokal taleserver."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Ser på alle dine sessioner og foreslår, hvad du skal gøre nu. Klik for at åbne den session"
   },
   "conciergeSettingsNote": {
-    "message": "Ser på alle dine sessioner og siger, hvilken du bør tage dig af nu. Klik for at gå til den sessions rude. Vises, så længe en OpenAI- eller Anthropic-nøgle er gemt, eller Lokalt er sat op. Vælg, hvordan den ser ud"
+    "message": "Ser på alle dine sessioner og siger, hvilken du bør tage dig af nu. Klik for at skifte til den sessions terminal. Vises, så længe en OpenAI- eller Anthropic-nøgle er gemt, eller Lokalt er sat op. Vælg nedenfor, hvordan den ser ud."
   },
   "conciergeLookOwl": {
     "message": "Ugle"
@@ -392,7 +400,7 @@
     "message": "Vælg eller skriv en model for at gemme og teste forbindelsen."
   },
   "aiUserMessagesNote": {
-    "message": "Hver gang en tur er færdig, sendes agentens sidste svar og de beskeder, du sendte i turen. De afgør også »?« på fugle, der venter på dit svar, og vredesmærket ved krænkelser af AI’en."
+    "message": "Hver gang agenten er færdig med et svar, sendes svaret og de beskeder, du har sendt siden dens forrige svar. De afgør også »?« på fugle, der venter på dit svar, og vredesmærket ved krænkelser af AI’en."
   },
   "retiredKeyNote": {
     "message": "Bruges ikke længere. Du kan slette den gemte nøgle."
@@ -454,7 +462,7 @@
     "message": "Systemstemme"
   },
   "readoutVoiceLocal": {
-    "message": "Lokal TTS-server"
+    "message": "Lokal taleserver"
   },
   "readoutKindLabel": {
     "message": "Servertype"
@@ -537,7 +545,7 @@
     "message": "Lad en AI-agent ændre indstillinger"
   },
   "agentAccessDescription": {
-    "message": "Din kodeagent (Claude Code eller en anden, der bruger MCP) kan læse og ændre indstillingerne på denne skærm, teste forbindelsen og afspille en prøve. API-nøgler bliver her: agenten kan ikke læse eller angive dem."
+    "message": "Din kodeagent (Claude Code eller en anden, der understøtter MCP, den almindelige måde at forbinde agenter med apps på) kan læse og ændre indstillingerne på denne skærm, teste forbindelsen og afspille en prøve. API-nøgler bliver her: agenten kan ikke læse eller angive dem."
   },
   "agentAccessCommandHint": {
     "message": "Kør dette én gang i en terminal. Bed derefter agenten, f.eks. »Skift oplæsningsstemmen til VOICEVOX«."

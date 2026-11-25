@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Bytt ikonsett"
   },
+  "iconSetUseButton": {
+    "message": "Bruk $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopier bane"
   },
@@ -295,7 +303,7 @@
     "message": "API-nøkler kan ikke lagres fordi ingen nøkkelring (GNOME Keyring eller KWallet) kjører på denne datamaskinen. Start en, og åpne tomarigi på nytt."
   },
   "voiceUnavailable": {
-    "message": "Systemet mangler talesyntese, så opplesing fungerer bare via en lokal TTS-tjener."
+    "message": "Systemet mangler talesyntese, så opplesing fungerer bare via en lokal taletjener."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Ser på alle øktene og foreslår hva du bør gjøre nå. Klikk for å åpne den økten"
   },
   "conciergeSettingsNote": {
-    "message": "Ser på alle øktene og sier hvilken du bør ta deg av nå. Klikk for å gå til ruten for den økten. Vises så lenge en OpenAI- eller Anthropic-nøkkel er lagret eller Lokalt er satt opp. Velg hvordan den ser ut"
+    "message": "Ser på alle øktene og sier hvilken du bør ta deg av nå. Klikk for å bytte til terminalen for den økten. Vises så lenge en OpenAI- eller Anthropic-nøkkel er lagret eller Lokalt er satt opp. Velg nedenfor hvordan den ser ut."
   },
   "conciergeLookOwl": {
     "message": "Ugle"
@@ -392,7 +400,7 @@
     "message": "Velg eller skriv inn en modell for å lagre og teste tilkoblingen."
   },
   "aiUserMessagesNote": {
-    "message": "Hver gang en runde er ferdig, sendes agentens siste svar og meldingene du sendte i den runden. De avgjør også «?» på fugler som venter på svaret ditt, og sinnemerket ved krenkelser mot KI-en."
+    "message": "Hver gang agenten er ferdig med et svar, sendes svaret og meldingene du har sendt siden forrige svar. De avgjør også «?» på fugler som venter på svaret ditt, og sinnemerket ved krenkelser mot KI-en."
   },
   "retiredKeyNote": {
     "message": "Brukes ikke lenger. Du kan slette den lagrede nøkkelen."
@@ -454,7 +462,7 @@
     "message": "Systemstemme"
   },
   "readoutVoiceLocal": {
-    "message": "Lokal TTS-tjener"
+    "message": "Lokal taletjener"
   },
   "readoutKindLabel": {
     "message": "Tjenertype"
@@ -537,7 +545,7 @@
     "message": "La en KI-agent endre innstillinger"
   },
   "agentAccessDescription": {
-    "message": "Kodeagenten din (Claude Code eller en annen som bruker MCP) kan lese og endre innstillingene på denne skjermen, teste tilkoblingen og spille av en prøve. API-nøkler blir her: agenten kan ikke lese eller angi dem."
+    "message": "Kodeagenten din (Claude Code eller en annen som støtter MCP, den vanlige måten å koble agenter til apper på) kan lese og endre innstillingene på denne skjermen, teste tilkoblingen og spille av en prøve. API-nøkler blir her: agenten kan ikke lese eller angi dem."
   },
   "agentAccessCommandHint": {
     "message": "Kjør dette én gang i en terminal. Be deretter agenten, f.eks. «Bytt opplesningsstemmen til VOICEVOX»."

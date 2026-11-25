@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Schimbă setul de pictograme"
   },
+  "iconSetUseButton": {
+    "message": "Folosește $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Copiază calea"
   },
@@ -295,7 +303,7 @@
     "message": "Cheile API nu pot fi salvate, deoarece pe acest computer nu rulează niciun portchei (GNOME Keyring sau KWallet). Pornește unul, apoi redeschide tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Acest sistem nu are motor de vorbire, așa că citirea cu voce funcționează doar printr-un server TTS local."
+    "message": "Acest sistem nu are motor de vorbire, așa că citirea cu voce funcționează doar printr-un server de voce local."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Se uită la toate sesiunile și îți sugerează ce să faci mai departe. Fă clic pentru a deschide acea sesiune"
   },
   "conciergeSettingsNote": {
-    "message": "Se uită la toate sesiunile și îți spune de care să te ocupi mai departe. Fă clic pentru a merge la panoul acelei sesiuni. Apare cât timp este salvată o cheie OpenAI sau Anthropic ori este configurat Local. Alege-i aspectul"
+    "message": "Se uită la toate sesiunile și îți spune de care să te ocupi mai departe. Fă clic pentru a trece la terminalul acelei sesiuni. Apare cât timp este salvată o cheie OpenAI sau Anthropic ori este configurat Local. Alege-i aspectul mai jos."
   },
   "conciergeLookOwl": {
     "message": "Bufniță"
@@ -392,7 +400,7 @@
     "message": "Alegeți sau introduceți un model pentru a salva și a testa conexiunea."
   },
   "aiUserMessagesNote": {
-    "message": "De fiecare dată când se încheie o tură, sunt trimise ultimul răspuns al agentului și mesajele pe care le-ai trimis în acea tură. Ele decid și „?” de pe păsările care așteaptă răspunsul tău și semnul de furie pentru mesajele jignitoare la adresa AI."
+    "message": "De fiecare dată când agentul termină un răspuns, sunt trimise acel răspuns și mesajele pe care le-ai trimis de la răspunsul lui anterior. Ele decid și „?” de pe păsările care așteaptă răspunsul tău și semnul de furie pentru mesajele jignitoare la adresa AI."
   },
   "retiredKeyNote": {
     "message": "Nu mai este folosită. Poți șterge această cheie salvată."
@@ -454,7 +462,7 @@
     "message": "Vocea sistemului"
   },
   "readoutVoiceLocal": {
-    "message": "Server TTS local"
+    "message": "Server de voce local"
   },
   "readoutKindLabel": {
     "message": "Tipul serverului"
@@ -537,7 +545,7 @@
     "message": "Permite unui agent AI să modifice setările"
   },
   "agentAccessDescription": {
-    "message": "Agentul tău de programare (Claude Code sau altul care folosește MCP) poate citi și modifica setările de pe acest ecran, poate testa conexiunea și poate reda o mostră. Cheile API rămân aici: agentul nu le poate citi sau seta."
+    "message": "Agentul tău de programare (Claude Code sau altul compatibil cu MCP, modul obișnuit de a conecta agenții la aplicații) poate citi și modifica setările de pe acest ecran, poate testa conexiunea și poate reda o mostră. Cheile API rămân aici: agentul nu le poate citi sau seta."
   },
   "agentAccessCommandHint": {
     "message": "Rulează asta o dată într-un terminal. Apoi cere-i agentului, de exemplu: „Schimbă vocea de citire pe VOICEVOX”."

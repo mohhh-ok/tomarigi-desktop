@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Preklopi nabor ikon"
   },
+  "iconSetUseButton": {
+    "message": "Uporabi: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopiraj pot"
   },
@@ -295,7 +303,7 @@
     "message": "Ključev API ni mogoče shraniti, ker v tem računalniku ne teče nobena shramba ključev (GNOME Keyring ali KWallet). Zaženite jo in znova odprite tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Ta sistem nima govornega pogona, zato branje z glasom deluje samo prek lokalnega strežnika TTS."
+    "message": "Ta sistem nima govornega pogona, zato branje z glasom deluje samo prek lokalnega govornega strežnika."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Pregleda vse seje in predlaga, kaj narediti naprej. Kliknite, da odprete to sejo"
   },
   "conciergeSettingsNote": {
-    "message": "Pregleda vse seje in pove, s katero se ukvarjati naslednjo. Kliknite, da skočite v podokno te seje. Prikaže se, dokler je shranjen ključ OpenAI ali Anthropic ali je nastavljeno Lokalno. Izberite njegov videz"
+    "message": "Pregleda vse seje in pove, s katero se ukvarjati naslednjo. Kliknite, da preklopite na terminal te seje. Prikaže se, dokler je shranjen ključ OpenAI ali Anthropic ali je nastavljeno Lokalno. Njegov videz izberite spodaj."
   },
   "conciergeLookOwl": {
     "message": "Sova"
@@ -392,7 +400,7 @@
     "message": "Izberite ali vnesite model, da ga shranite in preizkusite povezavo."
   },
   "aiUserMessagesNote": {
-    "message": "Vsakič, ko se poteza konča, se pošljeta zadnji odgovor agenta in sporočila, ki ste jih poslali med to potezo. Na njihovi podlagi se določita tudi »?« pri pticah, ki čakajo na vaš odgovor, in znak jeze za žalitve umetne inteligence."
+    "message": "Vsakič, ko agent konča odgovor, se pošljejo ta odgovor in sporočila, ki ste jih poslali od njegovega prejšnjega odgovora. Na njihovi podlagi se določita tudi »?« pri pticah, ki čakajo na vaš odgovor, in znak jeze za žalitve umetne inteligence."
   },
   "retiredKeyNote": {
     "message": "Ni več v uporabi. Shranjeni ključ lahko izbrišete."
@@ -454,7 +462,7 @@
     "message": "Sistemski glas"
   },
   "readoutVoiceLocal": {
-    "message": "Lokalni strežnik TTS"
+    "message": "Lokalni govorni strežnik"
   },
   "readoutKindLabel": {
     "message": "Vrsta strežnika"
@@ -537,7 +545,7 @@
     "message": "Dovoli agentu UI spreminjati nastavitve"
   },
   "agentAccessDescription": {
-    "message": "Vaš agent za programiranje (Claude Code ali drug, ki podpira MCP) lahko bere in spreminja nastavitve na tem zaslonu, preizkusi povezavo in predvaja vzorec. Ključi API ostanejo tukaj: agent jih ne more brati ali nastaviti."
+    "message": "Vaš agent za programiranje (Claude Code ali drug, ki podpira MCP, običajen način povezovanja agentov z aplikacijami) lahko bere in spreminja nastavitve na tem zaslonu, preizkusi povezavo in predvaja vzorec. Ključi API ostanejo tukaj: agent jih ne more brati ali nastaviti."
   },
   "agentAccessCommandHint": {
     "message": "To enkrat zaženite v terminalu. Nato agenta prosite, npr. »Preklopi glas branja na VOICEVOX«."

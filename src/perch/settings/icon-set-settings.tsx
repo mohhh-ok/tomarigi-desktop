@@ -12,7 +12,7 @@ export interface IconSetRow {
 
 /**
  * Per-project icon set assignments (issue #14). Row = project (deduplicated by slug); each press of the
- * toggle button at the right end advances to the next set in ICON_SET_IDS order (after frog it wraps
+ * button at the right end (its label names the set it changes to) advances to the next set in ICON_SET_IDS order (after frog it wraps
  * around to birds). The rows are the union of "projects in the current sessions" ∪ "projects with only a
  * saved assignment left" (iconSetRows, computed in App.tsx). Rows not running are dimmed to tell them apart
  * (icon-set-row-idle). Switching back to "birds" deletes the assignment entry itself (the semantics
@@ -61,7 +61,7 @@ export function IconSetSettings({
                   aria-label={`${t("iconSetToggleAria")}: ${row.label} (${ICON_SET_LABEL[set]})`}
                   onClick={() => onChange(row.slug, row.label, nextSet)}
                 >
-                  ⇄
+                  {t("iconSetUseButton", ICON_SET_LABEL[nextSet])}
                 </button>
               </li>
             );

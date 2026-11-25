@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Switch icon set"
   },
+  "iconSetUseButton": {
+    "message": "Use $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Copy path"
   },
@@ -295,7 +303,7 @@
     "message": "API keys can't be saved because no keyring (GNOME Keyring or KWallet) is running on this computer. Start one, then reopen tomarigi."
   },
   "voiceUnavailable": {
-    "message": "This system has no speech engine, so reading aloud works only through a local TTS server."
+    "message": "This system has no speech engine, so reading aloud works only through a local speech server."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Looks at all your sessions and suggests what to do next. Click to open that session"
   },
   "conciergeSettingsNote": {
-    "message": "Looks at all your sessions and tells you which one to handle next. Click it to jump to that session's pane. Appears while an OpenAI or Anthropic key is saved or Local is set up. Choose its look"
+    "message": "Looks at all your sessions and tells you which one to handle next. Click it to switch to that session's terminal. Appears while an OpenAI or Anthropic key is saved or Local is set up. Choose its look below."
   },
   "conciergeLookOwl": {
     "message": "Owl"
@@ -392,7 +400,7 @@
     "message": "Choose or type a model to save and test the connection."
   },
   "aiUserMessagesNote": {
-    "message": "Each time a turn finishes, the agent’s last reply and the messages you sent during that turn are sent. They also decide the “?” on birds waiting for your reply and the anger mark for abuse toward the AI."
+    "message": "Each time the agent finishes a reply, that reply and the messages you sent since its previous reply are sent. They also decide the “?” on birds waiting for your reply and the anger mark for abuse toward the AI."
   },
   "retiredKeyNote": {
     "message": "No longer used. You can delete this saved key."
@@ -454,7 +462,7 @@
     "message": "System voice"
   },
   "readoutVoiceLocal": {
-    "message": "Local TTS server"
+    "message": "Local speech server"
   },
   "readoutKindLabel": {
     "message": "Server type"
@@ -537,7 +545,7 @@
     "message": "Let an AI agent change settings"
   },
   "agentAccessDescription": {
-    "message": "Your coding agent (Claude Code, or another that speaks MCP) can read and change the settings on this screen, run the connection test and play a sample. API keys stay here: the agent can't read or set them."
+    "message": "Your coding agent (Claude Code, or another that supports MCP, the common way agents connect to apps) can read and change the settings on this screen, run the connection test and play a sample. API keys stay here: the agent can't read or set them."
   },
   "agentAccessCommandHint": {
     "message": "Run this once in a terminal. Then ask the agent, e.g. “Switch the readout voice to VOICEVOX”."

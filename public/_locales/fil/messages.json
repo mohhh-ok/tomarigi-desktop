@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Palitan ang set ng icon"
   },
+  "iconSetUseButton": {
+    "message": "Gamitin ang $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopyahin ang path"
   },
@@ -295,7 +303,7 @@
     "message": "Hindi ma-save ang mga API key dahil walang tumatakbong keyring (GNOME Keyring o KWallet) sa computer na ito. Magpatakbo ng isa, saka buksan muli ang tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Walang speech engine ang system na ito, kaya gumagana lang ang pagbasa nang malakas sa pamamagitan ng local na TTS server."
+    "message": "Walang speech engine ang system na ito, kaya gumagana lang ang pagbasa nang malakas sa pamamagitan ng local na server ng boses."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Tinitingnan ang lahat ng session mo at sinasabi kung ano ang susunod na gagawin. I-click para buksan ang session na iyon"
   },
   "conciergeSettingsNote": {
-    "message": "Tinitingnan ang lahat ng session mo at sinasabi kung alin ang susunod mong aasikasuhin. I-click para pumunta sa pane ng session na iyon. Lumalabas habang may naka-save na OpenAI o Anthropic key o naka-set up ang Lokal. Piliin ang itsura nito"
+    "message": "Tinitingnan ang lahat ng session mo at sinasabi kung alin ang susunod mong aasikasuhin. I-click para lumipat sa terminal ng session na iyon. Lumalabas habang may naka-save na OpenAI o Anthropic key o naka-set up ang Lokal. Piliin ang itsura nito sa ibaba."
   },
   "conciergeLookOwl": {
     "message": "Kuwago"
@@ -392,7 +400,7 @@
     "message": "Pumili o mag-type ng model para ma-save at masubok ang koneksyon."
   },
   "aiUserMessagesNote": {
-    "message": "Tuwing natatapos ang isang turn, ipinapadala ang huling sagot ng agent at ang mga mensaheng ipinadala mo sa turn na iyon. Ginagamit din ang mga ito para tukuyin ang “?” sa mga ibong naghihintay ng sagot mo at ang marka ng galit kapag mapang-abuso ka sa AI."
+    "message": "Tuwing natatapos sumagot ang agent, ipinapadala ang sagot na iyon at ang mga mensaheng ipinadala mo mula sa nauna nitong sagot. Ginagamit din ang mga ito para tukuyin ang “?” sa mga ibong naghihintay ng sagot mo at ang marka ng galit kapag mapang-abuso ka sa AI."
   },
   "retiredKeyNote": {
     "message": "Hindi na ginagamit. Puwede mong burahin ang naka-save na key na ito."
@@ -454,7 +462,7 @@
     "message": "Boses ng system"
   },
   "readoutVoiceLocal": {
-    "message": "Local na TTS server"
+    "message": "Local na server ng boses"
   },
   "readoutKindLabel": {
     "message": "Uri ng server"
@@ -537,7 +545,7 @@
     "message": "Hayaang baguhin ng AI agent ang mga setting"
   },
   "agentAccessDescription": {
-    "message": "Mababasa at mababago ng iyong coding agent (Claude Code o iba pang gumagamit ng MCP) ang mga setting sa screen na ito, masusubok ang koneksyon, at makapagpapatugtog ng sample. Nananatili rito ang mga API key: hindi ito mababasa o maitatakda ng agent."
+    "message": "Mababasa at mababago ng iyong coding agent (Claude Code o iba pang sumusuporta sa MCP, ang karaniwang paraan ng pagkonekta ng mga agent sa mga app) ang mga setting sa screen na ito, masusubok ang koneksyon, at makapagpapatugtog ng sample. Nananatili rito ang mga API key: hindi ito mababasa o maitatakda ng agent."
   },
   "agentAccessCommandHint": {
     "message": "Patakbuhin ito nang isang beses sa terminal. Pagkatapos ay sabihin sa agent, halimbawa: “Gawing VOICEVOX ang boses ng pagbasa”."

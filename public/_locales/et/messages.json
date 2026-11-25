@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Vaheta ikoonikomplekti"
   },
+  "iconSetUseButton": {
+    "message": "Kasuta: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopeeri asukoht"
   },
@@ -295,7 +303,7 @@
     "message": "API-võtmeid ei saa salvestada, sest selles arvutis ei tööta ühtegi võtmerõngast (GNOME Keyring või KWallet). Käivita see ja ava tomarigi uuesti."
   },
   "voiceUnavailable": {
-    "message": "Selles süsteemis pole kõnesünteesi, seega töötab häälega ettelugemine ainult kohaliku TTS-serveri kaudu."
+    "message": "Selles süsteemis pole kõnesünteesi, seega töötab häälega ettelugemine ainult kohaliku kõneserveri kaudu."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Vaatab kõiki seansse ja soovitab, mida edasi teha. Klõpsa, et see seanss avada"
   },
   "conciergeSettingsNote": {
-    "message": "Vaatab kõiki seansse ja ütleb, millega järgmisena tegeleda. Klõpsa, et minna selle seansi paanile. Ilmub, kuni OpenAI või Anthropicu võti on salvestatud või Kohalik on seadistatud. Vali selle välimus"
+    "message": "Vaatab kõiki seansse ja ütleb, millega järgmisena tegeleda. Klõpsa, et minna selle seansi terminali. Ilmub, kuni OpenAI või Anthropicu võti on salvestatud või Kohalik on seadistatud. Vali selle välimus allpool."
   },
   "conciergeLookOwl": {
     "message": "Öökull"
@@ -392,7 +400,7 @@
     "message": "Salvestamiseks ja ühenduse testimiseks valige või sisestage mudel."
   },
   "aiUserMessagesNote": {
-    "message": "Iga kord, kui käik lõpeb, saadetakse agendi viimane vastus ja selle käigu jooksul saadetud sõnumid. Nende põhjal otsustatakse ka sinu vastust ootavate lindude „?“ ja tehisintellekti solvamise eest antav vihamärk."
+    "message": "Iga kord, kui agent vastuse lõpetab, saadetakse see vastus ja sõnumid, mille saatsid pärast tema eelmist vastust. Nende põhjal otsustatakse ka sinu vastust ootavate lindude „?“ ja tehisintellekti solvamise eest antav vihamärk."
   },
   "retiredKeyNote": {
     "message": "Enam ei kasutata. Salvestatud võtme saad kustutada."
@@ -454,7 +462,7 @@
     "message": "Süsteemi hääl"
   },
   "readoutVoiceLocal": {
-    "message": "Kohalik TTS-server"
+    "message": "Kohalik kõneserver"
   },
   "readoutKindLabel": {
     "message": "Serveri tüüp"
@@ -537,7 +545,7 @@
     "message": "Luba tehisintellekti agendil seadeid muuta"
   },
   "agentAccessDescription": {
-    "message": "Sinu kodeerimisagent (Claude Code või muu MCP-d toetav) saab selle ekraani seadeid lugeda ja muuta, ühendust testida ja näidist esitada. API-võtmed jäävad siia: agent ei saa neid lugeda ega määrata."
+    "message": "Sinu kodeerimisagent (Claude Code või muu, mis toetab MCP-d, tavalist viisi agentide ühendamiseks rakendustega) saab selle ekraani seadeid lugeda ja muuta, ühendust testida ja näidist esitada. API-võtmed jäävad siia: agent ei saa neid lugeda ega määrata."
   },
   "agentAccessCommandHint": {
     "message": "Käivitage see terminalis üks kord. Seejärel paluge agendil näiteks: „Vaheta ettelugemise hääl VOICEVOX-i vastu“."

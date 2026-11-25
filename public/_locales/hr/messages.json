@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Promijeni skup ikona"
   },
+  "iconSetUseButton": {
+    "message": "Koristi: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopiraj putanju"
   },
@@ -295,7 +303,7 @@
     "message": "API ključevi ne mogu se spremiti jer na ovom računalu nije pokrenut privjesak ključeva (GNOME Keyring ili KWallet). Pokrenite ga pa ponovno otvorite tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Ovaj sustav nema pogon za govor, pa čitanje naglas radi samo preko lokalnog TTS poslužitelja."
+    "message": "Ovaj sustav nema pogon za govor, pa čitanje naglas radi samo preko lokalnog poslužitelja za govor."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Pregledava sve sesije i predlaže što dalje. Klikni za otvaranje te sesije"
   },
   "conciergeSettingsNote": {
-    "message": "Pregledava sve sesije i govori kojom se pozabaviti sljedeće. Klikni za prelazak na okno te sesije. Pojavljuje se dok je spremljen ključ za OpenAI ili Anthropic ili je postavljeno Lokalno. Odaberi kako izgleda"
+    "message": "Pregledava sve sesije i govori kojom se pozabaviti sljedeće. Klikni za prelazak na terminal te sesije. Pojavljuje se dok je spremljen ključ za OpenAI ili Anthropic ili je postavljeno Lokalno. Ispod odaberi kako izgleda."
   },
   "conciergeLookOwl": {
     "message": "Sova"
@@ -392,7 +400,7 @@
     "message": "Odaberite ili upišite model da biste ga spremili i testirali vezu."
   },
   "aiUserMessagesNote": {
-    "message": "Svaki put kad završi potez, šalju se posljednji odgovor agenta i poruke koje si poslao tijekom tog poteza. Po njima se određuju i „?” na pticama koje čekaju tvoj odgovor te oznaka ljutnje za uvrede prema umjetnoj inteligenciji."
+    "message": "Svaki put kad agent završi odgovor, šalju se taj odgovor i poruke koje si poslao od njegova prethodnog odgovora. Po njima se određuju i „?” na pticama koje čekaju tvoj odgovor te oznaka ljutnje za uvrede prema umjetnoj inteligenciji."
   },
   "retiredKeyNote": {
     "message": "Više se ne koristi. Spremljeni ključ možeš izbrisati."
@@ -454,7 +462,7 @@
     "message": "Glas sustava"
   },
   "readoutVoiceLocal": {
-    "message": "Lokalni TTS poslužitelj"
+    "message": "Lokalni poslužitelj za govor"
   },
   "readoutKindLabel": {
     "message": "Vrsta poslužitelja"
@@ -537,7 +545,7 @@
     "message": "Dopusti AI agentu da mijenja postavke"
   },
   "agentAccessDescription": {
-    "message": "Vaš agent za programiranje (Claude Code ili drugi koji podržava MCP) može čitati i mijenjati postavke na ovom zaslonu, testirati vezu i reproducirati uzorak. API ključevi ostaju ovdje: agent ih ne može čitati ni postaviti."
+    "message": "Vaš agent za programiranje (Claude Code ili drugi koji podržava MCP, uobičajen način povezivanja agenata s aplikacijama) može čitati i mijenjati postavke na ovom zaslonu, testirati vezu i reproducirati uzorak. API ključevi ostaju ovdje: agent ih ne može čitati ni postaviti."
   },
   "agentAccessCommandHint": {
     "message": "Pokrenite ovo jednom u terminalu. Zatim zamolite agenta, npr. „Prebaci glas čitanja na VOICEVOX”."

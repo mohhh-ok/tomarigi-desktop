@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Pārslēgt ikonu kopu"
   },
+  "iconSetUseButton": {
+    "message": "Izmantot: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopēt ceļu"
   },
@@ -295,7 +303,7 @@
     "message": "API atslēgas nevar saglabāt, jo šajā datorā nedarbojas neviena atslēgu saišķa programma (GNOME Keyring vai KWallet). Palaidiet to un atveriet tomarigi vēlreiz."
   },
   "voiceUnavailable": {
-    "message": "Šai sistēmai nav runas sintēzes, tāpēc lasīšana ar balsi darbojas tikai caur vietējo TTS serveri."
+    "message": "Šai sistēmai nav runas sintēzes, tāpēc lasīšana ar balsi darbojas tikai caur vietējo runas serveri."
   },
   "conciergeName": {
     "message": "Konsjeržs"
@@ -304,7 +312,7 @@
     "message": "Apskata visas sesijas un iesaka, ko darīt tālāk. Noklikšķiniet, lai atvērtu šo sesiju"
   },
   "conciergeSettingsNote": {
-    "message": "Apskata visas sesijas un pasaka, ar kuru nodarboties tālāk. Noklikšķiniet, lai pārietu uz šīs sesijas rūti. Redzams, kamēr ir saglabāta OpenAI vai Anthropic atslēga vai iestatīts Lokāli. Izvēlieties tā izskatu"
+    "message": "Apskata visas sesijas un pasaka, ar kuru nodarboties tālāk. Noklikšķiniet, lai pārslēgtos uz šīs sesijas termināli. Redzams, kamēr ir saglabāta OpenAI vai Anthropic atslēga vai iestatīts Lokāli. Tā izskatu izvēlieties zemāk."
   },
   "conciergeLookOwl": {
     "message": "Pūce"
@@ -392,7 +400,7 @@
     "message": "Izvēlieties vai ievadiet modeli, lai saglabātu un pārbaudītu savienojumu."
   },
   "aiUserMessagesNote": {
-    "message": "Katru reizi, kad gājiens beidzas, tiek nosūtīta aģenta pēdējā atbilde un ziņas, ko nosūtījāt šajā gājienā. Pēc tām nosaka arī “?” pie putniem, kas gaida jūsu atbildi, un dusmu zīmi par aizskaršanu pret MI."
+    "message": "Katru reizi, kad aģents pabeidz atbildi, tiek nosūtīta šī atbilde un ziņas, ko nosūtījāt kopš tā iepriekšējās atbildes. Pēc tām nosaka arī “?” pie putniem, kas gaida jūsu atbildi, un dusmu zīmi par aizskaršanu pret MI."
   },
   "retiredKeyNote": {
     "message": "Vairs netiek izmantota. Šo saglabāto atslēgu varat izdzēst."
@@ -454,7 +462,7 @@
     "message": "Sistēmas balss"
   },
   "readoutVoiceLocal": {
-    "message": "Vietējais TTS serveris"
+    "message": "Vietējais runas serveris"
   },
   "readoutKindLabel": {
     "message": "Servera veids"
@@ -537,7 +545,7 @@
     "message": "Ļaut MI aģentam mainīt iestatījumus"
   },
   "agentAccessDescription": {
-    "message": "Jūsu programēšanas aģents (Claude Code vai cits, kas atbalsta MCP) var lasīt un mainīt šī ekrāna iestatījumus, pārbaudīt savienojumu un atskaņot paraugu. API atslēgas paliek šeit: aģents tās nevar nolasīt vai iestatīt."
+    "message": "Jūsu programēšanas aģents (Claude Code vai cits, kas atbalsta MCP – ierasto veidu, kā savienot aģentus ar lietotnēm) var lasīt un mainīt šī ekrāna iestatījumus, pārbaudīt savienojumu un atskaņot paraugu. API atslēgas paliek šeit: aģents tās nevar nolasīt vai iestatīt."
   },
   "agentAccessCommandHint": {
     "message": "Palaidiet šo vienreiz terminālī. Pēc tam palūdziet aģentam, piem., “Pārslēdz lasīšanas balsi uz VOICEVOX”."

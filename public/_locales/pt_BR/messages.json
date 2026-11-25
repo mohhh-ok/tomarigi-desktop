@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Alternar conjunto de ícones"
   },
+  "iconSetUseButton": {
+    "message": "Usar $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Copiar caminho"
   },
@@ -295,7 +303,7 @@
     "message": "Não é possível salvar as chaves de API porque nenhum chaveiro (GNOME Keyring ou KWallet) está em execução neste computador. Inicie um e abra o tomarigi novamente."
   },
   "voiceUnavailable": {
-    "message": "Este sistema não tem mecanismo de voz, então a leitura em voz alta só funciona com um servidor TTS local."
+    "message": "Este sistema não tem mecanismo de voz, então a leitura em voz alta só funciona com um servidor de voz local."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Olha todas as suas sessões e sugere o que fazer em seguida. Clique para abrir essa sessão"
   },
   "conciergeSettingsNote": {
-    "message": "Olha todas as suas sessões e diz qual atender em seguida. Clique para ir ao painel dessa sessão. Aparece enquanto houver uma chave da OpenAI ou da Anthropic salva ou o Local estiver configurado. Escolha a aparência"
+    "message": "Olha todas as suas sessões e diz qual atender em seguida. Clique para passar ao terminal dessa sessão. Aparece enquanto houver uma chave da OpenAI ou da Anthropic salva ou o Local estiver configurado. Escolha a aparência abaixo."
   },
   "conciergeLookOwl": {
     "message": "Coruja"
@@ -392,7 +400,7 @@
     "message": "Escolha ou digite um modelo para salvar e testar a conexão."
   },
   "aiUserMessagesNote": {
-    "message": "Sempre que um turno termina, são enviadas a última resposta do agente e as mensagens que você enviou durante esse turno. Elas também decidem o “?” dos pássaros que esperam sua resposta e a marca de raiva por mensagens ofensivas à IA."
+    "message": "Sempre que o agente termina uma resposta, são enviadas essa resposta e as mensagens que você enviou desde a resposta anterior. Elas também decidem o “?” dos pássaros que esperam sua resposta e a marca de raiva por mensagens ofensivas à IA."
   },
   "retiredKeyNote": {
     "message": "Não é mais usada. Você pode excluir esta chave salva."
@@ -454,7 +462,7 @@
     "message": "Voz do sistema"
   },
   "readoutVoiceLocal": {
-    "message": "Servidor TTS local"
+    "message": "Servidor de voz local"
   },
   "readoutKindLabel": {
     "message": "Tipo de servidor"
@@ -537,7 +545,7 @@
     "message": "Permitir que um agente de IA altere as configurações"
   },
   "agentAccessDescription": {
-    "message": "Seu agente de programação (Claude Code ou outro que use MCP) pode ler e alterar as configurações desta tela, testar a conexão e tocar uma amostra. As chaves de API ficam aqui: o agente não pode lê-las nem defini-las."
+    "message": "Seu agente de programação (Claude Code ou outro compatível com MCP, a forma comum de conectar agentes a apps) pode ler e alterar as configurações desta tela, testar a conexão e tocar uma amostra. As chaves de API ficam aqui: o agente não pode lê-las nem defini-las."
   },
   "agentAccessCommandHint": {
     "message": "Execute isto uma vez em um terminal. Depois peça ao agente, por exemplo: “Mude a voz de leitura para VOICEVOX”."

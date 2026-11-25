@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "아이콘 세트 전환"
   },
+  "iconSetUseButton": {
+    "message": "$SET$(으)로 바꾸기",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "경로 복사"
   },
@@ -295,7 +303,7 @@
     "message": "이 컴퓨터에서 키링(GNOME Keyring 또는 KWallet)이 실행되고 있지 않아 API 키를 저장할 수 없습니다. 키링을 실행한 뒤 tomarigi를 다시 여세요."
   },
   "voiceUnavailable": {
-    "message": "이 시스템에는 음성 합성 기능이 없어 로컬 TTS 서버를 선택했을 때만 읽어주기를 사용할 수 있습니다."
+    "message": "이 시스템에는 음성 합성 기능이 없어 로컬 읽어주기 서버를 선택했을 때만 읽어주기를 사용할 수 있습니다."
   },
   "conciergeName": {
     "message": "컨시어지"
@@ -304,7 +312,7 @@
     "message": "모든 세션을 보고 다음에 할 일을 알려 줍니다. 누르면 그 세션을 엽니다"
   },
   "conciergeSettingsNote": {
-    "message": "모든 세션을 보고 다음에 어느 것을 처리하면 좋을지 알려 줍니다. 누르면 그 세션의 창으로 이동합니다. OpenAI 또는 Anthropic 키를 저장하거나 로컬을 설정해 두면 나타납니다. 모습을 고를 수 있습니다"
+    "message": "모든 세션을 보고 다음에 어느 것을 처리하면 좋을지 알려 줍니다. 누르면 그 세션의 터미널로 전환됩니다. OpenAI 또는 Anthropic 키를 저장하거나 로컬을 설정해 두면 나타납니다. 아래에서 모습을 고를 수 있습니다."
   },
   "conciergeLookOwl": {
     "message": "부엉이"
@@ -392,7 +400,7 @@
     "message": "모델을 선택하거나 입력하면 저장하고 연결을 테스트할 수 있습니다."
   },
   "aiUserMessagesNote": {
-    "message": "턴이 끝날 때마다 에이전트의 마지막 응답과 그 턴에 보낸 내 메시지를 전송합니다. 답장을 기다리는 새의 “?”와 AI에 대한 폭언에 붙는 분노 표시를 판정하는 데에도 사용합니다."
+    "message": "에이전트가 답을 마칠 때마다 그 답과, 그 전 답 이후에 내가 보낸 메시지를 전송합니다. 답장을 기다리는 새의 “?”와 AI에 대한 폭언에 붙는 분노 표시를 판정하는 데에도 사용합니다."
   },
   "retiredKeyNote": {
     "message": "더 이상 사용하지 않습니다. 저장된 키를 삭제할 수 있습니다."
@@ -454,7 +462,7 @@
     "message": "시스템 음성"
   },
   "readoutVoiceLocal": {
-    "message": "로컬 TTS 서버"
+    "message": "로컬 읽어주기 서버"
   },
   "readoutKindLabel": {
     "message": "서버 종류"
@@ -537,7 +545,7 @@
     "message": "AI 에이전트가 설정을 바꿀 수 있게 하기"
   },
   "agentAccessDescription": {
-    "message": "코딩 에이전트(Claude Code 등 MCP를 쓰는 에이전트)가 이 화면의 설정을 읽고 바꾸며, 연결 테스트와 샘플 재생을 할 수 있습니다. API 키는 이 화면에서만 다루며 에이전트는 읽거나 설정할 수 없습니다."
+    "message": "코딩 에이전트(Claude Code 등, 에이전트를 앱에 연결하는 방식인 MCP를 지원하는 에이전트)가 이 화면의 설정을 읽고 바꾸며, 연결 테스트와 샘플 재생을 할 수 있습니다. API 키는 이 화면에서만 다루며 에이전트는 읽거나 설정할 수 없습니다."
   },
   "agentAccessCommandHint": {
     "message": "터미널에서 이것을 한 번 실행하세요. 그다음 에이전트에게 \"읽기 음성을 VOICEVOX로 바꿔 줘\"처럼 부탁하면 됩니다."

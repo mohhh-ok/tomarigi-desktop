@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Canvia el conjunt d'icones"
   },
+  "iconSetUseButton": {
+    "message": "Fes servir $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Copia el camí"
   },
@@ -295,7 +303,7 @@
     "message": "No es poden desar les claus API perquè no hi ha cap clauer (GNOME Keyring o KWallet) en execució en aquest ordinador. Inicia'n un i torna a obrir tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Aquest sistema no té motor de veu, així que la lectura en veu alta només funciona amb un servidor TTS local."
+    "message": "Aquest sistema no té motor de veu, així que la lectura en veu alta només funciona amb un servidor de veu local."
   },
   "conciergeName": {
     "message": "Conserge"
@@ -304,7 +312,7 @@
     "message": "Mira totes les sessions i et diu què fer a continuació. Fes clic per obrir aquella sessió"
   },
   "conciergeSettingsNote": {
-    "message": "Mira totes les sessions i et diu de quina t'has d'ocupar ara. Fes clic per anar al panell d'aquella sessió. Apareix mentre hi hagi desada una clau d'OpenAI o d'Anthropic o estigui configurat Local. Tria'n l'aspecte"
+    "message": "Mira totes les sessions i et diu de quina t'has d'ocupar ara. Fes clic per passar al terminal d'aquella sessió. Apareix mentre hi hagi desada una clau d'OpenAI o d'Anthropic o estigui configurat Local. Tria'n l'aspecte a sota."
   },
   "conciergeLookOwl": {
     "message": "Mussol"
@@ -392,7 +400,7 @@
     "message": "Tria o escriu un model per desar-lo i provar la connexió."
   },
   "aiUserMessagesNote": {
-    "message": "Cada vegada que acaba un torn, s’envien la darrera resposta de l’agent i els missatges que has enviat durant aquest torn. També decideixen el «?» dels ocells que esperen la teva resposta i la marca d’enuig pels missatges ofensius cap a la IA."
+    "message": "Cada vegada que l’agent acaba una resposta, s’envien aquesta resposta i els missatges que has enviat des de la seva resposta anterior. També decideixen el «?» dels ocells que esperen la teva resposta i la marca d’enuig pels missatges ofensius cap a la IA."
   },
   "retiredKeyNote": {
     "message": "Ja no s’utilitza. Pots eliminar aquesta clau desada."
@@ -454,7 +462,7 @@
     "message": "Veu del sistema"
   },
   "readoutVoiceLocal": {
-    "message": "Servidor TTS local"
+    "message": "Servidor de veu local"
   },
   "readoutKindLabel": {
     "message": "Tipus de servidor"
@@ -537,7 +545,7 @@
     "message": "Permet que un agent d'IA canviï la configuració"
   },
   "agentAccessDescription": {
-    "message": "El teu agent de programació (Claude Code o un altre que faci servir MCP) pot llegir i canviar la configuració d'aquesta pantalla, provar la connexió i reproduir una mostra. Les claus d'API es queden aquí: l'agent no les pot llegir ni definir."
+    "message": "El teu agent de programació (Claude Code o un altre compatible amb MCP, la manera habitual de connectar agents amb apps) pot llegir i canviar la configuració d'aquesta pantalla, provar la connexió i reproduir una mostra. Les claus d'API es queden aquí: l'agent no les pot llegir ni definir."
   },
   "agentAccessCommandHint": {
     "message": "Executa això una vegada en un terminal. Després demana-ho a l'agent, per exemple: «Canvia la veu de lectura a VOICEVOX»."

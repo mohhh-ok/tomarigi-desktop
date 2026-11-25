@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Vaihda kuvakesarja"
   },
+  "iconSetUseButton": {
+    "message": "Käytä: $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopioi polku"
   },
@@ -295,7 +303,7 @@
     "message": "API-avaimia ei voi tallentaa, koska tällä tietokoneella ei ole käynnissä avainnippua (GNOME Keyring tai KWallet). Käynnistä se ja avaa tomarigi uudelleen."
   },
   "voiceUnavailable": {
-    "message": "Järjestelmässä ei ole puhesyntetisaattoria, joten ääneen lukeminen toimii vain paikallisen TTS-palvelimen kautta."
+    "message": "Järjestelmässä ei ole puhesyntetisaattoria, joten ääneen lukeminen toimii vain paikallisen puhepalvelimen kautta."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Katsoo kaikki istuntosi ja ehdottaa, mitä tehdä seuraavaksi. Avaa istunto napsauttamalla"
   },
   "conciergeSettingsNote": {
-    "message": "Katsoo kaikki istuntosi ja kertoo, mihin kannattaa tarttua seuraavaksi. Napsauta siirtyäksesi sen istunnon ruutuun. Näkyy, kun OpenAI- tai Anthropic-avain on tallennettu tai Paikallinen on määritetty. Valitse sen ulkonäkö"
+    "message": "Katsoo kaikki istuntosi ja kertoo, mihin kannattaa tarttua seuraavaksi. Napsauta siirtyäksesi sen istunnon päätteeseen. Näkyy, kun OpenAI- tai Anthropic-avain on tallennettu tai Paikallinen on määritetty. Valitse sen ulkonäkö alta."
   },
   "conciergeLookOwl": {
     "message": "Pöllö"
@@ -392,7 +400,7 @@
     "message": "Valitse tai kirjoita malli, niin voit tallentaa ja testata yhteyden."
   },
   "aiUserMessagesNote": {
-    "message": "Aina kun vuoro päättyy, agentin viimeinen vastaus ja vuoron aikana lähettämäsi viestit lähetetään. Niiden perusteella päätetään myös vastaustasi odottavien lintujen ”?” ja tekoälyn loukkaamisesta tuleva vihamerkki."
+    "message": "Aina kun agentti saa vastauksen valmiiksi, se vastaus ja edellisen vastauksen jälkeen lähettämäsi viestit lähetetään. Niiden perusteella päätetään myös vastaustasi odottavien lintujen ”?” ja tekoälyn loukkaamisesta tuleva vihamerkki."
   },
   "retiredKeyNote": {
     "message": "Ei ole enää käytössä. Voit poistaa tallennetun avaimen."
@@ -454,7 +462,7 @@
     "message": "Järjestelmän ääni"
   },
   "readoutVoiceLocal": {
-    "message": "Paikallinen TTS-palvelin"
+    "message": "Paikallinen puhepalvelin"
   },
   "readoutKindLabel": {
     "message": "Palvelimen tyyppi"
@@ -537,7 +545,7 @@
     "message": "Salli tekoälyagentin muuttaa asetuksia"
   },
   "agentAccessDescription": {
-    "message": "Koodausagenttisi (Claude Code tai muu MCP:tä käyttävä) voi lukea ja muuttaa tämän näkymän asetuksia, testata yhteyden ja toistaa näytteen. API-avaimet pysyvät täällä: agentti ei voi lukea tai asettaa niitä."
+    "message": "Koodausagenttisi (Claude Code tai muu, joka tukee MCP:tä, tavallista tapaa yhdistää agentit sovelluksiin) voi lukea ja muuttaa tämän näkymän asetuksia, testata yhteyden ja toistaa näytteen. API-avaimet pysyvät täällä: agentti ei voi lukea tai asettaa niitä."
   },
   "agentAccessCommandHint": {
     "message": "Suorita tämä kerran päätteessä. Pyydä sitten agenttia, esim. ”Vaihda lukuääni VOICEVOXiin”."

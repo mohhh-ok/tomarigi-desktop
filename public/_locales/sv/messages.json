@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Byt ikonuppsättning"
   },
+  "iconSetUseButton": {
+    "message": "Använd $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Kopiera sökväg"
   },
@@ -295,7 +303,7 @@
     "message": "API-nycklar kan inte sparas eftersom ingen nyckelring (GNOME Keyring eller KWallet) körs på den här datorn. Starta en och öppna tomarigi igen."
   },
   "voiceUnavailable": {
-    "message": "Systemet saknar talsyntes, så uppläsning fungerar bara via en lokal TTS-server."
+    "message": "Systemet saknar talsyntes, så uppläsning fungerar bara via en lokal talserver."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Tittar på alla sessioner och föreslår vad du ska göra härnäst. Klicka för att öppna den sessionen"
   },
   "conciergeSettingsNote": {
-    "message": "Tittar på alla sessioner och säger vilken du bör ta hand om härnäst. Klicka för att gå till den sessionens fönsterdel. Visas så länge en OpenAI- eller Anthropic-nyckel är sparad eller Lokalt är inställt. Välj hur den ser ut"
+    "message": "Tittar på alla sessioner och säger vilken du bör ta hand om härnäst. Klicka för att byta till den sessionens terminal. Visas så länge en OpenAI- eller Anthropic-nyckel är sparad eller Lokalt är inställt. Välj nedan hur den ser ut."
   },
   "conciergeLookOwl": {
     "message": "Uggla"
@@ -392,7 +400,7 @@
     "message": "Välj eller skriv en modell för att spara och testa anslutningen."
   },
   "aiUserMessagesNote": {
-    "message": "Varje gång en tur är klar skickas agentens sista svar och de meddelanden du skickade under turen. De avgör också ”?” på fåglar som väntar på ditt svar och argmärket vid kränkningar mot AI:n."
+    "message": "Varje gång agenten har svarat klart skickas svaret och de meddelanden du skickat sedan dess förra svar. De avgör också ”?” på fåglar som väntar på ditt svar och argmärket vid kränkningar mot AI:n."
   },
   "retiredKeyNote": {
     "message": "Används inte längre. Du kan radera den sparade nyckeln."
@@ -454,7 +462,7 @@
     "message": "Systemröst"
   },
   "readoutVoiceLocal": {
-    "message": "Lokal TTS-server"
+    "message": "Lokal talserver"
   },
   "readoutKindLabel": {
     "message": "Servertyp"
@@ -537,7 +545,7 @@
     "message": "Låt en AI-agent ändra inställningar"
   },
   "agentAccessDescription": {
-    "message": "Din kodagent (Claude Code eller en annan som talar MCP) kan läsa och ändra inställningarna på den här skärmen, testa anslutningen och spela upp ett prov. API-nycklar stannar här: agenten kan inte läsa eller ange dem."
+    "message": "Din kodagent (Claude Code eller en annan som stöder MCP, det vanliga sättet att koppla agenter till appar) kan läsa och ändra inställningarna på den här skärmen, testa anslutningen och spela upp ett prov. API-nycklar stannar här: agenten kan inte läsa eller ange dem."
   },
   "agentAccessCommandHint": {
     "message": "Kör detta en gång i en terminal. Be sedan agenten, t.ex. ”Byt uppläsningsrösten till VOICEVOX”."

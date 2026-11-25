@@ -226,6 +226,14 @@
   "iconSetToggleAria": {
     "message": "Changer de jeu d'icônes"
   },
+  "iconSetUseButton": {
+    "message": "Utiliser $SET$",
+    "placeholders": {
+      "set": {
+        "content": "$1"
+      }
+    }
+  },
   "copyPathButton": {
     "message": "Copier le chemin"
   },
@@ -295,7 +303,7 @@
     "message": "Impossible d'enregistrer les clés API : aucun trousseau (GNOME Keyring ou KWallet) ne fonctionne sur cet ordinateur. Lancez-en un, puis rouvrez tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Ce système n’a pas de moteur vocal ; la lecture à voix haute ne fonctionne donc qu’avec un serveur TTS local."
+    "message": "Ce système n’a pas de moteur vocal ; la lecture à voix haute ne fonctionne donc qu’avec un serveur vocal local."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -304,7 +312,7 @@
     "message": "Regarde toutes tes sessions et te dit quoi faire ensuite. Clique pour ouvrir cette session"
   },
   "conciergeSettingsNote": {
-    "message": "Regarde toutes tes sessions et te dit laquelle traiter ensuite. Clique pour aller au volet de cette session. Apparaît tant qu'une clé OpenAI ou Anthropic est enregistrée ou que Local est configuré. Choisis son apparence"
+    "message": "Regarde toutes tes sessions et te dit laquelle traiter ensuite. Clique pour passer au terminal de cette session. Apparaît tant qu'une clé OpenAI ou Anthropic est enregistrée ou que Local est configuré. Choisis son apparence ci-dessous."
   },
   "conciergeLookOwl": {
     "message": "Hibou"
@@ -392,7 +400,7 @@
     "message": "Choisissez ou saisissez un modèle pour enregistrer et tester la connexion."
   },
   "aiUserMessagesNote": {
-    "message": "À la fin de chaque tour, la dernière réponse de l’agent et les messages que tu as envoyés pendant ce tour sont envoyés. Ils décident aussi du « ? » des oiseaux qui attendent ta réponse et de la marque de colère pour les insultes envers l’IA."
+    "message": "Chaque fois que l’agent termine une réponse, cette réponse et les messages que tu as envoyés depuis sa réponse précédente sont envoyés. Ils décident aussi du « ? » des oiseaux qui attendent ta réponse et de la marque de colère pour les insultes envers l’IA."
   },
   "retiredKeyNote": {
     "message": "N’est plus utilisée. Tu peux supprimer cette clé enregistrée."
@@ -454,7 +462,7 @@
     "message": "Voix du système"
   },
   "readoutVoiceLocal": {
-    "message": "Serveur TTS local"
+    "message": "Serveur vocal local"
   },
   "readoutKindLabel": {
     "message": "Type de serveur"
@@ -537,7 +545,7 @@
     "message": "Autoriser un agent IA à modifier les réglages"
   },
   "agentAccessDescription": {
-    "message": "Votre agent de code (Claude Code ou un autre qui parle MCP) peut lire et modifier les réglages de cet écran, tester la connexion et jouer un extrait. Les clés d'API restent ici : l'agent ne peut ni les lire ni les définir."
+    "message": "Votre agent de code (Claude Code ou un autre compatible avec MCP, la façon courante de relier les agents aux applis) peut lire et modifier les réglages de cet écran, tester la connexion et jouer un extrait. Les clés d'API restent ici : l'agent ne peut ni les lire ni les définir."
   },
   "agentAccessCommandHint": {
     "message": "Exécutez ceci une fois dans un terminal. Ensuite, demandez à l'agent, par exemple : « Passe la voix de lecture sur VOICEVOX »."
