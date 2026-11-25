@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Kommandot har ändrats, så det du körde tidigare fungerar inte längre. Ta först bort den gamla registreringen:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopiera kommando"
+  "agentAccessCopyAddButton": {
+    "message": "Kopiera registreringskommando"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopiera borttagningskommando"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopiera URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopiera token"
   },
   "agentAccessCopied": {
     "message": "Kopierat"
@@ -558,7 +567,7 @@
     "message": "Ange en port från 1024 till 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Kunde inte starta: en annan app använder den här porten. Ange en annan port."
+    "message": "Kunde inte starta: en annan app använder den här porten. Ange en annan port och tryck på Retur för att försöka igen."
   },
   "agentAccessRenewButton": {
     "message": "Förnya token"
@@ -597,7 +606,7 @@
     "message": "Kommandot innehåller en hemlig token som låter program på den här datorn ändra inställningarna. Dela den inte; förnya den om den läcker."
   },
   "agentAccessOtherAgents": {
-    "message": "För en annan agent med MCP anger du URL:en och Authorization-huvudet från det här kommandot i den agentens MCP-inställningar."
+    "message": "För en annan agent med MCP anger du URL:en och token nedan i den agentens MCP-inställningar (huvud: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Stäng"

@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Polecenie się zmieniło, więc poprzednie już nie działa. Najpierw usuń starą rejestrację:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopiuj polecenie"
+  "agentAccessCopyAddButton": {
+    "message": "Kopiuj polecenie rejestracji"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopiuj polecenie usunięcia"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopiuj URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopiuj token"
   },
   "agentAccessCopied": {
     "message": "Skopiowano"
@@ -558,7 +567,7 @@
     "message": "Wpisz port od 1024 do 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Nie udało się uruchomić: inna aplikacja używa tego portu. Wpisz inny port."
+    "message": "Nie udało się uruchomić: inna aplikacja używa tego portu. Wpisz inny port i naciśnij Enter, aby spróbować ponownie."
   },
   "agentAccessRenewButton": {
     "message": "Odnów token"
@@ -597,7 +606,7 @@
     "message": "Polecenie zawiera tajny token, który pozwala programom na tym komputerze zmieniać te ustawienia. Nie udostępniaj go; jeśli wycieknie, odnów go."
   },
   "agentAccessOtherAgents": {
-    "message": "W przypadku innego agenta obsługującego MCP wpisz adres URL i nagłówek Authorization z tego polecenia w ustawieniach MCP tego agenta."
+    "message": "W przypadku innego agenta obsługującego MCP wpisz poniższy adres URL i token w ustawieniach MCP tego agenta (nagłówek: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Zamknij"

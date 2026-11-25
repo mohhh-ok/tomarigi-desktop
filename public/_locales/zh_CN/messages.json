@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "命令已更改，之前运行的命令不再有效。请先删除旧的注册："
   },
-  "agentAccessCopyButton": {
-    "message": "复制命令"
+  "agentAccessCopyAddButton": {
+    "message": "复制注册命令"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "复制删除命令"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "复制 URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "复制令牌"
   },
   "agentAccessCopied": {
     "message": "已复制"
@@ -558,7 +567,7 @@
     "message": "请输入 1024 到 65535 之间的端口。"
   },
   "agentAccessPortInUse": {
-    "message": "无法启动：此端口已被其他应用占用。请输入另一个端口。"
+    "message": "无法启动：此端口已被其他应用占用。输入另一个端口并按 Enter 即可重试。"
   },
   "agentAccessRenewButton": {
     "message": "重新生成令牌"
@@ -597,7 +606,7 @@
     "message": "该命令包含一个秘密令牌，可让这台电脑上的程序更改这些设置。请勿分享；如果泄露，请重新生成。"
   },
   "agentAccessOtherAgents": {
-    "message": "对于其他支持 MCP 的代理，请把此命令中的 URL 和 Authorization 头填入该代理的 MCP 设置。"
+    "message": "对于其他支持 MCP 的代理，请把下面的 URL 和令牌填入该代理的 MCP 设置（请求头：Authorization: Bearer <令牌>）。"
   },
   "agentNoteDismiss": {
     "message": "关闭"

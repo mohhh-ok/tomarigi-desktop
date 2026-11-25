@@ -804,6 +804,33 @@ button.agent-access-copy-main:hover {
   margin: 0 0 16px;
 }
 
+.agent-access-other .settings-note {
+  margin-bottom: 6px;
+}
+
+/* The URL or the token on its own line, its copy button at the end */
+.agent-access-part {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 8px;
+  margin-bottom: 6px;
+  padding: 4px 4px 4px 10px;
+  border: 1px solid #4a463c;
+  border-radius: 6px;
+  background: #1b1a15;
+}
+
+.agent-access-part code {
+  flex: 1 1 14em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  color: #d9b06a;
+  user-select: all;
+}
+
 .agent-access-recent h3 {
   margin: 0 0 6px;
   font-size: 12px;

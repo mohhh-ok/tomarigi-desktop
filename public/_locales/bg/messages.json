@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Командата се промени и предишната вече не работи. Първо премахнете старата регистрация:"
   },
-  "agentAccessCopyButton": {
-    "message": "Копиране на командата"
+  "agentAccessCopyAddButton": {
+    "message": "Копиране на командата за регистрация"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Копиране на командата за премахване"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Копиране на URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Копиране на токена"
   },
   "agentAccessCopied": {
     "message": "Копирано"
@@ -558,7 +567,7 @@
     "message": "Въведете порт от 1024 до 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Не можа да стартира: друго приложение използва този порт. Въведете друг порт."
+    "message": "Не можа да стартира: друго приложение използва този порт. Въведете друг порт и натиснете Enter, за да опитате отново."
   },
   "agentAccessRenewButton": {
     "message": "Подновяване на токена"
@@ -597,7 +606,7 @@
     "message": "Командата съдържа таен токен, с който програмите на този компютър могат да променят тези настройки. Не го споделяйте; ако изтече, подновете го."
   },
   "agentAccessOtherAgents": {
-    "message": "За друг агент с поддръжка на MCP въведете URL адреса и заглавката Authorization от тази команда в неговите MCP настройки."
+    "message": "За друг агент с поддръжка на MCP въведете URL адреса и токена по-долу в неговите MCP настройки (заглавка: Authorization: Bearer <токен>)."
   },
   "agentNoteDismiss": {
     "message": "Затвори"

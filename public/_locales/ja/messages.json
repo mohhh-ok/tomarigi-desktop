@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "コマンドが変わったので、前に実行したものはもう使えません。先に古い登録を消してください:"
   },
-  "agentAccessCopyButton": {
-    "message": "コマンドをコピー"
+  "agentAccessCopyAddButton": {
+    "message": "登録コマンドをコピー"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "削除コマンドをコピー"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "URL をコピー"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "トークンをコピー"
   },
   "agentAccessCopied": {
     "message": "コピーしました"
@@ -558,7 +567,7 @@
     "message": "1024〜65535 のポートを入力してください。"
   },
   "agentAccessPortInUse": {
-    "message": "このポートは別のアプリが使っているため、始められませんでした。別のポートを入力してください。"
+    "message": "このポートは別のアプリが使っているため、始められませんでした。別のポートを入力して Enter を押すと、もう一度始めます。"
   },
   "agentAccessRenewButton": {
     "message": "トークンを作り直す"
@@ -597,7 +606,7 @@
     "message": "コマンドには、このコンピューターのプログラムがこれらの設定を変えられる秘密のトークンが入っています。人に渡さないでください。漏れたら作り直してください。"
   },
   "agentAccessOtherAgents": {
-    "message": "ほかの MCP を使えるエージェントでは、このコマンドの URL と Authorization ヘッダーを、そのエージェントの MCP 設定に書いてください。"
+    "message": "ほかの MCP を使えるエージェントでは、下の URL とトークンを、そのエージェントの MCP 設定に入れてください（ヘッダーは Authorization: Bearer <トークン>）。"
   },
   "agentNoteDismiss": {
     "message": "閉じる"

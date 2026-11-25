@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Komento muuttui, joten aiemmin suorittamasi ei enää toimi. Poista ensin vanha rekisteröinti:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopioi komento"
+  "agentAccessCopyAddButton": {
+    "message": "Kopioi rekisteröintikomento"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopioi poistokomento"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopioi URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopioi tunnus"
   },
   "agentAccessCopied": {
     "message": "Kopioitu"
@@ -558,7 +567,7 @@
     "message": "Anna portti väliltä 1024–65535."
   },
   "agentAccessPortInUse": {
-    "message": "Käynnistys ei onnistunut: toinen sovellus käyttää tätä porttia. Anna toinen portti."
+    "message": "Käynnistys ei onnistunut: toinen sovellus käyttää tätä porttia. Anna toinen portti ja yritä uudelleen painamalla Enter."
   },
   "agentAccessRenewButton": {
     "message": "Uusi tunnus"
@@ -597,7 +606,7 @@
     "message": "Komento sisältää salaisen tunnuksen, jolla tämän tietokoneen ohjelmat voivat muuttaa näitä asetuksia. Älä jaa sitä; jos se vuotaa, uusi se."
   },
   "agentAccessOtherAgents": {
-    "message": "Jos käytät muuta MCP:tä tukevaa agenttia, lisää tämän komennon URL ja Authorization-otsake sen agentin MCP-asetuksiin."
+    "message": "Jos käytät muuta MCP:tä tukevaa agenttia, lisää alla oleva URL ja tunnus sen MCP-asetuksiin (otsake: Authorization: Bearer <tunnus>)."
   },
   "agentNoteDismiss": {
     "message": "Sulje"

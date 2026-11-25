@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Η εντολή άλλαξε, οπότε αυτή που εκτελέσατε πριν δεν λειτουργεί πια. Αφαιρέστε πρώτα την παλιά καταχώριση:"
   },
-  "agentAccessCopyButton": {
-    "message": "Αντιγραφή εντολής"
+  "agentAccessCopyAddButton": {
+    "message": "Αντιγραφή εντολής καταχώρισης"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Αντιγραφή εντολής αφαίρεσης"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Αντιγραφή URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Αντιγραφή διακριτικού"
   },
   "agentAccessCopied": {
     "message": "Αντιγράφηκε"
@@ -558,7 +567,7 @@
     "message": "Εισαγάγετε θύρα από 1024 έως 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Δεν ήταν δυνατή η εκκίνηση: αυτή τη θύρα τη χρησιμοποιεί άλλη εφαρμογή. Εισαγάγετε άλλη θύρα."
+    "message": "Δεν ήταν δυνατή η εκκίνηση: αυτή τη θύρα τη χρησιμοποιεί άλλη εφαρμογή. Εισαγάγετε άλλη θύρα και πατήστε Enter για νέα προσπάθεια."
   },
   "agentAccessRenewButton": {
     "message": "Ανανέωση token"
@@ -597,7 +606,7 @@
     "message": "Η εντολή περιέχει ένα μυστικό token που επιτρέπει σε προγράμματα αυτού του υπολογιστή να αλλάζουν αυτές τις ρυθμίσεις. Μην το μοιράζεστε· αν διαρρεύσει, ανανεώστε το."
   },
   "agentAccessOtherAgents": {
-    "message": "Για άλλον πράκτορα που υποστηρίζει MCP, βάλτε το URL και την κεφαλίδα Authorization αυτής της εντολής στις ρυθμίσεις MCP του."
+    "message": "Για άλλον πράκτορα που υποστηρίζει MCP, βάλτε το URL και το διακριτικό παρακάτω στις ρυθμίσεις MCP του (κεφαλίδα: Authorization: Bearer <διακριτικό>)."
   },
   "agentNoteDismiss": {
     "message": "Κλείσιμο"

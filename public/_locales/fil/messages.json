@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Nagbago ang command, kaya hindi na gagana ang pinatakbo mo dati. Alisin muna ang lumang rehistro:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopyahin ang command"
+  "agentAccessCopyAddButton": {
+    "message": "Kopyahin ang command sa pag-register"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopyahin ang command sa pag-alis"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopyahin ang URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopyahin ang token"
   },
   "agentAccessCopied": {
     "message": "Nakopya"
@@ -558,7 +567,7 @@
     "message": "Maglagay ng port mula 1024 hanggang 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Hindi masimulan: may ibang app na gumagamit ng port na ito. Maglagay ng ibang port."
+    "message": "Hindi masimulan: may ibang app na gumagamit ng port na ito. Maglagay ng ibang port at pindutin ang Enter para subukan ulit."
   },
   "agentAccessRenewButton": {
     "message": "I-renew ang token"
@@ -597,7 +606,7 @@
     "message": "May lihim na token ang command na ito na nagpapahintulot sa mga program sa computer na ito na baguhin ang mga setting na ito. Huwag itong ibahagi; kung kumalat, i-renew ito."
   },
   "agentAccessOtherAgents": {
-    "message": "Para sa ibang agent na gumagamit ng MCP, ilagay ang URL at ang Authorization header mula sa command na ito sa MCP settings ng agent na iyon."
+    "message": "Para sa ibang agent na gumagamit ng MCP, ilagay ang URL at token sa ibaba sa MCP settings ng agent na iyon (header: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Isara"

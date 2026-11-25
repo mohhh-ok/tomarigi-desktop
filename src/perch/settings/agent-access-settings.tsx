@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MdCheckCircle, MdContentCopy } from "react-icons/md";
 import { t } from "@/lib/i18n";
+import { commandParts } from "../agent-command";
 import type { AgentAccessStatus, AgentChangeEntry } from "../use-agent-access";
 
 // The time of day in the UI language (Intl), so no message key is needed
@@ -57,13 +58,13 @@ export function AgentAccessSettings({
               {replaced && (
                 <>
                   <p className="agent-access-hint">{t("agentAccessReplaceHint")}</p>
-                  <CommandBlock command={REMOVE_COMMAND} />
+                  <CommandBlock command={REMOVE_COMMAND} label={t("agentAccessCopyRemoveButton")} />
                 </>
               )}
               <p className="agent-access-hint">{t("agentAccessCommandHint")}</p>
-              <CommandBlock command={command} main />
+              <CommandBlock command={command} label={t("agentAccessCopyAddButton")} main />
               <p className="settings-note agent-access-secret">{t("agentAccessSecretNote")}</p>
-              <p className="settings-note agent-access-other">{t("agentAccessOtherAgents")}</p>
+              <OtherAgents command={command} />
             </>
           )}
           <div className="agent-access-actions">
@@ -135,20 +136,7 @@ export function AgentAccessSettings({
 
 /** A command to paste in a terminal, with a copy button. The whole command shows (it wraps) so it can be read before
  * running it */
-function CommandBlock({ command, main = false }: { command: string; main?: boolean }) {
-  const [copied, setCopied] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(command);
-      setCopied(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setCopied(false), 1_500);
-    } catch (error) {
-      console.warn("[tomarigi] failed to copy the command", error);
-    }
-  };
+function CommandBlock({ command, label, main = false }: { command: string; label: string; main?: boolean }) {
   return (
     <div className="agent-access-command">
       {/* One span per word, kept whole, so a line breaks between words and not inside a flag ("--header"); only a word
@@ -161,10 +149,52 @@ function CommandBlock({ command, main = false }: { command: string; main?: boole
           </span>
         ))}
       </code>
-      <button className={main ? "small agent-access-copy agent-access-copy-main" : "small agent-access-copy"} onClick={() => void copy()}>
-        {copied ? <MdCheckCircle size={14} aria-hidden="true" /> : <MdContentCopy size={14} aria-hidden="true" />}
-        {copied ? t("agentAccessCopied") : t("agentAccessCopyButton")}
-      </button>
+      <CopyButton text={command} label={label} main={main} />
     </div>
+  );
+}
+
+/** The URL and the token on their own, for an agent other than Claude Code (Codex, for one, takes the token through an
+ * environment variable, so the command as a whole is no use there) */
+function OtherAgents({ command }: { command: string }) {
+  const parts = commandParts(command);
+  return (
+    <div className="agent-access-other">
+      <p className="settings-note">{t("agentAccessOtherAgents")}</p>
+      {parts && (
+        <>
+          <div className="agent-access-part">
+            <code>{parts.url}</code>
+            <CopyButton text={parts.url} label={t("agentAccessCopyUrlButton")} />
+          </div>
+          <div className="agent-access-part">
+            <code className="agent-access-word-long">{parts.token}</code>
+            <CopyButton text={parts.token} label={t("agentAccessCopyTokenButton")} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CopyButton({ text, label, main = false }: { text: string; label: string; main?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 1_500);
+    } catch (error) {
+      console.warn("[tomarigi] failed to copy", error);
+    }
+  };
+  return (
+    <button className={main ? "small agent-access-copy agent-access-copy-main" : "small agent-access-copy"} onClick={() => void copy()}>
+      {copied ? <MdCheckCircle size={14} aria-hidden="true" /> : <MdContentCopy size={14} aria-hidden="true" />}
+      {copied ? t("agentAccessCopied") : label}
+    </button>
   );
 }

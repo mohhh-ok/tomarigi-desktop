@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Komut değişti, daha önce çalıştırdığınız artık çalışmıyor. Önce eski kaydı kaldırın:"
   },
-  "agentAccessCopyButton": {
-    "message": "Komutu kopyala"
+  "agentAccessCopyAddButton": {
+    "message": "Kayıt komutunu kopyala"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kaldırma komutunu kopyala"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "URL'yi kopyala"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Belirteci kopyala"
   },
   "agentAccessCopied": {
     "message": "Kopyalandı"
@@ -558,7 +567,7 @@
     "message": "1024 ile 65535 arasında bir bağlantı noktası girin."
   },
   "agentAccessPortInUse": {
-    "message": "Başlatılamadı: bu bağlantı noktasını başka bir uygulama kullanıyor. Başka bir bağlantı noktası girin."
+    "message": "Başlatılamadı: bu bağlantı noktasını başka bir uygulama kullanıyor. Başka bir bağlantı noktası girip yeniden denemek için Enter'a basın."
   },
   "agentAccessRenewButton": {
     "message": "Belirteci yenile"
@@ -597,7 +606,7 @@
     "message": "Komut, bu bilgisayardaki programların bu ayarları değiştirmesine izin veren gizli bir belirteç içerir. Paylaşmayın; sızarsa yenileyin."
   },
   "agentAccessOtherAgents": {
-    "message": "MCP destekleyen başka bir ajan için bu komuttaki URL'yi ve Authorization başlığını o ajanın MCP ayarlarına yazın."
+    "message": "MCP destekleyen başka bir ajan için aşağıdaki URL'yi ve belirteci o ajanın MCP ayarlarına yazın (başlık: Authorization: Bearer <belirteç>)."
   },
   "agentNoteDismiss": {
     "message": "Kapat"

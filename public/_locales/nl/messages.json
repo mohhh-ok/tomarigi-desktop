@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "De opdracht is gewijzigd, dus de vorige werkt niet meer. Verwijder eerst de oude registratie:"
   },
-  "agentAccessCopyButton": {
-    "message": "Opdracht kopiëren"
+  "agentAccessCopyAddButton": {
+    "message": "Registratieopdracht kopiëren"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Verwijderopdracht kopiëren"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "URL kopiëren"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Token kopiëren"
   },
   "agentAccessCopied": {
     "message": "Gekopieerd"
@@ -558,7 +567,7 @@
     "message": "Voer een poort in van 1024 tot 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Kon niet starten: een andere app gebruikt deze poort. Voer een andere poort in."
+    "message": "Kon niet starten: een andere app gebruikt deze poort. Voer een andere poort in en druk op Enter om het opnieuw te proberen."
   },
   "agentAccessRenewButton": {
     "message": "Token vernieuwen"
@@ -597,7 +606,7 @@
     "message": "De opdracht bevat een geheim token waarmee programma's op deze computer deze instellingen kunnen wijzigen. Deel het niet; vernieuw het als het uitlekt."
   },
   "agentAccessOtherAgents": {
-    "message": "Voor een andere agent met MCP zet je de URL en de Authorization-header uit deze opdracht in de MCP-instellingen van die agent."
+    "message": "Voor een andere agent met MCP zet je de URL en het token hieronder in de MCP-instellingen van die agent (header: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Sluiten"

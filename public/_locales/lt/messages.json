@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Komanda pasikeitė, todėl ankstesnė nebeveikia. Pirmiausia pašalinkite seną registraciją:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopijuoti komandą"
+  "agentAccessCopyAddButton": {
+    "message": "Kopijuoti registravimo komandą"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopijuoti šalinimo komandą"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopijuoti URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopijuoti prieigos raktą"
   },
   "agentAccessCopied": {
     "message": "Nukopijuota"
@@ -558,7 +567,7 @@
     "message": "Įveskite prievadą nuo 1024 iki 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Nepavyko paleisti: šį prievadą naudoja kita programa. Įveskite kitą prievadą."
+    "message": "Nepavyko paleisti: šį prievadą naudoja kita programa. Įveskite kitą prievadą ir paspauskite Enter, kad bandytumėte dar kartą."
   },
   "agentAccessRenewButton": {
     "message": "Atnaujinti prieigos raktą"
@@ -597,7 +606,7 @@
     "message": "Komandoje yra slaptas prieigos raktas, leidžiantis šio kompiuterio programoms keisti šiuos nustatymus. Nesidalykite juo; jei nutekėtų, atnaujinkite."
   },
   "agentAccessOtherAgents": {
-    "message": "Kitam MCP palaikančiam agentui šios komandos URL ir antraštę Authorization įrašykite į to agento MCP nustatymus."
+    "message": "Kitam MCP palaikančiam agentui toliau pateiktą URL ir prieigos raktą įrašykite į to agento MCP nustatymus (antraštė: Authorization: Bearer <raktas>)."
   },
   "agentNoteDismiss": {
     "message": "Uždaryti"

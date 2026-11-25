@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "কমান্ড বদলে গেছে, আগেরটি আর কাজ করবে না। আগে পুরোনো নিবন্ধন সরান:"
   },
-  "agentAccessCopyButton": {
-    "message": "কমান্ড কপি করুন"
+  "agentAccessCopyAddButton": {
+    "message": "রেজিস্টার কমান্ড কপি করুন"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "সরানোর কমান্ড কপি করুন"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "URL কপি করুন"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "টোকেন কপি করুন"
   },
   "agentAccessCopied": {
     "message": "কপি হয়েছে"
@@ -558,7 +567,7 @@
     "message": "1024 থেকে 65535-এর মধ্যে একটি পোর্ট লিখুন।"
   },
   "agentAccessPortInUse": {
-    "message": "চালু করা যায়নি: অন্য একটি অ্যাপ এই পোর্ট ব্যবহার করছে। অন্য পোর্ট লিখুন।"
+    "message": "চালু করা যায়নি: অন্য একটি অ্যাপ এই পোর্ট ব্যবহার করছে। অন্য পোর্ট লিখে আবার চেষ্টা করতে Enter চাপুন।"
   },
   "agentAccessRenewButton": {
     "message": "টোকেন নতুন করুন"
@@ -597,7 +606,7 @@
     "message": "এই কমান্ডে একটি গোপন টোকেন আছে, যা দিয়ে এই কম্পিউটারের প্রোগ্রাম এই সেটিংস বদলাতে পারে। এটি শেয়ার করবেন না; ফাঁস হলে নতুন করুন।"
   },
   "agentAccessOtherAgents": {
-    "message": "MCP ব্যবহার করে এমন অন্য এজেন্টের জন্য, এই কমান্ডের URL আর Authorization হেডার সেই এজেন্টের MCP সেটিংসে দিন।"
+    "message": "MCP ব্যবহার করে এমন অন্য এজেন্টের জন্য, নিচের URL আর টোকেন সেই এজেন্টের MCP সেটিংসে দিন (হেডার: Authorization: Bearer <টোকেন>)।"
   },
   "agentNoteDismiss": {
     "message": "বন্ধ করুন"

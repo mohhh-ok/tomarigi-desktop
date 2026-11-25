@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Naredba se promijenila pa ona koju ste prije pokrenuli više ne radi. Najprije uklonite staru registraciju:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopiraj naredbu"
+  "agentAccessCopyAddButton": {
+    "message": "Kopiraj naredbu za registraciju"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopiraj naredbu za uklanjanje"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopiraj URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopiraj token"
   },
   "agentAccessCopied": {
     "message": "Kopirano"
@@ -558,7 +567,7 @@
     "message": "Unesite vrata od 1024 do 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Pokretanje nije uspjelo: ova vrata koristi druga aplikacija. Unesite druga vrata."
+    "message": "Pokretanje nije uspjelo: ova vrata koristi druga aplikacija. Unesite druga vrata i pritisnite Enter za ponovni pokušaj."
   },
   "agentAccessRenewButton": {
     "message": "Obnovi token"
@@ -597,7 +606,7 @@
     "message": "Naredba sadrži tajni token kojim programi na ovom računalu mogu mijenjati ove postavke. Ne dijelite ga; ako procuri, obnovite ga."
   },
   "agentAccessOtherAgents": {
-    "message": "Za drugog agenta koji podržava MCP unesite URL i zaglavlje Authorization iz ove naredbe u njegove MCP postavke."
+    "message": "Za drugog agenta koji podržava MCP unesite URL i token u nastavku u njegove MCP postavke (zaglavlje: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Zatvori"

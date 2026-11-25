@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "A parancs megváltozott, a korábbi már nem működik. Előbb töröld a régi regisztrációt:"
   },
-  "agentAccessCopyButton": {
-    "message": "Parancs másolása"
+  "agentAccessCopyAddButton": {
+    "message": "Regisztrációs parancs másolása"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Eltávolító parancs másolása"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "URL másolása"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Token másolása"
   },
   "agentAccessCopied": {
     "message": "Másolva"
@@ -558,7 +567,7 @@
     "message": "Adj meg egy portot 1024 és 65535 között."
   },
   "agentAccessPortInUse": {
-    "message": "Nem sikerült elindítani: ezt a portot egy másik alkalmazás használja. Adj meg másik portot."
+    "message": "Nem sikerült elindítani: ezt a portot egy másik alkalmazás használja. Adj meg másik portot, és nyomj Entert az újrapróbáláshoz."
   },
   "agentAccessRenewButton": {
     "message": "Token megújítása"
@@ -597,7 +606,7 @@
     "message": "A parancs titkos tokent tartalmaz, amellyel a gép programjai módosíthatják ezeket a beállításokat. Ne oszd meg; ha kiszivárog, újítsd meg."
   },
   "agentAccessOtherAgents": {
-    "message": "Más MCP-t támogató ügynöknél add meg a parancsban lévő URL-t és Authorization fejlécet az ügynök MCP-beállításaiban."
+    "message": "Más MCP-t támogató ügynöknél add meg az alábbi URL-t és tokent az ügynök MCP-beállításaiban (fejléc: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Bezárás"

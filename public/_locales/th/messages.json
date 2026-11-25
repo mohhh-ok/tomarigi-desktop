@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "คำสั่งเปลี่ยนแล้ว คำสั่งเดิมใช้ไม่ได้อีก ให้ลบการลงทะเบียนเก่าก่อน:"
   },
-  "agentAccessCopyButton": {
-    "message": "คัดลอกคำสั่ง"
+  "agentAccessCopyAddButton": {
+    "message": "คัดลอกคำสั่งลงทะเบียน"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "คัดลอกคำสั่งลบ"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "คัดลอก URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "คัดลอกโทเค็น"
   },
   "agentAccessCopied": {
     "message": "คัดลอกแล้ว"
@@ -558,7 +567,7 @@
     "message": "ใส่พอร์ตระหว่าง 1024 ถึง 65535"
   },
   "agentAccessPortInUse": {
-    "message": "เริ่มไม่ได้ เพราะมีแอปอื่นใช้พอร์ตนี้อยู่ ให้ใส่พอร์ตอื่น"
+    "message": "เริ่มไม่ได้ เพราะมีแอปอื่นใช้พอร์ตนี้อยู่ ใส่พอร์ตอื่นแล้วกด Enter เพื่อลองอีกครั้ง"
   },
   "agentAccessRenewButton": {
     "message": "สร้างโทเค็นใหม่"
@@ -597,7 +606,7 @@
     "message": "คำสั่งนี้มีโทเค็นลับที่ทำให้โปรแกรมในคอมพิวเตอร์นี้เปลี่ยนการตั้งค่าเหล่านี้ได้ อย่าแชร์ให้ใคร ถ้ารั่วไหลให้สร้างใหม่"
   },
   "agentAccessOtherAgents": {
-    "message": "สำหรับเอเจนต์อื่นที่ใช้ MCP ได้ ให้ใส่ URL และเฮดเดอร์ Authorization จากคำสั่งนี้ในการตั้งค่า MCP ของเอเจนต์นั้น"
+    "message": "สำหรับเอเจนต์อื่นที่ใช้ MCP ได้ ให้ใส่ URL และโทเค็นด้านล่างในการตั้งค่า MCP ของเอเจนต์นั้น (เฮดเดอร์: Authorization: Bearer <โทเค็น>)"
   },
   "agentNoteDismiss": {
     "message": "ปิด"

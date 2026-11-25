@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Perintahnya berubah, jadi yang dijalankan sebelumnya tidak berfungsi lagi. Hapus dulu pendaftaran lama:"
   },
-  "agentAccessCopyButton": {
-    "message": "Salin perintah"
+  "agentAccessCopyAddButton": {
+    "message": "Salin perintah pendaftaran"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Salin perintah penghapusan"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Salin URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Salin token"
   },
   "agentAccessCopied": {
     "message": "Disalin"
@@ -558,7 +567,7 @@
     "message": "Masukkan port dari 1024 sampai 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Tidak bisa dimulai: aplikasi lain sedang memakai port ini. Masukkan port lain."
+    "message": "Tidak bisa dimulai: aplikasi lain sedang memakai port ini. Masukkan port lain lalu tekan Enter untuk mencoba lagi."
   },
   "agentAccessRenewButton": {
     "message": "Perbarui token"
@@ -597,7 +606,7 @@
     "message": "Perintah ini berisi token rahasia yang memungkinkan program di komputer ini mengubah pengaturan ini. Jangan bagikan; jika bocor, perbarui."
   },
   "agentAccessOtherAgents": {
-    "message": "Untuk agen lain yang mendukung MCP, masukkan URL dan header Authorization dari perintah ini ke pengaturan MCP agen tersebut."
+    "message": "Untuk agen lain yang mendukung MCP, masukkan URL dan token di bawah ke pengaturan MCP agen tersebut (header: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Tutup"

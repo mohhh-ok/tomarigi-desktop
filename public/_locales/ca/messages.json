@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "L'ordre ha canviat, així que la que vas executar abans ja no funciona. Primer treu el registre antic:"
   },
-  "agentAccessCopyButton": {
-    "message": "Copia l'ordre"
+  "agentAccessCopyAddButton": {
+    "message": "Copia l'ordre de registre"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Copia l'ordre d'eliminació"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Copia l'URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Copia el testimoni"
   },
   "agentAccessCopied": {
     "message": "Copiat"
@@ -558,7 +567,7 @@
     "message": "Introdueix un port entre 1024 i 65535."
   },
   "agentAccessPortInUse": {
-    "message": "No s'ha pogut iniciar: una altra app fa servir aquest port. Escriu un altre port."
+    "message": "No s'ha pogut iniciar: una altra app fa servir aquest port. Escriu un altre port i prem Retorn per tornar-ho a provar."
   },
   "agentAccessRenewButton": {
     "message": "Renova el testimoni"
@@ -597,7 +606,7 @@
     "message": "L'ordre conté un testimoni secret que permet als programes d'aquest ordinador canviar aquesta configuració. No el comparteixis; si es filtra, renova'l."
   },
   "agentAccessOtherAgents": {
-    "message": "Per a un altre agent compatible amb MCP, posa l'URL i la capçalera Authorization d'aquesta ordre a la configuració MCP d'aquest agent."
+    "message": "Per a un altre agent compatible amb MCP, posa l'URL i el testimoni de sota a la configuració MCP d'aquest agent (capçalera: Authorization: Bearer <testimoni>)."
   },
   "agentNoteDismiss": {
     "message": "Tanca"

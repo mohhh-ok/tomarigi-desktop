@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "فرمان تغییر کرد و فرمان قبلی دیگر کار نمی‌کند. اول ثبت قدیمی را حذف کنید:"
   },
-  "agentAccessCopyButton": {
-    "message": "کپی فرمان"
+  "agentAccessCopyAddButton": {
+    "message": "کپی فرمان ثبت"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "کپی فرمان حذف"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "کپی URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "کپی توکن"
   },
   "agentAccessCopied": {
     "message": "کپی شد"
@@ -558,7 +567,7 @@
     "message": "پورتی بین ۱۰۲۴ تا ۶۵۵۳۵ وارد کنید."
   },
   "agentAccessPortInUse": {
-    "message": "شروع نشد: برنامه دیگری از این پورت استفاده می‌کند. پورت دیگری وارد کنید."
+    "message": "شروع نشد: برنامه دیگری از این پورت استفاده می‌کند. پورت دیگری وارد کنید و Enter را بزنید تا دوباره امتحان شود."
   },
   "agentAccessRenewButton": {
     "message": "تجدید توکن"
@@ -597,7 +606,7 @@
     "message": "این فرمان یک توکن محرمانه دارد که به برنامه‌های این رایانه اجازه می‌دهد این تنظیمات را تغییر دهند. آن را به کسی ندهید؛ اگر فاش شد، تجدیدش کنید."
   },
   "agentAccessOtherAgents": {
-    "message": "برای عامل دیگری که از MCP پشتیبانی می‌کند، URL و سرآیند Authorization این فرمان را در تنظیمات MCP آن عامل وارد کنید."
+    "message": "برای عامل دیگری که از MCP پشتیبانی می‌کند، URL و توکن زیر را در تنظیمات MCP آن عامل وارد کنید (سرآیند: Authorization: Bearer <توکن>)."
   },
   "agentNoteDismiss": {
     "message": "بستن"

@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "تغيّر الأمر، فلم يعد الأمر السابق يعمل. أزل التسجيل القديم أولاً:"
   },
-  "agentAccessCopyButton": {
-    "message": "نسخ الأمر"
+  "agentAccessCopyAddButton": {
+    "message": "نسخ أمر التسجيل"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "نسخ أمر الإزالة"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "نسخ عنوان URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "نسخ الرمز المميز"
   },
   "agentAccessCopied": {
     "message": "تم النسخ"
@@ -558,7 +567,7 @@
     "message": "أدخل منفذًا من 1024 إلى 65535."
   },
   "agentAccessPortInUse": {
-    "message": "تعذّر البدء: يستخدم تطبيق آخر هذا المنفذ. أدخل منفذًا آخر."
+    "message": "تعذّر البدء: يستخدم تطبيق آخر هذا المنفذ. أدخل منفذًا آخر واضغط Enter للمحاولة مرة أخرى."
   },
   "agentAccessRenewButton": {
     "message": "تجديد الرمز"
@@ -597,7 +606,7 @@
     "message": "يحتوي الأمر على رمز سري يتيح لبرامج هذا الحاسوب تغيير هذه الإعدادات. لا تشاركه، وإن تسرّب فجدّده."
   },
   "agentAccessOtherAgents": {
-    "message": "لوكيل آخر يدعم MCP، ضع عنوان URL وترويسة Authorization من هذا الأمر في إعدادات MCP لذلك الوكيل."
+    "message": "لوكيل آخر يدعم MCP، ضع عنوان URL والرمز المميز أدناه في إعدادات MCP لذلك الوكيل (الترويسة: Authorization: Bearer <الرمز>)."
   },
   "agentNoteDismiss": {
     "message": "إغلاق"

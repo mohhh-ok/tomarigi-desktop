@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Lệnh đã thay đổi nên lệnh bạn chạy trước đây không còn dùng được. Hãy xóa đăng ký cũ trước:"
   },
-  "agentAccessCopyButton": {
-    "message": "Sao chép lệnh"
+  "agentAccessCopyAddButton": {
+    "message": "Sao chép lệnh đăng ký"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Sao chép lệnh xóa"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Sao chép URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Sao chép token"
   },
   "agentAccessCopied": {
     "message": "Đã sao chép"
@@ -558,7 +567,7 @@
     "message": "Nhập cổng từ 1024 đến 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Không thể khởi động: một ứng dụng khác đang dùng cổng này. Hãy nhập cổng khác."
+    "message": "Không thể khởi động: một ứng dụng khác đang dùng cổng này. Nhập cổng khác rồi nhấn Enter để thử lại."
   },
   "agentAccessRenewButton": {
     "message": "Tạo lại mã"
@@ -597,7 +606,7 @@
     "message": "Lệnh này chứa một mã bí mật cho phép các chương trình trên máy này thay đổi các cài đặt này. Đừng chia sẻ; nếu bị lộ, hãy tạo lại."
   },
   "agentAccessOtherAgents": {
-    "message": "Với tác nhân khác hỗ trợ MCP, hãy đưa URL và header Authorization trong lệnh này vào cài đặt MCP của tác nhân đó."
+    "message": "Với tác nhân khác hỗ trợ MCP, hãy đưa URL và token bên dưới vào cài đặt MCP của tác nhân đó (header: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Đóng"

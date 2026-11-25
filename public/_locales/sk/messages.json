@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Príkaz sa zmenil, takže ten predchádzajúci už nefunguje. Najprv odstráňte starú registráciu:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopírovať príkaz"
+  "agentAccessCopyAddButton": {
+    "message": "Kopírovať registračný príkaz"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopírovať príkaz na odstránenie"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopírovať URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopírovať token"
   },
   "agentAccessCopied": {
     "message": "Skopírované"
@@ -558,7 +567,7 @@
     "message": "Zadajte port od 1024 do 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Nepodarilo sa spustiť: tento port používa iná aplikácia. Zadajte iný port."
+    "message": "Nepodarilo sa spustiť: tento port používa iná aplikácia. Zadajte iný port a stlačením Enter to skúste znova."
   },
   "agentAccessRenewButton": {
     "message": "Obnoviť token"
@@ -597,7 +606,7 @@
     "message": "Príkaz obsahuje tajný token, ktorým môžu programy na tomto počítači meniť tieto nastavenia. Nezdieľajte ho; ak unikne, obnovte ho."
   },
   "agentAccessOtherAgents": {
-    "message": "Pri inom agentovi s podporou MCP zadajte URL a hlavičku Authorization z tohto príkazu do jeho nastavení MCP."
+    "message": "Pri inom agentovi s podporou MCP zadajte URL a token nižšie do jeho nastavení MCP (hlavička: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Zavrieť"

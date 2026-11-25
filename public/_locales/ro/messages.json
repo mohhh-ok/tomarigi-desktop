@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Comanda s-a schimbat, deci cea rulată înainte nu mai funcționează. Elimină mai întâi vechea înregistrare:"
   },
-  "agentAccessCopyButton": {
-    "message": "Copiază comanda"
+  "agentAccessCopyAddButton": {
+    "message": "Copiază comanda de înregistrare"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Copiază comanda de eliminare"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Copiază URL-ul"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Copiază tokenul"
   },
   "agentAccessCopied": {
     "message": "Copiat"
@@ -558,7 +567,7 @@
     "message": "Introdu un port între 1024 și 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Nu a putut porni: altă aplicație folosește acest port. Introdu alt port."
+    "message": "Nu a putut porni: altă aplicație folosește acest port. Introdu alt port și apasă Enter pentru a încerca din nou."
   },
   "agentAccessRenewButton": {
     "message": "Reînnoiește tokenul"
@@ -597,7 +606,7 @@
     "message": "Comanda conține un token secret care le permite programelor de pe acest computer să modifice aceste setări. Nu-l partaja; dacă se scurge, reînnoiește-l."
   },
   "agentAccessOtherAgents": {
-    "message": "Pentru alt agent compatibil cu MCP, pune URL-ul și antetul Authorization din această comandă în setările MCP ale agentului."
+    "message": "Pentru alt agent compatibil cu MCP, pune URL-ul și tokenul de mai jos în setările MCP ale agentului (antet: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Închide"

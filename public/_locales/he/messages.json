@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "הפקודה השתנתה, והקודמת כבר לא עובדת. הסירו קודם את הרישום הישן:"
   },
-  "agentAccessCopyButton": {
-    "message": "העתקת הפקודה"
+  "agentAccessCopyAddButton": {
+    "message": "העתקת פקודת הרישום"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "העתקת פקודת ההסרה"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "העתקת URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "העתקת הטוקן"
   },
   "agentAccessCopied": {
     "message": "הועתק"
@@ -558,7 +567,7 @@
     "message": "הזינו פורט בין 1024 ל-65535."
   },
   "agentAccessPortInUse": {
-    "message": "לא ניתן להפעיל: אפליקציה אחרת משתמשת בפורט הזה. הזינו פורט אחר."
+    "message": "לא ניתן להפעיל: אפליקציה אחרת משתמשת בפורט הזה. הזינו פורט אחר והקישו Enter כדי לנסות שוב."
   },
   "agentAccessRenewButton": {
     "message": "חידוש האסימון"
@@ -597,7 +606,7 @@
     "message": "הפקודה כוללת אסימון סודי שמאפשר לתוכנות במחשב הזה לשנות את ההגדרות האלה. אל תשתפו אותו; אם הוא דלף, חדשו אותו."
   },
   "agentAccessOtherAgents": {
-    "message": "עבור סוכן אחר שתומך ב-MCP, הכניסו את כתובת ה-URL ואת הכותרת Authorization מהפקודה הזו להגדרות ה-MCP של אותו סוכן."
+    "message": "עבור סוכן אחר שתומך ב-MCP, הכניסו את ה-URL והטוקן שלמטה להגדרות ה-MCP של אותו סוכן (כותרת: Authorization: Bearer <טוקן>)."
   },
   "agentNoteDismiss": {
     "message": "סגירה"

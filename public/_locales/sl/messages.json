@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Ukaz se je spremenil, zato prejšnji ne deluje več. Najprej odstranite staro registracijo:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopiraj ukaz"
+  "agentAccessCopyAddButton": {
+    "message": "Kopiraj ukaz za registracijo"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopiraj ukaz za odstranitev"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopiraj URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopiraj žeton"
   },
   "agentAccessCopied": {
     "message": "Kopirano"
@@ -558,7 +567,7 @@
     "message": "Vnesite vrata od 1024 do 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Zagon ni uspel: ta vrata uporablja druga aplikacija. Vnesite druga vrata."
+    "message": "Zagon ni uspel: ta vrata uporablja druga aplikacija. Vnesite druga vrata in pritisnite Enter za ponoven poskus."
   },
   "agentAccessRenewButton": {
     "message": "Obnovi žeton"
@@ -597,7 +606,7 @@
     "message": "Ukaz vsebuje skrivni žeton, s katerim lahko programi v tem računalniku spreminjajo te nastavitve. Ne delite ga; če uide, ga obnovite."
   },
   "agentAccessOtherAgents": {
-    "message": "Za drugega agenta, ki podpira MCP, vnesite URL in glavo Authorization iz tega ukaza v njegove nastavitve MCP."
+    "message": "Za drugega agenta, ki podpira MCP, vnesite spodnji URL in žeton v njegove nastavitve MCP (glava: Authorization: Bearer <žeton>)."
   },
   "agentNoteDismiss": {
     "message": "Zapri"

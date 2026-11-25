@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "The command changed, so the one you ran before no longer works. First remove the old registration:"
   },
-  "agentAccessCopyButton": {
-    "message": "Copy command"
+  "agentAccessCopyAddButton": {
+    "message": "Copy register command"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Copy remove command"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Copy URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Copy token"
   },
   "agentAccessCopied": {
     "message": "Copied"
@@ -558,7 +567,7 @@
     "message": "Enter a port from 1024 to 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Couldn't start: another app is using this port. Enter another port."
+    "message": "Couldn't start: another app is using this port. Enter another port and press Enter to try again."
   },
   "agentAccessRenewButton": {
     "message": "Renew token"
@@ -597,7 +606,7 @@
     "message": "The command contains a secret token that lets programs on this computer change these settings. Don't share it; if it gets out, renew it."
   },
   "agentAccessOtherAgents": {
-    "message": "For another agent that speaks MCP, put the URL and the Authorization header from this command in that agent's MCP settings."
+    "message": "For another agent that speaks MCP, put the URL and the token below in that agent's MCP settings (header: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Close"

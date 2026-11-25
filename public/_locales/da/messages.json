@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Kommandoen er ændret, så den, du kørte før, virker ikke længere. Fjern først den gamle registrering:"
   },
-  "agentAccessCopyButton": {
-    "message": "Kopiér kommando"
+  "agentAccessCopyAddButton": {
+    "message": "Kopiér registreringskommando"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Kopiér fjernelseskommando"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Kopiér URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Kopiér token"
   },
   "agentAccessCopied": {
     "message": "Kopieret"
@@ -558,7 +567,7 @@
     "message": "Angiv en port fra 1024 til 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Kunne ikke starte: en anden app bruger denne port. Indtast en anden port."
+    "message": "Kunne ikke starte: en anden app bruger denne port. Indtast en anden port, og tryk på Enter for at prøve igen."
   },
   "agentAccessRenewButton": {
     "message": "Forny token"
@@ -597,7 +606,7 @@
     "message": "Kommandoen indeholder et hemmeligt token, der lader programmer på denne computer ændre indstillingerne. Del det ikke; forny det, hvis det slipper ud."
   },
   "agentAccessOtherAgents": {
-    "message": "For en anden agent med MCP skal du angive URL'en og Authorization-headeren fra denne kommando i agentens MCP-indstillinger."
+    "message": "For en anden agent med MCP skal du angive URL'en og tokenet nedenfor i agentens MCP-indstillinger (header: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Luk"

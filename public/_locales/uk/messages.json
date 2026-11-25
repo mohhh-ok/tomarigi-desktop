@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "Команда змінилася, попередня більше не працює. Спочатку видаліть стару реєстрацію:"
   },
-  "agentAccessCopyButton": {
-    "message": "Скопіювати команду"
+  "agentAccessCopyAddButton": {
+    "message": "Копіювати команду реєстрації"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Копіювати команду видалення"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Копіювати URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Копіювати токен"
   },
   "agentAccessCopied": {
     "message": "Скопійовано"
@@ -558,7 +567,7 @@
     "message": "Введіть порт від 1024 до 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Не вдалося запустити: цей порт зайнятий іншим застосунком. Введіть інший порт."
+    "message": "Не вдалося запустити: цей порт зайнятий іншим застосунком. Введіть інший порт і натисніть Enter, щоб спробувати знову."
   },
   "agentAccessRenewButton": {
     "message": "Оновити токен"
@@ -597,7 +606,7 @@
     "message": "Команда містить секретний токен, що дозволяє програмам на цьому комп'ютері змінювати ці налаштування. Не діліться ним; якщо він витік, оновіть його."
   },
   "agentAccessOtherAgents": {
-    "message": "Для іншого агента з підтримкою MCP вкажіть URL і заголовок Authorization з цієї команди в його налаштуваннях MCP."
+    "message": "Для іншого агента з підтримкою MCP вкажіть URL і токен нижче в його налаштуваннях MCP (заголовок: Authorization: Bearer <токен>)."
   },
   "agentNoteDismiss": {
     "message": "Закрити"

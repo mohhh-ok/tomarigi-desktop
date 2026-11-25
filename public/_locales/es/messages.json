@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "El comando cambió, así que el que ejecutaste antes ya no funciona. Primero quita el registro anterior:"
   },
-  "agentAccessCopyButton": {
-    "message": "Copiar comando"
+  "agentAccessCopyAddButton": {
+    "message": "Copiar comando de registro"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Copiar comando de eliminación"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Copiar URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Copiar token"
   },
   "agentAccessCopied": {
     "message": "Copiado"
@@ -558,7 +567,7 @@
     "message": "Introduce un puerto entre 1024 y 65535."
   },
   "agentAccessPortInUse": {
-    "message": "No se pudo iniciar: otra app está usando este puerto. Escribe otro puerto."
+    "message": "No se pudo iniciar: otra app está usando este puerto. Escribe otro puerto y pulsa Intro para volver a intentarlo."
   },
   "agentAccessRenewButton": {
     "message": "Renovar token"
@@ -597,7 +606,7 @@
     "message": "El comando contiene un token secreto que permite a los programas de este equipo cambiar estos ajustes. No lo compartas; si se filtra, renuévalo."
   },
   "agentAccessOtherAgents": {
-    "message": "Para otro agente compatible con MCP, pon la URL y el encabezado Authorization de este comando en los ajustes MCP de ese agente."
+    "message": "Para otro agente compatible con MCP, pon la URL y el token de abajo en los ajustes MCP de ese agente (encabezado: Authorization: Bearer <token>)."
   },
   "agentNoteDismiss": {
     "message": "Cerrar"

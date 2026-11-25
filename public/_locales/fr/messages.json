@@ -545,8 +545,17 @@
   "agentAccessReplaceHint": {
     "message": "La commande a changé : celle exécutée avant ne fonctionne plus. Supprimez d'abord l'ancien enregistrement :"
   },
-  "agentAccessCopyButton": {
-    "message": "Copier la commande"
+  "agentAccessCopyAddButton": {
+    "message": "Copier la commande d'ajout"
+  },
+  "agentAccessCopyRemoveButton": {
+    "message": "Copier la commande de suppression"
+  },
+  "agentAccessCopyUrlButton": {
+    "message": "Copier l'URL"
+  },
+  "agentAccessCopyTokenButton": {
+    "message": "Copier le jeton"
   },
   "agentAccessCopied": {
     "message": "Copié"
@@ -558,7 +567,7 @@
     "message": "Saisissez un port entre 1024 et 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Impossible de démarrer : une autre app utilise ce port. Saisissez un autre port."
+    "message": "Impossible de démarrer : une autre app utilise ce port. Saisissez un autre port et appuyez sur Entrée pour réessayer."
   },
   "agentAccessRenewButton": {
     "message": "Renouveler le jeton"
@@ -597,7 +606,7 @@
     "message": "La commande contient un jeton secret qui permet aux programmes de cet ordinateur de modifier ces réglages. Ne le partagez pas ; s'il fuite, renouvelez-le."
   },
   "agentAccessOtherAgents": {
-    "message": "Pour un autre agent compatible MCP, indiquez l'URL et l'en-tête Authorization de cette commande dans les réglages MCP de cet agent."
+    "message": "Pour un autre agent compatible MCP, indiquez l'URL et le jeton ci-dessous dans les réglages MCP de cet agent (en-tête : Authorization: Bearer <jeton>)."
   },
   "agentNoteDismiss": {
     "message": "Fermer"
