@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Belum ada proyek"
   },
-  "iconSetToggleAria": {
-    "message": "Ganti set ikon"
-  },
   "iconSetUseButton": {
     "message": "Pakai $SET$",
     "placeholders": {

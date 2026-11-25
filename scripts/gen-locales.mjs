@@ -118,7 +118,6 @@ export const KEYS = [
   "iconSetRobot",
   "iconSetFrog",
   "iconSetEmpty",
-  "iconSetToggleAria",
   "iconSetUseButton",
   "copyPathButton",
   "closeButtonAria",

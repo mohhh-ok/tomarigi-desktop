@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "এখনও কোনো প্রকল্প নেই"
   },
-  "iconSetToggleAria": {
-    "message": "আইকন সেট পরিবর্তন করুন"
-  },
   "iconSetUseButton": {
     "message": "$SET$ ব্যবহার করুন",
     "placeholders": {

@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Zatiaľ žiadne projekty"
   },
-  "iconSetToggleAria": {
-    "message": "Prepnúť sadu ikon"
-  },
   "iconSetUseButton": {
     "message": "Použiť: $SET$",
     "placeholders": {

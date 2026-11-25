@@ -12,6 +12,7 @@ import { AgentAccessSettings } from "./settings/agent-access-settings";
 import { AiKeySettings } from "./settings/ai-key-settings";
 import { IconSetSettings } from "./settings/icon-set-settings";
 import { RootAddDialog } from "./settings/root-add-dialog";
+import { finishEdit } from "./settings/edit-session";
 import { RootManager, type Editing } from "./settings/root-manager";
 import { SoundSettings } from "./settings/sound-settings";
 import { UpdateSettings } from "./settings/update-settings";
@@ -118,20 +119,32 @@ export default function SettingsApp({ source }: { source: PerchSource }) {
     return () => document.removeEventListener("pointerdown", unlock);
   }, []);
 
-  const commitEdit = useCallback(async () => {
-    if (!editing) return;
-    const { id, draft } = editing;
-    setEditing(null);
-    // An empty label keeps the original value (renameRoot refuses it)
-    await rootsApi.renameRoot(id, draft);
-  }, [editing, rootsApi.renameRoot]);
+  // What is being edited, as a ref too: the first call that closes the edit decides save or not, and the blur that the
+  // closing causes (Chromium and WebKit fire it when the focused field is removed) finds it already closed
+  const editSession = useRef<Editing | null>(null);
+  const openEdit = useCallback((next: Editing | null) => {
+    editSession.current = next;
+    setEditing(next);
+  }, []);
+
+  const closeEdit = useCallback(
+    async (save: boolean) => {
+      const toSave = finishEdit(editSession, save);
+      setEditing(null);
+      // An empty label keeps the original value (renameRoot refuses it)
+      if (toSave) await rootsApi.renameRoot(toSave.id, toSave.draft);
+    },
+    [rootsApi.renameRoot],
+  );
+  const commitEdit = useCallback(() => closeEdit(true), [closeEdit]);
+  const cancelEdit = useCallback(() => closeEdit(false), [closeEdit]);
 
   const removeRootRow = useCallback(
     async (id: string) => {
       await rootsApi.removeRoot(id);
-      setEditing((prev) => (prev?.id === id ? null : prev));
+      if (editSession.current?.id === id) openEdit(null);
     },
-    [rootsApi.removeRoot],
+    [rootsApi.removeRoot, openEdit],
   );
 
   const content = (() => {
@@ -189,10 +202,12 @@ export default function SettingsApp({ source }: { source: PerchSource }) {
             addMessage={rootsApi.addMessage}
             onRequestAdd={() => setRootDialogOpen(true)}
             onRemove={(id) => void removeRootRow(id)}
-            onStartEdit={(root: RootEntry) => setEditing({ id: root.id, draft: root.label })}
-            onEditChange={(draft) => setEditing((prev) => (prev ? { ...prev, draft } : prev))}
+            onStartEdit={(root: RootEntry) => openEdit({ id: root.id, draft: root.label })}
+            onEditChange={(draft) => {
+              if (editSession.current) openEdit({ ...editSession.current, draft });
+            }}
             onCommitEdit={commitEdit}
-            onCancelEdit={() => setEditing(null)}
+            onCancelEdit={cancelEdit}
           />
         );
       case "icons":

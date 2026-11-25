@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Wala pang proyekto"
   },
-  "iconSetToggleAria": {
-    "message": "Palitan ang set ng icon"
-  },
   "iconSetUseButton": {
     "message": "Gamitin ang $SET$",
     "placeholders": {

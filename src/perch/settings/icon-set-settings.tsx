@@ -58,7 +58,7 @@ export function IconSetSettings({
                 <button
                   type="button"
                   className="small icon-set-toggle"
-                  aria-label={`${t("iconSetToggleAria")}: ${row.label} (${ICON_SET_LABEL[set]})`}
+                  aria-label={`${t("iconSetUseButton", ICON_SET_LABEL[nextSet])}: ${row.label} (${ICON_SET_LABEL[set]})`}
                   onClick={() => onChange(row.slug, row.label, nextSet)}
                 >
                   {t("iconSetUseButton", ICON_SET_LABEL[nextSet])}

@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Kol kas nėra projektų"
   },
-  "iconSetToggleAria": {
-    "message": "Perjungti piktogramų rinkinį"
-  },
   "iconSetUseButton": {
     "message": "Naudoti: $SET$",
     "placeholders": {

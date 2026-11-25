@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Chưa có dự án nào"
   },
-  "iconSetToggleAria": {
-    "message": "Chuyển bộ biểu tượng"
-  },
   "iconSetUseButton": {
     "message": "Dùng $SET$",
     "placeholders": {

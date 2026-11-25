@@ -210,11 +210,11 @@ Words (every locale in `scripts/locales/` is rewritten for the changed keys, not
 - `angerBadgeTitle` (ask) has 「ターン」 too but is the floating window's bird tooltip, not the settings window: left as is (out of scope)
 
 The icon set's button:
-- The button says what it changes the row to: 「{set}にする」 / "Use {set}" (new key `iconSetUseButton` with the placeholder `set`, all locales), e.g. 「ネコにする」. The image left of it stays the current set. `iconSetToggleAria` stays as the aria-label (with the row and the current set), the ⇄ goes
+- The button says what it changes the row to: 「{set}にする」 / "Use {set}" (new key `iconSetUseButton` with the placeholder `set`, all locales), e.g. 「ネコにする」. The image left of it stays the current set. The aria-label starts with the same visible text and then names the row and the current set (「ネコにする: {row} ({current set})」), so the accessible name contains the visible text (WCAG 2.5.3); the key `iconSetToggleAria` is removed, and the ⇄ goes
 
 Editing a watched folder's label:
 - While editing, the row is the field, then 「保存」 and 「キャンセル」 (`byokSaveButton` / `cancelButton`, both existing keys), both `button.small`. The badges and ✕ are hidden while editing, so the row fits at 560 px
-- Enter saves and Esc cancels as before. Leaving the field still saves, except when the focus moves to the row's own Save / Cancel (`relatedTarget` inside the row), so Tab to Cancel and a click on Cancel don't save first
+- Enter saves and Esc cancels as before. Leaving the field still saves, except when the focus moves to the row's own Save / Cancel (`relatedTarget` inside the row), so Tab to Cancel and a click on Cancel don't save first. Cancel and Esc never save: the open edit is held in a ref (`src/perch/settings/edit-session.ts`) and `finishEdit` closes it once, saving only when asked, so the blur that removing the field causes finds it already closed. Cancel is the shared `CancelEditButton` (with `keepFieldFocus`, which stops the press from taking the focus off the field)
 
 Buttons and row edges:
 - Right edges: the default rows lose the invisible ✕ placeholder (it was the gap of U1). To keep 「ラベル編集」 in one column, the ✕ moves to the left of 「ラベル編集」 in added rows; 「ラベル編集」 is the last item of every row, at the row's right edge like the icon set's button

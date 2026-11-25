@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Brak projektów"
   },
-  "iconSetToggleAria": {
-    "message": "Przełącz zestaw ikon"
-  },
   "iconSetUseButton": {
     "message": "Użyj: $SET$",
     "placeholders": {

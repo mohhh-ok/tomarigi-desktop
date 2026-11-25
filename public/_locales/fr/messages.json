@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Pas encore de projets"
   },
-  "iconSetToggleAria": {
-    "message": "Changer de jeu d'icônes"
-  },
   "iconSetUseButton": {
     "message": "Utiliser $SET$",
     "placeholders": {

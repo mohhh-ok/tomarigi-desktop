@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Ei vielä projekteja"
   },
-  "iconSetToggleAria": {
-    "message": "Vaihda kuvakesarja"
-  },
   "iconSetUseButton": {
     "message": "Käytä: $SET$",
     "placeholders": {

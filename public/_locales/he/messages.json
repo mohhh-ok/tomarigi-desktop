@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "אין עדיין פרויקטים"
   },
-  "iconSetToggleAria": {
-    "message": "החלף ערכת סמלים"
-  },
   "iconSetUseButton": {
     "message": "להשתמש ב$SET$",
     "placeholders": {

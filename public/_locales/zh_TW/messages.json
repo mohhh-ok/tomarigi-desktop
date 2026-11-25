@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "尚無專案"
   },
-  "iconSetToggleAria": {
-    "message": "切換圖示集"
-  },
   "iconSetUseButton": {
     "message": "改為$SET$",
     "placeholders": {

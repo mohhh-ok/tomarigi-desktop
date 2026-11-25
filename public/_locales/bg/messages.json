@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Все още няма проекти"
   },
-  "iconSetToggleAria": {
-    "message": "Смяна на набор икони"
-  },
   "iconSetUseButton": {
     "message": "Избери: $SET$",
     "placeholders": {

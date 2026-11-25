@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Проектов пока нет"
   },
-  "iconSetToggleAria": {
-    "message": "Переключить набор значков"
-  },
   "iconSetUseButton": {
     "message": "Выбрать: $SET$",
     "placeholders": {

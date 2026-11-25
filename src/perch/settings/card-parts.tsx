@@ -3,10 +3,13 @@ import type { ReactNode } from "react";
 import { t } from "@/lib/i18n";
 
 /** Leaves the replace / change input and goes back to the saved state. Shared by the key rows, Local AI and the local TTS server */
-export function CancelEditButton({ onCancel }: { onCancel: () => void }) {
+export function CancelEditButton({ onCancel, keepFieldFocus }: { onCancel: () => void; keepFieldFocus?: boolean }) {
   return (
     <button
       className="small"
+      // A press must not take the focus off the field being edited: WebKit doesn't focus a clicked button, so the
+      // field's blur would come with no relatedTarget before this click runs
+      onMouseDown={keepFieldFocus ? (e) => e.preventDefault() : undefined}
       onClick={(e) => {
         // Inside a label, a click would also focus the field
         e.preventDefault();

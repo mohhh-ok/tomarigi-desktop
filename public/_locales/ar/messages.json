@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "لا توجد مشاريع بعد"
   },
-  "iconSetToggleAria": {
-    "message": "تبديل مجموعة الأيقونات"
-  },
   "iconSetUseButton": {
     "message": "استخدام $SET$",
     "placeholders": {

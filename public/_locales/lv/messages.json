@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Vēl nav projektu"
   },
-  "iconSetToggleAria": {
-    "message": "Pārslēgt ikonu kopu"
-  },
   "iconSetUseButton": {
     "message": "Izmantot: $SET$",
     "placeholders": {

@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Inga projekt än"
   },
-  "iconSetToggleAria": {
-    "message": "Byt ikonuppsättning"
-  },
   "iconSetUseButton": {
     "message": "Använd $SET$",
     "placeholders": {

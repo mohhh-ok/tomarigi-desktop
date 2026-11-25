@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Încă nu există proiecte"
   },
-  "iconSetToggleAria": {
-    "message": "Schimbă setul de pictograme"
-  },
   "iconSetUseButton": {
     "message": "Folosește $SET$",
     "placeholders": {

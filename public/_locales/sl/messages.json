@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Še ni projektov"
   },
-  "iconSetToggleAria": {
-    "message": "Preklopi nabor ikon"
-  },
   "iconSetUseButton": {
     "message": "Uporabi: $SET$",
     "placeholders": {

@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Henüz proje yok"
   },
-  "iconSetToggleAria": {
-    "message": "Simge kümesini değiştir"
-  },
   "iconSetUseButton": {
     "message": "$SET$ kullan",
     "placeholders": {

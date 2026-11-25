@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "अभी कोई प्रोजेक्ट नहीं है"
   },
-  "iconSetToggleAria": {
-    "message": "आइकन सेट बदलें"
-  },
   "iconSetUseButton": {
     "message": "$SET$ लगाएँ",
     "placeholders": {

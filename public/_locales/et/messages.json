@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Projekte pole veel"
   },
-  "iconSetToggleAria": {
-    "message": "Vaheta ikoonikomplekti"
-  },
   "iconSetUseButton": {
     "message": "Kasuta: $SET$",
     "placeholders": {

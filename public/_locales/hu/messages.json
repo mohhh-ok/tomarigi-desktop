@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Még nincs projekt"
   },
-  "iconSetToggleAria": {
-    "message": "Ikonkészlet váltása"
-  },
   "iconSetUseButton": {
     "message": "Legyen: $SET$",
     "placeholders": {

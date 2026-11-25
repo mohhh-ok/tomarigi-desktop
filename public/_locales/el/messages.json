@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Δεν υπάρχουν ακόμη έργα"
   },
-  "iconSetToggleAria": {
-    "message": "Εναλλαγή συνόλου εικονιδίων"
-  },
   "iconSetUseButton": {
     "message": "Χρήση: $SET$",
     "placeholders": {

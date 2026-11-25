@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "아직 프로젝트가 없습니다"
   },
-  "iconSetToggleAria": {
-    "message": "아이콘 세트 전환"
-  },
   "iconSetUseButton": {
     "message": "$SET$(으)로 바꾸기",
     "placeholders": {

@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "Encara no hi ha projectes"
   },
-  "iconSetToggleAria": {
-    "message": "Canvia el conjunt d'icones"
-  },
   "iconSetUseButton": {
     "message": "Fes servir $SET$",
     "placeholders": {

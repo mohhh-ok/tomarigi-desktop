@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "还没有项目"
   },
-  "iconSetToggleAria": {
-    "message": "切换图标集"
-  },
   "iconSetUseButton": {
     "message": "改为$SET$",
     "placeholders": {

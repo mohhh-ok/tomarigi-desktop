@@ -223,9 +223,6 @@
   "iconSetEmpty": {
     "message": "هنوز پروژه‌ای نیست"
   },
-  "iconSetToggleAria": {
-    "message": "تعویض مجموعه آیکون"
-  },
   "iconSetUseButton": {
     "message": "استفاده از $SET$",
     "placeholders": {
