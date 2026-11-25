@@ -460,10 +460,10 @@
     "message": "Тип сервера"
   },
   "readoutKindOpenAi": {
-    "message": "Сумісний з OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Сумісний з OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Сумісний з VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Сумісний з VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Голос"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Щоб чути читання, увімкніть вище «Читати вголос»."
   }
 }

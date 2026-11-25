@@ -460,10 +460,10 @@
     "message": "Typ serwera"
   },
   "readoutKindOpenAi": {
-    "message": "Zgodny z OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Zgodny z OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Zgodny z VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Zgodny z VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Głos"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Włącz powyżej „Czytaj na głos”, aby słyszeć odczyty."
   }
 }

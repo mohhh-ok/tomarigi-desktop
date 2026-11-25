@@ -460,10 +460,10 @@
     "message": "Sunucu türü"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI uyumlu (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "OpenAI uyumlu"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX uyumlu (VOICEVOX, AivisSpeech, …)"
+    "message": "VOICEVOX uyumlu"
   },
   "readoutVoiceNameLabel": {
     "message": "Ses"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Okumaları duymak için yukarıdaki \"Sesli oku\"yu açın."
   }
 }

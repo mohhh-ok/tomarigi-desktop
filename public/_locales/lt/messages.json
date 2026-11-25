@@ -460,10 +460,10 @@
     "message": "Serverio tipas"
   },
   "readoutKindOpenAi": {
-    "message": "Suderinamas su OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Suderinamas su OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Suderinamas su VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Suderinamas su VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Balsas"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Kad girdėtumėte skaitymą, viršuje įjunkite „Skaityti balsu“."
   }
 }

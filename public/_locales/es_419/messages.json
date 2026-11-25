@@ -460,10 +460,10 @@
     "message": "Tipo de servidor"
   },
   "readoutKindOpenAi": {
-    "message": "Compatible con OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Compatible con OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Compatible con VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Compatible con VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Voz"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Activa «Leer en voz alta» arriba para escuchar las lecturas."
   }
 }

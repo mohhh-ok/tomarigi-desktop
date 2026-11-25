@@ -460,10 +460,10 @@
     "message": "Vrsta poslužitelja"
   },
   "readoutKindOpenAi": {
-    "message": "Kompatibilan s OpenAI-jem (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Kompatibilan s OpenAI-jem"
   },
   "readoutKindVoicevox": {
-    "message": "Kompatibilan s VOICEVOX-om (VOICEVOX, AivisSpeech, …)"
+    "message": "Kompatibilan s VOICEVOX-om"
   },
   "readoutVoiceNameLabel": {
     "message": "Glas"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Uključite gore „Čitaj naglas” da biste čuli čitanje."
   }
 }

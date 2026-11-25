@@ -460,10 +460,10 @@
     "message": "Τύπος διακομιστή"
   },
   "readoutKindOpenAi": {
-    "message": "Συμβατό με OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Συμβατό με OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Συμβατό με VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Συμβατό με VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Φωνή"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Ενεργοποιήστε παραπάνω το «Ανάγνωση με φωνή» για να ακούτε τις αναγνώσεις."
   }
 }

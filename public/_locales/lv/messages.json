@@ -460,10 +460,10 @@
     "message": "Servera veids"
   },
   "readoutKindOpenAi": {
-    "message": "Saderīgs ar OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Saderīgs ar OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Saderīgs ar VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Saderīgs ar VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Balss"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Lai dzirdētu lasīšanu, augšā ieslēdziet “Lasīt ar balsi”."
   }
 }

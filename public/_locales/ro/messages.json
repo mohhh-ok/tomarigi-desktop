@@ -460,10 +460,10 @@
     "message": "Tipul serverului"
   },
   "readoutKindOpenAi": {
-    "message": "Compatibil OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Compatibil OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Compatibil VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Compatibil VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Voce"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Activează „Citește cu voce” de mai sus ca să auzi citirile."
   }
 }

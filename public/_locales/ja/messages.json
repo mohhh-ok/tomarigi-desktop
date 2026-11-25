@@ -460,10 +460,10 @@
     "message": "サーバーの種類"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI 互換（Kokoro-FastAPI、mlx-audio など）"
+    "message": "OpenAI 互換"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX 互換（VOICEVOX、AivisSpeech など）"
+    "message": "VOICEVOX 互換"
   },
   "readoutVoiceNameLabel": {
     "message": "声"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "読み上げを聞くには、上の「声で読み上げる」をオンにしてください。"
   }
 }

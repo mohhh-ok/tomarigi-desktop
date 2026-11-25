@@ -460,10 +460,10 @@
     "message": "서버 종류"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI 호환(Kokoro-FastAPI, mlx-audio 등)"
+    "message": "OpenAI 호환"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX 호환(VOICEVOX, AivisSpeech 등)"
+    "message": "VOICEVOX 호환"
   },
   "readoutVoiceNameLabel": {
     "message": "음성"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "읽어주기를 들으려면 위의 '음성으로 읽어주기'를 켜세요."
   }
 }

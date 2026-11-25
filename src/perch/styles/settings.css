@@ -632,6 +632,18 @@ button.update-install:hover {
 
 .readout-voice-card {
   margin-top: 4px;
+  min-width: 0;
+}
+
+/* A select is as wide as its longest option (the server types name their servers); here it takes the card's width */
+.readout-voice-card .local-ai-fields,
+.readout-voice-card .local-ai-field {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.readout-voice-card select.judge-key-input {
+  width: 100%;
+  text-overflow: ellipsis;
 }
 
 .readout-voice-card .settings-note {
@@ -642,4 +654,39 @@ button.update-install:hover {
 .readout-voice-credit {
   font-size: 12px;
   color: #a49f92;
+}
+
+/* The servers of the chosen type, under it: product names, not pressable */
+.readout-voice-examples {
+  font-size: 12px;
+  color: #8d887c;
+}
+
+/* What keeps readouts from being heard as set (VOICEVOX-compatible outside Japanese, "Read aloud" off): amber, so it
+   isn't read as a quiet explanation */
+.readout-voice-warning {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #e0b25c;
+}
+
+.readout-voice-current {
+  display: grid;
+  margin-bottom: 10px;
+}
+
+.readout-voice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.readout-voice-card > .readout-voice-warning {
+  margin-top: 8px;
+}
+
+.readout-voice-current + .readout-voice-warning {
+  margin-bottom: 10px;
 }

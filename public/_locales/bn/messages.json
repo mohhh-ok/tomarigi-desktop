@@ -460,10 +460,10 @@
     "message": "সার্ভারের ধরন"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI-সামঞ্জস্যপূর্ণ (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "OpenAI-সামঞ্জস্যপূর্ণ"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX-সামঞ্জস্যপূর্ণ (VOICEVOX, AivisSpeech, …)"
+    "message": "VOICEVOX-সামঞ্জস্যপূর্ণ"
   },
   "readoutVoiceNameLabel": {
     "message": "কণ্ঠ"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "পড়ে শোনানো শুনতে উপরের \"কণ্ঠে পড়ে শোনানো\" চালু করুন।"
   }
 }

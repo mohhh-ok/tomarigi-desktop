@@ -460,10 +460,10 @@
     "message": "伺服器類型"
   },
   "readoutKindOpenAi": {
-    "message": "相容 OpenAI（Kokoro-FastAPI、mlx-audio 等）"
+    "message": "相容 OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "相容 VOICEVOX（VOICEVOX、AivisSpeech 等）"
+    "message": "相容 VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "聲音"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "要聽到朗讀，請開啟上方的「用語音朗讀」。"
   }
 }

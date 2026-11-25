@@ -204,6 +204,7 @@ export const KEYS = [
   "readoutTestAudio",
   "readoutTestSample",
   "readoutTestSampleJa",
+  "readoutNeedsReadAloud",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

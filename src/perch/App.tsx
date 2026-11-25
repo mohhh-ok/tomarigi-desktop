@@ -898,6 +898,7 @@ export default function App({
               <ReadoutVoiceSettings
                 open={settingsOpen}
                 voice={readoutVoice}
+                readAloud={voiceEnabled}
                 onSource={changeReadoutSource}
                 onSave={saveLocalTts}
                 onDelete={removeLocalTts}

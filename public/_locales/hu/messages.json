@@ -460,10 +460,10 @@
     "message": "Kiszolgáló típusa"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI-kompatibilis (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "OpenAI-kompatibilis"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX-kompatibilis (VOICEVOX, AivisSpeech, …)"
+    "message": "VOICEVOX-kompatibilis"
   },
   "readoutVoiceNameLabel": {
     "message": "Hang"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "A felolvasások hallásához kapcsold be fent a „Felolvasás hanggal” beállítást."
   }
 }

@@ -460,10 +460,10 @@
     "message": "Тип сървър"
   },
   "readoutKindOpenAi": {
-    "message": "Съвместим с OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Съвместим с OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Съвместим с VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Съвместим с VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Глас"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Включете „Прочитане на глас“ по-горе, за да чувате прочитанията."
   }
 }

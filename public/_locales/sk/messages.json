@@ -460,10 +460,10 @@
     "message": "Typ servera"
   },
   "readoutKindOpenAi": {
-    "message": "Kompatibilný s OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Kompatibilný s OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Kompatibilný s VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Kompatibilný s VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Hlas"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Ak chcete počuť čítanie, zapnite vyššie „Čítať nahlas“."
   }
 }

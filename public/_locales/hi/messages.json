@@ -460,10 +460,10 @@
     "message": "सर्वर का प्रकार"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI-संगत (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "OpenAI-संगत"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX-संगत (VOICEVOX, AivisSpeech, …)"
+    "message": "VOICEVOX-संगत"
   },
   "readoutVoiceNameLabel": {
     "message": "आवाज़"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "पढ़कर सुनाना सुनने के लिए ऊपर \"आवाज़ से पढ़ें\" चालू करें।"
   }
 }

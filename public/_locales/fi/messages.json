@@ -460,10 +460,10 @@
     "message": "Palvelimen tyyppi"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI-yhteensopiva (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "OpenAI-yhteensopiva"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX-yhteensopiva (VOICEVOX, AivisSpeech, …)"
+    "message": "VOICEVOX-yhteensopiva"
   },
   "readoutVoiceNameLabel": {
     "message": "Ääni"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Kytke yllä ”Lue ääneen” päälle, niin kuulet lukemiset."
   }
 }

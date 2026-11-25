@@ -460,10 +460,10 @@
     "message": "نوع الخادم"
   },
   "readoutKindOpenAi": {
-    "message": "متوافق مع OpenAI (Kokoro-FastAPI وmlx-audio وغيرهما)"
+    "message": "متوافق مع OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "متوافق مع VOICEVOX (VOICEVOX وAivisSpeech وغيرهما)"
+    "message": "متوافق مع VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "الصوت"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "فعّل «القراءة بصوت عالٍ» في الأعلى لسماع القراءة."
   }
 }

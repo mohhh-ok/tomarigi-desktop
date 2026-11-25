@@ -22,7 +22,7 @@ import {
   type TtsTestFailure,
   type TtsVoiceOption,
 } from "@/lib/tts-server";
-import type { ReadoutTestResult } from "@/lib/voice";
+import { speechAvailable, type ReadoutTestResult } from "@/lib/voice";
 import { BusyButton } from "./busy-button";
 import { CancelEditButton, CardNote } from "./card-parts";
 
@@ -33,6 +33,12 @@ const TEST_FAILURE_TEXT: Record<TtsTestFailure | "audio", Parameters<typeof t>[0
   timeout: "readoutTestTimeout",
   server: "readoutTestServerError",
   audio: "readoutTestAudio",
+};
+
+// Servers of each kind, shown under the type as product names (the same in every language)
+const KIND_EXAMPLES: Record<TtsKind, string> = {
+  openai: "Kokoro-FastAPI, mlx-audio",
+  voicevox: "VOICEVOX, AivisSpeech",
 };
 
 /** A readout slower than this falls back to the system voice (TTS_WAIT_MS in lib/readout-queue.ts) */
@@ -58,6 +64,7 @@ interface Lists {
 export function ReadoutVoiceSettings({
   open,
   voice,
+  readAloud,
   onSource,
   onSave,
   onDelete,
@@ -66,6 +73,8 @@ export function ReadoutVoiceSettings({
   // Whether the settings screen is showing; lists are read only then
   open: boolean;
   voice: ReadoutVoice;
+  // "Read aloud with voice" is on; while off, the card says readouts won't be heard (the sample still plays)
+  readAloud: boolean;
   onSource: (source: ReadoutVoice["source"]) => void;
   onSave: (config: LocalTtsConfig) => void;
   onDelete: () => void;
@@ -79,6 +88,8 @@ export function ReadoutVoiceSettings({
           type="radio"
           name="readout-voice"
           checked={voice.source === "system"}
+          // Nothing to read with where the system has no speech engine (the note above says so)
+          disabled={!speechAvailable()}
           onChange={() => onSource("system")}
         />
         {t("readoutVoiceSystem")}
@@ -93,7 +104,14 @@ export function ReadoutVoiceSettings({
         {t("readoutVoiceLocal")}
       </label>
       {voice.source === "local" && (
-        <LocalTtsCard open={open} config={voice.local ?? null} onSave={onSave} onDelete={onDelete} onTest={onTest} />
+        <LocalTtsCard
+          open={open}
+          readAloud={readAloud}
+          config={voice.local ?? null}
+          onSave={onSave}
+          onDelete={onDelete}
+          onTest={onTest}
+        />
       )}
     </div>
   );
@@ -101,12 +119,14 @@ export function ReadoutVoiceSettings({
 
 function LocalTtsCard({
   open,
+  readAloud,
   config,
   onSave,
   onDelete,
   onTest,
 }: {
   open: boolean;
+  readAloud: boolean;
   config: LocalTtsConfig | null;
   onSave: (config: LocalTtsConfig) => void;
   onDelete: () => void;
@@ -238,6 +258,7 @@ function LocalTtsCard({
   const credit = shown ? voicevoxCreditOf(shown) : undefined;
   const jaOnly = (showForm ? kind : config?.kind) === "voicevox" && !serverReadsLanguage("voicevox", uiLanguage());
   const voicesListed = lists?.baseUrl === baseUrl && lists.kind === kind ? lists : null;
+  const unreachableShown = shownTest.phase === "failure" && shownTest.reason === "unreachable";
   const listFailed =
     voicesListed !== null && (voicesListed.voices === "failed" || voicesListed.models === "failed");
 
@@ -264,6 +285,8 @@ function LocalTtsCard({
                 <option value="openai">{t("readoutKindOpenAi")}</option>
                 <option value="voicevox">{t("readoutKindVoicevox")}</option>
               </select>
+              <span className="readout-voice-examples">{KIND_EXAMPLES[kind]}</span>
+              {jaOnly && <span className="readout-voice-warning">{t("readoutVoicevoxJaOnly")}</span>}
             </label>
             <label className="local-ai-field">
               <span className="local-ai-field-label">{t("localAiBaseUrlLabel")}</span>
@@ -304,38 +327,19 @@ function LocalTtsCard({
             )}
             <label className="local-ai-field">
               <span className="local-ai-field-label">{t("readoutVoiceNameLabel")}</span>
-              <span className="judge-key-row local-ai-model-row">
-                <ListField
-                  list={voicesListed?.voices}
-                  value={voiceValue}
-                  options={voiceOptions ?? []}
-                  placeholder={t("readoutVoiceNameLabel")}
-                  onChange={setVoiceValue}
-                />
-                <button
-                  className="small"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    save();
-                  }}
-                  disabled={!canRun}
-                >
-                  {t("byokSaveButton")}
-                </button>
-                {config !== null && (
-                  <CancelEditButton
-                    onCancel={() => {
-                      setEditing(false);
-                      resetDraft(config);
-                    }}
-                  />
-                )}
-              </span>
+              <ListField
+                list={voicesListed?.voices}
+                value={voiceValue}
+                options={voiceOptions ?? []}
+                placeholder={t("readoutVoiceNameLabel")}
+                onChange={setVoiceValue}
+              />
               {credit && <span className="readout-voice-credit">{credit}</span>}
             </label>
           </div>
-          {/* One note: the URL error already says what is wrong; a list that couldn't be read asks for the name */}
-          {urlInvalid ? null : listFailed ? (
+          {/* One note: the URL error already says what is wrong; a list that couldn't be read asks for the name, unless
+              the sample already said the server can't be reached (the same cause, said once) */}
+          {urlInvalid || unreachableShown ? null : listFailed ? (
             <CardNote text={t("readoutListFailed")}>
               <button className="small" onClick={() => loadLists(baseUrl, kind)}>
                 {t("localAiReloadModels")}
@@ -346,19 +350,33 @@ function LocalTtsCard({
           ) : (
             needsVoice && <CardNote text={t("readoutNeedsVoice")} />
           )}
+          {/* Save applies the whole form, so it sits under it, not beside one field */}
+          <div className="readout-voice-actions">
+            <button className="small" onClick={save} disabled={!canRun}>
+              {t("byokSaveButton")}
+            </button>
+            {config !== null && (
+              <CancelEditButton
+                onCancel={() => {
+                  setEditing(false);
+                  resetDraft(config);
+                }}
+              />
+            )}
+          </div>
         </>
       ) : (
-        <div className="judge-key-row">
-          <span className="judge-key-set local-ai-current">
+        <>
+          <span className="judge-key-set local-ai-current readout-voice-current">
             <span className="local-ai-current-model">
               {config.voiceLabel ?? config.voice}
               {config.model ? ` · ${config.model}` : ""}
             </span>
-            <span className="local-ai-current-url">
-              {t(config.kind === "openai" ? "readoutKindOpenAi" : "readoutKindVoicevox")} · {config.baseUrl}
-            </span>
+            <span className="local-ai-current-url">{config.baseUrl}</span>
             {credit && <span className="readout-voice-credit">{credit}</span>}
           </span>
+          {jaOnly && <p className="readout-voice-warning">{t("readoutVoicevoxJaOnly")}</p>}
+          <div className="readout-voice-actions">
           <button
             className="small"
             onClick={() => {
@@ -377,9 +395,9 @@ function LocalTtsCard({
           >
             {t("byokDeleteButton")}
           </button>
-        </div>
+          </div>
+        </>
       )}
-      {jaOnly && <p className="settings-note">{t("readoutVoicevoxJaOnly")}</p>}
       <BusyButton
         label={t("readoutTestButton")}
         busyLabel={t("readoutTestingLabel")}
@@ -389,13 +407,16 @@ function LocalTtsCard({
       />
       {shownTest.phase === "success" && (
         <p className="judge-status judge-status-ok">
-          {t("readoutTestOk", (shownTest.ms / 1000).toFixed(1))}
+          {/* The number and its unit stay on one line */}
+          {t("readoutTestOk", (shownTest.ms / 1000).toFixed(1)).replace(/(\d) /, "$1\u00a0")}
           {shownTest.ms > READOUT_WAIT_MS && ` ${t("readoutTestSlow")}`}
         </p>
       )}
       {shownTest.phase === "failure" && (
         <p className="judge-status judge-status-error">{t(TEST_FAILURE_TEXT[shownTest.reason])}</p>
       )}
+      {/* The sample plays either way; readouts are heard only with "Read aloud" on */}
+      {!readAloud && config !== null && !showForm && <p className="readout-voice-warning">{t("readoutNeedsReadAloud")}</p>}
     </div>
   );
 }

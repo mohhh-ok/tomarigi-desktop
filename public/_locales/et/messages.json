@@ -460,10 +460,10 @@
     "message": "Serveri tüüp"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI-ga ühilduv (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "OpenAI-ga ühilduv"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX-iga ühilduv (VOICEVOX, AivisSpeech, …)"
+    "message": "VOICEVOX-iga ühilduv"
   },
   "readoutVoiceNameLabel": {
     "message": "Hääl"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Ettelugemise kuulmiseks lülita ülal sisse „Loe häälega ette”."
   }
 }

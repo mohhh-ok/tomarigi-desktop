@@ -460,10 +460,10 @@
     "message": "Servertype"
   },
   "readoutKindOpenAi": {
-    "message": "OpenAI-compatibel (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "OpenAI-compatibel"
   },
   "readoutKindVoicevox": {
-    "message": "VOICEVOX-compatibel (VOICEVOX, AivisSpeech, …)"
+    "message": "VOICEVOX-compatibel"
   },
   "readoutVoiceNameLabel": {
     "message": "Stem"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Zet \"Voorlezen met stem\" hierboven aan om het voorlezen te horen."
   }
 }

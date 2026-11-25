@@ -460,10 +460,10 @@
     "message": "Jenis pelayan"
   },
   "readoutKindOpenAi": {
-    "message": "Serasi OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Serasi OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Serasi VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Serasi VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Suara"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Hidupkan \"Baca dengan suara\" di atas untuk mendengar bacaan."
   }
 }

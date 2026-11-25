@@ -460,10 +460,10 @@
     "message": "ประเภทเซิร์ฟเวอร์"
   },
   "readoutKindOpenAi": {
-    "message": "รองรับ OpenAI (Kokoro-FastAPI, mlx-audio ฯลฯ)"
+    "message": "รองรับ OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "รองรับ VOICEVOX (VOICEVOX, AivisSpeech ฯลฯ)"
+    "message": "รองรับ VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "เสียง"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "เปิด \"อ่านออกเสียง\" ด้านบนเพื่อฟังการอ่าน"
   }
 }

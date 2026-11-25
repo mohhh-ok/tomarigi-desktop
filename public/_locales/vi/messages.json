@@ -460,10 +460,10 @@
     "message": "Loại máy chủ"
   },
   "readoutKindOpenAi": {
-    "message": "Tương thích OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Tương thích OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Tương thích VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Tương thích VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Giọng"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Bật \"Đọc bằng giọng nói\" ở trên để nghe đọc."
   }
 }

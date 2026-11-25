@@ -460,10 +460,10 @@
     "message": "סוג השרת"
   },
   "readoutKindOpenAi": {
-    "message": "תואם OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "תואם OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "תואם VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "תואם VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "קול"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "כדי לשמוע הקראות, הפעילו למעלה את „הקראה בקול”."
   }
 }

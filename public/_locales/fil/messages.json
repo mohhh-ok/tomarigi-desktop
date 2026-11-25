@@ -460,10 +460,10 @@
     "message": "Uri ng server"
   },
   "readoutKindOpenAi": {
-    "message": "Compatible sa OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Compatible sa OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Compatible sa VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Compatible sa VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Boses"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "I-on ang \"Basahin gamit ang boses\" sa itaas para marinig ang pagbasa."
   }
 }

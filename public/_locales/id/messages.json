@@ -460,10 +460,10 @@
     "message": "Jenis server"
   },
   "readoutKindOpenAi": {
-    "message": "Kompatibel OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+    "message": "Kompatibel OpenAI"
   },
   "readoutKindVoicevox": {
-    "message": "Kompatibel VOICEVOX (VOICEVOX, AivisSpeech, …)"
+    "message": "Kompatibel VOICEVOX"
   },
   "readoutVoiceNameLabel": {
     "message": "Suara"
@@ -523,5 +523,8 @@
   },
   "readoutTestSampleJa": {
     "message": "読み上げはこの声になります。"
+  },
+  "readoutNeedsReadAloud": {
+    "message": "Aktifkan \"Bacakan dengan suara\" di atas untuk mendengar bacaan."
   }
 }
