@@ -25,8 +25,8 @@ import {
   type SettingsProblem,
 } from "./settings-checks";
 import { englishText } from "./i18n";
+import { WINDOW_MODES, type WindowMode } from "./window-mode";
 
-export type WindowMode = "floating" | "normal";
 
 export interface SettingsSnapshot {
   aiProvider: AiProvider | null;
@@ -92,7 +92,6 @@ type Args = Record<string, unknown>;
 
 const PROVIDERS: AiProvider[] = ["anthropic", "openai", "local"];
 const TTS_KINDS: TtsKind[] = ["openai", "voicevox"];
-const WINDOW_MODES: WindowMode[] = ["floating", "normal"];
 const AGENT_KINDS = AGENTS.map((a) => a.kind);
 
 const ICON_SET_TEXT: Record<IconSetId, MessageName> = {

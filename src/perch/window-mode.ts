@@ -4,8 +4,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
+import type { WindowMode } from "../lib/window-mode";
 
-export type WindowMode = "floating" | "normal";
+export type { WindowMode };
 
 function apply(mode: WindowMode) {
   document.documentElement.dataset.windowMode = mode;

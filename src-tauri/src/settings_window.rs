@@ -305,7 +305,7 @@ pub(crate) fn start_self_test(app: &AppHandle) {
         });
         // After the page switched the window mode to standard and back to floating: the settings window keeps the focus
         step(19000, "after-page-test", |_| {});
-        step(1500, "show-floating", |h| crate::window::show_window(h));
+        step(1500, "show-floating", crate::window::show_window);
         step(2000, "close", |h| {
             h.get_webview_window(LABEL).map(|w| w.close());
         });
