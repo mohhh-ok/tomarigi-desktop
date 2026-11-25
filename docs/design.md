@@ -8,7 +8,7 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 - Watches the transcripts of every agent in "Agents" in parallel through adapters. State is decided by local heuristics only; no hooks are installed on the agent side
 - Bird states (sprites, aura while working, motion animations), and drag placement in the Garden
 - Icon sets (birds / gnome / cat / robot / frog) assigned per project
-- Web Audio chirps (mute, volume), speechSynthesis readout (opt-in, volume), BYOK (OpenAI / Anthropic) or a local model for summaries on done with the "?" and anger mark verdicts, and connection tests
+- Web Audio chirps (mute, volume), speechSynthesis readout (opt-in, volume) or a local TTS server's voice (see "Readout voice (local TTS server)"), BYOK (OpenAI / Anthropic) or a local model for summaries on done with the "?" and anger mark verdicts, and connection tests
 - Persistent event history and a debug log screen
 - i18n (see "Language")
 - Mock mode (presets + JSON injection)

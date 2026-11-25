@@ -295,7 +295,7 @@
     "message": "API-sleutels kunnen niet worden opgeslagen omdat er op deze computer geen sleutelbos (GNOME Keyring of KWallet) draait. Start er een en open tomarigi opnieuw."
   },
   "voiceUnavailable": {
-    "message": "Voorlezen is niet beschikbaar omdat dit systeem geen spraakengine heeft."
+    "message": "Dit systeem heeft geen spraakengine, dus voorlezen werkt alleen via een lokale TTS-server."
   },
   "conciergeName": {
     "message": "Conciërge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "AI-instellingen openen"
+  },
+  "readoutVoiceLabel": {
+    "message": "Voorleesstem"
+  },
+  "readoutVoiceSystem": {
+    "message": "Systeemstem"
+  },
+  "readoutVoiceLocal": {
+    "message": "Lokale TTS-server"
+  },
+  "readoutKindLabel": {
+    "message": "Servertype"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-compatibel (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-compatibel (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Stem"
+  },
+  "readoutListFailed": {
+    "message": "De lijst van deze server kon niet worden opgehaald. Typ de naam."
+  },
+  "readoutNeedsVoice": {
+    "message": "Kies of typ een stem om op te slaan en een voorbeeld af te spelen."
+  },
+  "readoutNeedsModel": {
+    "message": "Kies of typ een model om op te slaan en een voorbeeld af te spelen."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-compatibele servers lezen alleen Japans voor. Zolang de app niet op Japans staat, wordt de systeemstem gebruikt."
+  },
+  "readoutFallbackNote": {
+    "message": "Als de server niet binnen 5 seconden antwoordt, gebruikt die voorlezing de systeemstem."
+  },
+  "readoutTestButton": {
+    "message": "Voorbeeld afspelen"
+  },
+  "readoutTestingLabel": {
+    "message": "Afspelen…"
+  },
+  "readoutTestOk": {
+    "message": "Afgespeeld via de server ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Dat duurt langer dan 5 seconden, dus voorlezen gebruikt de systeemstem totdat de server sneller antwoordt."
+  },
+  "readoutTestUnreachable": {
+    "message": "Kan de server niet bereiken. Controleer of hij draait en of de URL klopt."
+  },
+  "readoutTestWrongServer": {
+    "message": "De server op deze URL antwoordt niet als het gekozen type. Controleer het servertype en de URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "De server heeft deze stem niet. Kies een andere."
+  },
+  "readoutTestTimeout": {
+    "message": "De server antwoordde niet binnen 30 seconden."
+  },
+  "readoutTestServerError": {
+    "message": "De server antwoordde met een fout."
+  },
+  "readoutTestAudio": {
+    "message": "De audio is aangekomen maar kon niet worden afgespeeld."
+  },
+  "readoutTestSample": {
+    "message": "Zo klinkt het voorlezen."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

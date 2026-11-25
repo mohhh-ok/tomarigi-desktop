@@ -295,7 +295,7 @@
     "message": "Hindi ma-save ang mga API key dahil walang tumatakbong keyring (GNOME Keyring o KWallet) sa computer na ito. Magpatakbo ng isa, saka buksan muli ang tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Hindi magagamit ang pagbasa nang malakas dahil walang speech engine ang system na ito."
+    "message": "Walang speech engine ang system na ito, kaya gumagana lang ang pagbasa nang malakas sa pamamagitan ng local na TTS server."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Buksan ang setting ng AI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Boses ng pagbasa"
+  },
+  "readoutVoiceSystem": {
+    "message": "Boses ng system"
+  },
+  "readoutVoiceLocal": {
+    "message": "Local na TTS server"
+  },
+  "readoutKindLabel": {
+    "message": "Uri ng server"
+  },
+  "readoutKindOpenAi": {
+    "message": "Compatible sa OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Compatible sa VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Boses"
+  },
+  "readoutListFailed": {
+    "message": "Hindi makuha ang listahan mula sa server na ito. I-type ang pangalan."
+  },
+  "readoutNeedsVoice": {
+    "message": "Pumili o mag-type ng boses para mag-save at mag-play ng sample."
+  },
+  "readoutNeedsModel": {
+    "message": "Pumili o mag-type ng model para mag-save at mag-play ng sample."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Japanese lang ang binabasa ng mga server na compatible sa VOICEVOX. Habang hindi Japanese ang wika ng app, boses ng system ang gagamitin sa pagbasa."
+  },
+  "readoutFallbackNote": {
+    "message": "Kapag hindi sumagot ang server sa loob ng 5 segundo, boses ng system ang gagamitin sa pagbasang iyon."
+  },
+  "readoutTestButton": {
+    "message": "I-play ang sample"
+  },
+  "readoutTestingLabel": {
+    "message": "Pine-play…"
+  },
+  "readoutTestOk": {
+    "message": "Na-play sa server ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Lampas ito sa 5 segundo, kaya boses ng system ang gagamitin sa pagbasa hanggang sumagot nang mas mabilis ang server."
+  },
+  "readoutTestUnreachable": {
+    "message": "Hindi maabot ang server. Tiyaking tumatakbo ito at tama ang URL."
+  },
+  "readoutTestWrongServer": {
+    "message": "Hindi sumasagot ang server sa URL na ito bilang napiling uri. Suriin ang uri ng server at ang URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Wala sa server ang boses na ito. Pumili ng iba."
+  },
+  "readoutTestTimeout": {
+    "message": "Hindi sumagot ang server sa loob ng 30 segundo."
+  },
+  "readoutTestServerError": {
+    "message": "Nagbalik ng error ang server."
+  },
+  "readoutTestAudio": {
+    "message": "Dumating ang audio pero hindi ito na-play."
+  },
+  "readoutTestSample": {
+    "message": "Ganito ang tunog ng pagbasa."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

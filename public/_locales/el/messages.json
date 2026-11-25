@@ -295,7 +295,7 @@
     "message": "Τα κλειδιά API δεν μπορούν να αποθηκευτούν, επειδή δεν εκτελείται μπρελόκ κλειδιών (GNOME Keyring ή KWallet) σε αυτόν τον υπολογιστή. Ξεκινήστε ένα και ανοίξτε ξανά το tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Η ανάγνωση με φωνή δεν είναι διαθέσιμη, επειδή το σύστημα δεν διαθέτει μηχανή ομιλίας."
+    "message": "Το σύστημα δεν διαθέτει μηχανή ομιλίας, οπότε η ανάγνωση με φωνή λειτουργεί μόνο μέσω τοπικού διακομιστή TTS."
   },
   "conciergeName": {
     "message": "Κονσιέρζ"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Άνοιγμα ρυθμίσεων ΤΝ"
+  },
+  "readoutVoiceLabel": {
+    "message": "Φωνή ανάγνωσης"
+  },
+  "readoutVoiceSystem": {
+    "message": "Φωνή συστήματος"
+  },
+  "readoutVoiceLocal": {
+    "message": "Τοπικός διακομιστής TTS"
+  },
+  "readoutKindLabel": {
+    "message": "Τύπος διακομιστή"
+  },
+  "readoutKindOpenAi": {
+    "message": "Συμβατό με OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Συμβατό με VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Φωνή"
+  },
+  "readoutListFailed": {
+    "message": "Δεν ήταν δυνατή η λήψη της λίστας από αυτόν τον διακομιστή. Πληκτρολογήστε το όνομα."
+  },
+  "readoutNeedsVoice": {
+    "message": "Επιλέξτε ή πληκτρολογήστε μια φωνή για αποθήκευση και αναπαραγωγή δείγματος."
+  },
+  "readoutNeedsModel": {
+    "message": "Επιλέξτε ή πληκτρολογήστε ένα μοντέλο για αποθήκευση και αναπαραγωγή δείγματος."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Οι διακομιστές συμβατοί με VOICEVOX διαβάζουν μόνο ιαπωνικά. Όσο η εφαρμογή δεν είναι στα ιαπωνικά, η ανάγνωση χρησιμοποιεί τη φωνή συστήματος."
+  },
+  "readoutFallbackNote": {
+    "message": "Αν ο διακομιστής δεν απαντήσει σε 5 δευτερόλεπτα, η ανάγνωση αυτή χρησιμοποιεί τη φωνή συστήματος."
+  },
+  "readoutTestButton": {
+    "message": "Αναπαραγωγή δείγματος"
+  },
+  "readoutTestingLabel": {
+    "message": "Αναπαραγωγή…"
+  },
+  "readoutTestOk": {
+    "message": "Αναπαράχθηκε μέσω του διακομιστή ($SECONDS$ δ).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Ξεπέρασε τα 5 δευτερόλεπτα, οπότε η ανάγνωση θα χρησιμοποιεί τη φωνή συστήματος μέχρι ο διακομιστής να απαντά ταχύτερα."
+  },
+  "readoutTestUnreachable": {
+    "message": "Δεν είναι δυνατή η σύνδεση με τον διακομιστή. Βεβαιωθείτε ότι εκτελείται και ότι το URL είναι σωστό."
+  },
+  "readoutTestWrongServer": {
+    "message": "Ο διακομιστής σε αυτό το URL δεν απαντά ως ο επιλεγμένος τύπος. Ελέγξτε τον τύπο διακομιστή και το URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Ο διακομιστής δεν έχει αυτή τη φωνή. Επιλέξτε άλλη."
+  },
+  "readoutTestTimeout": {
+    "message": "Ο διακομιστής δεν απάντησε σε 30 δευτερόλεπτα."
+  },
+  "readoutTestServerError": {
+    "message": "Ο διακομιστής απάντησε με σφάλμα."
+  },
+  "readoutTestAudio": {
+    "message": "Ο ήχος ήρθε αλλά δεν ήταν δυνατή η αναπαραγωγή του."
+  },
+  "readoutTestSample": {
+    "message": "Έτσι θα ακούγεται η ανάγνωση."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

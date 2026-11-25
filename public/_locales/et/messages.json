@@ -295,7 +295,7 @@
     "message": "API-võtmeid ei saa salvestada, sest selles arvutis ei tööta ühtegi võtmerõngast (GNOME Keyring või KWallet). Käivita see ja ava tomarigi uuesti."
   },
   "voiceUnavailable": {
-    "message": "Häälega ettelugemine pole saadaval, sest selles süsteemis pole kõnesünteesi."
+    "message": "Selles süsteemis pole kõnesünteesi, seega töötab häälega ettelugemine ainult kohaliku TTS-serveri kaudu."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Ava AI seaded"
+  },
+  "readoutVoiceLabel": {
+    "message": "Ettelugemise hääl"
+  },
+  "readoutVoiceSystem": {
+    "message": "Süsteemi hääl"
+  },
+  "readoutVoiceLocal": {
+    "message": "Kohalik TTS-server"
+  },
+  "readoutKindLabel": {
+    "message": "Serveri tüüp"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-ga ühilduv (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-iga ühilduv (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Hääl"
+  },
+  "readoutListFailed": {
+    "message": "Sellelt serverilt ei õnnestunud nimekirja saada. Sisesta nimi."
+  },
+  "readoutNeedsVoice": {
+    "message": "Salvestamiseks ja näidise esitamiseks vali või sisesta hääl."
+  },
+  "readoutNeedsModel": {
+    "message": "Salvestamiseks ja näidise esitamiseks vali või sisesta mudel."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-iga ühilduvad serverid loevad ette ainult jaapani keelt. Kuni rakenduse keel pole jaapani, kasutatakse ettelugemisel süsteemi häält."
+  },
+  "readoutFallbackNote": {
+    "message": "Kui server ei vasta 5 sekundi jooksul, kasutab see ettelugemine süsteemi häält."
+  },
+  "readoutTestButton": {
+    "message": "Esita näidis"
+  },
+  "readoutTestingLabel": {
+    "message": "Esitamine…"
+  },
+  "readoutTestOk": {
+    "message": "Esitatud serveri kaudu ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "See ületab 5 sekundit, seega kasutatakse ettelugemisel süsteemi häält, kuni server vastab kiiremini."
+  },
+  "readoutTestUnreachable": {
+    "message": "Serveriga ei saa ühendust. Kontrolli, et see töötab ja URL on õige."
+  },
+  "readoutTestWrongServer": {
+    "message": "Selle URL-i server ei vasta valitud tüübina. Kontrolli serveri tüüpi ja URL-i."
+  },
+  "readoutTestNoVoice": {
+    "message": "Serveris pole seda häält. Vali mõni muu."
+  },
+  "readoutTestTimeout": {
+    "message": "Server ei vastanud 30 sekundi jooksul."
+  },
+  "readoutTestServerError": {
+    "message": "Server vastas veaga."
+  },
+  "readoutTestAudio": {
+    "message": "Heli jõudis kohale, kuid seda ei õnnestunud esitada."
+  },
+  "readoutTestSample": {
+    "message": "Nii kõlab ettelugemine."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

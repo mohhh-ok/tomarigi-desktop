@@ -295,7 +295,7 @@
     "message": "Bu bilgisayarda çalışan bir anahtarlık (GNOME Keyring veya KWallet) olmadığı için API anahtarları kaydedilemiyor. Birini başlatıp tomarigi'yi yeniden açın."
   },
   "voiceUnavailable": {
-    "message": "Bu sistemde konuşma motoru olmadığı için sesli okuma kullanılamıyor."
+    "message": "Bu sistemde konuşma motoru olmadığı için sesli okuma yalnızca yerel bir TTS sunucusuyla çalışır."
   },
   "conciergeName": {
     "message": "Konsiyerj"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Yapay zekâ ayarlarını aç"
+  },
+  "readoutVoiceLabel": {
+    "message": "Okuma sesi"
+  },
+  "readoutVoiceSystem": {
+    "message": "Sistem sesi"
+  },
+  "readoutVoiceLocal": {
+    "message": "Yerel TTS sunucusu"
+  },
+  "readoutKindLabel": {
+    "message": "Sunucu türü"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI uyumlu (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX uyumlu (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Ses"
+  },
+  "readoutListFailed": {
+    "message": "Bu sunucudan liste alınamadı. Adı yazın."
+  },
+  "readoutNeedsVoice": {
+    "message": "Kaydetmek ve örnek çalmak için bir ses seçin veya yazın."
+  },
+  "readoutNeedsModel": {
+    "message": "Kaydetmek ve örnek çalmak için bir model seçin veya yazın."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX uyumlu sunucular yalnızca Japonca okur. Uygulama Japonca olmadığı sürece okuma sistem sesini kullanır."
+  },
+  "readoutFallbackNote": {
+    "message": "Sunucu 5 saniye içinde yanıt vermezse o okuma sistem sesini kullanır."
+  },
+  "readoutTestButton": {
+    "message": "Örnek çal"
+  },
+  "readoutTestingLabel": {
+    "message": "Çalınıyor…"
+  },
+  "readoutTestOk": {
+    "message": "Sunucu üzerinden okundu ($SECONDS$ sn).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "5 saniyeyi aştığı için sunucu daha hızlı yanıt verene kadar okuma sistem sesini kullanacak."
+  },
+  "readoutTestUnreachable": {
+    "message": "Sunucuya ulaşılamıyor. Çalıştığından ve URL’nin doğru olduğundan emin olun."
+  },
+  "readoutTestWrongServer": {
+    "message": "Bu URL’deki sunucu seçilen türde yanıt vermiyor. Sunucu türünü ve URL’yi kontrol edin."
+  },
+  "readoutTestNoVoice": {
+    "message": "Sunucuda bu ses yok. Başka bir ses seçin."
+  },
+  "readoutTestTimeout": {
+    "message": "Sunucu 30 saniye içinde yanıt vermedi."
+  },
+  "readoutTestServerError": {
+    "message": "Sunucu hata döndürdü."
+  },
+  "readoutTestAudio": {
+    "message": "Ses geldi ancak çalınamadı."
+  },
+  "readoutTestSample": {
+    "message": "Okuma böyle duyulacak."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

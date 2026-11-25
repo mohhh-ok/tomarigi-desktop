@@ -295,7 +295,7 @@
     "message": "이 컴퓨터에서 키링(GNOME Keyring 또는 KWallet)이 실행되고 있지 않아 API 키를 저장할 수 없습니다. 키링을 실행한 뒤 tomarigi를 다시 여세요."
   },
   "voiceUnavailable": {
-    "message": "이 시스템에는 음성 합성 기능이 없어 읽어주기를 사용할 수 없습니다."
+    "message": "이 시스템에는 음성 합성 기능이 없어 로컬 TTS 서버를 선택했을 때만 읽어주기를 사용할 수 있습니다."
   },
   "conciergeName": {
     "message": "컨시어지"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "AI 설정 열기"
+  },
+  "readoutVoiceLabel": {
+    "message": "읽어주기 음성"
+  },
+  "readoutVoiceSystem": {
+    "message": "시스템 음성"
+  },
+  "readoutVoiceLocal": {
+    "message": "로컬 TTS 서버"
+  },
+  "readoutKindLabel": {
+    "message": "서버 종류"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI 호환(Kokoro-FastAPI, mlx-audio 등)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX 호환(VOICEVOX, AivisSpeech 등)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "음성"
+  },
+  "readoutListFailed": {
+    "message": "이 서버에서 목록을 가져오지 못했습니다. 이름을 입력하세요."
+  },
+  "readoutNeedsVoice": {
+    "message": "음성을 선택하거나 입력하면 저장하고 샘플을 재생할 수 있습니다."
+  },
+  "readoutNeedsModel": {
+    "message": "모델을 선택하거나 입력하면 저장하고 샘플을 재생할 수 있습니다."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX 호환 서버는 일본어만 읽습니다. 앱 언어가 일본어가 아닌 동안에는 시스템 음성으로 읽어줍니다."
+  },
+  "readoutFallbackNote": {
+    "message": "서버가 5초 안에 응답하지 않으면 그 읽어주기는 시스템 음성으로 처리됩니다."
+  },
+  "readoutTestButton": {
+    "message": "샘플 재생"
+  },
+  "readoutTestingLabel": {
+    "message": "재생 중…"
+  },
+  "readoutTestOk": {
+    "message": "서버의 음성으로 읽었습니다($SECONDS$초).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "5초를 넘었으므로 서버가 더 빨리 응답할 때까지 읽어주기에 시스템 음성을 사용합니다."
+  },
+  "readoutTestUnreachable": {
+    "message": "서버에 연결할 수 없습니다. 서버가 실행 중인지, URL이 올바른지 확인하세요."
+  },
+  "readoutTestWrongServer": {
+    "message": "이 URL의 서버는 선택한 종류의 서버로 응답하지 않습니다. 서버 종류와 URL을 확인하세요."
+  },
+  "readoutTestNoVoice": {
+    "message": "이 서버에는 이 음성이 없습니다. 다른 음성을 선택하세요."
+  },
+  "readoutTestTimeout": {
+    "message": "서버가 30초 안에 응답하지 않았습니다."
+  },
+  "readoutTestServerError": {
+    "message": "서버가 오류를 반환했습니다."
+  },
+  "readoutTestAudio": {
+    "message": "오디오는 도착했지만 재생할 수 없었습니다."
+  },
+  "readoutTestSample": {
+    "message": "읽어줄 때 이런 음성이 됩니다."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

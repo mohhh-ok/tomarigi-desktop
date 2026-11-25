@@ -295,7 +295,7 @@
     "message": "API atslēgas nevar saglabāt, jo šajā datorā nedarbojas neviena atslēgu saišķa programma (GNOME Keyring vai KWallet). Palaidiet to un atveriet tomarigi vēlreiz."
   },
   "voiceUnavailable": {
-    "message": "Lasīšana ar balsi nav pieejama, jo šai sistēmai nav runas sintēzes."
+    "message": "Šai sistēmai nav runas sintēzes, tāpēc lasīšana ar balsi darbojas tikai caur vietējo TTS serveri."
   },
   "conciergeName": {
     "message": "Konsjeržs"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Atvērt MI iestatījumus"
+  },
+  "readoutVoiceLabel": {
+    "message": "Lasīšanas balss"
+  },
+  "readoutVoiceSystem": {
+    "message": "Sistēmas balss"
+  },
+  "readoutVoiceLocal": {
+    "message": "Vietējais TTS serveris"
+  },
+  "readoutKindLabel": {
+    "message": "Servera veids"
+  },
+  "readoutKindOpenAi": {
+    "message": "Saderīgs ar OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Saderīgs ar VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Balss"
+  },
+  "readoutListFailed": {
+    "message": "Neizdevās iegūt sarakstu no šī servera. Ierakstiet nosaukumu."
+  },
+  "readoutNeedsVoice": {
+    "message": "Izvēlieties vai ierakstiet balsi, lai saglabātu un atskaņotu paraugu."
+  },
+  "readoutNeedsModel": {
+    "message": "Izvēlieties vai ierakstiet modeli, lai saglabātu un atskaņotu paraugu."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX saderīgie serveri lasa tikai japāņu valodā. Kamēr lietotnes valoda nav japāņu, lasīšanai tiek izmantota sistēmas balss."
+  },
+  "readoutFallbackNote": {
+    "message": "Ja serveris neatbild 5 sekunžu laikā, šī lasīšana izmanto sistēmas balsi."
+  },
+  "readoutTestButton": {
+    "message": "Atskaņot paraugu"
+  },
+  "readoutTestingLabel": {
+    "message": "Atskaņo…"
+  },
+  "readoutTestOk": {
+    "message": "Atskaņots caur serveri ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Tas pārsniedz 5 sekundes, tāpēc lasīšanai tiks izmantota sistēmas balss, līdz serveris atbildēs ātrāk."
+  },
+  "readoutTestUnreachable": {
+    "message": "Nevar sasniegt serveri. Pārbaudiet, vai tas darbojas un vai URL ir pareizs."
+  },
+  "readoutTestWrongServer": {
+    "message": "Serveris šajā URL neatbild kā izvēlētais veids. Pārbaudiet servera veidu un URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Serverim nav šīs balss. Izvēlieties citu."
+  },
+  "readoutTestTimeout": {
+    "message": "Serveris neatbildēja 30 sekunžu laikā."
+  },
+  "readoutTestServerError": {
+    "message": "Serveris atbildēja ar kļūdu."
+  },
+  "readoutTestAudio": {
+    "message": "Skaņa tika saņemta, bet to neizdevās atskaņot."
+  },
+  "readoutTestSample": {
+    "message": "Tā skanēs lasīšana."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

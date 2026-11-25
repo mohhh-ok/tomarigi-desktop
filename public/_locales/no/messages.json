@@ -295,7 +295,7 @@
     "message": "API-nøkler kan ikke lagres fordi ingen nøkkelring (GNOME Keyring eller KWallet) kjører på denne datamaskinen. Start en, og åpne tomarigi på nytt."
   },
   "voiceUnavailable": {
-    "message": "Opplesing er ikke tilgjengelig fordi systemet mangler talesyntese."
+    "message": "Systemet mangler talesyntese, så opplesing fungerer bare via en lokal TTS-tjener."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Åpne AI-innstillinger"
+  },
+  "readoutVoiceLabel": {
+    "message": "Opplesningsstemme"
+  },
+  "readoutVoiceSystem": {
+    "message": "Systemstemme"
+  },
+  "readoutVoiceLocal": {
+    "message": "Lokal TTS-tjener"
+  },
+  "readoutKindLabel": {
+    "message": "Tjenertype"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-kompatibel (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-kompatibel (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Stemme"
+  },
+  "readoutListFailed": {
+    "message": "Kunne ikke hente listen fra denne tjeneren. Skriv inn navnet."
+  },
+  "readoutNeedsVoice": {
+    "message": "Velg eller skriv inn en stemme for å lagre og spille av et eksempel."
+  },
+  "readoutNeedsModel": {
+    "message": "Velg eller skriv inn en modell for å lagre og spille av et eksempel."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-kompatible tjenere leser bare japansk. Så lenge appen ikke er på japansk, brukes systemstemmen ved opplesing."
+  },
+  "readoutFallbackNote": {
+    "message": "Hvis tjeneren ikke svarer innen 5 sekunder, brukes systemstemmen for den opplesingen."
+  },
+  "readoutTestButton": {
+    "message": "Spill av et eksempel"
+  },
+  "readoutTestingLabel": {
+    "message": "Spiller av …"
+  },
+  "readoutTestOk": {
+    "message": "Spilt av via tjeneren ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Det tar over 5 sekunder, så opplesingen bruker systemstemmen til tjeneren svarer raskere."
+  },
+  "readoutTestUnreachable": {
+    "message": "Får ikke kontakt med tjeneren. Sjekk at den kjører og at URL-en stemmer."
+  },
+  "readoutTestWrongServer": {
+    "message": "Tjeneren på denne URL-en svarer ikke som den valgte typen. Sjekk tjenertypen og URL-en."
+  },
+  "readoutTestNoVoice": {
+    "message": "Tjeneren har ikke denne stemmen. Velg en annen."
+  },
+  "readoutTestTimeout": {
+    "message": "Tjeneren svarte ikke innen 30 sekunder."
+  },
+  "readoutTestServerError": {
+    "message": "Tjeneren svarte med en feil."
+  },
+  "readoutTestAudio": {
+    "message": "Lyden kom frem, men kunne ikke spilles av."
+  },
+  "readoutTestSample": {
+    "message": "Slik kommer opplesingen til å høres ut."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

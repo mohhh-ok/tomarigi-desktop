@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import {
   DEFAULT_LOCAL_BASE_URL,
@@ -11,6 +11,7 @@ import {
 import type { JudgeErrorKind } from "@/lib/judge";
 import { fetchLocalModels, isValidBaseUrl, pickLocalModel } from "@/lib/local-judge";
 import { BusyButton } from "./busy-button";
+import { CancelEditButton, CardNote } from "./card-parts";
 
 // Product names of the retired providers, shown as is in every locale
 const RETIRED_KEY_NAMES: Record<RetiredKeyProvider, string> = { typesafe: "TypeSafe" };
@@ -124,22 +125,6 @@ function ProviderChoice({ selected, onSelect }: { selected: boolean; onSelect: (
   );
 }
 
-/** Leaves the replace / change input and goes back to the saved state. Shared by the key rows and Local */
-function CancelEditButton({ onCancel }: { onCancel: () => void }) {
-  return (
-    <button
-      className="small"
-      onClick={(e) => {
-        // Inside a label, a click would also focus the field
-        e.preventDefault();
-        onCancel();
-      }}
-    >
-      {t("cancelButton")}
-    </button>
-  );
-}
-
 /** What a failed connection test says, by why it failed: what happened and what to check, never the internal kind */
 const TEST_FAILURE_TEXT: Record<JudgeErrorKind, Parameters<typeof t>[0]> = {
   auth: "byokTestFailedAuth",
@@ -148,17 +133,6 @@ const TEST_FAILURE_TEXT: Record<JudgeErrorKind, Parameters<typeof t>[0]> = {
   network: "byokTestFailedNetwork",
   malformed: "byokTestFailedMalformed",
 };
-
-/** Why Save or the connection test can't be pressed yet: the one place of a card that says it, under its fields
- * (docs/design.md, Local AI). Shared by the key rows and Local */
-function CardNote({ text, children }: { text: string; children?: ReactNode }) {
-  return (
-    <div className="ai-card-note">
-      <p>{text}</p>
-      {children}
-    </div>
-  );
-}
 
 /** The connection test button and its result. Shared by the key rows and Local */
 function ConnectionTest({

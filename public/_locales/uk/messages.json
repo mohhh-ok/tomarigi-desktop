@@ -295,7 +295,7 @@
     "message": "Не вдається зберегти API-ключі: на цьому комп’ютері не запущено в’язку ключів (GNOME Keyring або KWallet). Запустіть її та знову відкрийте tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Читання вголос недоступне: у цій системі немає синтезатора мовлення."
+    "message": "У цій системі немає синтезатора мовлення, тому читання вголос працює лише через локальний TTS-сервер."
   },
   "conciergeName": {
     "message": "Консьєрж"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Відкрити налаштування ШІ"
+  },
+  "readoutVoiceLabel": {
+    "message": "Голос озвучування"
+  },
+  "readoutVoiceSystem": {
+    "message": "Системний голос"
+  },
+  "readoutVoiceLocal": {
+    "message": "Локальний TTS-сервер"
+  },
+  "readoutKindLabel": {
+    "message": "Тип сервера"
+  },
+  "readoutKindOpenAi": {
+    "message": "Сумісний з OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Сумісний з VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Голос"
+  },
+  "readoutListFailed": {
+    "message": "Не вдалося отримати список із цього сервера. Введіть назву."
+  },
+  "readoutNeedsVoice": {
+    "message": "Виберіть або введіть голос, щоб зберегти й відтворити зразок."
+  },
+  "readoutNeedsModel": {
+    "message": "Виберіть або введіть модель, щоб зберегти й відтворити зразок."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Сервери, сумісні з VOICEVOX, читають лише японською. Поки мова застосунку не японська, озвучування використовує системний голос."
+  },
+  "readoutFallbackNote": {
+    "message": "Якщо сервер не відповідає протягом 5 секунд, це озвучування використовує системний голос."
+  },
+  "readoutTestButton": {
+    "message": "Відтворити зразок"
+  },
+  "readoutTestingLabel": {
+    "message": "Відтворення…"
+  },
+  "readoutTestOk": {
+    "message": "Відтворено через сервер ($SECONDS$ с).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Це довше за 5 секунд, тому озвучування використовуватиме системний голос, доки сервер не почне відповідати швидше."
+  },
+  "readoutTestUnreachable": {
+    "message": "Не вдається підключитися до сервера. Перевірте, що він запущений і URL указано правильно."
+  },
+  "readoutTestWrongServer": {
+    "message": "Сервер за цією URL-адресою не відповідає як вибраний тип. Перевірте тип сервера та URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "На сервері немає цього голосу. Виберіть інший."
+  },
+  "readoutTestTimeout": {
+    "message": "Сервер не відповів протягом 30 секунд."
+  },
+  "readoutTestServerError": {
+    "message": "Сервер повернув помилку."
+  },
+  "readoutTestAudio": {
+    "message": "Звук отримано, але відтворити його не вдалося."
+  },
+  "readoutTestSample": {
+    "message": "Так звучатиме озвучування."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

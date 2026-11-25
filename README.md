@@ -18,7 +18,7 @@ A desktop app for macOS, Windows, and Linux (the Windows and Linux builds haven'
 - In the floating window's Garden, only the birds, their bubbles, and the "tomarigi" handle are shown, and clicks go through to the window below. Click the handle to show the whole window; drag it to move the window
 - Icon sets: Birds, Gnome, Cat, Robot, and Frog, assigned per project
 - No hooks or config changes on the agent side. It only reads each agent's session files (`~/.claude/projects`, `~/.codex/sessions`, `~/.qwen/projects`, `~/.copilot/session-state`, `~/.gemini/tmp`, `~/.local/share/opencode`, `~/.cursor/projects`)
-- Optional BYOK keys: OpenAI or Anthropic (or, without a key, a local model on an OpenAI-compatible server such as Ollama or LM Studio). Two requests per finished turn write the speech bubble that summarizes it, spot a question asked in plain text (the "?"), and spot abuse toward the AI in your messages of that turn (the anger mark); the second checks the question again, so a report isn't taken for one. The last reply and your own messages of that turn are sent with both. TypeSafe (Jev) is no longer used: a TypeSafe key still saved shows in settings with only Delete. Voice readout uses the system speech synthesizer and needs no key
+- Optional BYOK keys: OpenAI or Anthropic (or, without a key, a local model on an OpenAI-compatible server such as Ollama or LM Studio). Two requests per finished turn write the speech bubble that summarizes it, spot a question asked in plain text (the "?"), and spot abuse toward the AI in your messages of that turn (the anger mark); the second checks the question again, so a report isn't taken for one. The last reply and your own messages of that turn are sent with both. TypeSafe (Jev) is no longer used: a TypeSafe key still saved shows in settings with only Delete. Voice readout uses the system speech synthesizer and needs no key. It can also use a TTS server running on your machine or LAN: an OpenAI-compatible one (Kokoro-FastAPI, mlx-audio, …) or a VOICEVOX-compatible one (VOICEVOX, AivisSpeech, …), chosen under "Readout voice" in settings. When the server doesn't answer within 5 seconds, that readout uses the system voice. VOICEVOX-compatible servers read Japanese only
 
 ## Install
 
@@ -54,7 +54,7 @@ Claude desktop app: a Claude Code session running in the Code tab of the Claude 
 
 - Jumping brings the terminal window to the front but can't pick its tab or split (on Linux, a session inside tmux still gets its pane). Windows Terminal comes forward on whatever tab it shows. On a Wayland session only terminals running through Xwayland can be brought forward
 - The Windows installer isn't code-signed, so Windows SmartScreen warns on first run ("More info" → "Run anyway")
-- Linux: API keys are saved to GNOME Keyring or KWallet; without one running, keys can't be saved. The tray icon opens its menu ("Show / Hide" is there), the background isn't blurred, and staying on top depends on the window manager. Some Linux systems have no speech engine, and readout is off there
+- Linux: API keys are saved to GNOME Keyring or KWallet; without one running, keys can't be saved. The tray icon opens its menu ("Show / Hide" is there), the background isn't blurred, and staying on top depends on the window manager. Some Linux systems have no speech engine; readout works there only through a local TTS server
 
 ## Development
 
@@ -114,6 +114,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly, or
 - `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window
 - `TOMARIGI_IMPORT_KEY=<anthropic|openai>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)
 - `TOMARIGI_LOCAL_AI="<base URL>|<model>"`: sets up Local AI with that server and model, chooses it for summaries and the concierge, and logs the connection test result (`[keys] imported local ...`)
+- `TOMARIGI_LOCAL_TTS="<openai|voicevox>|<base URL>|<voice>|<model>"`: chooses a local TTS server as the readout voice (the model only for `openai`) and logs its sample request (`[voice] for=test ...`; playback needs a click first, so it logs `error=audio` without one). Each readout through a server logs `[voice] for=<done|waiting|concierge|test> server=<kind> ms=<n> used=<server|system|none>`
 - `TOMARIGI_KEY_BACKEND=webview`: stores keys in IndexedDB instead of the Keychain, in any build including dev (for testing the IndexedDB → Keychain migration)
 
 ### Other notes

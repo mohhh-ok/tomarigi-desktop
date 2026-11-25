@@ -295,7 +295,7 @@
     "message": "API-nycklar kan inte sparas eftersom ingen nyckelring (GNOME Keyring eller KWallet) körs på den här datorn. Starta en och öppna tomarigi igen."
   },
   "voiceUnavailable": {
-    "message": "Uppläsning är inte tillgänglig eftersom systemet saknar talsyntes."
+    "message": "Systemet saknar talsyntes, så uppläsning fungerar bara via en lokal TTS-server."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Öppna AI-inställningar"
+  },
+  "readoutVoiceLabel": {
+    "message": "Uppläsningsröst"
+  },
+  "readoutVoiceSystem": {
+    "message": "Systemröst"
+  },
+  "readoutVoiceLocal": {
+    "message": "Lokal TTS-server"
+  },
+  "readoutKindLabel": {
+    "message": "Servertyp"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-kompatibel (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-kompatibel (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Röst"
+  },
+  "readoutListFailed": {
+    "message": "Det gick inte att hämta listan från servern. Skriv namnet."
+  },
+  "readoutNeedsVoice": {
+    "message": "Välj eller skriv en röst för att spara och spela upp ett prov."
+  },
+  "readoutNeedsModel": {
+    "message": "Välj eller skriv en modell för att spara och spela upp ett prov."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-kompatibla servrar läser bara japanska. Så länge appen inte är på japanska används systemrösten vid uppläsning."
+  },
+  "readoutFallbackNote": {
+    "message": "Om servern inte svarar inom 5 sekunder används systemrösten för den uppläsningen."
+  },
+  "readoutTestButton": {
+    "message": "Spela upp ett prov"
+  },
+  "readoutTestingLabel": {
+    "message": "Spelar upp…"
+  },
+  "readoutTestOk": {
+    "message": "Uppspelat via servern ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Det tar över 5 sekunder, så uppläsningen använder systemrösten tills servern svarar snabbare."
+  },
+  "readoutTestUnreachable": {
+    "message": "Det går inte att nå servern. Kontrollera att den körs och att URL:en stämmer."
+  },
+  "readoutTestWrongServer": {
+    "message": "Servern på den här URL:en svarar inte som den valda typen. Kontrollera servertypen och URL:en."
+  },
+  "readoutTestNoVoice": {
+    "message": "Servern har inte den här rösten. Välj en annan."
+  },
+  "readoutTestTimeout": {
+    "message": "Servern svarade inte inom 30 sekunder."
+  },
+  "readoutTestServerError": {
+    "message": "Servern svarade med ett fel."
+  },
+  "readoutTestAudio": {
+    "message": "Ljudet kom fram men kunde inte spelas upp."
+  },
+  "readoutTestSample": {
+    "message": "Så här låter uppläsningen."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

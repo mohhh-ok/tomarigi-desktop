@@ -295,7 +295,7 @@
     "message": "לא ניתן לשמור מפתחות API כי אין מחזיק מפתחות (GNOME Keyring או KWallet) שפועל במחשב הזה. הפעילו אחד ופתחו מחדש את tomarigi."
   },
   "voiceUnavailable": {
-    "message": "הקראה בקול אינה זמינה כי אין במערכת הזו מנוע דיבור."
+    "message": "אין במערכת הזו מנוע דיבור, ולכן הקראה בקול פועלת רק דרך שרת TTS מקומי."
   },
   "conciergeName": {
     "message": "קונסיירז׳"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "פתיחת הגדרות הבינה המלאכותית"
+  },
+  "readoutVoiceLabel": {
+    "message": "קול ההקראה"
+  },
+  "readoutVoiceSystem": {
+    "message": "קול המערכת"
+  },
+  "readoutVoiceLocal": {
+    "message": "שרת TTS מקומי"
+  },
+  "readoutKindLabel": {
+    "message": "סוג השרת"
+  },
+  "readoutKindOpenAi": {
+    "message": "תואם OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "תואם VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "קול"
+  },
+  "readoutListFailed": {
+    "message": "לא ניתן היה לקבל את הרשימה מהשרת הזה. הקלידו את השם."
+  },
+  "readoutNeedsVoice": {
+    "message": "בחרו או הקלידו קול כדי לשמור ולנגן דוגמה."
+  },
+  "readoutNeedsModel": {
+    "message": "בחרו או הקלידו מודל כדי לשמור ולנגן דוגמה."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "שרתים התואמים ל-VOICEVOX מקריאים יפנית בלבד. כל עוד שפת האפליקציה אינה יפנית, ההקראה תשתמש בקול המערכת."
+  },
+  "readoutFallbackNote": {
+    "message": "אם השרת לא עונה תוך 5 שניות, ההקראה הזו תשתמש בקול המערכת."
+  },
+  "readoutTestButton": {
+    "message": "נגן דוגמה"
+  },
+  "readoutTestingLabel": {
+    "message": "מנגן…"
+  },
+  "readoutTestOk": {
+    "message": "הוקרא דרך השרת ($SECONDS$ שנ׳).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "זה עבר את 5 השניות, ולכן ההקראה תשתמש בקול המערכת עד שהשרת יענה מהר יותר."
+  },
+  "readoutTestUnreachable": {
+    "message": "לא ניתן להגיע לשרת. בדקו שהוא פועל ושה-URL נכון."
+  },
+  "readoutTestWrongServer": {
+    "message": "השרת בכתובת ה-URL הזו אינו עונה כסוג שנבחר. בדקו את סוג השרת ואת ה-URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "אין לשרת את הקול הזה. בחרו קול אחר."
+  },
+  "readoutTestTimeout": {
+    "message": "השרת לא ענה תוך 30 שניות."
+  },
+  "readoutTestServerError": {
+    "message": "השרת החזיר שגיאה."
+  },
+  "readoutTestAudio": {
+    "message": "האודיו הגיע אך לא ניתן היה להשמיע אותו."
+  },
+  "readoutTestSample": {
+    "message": "כך תישמע ההקראה."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

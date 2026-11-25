@@ -295,7 +295,7 @@
     "message": "Không thể lưu khóa API vì máy tính này không chạy trình quản lý khóa nào (GNOME Keyring hoặc KWallet). Hãy khởi động một trình rồi mở lại tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Không thể đọc bằng giọng nói vì hệ thống này không có công cụ tổng hợp giọng nói."
+    "message": "Hệ thống này không có công cụ tổng hợp giọng nói, nên việc đọc bằng giọng nói chỉ hoạt động qua máy chủ TTS cục bộ."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Mở cài đặt AI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Giọng đọc"
+  },
+  "readoutVoiceSystem": {
+    "message": "Giọng của hệ thống"
+  },
+  "readoutVoiceLocal": {
+    "message": "Máy chủ TTS cục bộ"
+  },
+  "readoutKindLabel": {
+    "message": "Loại máy chủ"
+  },
+  "readoutKindOpenAi": {
+    "message": "Tương thích OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Tương thích VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Giọng"
+  },
+  "readoutListFailed": {
+    "message": "Không lấy được danh sách từ máy chủ này. Hãy nhập tên."
+  },
+  "readoutNeedsVoice": {
+    "message": "Hãy chọn hoặc nhập một giọng để lưu và phát thử."
+  },
+  "readoutNeedsModel": {
+    "message": "Hãy chọn hoặc nhập một mô hình để lưu và phát thử."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Máy chủ tương thích VOICEVOX chỉ đọc tiếng Nhật. Khi ngôn ngữ của ứng dụng không phải tiếng Nhật, việc đọc sẽ dùng giọng của hệ thống."
+  },
+  "readoutFallbackNote": {
+    "message": "Nếu máy chủ không phản hồi trong 5 giây, lần đọc đó sẽ dùng giọng của hệ thống."
+  },
+  "readoutTestButton": {
+    "message": "Phát thử"
+  },
+  "readoutTestingLabel": {
+    "message": "Đang phát…"
+  },
+  "readoutTestOk": {
+    "message": "Đã đọc qua máy chủ ($SECONDS$ giây).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Đã quá 5 giây, nên việc đọc sẽ dùng giọng của hệ thống cho đến khi máy chủ phản hồi nhanh hơn."
+  },
+  "readoutTestUnreachable": {
+    "message": "Không thể kết nối với máy chủ. Hãy kiểm tra máy chủ đang chạy và URL đúng."
+  },
+  "readoutTestWrongServer": {
+    "message": "Máy chủ tại URL này không phản hồi như loại đã chọn. Hãy kiểm tra loại máy chủ và URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Máy chủ không có giọng này. Hãy chọn giọng khác."
+  },
+  "readoutTestTimeout": {
+    "message": "Máy chủ không phản hồi trong 30 giây."
+  },
+  "readoutTestServerError": {
+    "message": "Máy chủ trả về lỗi."
+  },
+  "readoutTestAudio": {
+    "message": "Đã nhận được âm thanh nhưng không phát được."
+  },
+  "readoutTestSample": {
+    "message": "Việc đọc sẽ nghe như thế này."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

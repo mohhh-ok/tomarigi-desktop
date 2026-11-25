@@ -295,7 +295,7 @@
     "message": "API-avaimia ei voi tallentaa, koska tällä tietokoneella ei ole käynnissä avainnippua (GNOME Keyring tai KWallet). Käynnistä se ja avaa tomarigi uudelleen."
   },
   "voiceUnavailable": {
-    "message": "Ääneen lukeminen ei ole käytettävissä, koska järjestelmässä ei ole puhesyntetisaattoria."
+    "message": "Järjestelmässä ei ole puhesyntetisaattoria, joten ääneen lukeminen toimii vain paikallisen TTS-palvelimen kautta."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Avaa tekoälyasetukset"
+  },
+  "readoutVoiceLabel": {
+    "message": "Lukuääni"
+  },
+  "readoutVoiceSystem": {
+    "message": "Järjestelmän ääni"
+  },
+  "readoutVoiceLocal": {
+    "message": "Paikallinen TTS-palvelin"
+  },
+  "readoutKindLabel": {
+    "message": "Palvelimen tyyppi"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-yhteensopiva (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-yhteensopiva (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Ääni"
+  },
+  "readoutListFailed": {
+    "message": "Luetteloa ei saatu tältä palvelimelta. Kirjoita nimi."
+  },
+  "readoutNeedsVoice": {
+    "message": "Valitse tai kirjoita ääni, niin voit tallentaa ja toistaa näytteen."
+  },
+  "readoutNeedsModel": {
+    "message": "Valitse tai kirjoita malli, niin voit tallentaa ja toistaa näytteen."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-yhteensopivat palvelimet lukevat vain japania. Kun sovelluksen kieli ei ole japani, luku käyttää järjestelmän ääntä."
+  },
+  "readoutFallbackNote": {
+    "message": "Jos palvelin ei vastaa 5 sekunnissa, kyseinen luku käyttää järjestelmän ääntä."
+  },
+  "readoutTestButton": {
+    "message": "Toista näyte"
+  },
+  "readoutTestingLabel": {
+    "message": "Toistetaan…"
+  },
+  "readoutTestOk": {
+    "message": "Toistettu palvelimen kautta ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Se ylittää 5 sekuntia, joten luku käyttää järjestelmän ääntä, kunnes palvelin vastaa nopeammin."
+  },
+  "readoutTestUnreachable": {
+    "message": "Palvelimeen ei saada yhteyttä. Tarkista, että se on käynnissä ja URL on oikein."
+  },
+  "readoutTestWrongServer": {
+    "message": "Tämän URL-osoitteen palvelin ei vastaa valittuna tyyppinä. Tarkista palvelimen tyyppi ja URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Palvelimella ei ole tätä ääntä. Valitse toinen."
+  },
+  "readoutTestTimeout": {
+    "message": "Palvelin ei vastannut 30 sekunnissa."
+  },
+  "readoutTestServerError": {
+    "message": "Palvelin vastasi virheellä."
+  },
+  "readoutTestAudio": {
+    "message": "Ääni saapui, mutta sitä ei voitu toistaa."
+  },
+  "readoutTestSample": {
+    "message": "Näin luku kuulostaa."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

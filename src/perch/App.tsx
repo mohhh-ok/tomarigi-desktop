@@ -16,7 +16,8 @@ import {
 import { focusSession, focusTargetOf } from "@/lib/terminal-focus";
 import { isAngry } from "@/lib/turn-verdict";
 import type { AskJudgement, SessionEvent, SessionView } from "@/lib/sessions";
-import { speakDoneEvent, speakEvent, speakSuggestions, speechAvailable } from "@/lib/voice";
+import { readoutAvailable, speakDoneEvent, speakEvent, speakSuggestions, speechAvailable } from "@/lib/voice";
+import { ReadoutVoiceSettings } from "./settings/readout-voice-settings";
 import DebugApp from "./DebugApp";
 import { Garden } from "./garden";
 import { bubbleText } from "./bubble";
@@ -141,6 +142,11 @@ export default function App({
     voiceEnabled,
     voiceEnabledRef,
     voiceVolume,
+    readoutVoice,
+    changeReadoutSource,
+    saveLocalTts,
+    removeLocalTts,
+    runTtsTest,
     aiKeySet,
     retiredKeys,
     keyStoreAvailable,
@@ -166,8 +172,10 @@ export default function App({
     changeConciergeLook,
   } = useSettings();
   const { requestJudgements, displaySessions } = useTurnJudgements(sessions, summarySetUp);
-  // Readout is off where the WebView can't speak (some Linux builds; docs/design.md "Platforms")
-  const canSpeak = speechAvailable();
+  // Readout is off where nothing can speak: no speechSynthesis (some Linux builds; docs/design.md "Platforms") and no
+  // local TTS server chosen. readoutAvailable reads the voice use-settings sets before it renders
+  const canSpeak = readoutAvailable();
+  const systemCanSpeak = speechAvailable();
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
   // it is a screen (like settings) opened and closed by this state alone
   const [showDebug, setShowDebug] = useState(
@@ -868,7 +876,7 @@ export default function App({
                 />
                 {t("voiceEnableLabel")}
               </label>
-              {!canSpeak && <p className="settings-subrow settings-note">{t("voiceUnavailable")}</p>}
+              {!systemCanSpeak && <p className="settings-subrow settings-note">{t("voiceUnavailable")}</p>}
               {/* The volume value is kept even when voiceEnabled is OFF (the toggle is a switch for whether to
                   speak and is independent of volume). While OFF it is only disabled to prevent meaningless
                   adjustments; the value doesn't change */}
@@ -885,6 +893,16 @@ export default function App({
                 />
                 <span className="volume-value">{Math.round(voiceVolume * 100)}%</span>
               </label>
+              {/* Not dimmed while "Read aloud" is off: the sample can be played before turning it on, and where the
+                  system has no speech engine, choosing a local server is what lets it be turned on */}
+              <ReadoutVoiceSettings
+                open={settingsOpen}
+                voice={readoutVoice}
+                onSource={changeReadoutSource}
+                onSave={saveLocalTts}
+                onDelete={removeLocalTts}
+                onTest={runTtsTest}
+              />
             </div>
             {/* Floating window / standard window (can also be changed from the menu bar menu; window-mode.ts) */}
             <section className="window-mode">

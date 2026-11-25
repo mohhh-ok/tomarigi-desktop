@@ -295,7 +295,7 @@
     "message": "API raktų išsaugoti negalima, nes šiame kompiuteryje neveikia raktinė (GNOME Keyring arba KWallet). Paleiskite ją ir vėl atidarykite tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Skaitymas balsu negalimas, nes šioje sistemoje nėra kalbos sintezatoriaus."
+    "message": "Šioje sistemoje nėra kalbos sintezatoriaus, todėl skaitymas balsu veikia tik per vietinį TTS serverį."
   },
   "conciergeName": {
     "message": "Konsjeržas"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Atidaryti DI nustatymus"
+  },
+  "readoutVoiceLabel": {
+    "message": "Skaitymo balsas"
+  },
+  "readoutVoiceSystem": {
+    "message": "Sistemos balsas"
+  },
+  "readoutVoiceLocal": {
+    "message": "Vietinis TTS serveris"
+  },
+  "readoutKindLabel": {
+    "message": "Serverio tipas"
+  },
+  "readoutKindOpenAi": {
+    "message": "Suderinamas su OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Suderinamas su VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Balsas"
+  },
+  "readoutListFailed": {
+    "message": "Nepavyko gauti sąrašo iš šio serverio. Įveskite pavadinimą."
+  },
+  "readoutNeedsVoice": {
+    "message": "Pasirinkite arba įveskite balsą, kad išsaugotumėte ir paleistumėte pavyzdį."
+  },
+  "readoutNeedsModel": {
+    "message": "Pasirinkite arba įveskite modelį, kad išsaugotumėte ir paleistumėte pavyzdį."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX suderinami serveriai skaito tik japoniškai. Kol programos kalba nėra japonų, skaitoma sistemos balsu."
+  },
+  "readoutFallbackNote": {
+    "message": "Jei serveris neatsako per 5 sekundes, tas skaitymas naudoja sistemos balsą."
+  },
+  "readoutTestButton": {
+    "message": "Paleisti pavyzdį"
+  },
+  "readoutTestingLabel": {
+    "message": "Paleidžiama…"
+  },
+  "readoutTestOk": {
+    "message": "Atkurta per serverį ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Tai trunka ilgiau nei 5 sekundes, todėl skaitymas naudos sistemos balsą, kol serveris atsakys greičiau."
+  },
+  "readoutTestUnreachable": {
+    "message": "Nepavyksta pasiekti serverio. Patikrinkite, ar jis veikia ir ar URL teisingas."
+  },
+  "readoutTestWrongServer": {
+    "message": "Serveris šiuo URL neatsako kaip pasirinktas tipas. Patikrinkite serverio tipą ir URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Serveryje nėra šio balso. Pasirinkite kitą."
+  },
+  "readoutTestTimeout": {
+    "message": "Serveris neatsakė per 30 sekundžių."
+  },
+  "readoutTestServerError": {
+    "message": "Serveris atsakė klaida."
+  },
+  "readoutTestAudio": {
+    "message": "Garsas gautas, bet jo nepavyko paleisti."
+  },
+  "readoutTestSample": {
+    "message": "Taip skambės skaitymas."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

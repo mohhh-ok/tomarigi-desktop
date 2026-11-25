@@ -295,7 +295,7 @@
     "message": "API ключовете не могат да бъдат запазени, защото на този компютър не работи ключодържател (GNOME Keyring или KWallet). Стартирайте такъв и отворете tomarigi отново."
   },
   "voiceUnavailable": {
-    "message": "Четенето на глас не е налично, защото системата няма синтезатор на реч."
+    "message": "Системата няма синтезатор на реч, затова четенето на глас работи само чрез локален TTS сървър."
   },
   "conciergeName": {
     "message": "Консиерж"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Отвори настройките за ИИ"
+  },
+  "readoutVoiceLabel": {
+    "message": "Глас за четене"
+  },
+  "readoutVoiceSystem": {
+    "message": "Системен глас"
+  },
+  "readoutVoiceLocal": {
+    "message": "Локален TTS сървър"
+  },
+  "readoutKindLabel": {
+    "message": "Тип сървър"
+  },
+  "readoutKindOpenAi": {
+    "message": "Съвместим с OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Съвместим с VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Глас"
+  },
+  "readoutListFailed": {
+    "message": "Списъкът от този сървър не можа да бъде получен. Въведете името."
+  },
+  "readoutNeedsVoice": {
+    "message": "Изберете или въведете глас, за да запазите и пуснете пример."
+  },
+  "readoutNeedsModel": {
+    "message": "Изберете или въведете модел, за да запазите и пуснете пример."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Сървърите, съвместими с VOICEVOX, четат само японски. Докато езикът на приложението не е японски, четенето използва системния глас."
+  },
+  "readoutFallbackNote": {
+    "message": "Ако сървърът не отговори до 5 секунди, това четене използва системния глас."
+  },
+  "readoutTestButton": {
+    "message": "Пусни пример"
+  },
+  "readoutTestingLabel": {
+    "message": "Възпроизвеждане…"
+  },
+  "readoutTestOk": {
+    "message": "Възпроизведено през сървъра ($SECONDS$ с).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Отне над 5 секунди, затова четенето ще използва системния глас, докато сървърът не отговаря по-бързо."
+  },
+  "readoutTestUnreachable": {
+    "message": "Не може да се осъществи връзка със сървъра. Проверете дали работи и дали URL адресът е правилен."
+  },
+  "readoutTestWrongServer": {
+    "message": "Сървърът на този URL адрес не отговаря като избрания тип. Проверете типа сървър и URL адреса."
+  },
+  "readoutTestNoVoice": {
+    "message": "Сървърът няма този глас. Изберете друг."
+  },
+  "readoutTestTimeout": {
+    "message": "Сървърът не отговори до 30 секунди."
+  },
+  "readoutTestServerError": {
+    "message": "Сървърът върна грешка."
+  },
+  "readoutTestAudio": {
+    "message": "Звукът пристигна, но не можа да бъде пуснат."
+  },
+  "readoutTestSample": {
+    "message": "Така ще звучи четенето."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

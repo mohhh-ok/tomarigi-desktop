@@ -295,7 +295,7 @@
     "message": "API-Schlüssel können nicht gespeichert werden, weil auf diesem Computer kein Schlüsselbund (GNOME Keyring oder KWallet) läuft. Starte einen und öffne tomarigi erneut."
   },
   "voiceUnavailable": {
-    "message": "Vorlesen ist nicht verfügbar, weil dieses System keine Sprachausgabe hat."
+    "message": "Dieses System hat keine Sprachausgabe, daher funktioniert Vorlesen nur über einen lokalen TTS-Server."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "KI-Einstellungen öffnen"
+  },
+  "readoutVoiceLabel": {
+    "message": "Vorlesestimme"
+  },
+  "readoutVoiceSystem": {
+    "message": "Systemstimme"
+  },
+  "readoutVoiceLocal": {
+    "message": "Lokaler TTS-Server"
+  },
+  "readoutKindLabel": {
+    "message": "Servertyp"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-kompatibel (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-kompatibel (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Stimme"
+  },
+  "readoutListFailed": {
+    "message": "Die Liste dieses Servers konnte nicht abgerufen werden. Gib den Namen ein."
+  },
+  "readoutNeedsVoice": {
+    "message": "Wähle oder gib eine Stimme ein, um zu speichern und eine Probe abzuspielen."
+  },
+  "readoutNeedsModel": {
+    "message": "Wähle oder gib ein Modell ein, um zu speichern und eine Probe abzuspielen."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-kompatible Server lesen nur Japanisch vor. Solange die App nicht auf Japanisch eingestellt ist, wird die Systemstimme verwendet."
+  },
+  "readoutFallbackNote": {
+    "message": "Antwortet der Server nicht innerhalb von 5 Sekunden, wird dieses Vorlesen mit der Systemstimme ausgegeben."
+  },
+  "readoutTestButton": {
+    "message": "Probe abspielen"
+  },
+  "readoutTestingLabel": {
+    "message": "Wird abgespielt …"
+  },
+  "readoutTestOk": {
+    "message": "Über den Server abgespielt ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Das dauert länger als 5 Sekunden, daher wird zum Vorlesen die Systemstimme verwendet, bis der Server schneller antwortet."
+  },
+  "readoutTestUnreachable": {
+    "message": "Server nicht erreichbar. Prüfe, ob er läuft und die URL stimmt."
+  },
+  "readoutTestWrongServer": {
+    "message": "Der Server unter dieser URL antwortet nicht als der gewählte Typ. Prüfe Servertyp und URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Der Server hat diese Stimme nicht. Wähle eine andere."
+  },
+  "readoutTestTimeout": {
+    "message": "Der Server hat nicht innerhalb von 30 Sekunden geantwortet."
+  },
+  "readoutTestServerError": {
+    "message": "Der Server hat mit einem Fehler geantwortet."
+  },
+  "readoutTestAudio": {
+    "message": "Das Audio ist angekommen, konnte aber nicht abgespielt werden."
+  },
+  "readoutTestSample": {
+    "message": "So klingt das Vorlesen."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

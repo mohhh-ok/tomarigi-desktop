@@ -3,12 +3,12 @@
 // item, and a click on the item comes back as the "voice-enabled" event with the new value
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { speechAvailable } from "@/lib/voice";
+import { readoutAvailable } from "@/lib/voice";
 
-/** Puts the readout setting on the menu item. Without a speech engine the item is disabled and unchecked, as the
- * settings checkbox is */
+/** Puts the readout setting on the menu item. Without anything that can read (no speech engine and no local TTS
+ * server) the item is disabled and unchecked, as the settings checkbox is */
 export function reportVoiceMenu(enabled: boolean): void {
-  const available = speechAvailable();
+  const available = readoutAvailable();
   void invoke("set_voice_menu", { checked: enabled && available, available }).catch(() => {});
 }
 

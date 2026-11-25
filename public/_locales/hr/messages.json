@@ -295,7 +295,7 @@
     "message": "API ključevi ne mogu se spremiti jer na ovom računalu nije pokrenut privjesak ključeva (GNOME Keyring ili KWallet). Pokrenite ga pa ponovno otvorite tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Čitanje naglas nije dostupno jer ovaj sustav nema pogon za govor."
+    "message": "Ovaj sustav nema pogon za govor, pa čitanje naglas radi samo preko lokalnog TTS poslužitelja."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Otvori postavke UI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Glas čitanja"
+  },
+  "readoutVoiceSystem": {
+    "message": "Glas sustava"
+  },
+  "readoutVoiceLocal": {
+    "message": "Lokalni TTS poslužitelj"
+  },
+  "readoutKindLabel": {
+    "message": "Vrsta poslužitelja"
+  },
+  "readoutKindOpenAi": {
+    "message": "Kompatibilan s OpenAI-jem (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Kompatibilan s VOICEVOX-om (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Glas"
+  },
+  "readoutListFailed": {
+    "message": "Popis s ovog poslužitelja nije moguće dohvatiti. Upiši naziv."
+  },
+  "readoutNeedsVoice": {
+    "message": "Odaberi ili upiši glas za spremanje i reprodukciju uzorka."
+  },
+  "readoutNeedsModel": {
+    "message": "Odaberi ili upiši model za spremanje i reprodukciju uzorka."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Poslužitelji kompatibilni s VOICEVOX-om čitaju samo japanski. Dok jezik aplikacije nije japanski, čitanje koristi glas sustava."
+  },
+  "readoutFallbackNote": {
+    "message": "Ako poslužitelj ne odgovori u 5 sekundi, to čitanje koristi glas sustava."
+  },
+  "readoutTestButton": {
+    "message": "Reproduciraj uzorak"
+  },
+  "readoutTestingLabel": {
+    "message": "Reprodukcija…"
+  },
+  "readoutTestOk": {
+    "message": "Reproducirano putem poslužitelja ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Prešlo je 5 sekundi, pa će čitanje koristiti glas sustava dok poslužitelj ne odgovara brže."
+  },
+  "readoutTestUnreachable": {
+    "message": "Poslužitelj nije dostupan. Provjeri radi li i je li URL ispravan."
+  },
+  "readoutTestWrongServer": {
+    "message": "Poslužitelj na ovom URL-u ne odgovara kao odabrana vrsta. Provjeri vrstu poslužitelja i URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Poslužitelj nema ovaj glas. Odaberi drugi."
+  },
+  "readoutTestTimeout": {
+    "message": "Poslužitelj nije odgovorio u 30 sekundi."
+  },
+  "readoutTestServerError": {
+    "message": "Poslužitelj je odgovorio pogreškom."
+  },
+  "readoutTestAudio": {
+    "message": "Zvuk je stigao, ali ga nije bilo moguće reproducirati."
+  },
+  "readoutTestSample": {
+    "message": "Ovako će zvučati čitanje."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

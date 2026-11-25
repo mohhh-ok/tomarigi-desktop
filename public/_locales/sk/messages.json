@@ -295,7 +295,7 @@
     "message": "Kľúče API nemožno uložiť, pretože na tomto počítači nebeží žiadna kľúčenka (GNOME Keyring alebo KWallet). Spustite ju a znova otvorte tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Čítanie nahlas nie je k dispozícii, pretože tento systém nemá rečový modul."
+    "message": "Tento systém nemá rečový modul, takže čítanie nahlas funguje iba cez lokálny server TTS."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Otvoriť nastavenia AI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Hlas čítania"
+  },
+  "readoutVoiceSystem": {
+    "message": "Systémový hlas"
+  },
+  "readoutVoiceLocal": {
+    "message": "Lokálny server TTS"
+  },
+  "readoutKindLabel": {
+    "message": "Typ servera"
+  },
+  "readoutKindOpenAi": {
+    "message": "Kompatibilný s OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Kompatibilný s VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Hlas"
+  },
+  "readoutListFailed": {
+    "message": "Zoznam z tohto servera sa nepodarilo získať. Zadajte názov."
+  },
+  "readoutNeedsVoice": {
+    "message": "Vyberte alebo zadajte hlas, aby ste mohli uložiť a prehrať ukážku."
+  },
+  "readoutNeedsModel": {
+    "message": "Vyberte alebo zadajte model, aby ste mohli uložiť a prehrať ukážku."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Servery kompatibilné s VOICEVOX čítajú iba po japonsky. Kým aplikácia nie je v japončine, čítanie používa systémový hlas."
+  },
+  "readoutFallbackNote": {
+    "message": "Ak server neodpovie do 5 sekúnd, dané čítanie použije systémový hlas."
+  },
+  "readoutTestButton": {
+    "message": "Prehrať ukážku"
+  },
+  "readoutTestingLabel": {
+    "message": "Prehráva sa…"
+  },
+  "readoutTestOk": {
+    "message": "Prehrané cez server ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Presiahlo to 5 sekúnd, takže čítanie bude používať systémový hlas, kým server neodpovie rýchlejšie."
+  },
+  "readoutTestUnreachable": {
+    "message": "Server nie je dostupný. Skontrolujte, či beží a či je URL správna."
+  },
+  "readoutTestWrongServer": {
+    "message": "Server na tejto URL neodpovedá ako zvolený typ. Skontrolujte typ servera a URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Server tento hlas nemá. Vyberte iný."
+  },
+  "readoutTestTimeout": {
+    "message": "Server neodpovedal do 30 sekúnd."
+  },
+  "readoutTestServerError": {
+    "message": "Server odpovedal chybou."
+  },
+  "readoutTestAudio": {
+    "message": "Zvuk dorazil, ale nepodarilo sa ho prehrať."
+  },
+  "readoutTestSample": {
+    "message": "Takto bude čítanie znieť."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

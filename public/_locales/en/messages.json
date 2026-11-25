@@ -295,7 +295,7 @@
     "message": "API keys can't be saved because no keyring (GNOME Keyring or KWallet) is running on this computer. Start one, then reopen tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Reading aloud isn't available because this system has no speech engine."
+    "message": "This system has no speech engine, so reading aloud works only through a local TTS server."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Open AI settings"
+  },
+  "readoutVoiceLabel": {
+    "message": "Readout voice"
+  },
+  "readoutVoiceSystem": {
+    "message": "System voice"
+  },
+  "readoutVoiceLocal": {
+    "message": "Local TTS server"
+  },
+  "readoutKindLabel": {
+    "message": "Server type"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-compatible (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-compatible (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Voice"
+  },
+  "readoutListFailed": {
+    "message": "Couldn't get the list from this server. Type the name."
+  },
+  "readoutNeedsVoice": {
+    "message": "Choose or type a voice to save and play a sample."
+  },
+  "readoutNeedsModel": {
+    "message": "Choose or type a model to save and play a sample."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-compatible servers read Japanese only. While the app isn't in Japanese, readouts use the system voice."
+  },
+  "readoutFallbackNote": {
+    "message": "When the server doesn't answer within 5 seconds, that readout uses the system voice."
+  },
+  "readoutTestButton": {
+    "message": "Play a sample"
+  },
+  "readoutTestingLabel": {
+    "message": "Playing…"
+  },
+  "readoutTestOk": {
+    "message": "Played through the server ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "That's over 5 seconds, so readouts will use the system voice until the server answers faster."
+  },
+  "readoutTestUnreachable": {
+    "message": "Can't reach the server. Check that it's running and the URL is right."
+  },
+  "readoutTestWrongServer": {
+    "message": "The server at this URL doesn't answer as the chosen type. Check the server type and the URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "The server doesn't have this voice. Choose another one."
+  },
+  "readoutTestTimeout": {
+    "message": "The server didn't answer within 30 seconds."
+  },
+  "readoutTestServerError": {
+    "message": "The server answered with an error."
+  },
+  "readoutTestAudio": {
+    "message": "The audio came but couldn't be played."
+  },
+  "readoutTestSample": {
+    "message": "This is how readouts will sound."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

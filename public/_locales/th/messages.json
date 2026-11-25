@@ -295,7 +295,7 @@
     "message": "บันทึกคีย์ API ไม่ได้ เพราะไม่มีพวงกุญแจ (GNOME Keyring หรือ KWallet) ทำงานอยู่ในคอมพิวเตอร์เครื่องนี้ เปิดใช้งานแล้วเปิด tomarigi ใหม่"
   },
   "voiceUnavailable": {
-    "message": "ใช้การอ่านออกเสียงไม่ได้ เพราะระบบนี้ไม่มีเครื่องมือสังเคราะห์เสียง"
+    "message": "ระบบนี้ไม่มีเครื่องมือสังเคราะห์เสียง การอ่านออกเสียงจึงใช้ได้เฉพาะผ่านเซิร์ฟเวอร์ TTS ภายในเครื่อง"
   },
   "conciergeName": {
     "message": "คอนเซียร์จ"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "เปิดการตั้งค่า AI"
+  },
+  "readoutVoiceLabel": {
+    "message": "เสียงอ่านออกเสียง"
+  },
+  "readoutVoiceSystem": {
+    "message": "เสียงของระบบ"
+  },
+  "readoutVoiceLocal": {
+    "message": "เซิร์ฟเวอร์ TTS ภายในเครื่อง"
+  },
+  "readoutKindLabel": {
+    "message": "ประเภทเซิร์ฟเวอร์"
+  },
+  "readoutKindOpenAi": {
+    "message": "รองรับ OpenAI (Kokoro-FastAPI, mlx-audio ฯลฯ)"
+  },
+  "readoutKindVoicevox": {
+    "message": "รองรับ VOICEVOX (VOICEVOX, AivisSpeech ฯลฯ)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "เสียง"
+  },
+  "readoutListFailed": {
+    "message": "ดึงรายการจากเซิร์ฟเวอร์นี้ไม่ได้ โปรดพิมพ์ชื่อ"
+  },
+  "readoutNeedsVoice": {
+    "message": "เลือกหรือพิมพ์เสียงเพื่อบันทึกและเล่นตัวอย่าง"
+  },
+  "readoutNeedsModel": {
+    "message": "เลือกหรือพิมพ์โมเดลเพื่อบันทึกและเล่นตัวอย่าง"
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "เซิร์ฟเวอร์ที่รองรับ VOICEVOX อ่านได้เฉพาะภาษาญี่ปุ่น ขณะที่ภาษาของแอปไม่ใช่ภาษาญี่ปุ่น จะอ่านออกเสียงด้วยเสียงของระบบ"
+  },
+  "readoutFallbackNote": {
+    "message": "หากเซิร์ฟเวอร์ไม่ตอบภายใน 5 วินาที การอ่านครั้งนั้นจะใช้เสียงของระบบ"
+  },
+  "readoutTestButton": {
+    "message": "เล่นตัวอย่าง"
+  },
+  "readoutTestingLabel": {
+    "message": "กำลังเล่น…"
+  },
+  "readoutTestOk": {
+    "message": "อ่านออกเสียงผ่านเซิร์ฟเวอร์แล้ว ($SECONDS$ วินาที)",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "เกิน 5 วินาที จึงจะใช้เสียงของระบบอ่านออกเสียงจนกว่าเซิร์ฟเวอร์จะตอบเร็วขึ้น"
+  },
+  "readoutTestUnreachable": {
+    "message": "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ โปรดตรวจสอบว่าเซิร์ฟเวอร์กำลังทำงานและ URL ถูกต้อง"
+  },
+  "readoutTestWrongServer": {
+    "message": "เซิร์ฟเวอร์ที่ URL นี้ไม่ตอบสนองตามประเภทที่เลือก โปรดตรวจสอบประเภทเซิร์ฟเวอร์และ URL"
+  },
+  "readoutTestNoVoice": {
+    "message": "เซิร์ฟเวอร์ไม่มีเสียงนี้ โปรดเลือกเสียงอื่น"
+  },
+  "readoutTestTimeout": {
+    "message": "เซิร์ฟเวอร์ไม่ตอบภายใน 30 วินาที"
+  },
+  "readoutTestServerError": {
+    "message": "เซิร์ฟเวอร์ตอบกลับด้วยข้อผิดพลาด"
+  },
+  "readoutTestAudio": {
+    "message": "ได้รับเสียงแล้วแต่เล่นไม่ได้"
+  },
+  "readoutTestSample": {
+    "message": "การอ่านออกเสียงจะฟังเป็นแบบนี้"
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

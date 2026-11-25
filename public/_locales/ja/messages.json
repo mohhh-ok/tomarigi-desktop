@@ -295,7 +295,7 @@
     "message": "このコンピューターでキーリング（GNOME Keyring または KWallet）が動いていないため、API キーを保存できません。キーリングを起動してから tomarigi を開き直してください。"
   },
   "voiceUnavailable": {
-    "message": "このシステムには音声合成の機能が無いため、読み上げは使えません。"
+    "message": "このシステムには音声合成の機能が無いため、読み上げはローカルの TTS サーバーを選んだときだけ使えます。"
   },
   "conciergeName": {
     "message": "コンシェルジュ"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "AI の設定を開く"
+  },
+  "readoutVoiceLabel": {
+    "message": "読み上げの声"
+  },
+  "readoutVoiceSystem": {
+    "message": "OS の音声"
+  },
+  "readoutVoiceLocal": {
+    "message": "ローカルの TTS サーバー"
+  },
+  "readoutKindLabel": {
+    "message": "サーバーの種類"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI 互換（Kokoro-FastAPI、mlx-audio など）"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX 互換（VOICEVOX、AivisSpeech など）"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "声"
+  },
+  "readoutListFailed": {
+    "message": "このサーバーから一覧を取得できませんでした。名前を入力してください。"
+  },
+  "readoutNeedsVoice": {
+    "message": "声を選ぶか入力すると、保存と試しの読み上げができます。"
+  },
+  "readoutNeedsModel": {
+    "message": "モデルを選ぶか入力すると、保存と試しの読み上げができます。"
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX 互換のサーバーは日本語だけを読みます。アプリの言語が日本語でない間は、OS の音声で読み上げます。"
+  },
+  "readoutFallbackNote": {
+    "message": "サーバーが 5 秒以内に答えないときは、その読み上げを OS の音声で読みます。"
+  },
+  "readoutTestButton": {
+    "message": "試しに読み上げる"
+  },
+  "readoutTestingLabel": {
+    "message": "読み上げ中…"
+  },
+  "readoutTestOk": {
+    "message": "サーバーの声で読み上げました（$SECONDS$ 秒）。",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "5 秒を超えたので、サーバーがもっと速く答えるまでは読み上げに OS の音声を使います。"
+  },
+  "readoutTestUnreachable": {
+    "message": "サーバーにつながりません。サーバーが起動しているか、URL が正しいかを確かめてください。"
+  },
+  "readoutTestWrongServer": {
+    "message": "この URL のサーバーは、選んだ種類のサーバーとして答えません。サーバーの種類と URL を確かめてください。"
+  },
+  "readoutTestNoVoice": {
+    "message": "このサーバーにはこの声がありません。別の声を選んでください。"
+  },
+  "readoutTestTimeout": {
+    "message": "サーバーが 30 秒以内に答えませんでした。"
+  },
+  "readoutTestServerError": {
+    "message": "サーバーがエラーを返しました。"
+  },
+  "readoutTestAudio": {
+    "message": "音声は届きましたが、再生できませんでした。"
+  },
+  "readoutTestSample": {
+    "message": "読み上げはこの声になります。"
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

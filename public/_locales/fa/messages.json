@@ -295,7 +295,7 @@
     "message": "کلیدهای API ذخیره نمی‌شوند، چون هیچ دسته‌کلیدی (GNOME Keyring یا KWallet) روی این رایانه در حال اجرا نیست. یکی را اجرا کنید و tomarigi را دوباره باز کنید."
   },
   "voiceUnavailable": {
-    "message": "خواندن با صدا در دسترس نیست، چون این سیستم موتور گفتار ندارد."
+    "message": "این سیستم موتور گفتار ندارد، بنابراین خواندن با صدا فقط از طریق سرور TTS محلی کار می‌کند."
   },
   "conciergeName": {
     "message": "کانسیرژ"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "باز کردن تنظیمات هوش مصنوعی"
+  },
+  "readoutVoiceLabel": {
+    "message": "صدای خواندن"
+  },
+  "readoutVoiceSystem": {
+    "message": "صدای سیستم"
+  },
+  "readoutVoiceLocal": {
+    "message": "سرور TTS محلی"
+  },
+  "readoutKindLabel": {
+    "message": "نوع سرور"
+  },
+  "readoutKindOpenAi": {
+    "message": "سازگار با OpenAI (Kokoro-FastAPI، mlx-audio و …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "سازگار با VOICEVOX (VOICEVOX، AivisSpeech و …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "صدا"
+  },
+  "readoutListFailed": {
+    "message": "دریافت فهرست از این سرور ممکن نشد. نام را تایپ کنید."
+  },
+  "readoutNeedsVoice": {
+    "message": "برای ذخیره و پخش نمونه، یک صدا انتخاب یا تایپ کنید."
+  },
+  "readoutNeedsModel": {
+    "message": "برای ذخیره و پخش نمونه، یک مدل انتخاب یا تایپ کنید."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "سرورهای سازگار با VOICEVOX فقط ژاپنی می‌خوانند. تا زمانی که زبان برنامه ژاپنی نیست، خواندن با صدای سیستم انجام می‌شود."
+  },
+  "readoutFallbackNote": {
+    "message": "اگر سرور ظرف ۵ ثانیه پاسخ ندهد، آن خواندن با صدای سیستم انجام می‌شود."
+  },
+  "readoutTestButton": {
+    "message": "پخش نمونه"
+  },
+  "readoutTestingLabel": {
+    "message": "در حال پخش…"
+  },
+  "readoutTestOk": {
+    "message": "از طریق سرور خوانده شد ($SECONDS$ ثانیه).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "از ۵ ثانیه بیشتر شد، پس تا زمانی که سرور سریع‌تر پاسخ دهد، خواندن با صدای سیستم انجام می‌شود."
+  },
+  "readoutTestUnreachable": {
+    "message": "دسترسی به سرور ممکن نیست. بررسی کنید که سرور در حال اجرا و URL درست باشد."
+  },
+  "readoutTestWrongServer": {
+    "message": "سرور در این URL مانند نوع انتخاب‌شده پاسخ نمی‌دهد. نوع سرور و URL را بررسی کنید."
+  },
+  "readoutTestNoVoice": {
+    "message": "این صدا در سرور وجود ندارد. صدای دیگری انتخاب کنید."
+  },
+  "readoutTestTimeout": {
+    "message": "سرور ظرف ۳۰ ثانیه پاسخ نداد."
+  },
+  "readoutTestServerError": {
+    "message": "سرور خطا برگرداند."
+  },
+  "readoutTestAudio": {
+    "message": "صدا رسید اما پخش نشد."
+  },
+  "readoutTestSample": {
+    "message": "خواندن این‌گونه شنیده می‌شود."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

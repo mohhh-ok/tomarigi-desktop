@@ -295,7 +295,7 @@
     "message": "এই কম্পিউটারে কোনো কীরিং (GNOME Keyring বা KWallet) চালু নেই, তাই API কী সংরক্ষণ করা যাচ্ছে না। একটি চালু করে tomarigi আবার খুলুন।"
   },
   "voiceUnavailable": {
-    "message": "এই সিস্টেমে কোনো স্পিচ ইঞ্জিন নেই, তাই কণ্ঠে পড়ে শোনানো যাবে না।"
+    "message": "এই সিস্টেমে কোনো স্পিচ ইঞ্জিন নেই, তাই কণ্ঠে পড়ে শোনানো শুধু লোকাল TTS সার্ভারের মাধ্যমে কাজ করে।"
   },
   "conciergeName": {
     "message": "কনসিয়ার্জ"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "AI সেটিংস খুলুন"
+  },
+  "readoutVoiceLabel": {
+    "message": "পড়ে শোনানোর কণ্ঠ"
+  },
+  "readoutVoiceSystem": {
+    "message": "সিস্টেমের কণ্ঠ"
+  },
+  "readoutVoiceLocal": {
+    "message": "লোকাল TTS সার্ভার"
+  },
+  "readoutKindLabel": {
+    "message": "সার্ভারের ধরন"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-সামঞ্জস্যপূর্ণ (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-সামঞ্জস্যপূর্ণ (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "কণ্ঠ"
+  },
+  "readoutListFailed": {
+    "message": "এই সার্ভার থেকে তালিকা পাওয়া যায়নি। নামটি লিখুন।"
+  },
+  "readoutNeedsVoice": {
+    "message": "সংরক্ষণ করতে ও নমুনা চালাতে একটি কণ্ঠ বেছে নিন বা লিখুন।"
+  },
+  "readoutNeedsModel": {
+    "message": "সংরক্ষণ করতে ও নমুনা চালাতে একটি মডেল বেছে নিন বা লিখুন।"
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-সামঞ্জস্যপূর্ণ সার্ভার শুধু জাপানি পড়ে। অ্যাপের ভাষা জাপানি না থাকলে সিস্টেমের কণ্ঠে পড়ে শোনানো হবে।"
+  },
+  "readoutFallbackNote": {
+    "message": "সার্ভার ৫ সেকেন্ডের মধ্যে সাড়া না দিলে সেই পড়া সিস্টেমের কণ্ঠে হবে।"
+  },
+  "readoutTestButton": {
+    "message": "নমুনা চালান"
+  },
+  "readoutTestingLabel": {
+    "message": "চলছে…"
+  },
+  "readoutTestOk": {
+    "message": "সার্ভারের কণ্ঠে পড়া হয়েছে ($SECONDS$ সেকেন্ড)।",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "৫ সেকেন্ড ছাড়িয়ে গেছে, তাই সার্ভার আরও দ্রুত সাড়া না দেওয়া পর্যন্ত পড়ে শোনাতে সিস্টেমের কণ্ঠ ব্যবহার হবে।"
+  },
+  "readoutTestUnreachable": {
+    "message": "সার্ভারে পৌঁছানো যাচ্ছে না। সার্ভার চালু আছে কি না এবং URL ঠিক আছে কি না দেখুন।"
+  },
+  "readoutTestWrongServer": {
+    "message": "এই URL-এর সার্ভার বেছে নেওয়া ধরনের সার্ভার হিসেবে সাড়া দিচ্ছে না। সার্ভারের ধরন ও URL দেখুন।"
+  },
+  "readoutTestNoVoice": {
+    "message": "এই সার্ভারে এই কণ্ঠ নেই। অন্য একটি বেছে নিন।"
+  },
+  "readoutTestTimeout": {
+    "message": "সার্ভার ৩০ সেকেন্ডের মধ্যে সাড়া দেয়নি।"
+  },
+  "readoutTestServerError": {
+    "message": "সার্ভার একটি ত্রুটি ফিরিয়ে দিয়েছে।"
+  },
+  "readoutTestAudio": {
+    "message": "অডিও এসেছে, কিন্তু চালানো যায়নি।"
+  },
+  "readoutTestSample": {
+    "message": "পড়ে শোনানো এভাবেই শোনাবে।"
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

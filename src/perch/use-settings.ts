@@ -45,7 +45,15 @@ import {
 import { testJudgeConnection } from "@/lib/judge";
 import { testOpenAiConnection } from "@/lib/openai-judge";
 import { testLocalConnection } from "@/lib/local-judge";
-import { cancelSpeech, setVoiceVolume } from "@/lib/voice";
+import { cancelSpeech, setReadoutVoice, setVoiceVolume, testReadoutVoice, type ReadoutTestResult } from "@/lib/voice";
+import {
+  loadReadoutVoice,
+  saveReadoutVoice,
+  SYSTEM_VOICE,
+  type LocalTtsConfig,
+  type ReadoutVoice,
+} from "@/lib/readout-voice";
+import { t } from "@/lib/i18n";
 import { listenVoiceMenu, reportVoiceMenu } from "./voice-menu";
 import { DEFAULT_ICON_SET } from "./icon-sets";
 import type { ApiKeyTestState } from "./settings/ai-key-settings";
@@ -80,6 +88,9 @@ export function useSettings() {
   const [iconSetAssignments, setIconSetAssignments] = useState<IconSetAssignments>({});
   // The concierge's look (docs/design.md "Concierge"), the same in every icon set
   const [conciergeLook, setConciergeLook] = useState<ConciergeLook>(DEFAULT_CONCIERGE_LOOK);
+  // System voice or a local TTS server (docs/design.md "Readout voice (local TTS server)")
+  const [readoutVoice, setReadoutVoiceState] = useState<ReadoutVoice>(SYSTEM_VOICE);
+  const readoutVoiceRef = useRef(readoutVoice);
   const mutedRef = useRef(muted);
   const voiceEnabledRef = useRef(voiceEnabled);
 
@@ -102,6 +113,24 @@ export function useSettings() {
     const volume = await loadVoiceVolume();
     setVoiceVolumeState(volume);
     setVoiceVolume(volume);
+    let readout = await loadReadoutVoice();
+    // For verification: TOMARIGI_LOCAL_TTS sets the local readout voice and logs its test (README)
+    const ttsImport = await invoke<string[] | null>("local_tts_import").catch(() => null);
+    if (ttsImport && (ttsImport[0] === "openai" || ttsImport[0] === "voicevox")) {
+      const [kind, baseUrl, voice, model] = ttsImport;
+      readout = {
+        source: "local",
+        local: { kind, baseUrl, voice, ...(kind === "openai" && { model }), voicevoxCredit: false },
+      };
+      await saveReadoutVoice(readout);
+      void invoke("log", { line: `[voice] imported local kind=${kind} voice=${voice}` }).catch(() => {});
+      const local = readout.local!;
+      // Without a click there is no AudioContext, so the sample's playback fails (error=audio); the request still runs
+      void testReadoutVoice(local, t(kind === "voicevox" ? "readoutTestSampleJa" : "readoutTestSample"));
+    }
+    readoutVoiceRef.current = readout;
+    setReadoutVoiceState(readout);
+    setReadoutVoice(readout);
     // Rust holds the keys (docs/design.md "BYOK API keys"). After migrating keys an earlier version left in IndexedDB
     // (the keychain version) and handing over from dev's IndexedDB, it only asks whether each key is saved
     try {
@@ -188,6 +217,43 @@ export function useSettings() {
     setChirpVolume(next);
     void saveChirpVolume(next);
   }, []);
+
+  const applyReadoutVoice = useCallback(async (next: ReadoutVoice) => {
+    readoutVoiceRef.current = next;
+    setReadoutVoiceState(next);
+    setReadoutVoice(next);
+    // The menu item's "available" depends on the voice where the system has none
+    reportVoiceMenu(voiceEnabledRef.current);
+    await saveReadoutVoice(next);
+  }, []);
+
+  /** "System voice" / "Local server". The local config is kept either way */
+  const changeReadoutSource = useCallback(
+    (source: ReadoutVoice["source"]) => {
+      void applyReadoutVoice({ ...readoutVoiceRef.current, source });
+      void invoke("log", { line: `[voice] source=${source}` }).catch(() => {});
+    },
+    [applyReadoutVoice],
+  );
+
+  const saveLocalTts = useCallback(
+    (local: LocalTtsConfig) => {
+      void applyReadoutVoice({ source: "local", local });
+      void invoke("log", { line: `[voice] saved local kind=${local.kind}` }).catch(() => {});
+    },
+    [applyReadoutVoice],
+  );
+
+  const removeLocalTts = useCallback(() => {
+    void applyReadoutVoice({ source: readoutVoiceRef.current.source });
+    void invoke("log", { line: "[voice] deleted local" }).catch(() => {});
+  }, [applyReadoutVoice]);
+
+  const runTtsTest = useCallback(
+    (config: LocalTtsConfig): Promise<ReadoutTestResult> =>
+      testReadoutVoice(config, t(config.kind === "voicevox" ? "readoutTestSampleJa" : "readoutTestSample")),
+    [],
+  );
 
   /** After saving, the draft isn't kept anywhere (no plaintext key left in state) */
   // true if saved. On failure (can't write to the keychain, etc.) it returns false so the settings row shows the failure
@@ -321,6 +387,11 @@ export function useSettings() {
     voiceEnabled,
     voiceEnabledRef,
     voiceVolume,
+    readoutVoice,
+    changeReadoutSource,
+    saveLocalTts,
+    removeLocalTts,
+    runTtsTest,
     aiKeySet,
     retiredKeys,
     keyStoreAvailable,

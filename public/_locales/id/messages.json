@@ -295,7 +295,7 @@
     "message": "Kunci API tidak dapat disimpan karena tidak ada keyring (GNOME Keyring atau KWallet) yang berjalan di komputer ini. Jalankan salah satunya, lalu buka ulang tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Pembacaan dengan suara tidak tersedia karena sistem ini tidak memiliki mesin suara."
+    "message": "Sistem ini tidak memiliki mesin suara, jadi pembacaan dengan suara hanya berfungsi lewat server TTS lokal."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Buka setelan AI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Suara pembacaan"
+  },
+  "readoutVoiceSystem": {
+    "message": "Suara sistem"
+  },
+  "readoutVoiceLocal": {
+    "message": "Server TTS lokal"
+  },
+  "readoutKindLabel": {
+    "message": "Jenis server"
+  },
+  "readoutKindOpenAi": {
+    "message": "Kompatibel OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Kompatibel VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Suara"
+  },
+  "readoutListFailed": {
+    "message": "Tidak dapat mengambil daftar dari server ini. Ketik namanya."
+  },
+  "readoutNeedsVoice": {
+    "message": "Pilih atau ketik suara untuk menyimpan dan memutar contoh."
+  },
+  "readoutNeedsModel": {
+    "message": "Pilih atau ketik model untuk menyimpan dan memutar contoh."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Server yang kompatibel dengan VOICEVOX hanya membaca bahasa Jepang. Selama bahasa aplikasi bukan Jepang, pembacaan memakai suara sistem."
+  },
+  "readoutFallbackNote": {
+    "message": "Jika server tidak menjawab dalam 5 detik, pembacaan itu memakai suara sistem."
+  },
+  "readoutTestButton": {
+    "message": "Putar contoh"
+  },
+  "readoutTestingLabel": {
+    "message": "Memutar…"
+  },
+  "readoutTestOk": {
+    "message": "Dibacakan lewat server ($SECONDS$ dtk).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Lebih dari 5 detik, jadi pembacaan akan memakai suara sistem sampai server menjawab lebih cepat."
+  },
+  "readoutTestUnreachable": {
+    "message": "Tidak dapat menjangkau server. Pastikan server berjalan dan URL-nya benar."
+  },
+  "readoutTestWrongServer": {
+    "message": "Server di URL ini tidak menjawab sebagai jenis yang dipilih. Periksa jenis server dan URL-nya."
+  },
+  "readoutTestNoVoice": {
+    "message": "Server tidak memiliki suara ini. Pilih suara lain."
+  },
+  "readoutTestTimeout": {
+    "message": "Server tidak menjawab dalam 30 detik."
+  },
+  "readoutTestServerError": {
+    "message": "Server menjawab dengan galat."
+  },
+  "readoutTestAudio": {
+    "message": "Audio diterima tetapi tidak dapat diputar."
+  },
+  "readoutTestSample": {
+    "message": "Beginilah suara pembacaan nanti."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

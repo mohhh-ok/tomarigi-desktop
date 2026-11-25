@@ -611,3 +611,35 @@ button.update-install:hover {
 .update-settings p {
   text-wrap: pretty;
 }
+
+/* Readout voice (readout-voice-settings.tsx): a sub-group of "Read aloud", indented like its other sub-rows, with the
+   local server's card under the two choices */
+.readout-voice {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-left: 24px;
+}
+
+.readout-voice .voice-enable-row + .voice-enable-row {
+  margin-top: 0;
+}
+
+.readout-voice-label {
+  font-size: 12px;
+  color: #a49f92;
+}
+
+.readout-voice-card {
+  margin-top: 4px;
+}
+
+.readout-voice-card .settings-note {
+  margin: 0 0 10px;
+}
+
+/* The credit VOICEVOX's terms ask for, under the voice */
+.readout-voice-credit {
+  font-size: 12px;
+  color: #a49f92;
+}

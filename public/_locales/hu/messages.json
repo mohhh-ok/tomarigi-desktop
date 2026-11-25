@@ -295,7 +295,7 @@
     "message": "Az API-kulcsok nem menthetők, mert ezen a számítógépen nem fut kulcstartó (GNOME Keyring vagy KWallet). Indítson el egyet, majd nyissa meg újra a tomarigit."
   },
   "voiceUnavailable": {
-    "message": "A felolvasás nem érhető el, mert ezen a rendszeren nincs beszédmotor."
+    "message": "Ezen a rendszeren nincs beszédmotor, ezért a felolvasás csak helyi TTS-kiszolgálóval működik."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "MI-beállítások megnyitása"
+  },
+  "readoutVoiceLabel": {
+    "message": "Felolvasás hangja"
+  },
+  "readoutVoiceSystem": {
+    "message": "Rendszerhang"
+  },
+  "readoutVoiceLocal": {
+    "message": "Helyi TTS-kiszolgáló"
+  },
+  "readoutKindLabel": {
+    "message": "Kiszolgáló típusa"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-kompatibilis (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-kompatibilis (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Hang"
+  },
+  "readoutListFailed": {
+    "message": "Nem sikerült lekérni a listát erről a kiszolgálóról. Írd be a nevet."
+  },
+  "readoutNeedsVoice": {
+    "message": "Válassz vagy írj be egy hangot a mentéshez és a minta lejátszásához."
+  },
+  "readoutNeedsModel": {
+    "message": "Válassz vagy írj be egy modellt a mentéshez és a minta lejátszásához."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "A VOICEVOX-kompatibilis kiszolgálók csak japánul olvasnak fel. Amíg az alkalmazás nyelve nem japán, a felolvasás a rendszerhangot használja."
+  },
+  "readoutFallbackNote": {
+    "message": "Ha a kiszolgáló 5 másodpercen belül nem válaszol, az a felolvasás a rendszerhangot használja."
+  },
+  "readoutTestButton": {
+    "message": "Minta lejátszása"
+  },
+  "readoutTestingLabel": {
+    "message": "Lejátszás…"
+  },
+  "readoutTestOk": {
+    "message": "Lejátszva a kiszolgálón keresztül ($SECONDS$ mp).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Ez több mint 5 másodperc, ezért a felolvasás a rendszerhangot használja, amíg a kiszolgáló gyorsabban nem válaszol."
+  },
+  "readoutTestUnreachable": {
+    "message": "A kiszolgáló nem érhető el. Ellenőrizd, hogy fut-e, és hogy az URL helyes-e."
+  },
+  "readoutTestWrongServer": {
+    "message": "Az ezen az URL-en lévő kiszolgáló nem a kiválasztott típusként válaszol. Ellenőrizd a kiszolgáló típusát és az URL-t."
+  },
+  "readoutTestNoVoice": {
+    "message": "A kiszolgálón nincs ilyen hang. Válassz másikat."
+  },
+  "readoutTestTimeout": {
+    "message": "A kiszolgáló 30 másodpercen belül nem válaszolt."
+  },
+  "readoutTestServerError": {
+    "message": "A kiszolgáló hibával válaszolt."
+  },
+  "readoutTestAudio": {
+    "message": "A hang megérkezett, de nem sikerült lejátszani."
+  },
+  "readoutTestSample": {
+    "message": "Így fog hangzani a felolvasás."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

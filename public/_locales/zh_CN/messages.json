@@ -295,7 +295,7 @@
     "message": "此电脑上没有运行密钥环（GNOME Keyring 或 KWallet），因此无法保存 API 密钥。请启动密钥环后重新打开 tomarigi。"
   },
   "voiceUnavailable": {
-    "message": "此系统没有语音合成功能，因此无法朗读。"
+    "message": "此系统没有语音合成功能，因此只有选择本地 TTS 服务器时才能朗读。"
   },
   "conciergeName": {
     "message": "礼宾员"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "打开 AI 设置"
+  },
+  "readoutVoiceLabel": {
+    "message": "朗读语音"
+  },
+  "readoutVoiceSystem": {
+    "message": "系统语音"
+  },
+  "readoutVoiceLocal": {
+    "message": "本地 TTS 服务器"
+  },
+  "readoutKindLabel": {
+    "message": "服务器类型"
+  },
+  "readoutKindOpenAi": {
+    "message": "兼容 OpenAI（Kokoro-FastAPI、mlx-audio 等）"
+  },
+  "readoutKindVoicevox": {
+    "message": "兼容 VOICEVOX（VOICEVOX、AivisSpeech 等）"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "声音"
+  },
+  "readoutListFailed": {
+    "message": "无法从此服务器获取列表。请输入名称。"
+  },
+  "readoutNeedsVoice": {
+    "message": "选择或输入一个声音后，即可保存并试听。"
+  },
+  "readoutNeedsModel": {
+    "message": "选择或输入一个模型后，即可保存并试听。"
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "兼容 VOICEVOX 的服务器只能朗读日语。应用语言不是日语时，将使用系统语音朗读。"
+  },
+  "readoutFallbackNote": {
+    "message": "服务器在 5 秒内没有响应时，该次朗读会使用系统语音。"
+  },
+  "readoutTestButton": {
+    "message": "试听"
+  },
+  "readoutTestingLabel": {
+    "message": "播放中…"
+  },
+  "readoutTestOk": {
+    "message": "已通过服务器朗读（$SECONDS$ 秒）。",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "超过了 5 秒，因此在服务器响应变快之前，朗读会使用系统语音。"
+  },
+  "readoutTestUnreachable": {
+    "message": "无法连接到服务器。请确认服务器正在运行且 URL 正确。"
+  },
+  "readoutTestWrongServer": {
+    "message": "此 URL 上的服务器不符合所选类型。请检查服务器类型和 URL。"
+  },
+  "readoutTestNoVoice": {
+    "message": "服务器没有这个声音。请选择其他声音。"
+  },
+  "readoutTestTimeout": {
+    "message": "服务器在 30 秒内没有响应。"
+  },
+  "readoutTestServerError": {
+    "message": "服务器返回了错误。"
+  },
+  "readoutTestAudio": {
+    "message": "音频已收到，但无法播放。"
+  },
+  "readoutTestSample": {
+    "message": "朗读的声音就是这样。"
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

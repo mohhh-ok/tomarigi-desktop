@@ -295,7 +295,7 @@
     "message": "API कुंजियाँ सहेजी नहीं जा सकतीं, क्योंकि इस कंप्यूटर पर कोई कीरिंग (GNOME Keyring या KWallet) नहीं चल रही है। एक चालू करें, फिर tomarigi को दोबारा खोलें।"
   },
   "voiceUnavailable": {
-    "message": "आवाज़ से पढ़ना उपलब्ध नहीं है, क्योंकि इस सिस्टम में स्पीच इंजन नहीं है।"
+    "message": "इस सिस्टम में स्पीच इंजन नहीं है, इसलिए आवाज़ से पढ़ना केवल लोकल TTS सर्वर के ज़रिए काम करता है।"
   },
   "conciergeName": {
     "message": "कंसीयर्ज"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "AI सेटिंग खोलें"
+  },
+  "readoutVoiceLabel": {
+    "message": "पढ़ने की आवाज़"
+  },
+  "readoutVoiceSystem": {
+    "message": "सिस्टम की आवाज़"
+  },
+  "readoutVoiceLocal": {
+    "message": "लोकल TTS सर्वर"
+  },
+  "readoutKindLabel": {
+    "message": "सर्वर का प्रकार"
+  },
+  "readoutKindOpenAi": {
+    "message": "OpenAI-संगत (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "VOICEVOX-संगत (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "आवाज़"
+  },
+  "readoutListFailed": {
+    "message": "इस सर्वर से सूची नहीं मिल सकी। नाम टाइप करें।"
+  },
+  "readoutNeedsVoice": {
+    "message": "सहेजने और नमूना चलाने के लिए कोई आवाज़ चुनें या टाइप करें।"
+  },
+  "readoutNeedsModel": {
+    "message": "सहेजने और नमूना चलाने के लिए कोई मॉडल चुनें या टाइप करें।"
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "VOICEVOX-संगत सर्वर केवल जापानी पढ़ते हैं। जब तक ऐप की भाषा जापानी नहीं है, पढ़ने में सिस्टम की आवाज़ इस्तेमाल होगी।"
+  },
+  "readoutFallbackNote": {
+    "message": "अगर सर्वर 5 सेकंड में जवाब नहीं देता, तो वह पढ़ना सिस्टम की आवाज़ में होगा।"
+  },
+  "readoutTestButton": {
+    "message": "नमूना चलाएँ"
+  },
+  "readoutTestingLabel": {
+    "message": "चल रहा है…"
+  },
+  "readoutTestOk": {
+    "message": "सर्वर की आवाज़ में पढ़ा गया ($SECONDS$ सेकंड)।",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "यह 5 सेकंड से ज़्यादा है, इसलिए सर्वर के तेज़ जवाब देने तक पढ़ने में सिस्टम की आवाज़ इस्तेमाल होगी।"
+  },
+  "readoutTestUnreachable": {
+    "message": "सर्वर तक नहीं पहुँचा जा सका। जाँचें कि सर्वर चल रहा है और URL सही है।"
+  },
+  "readoutTestWrongServer": {
+    "message": "इस URL का सर्वर चुने गए प्रकार के रूप में जवाब नहीं देता। सर्वर का प्रकार और URL जाँचें।"
+  },
+  "readoutTestNoVoice": {
+    "message": "इस सर्वर में यह आवाज़ नहीं है। कोई दूसरी आवाज़ चुनें।"
+  },
+  "readoutTestTimeout": {
+    "message": "सर्वर ने 30 सेकंड में जवाब नहीं दिया।"
+  },
+  "readoutTestServerError": {
+    "message": "सर्वर ने त्रुटि लौटाई।"
+  },
+  "readoutTestAudio": {
+    "message": "ऑडियो आया, लेकिन चलाया नहीं जा सका।"
+  },
+  "readoutTestSample": {
+    "message": "पढ़ना इसी आवाज़ में सुनाई देगा।"
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

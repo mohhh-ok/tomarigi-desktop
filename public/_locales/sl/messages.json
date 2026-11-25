@@ -295,7 +295,7 @@
     "message": "Ključev API ni mogoče shraniti, ker v tem računalniku ne teče nobena shramba ključev (GNOME Keyring ali KWallet). Zaženite jo in znova odprite tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Branje z glasom ni na voljo, ker ta sistem nima govornega pogona."
+    "message": "Ta sistem nima govornega pogona, zato branje z glasom deluje samo prek lokalnega strežnika TTS."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Odpri nastavitve UI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Glas branja"
+  },
+  "readoutVoiceSystem": {
+    "message": "Sistemski glas"
+  },
+  "readoutVoiceLocal": {
+    "message": "Lokalni strežnik TTS"
+  },
+  "readoutKindLabel": {
+    "message": "Vrsta strežnika"
+  },
+  "readoutKindOpenAi": {
+    "message": "Združljiv z OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Združljiv z VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Glas"
+  },
+  "readoutListFailed": {
+    "message": "Seznama s tega strežnika ni bilo mogoče pridobiti. Vnesite ime."
+  },
+  "readoutNeedsVoice": {
+    "message": "Izberite ali vnesite glas, da shranite in predvajate vzorec."
+  },
+  "readoutNeedsModel": {
+    "message": "Izberite ali vnesite model, da shranite in predvajate vzorec."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Strežniki, združljivi z VOICEVOX, berejo samo japonsko. Dokler jezik aplikacije ni japonščina, branje uporablja sistemski glas."
+  },
+  "readoutFallbackNote": {
+    "message": "Če strežnik ne odgovori v 5 sekundah, to branje uporabi sistemski glas."
+  },
+  "readoutTestButton": {
+    "message": "Predvajaj vzorec"
+  },
+  "readoutTestingLabel": {
+    "message": "Predvajanje…"
+  },
+  "readoutTestOk": {
+    "message": "Predvajano prek strežnika ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "To presega 5 sekund, zato bo branje uporabljalo sistemski glas, dokler strežnik ne odgovarja hitreje."
+  },
+  "readoutTestUnreachable": {
+    "message": "Strežnika ni mogoče doseči. Preverite, ali deluje in ali je URL pravilen."
+  },
+  "readoutTestWrongServer": {
+    "message": "Strežnik na tem URL-ju ne odgovarja kot izbrana vrsta. Preverite vrsto strežnika in URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Strežnik nima tega glasu. Izberite drugega."
+  },
+  "readoutTestTimeout": {
+    "message": "Strežnik ni odgovoril v 30 sekundah."
+  },
+  "readoutTestServerError": {
+    "message": "Strežnik je odgovoril z napako."
+  },
+  "readoutTestAudio": {
+    "message": "Zvok je prispel, vendar ga ni bilo mogoče predvajati."
+  },
+  "readoutTestSample": {
+    "message": "Tako bo zvenelo branje."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

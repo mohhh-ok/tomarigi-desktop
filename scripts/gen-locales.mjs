@@ -29,12 +29,13 @@ import ask from "./locales/ask.mjs";
 import concierge from "./locales/concierge.mjs";
 import update from "./locales/update.mjs";
 import localAi from "./locales/local-ai.mjs";
+import readoutVoice from "./locales/readout-voice.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "..", "public", "_locales");
 
 // Merge the groups into one table. The same key appearing in two groups is an accident, so fail.
-const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge, update, localAi };
+const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge, update, localAi, readoutVoice };
 
 const MERGED = {};
 for (const [groupName, table] of Object.entries(GROUPS)) {
@@ -179,6 +180,30 @@ export const KEYS = [
   "conciergeSetupNeeds",
   "conciergeSetupFree",
   "conciergeSetupButton",
+  "readoutVoiceLabel",
+  "readoutVoiceSystem",
+  "readoutVoiceLocal",
+  "readoutKindLabel",
+  "readoutKindOpenAi",
+  "readoutKindVoicevox",
+  "readoutVoiceNameLabel",
+  "readoutListFailed",
+  "readoutNeedsVoice",
+  "readoutNeedsModel",
+  "readoutVoicevoxJaOnly",
+  "readoutFallbackNote",
+  "readoutTestButton",
+  "readoutTestingLabel",
+  "readoutTestOk",
+  "readoutTestSlow",
+  "readoutTestUnreachable",
+  "readoutTestWrongServer",
+  "readoutTestNoVoice",
+  "readoutTestTimeout",
+  "readoutTestServerError",
+  "readoutTestAudio",
+  "readoutTestSample",
+  "readoutTestSampleJa",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).
@@ -195,6 +220,7 @@ export const KEYS = [
 
 // key name → placeholder name → positional argument. Shared by all locales (doesn't depend on the language of the text).
 export const PLACEHOLDERS = {
+  readoutTestOk: { seconds: "$1" },
   sinceSeconds: { count: "$1" },
   sinceMinutes: { count: "$1" },
   sinceHoursMinutes: { hours: "$1", minutes: "$2" },

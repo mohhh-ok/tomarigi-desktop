@@ -295,7 +295,7 @@
     "message": "لا يمكن حفظ مفاتيح API لأنه لا توجد سلسلة مفاتيح (GNOME Keyring أو KWallet) قيد التشغيل على هذا الكمبيوتر. شغّل واحدة ثم أعد فتح tomarigi."
   },
   "voiceUnavailable": {
-    "message": "القراءة بصوت عالٍ غير متاحة لأن هذا النظام لا يحتوي على محرك نطق."
+    "message": "لا يحتوي هذا النظام على محرك نطق، لذا تعمل القراءة بصوت عالٍ فقط عبر خادم TTS محلي."
   },
   "conciergeName": {
     "message": "الكونسيرج"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "فتح إعدادات الذكاء الاصطناعي"
+  },
+  "readoutVoiceLabel": {
+    "message": "صوت القراءة"
+  },
+  "readoutVoiceSystem": {
+    "message": "صوت النظام"
+  },
+  "readoutVoiceLocal": {
+    "message": "خادم TTS محلي"
+  },
+  "readoutKindLabel": {
+    "message": "نوع الخادم"
+  },
+  "readoutKindOpenAi": {
+    "message": "متوافق مع OpenAI (Kokoro-FastAPI وmlx-audio وغيرهما)"
+  },
+  "readoutKindVoicevox": {
+    "message": "متوافق مع VOICEVOX (VOICEVOX وAivisSpeech وغيرهما)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "الصوت"
+  },
+  "readoutListFailed": {
+    "message": "تعذّر الحصول على القائمة من هذا الخادم. اكتب الاسم."
+  },
+  "readoutNeedsVoice": {
+    "message": "اختر صوتًا أو اكتبه لحفظه وتشغيل عيّنة."
+  },
+  "readoutNeedsModel": {
+    "message": "اختر نموذجًا أو اكتبه لحفظه وتشغيل عيّنة."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "الخوادم المتوافقة مع VOICEVOX تقرأ اليابانية فقط. وما دامت لغة التطبيق ليست اليابانية، تستخدم القراءة صوت النظام."
+  },
+  "readoutFallbackNote": {
+    "message": "إذا لم يردّ الخادم خلال 5 ثوانٍ، تستخدم تلك القراءة صوت النظام."
+  },
+  "readoutTestButton": {
+    "message": "تشغيل عيّنة"
+  },
+  "readoutTestingLabel": {
+    "message": "جارٍ التشغيل…"
+  },
+  "readoutTestOk": {
+    "message": "تمت القراءة عبر الخادم ($SECONDS$ ث).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "تجاوز ذلك 5 ثوانٍ، لذا ستستخدم القراءة صوت النظام إلى أن يردّ الخادم بشكل أسرع."
+  },
+  "readoutTestUnreachable": {
+    "message": "تعذّر الوصول إلى الخادم. تأكد من أنه قيد التشغيل وأن عنوان URL صحيح."
+  },
+  "readoutTestWrongServer": {
+    "message": "الخادم على عنوان URL هذا لا يستجيب كالنوع المختار. تحقق من نوع الخادم وعنوان URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "لا يحتوي الخادم على هذا الصوت. اختر صوتًا آخر."
+  },
+  "readoutTestTimeout": {
+    "message": "لم يردّ الخادم خلال 30 ثانية."
+  },
+  "readoutTestServerError": {
+    "message": "ردّ الخادم بخطأ."
+  },
+  "readoutTestAudio": {
+    "message": "وصل الصوت لكن تعذّر تشغيله."
+  },
+  "readoutTestSample": {
+    "message": "هكذا ستبدو القراءة."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

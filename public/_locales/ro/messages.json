@@ -295,7 +295,7 @@
     "message": "Cheile API nu pot fi salvate, deoarece pe acest computer nu rulează niciun portchei (GNOME Keyring sau KWallet). Pornește unul, apoi redeschide tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Citirea cu voce nu este disponibilă, deoarece acest sistem nu are motor de vorbire."
+    "message": "Acest sistem nu are motor de vorbire, așa că citirea cu voce funcționează doar printr-un server TTS local."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Deschide setările AI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Vocea de citire"
+  },
+  "readoutVoiceSystem": {
+    "message": "Vocea sistemului"
+  },
+  "readoutVoiceLocal": {
+    "message": "Server TTS local"
+  },
+  "readoutKindLabel": {
+    "message": "Tipul serverului"
+  },
+  "readoutKindOpenAi": {
+    "message": "Compatibil OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Compatibil VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Voce"
+  },
+  "readoutListFailed": {
+    "message": "Nu s-a putut obține lista de la acest server. Introdu numele."
+  },
+  "readoutNeedsVoice": {
+    "message": "Alege sau introdu o voce pentru a salva și a reda un exemplu."
+  },
+  "readoutNeedsModel": {
+    "message": "Alege sau introdu un model pentru a salva și a reda un exemplu."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Serverele compatibile VOICEVOX citesc doar japoneza. Cât timp aplicația nu este în japoneză, citirea folosește vocea sistemului."
+  },
+  "readoutFallbackNote": {
+    "message": "Dacă serverul nu răspunde în 5 secunde, acea citire folosește vocea sistemului."
+  },
+  "readoutTestButton": {
+    "message": "Redă un exemplu"
+  },
+  "readoutTestingLabel": {
+    "message": "Se redă…"
+  },
+  "readoutTestOk": {
+    "message": "Redat prin server ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Depășește 5 secunde, așa că citirea va folosi vocea sistemului până când serverul răspunde mai repede."
+  },
+  "readoutTestUnreachable": {
+    "message": "Serverul nu poate fi contactat. Verifică dacă rulează și dacă URL-ul este corect."
+  },
+  "readoutTestWrongServer": {
+    "message": "Serverul de la acest URL nu răspunde ca tipul ales. Verifică tipul serverului și URL-ul."
+  },
+  "readoutTestNoVoice": {
+    "message": "Serverul nu are această voce. Alege alta."
+  },
+  "readoutTestTimeout": {
+    "message": "Serverul nu a răspuns în 30 de secunde."
+  },
+  "readoutTestServerError": {
+    "message": "Serverul a răspuns cu o eroare."
+  },
+  "readoutTestAudio": {
+    "message": "Sunetul a ajuns, dar nu a putut fi redat."
+  },
+  "readoutTestSample": {
+    "message": "Așa va suna citirea."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

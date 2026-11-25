@@ -295,7 +295,7 @@
     "message": "No se pueden guardar las claves API porque no hay ningún llavero (GNOME Keyring o KWallet) en ejecución en este equipo. Inicia uno y vuelve a abrir tomarigi."
   },
   "voiceUnavailable": {
-    "message": "La lectura en voz alta no está disponible porque este sistema no tiene motor de voz."
+    "message": "Este sistema no tiene motor de voz, así que la lectura en voz alta solo funciona con un servidor TTS local."
   },
   "conciergeName": {
     "message": "Conserje"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Abrir ajustes de IA"
+  },
+  "readoutVoiceLabel": {
+    "message": "Voz de lectura"
+  },
+  "readoutVoiceSystem": {
+    "message": "Voz del sistema"
+  },
+  "readoutVoiceLocal": {
+    "message": "Servidor TTS local"
+  },
+  "readoutKindLabel": {
+    "message": "Tipo de servidor"
+  },
+  "readoutKindOpenAi": {
+    "message": "Compatible con OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Compatible con VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Voz"
+  },
+  "readoutListFailed": {
+    "message": "No se pudo obtener la lista de este servidor. Escribe el nombre."
+  },
+  "readoutNeedsVoice": {
+    "message": "Elige o escribe una voz para guardar y reproducir una muestra."
+  },
+  "readoutNeedsModel": {
+    "message": "Elige o escribe un modelo para guardar y reproducir una muestra."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Los servidores compatibles con VOICEVOX solo leen japonés. Mientras la app no esté en japonés, la lectura usa la voz del sistema."
+  },
+  "readoutFallbackNote": {
+    "message": "Si el servidor no responde en 5 segundos, esa lectura usa la voz del sistema."
+  },
+  "readoutTestButton": {
+    "message": "Reproducir una muestra"
+  },
+  "readoutTestingLabel": {
+    "message": "Reproduciendo…"
+  },
+  "readoutTestOk": {
+    "message": "Reproducido con el servidor ($SECONDS$ s).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Ha superado los 5 segundos, así que la lectura usará la voz del sistema hasta que el servidor responda más rápido."
+  },
+  "readoutTestUnreachable": {
+    "message": "No se puede conectar con el servidor. Comprueba que esté en marcha y que la URL sea correcta."
+  },
+  "readoutTestWrongServer": {
+    "message": "El servidor de esta URL no responde como el tipo elegido. Comprueba el tipo de servidor y la URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "El servidor no tiene esta voz. Elige otra."
+  },
+  "readoutTestTimeout": {
+    "message": "El servidor no respondió en 30 segundos."
+  },
+  "readoutTestServerError": {
+    "message": "El servidor respondió con un error."
+  },
+  "readoutTestAudio": {
+    "message": "El audio llegó, pero no se pudo reproducir."
+  },
+  "readoutTestSample": {
+    "message": "Así sonará la lectura."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }

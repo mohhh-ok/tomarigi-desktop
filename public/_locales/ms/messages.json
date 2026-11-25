@@ -295,7 +295,7 @@
     "message": "Kunci API tidak dapat disimpan kerana tiada keyring (GNOME Keyring atau KWallet) berjalan pada komputer ini. Mulakan satu, kemudian buka semula tomarigi."
   },
   "voiceUnavailable": {
-    "message": "Bacaan dengan suara tidak tersedia kerana sistem ini tiada enjin pertuturan."
+    "message": "Sistem ini tiada enjin pertuturan, jadi bacaan dengan suara hanya berfungsi melalui pelayan TTS tempatan."
   },
   "conciergeName": {
     "message": "Concierge"
@@ -446,5 +446,82 @@
   },
   "conciergeSetupButton": {
     "message": "Buka tetapan AI"
+  },
+  "readoutVoiceLabel": {
+    "message": "Suara bacaan"
+  },
+  "readoutVoiceSystem": {
+    "message": "Suara sistem"
+  },
+  "readoutVoiceLocal": {
+    "message": "Pelayan TTS tempatan"
+  },
+  "readoutKindLabel": {
+    "message": "Jenis pelayan"
+  },
+  "readoutKindOpenAi": {
+    "message": "Serasi OpenAI (Kokoro-FastAPI, mlx-audio, …)"
+  },
+  "readoutKindVoicevox": {
+    "message": "Serasi VOICEVOX (VOICEVOX, AivisSpeech, …)"
+  },
+  "readoutVoiceNameLabel": {
+    "message": "Suara"
+  },
+  "readoutListFailed": {
+    "message": "Tidak dapat mendapatkan senarai daripada pelayan ini. Taip nama."
+  },
+  "readoutNeedsVoice": {
+    "message": "Pilih atau taip suara untuk menyimpan dan memainkan sampel."
+  },
+  "readoutNeedsModel": {
+    "message": "Pilih atau taip model untuk menyimpan dan memainkan sampel."
+  },
+  "readoutVoicevoxJaOnly": {
+    "message": "Pelayan serasi VOICEVOX hanya membaca bahasa Jepun. Selagi bahasa aplikasi bukan bahasa Jepun, bacaan menggunakan suara sistem."
+  },
+  "readoutFallbackNote": {
+    "message": "Jika pelayan tidak menjawab dalam 5 saat, bacaan itu menggunakan suara sistem."
+  },
+  "readoutTestButton": {
+    "message": "Mainkan sampel"
+  },
+  "readoutTestingLabel": {
+    "message": "Sedang dimainkan…"
+  },
+  "readoutTestOk": {
+    "message": "Dibaca melalui pelayan ($SECONDS$ saat).",
+    "placeholders": {
+      "seconds": {
+        "content": "$1"
+      }
+    }
+  },
+  "readoutTestSlow": {
+    "message": "Melebihi 5 saat, jadi bacaan akan menggunakan suara sistem sehingga pelayan menjawab dengan lebih pantas."
+  },
+  "readoutTestUnreachable": {
+    "message": "Tidak dapat menghubungi pelayan. Pastikan pelayan sedang berjalan dan URL betul."
+  },
+  "readoutTestWrongServer": {
+    "message": "Pelayan pada URL ini tidak menjawab sebagai jenis yang dipilih. Semak jenis pelayan dan URL."
+  },
+  "readoutTestNoVoice": {
+    "message": "Pelayan tidak mempunyai suara ini. Pilih suara lain."
+  },
+  "readoutTestTimeout": {
+    "message": "Pelayan tidak menjawab dalam 30 saat."
+  },
+  "readoutTestServerError": {
+    "message": "Pelayan menjawab dengan ralat."
+  },
+  "readoutTestAudio": {
+    "message": "Audio diterima tetapi tidak dapat dimainkan."
+  },
+  "readoutTestSample": {
+    "message": "Beginilah bunyi bacaan nanti."
+  },
+  "readoutTestSampleJa": {
+    "message": "読み上げはこの声になります。"
   }
 }
