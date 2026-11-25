@@ -114,7 +114,7 @@ export function useSettings() {
     setVoiceVolumeState(volume);
     setVoiceVolume(volume);
     let readout = await loadReadoutVoice();
-    // For verification: TOMARIGI_LOCAL_TTS sets the local readout voice and logs its test (README)
+    // For verification: TOMARIGI_LOCAL_TTS sets the local readout voice, turns "Read aloud" on, and logs its test (README)
     const ttsImport = await invoke<string[] | null>("local_tts_import").catch(() => null);
     if (ttsImport && (ttsImport[0] === "openai" || ttsImport[0] === "voicevox")) {
       const [kind, baseUrl, voice, model] = ttsImport;
@@ -123,6 +123,9 @@ export function useSettings() {
         local: { kind, baseUrl, voice, ...(kind === "openai" && { model }), voicevoxCredit: false },
       };
       await saveReadoutVoice(readout);
+      await saveVoiceEnabled(true);
+      voiceEnabledRef.current = true;
+      setVoiceEnabled(true);
       void invoke("log", { line: `[voice] imported local kind=${kind} voice=${voice}` }).catch(() => {});
       const local = readout.local!;
       // Without a click there is no AudioContext, so the sample's playback fails (error=audio); the request still runs
@@ -131,6 +134,8 @@ export function useSettings() {
     readoutVoiceRef.current = readout;
     setReadoutVoiceState(readout);
     setReadoutVoice(readout);
+    // Where the system has no speech engine, the menu item's "available" depends on the voice just set
+    reportVoiceMenu(voiceEnabledRef.current);
     // Rust holds the keys (docs/design.md "BYOK API keys"). After migrating keys an earlier version left in IndexedDB
     // (the keychain version) and handing over from dev's IndexedDB, it only asks whether each key is saved
     try {

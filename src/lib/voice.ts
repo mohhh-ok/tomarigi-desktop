@@ -8,7 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { t, uiLanguage } from "./i18n";
 import { loadActiveAiProvider } from "./api-keys";
 import { summarizeDoneEvent } from "./summarize";
-import { audioContext } from "./chirp";
+import { audioContext, primeAudio } from "./chirp";
 import { routeOf, SYSTEM_VOICE, type LocalTtsConfig, type ReadoutVoice } from "./readout-voice";
 import { ReadoutQueue, TTS_WAIT_MS, type ReadoutTag } from "./readout-queue";
 import { synthesize } from "./tts-server";
@@ -90,11 +90,17 @@ function appLog(line: string): void {
 let playingSource: AudioBufferSourceNode | undefined;
 
 /** Plays audio bytes on the chirp AudioContext through a gain of its own (the readout volume, not the chirp volume).
- * Throws when there is no AudioContext yet (before the first user action) or the bytes can't be decoded */
+ * Throws when the context can't run (the WebView wants a user action first) or the bytes can't be decoded */
 async function playAudio(audio: ArrayBuffer, volume: number): Promise<void> {
+  // Before the first click there may be no context yet; where the WebView lets audio start without one, it runs now
+  if (!audioContext()) primeAudio();
   const ctx = audioContext();
   if (!ctx) throw new Error("no audio context");
-  if (ctx.state === "suspended") await ctx.resume();
+  if (ctx.state === "suspended") {
+    // resume() never settles while a user action is required, so it isn't waited on for long
+    await Promise.race([ctx.resume(), new Promise((resolve) => setTimeout(resolve, 300))]);
+  }
+  if (ctx.state !== "running") throw new Error("audio context not running");
   const buffer = await ctx.decodeAudioData(audio.slice(0));
   const source = ctx.createBufferSource();
   const gain = ctx.createGain();

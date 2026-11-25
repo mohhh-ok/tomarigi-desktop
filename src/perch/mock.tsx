@@ -176,9 +176,24 @@ function startCycle(get: () => MockData, set: (next: MockData) => void) {
     });
   };
   const JOINER = "mock/cycle/joiner";
+  // A fresh event of a bird with the state it comes with, as a scan gives them, so the chirp and the readout run, and in
+  // the Concierge tab a new suggestion is read (local TTS server checks)
+  const fire = (i: number, type: "done" | "waiting", snippet: string) => {
+    const d = get();
+    const s = d.sessions[i];
+    if (!s) return;
+    const now = Date.now();
+    const event: SessionEvent = { key: `mock-cycle:${type}:${now}`, sessionId: s.id, project: s.project, snippet, type, at: now };
+    set({
+      events: [event, ...d.events].slice(0, 30),
+      sessions: d.sessions.map((v) => (v.id === s.id ? { ...v, state: type, toolName: undefined, sinceMs: 1_000 } : v)),
+    });
+  };
   const steps: [string, () => void][] = [
     ["bubble on bird 0", () => edit(at(0), (s) => ({ ...s, state: "done", toolName: undefined, summary: "Fixed the header spacing and checked the build" }))],
+    ["done event on bird 0", () => fire(0, "done", "Fixed the header spacing")],
     ["tool line on bird 1", () => edit(at(1), (s) => ({ ...s, state: "working", toolName: "Bash" }))],
+    ["needs reply event on bird 1", () => fire(1, "waiting", "Which layout should I use?")],
     ["bubble off bird 0", () => edit(at(0), (s) => ({ ...s, state: "working", summary: undefined, toolName: undefined }))],
     ["link birds 1 and 2", () => link(at(1), at(2), true)],
     ["bird joins", () => {

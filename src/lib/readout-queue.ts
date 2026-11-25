@@ -68,9 +68,12 @@ export class ReadoutQueue {
     const sentAt = this.deps.now();
     const kind = this.deps.serverKind() ?? "server";
     const item: Item = { text, lang, settled: Promise.resolve({ use: "none" }) };
+    // ms is how long the server took to answer (or the wait to run out), not counting the time spent queued behind
+    // other readouts before playing
+    let settledAt: number | undefined;
     const log = (used: "server" | "system" | "none", error?: string) =>
       this.deps.log(
-        `[voice] for=${tag} server=${kind} ms=${Math.round(this.deps.now() - sentAt)} used=${used}${error ? ` error=${error}` : ""}`,
+        `[voice] for=${tag} server=${kind} ms=${Math.round((settledAt ?? this.deps.now()) - sentAt)} used=${used}${error ? ` error=${error}` : ""}`,
       );
     const fallback = (): Settled => (this.deps.systemAvailable() ? { use: "system" } : { use: "none" });
     const generation = this.generation;
@@ -79,6 +82,7 @@ export class ReadoutQueue {
       const settle = (value: Settled, error?: string) => {
         if (done) return;
         done = true;
+        settledAt = this.deps.now();
         if (generation !== this.generation) {
           log("none", "cancelled");
           resolve({ use: "none" });

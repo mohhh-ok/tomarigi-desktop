@@ -90,6 +90,9 @@ function scene(options: { voice?: ReadoutVoice; systemAvailable?: boolean } = {}
       for (const w of waits.splice(0)) w();
       await flush();
     },
+    tick: (ms: number) => {
+      clock += ms;
+    },
     /** The utterance playing now ends */
     end: async () => {
       playing?.end();
@@ -99,10 +102,12 @@ function scene(options: { voice?: ReadoutVoice; systemAvailable?: boolean } = {}
 }
 
 describe("ReadoutQueue", () => {
-  test("the server answers in time: its audio is played and logged as used", async () => {
+  test("the server answers in time: its audio is played and logged as used, with the time it took to answer", async () => {
     const s = scene();
     s.queue.enqueue("app", "ja", "done");
     await s.answer("app", 812);
+    // Playback takes a while; the logged time is the server's
+    s.tick(3000);
     await s.end();
     expect(s.played).toEqual(["server:app"]);
     expect(s.log).toEqual(["[voice] for=done server=voicevox ms=812 used=server"]);
