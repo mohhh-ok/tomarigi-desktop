@@ -9,6 +9,7 @@ import {
   checkProviderChoice,
   checkRootLabel,
   checkRootRemovable,
+  checkTypedRootPath,
   checkVoiceInList,
   checkVolume,
 } from "../src/lib/settings-checks";
@@ -53,12 +54,20 @@ test("a volume is an integer percent", () => {
   expect(checkVolume(50.5)).toBe("volume-range");
 });
 
-test("a new watched folder: absolute, not watched yet, readable", () => {
+test("a new watched folder: absolute with no .., not watched yet", () => {
   const existing = [{ path: "/Users/x/.claude/projects" }];
-  expect(checkNewRoot(existing, "/Users/x/work/.claude/projects", true)).toBeUndefined();
-  expect(checkNewRoot(existing, "~/work", true)).toBe("path-not-absolute");
-  expect(checkNewRoot(existing, "/Users/x/.claude/projects/", true)).toBe("duplicate");
-  expect(checkNewRoot(existing, "/nowhere", false)).toBe("not-readable");
+  expect(checkNewRoot(existing, "/Users/x/work/.claude/projects")).toBeUndefined();
+  expect(checkNewRoot(existing, "~/work")).toBe("path-not-absolute");
+  expect(checkNewRoot(existing, "/Users/x/work/../.claude/projects")).toBe("path-not-absolute");
+  expect(checkNewRoot(existing, "/Users/x/.claude/projects/")).toBe("duplicate");
+  expect(checkNewRoot([{ path: "C:\\Users\\x\\.codex" }], "C:/Users/x/.codex")).toBe("duplicate");
+});
+
+test("a path the agent types: no network path, which Windows would reach just to read it", () => {
+  expect(checkTypedRootPath("\\\\server\\share")).toBe("network-path");
+  expect(checkTypedRootPath("//server/share")).toBe("network-path");
+  expect(checkTypedRootPath("/Users/x/work")).toBeUndefined();
+  expect(checkTypedRootPath("C:\\Users\\x")).toBeUndefined();
 });
 
 test("labels, default folders and choices", () => {

@@ -5,6 +5,7 @@ import {
   checkNewRoot,
   checkRootLabel,
   checkRootRemovable,
+  checkTypedRootPath,
   type SettingsProblem,
 } from "@/lib/settings-checks";
 import {
@@ -94,8 +95,10 @@ export function useRoots(source: PerchSource) {
   const addRootAt = useCallback(
     async (kind: RootKind, path: string, label?: string): Promise<SettingsProblem | RootEntry> => {
       const trimmed = path.trim();
-      const problem = checkNewRoot(rootsRef.current, trimmed, await isReadableDir(trimmed));
+      // The file system is read only once the path passes the other rules
+      const problem = checkTypedRootPath(trimmed) ?? checkNewRoot(rootsRef.current, trimmed);
       if (problem) return problem;
+      if (!(await isReadableDir(trimmed))) return "not-readable";
       const root = newRoot(rootsRef.current, kind, trimmed, label);
       await append(root);
       return root;

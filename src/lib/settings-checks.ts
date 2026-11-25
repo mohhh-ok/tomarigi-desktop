@@ -14,6 +14,7 @@ export type SettingsProblem =
   | "volume-range"
   | "duplicate"
   | "path-not-absolute"
+  | "network-path"
   | "not-readable"
   | "label-empty"
   | "builtin"
@@ -31,6 +32,7 @@ export const PROBLEM_MESSAGE = {
   "volume-range": "agentProblemVolumeRange",
   duplicate: "duplicateRootMessage",
   "path-not-absolute": "agentProblemPathNotAbsolute",
+  "network-path": "agentProblemNetworkPath",
   "not-readable": "agentProblemNotReadable",
   "label-empty": "agentProblemLabelEmpty",
   builtin: "agentProblemBuiltinRoot",
@@ -89,16 +91,18 @@ export function checkVolume(percent: number): SettingsProblem | undefined {
   return Number.isInteger(percent) && percent >= 0 && percent <= 100 ? undefined : "volume-range";
 }
 
-/** A folder to watch: absolute, not already watched (defaults included), and readable */
-export function checkNewRoot(
-  existing: readonly { path: string }[],
-  path: string,
-  readable: boolean,
-): SettingsProblem | undefined {
-  if (!isAbsolutePath(path)) return "path-not-absolute";
+/** A folder to watch: absolute with no `..`, not already watched (defaults included). The folder picker's choice
+ * passes the path rules by construction and is checked for duplicates only */
+export function checkNewRoot(existing: readonly { path: string }[], path: string): SettingsProblem | undefined {
+  if (!isAbsolutePath(path) || path.split(/[\\/]/).includes("..")) return "path-not-absolute";
   if (existing.some((root) => samePath(root.path, path))) return "duplicate";
-  if (!readable) return "not-readable";
   return undefined;
+}
+
+/** A path typed by the AI agent, before the file system is touched: a network path (`\\server\share`, `//server`)
+ * would make Windows reach that server (and offer it the user's credentials) just to see whether it is readable */
+export function checkTypedRootPath(path: string): SettingsProblem | undefined {
+  return /^[\\/]{2}/.test(path) ? "network-path" : undefined;
 }
 
 export function checkRootLabel(label: string): SettingsProblem | undefined {

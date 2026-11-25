@@ -124,7 +124,7 @@ export async function pickNewRoot(
     defaultPath: `~/${agentOf(kind).home}`,
   });
   if (!path) return "cancelled";
-  if (checkNewRoot(existing, path, true) === "duplicate") return "duplicate";
+  if (checkNewRoot(existing, path) === "duplicate") return "duplicate";
   return newRoot(existing, kind, path);
 }
 
