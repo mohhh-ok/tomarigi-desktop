@@ -179,6 +179,57 @@ Pass/fail:
 - The menu bar menu gets "Settings…" after Show / Hide
 - Out of scope: a browser page, changing what each setting does, the debug log, the floating window's tabs
 
+### Detailed design
+
+Claude's own decisions, by the session that implements it; may be changed.
+
+Checked on macOS (verify .app, Tauri 2.12.5, a throwaway build with a second window `settings` made by `WebviewWindowBuilder` loading `index.html?probe=settings`; the code was reverted):
+- (a) The two windows share one store: both pages have the origin `tauri://localhost`; the second window read the value the floating window had written to the `tomarigi` / `kv` IndexedDB a moment before, and the floating window read the value the second window wrote. An event sent with `emit` from the second window reached a `listen` in the floating window. Windows / Linux are not checked yet (one origin per app there too; checked in CI builds or reported back)
+- (c) In floating mode (activation policy Accessory), `activateIgnoringOtherApps:` on `NSApplication` and then `set_focus()` on the new window made it the key window with the app active, and the policy stayed Accessory (1), so no Dock icon. Typing into a field right after opening is checked again on the real window
+
+The window (Rust, new `src-tauri/src/settings_window.rs`):
+- `open_settings(section?)` command, also called by the menu item and the update item. When the `settings` window exists: unminimize, show, focus, and when a section is given send it to that window (`emit_to("settings", "settings-section", id)`). Otherwise build it with `WebviewWindowBuilder` (label `settings`, URL `index.html?view=settings` plus `&section=<id>` when given), with a title bar, resizable, not always on top, dark theme, an opaque dark background, default 760×560, smallest 560×420, title `tomarigi` until the page sets its own (the page sets the title in the UI language with `setTitle`)
+- Size and place: saved to `settings-window.json` in the app config folder (as `window.json` is for the floating window) after Moved / Resized settle, and restored when it is built; a place not on any display is replaced by the center of the main display. Closing destroys the window (no `prevent_close`), so nothing runs while it is closed
+- Focus: before building or showing it, when the mode is floating, remember the frontmost app (`NSWorkspace.frontmostApplication`, when it isn't this app); then `activateIgnoringOtherApps:` and `set_focus()`. The activation policy isn't touched. When the window is destroyed in floating mode, the remembered app is activated again, so the app that was in front before comes back and no Dock icon shows. In standard mode nothing is remembered. Windows / Linux: `set_focus()` only
+- The menu bar menu: "Settings…" (`設定…` in Japanese) after Show / Hide, calling `open_settings` without a section. The update item now opens the settings window at the Updates section instead of the floating window. The "Read aloud" click event goes to the floating window only (`emit_to("main", …)`), since only it saves from it; `window-mode` and `update-status` stay sent to every window
+- `src-tauri/capabilities/default.json` lists `settings` next to `main`
+
+The page (frontend):
+- `boot.tsx` renders `SettingsApp` (new `src/perch/settings-app.tsx`) for `?view=settings` and `App` otherwise. `?mock=1&view=settings` opens it in a browser with the mock source, for screenshots and UI checks; `?settings=1` is replaced by `?view=settings`
+- `SettingsApp`: a left list of the sections and the chosen section's content on the right (only the right scrolls). Section ids: `sound`, `ai`, `concierge`, `folders`, `icons`, `window`, `agent`, `updates`. The chosen one is written to the URL (`history.replaceState`, `?view=settings&section=<id>`) and saved (kv `settingsSection`); without `section` in the URL the saved one opens, else `sound`. The existing cards are moved, not rewritten: `RootManager` and `RootAddDialog`, `AiKeySettings`, `ConciergeSettings`, `IconSetSettings`, `AgentAccessSettings`, `UpdateSettings`; the sound and readout controls and the window mode radios move out of `App.tsx` into `settings/sound-settings.tsx` and `settings/window-mode-settings.tsx`. `AiKeySettings` / `ReadoutVoiceSettings` get `open` = their section is shown (it clears drafts as closing settings did)
+- Keys: Cmd+, (Ctrl+, elsewhere) in either page calls `open_settings`; Cmd+W (Ctrl+W) in the settings page closes it. The floating window's ⚙ calls `open_settings`; the Concierge tab's "set up AI" calls `open_settings("ai")`. The floating window loses `settingsOpen`, the settings `BackBar`, its Esc handling and the `open-updates` listener
+- The settings page doesn't take `data-window-mode` (it is always a standard window): `useWindowMode` gets an option not to write it to `<html>`, and the page sets `data-view="settings"` for its own styles
+
+(b) Telling every window about a change, in one place:
+- `src/lib/settings-sync.ts`: `notifySettingChanged(key)` sends the app-wide event `settings-changed` with `{ key, from: <window label> }` (never a value: API keys can be in IndexedDB with the webview store), and `onSettingsChanged(keys, reload)` calls `reload` for those keys when the event comes from another window (the window that saved has already set its own state; reloading on its own echo could pull a slider back mid-drag). Outside Tauri (the browser mock) it does nothing
+- Called from `kvPut` and `kvDelete` in `settings-store.ts`, which every setting saved in IndexedDB goes through (`api-keys.ts`, `readout-voice.ts` and `use-agent-access.ts` already use them; `icon-set-store.ts` is changed to use them instead of its own `put`), and from `saveApiKey` / `deleteApiKey` / `deleteRetiredKey` in `api-keys.ts` with the key `apiKeys` (keys are kept in Rust, not in IndexedDB). So a save from the settings window, the floating window's mute button, the menu bar's "Read aloud" (saved by the floating window) and the MCP tools (run by the floating window) all pass the same place
+- Each window reloads only what changed: `useSettings` maps keys to its loaders (`muted` / `chirpVolume` → sound; `voiceEnabled` / `voiceVolume` / `readoutVoice` → readout; `apiKeys` / `aiProvider` / `localAi` → AI; `conciergeLook`; `iconSetAssignments`), `useRoots` reloads on `roots` / `defaultRootLabels`, `useAgentAccess` on `agentAccess`. A reload applies the module-level values again in that window (`setChirpVolume`, `setVoiceVolume`, `setReadoutVoice`), so previews and samples played in the settings window use the current volume and voice
+- Window mode stays with Rust (`window-mode` event to every window) and updates with `update-status`, as now
+
+One owner of the running state (`useSettings` / `useAgentAccess` take a role, `"owner"` in `App`, `"settings"` in `SettingsApp`):
+- Only the floating window: the startup imports (`TOMARIGI_LOCAL_TTS`, `TOMARIGI_LOCAL_AI`, `TOMARIGI_AGENT_ACCESS`, `initApiKeys`), reporting "Read aloud" to the menu (`reportVoiceMenu`) and listening to its clicks, stopping speech when "Read aloud" turns off (also when the change came from the settings window), the MCP server (start / stop on a change of `agentAccess`, the `mcp-call` handler, which Rust already sends to `main` only), scanning, chirps and readouts
+- What the settings window shows but isn't saved anywhere comes from the floating window: the running projects for the icon set rows, the folders that failed to scan (`brokenIds`), and the agent access status, command, "replaced" flag and recent changes. The floating window sends them as `settings-runtime` to the `settings` window when they change and when the settings page asks with `settings-runtime-request` on load. The two actions that aren't saves, "Renew token" and retrying a port that was in use, go to the floating window as `agent-access-action`. In the browser mock the settings page takes them from the mock source (one scan) with agent access off
+- Tests in the settings window run there: the AI connection test, the readout sample, the sound previews (their own `AudioContext`, unlocked by the first click), the folder picker
+
+Where each requirement is met:
+
+| Requirement / basic design | Where |
+|---|---|
+| Opened from ⚙, the menu bar item, Cmd+, ; a second open brings it to the front | `open_settings` in `settings_window.rs`; ⚙ in `App.tsx`; "Settings…" in `tray.rs`; the keydown handler in `App.tsx` and `settings-app.tsx` |
+| A standard window in either mode, takes focus | `WebviewWindowBuilder` options; activate + `set_focus` in `open_settings` |
+| Default about 760×560, smallest about 560×420, reopens at its size and place | builder size / min size; `settings-window.json` save and restore |
+| Sections on the left, only the right scrolls, last section shown again | `SettingsApp` layout and styles (`styles/settings-window.css`); `settingsSection` and the URL |
+| Everything settable today, same checks, wording, tests, dialogs | the moved cards and hooks, unchanged; `RootAddDialog` in the settings page |
+| A change takes effect at once in every window, either way | `settings-sync.ts` through `kvPut` / `kvDelete` / the key functions; reloads in `useSettings`, `useRoots`, `useAgentAccess`; `window-mode` from Rust |
+| The floating window keeps its tabs without settings; debug log unchanged | `App.tsx` without the settings panel |
+| UI language, the app's look | existing messages, new ones in `scripts/locales/`; the same card styles on an opaque dark page |
+| macOS, Windows, Linux | Tauri windows; the macOS-only focus code behind `cfg(target_os = "macos")` |
+| Window `settings` with the section in the URL; built on open, destroyed on close | `open_settings`, `?view=settings&section=<id>` |
+| Settings stay where they are; shared store checked | (a) above |
+| One owner of the running state | the `"owner"` role in `App`; `settings-runtime` and `agent-access-action` |
+| Focus in floating mode and back on close without a Dock icon | (c) above; the remembered frontmost app |
+| "Settings…" after Show / Hide | `setup_tray` |
+
 ## Fade until hovered
 
 Applies to the floating window's Garden and Concierge tabs only.
