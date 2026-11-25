@@ -192,6 +192,35 @@ Requirements:
 
 Pass/fail: shots of every section at 760×560 and 560×420 in Japanese and English show none of the words above unexplained, the ⇄ button with words, the label editing with Save / Cancel, and the buttons and row edges matching; one UI check on those shots finds no "unclear word" or "different button" left
 
+#### Detailed design (clarity)
+
+Claude's own decisions, by the session that implements it; may be changed.
+
+Words (every locale in `scripts/locales/` is rewritten for the changed keys, not only ja / en). Found by listing every key whose ja or en has ターン / ペイン / MCP / TTS / turn / pane; the ones on the settings window:
+
+| Key (group) | ja now → new | en now → new |
+|---|---|---|
+| `aiUserMessagesNote` (byok) | ターンが終わるたびに、エージェントの最後の応答と、そのターンにあなたが送った発言を送信します。… → エージェントが返事を終えるたびに、その返事と、前の返事のあとにあなたが送った発言を送信します。…（後半はそのまま） | Each time a turn finishes, the agent’s last reply and the messages you sent during that turn are sent. … → Each time the agent finishes a reply, that reply and the messages you sent since its previous reply are sent. … |
+| `conciergeSettingsNote` (concierge) | …押すとそのセッションのペインに飛びます。…見た目を選べます → …押すとそのセッションのターミナルに切り替わります。…見た目は下で選べます。 | …Click it to jump to that session's pane. …Choose its look → …Click it to switch to that session's terminal. …Choose its look below. |
+| `agentAccessDescription` (agent-access) | （Claude Code など MCP を使えるもの） → （Claude Code など、MCP というエージェントとアプリをつなぐ仕組みに対応したもの） | (Claude Code, or another that speaks MCP) → (Claude Code, or another that supports MCP, the common way agents connect to apps) |
+| `readoutVoiceLocal` (readout-voice) | ローカルの TTS サーバー → ローカルの読み上げサーバー | Local TTS server → Local speech server |
+| `voiceUnavailable` (voice) | …ローカルの TTS サーバーを選んだときだけ… → …ローカルの読み上げサーバーを選んだときだけ… | …through a local TTS server. → …through a local speech server. |
+
+- `agentAccessOtherAgents` keeps "MCP": it comes after the card's description, where the word is explained. 「トークン」「ポート」 stay (the agent card is for developers; finding X5)
+- `angerBadgeTitle` (ask) has 「ターン」 too but is the floating window's bird tooltip, not the settings window: left as is (out of scope)
+
+The icon set's button:
+- The button says what it changes the row to: 「{set}にする」 / "Use {set}" (new key `iconSetUseButton` with the placeholder `set`, all locales), e.g. 「ネコにする」. The image left of it stays the current set. `iconSetToggleAria` stays as the aria-label (with the row and the current set), the ⇄ goes
+
+Editing a watched folder's label:
+- While editing, the row is the field, then 「保存」 and 「取り消し」 (`byokSaveButton` / `cancelButton`, both existing keys), both `button.small`. The badges and ✕ are hidden while editing, so the row fits at 560 px
+- Enter saves and Esc cancels as before. Leaving the field still saves, except when the focus moves to the row's own Save / Cancel (`relatedTarget` inside the row), so Tab to Cancel and a click on Cancel don't save first
+
+Buttons and row edges:
+- Right edges: the default rows lose the invisible ✕ placeholder (it was the gap of U1). To keep 「ラベル編集」 in one column, the ✕ moves to the left of 「ラベル編集」 in added rows; 「ラベル編集」 is the last item of every row, at the row's right edge like the icon set's button
+- One small button for the settings page (`html[data-view="settings"]`, so the floating window is untouched): `button` takes the page's font (`font: inherit`, the cause of the Arial-like "Check for updates"), and `button.small` (BusyButton, the remove ✕ and the copy buttons included) gets one height (`inline-flex`, centered, `min-height: 28px`, `line-height: 1.4`, 12 px text, 6 px corners)
+- 「フォルダを追加」 becomes `button.small` with 12 px above it. The one larger kind stays only for a section's single main action (「v… に更新」, 「登録コマンドをコピー」), which is meant to stand out
+
 
 ### Detailed design
 
