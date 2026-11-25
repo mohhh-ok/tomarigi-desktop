@@ -275,8 +275,6 @@ function LocalTtsCard({
 
   return (
     <div className="ai-key-provider readout-voice-card">
-      {/* The sample plays either way; readouts are heard only with "Read aloud" on, so it is said before anything else */}
-      {!readAloud && <p className="readout-voice-warning">{t("readoutNeedsReadAloud")}</p>}
       <p className="judge-description">{t(speechAvailable() ? "readoutFallbackNote" : "readoutFallbackNoSystem")}</p>
       {showForm ? (
         <>
@@ -425,6 +423,9 @@ function LocalTtsCard({
       {shownTest.phase === "failure" && (
         <p className="judge-status judge-status-error">{t(TEST_FAILURE_TEXT[shownTest.reason])}</p>
       )}
+      {/* The sample plays either way; readouts are heard only with "Read aloud" on. Last in the card, apart from the
+          server's own notes, so what was set is read first */}
+      {!readAloud && <p className="readout-voice-warning readout-voice-read-aloud">{t("readoutNeedsReadAloud")}</p>}
     </div>
   );
 }
