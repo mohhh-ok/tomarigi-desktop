@@ -172,7 +172,7 @@ try {
         },
         [SERVERS[scene.server], scene.speech ?? null, WAV],
       );
-      await page.goto(`${ORIGIN}${mockPath(`settings=1&scrollTo=readout-voice${scene.query ? `&${scene.query}` : ""}`)}`);
+      await page.goto(`${ORIGIN}${mockPath(`view=settings&section=sound&scrollTo=readout-voice${scene.query ? `&${scene.query}` : ""}`)}`);
       await page.waitForSelector(".readout-voice", { timeout: 15000 });
       await scene.steps(page);
       await page.waitForTimeout(400);

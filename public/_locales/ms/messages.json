@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Nyahsenyap"
   },
+  "soundSettingsHeading": {
+    "message": "Bunyi dan bacaan"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Kembali"
   },
   "hideWindowButtonLabel": {
     "message": "Sembunyikan tetingkap (buka semula dari ikon bar menu)"

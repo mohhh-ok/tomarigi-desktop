@@ -3,9 +3,10 @@
 // the settings screen's own functions (lib/agent-tools.ts)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { emitTo, listen } from "@tauri-apps/api/event";
 import { t } from "@/lib/i18n";
 import { kvGet, kvPut } from "@/lib/settings-store";
+import { onSettingsChanged } from "@/lib/settings-sync";
 import { fetchLocalModels, testLocalConnection } from "@/lib/local-judge";
 import { testOpenAiConnection } from "@/lib/openai-judge";
 import { testJudgeConnection } from "@/lib/judge";
@@ -19,6 +20,9 @@ import {
 } from "@/lib/agent-tools";
 
 const KEY_AGENT_ACCESS = "agentAccess";
+/** What the settings window asks the floating window to do that isn't a saved setting (docs/design.md "Settings window") */
+const AGENT_ACCESS_ACTION = "agent-access-action";
+type AgentAccessAction = "renew" | "retry";
 export const DEFAULT_AGENT_PORT = 4844;
 
 interface AgentAccessSetting {
@@ -127,9 +131,9 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
     })();
   }, [ready, start]);
 
-  const changeEnabled = useCallback(
+  /** Starts or stops the server for a setting already saved */
+  const applyEnabled = useCallback(
     (enabled: boolean) => {
-      save({ ...settingRef.current, enabled });
       setStatus(enabled ? "starting" : "off");
       if (enabled) {
         void start(settingRef.current.port);
@@ -139,7 +143,15 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
         setCommand(null);
       }
     },
-    [save, start],
+    [start],
+  );
+
+  const changeEnabled = useCallback(
+    (enabled: boolean) => {
+      save({ ...settingRef.current, enabled });
+      applyEnabled(enabled);
+    },
+    [save, applyEnabled],
   );
 
   /** Returns false for a port outside the field's rule (nothing is saved) */
@@ -155,6 +167,21 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
     },
     [save, start, status],
   );
+
+  // The settings window saves the setting; the floating window, which runs the server, follows it
+  useEffect(() => {
+    if (!ready) return;
+    return onSettingsChanged([KEY_AGENT_ACCESS], () => {
+      void kvGet(KEY_AGENT_ACCESS).then((saved) => {
+        const next = parseSetting(saved);
+        const prev = settingRef.current;
+        settingRef.current = next;
+        setSetting(next);
+        if (next.enabled !== prev.enabled) applyEnabled(next.enabled);
+        else if (next.enabled && next.port !== prev.port) void start(next.port).then((ok) => ok && setReplaced(true));
+      });
+    });
+  }, [ready, applyEnabled, start]);
 
   const renewToken = useCallback(async () => {
     try {
@@ -205,6 +232,14 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
     return () => void unlisten.then((f) => f());
   }, [record]);
 
+  useEffect(() => {
+    const unlisten = listen<AgentAccessAction>(AGENT_ACCESS_ACTION, ({ payload }) => {
+      if (payload === "renew") void renewToken();
+      else if (payload === "retry" && settingRef.current.enabled) void start(settingRef.current.port);
+    });
+    return () => void unlisten.then((f) => f());
+  }, [renewToken, start]);
+
   const dismissNotes = useCallback(() => setNotes([]), []);
 
   return {
@@ -222,3 +257,55 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
   };
 }
 
+
+/** What the floating window shows of the agent access that isn't saved, sent to the settings window */
+export interface AgentAccessRuntime {
+  status: AgentAccessStatus;
+  command: string | null;
+  replaced: boolean;
+  recent: AgentChangeEntry[];
+}
+
+export const AGENT_ACCESS_OFF: AgentAccessRuntime = { status: "off", command: null, replaced: false, recent: [] };
+
+/** The settings window's side: the saved setting, the floating window's runtime state, and saves that the floating
+ * window follows. Renewing the token and retrying a port in use are sent to it as actions */
+export function useAgentAccessView(runtime: AgentAccessRuntime) {
+  const [setting, setSetting] = useState<AgentAccessSetting>({ enabled: false, port: DEFAULT_AGENT_PORT });
+  const settingRef = useRef(setting);
+  settingRef.current = setting;
+
+  useEffect(() => {
+    const load = () => void kvGet(KEY_AGENT_ACCESS).then((saved) => setSetting(parseSetting(saved)), () => {});
+    load();
+    return onSettingsChanged([KEY_AGENT_ACCESS], load);
+  }, []);
+
+  const save = useCallback((next: AgentAccessSetting) => {
+    settingRef.current = next;
+    setSetting(next);
+    void kvPut(KEY_AGENT_ACCESS, next);
+  }, []);
+
+  const act = (action: AgentAccessAction) => void emitTo("main", AGENT_ACCESS_ACTION, action).catch(() => {});
+
+  return {
+    enabled: setting.enabled,
+    port: setting.port,
+    ...runtime,
+    // Off shows at once, before the floating window has stopped the server. A failure stays shown: without a key store
+    // the floating window turns the setting back off and keeps saying why
+    status: !setting.enabled && (runtime.status === "on" || runtime.status === "starting") ? ("off" as const) : runtime.status,
+    changeEnabled: (enabled: boolean) => save({ ...settingRef.current, enabled }),
+    changePort: (port: number): boolean => {
+      if (!isValidAgentPort(port)) return false;
+      if (port === settingRef.current.port) {
+        if (runtime.status === "port-in-use") act("retry");
+        return true;
+      }
+      save({ ...settingRef.current, port });
+      return true;
+    },
+    renewToken: async () => act("renew"),
+  };
+}

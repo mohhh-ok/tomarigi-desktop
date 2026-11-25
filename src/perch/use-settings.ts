@@ -2,6 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { setChirpVolume } from "@/lib/chirp";
 import {
+  KEY_CHIRP_VOLUME,
+  KEY_CONCIERGE_LOOK,
+  KEY_MUTED,
+  KEY_VOICE_ENABLED,
+  KEY_VOICE_VOLUME,
   loadChirpVolume,
   loadMuted,
   loadVoiceEnabled,
@@ -21,6 +26,8 @@ import {
   deleteLocalAiConfig,
   deleteRetiredKey,
   initApiKeys,
+  KEY_AI_PROVIDER,
+  KEY_LOCAL_AI,
   loadAiProvider,
   loadApiKeyBackend,
   loadApiKeyStatus,
@@ -37,6 +44,7 @@ import {
   type RetiredKeyProvider,
 } from "@/lib/api-keys";
 import {
+  KEY_ICON_SET_ASSIGNMENTS,
   loadIconSetAssignments,
   saveIconSetAssignments,
   type IconSetAssignments,
@@ -47,6 +55,7 @@ import { testOpenAiConnection } from "@/lib/openai-judge";
 import { testLocalConnection } from "@/lib/local-judge";
 import { cancelSpeech, setReadoutVoice, setVoiceVolume, testReadoutVoice, type ReadoutTestResult } from "@/lib/voice";
 import {
+  KEY_READOUT_VOICE,
   loadReadoutVoice,
   saveReadoutVoice,
   SYSTEM_VOICE,
@@ -54,13 +63,18 @@ import {
   type ReadoutVoice,
 } from "@/lib/readout-voice";
 import { t } from "@/lib/i18n";
+import { API_KEYS_SETTING, onSettingsChanged } from "@/lib/settings-sync";
 import { listenVoiceMenu, reportVoiceMenu } from "./voice-menu";
 import { DEFAULT_ICON_SET } from "./icon-sets";
 import type { ApiKeyTestState } from "./settings/ai-key-settings";
 
 /** The settings in the settings view (sound, readout, API keys, icon sets): their state, loading, and saving.
  * App.tsx awaits loadSettings() inside its startup load, after the watched folders and before the first scan */
-export function useSettings() {
+/** "owner" is the floating window, which runs what the settings drive (the startup imports, the menu bar's "Read aloud",
+ * stopping speech); "settings" is the settings window, which only shows and saves them (docs/design.md "Settings window") */
+export type SettingsRole = "owner" | "settings";
+
+export function useSettings(role: SettingsRole) {
   const [muted, setMuted] = useState(false);
   const [chirpVolume, setChirpVolumeState] = useState(1);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
@@ -102,40 +116,82 @@ export function useSettings() {
     voiceEnabledRef.current = voiceEnabled;
   }, [voiceEnabled]);
 
-  const loadSettings = useCallback(async () => {
-    setMuted(await loadMuted());
+  const loadSound = useCallback(async () => {
+    const m = await loadMuted();
+    mutedRef.current = m;
+    setMuted(m);
     const cVolume = await loadChirpVolume();
     setChirpVolumeState(cVolume);
     setChirpVolume(cVolume);
+  }, []);
+
+  /** "Read aloud", its volume and the voice. Applied to this window's module values too (lib/voice.ts), so a sample
+   * played in the settings window uses them. Only the owner reports to the menu bar item and stops speech */
+  const loadReadout = useCallback(async () => {
     const voice = await loadVoiceEnabled();
+    const wasOn = voiceEnabledRef.current;
+    voiceEnabledRef.current = voice;
     setVoiceEnabled(voice);
-    reportVoiceMenu(voice);
     const volume = await loadVoiceVolume();
     setVoiceVolumeState(volume);
     setVoiceVolume(volume);
-    let readout = await loadReadoutVoice();
+    const readout = await loadReadoutVoice();
+    readoutVoiceRef.current = readout;
+    setReadoutVoiceState(readout);
+    setReadoutVoice(readout);
+    if (role === "owner") {
+      // Where the system has no speech engine, the menu item's "available" depends on the voice just set
+      reportVoiceMenu(voice);
+      if (wasOn && !voice) cancelSpeech();
+    }
+  }, [role]);
+
+  const loadAi = useCallback(async () => {
+    const [keyStatus, retired, preferredProvider, keyBackend, local] = await Promise.all([
+      loadApiKeyStatus(),
+      loadRetiredKeysSaved(),
+      loadAiProvider(),
+      loadApiKeyBackend(),
+      loadLocalAiConfig(),
+    ]);
+    setKeyStoreAvailable(keyBackend !== "unavailable");
+    const resolvedProvider = resolveAiProvider(preferredProvider, {
+      anthropic: keyStatus.anthropic,
+      openai: keyStatus.openai,
+      local: local !== undefined,
+    });
+    setAiKeySet(keyStatus);
+    setRetiredKeys(retired);
+    setLocalAi(local ?? null);
+    setAiProvider(resolvedProvider ?? null);
+    return { keyStatus, retired, local, preferredProvider, resolvedProvider };
+  }, []);
+
+  const loadLooks = useCallback(async () => {
+    setIconSetAssignments(await loadIconSetAssignments());
+    setConciergeLook(await loadConciergeLook());
+  }, []);
+
+  const loadSettings = useCallback(async () => {
+    if (role === "settings") {
+      await Promise.all([loadSound(), loadReadout(), loadAi(), loadLooks()]);
+      return;
+    }
+    await loadSound();
     // For verification: TOMARIGI_LOCAL_TTS sets the local readout voice, turns "Read aloud" on, and logs its test (README)
     const ttsImport = await invoke<string[] | null>("local_tts_import").catch(() => null);
     if (ttsImport && (ttsImport[0] === "openai" || ttsImport[0] === "voicevox")) {
       const [kind, baseUrl, voice, model] = ttsImport;
-      readout = {
-        source: "local",
-        local: { kind, baseUrl, voice, ...(kind === "openai" && { model }), voicevoxCredit: false },
-      };
-      await saveReadoutVoice(readout);
+      const local: LocalTtsConfig = { kind, baseUrl, voice, ...(kind === "openai" && { model }), voicevoxCredit: false };
+      await saveReadoutVoice({ source: "local", local });
       await saveVoiceEnabled(true);
-      voiceEnabledRef.current = true;
-      setVoiceEnabled(true);
       void invoke("log", { line: `[voice] imported local kind=${kind} voice=${voice}` }).catch(() => {});
-      const local = readout.local!;
+      await loadReadout();
       // Without a click there is no AudioContext, so the sample's playback fails (error=audio); the request still runs
       void testReadoutVoice(local, t(kind === "voicevox" ? "readoutTestSampleJa" : "readoutTestSample"));
+    } else {
+      await loadReadout();
     }
-    readoutVoiceRef.current = readout;
-    setReadoutVoiceState(readout);
-    setReadoutVoice(readout);
-    // Where the system has no speech engine, the menu item's "available" depends on the voice just set
-    reportVoiceMenu(voiceEnabledRef.current);
     // Rust holds the keys (docs/design.md "BYOK API keys"). After migrating keys an earlier version left in IndexedDB
     // (the keychain version) and handing over from dev's IndexedDB, it only asks whether each key is saved
     try {
@@ -154,34 +210,46 @@ export function useSettings() {
         line: `[keys] imported local model=${model} test=${test.ok ? "ok" : `${test.kind} ${test.message ?? ""}`}`,
       }).catch(() => {});
     }
-    const [keyStatus, retired, preferredProvider, keyBackend, local] = await Promise.all([
-      loadApiKeyStatus(),
-      loadRetiredKeysSaved(),
-      loadAiProvider(),
-      loadApiKeyBackend(),
-      loadLocalAiConfig(),
-    ]);
-    setKeyStoreAvailable(keyBackend !== "unavailable");
+    const { keyStatus, retired, local, preferredProvider, resolvedProvider } = await loadAi();
     // Log whether each key is saved (a boolean only). Key values are never received or printed
     void invoke("log", {
       line: `[keys] status anthropic=${keyStatus.anthropic} openai=${keyStatus.openai} local=${local !== undefined} retired=${retired.join(",") || "-"}`,
     });
-    const resolvedProvider = resolveAiProvider(preferredProvider, {
-      anthropic: keyStatus.anthropic,
-      openai: keyStatus.openai,
-      local: local !== undefined,
-    });
-    setAiKeySet(keyStatus);
-    setRetiredKeys(retired);
-    setLocalAi(local ?? null);
-    setAiProvider(resolvedProvider ?? null);
     // Inconsistencies from old data or from deleting the key in use are normalized once to the available side.
     if (resolvedProvider && resolvedProvider !== preferredProvider) {
       await saveAiProvider(resolvedProvider);
     }
-    setIconSetAssignments(await loadIconSetAssignments());
-    setConciergeLook(await loadConciergeLook());
-  }, []);
+    await loadLooks();
+  }, [role, loadSound, loadReadout, loadAi, loadLooks]);
+
+  // A save in another window (the settings window, or the floating window's mute button, the menu bar's "Read aloud"
+  // and the AI agent's tools, which the floating window runs) reloads what changed (docs/design.md "Settings window")
+  useEffect(
+    () =>
+      onSettingsChanged(
+        [
+          KEY_MUTED,
+          KEY_CHIRP_VOLUME,
+          KEY_VOICE_ENABLED,
+          KEY_VOICE_VOLUME,
+          KEY_READOUT_VOICE,
+          API_KEYS_SETTING,
+          KEY_AI_PROVIDER,
+          KEY_LOCAL_AI,
+          KEY_ICON_SET_ASSIGNMENTS,
+          KEY_CONCIERGE_LOOK,
+        ],
+        (key) => {
+          if (key === KEY_MUTED || key === KEY_CHIRP_VOLUME) void loadSound();
+          else if (key === KEY_VOICE_ENABLED || key === KEY_VOICE_VOLUME || key === KEY_READOUT_VOICE) void loadReadout();
+          else if (key === API_KEYS_SETTING || key === KEY_AI_PROVIDER || key === KEY_LOCAL_AI) {
+            void loadAi();
+            setAiKeyTestState({ anthropic: { phase: "idle" }, openai: { phase: "idle" }, local: { phase: "idle" } });
+          } else void loadLooks();
+        },
+      ),
+    [loadSound, loadReadout, loadAi, loadLooks],
+  );
 
   const changeMuted = useCallback((next: boolean) => {
     mutedRef.current = next;
@@ -198,14 +266,15 @@ export function useSettings() {
     voiceEnabledRef.current = next;
     setVoiceEnabled(next);
     void saveVoiceEnabled(next);
-    reportVoiceMenu(next);
-    // OFF is an "I want quiet" action, so speech that is playing or queued stops immediately too
+    if (role === "owner") reportVoiceMenu(next);
+    // OFF is an "I want quiet" action, so speech that is playing or queued stops immediately too (in the floating
+    // window through its reload)
     if (!next) cancelSpeech();
-  }, []);
+  }, [role]);
 
   const toggleVoiceEnabled = useCallback(() => changeVoiceEnabled(!voiceEnabledRef.current), [changeVoiceEnabled]);
 
-  useEffect(() => listenVoiceMenu(changeVoiceEnabled), [changeVoiceEnabled]);
+  useEffect(() => (role === "owner" ? listenVoiceMenu(changeVoiceEnabled) : undefined), [role, changeVoiceEnabled]);
 
   // Slider (input shown as 0–100, internal value 0–1). The module variable in lib/voice.ts is read at the
   // "moment" of speaking, so here it is enough to apply it with setVoiceVolume right along with the state
@@ -230,9 +299,9 @@ export function useSettings() {
     setReadoutVoiceState(next);
     setReadoutVoice(next);
     // The menu item's "available" depends on the voice where the system has none
-    reportVoiceMenu(voiceEnabledRef.current);
+    if (role === "owner") reportVoiceMenu(voiceEnabledRef.current);
     await saveReadoutVoice(next);
-  }, []);
+  }, [role]);
 
   /** "System voice" / "Local server". The local config is kept either way */
   const changeReadoutSource = useCallback(

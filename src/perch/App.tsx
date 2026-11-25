@@ -1,42 +1,34 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { MdBugReport, MdClose, MdNotifications, MdNotificationsOff, MdSettings, MdVolumeUp } from "react-icons/md";
+import { MdBugReport, MdClose, MdNotifications, MdNotificationsOff, MdSettings } from "react-icons/md";
 import { t } from "@/lib/i18n";
 import { chirpDone, chirpWaiting, primeAudio } from "@/lib/chirp";
-import type { RootEntry } from "@/lib/settings-store";
 import { focusSession, focusTargetOf } from "@/lib/terminal-focus";
 import { isAngry } from "@/lib/turn-verdict";
 import type { AskJudgement, SessionEvent, SessionView } from "@/lib/sessions";
-import { readoutAvailable, speakDoneEvent, speakEvent, speakSuggestions, speechAvailable } from "@/lib/voice";
-import { ReadoutVoiceSettings } from "./settings/readout-voice-settings";
+import { speakDoneEvent, speakEvent, speakSuggestions } from "@/lib/voice";
 import DebugApp from "./DebugApp";
 import { Garden } from "./garden";
 import { bubbleText } from "./bubble";
 import { type PerchSource } from "./source";
-import { EVENT, EventIcon } from "./event-kind";
 import { EventFeed } from "./event-feed";
 import { Perch } from "./perch-list";
 import { currentWindowMode, useWindowMode } from "./window-mode";
-import { useUpdates } from "./use-updates";
 import { onFadeHandlePointerDown, useGardenFade } from "./garden-fade";
 import { useGardenGrow } from "./garden-grow";
 import { BackBar } from "./back-bar";
-import { AiKeySettings } from "./settings/ai-key-settings";
-import { IconSetSettings, type IconSetRow } from "./settings/icon-set-settings";
 import { RootAddDialog } from "./settings/root-add-dialog";
-import { RootManager, type Editing } from "./settings/root-manager";
-import { UpdateSettings } from "./settings/update-settings";
 import { useSettings } from "./use-settings";
 import { useRoots } from "./use-roots";
 import { useAgentAccess } from "./use-agent-access";
 import { DEFAULT_ICON_SET } from "@/lib/icon-set-store";
 import { AgentChangeNote } from "./agent-change-note";
-import { AgentAccessSettings } from "./settings/agent-access-settings";
+import { iconSetRowsOf, runningProjects, usePublishSettingsRuntime } from "./settings-runtime";
+import { useSettingsShortcut } from "./settings-app";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
-import { ConciergeGlyph, ConciergeLine, ConciergeSettings } from "./concierge";
+import { ConciergeGlyph, ConciergeLine } from "./concierge";
 import {
   conciergeTabCounts,
   conciergeTabContent,
@@ -82,7 +74,7 @@ function speakSessionEvent(event: SessionEvent, stillEnabled: () => boolean): vo
 type Phase = "loading" | "ready";
 
 // Tabs switch the view (Concierge, Garden, Perch, events; concierge-tab.ts). The open one is saved and opened again
-// after a relaunch. Settings are a separate level (⚙ button → settings view), so they aren't a Tab
+// after a relaunch. Settings are a window of their own (⚙ → open_settings; docs/design.md "Settings window")
 
 // Grabbing the window background moves the whole window. Excludes clickable controls, text inputs, birds (garden
 // drag), scrolling lists, and the window handle (it drags the window itself, garden-fade.ts)
@@ -98,12 +90,12 @@ export default function App({
 }) {
   const [phase, setPhase] = useState<Phase>("loading");
   const rootsApi = useRoots(source);
-  const { roots, perms, addMessage, addRoot, removeRoot, renameRoot } = rootsApi;
+  const { roots, perms, addMessage, addRoot } = rootsApi;
   const [brokenIds, setBrokenIds] = useState<string[]>([]);
   const [sessions, setSessions] = useState<SessionView[]>([]);
   const [events, setEvents] = useState<SessionEvent[]>([]);
   // The Garden is the most fun to watch = the face of the product, so it is the default tab
-  // ?tab=concierge|perch|events / ?settings=1 choose the screen at launch (for checking screenshots; TOMARIGI_QUERY in
+  // ?tab=concierge|perch|events chooses the screen at launch (for checking screenshots; TOMARIGI_QUERY in
   // the README); without it the tab saved last opens
   const [chosenTab, setChosenTab] = useState<Tab>(
     () => tabOf(new URLSearchParams(location.search).get("tab")) ?? "garden",
@@ -119,63 +111,37 @@ export default function App({
     setChosenTab(next);
     void saveOpenTab(next).catch(() => {});
   }, []);
-  const [settingsOpen, setSettingsOpen] = useState(
-    () => new URLSearchParams(location.search).has("settings"),
-  );
-  // ?scrollTo=<class name> scrolls the window to that element at launch (for checking screenshots; TOMARIGI_QUERY in the README).
-  // At the floating window's height the lower part of the settings isn't visible
-  useEffect(() => {
-    const target = new URLSearchParams(location.search).get("scrollTo");
-    if (phase !== "ready" || !target || !/^[\w-]+$/.test(target)) return;
-    document.querySelector(`.${target}`)?.scrollIntoView({ block: "center" });
-  }, [phase]);
-  const [editing, setEditing] = useState<Editing | null>(null);
-  const [windowMode, setWindowMode] = useWindowMode();
-  const updates = useUpdates();
-  const settingsApi = useSettings();
+  const [windowMode] = useWindowMode();
+  const settingsApi = useSettings("owner");
   const {
     muted,
     mutedRef,
     chirpVolume,
-    voiceEnabled,
     voiceEnabledRef,
     voiceVolume,
     readoutVoice,
     changeReadoutSource,
     saveLocalTts,
-    removeLocalTts,
     runTtsTest,
     aiKeySet,
-    retiredKeys,
-    keyStoreAvailable,
-    aiKeyTestState,
     aiProvider,
     localAi,
     summarySetUp,
     iconSetAssignments,
     loadSettings,
     toggleMuted,
-    toggleVoiceEnabled,
     changeVoiceVolume,
     changeChirpVolume,
-    saveAiKey,
-    removeAiKey,
-    removeRetiredKey,
     saveLocalAi,
     removeLocalAi,
     selectAiProvider,
-    runAiKeyTest,
     assignIconSet,
     conciergeLook,
     changeConciergeLook,
   } = settingsApi;
   const { requestJudgements, displaySessions } = useTurnJudgements(sessions, summarySetUp);
-  // Readout is off where nothing can speak: no speechSynthesis (some Linux builds; docs/design.md "Platforms") and no
-  // local TTS server chosen. readoutAvailable reads the voice use-settings sets before it renders
-  const canSpeak = readoutAvailable();
-  const systemCanSpeak = speechAvailable();
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
-  // it is a screen (like settings) opened and closed by this state alone
+  // it is a screen opened and closed by this state alone
   const [showDebug, setShowDebug] = useState(
     () => new URLSearchParams(location.search).has("debug"),
   );
@@ -184,40 +150,15 @@ export default function App({
     () => new URLSearchParams(location.search).get("dialog") === "add-folder",
   );
   const closeDebug = useCallback(() => setShowDebug(false), []);
-  // Esc leaves settings. Skipped while a dialog or a folder name edit is open, because their own Esc handlers close
-  // just that one thing and the same key press shouldn't also drop the user out of settings
-  useEffect(() => {
-    if (!settingsOpen || showDebug || rootDialogOpen || editing) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSettingsOpen(false);
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [settingsOpen, showDebug, rootDialogOpen, editing]);
-  // The menu bar's update item opens settings at the update section, where its result and progress are shown
-  // (tray.rs on_update_item)
-  useEffect(() => {
-    const unlisten = listen("open-updates", () => {
-      setShowDebug(false);
-      setSettingsOpen(true);
-      // After the scroll reset below runs for the newly opened settings
-      requestAnimationFrame(() => document.querySelector(".update-settings")?.scrollIntoView({ block: "center" }));
-    });
-    return () => void unlisten.then((f) => f());
-  }, []);
-  // The Concierge tab without a provider opens settings at the AI section, where a key or Local is set up
-  const openAiSettings = useCallback(() => {
-    setShowDebug(false);
-    setSettingsOpen(true);
-    // After the scroll reset below runs for the newly opened settings
-    requestAnimationFrame(() => document.querySelector(".ai-keys")?.scrollIntoView({ block: "start" }));
-  }, []);
-  // Settings, the debug log, and the tabs share one scroll area, so start each side from the top instead of carrying over where the
+  useSettingsShortcut();
+  // The Concierge tab without a provider opens the settings window at the AI section, where a key or Local is set up
+  const openAiSettings = useCallback(() => void invoke("open_settings", { section: "ai" }).catch(() => {}), []);
+  // The debug log and the tabs share one scroll area, so start each side from the top instead of carrying over where the
   // other one was scrolled to
   const pageBodyRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     pageBodyRef.current?.scrollTo(0, 0);
-  }, [settingsOpen, showDebug]);
+  }, [showDebug]);
   // The concierge's readout routing (use-concierge.ts), set once the concierge is made below; read from the scan loop
   const conciergeReadoutEventRef = useRef<(event: SessionEvent) => "speak" | "held" | "skip">(() => "speak");
   const scanBusyRef = useRef(false); // Prevents overlapping runs when a scan exceeds POLL_MS (prevents double chirps)
@@ -348,34 +289,6 @@ export default function App({
     };
   }, [phase, roots, perms, source]);
 
-  const removeRootRow = useCallback(
-    async (id: string) => {
-      await removeRoot(id);
-      setEditing((prev) => (prev?.id === id ? null : prev));
-    },
-    [removeRoot],
-  );
-
-  const startEdit = useCallback((root: RootEntry) => {
-    setEditing({ id: root.id, draft: root.label });
-  }, []);
-
-  const cancelEdit = useCallback(() => setEditing(null), []);
-
-  const commitEdit = useCallback(async () => {
-    if (!editing) return;
-    const { id, draft } = editing;
-    setEditing(null);
-    // An empty label keeps the original value (renameRoot refuses it)
-    await renameRoot(id, draft);
-  }, [editing, renameRoot]);
-
-  // Preview the three chirps individually (played in a row, you can't tell which sound is which state)
-  const previewChirp = useCallback((chirp: () => void) => {
-    primeAudio();
-    chirp();
-  }, []);
-
   // Clicking a bird or row jumps to its terminal pane. mock doesn't use roots, so it can't be matched and does nothing.
   // Jumps are an input of the concierge (which waiting session the user skipped)
   const onFocusSession = useCallback(
@@ -486,7 +399,7 @@ export default function App({
   // over it; on the other tabs, settings and the debug log it is back at its frame
   const conciergeTab = useConciergeTab({
     open: showTabs && tab === "concierge",
-    canShrink: windowMode === "floating" && !settingsOpen && !showDebug,
+    canShrink: windowMode === "floating" && !showDebug,
   });
   // Without a provider nothing is asked and the readout stays per session, as outside the tab
   useEffect(
@@ -499,46 +412,25 @@ export default function App({
     if (conciergeTab.view) root.dataset.conciergeOnly = "";
     else delete root.dataset.conciergeOnly;
   }, [conciergeTab.view]);
-  // Fade until hovered (garden-fade.ts). Not while settings, the debug log, or the folder dialog are open over the Garden
+  // Fade until hovered (garden-fade.ts). Not while the debug log or the folder dialog are open over the Garden
   useGardenFade(
     windowMode === "floating" &&
       showTabs &&
       (tab === "garden" || tab === "concierge") &&
-      !settingsOpen &&
       !showDebug &&
       !rootDialogOpen,
   );
   // Grow the floating window when the Garden's birds don't fit (garden-grow.ts). The folder dialog only covers the
   // Garden, so it doesn't count
   const { onFit: onGardenFit, growRoom: gardenGrowRoom } = useGardenGrow(
-    windowMode === "floating" && showTabs && tab === "garden" && !settingsOpen && !showDebug && !conciergeTab.view,
+    windowMode === "floating" && showTabs && tab === "garden" && !showDebug && !conciergeTab.view,
     windowMode === "floating",
     displaySessions.length + (concierge.shown ? 1 : 0),
   );
 
-  // Rows shown in the icon set settings = "projects in the current sessions (deduplicated by slug)"
-  // ∪ "projects with only a saved assignment left". Running ones form the first group to prioritize
-  // current usage, and within each group the order is fixed by label ascending. sessions is sorted by
-  // sinceMs (time since the latest write), which goes back to 0 on every write, so keeping the order of
-  // appearance would reorder the rows' <select> on every poll (3 seconds)
-  // (the DOM node of an open <select> gets moved, and in Chrome an open dropdown actually closes).
-  // Label ascending order is stable regardless of the order of sessions
-  const iconSetRows = useMemo<IconSetRow[]>(() => {
-    const seen = new Set<string>();
-    const running: IconSetRow[] = [];
-    for (const s of sessions) {
-      if (seen.has(s.slug)) continue;
-      seen.add(s.slug);
-      // Per project: the project's name, not a session's name told apart from another (docs/design.md "Display names")
-      running.push({ slug: s.slug, label: s.projectBase ?? s.project, running: true });
-    }
-    running.sort((a, b) => a.label.localeCompare(b.label));
-    const savedOnly = Object.entries(iconSetAssignments)
-      .filter(([slug]) => !seen.has(slug))
-      .map(([slug, a]) => ({ slug, label: a.label, running: false }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-    return [...running, ...savedOnly];
-  }, [sessions, iconSetAssignments]);
+  // Rows of the icon set settings, for the AI agent's tools and the settings window (settings-runtime.ts)
+  const running = useMemo(() => runningProjects(sessions), [sessions]);
+  const iconSetRows = useMemo(() => iconSetRowsOf(running, iconSetAssignments), [running, iconSetAssignments]);
 
   // The AI agent's settings tools (docs/design.md "Settings by an AI agent (MCP)") call the same functions as the
   // controls below, so the screen shows their changes at once
@@ -590,6 +482,18 @@ export default function App({
     playSample: runTtsTest,
   });
 
+  // What the settings window shows but isn't saved (docs/design.md "Settings window")
+  usePublishSettingsRuntime({
+    running,
+    brokenIds,
+    agent: {
+      status: agentAccess.status,
+      command: agentAccess.command,
+      replaced: agentAccess.replaced,
+      recent: agentAccess.recent,
+    },
+  });
+
   return (
     <main className="page">
       <AgentChangeNote notes={agentAccess.notes} onDismiss={agentAccess.dismissNotes} />
@@ -614,26 +518,19 @@ export default function App({
             {/* A debug-only button, so no i18n; English is hardcoded (same policy as DebugApp.tsx) */}
             <button
               className={showDebug ? "small active" : "small"}
-              onClick={() => {
-                // Settings and the debug log are both screens shown in place of the tabs, so only one is open
-                setSettingsOpen(false);
-                setShowDebug((v) => !v);
-              }}
+              onClick={() => setShowDebug((v) => !v)}
               aria-label="Debug log"
               title="Debug log"
               aria-pressed={showDebug}
             >
               <MdBugReport size={16} />
             </button>
+            {/* Opens the settings window, or brings it to the front (docs/design.md "Settings window") */}
             <button
-              className={settingsOpen ? "small active" : "small"}
-              onClick={() => {
-                setShowDebug(false);
-                setSettingsOpen((v) => !v);
-              }}
+              className="small"
+              onClick={() => void invoke("open_settings").catch(() => {})}
               aria-label={t("tabSettingsLabel")}
               title={t("tabSettingsLabel")}
-              aria-pressed={settingsOpen}
             >
               <MdSettings size={16} />
             </button>
@@ -653,25 +550,17 @@ export default function App({
         {/* The Concierge tab is open: said right under the handle, on the same backing and shown at rest like it (the
             tab row is hidden then), with the other birds and how many of them need a reply. A row of its own, so the
             window's width follows the concierge, not this text (docs/design.md "Concierge") */}
-        {tab === "concierge" && showTabs && !settingsOpen && !showDebug && (
+        {tab === "concierge" && showTabs && !showDebug && (
           <div className="concierge-only-row">
             <ConciergeTabLabel sessions={displaySessions} />
           </div>
         )}
       </div>
-      {/* While in settings, the tab row is replaced by a bar with Back and the title, so the way out is written on
-          screen (⚙ again and Esc also close it). Tabs are only the "views"; settings are a separate level, so they
-          aren't listed as a tab. This row sits outside .page-body so it stays put while the content scrolls */}
+      {/* While the debug log is open, the tab row is replaced by a bar with Back and the title, so the way out is
+          written on screen. This row sits outside .page-body so it stays put while the content scrolls */}
       {showDebug ? (
         <BackBar backLabel="Back" title="Event log (debug)" onBack={closeDebug} />
-      ) : showTabs &&
-        (settingsOpen ? (
-          <BackBar
-            backLabel={t("settingsBackButton")}
-            title={t("tabSettingsLabel")}
-            onBack={() => setSettingsOpen(false)}
-          />
-        ) : (
+      ) : showTabs && (
             <div className="tabs" role="tablist">
               {tabsShown().map((id) => (
                 <button
@@ -691,7 +580,7 @@ export default function App({
                 </button>
               ))}
             </div>
-        ))}
+      )}
       {/* Only this area scrolls, so the header (⚙ and ×) and the tab / settings row stay visible */}
       <div className="page-body" ref={pageBodyRef}>
       {phase === "loading" && <p className="note">{t("loadingLabel")}</p>}
@@ -705,12 +594,12 @@ export default function App({
       {showTabs && (
         <>
           {/* Each tab panel stays mounted and is hidden with the hidden attribute (recreating it on every tab
-              switch would lose internal state such as Garden's). Same hidden while in settings */}
+              switch would lose internal state such as Garden's). Same hidden while the debug log is open */}
           <section
             role="tabpanel"
             id="tabpanel-events"
             aria-labelledby="tab-btn-events"
-            hidden={settingsOpen || showDebug || tab !== "events"}
+            hidden={showDebug || tab !== "events"}
           >
             <div className="stage stage-events">
               <EventFeed
@@ -725,7 +614,7 @@ export default function App({
             role="tabpanel"
             id="tabpanel-perch"
             aria-labelledby="tab-btn-perch"
-            hidden={settingsOpen || showDebug || tab !== "perch"}
+            hidden={showDebug || tab !== "perch"}
           >
             <div className="stage stage-perch">
               <ConciergeLine advice={concierge.advice} look={conciergeLook} onFocus={onFocusSession} canFocus={canFocus} />
@@ -744,7 +633,7 @@ export default function App({
             role="tabpanel"
             id="tabpanel-garden"
             aria-labelledby={tab === "concierge" ? "tab-btn-concierge" : "tab-btn-garden"}
-            hidden={settingsOpen || showDebug || (tab !== "garden" && tab !== "concierge")}
+            hidden={showDebug || (tab !== "garden" && tab !== "concierge")}
           >
             <div className="stage stage-garden">
               {/* The birds are only hidden: the Garden stays mounted and paused, so they come back as they were */}
@@ -777,176 +666,9 @@ export default function App({
               )}
             </div>
           </section>
-          <section className="settings-panel" hidden={!settingsOpen || showDebug}>
-            {/* Watched folder management is the roots/perms subsystem itself. mock shows its fixed folders
-                (source.displayRoots) so the list and the add dialog can be checked, without reading or saving.
-                BYOK, volume, and readout settings work as the real thing even in mock (see AiKeySettings and
-                voice-controls below) */}
-            {(source.usesRoots || source.displayRoots) && (
-              <RootManager
-                roots={roots}
-                perms={perms}
-                brokenIds={brokenIds}
-                editing={editing}
-                addMessage={addMessage}
-                onRequestAdd={() => setRootDialogOpen(true)}
-                onRemove={(id) => void removeRootRow(id)}
-                onStartEdit={startEdit}
-                onEditChange={(draft) => setEditing((prev) => (prev ? { ...prev, draft } : prev))}
-                onCommitEdit={commitEdit}
-                onCancelEdit={cancelEdit}
-              />
-            )}
-            <AiKeySettings
-              open={settingsOpen && !showDebug}
-              keySet={aiKeySet}
-              retiredKeys={retiredKeys}
-              storeAvailable={keyStoreAvailable}
-              localAi={localAi}
-              onSaveLocal={(config) => void saveLocalAi(config)}
-              onDeleteLocal={() => void removeLocalAi()}
-              selectedProvider={aiProvider}
-              testState={aiKeyTestState}
-              onSaveKey={saveAiKey}
-              onDeleteKey={(provider) => void removeAiKey(provider)}
-              onDeleteRetiredKey={(provider) => void removeRetiredKey(provider)}
-              onTest={(provider, localDraft) => void runAiKeyTest(provider, localDraft)}
-              onSelect={(provider) => void selectAiProvider(provider)}
-            />
-            <ConciergeSettings look={conciergeLook} onChange={changeConciergeLook} />
-            <IconSetSettings
-              rows={iconSetRows}
-              assignments={iconSetAssignments}
-              onChange={assignIconSet}
-            />
-            {/* The two notification toggles share one pattern: "parent checkbox + sub-rows directly below".
-                "Notify with sound" is the inverse of the existing muted state (checked = !muted). It shares
-                the same state as the header's mute button (toggleMuted), so they stay in sync automatically.
-                Directly below come a volume slider only for chirps, then two preview buttons.
-                It is a setting independent of the readout (speechSynthesis) volume (the same idea as separate
-                SE/BGM volumes in games; see setChirpVolume in lib/chirp.ts).
-                "Read aloud" is the event readout (speechSynthesis). It is an opt-in setting, OFF by default,
-                with the readout volume slider directly below */}
-            <div className="voice-controls">
-              <label className="voice-enable-row">
-                <input type="checkbox" checked={!muted} onChange={toggleMuted} />
-                {t("soundEnableLabel")}
-              </label>
-              {/* The chirp slider isn't disabled even when muted ("Notify with sound" OFF).
-                  Reason: just as the preview buttons below can be pressed while muted, this supports the flow
-                  "set the volume while previewing, then turn it ON". The readout slider (which has no preview
-                  button) keeps the policy of being disabled by voiceEnabled (the uses differ: for readout the
-                  meaning of the volume depends on the "speak or not" toggle, while chirps have previewing as a
-                  way to check, so there is no reason to disable it) */}
-              <label className="settings-subrow volume-row">
-                {t("voiceVolumeLabel")}
-                <input
-                  type="range"
-                  className="volume-slider"
-                  min={0}
-                  max={100}
-                  value={Math.round(chirpVolume * 100)}
-                  onChange={(e) => changeChirpVolume(Number(e.target.value) / 100)}
-                />
-                <span className="volume-value">{Math.round(chirpVolume * 100)}%</span>
-              </label>
-              {/* Previewing is "listening to decide whether to turn it ON", so it isn't disabled even when
-                  muted ("Notify with sound" OFF). Disabling it would defeat the purpose by blocking the natural
-                  use of "try the sound, then turn it ON" (volume sliders change the setting itself, so they
-                  keep the policy of being disabled by voiceEnabled) */}
-              <div className="settings-subrow sound-preview-row">
-                {/* Sounds fire on events, so the labels come from the event side too (state labels wouldn't match).
-                    The button icons teach the same meaning as in the feed */}
-                <button className="small" onClick={() => previewChirp(chirpDone)}>
-                  <MdVolumeUp size={14} className="preview-mic" />
-                  <EventIcon kind="done" size={18} /> {EVENT.done.label}
-                </button>
-                <button className="small" onClick={() => previewChirp(chirpWaiting)}>
-                  <MdVolumeUp size={14} className="preview-mic" />
-                  <EventIcon kind="waiting" size={18} /> {EVENT.waiting.label}
-                </button>
-              </div>
-              <label className="voice-enable-row">
-                <input
-                  type="checkbox"
-                  checked={voiceEnabled && canSpeak}
-                  disabled={!canSpeak}
-                  onChange={toggleVoiceEnabled}
-                />
-                {t("voiceEnableLabel")}
-              </label>
-              {!systemCanSpeak && <p className="settings-subrow settings-note">{t("voiceUnavailable")}</p>}
-              {/* The volume value is kept even when voiceEnabled is OFF (the toggle is a switch for whether to
-                  speak and is independent of volume). While OFF it is only disabled to prevent meaningless
-                  adjustments; the value doesn't change */}
-              <label className="settings-subrow volume-row">
-                {t("voiceVolumeLabel")}
-                <input
-                  type="range"
-                  className="volume-slider"
-                  min={0}
-                  max={100}
-                  value={Math.round(voiceVolume * 100)}
-                  disabled={!voiceEnabled || !canSpeak}
-                  onChange={(e) => changeVoiceVolume(Number(e.target.value) / 100)}
-                />
-                <span className="volume-value">{Math.round(voiceVolume * 100)}%</span>
-              </label>
-              {/* Not dimmed while "Read aloud" is off: the sample can be played before turning it on, and where the
-                  system has no speech engine, choosing a local server is what lets it be turned on */}
-              <ReadoutVoiceSettings
-                open={settingsOpen}
-                voice={readoutVoice}
-                readAloud={voiceEnabled}
-                onSource={changeReadoutSource}
-                onSave={saveLocalTts}
-                onDelete={removeLocalTts}
-                onTest={runTtsTest}
-              />
-            </div>
-            {/* Floating window / standard window (can also be changed from the menu bar menu; window-mode.ts) */}
-            <section className="window-mode">
-              <h2>{t("windowModeHeading")}</h2>
-              <label className="voice-enable-row">
-                <input
-                  type="radio"
-                  name="window-mode"
-                  checked={windowMode === "floating"}
-                  onChange={() => setWindowMode("floating")}
-                />
-                {t("windowModeFloating")}
-              </label>
-              <label className="voice-enable-row">
-                <input
-                  type="radio"
-                  name="window-mode"
-                  checked={windowMode === "normal"}
-                  onChange={() => setWindowMode("normal")}
-                />
-                {t("windowModeNormal")}
-              </label>
-            </section>
-            <AgentAccessSettings
-              enabled={agentAccess.enabled}
-              port={agentAccess.port}
-              status={agentAccess.status}
-              command={agentAccess.command}
-              replaced={agentAccess.replaced}
-              recent={agentAccess.recent}
-              onEnabled={agentAccess.changeEnabled}
-              onPort={agentAccess.changePort}
-              onRenew={() => void agentAccess.renewToken()}
-            />
-            <UpdateSettings
-              status={updates.status}
-              version={updates.version}
-              onCheck={updates.check}
-              onInstall={updates.install}
-            />
-          </section>
         </>
       )}
-      {/* The debug log takes the place of the tabs' content, like settings. English only (docs/design.md "Language") */}
+      {/* The debug log takes the place of the tabs' content. English only (docs/design.md "Language") */}
       {showDebug && <DebugApp onClose={closeDebug} />}
       {/* Control panel only for the mock source (MockPanel passed by boot.tsx) */}
       {extraPanel}

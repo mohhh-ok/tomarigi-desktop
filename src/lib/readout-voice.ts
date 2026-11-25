@@ -32,7 +32,7 @@ export const DEFAULT_TTS_BASE_URL: Record<TtsKind, string> = {
   voicevox: "http://localhost:50021",
 };
 
-const KEY_READOUT_VOICE = "readoutVoice";
+export const KEY_READOUT_VOICE = "readoutVoice";
 
 function asLocalConfig(value: unknown): LocalTtsConfig | undefined {
   if (typeof value !== "object" || value === null) return undefined;

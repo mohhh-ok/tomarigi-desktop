@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Unmute"
   },
+  "soundSettingsHeading": {
+    "message": "Sound and readout"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Back"
   },
   "hideWindowButtonLabel": {
     "message": "Hide window (bring it back from the menu bar icon)"

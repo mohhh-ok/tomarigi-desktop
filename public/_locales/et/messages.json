@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Lülita heli sisse"
   },
+  "soundSettingsHeading": {
+    "message": "Heli ja ettelugemine"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Tagasi"
   },
   "hideWindowButtonLabel": {
     "message": "Peida aken (too tagasi menüüriba ikoonilt)"

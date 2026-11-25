@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import SettingsApp from "./settings-app";
 import { createMockSource, MockPanel } from "./mock";
 import "./perch.css";
 import { realSource } from "./source";
@@ -20,10 +21,19 @@ getIdentifier()
   })
   .catch(() => {}); // do nothing outside Tauri, e.g. static serving with ?mock=1
 const isMock = params.has("mock");
+// The settings window loads the same page with ?view=settings (docs/design.md "Settings window")
+const isSettings = params.get("view") === "settings";
+if (isSettings) document.documentElement.dataset.view = "settings";
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 
-if (isMock) {
+if (isSettings) {
+  root.render(
+    <React.StrictMode>
+      <SettingsApp source={isMock ? createMockSource() : realSource} />
+    </React.StrictMode>,
+  );
+} else if (isMock) {
   // Create just one mock source instance and pass it to both App and the panel. App.tsx
   // reflects panel edits immediately through source.subscribe, so both must refer to the same
   // instance (creating one each in App and MockPanel would give them separate data)

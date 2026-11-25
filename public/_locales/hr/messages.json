@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Uključi zvuk"
   },
+  "soundSettingsHeading": {
+    "message": "Zvuk i čitanje naglas"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Natrag"
   },
   "hideWindowButtonLabel": {
     "message": "Sakrij prozor (vrati ga ikonom na traci izbornika)"

@@ -220,3 +220,18 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
 
 Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<scene>-<width>.png` (and
 `changed-ja-card-<width>.png`, the card's list after the note is gone).
+
+## Settings window
+
+`settings-window-shot.mjs` shoots every section of the settings window (`?mock=1&view=settings&section=<id>`) at its
+default and smallest size (760x560 and 560x420) in English and Japanese, for a UI check. `agent-access-shot.mjs` shoots
+its "AI agent" section in each state the floating window can send it, and the floating window's note. Both need a
+`vite build` output (`DIST`) and Playwright ("Playwright" above); no dev server or port.
+
+```sh
+DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/settings-shots \
+  node tools/settings-window-shot.mjs [section ids...]
+```
+
+`mcp-call.sh` calls one of the app's MCP tools with curl, for checks on the verify .app started with
+`TOMARIGI_AGENT_ACCESS` and a known token (README "Environment variables at launch").

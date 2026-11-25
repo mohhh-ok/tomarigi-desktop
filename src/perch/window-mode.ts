@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 
-type WindowMode = "floating" | "normal";
+export type WindowMode = "floating" | "normal";
 
 function apply(mode: WindowMode) {
   document.documentElement.dataset.windowMode = mode;
@@ -15,17 +15,19 @@ export function currentWindowMode(): WindowMode {
   return document.documentElement.dataset.windowMode === "normal" ? "normal" : "floating";
 }
 
-export function useWindowMode(): [WindowMode, (mode: WindowMode) => void] {
+/** `applyToPage` false: the settings window shows the mode but is always a standard window itself, so its page
+ * doesn't take the floating window's look */
+export function useWindowMode(applyToPage = true): [WindowMode, (mode: WindowMode) => void] {
   const [mode, setMode] = useState<WindowMode>(currentWindowMode);
   useEffect(() => {
     const update = (m: WindowMode) => {
-      apply(m);
+      if (applyToPage) apply(m);
       setMode(m);
     };
-    void invoke<WindowMode>("get_window_mode").then(update);
+    void invoke<WindowMode>("get_window_mode").then(update, () => {});
     const unlisten = listen<WindowMode>("window-mode", (e) => update(e.payload));
-    return () => void unlisten.then((f) => f());
-  }, []);
+    return () => void unlisten.then((f) => f(), () => {});
+  }, [applyToPage]);
   // Change the look only once "window-mode" comes back from Rust (so they don't disagree when switching fails)
   return [mode, (m) => void invoke("set_window_mode", { mode: m })];
 }

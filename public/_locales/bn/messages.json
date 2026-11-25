@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "নিঃশব্দ বাতিল করুন"
   },
+  "soundSettingsHeading": {
+    "message": "শব্দ ও পড়ে শোনানো"
+  },
   "sinceSeconds": {
     "message": "$COUNT$সে",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "ফিরে যান"
   },
   "hideWindowButtonLabel": {
     "message": "উইন্ডো লুকান (মেনু বারের আইকন থেকে ফিরিয়ে আনুন)"

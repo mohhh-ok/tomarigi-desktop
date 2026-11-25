@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Poista mykistys"
   },
+  "soundSettingsHeading": {
+    "message": "Ääni ja ääneen luku"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Takaisin"
   },
   "hideWindowButtonLabel": {
     "message": "Piilota ikkuna (tuo takaisin valikkorivin kuvakkeesta)"

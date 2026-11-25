@@ -8,8 +8,8 @@ import { API_KEYS_SETTING, notifySettingChanged } from "./settings-sync";
 const KEY_AI_API_KEY = "judgeApiKey";
 const KEY_OPENAI_API_KEY = "openAiApiKey";
 const KEY_TYPESAFE_API_KEY = "typeSafeApiKey";
-const KEY_AI_PROVIDER = "aiProvider";
-const KEY_LOCAL_AI = "localAi";
+export const KEY_AI_PROVIDER = "aiProvider";
+export const KEY_LOCAL_AI = "localAi";
 
 // Providers that run summaries and the concierge. local is an OpenAI-compatible server and has no key (lib/local-judge.ts)
 export type AiProvider = "anthropic" | "openai" | "local";

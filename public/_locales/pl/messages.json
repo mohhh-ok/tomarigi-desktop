@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Wyłącz wyciszenie"
   },
+  "soundSettingsHeading": {
+    "message": "Dźwięk i czytanie na głos"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Wstecz"
   },
   "hideWindowButtonLabel": {
     "message": "Ukryj okno (przywróć ikoną na pasku menu)"

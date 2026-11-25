@@ -132,6 +132,7 @@ What has been checked without real machines (on a Mac): the Linux build, `cargo 
 - [ ] Readout speaks with the system voice
 - [ ] "Save" in the debug log writes to `%USERPROFILE%\Downloads`; the app log is at `%TEMP%\tomarigi-desktop\app-log.txt` (Linux: `~/.local/state/tomarigi-desktop/app-log.txt`)
 - [ ] The UI font is Segoe UI / Yu Gothic UI; Japanese text has no missing glyphs
+- [ ] Settings window (docs/design.md "Settings window"): it opens from ⚙, the tray menu's "Settings…" and Ctrl+, and takes focus; a value changed there (sound, read aloud, icon set) takes effect in the floating window, also while it is hidden, and "Read aloud" from the tray menu shows in the settings window at once (the two windows share one IndexedDB; not checked on Windows yet). `TOMARIGI_SETTINGS_TEST=1` with the verify build runs the same steps and logs `[settings-test]` / `[settings-sync]`
 
 ### Checks on a real Linux (x64) machine
 
@@ -148,5 +149,6 @@ Check on GNOME (X11 and Wayland sessions) and KDE Plasma at least, with the `.de
 - [ ] Jumping: in tmux the pane is selected and the terminal window comes forward; outside tmux the terminal window comes forward (GNOME Terminal, Konsole, Ghostty, kitty, Alacritty); on Wayland, native Wayland terminals can't be brought forward (the log says `no window of an ancestor`)
 - [ ] Codex liveness through `/proc/<pid>/fd`; processes of agents without a pid file are found (`ps` from procps is needed)
 - [ ] NVIDIA: no white window (if it happens, check `WEBKIT_DISABLE_DMABUF_RENDERER=1`; https://v2.tauri.app/develop/debug/linux-graphics/)
+- [ ] Settings window: it opens from ⚙, the tray menu's "Settings…" and Ctrl+, and takes focus; a value changed there takes effect in the floating window, also while it is hidden, and "Read aloud" from the tray menu shows in the settings window at once (the two windows share one IndexedDB; not checked on Linux yet)
 - [ ] Japanese text renders with Noto Sans CJK
 

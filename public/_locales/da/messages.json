@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Slå lyd til"
   },
+  "soundSettingsHeading": {
+    "message": "Lyd og oplæsning"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Tilbage"
   },
   "hideWindowButtonLabel": {
     "message": "Skjul vinduet (hent det frem via menulinjeikonet)"

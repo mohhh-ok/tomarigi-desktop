@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "เปิดเสียง"
   },
+  "soundSettingsHeading": {
+    "message": "เสียงและการอ่านออกเสียง"
+  },
   "sinceSeconds": {
     "message": "$COUNT$ว",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "กลับ"
   },
   "hideWindowButtonLabel": {
     "message": "ซ่อนหน้าต่าง (เปิดคืนได้จากไอคอนในแถบเมนู)"

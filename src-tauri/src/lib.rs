@@ -12,7 +12,8 @@
 //   screen). Saves and restores the mode, and the position and size per mode
 // - garden_grow: grows the floating window when the Garden's birds don't fit, without saving the grown frame
 // - fade: the floating window's Garden fades until a bird is hovered
-// - tray: menu bar icon (show/hide, window mode, updates, quit). Shown in the Dock and Cmd+Tab only in standard window mode
+// - settings_window: the settings window (docs/design.md "Settings window")
+// - tray: menu bar icon (show/hide, settings, window mode, updates, quit). Shown in the Dock and Cmd+Tab only in standard window mode
 // - updater: checks for, downloads, and installs app updates (docs/design.md "Updates")
 // This file keeps the shared log / path helpers, startup (run), and the command registration
 mod fade;
@@ -23,6 +24,7 @@ mod keys;
 mod liveness;
 mod mcp;
 mod opencode;
+mod settings_window;
 mod tray;
 mod tts;
 mod updater;
@@ -308,6 +310,7 @@ pub fn run() {
                     step("after-floating", |_| {});
                 });
             }
+            settings_window::start_self_test(app.handle());
             append_log("[app] started");
             Ok(())
         })
@@ -328,6 +331,7 @@ pub fn run() {
             window::hide_window,
             window::get_window_mode,
             window::set_window_mode,
+            settings_window::open_settings,
             tray::set_voice_menu,
             fade::set_garden_fade,
             fade::reveal_garden,

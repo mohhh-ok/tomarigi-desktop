@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Activează sunetul"
   },
+  "soundSettingsHeading": {
+    "message": "Sunet și citire cu voce tare"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Înapoi"
   },
   "hideWindowButtonLabel": {
     "message": "Ascunde fereastra (o readuci din pictograma din bara de meniu)"

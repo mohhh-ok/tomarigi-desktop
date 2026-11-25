@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Dempen opheffen"
   },
+  "soundSettingsHeading": {
+    "message": "Geluid en voorlezen"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Terug"
   },
   "hideWindowButtonLabel": {
     "message": "Venster verbergen (terughalen via het menubalkpictogram)"

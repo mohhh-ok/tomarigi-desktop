@@ -4,8 +4,9 @@ use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager};
 
+use crate::settings_window;
 use crate::updater::{check_now, install_now, UpdateStatus};
-use crate::window::{show_window, switch_mode, toggle_window, WindowMode};
+use crate::window::{switch_mode, toggle_window, WindowMode};
 
 /// The "floating window / standard window" items in the menu bar menu. The check marks are reset on every mode change
 pub(crate) struct ModeMenu {
@@ -66,7 +67,8 @@ fn on_voice_item(app: &AppHandle) {
     let Some(menu) = app.try_state::<VoiceMenu>() else { return };
     let on = menu.state.click();
     menu.item.set_checked(on).ok();
-    app.emit("voice-enabled", on).ok();
+    // Only the floating window saves from it; the settings window follows the saved value (settings-changed)
+    app.emit_to("main", "voice-enabled", on).ok();
 }
 
 /// The "Check for updates" / "Update to v<version>" item. Its label follows the update status (show_update_status)
@@ -85,12 +87,31 @@ fn system_locale() -> String {
 }
 
 /// Menu labels. Japanese if the system language is Japanese, English otherwise
-/// (show/hide, floating window, standard window, quit)
-fn menu_labels() -> (&'static str, &'static str, &'static str, &'static str) {
+struct MenuLabels {
+    toggle: &'static str,
+    settings: &'static str,
+    floating: &'static str,
+    normal: &'static str,
+    quit: &'static str,
+}
+
+fn menu_labels() -> MenuLabels {
     if is_japanese() {
-        ("表示 / 非表示", "浮遊窓（常に最前面）", "通常の窓（最大化できる）", "tomarigi を終了")
+        MenuLabels {
+            toggle: "表示 / 非表示",
+            settings: "設定…",
+            floating: "浮遊窓（常に最前面）",
+            normal: "通常の窓（最大化できる）",
+            quit: "tomarigi を終了",
+        }
     } else {
-        ("Show / Hide", "Floating (always on top)", "Standard window (can maximize)", "Quit tomarigi")
+        MenuLabels {
+            toggle: "Show / Hide",
+            settings: "Settings…",
+            floating: "Floating (always on top)",
+            normal: "Standard window (can maximize)",
+            quit: "Quit tomarigi",
+        }
     }
 }
 
@@ -124,11 +145,10 @@ pub(crate) fn show_update_status(app: &AppHandle, status: &UpdateStatus) {
     menu.0.set_enabled(enabled).ok();
 }
 
-/// The update item: checks, or installs the found version. Either way the window opens on the settings' update section,
-/// where the result and the progress are shown (docs/design.md "Updates")
+/// The update item: checks, or installs the found version. Either way the settings window opens on its Updates section,
+/// where the result and the progress are shown (docs/design.md "Updates", "Settings window")
 fn on_update_item(app: &AppHandle) {
-    show_window(app);
-    app.emit("open-updates", ()).ok();
+    settings_window::open(app, Some("updates"));
     match crate::updater::update_status(app.clone()) {
         UpdateStatus::Available { .. } | UpdateStatus::InstallFailed { .. } => install_now(app),
         _ => check_now(app),
@@ -136,20 +156,22 @@ fn on_update_item(app: &AppHandle) {
 }
 
 pub(crate) fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()> {
-    let (toggle_label, floating_label, normal_label, quit_label) = menu_labels();
-    let toggle = MenuItem::with_id(app, "toggle", toggle_label, true, None::<&str>)?;
+    let labels = menu_labels();
+    let toggle = MenuItem::with_id(app, "toggle", labels.toggle, true, None::<&str>)?;
+    let settings = MenuItem::with_id(app, "settings", labels.settings, true, None::<&str>)?;
     let floating =
-        CheckMenuItem::with_id(app, "mode-floating", floating_label, true, mode == WindowMode::Floating, None::<&str>)?;
-    let normal = CheckMenuItem::with_id(app, "mode-normal", normal_label, true, mode == WindowMode::Normal, None::<&str>)?;
+        CheckMenuItem::with_id(app, "mode-floating", labels.floating, true, mode == WindowMode::Floating, None::<&str>)?;
+    let normal = CheckMenuItem::with_id(app, "mode-normal", labels.normal, true, mode == WindowMode::Normal, None::<&str>)?;
     // Unchecked and disabled until the settings report the saved value and whether the system can speak
     let voice = CheckMenuItem::with_id(app, "voice", voice_label(is_japanese()), false, false, None::<&str>)?;
     let (update_text, _) = update_label(&UpdateStatus::Idle);
     let update = MenuItem::with_id(app, "update", update_text, true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", quit_label, true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", labels.quit, true, None::<&str>)?;
     let menu = Menu::with_items(
         app,
         &[
             &toggle,
+            &settings,
             &PredefinedMenuItem::separator(app)?,
             &floating,
             &normal,
@@ -177,6 +199,7 @@ pub(crate) fn setup_tray(app: &tauri::App, mode: WindowMode) -> tauri::Result<()
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "toggle" => toggle_window(app),
+            "settings" => settings_window::open(app, None),
             "mode-floating" => switch_mode(app, WindowMode::Floating),
             "mode-normal" => switch_mode(app, WindowMode::Normal),
             "voice" => on_voice_item(app),

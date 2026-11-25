@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Ativar som"
   },
+  "soundSettingsHeading": {
+    "message": "Som e leitura em voz alta"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Voltar"
   },
   "hideWindowButtonLabel": {
     "message": "Ocultar janela (reabra pelo ícone da barra de menus)"

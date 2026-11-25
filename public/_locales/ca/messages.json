@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Activa el so"
   },
+  "soundSettingsHeading": {
+    "message": "So i lectura en veu alta"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Enrere"
   },
   "hideWindowButtonLabel": {
     "message": "Amaga la finestra (es recupera des de la icona de la barra de menús)"

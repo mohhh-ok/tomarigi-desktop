@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "음소거 해제"
   },
+  "soundSettingsHeading": {
+    "message": "소리와 읽어 주기"
+  },
   "sinceSeconds": {
     "message": "$COUNT$초",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "뒤로"
   },
   "hideWindowButtonLabel": {
     "message": "창 숨기기(메뉴 막대 아이콘으로 다시 열 수 있음)"

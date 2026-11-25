@@ -7,12 +7,12 @@ import { pathKey } from "./paths";
 import { checkNewRoot } from "./settings-checks";
 import { CONCIERGE_LOOKS, DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "./concierge";
 
-const KEY_ROOTS = "roots";
-const KEY_MUTED = "muted";
-const KEY_VOICE_ENABLED = "voiceEnabled";
-const KEY_VOICE_VOLUME = "voiceVolume";
-const KEY_CHIRP_VOLUME = "chirpVolume";
-const KEY_CONCIERGE_LOOK = "conciergeLook";
+export const KEY_ROOTS = "roots";
+export const KEY_MUTED = "muted";
+export const KEY_VOICE_ENABLED = "voiceEnabled";
+export const KEY_VOICE_VOLUME = "voiceVolume";
+export const KEY_CHIRP_VOLUME = "chirpVolume";
+export const KEY_CONCIERGE_LOOK = "conciergeLook";
 const KEY_OPEN_TAB = "openTab";
 
 // The store itself (and kvDelete) is lib/kv.ts; re-exported for the callers that read settings from here
@@ -42,7 +42,7 @@ interface DefaultRoot {
 }
 
 // Where edited labels of default folders are saved (defaults aren't in the saved list, so they're kept separately). key → label
-const KEY_DEFAULT_ROOT_LABELS = "defaultRootLabels";
+export const KEY_DEFAULT_ROOT_LABELS = "defaultRootLabels";
 
 function withHandle(root: Omit<RootEntry, "handle">): RootEntry {
   return { ...root, handle: new NativeDirectoryHandle(root.path) };

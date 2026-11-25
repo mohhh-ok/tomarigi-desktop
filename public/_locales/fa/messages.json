@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "فعال کردن صدا"
   },
+  "soundSettingsHeading": {
+    "message": "صدا و خواندن با صدا"
+  },
   "sinceSeconds": {
     "message": "$COUNT$ثانیه",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "بازگشت"
   },
   "hideWindowButtonLabel": {
     "message": "پنهان کردن پنجره (از نماد نوار منو برمی‌گردد)"

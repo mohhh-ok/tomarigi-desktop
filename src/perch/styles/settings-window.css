@@ -1,0 +1,95 @@
+/* The settings window (docs/design.md "Settings window"; settings-app.tsx): a standard opaque window, sections listed
+   on the left, the chosen one on the right. Only the right scrolls. The cards keep their styles from settings.css */
+
+html[data-view="settings"],
+html[data-view="settings"] body {
+  background: #18181e;
+}
+
+/* The verification build is told apart by its color here too (data-build in boot.tsx) */
+html[data-view="settings"][data-build="verify"],
+html[data-view="settings"][data-build="verify"] body {
+  background: #0c2a27;
+}
+
+/* Text in the settings can be selected and copied (paths, the agent's command); there is no window dragging here */
+html[data-view="settings"] body {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.settings-page {
+  height: 100%;
+  display: flex;
+}
+
+.settings-nav {
+  flex: none;
+  width: 184px;
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid #2a2922;
+  overflow-y: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.settings-nav-item {
+  text-align: start;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #a49f92;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.settings-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e9e6de;
+}
+
+.settings-nav-item.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e9e6de;
+  font-weight: 600;
+}
+
+.settings-nav-item:focus-visible {
+  outline: 2px solid #6d8fd8;
+  outline-offset: -2px;
+}
+
+.settings-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 0 24px;
+}
+
+.settings-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+}
+
+/* One section at a time: its heading is the pane's title, a step larger than the cards' own sub-headings */
+.settings-content .settings-panel > :first-child > h2 {
+  font-size: 15px;
+  color: #e9e6de;
+  margin-bottom: 14px;
+}
+
+/* Sound and readout: the controls sit right under the section's heading, without the separator they had in the list */
+.sound-settings > .voice-controls {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}

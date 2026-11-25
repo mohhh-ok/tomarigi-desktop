@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Ieslēgt skaņu"
   },
+  "soundSettingsHeading": {
+    "message": "Skaņa un nolasīšana"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Atpakaļ"
   },
   "hideWindowButtonLabel": {
     "message": "Paslēpt logu (atgriež ar izvēļņu joslas ikonu)"

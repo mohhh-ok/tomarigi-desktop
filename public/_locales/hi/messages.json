@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "अनम्यूट करें"
   },
+  "soundSettingsHeading": {
+    "message": "ध्वनि और पढ़कर सुनाना"
+  },
   "sinceSeconds": {
     "message": "$COUNT$से",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "वापस"
   },
   "hideWindowButtonLabel": {
     "message": "विंडो छिपाएँ (मेन्यू बार आइकन से वापस लाएँ)"

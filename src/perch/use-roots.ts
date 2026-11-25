@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import { isReadableDir } from "@/lib/native-fs";
 import {
@@ -8,7 +8,10 @@ import {
   checkTypedRootPath,
   type SettingsProblem,
 } from "@/lib/settings-checks";
+import { onSettingsChanged } from "@/lib/settings-sync";
 import {
+  KEY_DEFAULT_ROOT_LABELS,
+  KEY_ROOTS,
   loadRoots,
   newRoot,
   pickNewRoot,
@@ -46,6 +49,13 @@ export function useRoots(source: PerchSource) {
       setPerms(Object.fromEntries(source.displayRoots.map((r) => [r.id, "granted" as const])));
     }
   }, [source, setRoots]);
+
+  // A folder added, removed or renamed in another window (the settings window, or the AI agent's tools run by the
+  // floating window): the floating window scans the new list, the settings window shows it
+  useEffect(
+    () => (source.usesRoots ? onSettingsChanged([KEY_ROOTS, KEY_DEFAULT_ROOT_LABELS], () => void loadAll()) : undefined),
+    [source, loadAll],
+  );
 
   /** So that state and persistence don't silently diverge on failure, it warns and shows a message on screen */
   const persist = useCallback(

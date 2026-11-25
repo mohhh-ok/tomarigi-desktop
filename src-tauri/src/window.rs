@@ -146,6 +146,14 @@ fn place_top_right(win: &WebviewWindow) {
     win.set_position(tauri::PhysicalPosition::new(x, p.y + menu_bar)).ok();
 }
 
+/// Whether a saved top-left corner is on one of the displays now connected
+pub(crate) fn on_any_monitor(win: &WebviewWindow, x: i32, y: i32) -> bool {
+    win.available_monitors().unwrap_or_default().iter().any(|m| {
+        let (p, s) = (m.position(), m.size());
+        x >= p.x && y >= p.y && x < p.x + s.width as i32 && y < p.y + s.height as i32
+    })
+}
+
 /// Restores the saved position and size. If the position isn't on any display (e.g. a disconnected display),
 /// places it at the top right
 pub(crate) fn restore_window_state(win: &WebviewWindow, mode: WindowMode) {
@@ -157,13 +165,7 @@ pub(crate) fn restore_window_state(win: &WebviewWindow, mode: WindowMode) {
         return;
     };
     win.set_size(tauri::PhysicalSize::new(state.width, state.height)).ok();
-    let on_screen = win.available_monitors().unwrap_or_default().iter().any(|m| {
-        let (p, s) = (m.position(), m.size());
-        state.x >= p.x
-            && state.y >= p.y
-            && state.x < p.x + s.width as i32
-            && state.y < p.y + s.height as i32
-    });
+    let on_screen = on_any_monitor(win, state.x, state.y);
     if on_screen {
         win.set_position(tauri::PhysicalPosition::new(state.x, state.y)).ok();
     } else {

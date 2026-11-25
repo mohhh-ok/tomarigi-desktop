@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "取消静音"
   },
+  "soundSettingsHeading": {
+    "message": "声音与朗读"
+  },
   "sinceSeconds": {
     "message": "$COUNT$秒",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "返回"
   },
   "hideWindowButtonLabel": {
     "message": "隐藏窗口（可从菜单栏图标恢复）"

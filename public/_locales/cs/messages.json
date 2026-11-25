@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Zrušit ztlumení"
   },
+  "soundSettingsHeading": {
+    "message": "Zvuk a předčítání"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Zpět"
   },
   "hideWindowButtonLabel": {
     "message": "Skrýt okno (vrátíte ho ikonou v řádku nabídek)"

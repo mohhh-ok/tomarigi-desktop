@@ -50,8 +50,11 @@ export function onSettingsChanged(keys: readonly string[], reload: (key: string)
     const self = await windowLabel();
     if (self === null || stopped) return undefined;
     const { listen } = await import("@tauri-apps/api/event");
+    const { invoke } = await import("@tauri-apps/api/core");
     return listen<SettingsChange>(SETTINGS_CHANGED, ({ payload }) => {
-      if (wantsReload(payload, keys, self)) reload(payload.key);
+      if (!wantsReload(payload, keys, self)) return;
+      void invoke("log", { line: `[settings-sync] ${self} reloads ${payload.key} (saved by ${payload.from})` }).catch(() => {});
+      reload(payload.key);
     });
   })().catch(() => undefined);
   return () => {

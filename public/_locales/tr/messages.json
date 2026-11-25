@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Sesi aç"
   },
+  "soundSettingsHeading": {
+    "message": "Ses ve sesli okuma"
+  },
   "sinceSeconds": {
     "message": "$COUNT$sn",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Geri"
   },
   "hideWindowButtonLabel": {
     "message": "Pencereyi gizle (menü çubuğu simgesinden geri getirilir)"

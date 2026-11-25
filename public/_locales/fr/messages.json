@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Rétablir le son"
   },
+  "soundSettingsHeading": {
+    "message": "Son et lecture à voix haute"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Retour"
   },
   "hideWindowButtonLabel": {
     "message": "Masquer la fenêtre (réaffichable via l’icône de la barre des menus)"

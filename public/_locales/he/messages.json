@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "בטל השתקה"
   },
+  "soundSettingsHeading": {
+    "message": "צליל והקראה"
+  },
   "sinceSeconds": {
     "message": "$COUNT$ש׳",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "חזרה"
   },
   "hideWindowButtonLabel": {
     "message": "הסתרת החלון (אפשר להחזיר מסמל שורת התפריטים)"

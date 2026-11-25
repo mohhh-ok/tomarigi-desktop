@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Némítás feloldása"
   },
+  "soundSettingsHeading": {
+    "message": "Hang és felolvasás"
+  },
   "sinceSeconds": {
     "message": "$COUNT$mp",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Vissza"
   },
   "hideWindowButtonLabel": {
     "message": "Ablak elrejtése (a menüsor ikonjával visszahozható)"

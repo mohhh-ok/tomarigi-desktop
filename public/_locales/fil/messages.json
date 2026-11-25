@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "I-unmute"
   },
+  "soundSettingsHeading": {
+    "message": "Tunog at pagbasa nang malakas"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Bumalik"
   },
   "hideWindowButtonLabel": {
     "message": "Itago ang window (ibalik mula sa icon sa menu bar)"

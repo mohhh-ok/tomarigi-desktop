@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Vklopi zvok"
   },
+  "soundSettingsHeading": {
+    "message": "Zvok in branje na glas"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Nazaj"
   },
   "hideWindowButtonLabel": {
     "message": "Skrij okno (vrnete ga z ikono v menijski vrstici)"

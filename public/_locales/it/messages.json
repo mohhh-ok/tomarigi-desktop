@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Attiva audio"
   },
+  "soundSettingsHeading": {
+    "message": "Suono e lettura ad alta voce"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Indietro"
   },
   "hideWindowButtonLabel": {
     "message": "Nascondi finestra (riaprila dall’icona nella barra dei menu)"

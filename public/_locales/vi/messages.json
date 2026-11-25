@@ -83,6 +83,9 @@
   "unmuteButtonAria": {
     "message": "Bật tiếng"
   },
+  "soundSettingsHeading": {
+    "message": "Âm thanh và đọc to"
+  },
   "sinceSeconds": {
     "message": "$COUNT$s",
     "placeholders": {
@@ -284,9 +287,6 @@
         "content": "$1"
       }
     }
-  },
-  "settingsBackButton": {
-    "message": "Quay lại"
   },
   "hideWindowButtonLabel": {
     "message": "Ẩn cửa sổ (mở lại từ biểu tượng trên thanh menu)"
