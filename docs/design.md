@@ -408,6 +408,37 @@ Tests (table tests calling the same functions as the app; names and ids are made
 - Not supported: Aider (its history is Markdown with no record of turns ending, so no state can be derived). Kiro CLI and Amp are deferred until their session files are confirmed on a real install (the only sources found disagree or are unofficial; Claude's own decision). Resume when a session file from each is available to read
 - Caveat: none of these transcript formats is a public spec, the same as for Claude Code and Codex. Qwen Code's `runtime.json` is the exception (written for outside tools)
 
+## Readout voice (local TTS server)
+
+The readout can use a TTS server running locally (or on the LAN) in place of the system's voice (the user: 「ttsさーばーをしていできるようにしようか。がいぶapiかあるいはローカルか」, then, after a report on the differences, 「いったんろーかるげんていにしようか」). Cloud TTS APIs are out of scope for now (the user's decision). Facts behind the choices (checked 2026-11-25 in the official docs): OpenAI's `/v1/audio/speech` models (`tts-1`, `tts-1-hd`, `gpt-4o-mini-tts`) shut down on 2027-01-06, and their successor runs only on the Realtime API; VOICEVOX's terms allow commercial use and require a credit that shows VOICEVOX was used (voicevox.hiroshiba.jp/term/), with each voice library's own terms on top.
+
+### Requirements
+
+- Readout voice in the settings: "System voice" (today's readout, the default) or "Local server". A user who never touches it hears what they hear today
+- Two kinds of local server, chosen in the settings (Claude's own decision, from the report: these two cover the maintained local servers found):
+  - OpenAI-compatible (`POST <base URL>/audio/speech`): Kokoro-FastAPI, mlx-audio and other servers with that endpoint
+  - VOICEVOX-compatible (`POST <base URL>/audio_query` then `POST <base URL>/synthesis`): VOICEVOX ENGINE and AivisSpeech Engine
+- Everything that is read aloud today goes through the chosen voice: the done readout (with its summary or fallback), needs reply, the Concierge tab's suggestions, and the events read when a Concierge request fails. What is read, its order (display name, then the body, as two utterances), the "Read aloud" setting, the menu bar item and the readout volume work as they do now. Two readouts never play over each other; they play one after another in the order they were queued, as speechSynthesis's queue does today
+- The readout is never lost: when the server can't be reached, answers with an error, or gives no audio within the wait below, that utterance is read with the system voice (and not with the server's voice later). Audio that arrives after the wait is dropped (Claude's own decision: the readout is the signal that a turn finished)
+- VOICEVOX-compatible servers read Japanese only, so while the UI language isn't Japanese, readout uses the system voice even when such a server is chosen, and the settings say so under the choice (Claude's own decision)
+- The settings let the user hear the voice before relying on it: a "Test" plays a short sample through the server with the chosen voice, and says what went wrong when it fails (not running, wrong kind of server, no such voice)
+- Where the system has no speech engine (some Linux builds), "Read aloud" can be turned on while a local server is chosen; without the fallback voice, a failed utterance is skipped and logged (Claude's own decision)
+- With VOICEVOX-compatible servers, the settings show the credit 「VOICEVOX:<voice name>」 next to the chosen voice (Claude's own decision, from the terms; may be changed)
+
+Pass/fail:
+- Unit tests (scenes) for the choice between server and system voice: server answers in time / error / timeout / late audio dropped / English UI with VOICEVOX / no system voice / queue order with several events
+- Run against real servers on this Mac: one OpenAI-compatible (Kokoro-FastAPI or mlx-audio) and one VOICEVOX-compatible (VOICEVOX or AivisSpeech). The app log shows each request, its time, and whether the server's audio or the system voice was used. The sound itself can't be checked by an agent; the user listens to the result (done, needs reply, Concierge tab, Test)
+
+### Basic design
+
+- Settings, saved with the other settings (not secrets, no key; Claude's own decision, as for the Local AI provider): voice source (system / local), server kind (OpenAI-compatible / VOICEVOX-compatible), base URL, and voice; for OpenAI-compatible also the model. Default base URLs: `http://localhost:8880/v1` (Kokoro-FastAPI) for OpenAI-compatible, `http://localhost:50021` (VOICEVOX) for VOICEVOX-compatible; AivisSpeech's is `http://localhost:10101`, typed by the user (Claude's own decisions)
+- The base URL follows the Local AI rule (http(s), no user name or password, `?`, or `#`), checked in the settings screen and in Rust with the same rule. Any host is accepted
+- Voices and models are picked from the server's lists when it has them (VOICEVOX `/speakers`; OpenAI-compatible `GET <base URL>/audio/voices` and `GET <base URL>/models`, which not every server has), and can be typed when the list can't be fetched. Editing the URL clears the list and the choice, as for the Local AI provider, so a voice of another server can't be saved with the new URL
+- Requests are made from Rust, not from the WebView (Claude's own decision): the same path as the Local AI provider, and the local servers' CORS defaults (VOICEVOX allows only localhost-like origins) don't apply. The audio is passed to the page and played there, so the readout volume applies as it does now
+- Wait for the server's audio: 5 seconds per utterance, counted from sending the request (Claude's own decision). The done readout's 5-second wait for the summary comes before it and is unchanged. A first request while a server loads its model may take longer and is then read with the system voice
+- Nothing is written to disk: audio is played from memory and not cached. Each request writes one line to the app log (kind, time taken, server or fallback, and the error if any)
+- Out of scope: cloud TTS APIs (OpenAI, ElevenLabs, Google, Azure), keys for TTS, Style-Bert-VITS2 and Piper (their own APIs; Piper's official voices have no Japanese)
+
 ## Platforms
 
 - macOS, Windows 10 / 11 (x64), and Linux (x64, X11). On a Wayland session the app runs through Xwayland (`GDK_BACKEND=x11` is set at launch), because pure Wayland has no always-on-top, no global cursor position, no window position restore, and no way to focus another app's window (Claude's own decision, from research)
@@ -423,7 +454,7 @@ Tests (table tests calling the same functions as the app; names and ids are made
   - Windows Codex locks: a lock file that can't be opened without sharing is held by some process, and only those files are asked about through the Restart Manager (one session per file)
 - Paths: on Windows the folder picker and the working folders in transcripts use `\`, and the default folders mix `\` and `/` (home + `.claude/projects`). The app reads both as separators, compares paths with `\` read as `/` (so a picked folder that is already a default is a duplicate), and passes paths on as they are (`src/lib/paths.ts`)
 - Jumping: tmux works the same on Linux. Otherwise only the terminal window is brought to the front: on Windows the nearest ancestor with a visible window (`SetForegroundWindow`; Windows Terminal tabs can't be addressed from outside), on X11 the window whose `_NET_WM_PID` is an ancestor (`_NET_ACTIVE_WINDOW`). The VS Code extension works on every OS
-- Readout uses the WebView's speechSynthesis; where it's missing (some Linux builds), readout is off: the "Read aloud" checkbox is disabled and a note under it says the system has no speech engine
+- Readout uses the WebView's speechSynthesis; where it's missing (some Linux builds), readout is off: the "Read aloud" checkbox is disabled and a note under it says the system has no speech engine, unless a local TTS server is chosen (see "Readout voice (local TTS server)")
 - Distribution: CI builds Windows (NSIS) and Linux (deb, AppImage) next to macOS. Windows builds are not code-signed, so Windows shows a SmartScreen warning on first run (the user's decision: 「しょうめいしょはとらない」. Azure Artifact Signing is open to individual developers only in the US and Canada, so an individual in Japan would need a certificate from a CA). Real-machine checks on Windows and Linux are listed in docs/release.md and are not done yet
 
 ## The "?" for sessions waiting on you
