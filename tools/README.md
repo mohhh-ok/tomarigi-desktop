@@ -224,7 +224,8 @@ Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<sc
 ## Settings window
 
 `settings-window-shot.mjs` shoots every section of the settings window (`?mock=1&view=settings&section=<id>`) at its
-default and smallest size (760x560 and 560x420) in English and Japanese, for a UI check. `agent-access-shot.mjs` shoots
+default and smallest size (760x560 and 560x420) in English and Japanese, for a UI check, plus a folder label being edited
+(`-editing`) and the icon sets after one press (`-pressed`). `agent-access-shot.mjs` shoots
 its "AI agent" section in each state the floating window can send it, and the floating window's note. Both need a
 `vite build` output (`DIST`) and Playwright ("Playwright" above); no dev server or port.
 

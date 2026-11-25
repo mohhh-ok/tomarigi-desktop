@@ -4,7 +4,9 @@
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/settings-shots \
 //     node tools/settings-window-shot.mjs [section ids...]
 // The page is the mock's settings view (`?mock=1&view=settings&section=<id>`); outside the app the running projects
-// come from the mock source and agent access is off. Each section is shot at its top and scrolled to its end (`-end`).
+// come from the mock source and agent access is off. Each section is shot at its top and scrolled to its end (`-end`);
+// the folders also with the last row's label being edited (`-editing`), the icon sets after one press of the first
+// row's button (`-pressed`).
 // Env: SIZES (default 760x560,560x420), LANGS (default en,ja; any browser locale, e.g. el or de)
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -44,6 +46,25 @@ try {
         const end = join(OUT, `${section}-${lang}-${w}x${h}-end.png`);
         await page.screenshot({ path: end });
         console.log(end);
+        // The states the clarity fixes are about (docs/design.md "Clarity of the settings window"): a label being
+        // edited, with Save / Cancel; and an icon set's button after a press, its label then naming the next set
+        if (section === "folders") {
+          await page.locator(".settings-content").evaluate((e) => e.scrollTo(0, 0));
+          await page.locator(".root-row").last().getByRole("button", { name: /^(Edit label|ラベル編集)$/ }).click();
+          await page.waitForTimeout(150);
+          const editing = join(OUT, `${section}-${lang}-${w}x${h}-editing.png`);
+          await page.screenshot({ path: editing });
+          console.log(editing);
+          await page.keyboard.press("Escape");
+        }
+        if (section === "icons" && (await page.locator(".icon-set-toggle").count()) > 0) {
+          await page.locator(".settings-content").evaluate((e) => e.scrollTo(0, 0));
+          await page.locator(".icon-set-toggle").first().click();
+          await page.waitForTimeout(300);
+          const pressed = join(OUT, `${section}-${lang}-${w}x${h}-pressed.png`);
+          await page.screenshot({ path: pressed });
+          console.log(pressed);
+        }
       }
       await ctx.close();
     }

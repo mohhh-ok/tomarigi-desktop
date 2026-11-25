@@ -35,6 +35,11 @@ const MOCK_ROOTS: RootEntry[] = AGENTS.map((agent) => {
   const path = `/Users/me/${agent.home}`;
   return { id: `default:${agent.kind}`, kind: agent.kind, label: agent.label, path, builtin: true, handle: new NativeDirectoryHandle(path) };
 });
+// And one added by the user (a second Claude Code home), so the settings show a row with ✕ next to the default ones
+{
+  const path = "/Users/me/.claude2/projects";
+  MOCK_ROOTS.push({ id: "added:claude2", kind: "claude", label: "claude2", path, builtin: false, handle: new NativeDirectoryHandle(path) });
+}
 
 /** Creates one instance bundling the PerchSource implementation and the operation API MockPanel uses.
  * boot.tsx creates one of these and passes it to both App and MockPanel, so
