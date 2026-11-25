@@ -183,11 +183,13 @@ export function useSettings() {
     setConciergeLook(await loadConciergeLook());
   }, []);
 
-  const toggleMuted = useCallback(() => {
-    const next = !muted;
+  const changeMuted = useCallback((next: boolean) => {
+    mutedRef.current = next;
     setMuted(next);
     void saveMuted(next);
-  }, [muted]);
+  }, []);
+
+  const toggleMuted = useCallback(() => changeMuted(!mutedRef.current), [changeMuted]);
 
   // From the settings checkbox and from the menu bar menu's "Read aloud" item (voice-menu.ts), so both show the same value.
   // voiceEnabledRef is set here too: the menu item works while the window is hidden, and the next readout must see the
@@ -408,7 +410,9 @@ export function useSettings() {
     iconSetAssignments,
     loadSettings,
     toggleMuted,
+    changeMuted,
     toggleVoiceEnabled,
+    changeVoiceEnabled,
     changeVoiceVolume,
     changeChirpVolume,
     saveAiKey,

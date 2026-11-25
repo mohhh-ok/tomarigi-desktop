@@ -254,6 +254,31 @@ pub(crate) fn mcp_token() -> Result<String, String> {
     Ok(token)
 }
 
+/// For verification, debug builds only (the verify .app is one; a release build never reads the variable): with
+/// TOMARIGI_AGENT_ACCESS=<port>, the first line of stdin is the MCP token for this run, so a check can register the
+/// server with a token it already knows. It is kept in memory only: the saved token isn't replaced. Only its length is
+/// logged
+#[cfg(debug_assertions)]
+pub(crate) fn import_mcp_token_from_stdin() {
+    if std::env::var("TOMARIGI_AGENT_ACCESS").map_or(true, |v| v.trim() == "off") {
+        return;
+    }
+    let mut line = String::new();
+    if std::io::stdin().read_line(&mut line).is_err() {
+        return;
+    }
+    let token = line.trim().to_string();
+    if token.len() < 32 {
+        append_log(&format!("[mcp] import token refused len={}", token.len()));
+        return;
+    }
+    append_log(&format!("[mcp] imported token len={} (this run only)", token.len()));
+    cache_set(MCP_TOKEN_ACCOUNT, Some(token));
+}
+
+#[cfg(not(debug_assertions))]
+pub(crate) fn import_mcp_token_from_stdin() {}
+
 /// A new token, saved in place of the old one (the old registration command stops working)
 pub(crate) fn renew_mcp_token() -> Result<String, String> {
     let token = new_mcp_token();

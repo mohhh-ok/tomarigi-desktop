@@ -30,6 +30,10 @@ import { RootManager, type Editing } from "./settings/root-manager";
 import { UpdateSettings } from "./settings/update-settings";
 import { useSettings } from "./use-settings";
 import { useRoots } from "./use-roots";
+import { useAgentAccess } from "./use-agent-access";
+import { DEFAULT_ICON_SET } from "@/lib/icon-set-store";
+import { AgentChangeNote } from "./agent-change-note";
+import { AgentAccessSettings } from "./settings/agent-access-settings";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
 import { ConciergeGlyph, ConciergeLine, ConciergeSettings } from "./concierge";
@@ -128,6 +132,7 @@ export default function App({
   const [editing, setEditing] = useState<Editing | null>(null);
   const [windowMode, setWindowMode] = useWindowMode();
   const updates = useUpdates();
+  const settingsApi = useSettings();
   const {
     muted,
     mutedRef,
@@ -163,7 +168,7 @@ export default function App({
     assignIconSet,
     conciergeLook,
     changeConciergeLook,
-  } = useSettings();
+  } = settingsApi;
   const { requestJudgements, displaySessions } = useTurnJudgements(sessions, summarySetUp);
   // Readout is off where nothing can speak: no speechSynthesis (some Linux builds; docs/design.md "Platforms") and no
   // local TTS server chosen. readoutAvailable reads the voice use-settings sets before it renders
@@ -535,8 +540,59 @@ export default function App({
     return [...running, ...savedOnly];
   }, [sessions, iconSetAssignments]);
 
+  // The AI agent's settings tools (docs/design.md "Settings by an AI agent (MCP)") call the same functions as the
+  // controls below, so the screen shows their changes at once
+  const agentAccess = useAgentAccess(phase === "ready", {
+    snapshot: () => ({
+      aiProvider,
+      keySaved: aiKeySet,
+      localAi,
+      readoutVoice,
+      chirps: !mutedRef.current,
+      chirpVolume,
+      readAloud: voiceEnabledRef.current,
+      readAloudVolume: voiceVolume,
+      windowMode,
+      conciergeLook,
+      iconSets: iconSetRows.map((r) => ({
+        slug: r.slug,
+        name: r.label,
+        running: r.running,
+        set: iconSetAssignments[r.slug]?.set ?? DEFAULT_ICON_SET,
+      })),
+      folders: rootsApi.rootsRef.current.map((r) => ({
+        id: r.id,
+        agent: r.kind,
+        label: r.label,
+        path: r.path,
+        builtin: r.builtin,
+        readable: perms[r.id] === "granted",
+      })),
+    }),
+    selectAiProvider,
+    saveLocalAi,
+    removeLocalAi,
+    setReadoutSource: changeReadoutSource,
+    saveLocalTts,
+    setChirps: (on) => settingsApi.changeMuted(!on),
+    setChirpVolume: changeChirpVolume,
+    setReadAloud: settingsApi.changeVoiceEnabled,
+    setReadAloudVolume: changeVoiceVolume,
+    setWindowMode: (mode) => invoke("set_window_mode", { mode }),
+    assignIconSet,
+    setConciergeLook: changeConciergeLook,
+    addFolder: async (agent, path, label) => {
+      const added = await rootsApi.addRootAt(agent, path, label);
+      return typeof added === "string" ? added : { id: added.id, label: added.label };
+    },
+    removeFolder: rootsApi.removeRoot,
+    renameFolder: rootsApi.renameRoot,
+    playSample: runTtsTest,
+  });
+
   return (
     <main className="page">
+      <AgentChangeNote notes={agentAccess.notes} />
       <div className="page-header">
         {/* The window handle while the Garden is faded (docs/design.md "Fade until hovered") */}
         <h1 className="brand fade-handle" onPointerDown={onFadeHandlePointerDown}>
@@ -870,6 +926,17 @@ export default function App({
                 {t("windowModeNormal")}
               </label>
             </section>
+            <AgentAccessSettings
+              enabled={agentAccess.enabled}
+              port={agentAccess.port}
+              status={agentAccess.status}
+              command={agentAccess.command}
+              replaced={agentAccess.replaced}
+              recent={agentAccess.recent}
+              onEnabled={agentAccess.changeEnabled}
+              onPort={agentAccess.changePort}
+              onRenew={() => void agentAccess.renewToken()}
+            />
             <UpdateSettings
               status={updates.status}
               version={updates.version}

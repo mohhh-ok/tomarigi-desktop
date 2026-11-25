@@ -177,6 +177,7 @@ pub fn run() {
             // Decide the BYOK key store from the identifier (docs/design.md "BYOK API keys")
             init_key_store(&app.config().identifier);
             import_key_from_stdin(app.handle());
+            keys::import_mcp_token_from_stdin();
             let win = app.get_webview_window("main").expect("main window");
             // TOMARIGI_MOCK=1 enables mock mode (adds ?mock=1 to the page URL, read in src/perch/boot.tsx).
             // TOMARIGI_QUERY="tab=perch&settings=1" etc. sets the screen at launch (for screenshot checks; see the
@@ -366,7 +367,8 @@ pub fn run() {
             mcp::mcp_stop,
             mcp::mcp_reply,
             mcp::mcp_renew_token,
-            mcp::mcp_running_port
+            mcp::mcp_running_port,
+            mcp::agent_access_import
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

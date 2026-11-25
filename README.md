@@ -50,6 +50,16 @@ VS Code, Cursor, and other VS Code forks: to jump to the integrated terminal tab
 
 Claude desktop app: a Claude Code session running in the Code tab of the Claude desktop app has no terminal pane, so clicking its bird opens that session in the desktop app instead. Checked on macOS; on Windows and Linux it is not checked on a real machine yet, and if it doesn't work there the click jumps to the terminal as before.
 
+### Letting an AI agent change settings
+
+Your coding agent (Claude Code, or another that speaks MCP) can change Tomarigi's settings for you, e.g. "Switch the readout voice to the VOICEVOX running on this machine and play a sample".
+
+1. In settings, under "AI agent", turn on "Let an AI agent change settings"
+2. Copy the command shown there and run it once in a terminal. It registers Tomarigi with Claude Code for every project: `claude mcp add --scope user --transport http tomarigi http://127.0.0.1:4844/mcp --header "Authorization: Bearer <token>"`
+3. Ask the agent. It can read every setting on the settings screen, change them, list the models and voices of a server, run the connection test, and play a sample, and it gets the result back
+
+API keys can't be read or set this way; paste them on the settings screen. Through the agent, a server URL (Local AI, a TTS server) must be on this computer or the local network (localhost, a `.local` name, or a private IP address); enter any other server on the settings screen. Each change shows a short note in the app and is listed under "AI agent" in settings. The server listens on 127.0.0.1 only and refuses requests without the token in the command. "Renew token" makes the old command stop working; then run `claude mcp remove --scope user tomarigi` and the new command. If port 4844 is taken, change it in the same place. While Tomarigi isn't running, the agent's calls fail to connect.
+
 ### Windows and Linux
 
 - Jumping brings the terminal window to the front but can't pick its tab or split (on Linux, a session inside tmux still gets its pane). Windows Terminal comes forward on whatever tab it shows. On a Wayland session only terminals running through Xwayland can be brought forward
@@ -101,7 +111,7 @@ Agents check whatever they can in a headless browser, and launch the verify .app
 
 ### Ports
 
-The dev server port is fixed at 4842 in `vite.config.ts` and `src-tauri/tauri.conf.json`. HMR uses port 4843 only when `TAURI_DEV_HOST` is set (running the dev app on another device).
+The dev server port is fixed at 4842 in `vite.config.ts` and `src-tauri/tauri.conf.json`. HMR uses port 4843 only when `TAURI_DEV_HOST` is set (running the dev app on another device). The AI agent's MCP server listens on 127.0.0.1:4844 by default, only while its setting is on (changeable in settings); its tests use 48441–48446.
 
 ### Environment variables at launch
 
@@ -114,6 +124,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly, or
 - `TOMARIGI_MODE_TEST`: window mode self-test. `1` cycles standard → floating → standard → maximized → full screen → floating every 5 seconds; `normal` just switches to the standard window
 - `TOMARIGI_IMPORT_KEY=<anthropic|openai>`: saves the first line of stdin as that provider's API key (for checking without operating the settings screen by hand; only the length is logged)
 - `TOMARIGI_LOCAL_AI="<base URL>|<model>"`: sets up Local AI with that server and model, chooses it for summaries and the concierge, and logs the connection test result (`[keys] imported local ...`)
+- `TOMARIGI_AGENT_ACCESS=<port>` (debug builds only: dev and the verify .app; a release build ignores it): turns on "Let an AI agent change settings" with that port (`off` turns it off), and takes the first line of stdin as the token for that run only (at least 32 characters; kept in memory, the saved token isn't replaced; only its length is logged as `[mcp] imported token len=<n>`), so a check can register the MCP server with a token it already knows: `printf '%s\n' "$TOKEN" | TOMARIGI_AGENT_ACCESS=4844 ".../Contents/MacOS/tomarigi-desktop"`
 - `TOMARIGI_LOCAL_TTS="<openai|voicevox>|<base URL>|<voice>|<model>"`: chooses a local TTS server as the readout voice (the model only for `openai`), turns "Read aloud" on, and logs its sample request (`[voice] for=test ...`; where the WebView wants a click before audio plays, it logs `error=audio`). Each readout through a server logs `[voice] for=<done|waiting|concierge|test> server=<kind> ms=<n> used=<server|system|none>`
 - `TOMARIGI_KEY_BACKEND=webview`: stores keys in IndexedDB instead of the Keychain, in any build including dev (for testing the IndexedDB → Keychain migration)
 

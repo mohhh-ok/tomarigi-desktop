@@ -495,6 +495,7 @@ button.remove {
 .icon-sets,
 .concierge-settings,
 .window-mode,
+.agent-access,
 .update-settings {
   margin-top: 28px;
   padding-top: 16px;
@@ -504,6 +505,7 @@ button.remove {
 .icon-sets h2,
 .concierge-settings h2,
 .window-mode h2,
+.agent-access h2,
 .update-settings h2 {
   margin: 0 0 10px;
   font-size: 13px;
@@ -706,3 +708,132 @@ button.update-install:hover {
   margin-bottom: 10px;
 }
 
+
+/* AI agent (settings/agent-access-settings.tsx). The switch, then, while on, the command to run once: the card's one
+   thing to do, so it is the brightest block; the port and "Renew token" are small controls under it */
+.agent-access-description {
+  padding-left: 22px;
+}
+
+.agent-access-body {
+  margin-top: 12px;
+  padding-left: 22px;
+}
+
+.agent-access-hint {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d8d3c6;
+}
+
+.agent-access-command {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid #4a463c;
+  border-radius: 6px;
+  background: #1b1a15;
+}
+
+.agent-access-command code {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: #d9b06a;
+  user-select: all;
+}
+
+.agent-access-copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.agent-access-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.agent-access-port {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agent-access-port-input.judge-key-input {
+  flex: none;
+  width: 72px;
+  font-variant-numeric: tabular-nums;
+}
+
+.agent-access-recent {
+  margin-top: 14px;
+}
+
+.agent-access-recent h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a49f92;
+}
+
+.agent-access-recent ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.agent-access-recent li {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d8d3c6;
+  border-bottom: 1px solid #232219;
+}
+
+.agent-access-time {
+  flex: none;
+  color: #8d887c;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The note when the agent changes a setting (agent-change-note.tsx): over the top of the window for a few seconds,
+   on every screen, so it is seen wherever the user is */
+.agent-change-note {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  z-index: 50;
+  padding: 8px 12px;
+  border: 1px solid #5a5244;
+  border-radius: 8px;
+  background: rgba(30, 29, 23, 0.96);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  font-size: 12px;
+  line-height: 1.5;
+  color: #e6e1d3;
+}
+
+.agent-change-note-title {
+  margin: 0 0 2px;
+  font-weight: 600;
+  color: #d9b06a;
+}
+
+.agent-change-note ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-wrap: anywhere;
+}

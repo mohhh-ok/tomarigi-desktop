@@ -298,6 +298,16 @@ pub(crate) fn mcp_renew_token(port: u16) -> Result<String, String> {
     Ok(registration_command(port, &token))
 }
 
+/// For verification, debug builds only: TOMARIGI_AGENT_ACCESS=<port> turns the setting on with that port at launch,
+/// `off` turns it off (the page saves it, like TOMARIGI_LOCAL_AI). A release build always answers None
+#[tauri::command]
+pub(crate) fn agent_access_import() -> Option<String> {
+    #[cfg(debug_assertions)]
+    return Some(std::env::var("TOMARIGI_AGENT_ACCESS").ok()?.trim().to_string());
+    #[cfg(not(debug_assertions))]
+    None
+}
+
 /// The port of the running server, if any
 #[tauri::command]
 pub(crate) fn mcp_running_port() -> Option<u16> {
