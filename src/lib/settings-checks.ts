@@ -6,6 +6,7 @@ import { isAbsolutePath, samePath } from "./paths";
 
 export type SettingsProblem =
   | "url-invalid"
+  | "server-not-local"
   | "model-missing"
   | "tts-model-missing"
   | "voice-missing"
@@ -37,6 +38,9 @@ const PROBLEM_MESSAGE: Record<SettingsProblem, { key: MessageName } | { en: stri
   "local-not-set-up": { en: "Local AI isn't set up yet. Set its server URL and model first (set_local_ai)." },
   "volume-range": { en: "A volume is a whole number from 0 to 100 (percent, as the slider shows)." },
   "path-not-absolute": { en: "Give the folder as an absolute path without \"..\" (e.g. /Users/me/.claude-work/projects)." },
+  "server-not-local": {
+    en: "Through these tools a server must be on this computer or the local network: localhost, a .local name, or a private IP address. Ask the user to enter any other server on Tomarigi's settings screen.",
+  },
   "network-path": { en: "Network paths can't be watched. Give a folder on this computer." },
   "not-readable": { en: "That folder doesn't exist or can't be read." },
   "label-empty": { en: "A label can't be empty." },
@@ -148,3 +152,47 @@ export const TTS_TEST_FAILURE_MESSAGE = {
   server: "readoutTestServerError",
   audio: "readoutTestAudio",
 } as const;
+
+function ipv4Local(a: number, b: number): boolean {
+  return a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254);
+}
+
+/** The 8 groups of an IPv6 address as the URL parser writes it (compressed, lowercase hex), or undefined */
+function ipv6Groups(text: string): number[] | undefined {
+  const halves = text.split("::");
+  if (halves.length > 2) return undefined;
+  const part = (h: string) => (h === "" ? [] : h.split(":").map((g) => (/^[0-9a-f]{1,4}$/.test(g) ? parseInt(g, 16) : NaN)));
+  const head = part(halves[0]);
+  const tail = halves.length === 2 ? part(halves[1]) : [];
+  const groups = halves.length === 2 ? [...head, ...Array(8 - head.length - tail.length).fill(0), ...tail] : head;
+  return groups.length === 8 && groups.every((g) => Number.isInteger(g)) ? groups : undefined;
+}
+
+/**
+ * A server URL the AI agent gives (Local AI, a TTS server): only this computer or the local network, so an agent that
+ * was talked into it can't send the transcripts the summaries read to a server outside. `localhost`, a `.local` name,
+ * or a loopback / private / link-local IP address written as such; any other name is refused without being looked up
+ * (a name can resolve to a local address and still be the outside's). The settings screen doesn't use this rule
+ */
+export function checkAgentServerUrl(value: string): SettingsProblem | undefined {
+  let host: string;
+  try {
+    host = new URL(value.trim()).hostname.toLowerCase();
+  } catch {
+    return "url-invalid";
+  }
+  if (host === "localhost" || (host.endsWith(".local") && host.length > ".local".length)) return undefined;
+  const v4 = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(host);
+  if (v4) return ipv4Local(Number(v4[1]), Number(v4[2])) ? undefined : "server-not-local";
+  if (host.startsWith("[") && host.endsWith("]")) {
+    const g = ipv6Groups(host.slice(1, -1));
+    if (!g) return "server-not-local";
+    if (g.slice(0, 7).every((x) => x === 0) && g[7] === 1) return undefined;
+    // An IPv4 address written as IPv6 (::ffff:a.b.c.d) is read as that IPv4 address
+    if (g.slice(0, 5).every((x) => x === 0) && g[5] === 0xffff) {
+      return ipv4Local(g[6] >> 8, g[6] & 0xff) ? undefined : "server-not-local";
+    }
+    if ((g[0] & 0xfe00) === 0xfc00 || (g[0] & 0xffc0) === 0xfe80) return undefined;
+  }
+  return "server-not-local";
+}

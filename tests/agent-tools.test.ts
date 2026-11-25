@@ -138,6 +138,22 @@ describe("Local AI", () => {
     expect(saved()).toEqual([]);
   });
 
+  test("a server outside this computer and the local network is refused, and the screen is pointed to", async () => {
+    const { deps, saved } = fakes();
+    for (const [tool, args] of [
+      ["set_local_ai", { base_url: "https://api.example.com/v1", model: "m" }],
+      ["list_local_ai_models", { base_url: "http://8.8.8.8/v1" }],
+      ["test_ai_connection", { provider: "local", base_url: "http://8.8.8.8/v1", model: "m" }],
+      ["set_readout_voice", { source: "local", server: { kind: "voicevox", base_url: "http://tts.example.com", voice: "2" } }],
+      ["list_tts_voices", { kind: "voicevox", base_url: "http://tts.example.com" }],
+      ["play_readout_sample", { server: { kind: "voicevox", base_url: "http://[::ffff:8.8.8.8]", voice: "2" } }],
+    ] as const) {
+      const r = await runAgentTool(tool, args, deps);
+      expect([tool, r.ok, r.text]).toEqual([tool, false, expect.stringContaining("settings screen")]);
+    }
+    expect(saved()).toEqual([]);
+  });
+
   test("a valid one is saved trimmed", async () => {
     const { deps, saved } = fakes();
     const r = await runAgentTool("set_local_ai", { base_url: " http://localhost:11434/v1 ", model: "qwen3" }, deps);

@@ -13,6 +13,7 @@ import { ICON_SET_IDS, type IconSetId } from "./icon-set-store";
 import { CONCIERGE_LOOKS, type ConciergeLook } from "./concierge";
 import {
   AI_TEST_FAILURE_MESSAGE,
+  checkAgentServerUrl,
   checkLocalAi,
   checkLocalTts,
   checkOption,
@@ -312,7 +313,7 @@ async function serverConfig(
   const baseUrl = (str(server, "base_url") ?? "").trim();
   let voice = (str(server, "voice") ?? "").trim();
   const model = (str(server, "model") ?? "").trim();
-  const problem = checkLocalTts({ kind: ttsKind, baseUrl, voice, model });
+  const problem = checkLocalTts({ kind: ttsKind, baseUrl, voice, model }) ?? checkAgentServerUrl(baseUrl);
   if (problem) return problem;
   const [voices, engine] = await Promise.all([
     deps.fetchTtsVoices(ttsKind, baseUrl),
@@ -371,7 +372,7 @@ export async function runAgentTool(name: string, rawArgs: unknown, deps: AgentTo
 
     case "set_local_ai": {
       const config = { baseUrl: (str(args, "base_url") ?? "").trim(), model: (str(args, "model") ?? "").trim() };
-      const problem = checkLocalAi(config);
+      const problem = checkLocalAi(config) ?? checkAgentServerUrl(config.baseUrl);
       if (problem) return refuse(problem);
       await deps.saveLocalAi(config);
       return done(`Saved Local AI: ${config.baseUrl}, model ${config.model}. Run test_ai_connection to check it.`, [
@@ -522,8 +523,10 @@ export async function runAgentTool(name: string, rawArgs: unknown, deps: AgentTo
     }
 
     case "list_local_ai_models": {
-      const baseUrl = (str(args, "base_url") ?? before.localAi?.baseUrl ?? "").trim();
-      const problem = checkLocalAi({ baseUrl, model: "-" });
+      const given = str(args, "base_url");
+      const baseUrl = (given ?? before.localAi?.baseUrl ?? "").trim();
+      // The saved server is the user's own choice; a URL the agent gives must be local
+      const problem = checkLocalAi({ baseUrl, model: "-" }) ?? (given !== undefined ? checkAgentServerUrl(baseUrl) : undefined);
       if (problem) return refuse(problem);
       const models = await deps.fetchLocalModels(baseUrl);
       if (!models || models.length === 0) return fail(englishText("localAiModelsFailed"));
@@ -534,7 +537,8 @@ export async function runAgentTool(name: string, rawArgs: unknown, deps: AgentTo
       const kind = str(args, "kind");
       if (checkOption(kind, TTS_KINDS)) return refuse("unknown-option");
       const baseUrl = (str(args, "base_url") ?? "").trim();
-      const problem = checkLocalTts({ kind: kind as TtsKind, baseUrl, voice: "-", model: "-" });
+      const problem =
+        checkLocalTts({ kind: kind as TtsKind, baseUrl, voice: "-", model: "-" }) ?? checkAgentServerUrl(baseUrl);
       if (problem) return refuse(problem);
       const [voices, models] = await Promise.all([
         deps.fetchTtsVoices(kind as TtsKind, baseUrl),
@@ -557,7 +561,8 @@ export async function runAgentTool(name: string, rawArgs: unknown, deps: AgentTo
             baseUrl: (str(args, "base_url") ?? before.localAi?.baseUrl ?? "").trim(),
             model: (str(args, "model") ?? before.localAi?.model ?? "").trim(),
           };
-          const problem = checkLocalAi(draft);
+          const problem =
+            checkLocalAi(draft) ?? (str(args, "base_url") !== undefined ? checkAgentServerUrl(draft.baseUrl) : undefined);
           if (problem) return refuse(problem);
         } else if (!before.localAi) {
           return refuse("local-not-set-up");

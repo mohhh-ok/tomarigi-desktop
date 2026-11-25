@@ -2,6 +2,7 @@
 // an AI agent (MCP)")
 import { expect, test } from "bun:test";
 import {
+  checkAgentServerUrl,
   checkLocalAi,
   checkLocalTts,
   checkNewRoot,
@@ -78,4 +79,37 @@ test("labels, default folders and choices", () => {
   expect(checkOption("cat", ["birds", "cat"])).toBeUndefined();
   expect(checkOption("dog", ["birds", "cat"])).toBe("unknown-option");
   expect(checkOption(3, ["birds"])).toBe("unknown-option");
+});
+
+test("a server the agent gives must be on this computer or the local network", () => {
+  for (const ok of [
+    "http://localhost:11434/v1",
+    "http://ollama.local:11434/v1",
+    "http://127.0.0.1:50021",
+    "http://127.8.9.10",
+    "http://[::1]:8880/v1",
+    "http://10.0.0.5:1234/v1",
+    "http://172.16.0.1",
+    "http://172.31.255.255",
+    "https://192.168.1.5:1234/v1/",
+    "http://169.254.1.1",
+    "http://[fd12:3456::1]",
+    "http://[fe80::1]",
+    "http://[::ffff:10.0.0.1]",
+    "http://[::ffff:192.168.0.2]:50021",
+  ]) {
+    expect([ok, checkAgentServerUrl(ok)]).toEqual([ok, undefined]);
+  }
+  for (const no of [
+    "https://api.example.com/v1",
+    "http://8.8.8.8",
+    "http://localhost.example.com",
+    "http://[::ffff:8.8.8.8]",
+    "http://172.32.0.1",
+    "http://[2001:db8::1]",
+    "http://.local",
+  ]) {
+    expect([no, checkAgentServerUrl(no)]).toEqual([no, "server-not-local"]);
+  }
+  expect(checkAgentServerUrl("not a url")).toBe("url-invalid");
 });
