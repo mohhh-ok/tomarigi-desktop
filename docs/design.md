@@ -181,7 +181,7 @@ Pass/fail:
 
 ### Clarity of the settings window
 
-The user asked to fix, before the release, what the UI checks of the settings window had found unclear on the screen from before the move (the user: 「せっていがめんのわかりにくさもなおして」, of the list Claude gave: the words 「ターン」「ペイン」「MCP」, the icon set's ⇄ with no words, the folder label editing with no Save / Cancel, and buttons of different sizes). Findings: /tmp/tomarigi-desktop/ui-check-1.md (U1–U3, U8, X1, X4, X5).
+The user asked to fix, before the release, what the UI checks of the settings window had found unclear on the screen from before the move (the user: 「せっていがめんのわかりにくさもなおして」, of the list Claude gave: the words 「ターン」「ペイン」「MCP」, the icon set's ⇄ with no words, the folder label editing with no Save / Cancel, and buttons of different sizes).
 
 Requirements:
 - No developer word is left unexplained on the settings window: 「ターン」 and 「ペイン」 are replaced by what the user sees (e.g. the agent's reply / that session's terminal), and 「MCP」 and 「TTS」 are either replaced or said in plain words where they first appear on a card. Every language, not only Japanese and English
