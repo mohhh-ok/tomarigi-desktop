@@ -189,3 +189,18 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright node 
 Prints one `OK` / `NG` line per check with what `document.elementFromPoint` returned, the `[mock] focus` lines a click
 logged (`?focusable=1`), or the Tauri calls a grab made (`plugin:window|start_dragging` moves the window). Exits 1 when
 any check is NG.
+
+## readout-voice-shot.mjs
+
+Shoots the settings' "Readout voice" in each state (system voice, the local server's form and saved card, the
+VOICEVOX credit, the Japanese-only note, a server that isn't running, a computer without a speech engine), for a UI
+check (docs/design.md "Readout voice (local TTS server)"). Each scene is driven through the screen. The page's calls to
+Rust are answered with what real servers answered (`tests/fixtures/tts/`); no server has to run. Needs a `vite build`
+output (`DIST`) and Playwright ("Playwright" above).
+
+```sh
+DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/readout-shots \
+  node tools/readout-voice-shot.mjs [scene ids...]
+```
+
+Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<scene>-<width>.png`.
