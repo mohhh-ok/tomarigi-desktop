@@ -179,6 +179,20 @@ Pass/fail:
 - The menu bar menu gets "Settings…" after Show / Hide
 - Out of scope: a browser page, changing what each setting does, the debug log, the floating window's tabs
 
+### Clarity of the settings window
+
+The user asked to fix, before the release, what the UI checks of the settings window had found unclear on the screen from before the move (the user: 「せっていがめんのわかりにくさもなおして」, of the list Claude gave: the words 「ターン」「ペイン」「MCP」, the icon set's ⇄ with no words, the folder label editing with no Save / Cancel, and buttons of different sizes). Findings: /tmp/tomarigi-desktop/ui-check-1.md (U1–U3, U8, X1, X4, X5).
+
+Requirements:
+- No developer word is left unexplained on the settings window: 「ターン」 and 「ペイン」 are replaced by what the user sees (e.g. the agent's reply / that session's terminal), and 「MCP」 and 「TTS」 are either replaced or said in plain words where they first appear on a card. Every language, not only Japanese and English
+- The icon set's change button says what it does in words (not only ⇄)
+- Editing a watched folder's label shows a visible Save and Cancel next to the field; Enter saves and Esc cancels as before
+- A button of the same kind looks the same in every section (height, corners, font, size), and the right edges of the rows in a list line up (the watched folders' rows and the icon sets' rows)
+- Out of scope: changing what a setting does, moving settings between sections, the other findings in the file
+
+Pass/fail: shots of every section at 760×560 and 560×420 in Japanese and English show none of the words above unexplained, the ⇄ button with words, the label editing with Save / Cancel, and the buttons and row edges matching; one UI check on those shots finds no "unclear word" or "different button" left
+
+
 ### Detailed design
 
 Claude's own decisions, by the session that implements it; may be changed.
