@@ -558,7 +558,7 @@
     "message": "Adj meg egy portot 1024 és 65535 között."
   },
   "agentAccessPortInUse": {
-    "message": "Ezt a portot egy másik alkalmazás használja. Válassz másik portot."
+    "message": "Nem sikerült elindítani: ezt a portot egy másik alkalmazás használja. Adj meg másik portot."
   },
   "agentAccessRenewButton": {
     "message": "Token megújítása"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "A parancs titkos tokent tartalmaz, amellyel a gép programjai módosíthatják ezeket a beállításokat. Ne oszd meg; ha kiszivárog, újítsd meg."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Más MCP-t támogató ügynöknél add meg a parancsban lévő URL-t és Authorization fejlécet az ügynök MCP-beállításaiban."
+  },
+  "agentNoteDismiss": {
+    "message": "Bezárás"
   }
 }

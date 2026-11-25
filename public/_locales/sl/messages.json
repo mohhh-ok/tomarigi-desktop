@@ -558,7 +558,7 @@
     "message": "Vnesite vrata od 1024 do 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Ta vrata uporablja druga aplikacija. Izberite druga vrata."
+    "message": "Zagon ni uspel: ta vrata uporablja druga aplikacija. Vnesite druga vrata."
   },
   "agentAccessRenewButton": {
     "message": "Obnovi žeton"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Ukaz vsebuje skrivni žeton, s katerim lahko programi v tem računalniku spreminjajo te nastavitve. Ne delite ga; če uide, ga obnovite."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Za drugega agenta, ki podpira MCP, vnesite URL in glavo Authorization iz tega ukaza v njegove nastavitve MCP."
+  },
+  "agentNoteDismiss": {
+    "message": "Zapri"
   }
 }

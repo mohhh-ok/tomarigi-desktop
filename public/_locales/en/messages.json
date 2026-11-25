@@ -558,7 +558,7 @@
     "message": "Enter a port from 1024 to 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Another app is using this port. Choose another port."
+    "message": "Couldn't start: another app is using this port. Enter another port."
   },
   "agentAccessRenewButton": {
     "message": "Renew token"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "The command contains a secret token that lets programs on this computer change these settings. Don't share it; if it gets out, renew it."
+  },
+  "agentAccessOtherAgents": {
+    "message": "For another agent that speaks MCP, put the URL and the Authorization header from this command in that agent's MCP settings."
+  },
+  "agentNoteDismiss": {
+    "message": "Close"
   }
 }

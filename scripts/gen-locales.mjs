@@ -229,6 +229,8 @@ export const KEYS = [
   "agentNoteChirpVolume",
   "agentNoteReadAloudVolume",
   "agentAccessSecretNote",
+  "agentAccessOtherAgents",
+  "agentNoteDismiss",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).

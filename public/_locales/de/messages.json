@@ -558,7 +558,7 @@
     "message": "Gib einen Port von 1024 bis 65535 ein."
   },
   "agentAccessPortInUse": {
-    "message": "Eine andere App verwendet diesen Port. Wähle einen anderen Port."
+    "message": "Konnte nicht starten: Eine andere App verwendet diesen Port. Gib einen anderen Port ein."
   },
   "agentAccessRenewButton": {
     "message": "Token erneuern"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Der Befehl enthält ein geheimes Token, mit dem Programme auf diesem Computer diese Einstellungen ändern können. Gib ihn nicht weiter; falls er bekannt wird, erneuere das Token."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Für einen anderen Agenten mit MCP trage die URL und den Authorization-Header aus diesem Befehl in dessen MCP-Einstellungen ein."
+  },
+  "agentNoteDismiss": {
+    "message": "Schließen"
   }
 }

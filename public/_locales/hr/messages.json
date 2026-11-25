@@ -558,7 +558,7 @@
     "message": "Unesite vrata od 1024 do 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Ova vrata koristi druga aplikacija. Odaberite druga vrata."
+    "message": "Pokretanje nije uspjelo: ova vrata koristi druga aplikacija. Unesite druga vrata."
   },
   "agentAccessRenewButton": {
     "message": "Obnovi token"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Naredba sadrži tajni token kojim programi na ovom računalu mogu mijenjati ove postavke. Ne dijelite ga; ako procuri, obnovite ga."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Za drugog agenta koji podržava MCP unesite URL i zaglavlje Authorization iz ove naredbe u njegove MCP postavke."
+  },
+  "agentNoteDismiss": {
+    "message": "Zatvori"
   }
 }

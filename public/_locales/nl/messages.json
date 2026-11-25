@@ -558,7 +558,7 @@
     "message": "Voer een poort in van 1024 tot 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Een andere app gebruikt deze poort. Kies een andere poort."
+    "message": "Kon niet starten: een andere app gebruikt deze poort. Voer een andere poort in."
   },
   "agentAccessRenewButton": {
     "message": "Token vernieuwen"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "De opdracht bevat een geheim token waarmee programma's op deze computer deze instellingen kunnen wijzigen. Deel het niet; vernieuw het als het uitlekt."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Voor een andere agent met MCP zet je de URL en de Authorization-header uit deze opdracht in de MCP-instellingen van die agent."
+  },
+  "agentNoteDismiss": {
+    "message": "Sluiten"
   }
 }

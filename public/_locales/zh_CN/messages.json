@@ -558,7 +558,7 @@
     "message": "请输入 1024 到 65535 之间的端口。"
   },
   "agentAccessPortInUse": {
-    "message": "此端口已被其他应用占用。请换一个端口。"
+    "message": "无法启动：此端口已被其他应用占用。请输入另一个端口。"
   },
   "agentAccessRenewButton": {
     "message": "重新生成令牌"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "该命令包含一个秘密令牌，可让这台电脑上的程序更改这些设置。请勿分享；如果泄露，请重新生成。"
+  },
+  "agentAccessOtherAgents": {
+    "message": "对于其他支持 MCP 的代理，请把此命令中的 URL 和 Authorization 头填入该代理的 MCP 设置。"
+  },
+  "agentNoteDismiss": {
+    "message": "关闭"
   }
 }

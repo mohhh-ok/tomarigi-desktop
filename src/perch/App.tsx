@@ -592,7 +592,7 @@ export default function App({
 
   return (
     <main className="page">
-      <AgentChangeNote notes={agentAccess.notes} />
+      <AgentChangeNote notes={agentAccess.notes} onDismiss={agentAccess.dismissNotes} />
       <div className="page-header">
         {/* The window handle while the Garden is faded (docs/design.md "Fade until hovered") */}
         <h1 className="brand fade-handle" onPointerDown={onFadeHandlePointerDown}>

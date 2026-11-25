@@ -558,7 +558,7 @@
     "message": "1024〜65535 のポートを入力してください。"
   },
   "agentAccessPortInUse": {
-    "message": "このポートは別のアプリが使っています。別のポートにしてください。"
+    "message": "このポートは別のアプリが使っているため、始められませんでした。別のポートを入力してください。"
   },
   "agentAccessRenewButton": {
     "message": "トークンを作り直す"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "コマンドには、このコンピューターのプログラムがこれらの設定を変えられる秘密のトークンが入っています。人に渡さないでください。漏れたら作り直してください。"
+  },
+  "agentAccessOtherAgents": {
+    "message": "ほかの MCP を使えるエージェントでは、このコマンドの URL と Authorization ヘッダーを、そのエージェントの MCP 設定に書いてください。"
+  },
+  "agentNoteDismiss": {
+    "message": "閉じる"
   }
 }

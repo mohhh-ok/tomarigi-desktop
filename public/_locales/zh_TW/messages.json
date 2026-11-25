@@ -558,7 +558,7 @@
     "message": "請輸入 1024 到 65535 之間的連接埠。"
   },
   "agentAccessPortInUse": {
-    "message": "此連接埠已被其他應用程式使用。請換一個連接埠。"
+    "message": "無法啟動：此連接埠已被其他應用程式使用。請輸入另一個連接埠。"
   },
   "agentAccessRenewButton": {
     "message": "重新產生權杖"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "該指令包含一個秘密權杖，可讓這台電腦上的程式變更這些設定。請勿分享；如果外洩，請重新產生。"
+  },
+  "agentAccessOtherAgents": {
+    "message": "若是其他支援 MCP 的代理，請把此命令中的 URL 和 Authorization 標頭填入該代理的 MCP 設定。"
+  },
+  "agentNoteDismiss": {
+    "message": "關閉"
   }
 }

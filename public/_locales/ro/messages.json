@@ -558,7 +558,7 @@
     "message": "Introdu un port între 1024 și 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Altă aplicație folosește acest port. Alege alt port."
+    "message": "Nu a putut porni: altă aplicație folosește acest port. Introdu alt port."
   },
   "agentAccessRenewButton": {
     "message": "Reînnoiește tokenul"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Comanda conține un token secret care le permite programelor de pe acest computer să modifice aceste setări. Nu-l partaja; dacă se scurge, reînnoiește-l."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Pentru alt agent compatibil cu MCP, pune URL-ul și antetul Authorization din această comandă în setările MCP ale agentului."
+  },
+  "agentNoteDismiss": {
+    "message": "Închide"
   }
 }

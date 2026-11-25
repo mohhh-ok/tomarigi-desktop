@@ -205,6 +205,8 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
     return () => void unlisten.then((f) => f());
   }, [record]);
 
+  const dismissNotes = useCallback(() => setNotes([]), []);
+
   return {
     enabled: setting.enabled,
     port: setting.port,
@@ -213,6 +215,7 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
     replaced,
     recent,
     notes,
+    dismissNotes,
     changeEnabled,
     changePort,
     renewToken,

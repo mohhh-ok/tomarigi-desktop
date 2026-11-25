@@ -558,7 +558,7 @@
     "message": "Maglagay ng port mula 1024 hanggang 65535."
   },
   "agentAccessPortInUse": {
-    "message": "May ibang app na gumagamit ng port na ito. Pumili ng ibang port."
+    "message": "Hindi masimulan: may ibang app na gumagamit ng port na ito. Maglagay ng ibang port."
   },
   "agentAccessRenewButton": {
     "message": "I-renew ang token"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "May lihim na token ang command na ito na nagpapahintulot sa mga program sa computer na ito na baguhin ang mga setting na ito. Huwag itong ibahagi; kung kumalat, i-renew ito."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Para sa ibang agent na gumagamit ng MCP, ilagay ang URL at ang Authorization header mula sa command na ito sa MCP settings ng agent na iyon."
+  },
+  "agentNoteDismiss": {
+    "message": "Isara"
   }
 }

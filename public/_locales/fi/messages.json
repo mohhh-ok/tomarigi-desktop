@@ -558,7 +558,7 @@
     "message": "Anna portti väliltä 1024–65535."
   },
   "agentAccessPortInUse": {
-    "message": "Toinen sovellus käyttää tätä porttia. Valitse toinen portti."
+    "message": "Käynnistys ei onnistunut: toinen sovellus käyttää tätä porttia. Anna toinen portti."
   },
   "agentAccessRenewButton": {
     "message": "Uusi tunnus"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Komento sisältää salaisen tunnuksen, jolla tämän tietokoneen ohjelmat voivat muuttaa näitä asetuksia. Älä jaa sitä; jos se vuotaa, uusi se."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Jos käytät muuta MCP:tä tukevaa agenttia, lisää tämän komennon URL ja Authorization-otsake sen agentin MCP-asetuksiin."
+  },
+  "agentNoteDismiss": {
+    "message": "Sulje"
   }
 }

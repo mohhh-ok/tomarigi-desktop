@@ -558,7 +558,7 @@
     "message": "Saisissez un port entre 1024 et 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Une autre app utilise ce port. Choisissez un autre port."
+    "message": "Impossible de démarrer : une autre app utilise ce port. Saisissez un autre port."
   },
   "agentAccessRenewButton": {
     "message": "Renouveler le jeton"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "La commande contient un jeton secret qui permet aux programmes de cet ordinateur de modifier ces réglages. Ne le partagez pas ; s'il fuite, renouvelez-le."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Pour un autre agent compatible MCP, indiquez l'URL et l'en-tête Authorization de cette commande dans les réglages MCP de cet agent."
+  },
+  "agentNoteDismiss": {
+    "message": "Fermer"
   }
 }

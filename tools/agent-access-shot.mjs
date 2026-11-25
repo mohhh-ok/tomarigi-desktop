@@ -158,8 +158,9 @@ try {
       await page.screenshot({ path });
       console.log(path);
       if (scene.note) {
-        // After the note is gone
-        await page.waitForSelector(".agent-change-note", { state: "detached", timeout: 10000 });
+        // Closed with its button, well before the 6 seconds would hide it
+        await page.locator(".agent-change-note-close").click();
+        await page.waitForSelector(".agent-change-note", { state: "detached", timeout: 1500 });
         await page.locator(".agent-access h2").evaluate((e) => e.scrollIntoView({ block: "start" }));
         const card = join(OUT, `${scene.id}-card-${w}.png`);
         await page.screenshot({ path: card });

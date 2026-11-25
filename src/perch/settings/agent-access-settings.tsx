@@ -63,6 +63,7 @@ export function AgentAccessSettings({
               <p className="agent-access-hint">{t("agentAccessCommandHint")}</p>
               <CommandBlock command={command} main />
               <p className="settings-note agent-access-secret">{t("agentAccessSecretNote")}</p>
+              <p className="settings-note agent-access-other">{t("agentAccessOtherAgents")}</p>
             </>
           )}
           <div className="agent-access-actions">
@@ -71,7 +72,7 @@ export function AgentAccessSettings({
               <input
                 className="judge-key-input agent-access-port-input"
                 inputMode="numeric"
-                aria-invalid={portInvalid}
+                aria-invalid={portInvalid || status === "port-in-use"}
                 value={portDraft}
                 onChange={(e) => {
                   setPortDraft(e.target.value);

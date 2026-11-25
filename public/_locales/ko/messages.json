@@ -558,7 +558,7 @@
     "message": "1024~65535 사이의 포트를 입력하세요."
   },
   "agentAccessPortInUse": {
-    "message": "다른 앱이 이 포트를 쓰고 있습니다. 다른 포트를 고르세요."
+    "message": "시작하지 못했습니다. 다른 앱이 이 포트를 쓰고 있습니다. 다른 포트를 입력하세요."
   },
   "agentAccessRenewButton": {
     "message": "토큰 다시 만들기"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "이 명령에는 이 컴퓨터의 프로그램이 이 설정을 바꿀 수 있는 비밀 토큰이 들어 있습니다. 공유하지 마세요. 유출되면 다시 만드세요."
+  },
+  "agentAccessOtherAgents": {
+    "message": "MCP를 쓰는 다른 에이전트에서는 이 명령의 URL과 Authorization 헤더를 그 에이전트의 MCP 설정에 넣으세요."
+  },
+  "agentNoteDismiss": {
+    "message": "닫기"
   }
 }

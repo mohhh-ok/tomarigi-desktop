@@ -558,7 +558,7 @@
     "message": "1024 ile 65535 arasında bir bağlantı noktası girin."
   },
   "agentAccessPortInUse": {
-    "message": "Bu bağlantı noktasını başka bir uygulama kullanıyor. Başka bir bağlantı noktası seçin."
+    "message": "Başlatılamadı: bu bağlantı noktasını başka bir uygulama kullanıyor. Başka bir bağlantı noktası girin."
   },
   "agentAccessRenewButton": {
     "message": "Belirteci yenile"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Komut, bu bilgisayardaki programların bu ayarları değiştirmesine izin veren gizli bir belirteç içerir. Paylaşmayın; sızarsa yenileyin."
+  },
+  "agentAccessOtherAgents": {
+    "message": "MCP destekleyen başka bir ajan için bu komuttaki URL'yi ve Authorization başlığını o ajanın MCP ayarlarına yazın."
+  },
+  "agentNoteDismiss": {
+    "message": "Kapat"
   }
 }

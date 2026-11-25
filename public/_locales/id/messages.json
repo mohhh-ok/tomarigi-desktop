@@ -558,7 +558,7 @@
     "message": "Masukkan port dari 1024 sampai 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Aplikasi lain sedang memakai port ini. Pilih port lain."
+    "message": "Tidak bisa dimulai: aplikasi lain sedang memakai port ini. Masukkan port lain."
   },
   "agentAccessRenewButton": {
     "message": "Perbarui token"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Perintah ini berisi token rahasia yang memungkinkan program di komputer ini mengubah pengaturan ini. Jangan bagikan; jika bocor, perbarui."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Untuk agen lain yang mendukung MCP, masukkan URL dan header Authorization dari perintah ini ke pengaturan MCP agen tersebut."
+  },
+  "agentNoteDismiss": {
+    "message": "Tutup"
   }
 }

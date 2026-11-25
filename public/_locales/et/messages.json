@@ -558,7 +558,7 @@
     "message": "Sisestage port vahemikus 1024–65535."
   },
   "agentAccessPortInUse": {
-    "message": "Seda porti kasutab teine rakendus. Valige teine port."
+    "message": "Käivitamine ebaõnnestus: seda porti kasutab teine rakendus. Sisestage teine port."
   },
   "agentAccessRenewButton": {
     "message": "Uuenda luba"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Käsus on salajane luba, millega selle arvuti programmid saavad neid seadeid muuta. Ärge jagage seda; kui see lekib, uuendage see."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Muu MCP-d toetava agendi puhul lisage selle käsu URL ja päis Authorization selle agendi MCP-seadetesse."
+  },
+  "agentNoteDismiss": {
+    "message": "Sulge"
   }
 }

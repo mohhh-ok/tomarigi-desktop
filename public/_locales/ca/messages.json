@@ -558,7 +558,7 @@
     "message": "Introdueix un port entre 1024 i 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Una altra app fa servir aquest port. Tria un altre port."
+    "message": "No s'ha pogut iniciar: una altra app fa servir aquest port. Escriu un altre port."
   },
   "agentAccessRenewButton": {
     "message": "Renova el testimoni"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "L'ordre conté un testimoni secret que permet als programes d'aquest ordinador canviar aquesta configuració. No el comparteixis; si es filtra, renova'l."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Per a un altre agent compatible amb MCP, posa l'URL i la capçalera Authorization d'aquesta ordre a la configuració MCP d'aquest agent."
+  },
+  "agentNoteDismiss": {
+    "message": "Tanca"
   }
 }

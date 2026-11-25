@@ -558,7 +558,7 @@
     "message": "Įveskite prievadą nuo 1024 iki 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Šį prievadą naudoja kita programa. Pasirinkite kitą prievadą."
+    "message": "Nepavyko paleisti: šį prievadą naudoja kita programa. Įveskite kitą prievadą."
   },
   "agentAccessRenewButton": {
     "message": "Atnaujinti prieigos raktą"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Komandoje yra slaptas prieigos raktas, leidžiantis šio kompiuterio programoms keisti šiuos nustatymus. Nesidalykite juo; jei nutekėtų, atnaujinkite."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Kitam MCP palaikančiam agentui šios komandos URL ir antraštę Authorization įrašykite į to agento MCP nustatymus."
+  },
+  "agentNoteDismiss": {
+    "message": "Uždaryti"
   }
 }

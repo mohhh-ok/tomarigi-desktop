@@ -417,6 +417,12 @@ button.remove {
   border-color: #d97e6a;
 }
 
+/* The system focus ring is blue and would hide that the field is wrong */
+.judge-key-input[aria-invalid="true"]:focus {
+  outline: 2px solid #d97e6a;
+  outline-offset: -1px;
+}
+
 /* Why Save or the test can't be pressed yet (CardNote: no key saved; for Local, the model list couldn't be read, with
    the retry button under it, or no model): a note in the description's tone */
 .ai-card-note {
@@ -794,6 +800,10 @@ button.agent-access-copy-main:hover {
   margin: -4px 0 12px;
 }
 
+.agent-access-other {
+  margin: 0 0 16px;
+}
+
 .agent-access-recent h3 {
   margin: 0 0 6px;
   font-size: 12px;
@@ -838,6 +848,20 @@ button.agent-access-copy-main:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   font-size: 12px;
   line-height: 1.5;
+  color: #e6e1d3;
+}
+
+.agent-change-note-close {
+  float: right;
+  margin: -2px -6px 0 8px;
+  padding: 2px;
+  border: none;
+  background: none;
+  color: #a8a294;
+  cursor: pointer;
+}
+
+.agent-change-note-close:hover {
   color: #e6e1d3;
 }
 

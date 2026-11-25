@@ -558,7 +558,7 @@
     "message": "Zadejte port od 1024 do 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Tento port používá jiná aplikace. Zvolte jiný port."
+    "message": "Nepodařilo se spustit: tento port používá jiná aplikace. Zadejte jiný port."
   },
   "agentAccessRenewButton": {
     "message": "Obnovit token"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Příkaz obsahuje tajný token, kterým mohou programy na tomto počítači měnit tato nastavení. Nesdílejte ho; pokud unikne, obnovte ho."
+  },
+  "agentAccessOtherAgents": {
+    "message": "U jiného agenta s podporou MCP zadejte URL a hlavičku Authorization z tohoto příkazu do jeho nastavení MCP."
+  },
+  "agentNoteDismiss": {
+    "message": "Zavřít"
   }
 }

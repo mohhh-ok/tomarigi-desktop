@@ -558,7 +558,7 @@
     "message": "Inserisci una porta da 1024 a 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Un'altra app sta usando questa porta. Scegli un'altra porta."
+    "message": "Impossibile avviare: un'altra app sta usando questa porta. Inserisci un'altra porta."
   },
   "agentAccessRenewButton": {
     "message": "Rinnova token"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Il comando contiene un token segreto che permette ai programmi di questo computer di modificare queste impostazioni. Non condividerlo; se trapela, rinnovalo."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Per un altro agente compatibile con MCP, inserisci l'URL e l'intestazione Authorization di questo comando nelle impostazioni MCP di quell'agente."
+  },
+  "agentNoteDismiss": {
+    "message": "Chiudi"
   }
 }

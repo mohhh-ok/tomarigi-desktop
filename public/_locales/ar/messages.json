@@ -558,7 +558,7 @@
     "message": "أدخل منفذًا من 1024 إلى 65535."
   },
   "agentAccessPortInUse": {
-    "message": "يستخدم تطبيق آخر هذا المنفذ. اختر منفذًا آخر."
+    "message": "تعذّر البدء: يستخدم تطبيق آخر هذا المنفذ. أدخل منفذًا آخر."
   },
   "agentAccessRenewButton": {
     "message": "تجديد الرمز"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "يحتوي الأمر على رمز سري يتيح لبرامج هذا الحاسوب تغيير هذه الإعدادات. لا تشاركه، وإن تسرّب فجدّده."
+  },
+  "agentAccessOtherAgents": {
+    "message": "لوكيل آخر يدعم MCP، ضع عنوان URL وترويسة Authorization من هذا الأمر في إعدادات MCP لذلك الوكيل."
+  },
+  "agentNoteDismiss": {
+    "message": "إغلاق"
   }
 }

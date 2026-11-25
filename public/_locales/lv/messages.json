@@ -558,7 +558,7 @@
     "message": "Ievadiet portu no 1024 līdz 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Šo portu izmanto cita lietotne. Izvēlieties citu portu."
+    "message": "Neizdevās palaist: šo portu izmanto cita lietotne. Ievadiet citu portu."
   },
   "agentAccessRenewButton": {
     "message": "Atjaunot marķieri"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Komandā ir slepens marķieris, ar ko šī datora programmas var mainīt šos iestatījumus. Nedalieties ar to; ja tas noplūst, atjaunojiet to."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Citam aģentam, kas atbalsta MCP, ievadiet šīs komandas URL un galveni Authorization šī aģenta MCP iestatījumos."
+  },
+  "agentNoteDismiss": {
+    "message": "Aizvērt"
   }
 }

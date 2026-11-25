@@ -558,7 +558,7 @@
     "message": "Angiv en port fra 1024 til 65535."
   },
   "agentAccessPortInUse": {
-    "message": "En anden app bruger denne port. Vælg en anden port."
+    "message": "Kunne ikke starte: en anden app bruger denne port. Indtast en anden port."
   },
   "agentAccessRenewButton": {
     "message": "Forny token"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Kommandoen indeholder et hemmeligt token, der lader programmer på denne computer ændre indstillingerne. Del det ikke; forny det, hvis det slipper ud."
+  },
+  "agentAccessOtherAgents": {
+    "message": "For en anden agent med MCP skal du angive URL'en og Authorization-headeren fra denne kommando i agentens MCP-indstillinger."
+  },
+  "agentNoteDismiss": {
+    "message": "Luk"
   }
 }

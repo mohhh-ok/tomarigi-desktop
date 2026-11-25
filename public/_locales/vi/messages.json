@@ -558,7 +558,7 @@
     "message": "Nhập cổng từ 1024 đến 65535."
   },
   "agentAccessPortInUse": {
-    "message": "Một ứng dụng khác đang dùng cổng này. Hãy chọn cổng khác."
+    "message": "Không thể khởi động: một ứng dụng khác đang dùng cổng này. Hãy nhập cổng khác."
   },
   "agentAccessRenewButton": {
     "message": "Tạo lại mã"
@@ -595,5 +595,11 @@
   },
   "agentAccessSecretNote": {
     "message": "Lệnh này chứa một mã bí mật cho phép các chương trình trên máy này thay đổi các cài đặt này. Đừng chia sẻ; nếu bị lộ, hãy tạo lại."
+  },
+  "agentAccessOtherAgents": {
+    "message": "Với tác nhân khác hỗ trợ MCP, hãy đưa URL và header Authorization trong lệnh này vào cài đặt MCP của tác nhân đó."
+  },
+  "agentNoteDismiss": {
+    "message": "Đóng"
   }
 }
