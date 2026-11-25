@@ -481,8 +481,10 @@ pub(crate) fn set_dock_policy(app: &AppHandle, mode: WindowMode) {
 }
 
 /// After switching to the standard window, bring the app to the front and show the window and the app-name menu bar.
-/// Clicking the floating window doesn't activate the app (NonactivatingPanel), so switching from settings would
-/// leave the previous app in front. It doesn't work right after setting Regular, so wait a moment
+/// Clicking the floating window doesn't activate the app (NonactivatingPanel), so switching from the menu bar would
+/// leave the previous app in front. It doesn't work right after setting Regular, so wait a moment.
+/// When the settings window is open, the switch was most likely made there, so it keeps the focus: setting the policy
+/// back to Accessory deactivates the app, which had left the settings window without focus (observed)
 fn activate_later(app: &AppHandle) {
     let handle = app.clone();
     std::thread::spawn(move || {
@@ -497,7 +499,7 @@ fn activate_later(app: &AppHandle) {
                     let ns_app: *mut AnyObject = msg_send![class!(NSApplication), sharedApplication];
                     let _: () = msg_send![ns_app, activateIgnoringOtherApps: true];
                 }
-                if let Some(w) = h.get_webview_window("main") {
+                if let Some(w) = h.get_webview_window(crate::settings_window::LABEL).or_else(|| h.get_webview_window("main")) {
                     w.set_focus().ok();
                 }
             })
@@ -561,9 +563,10 @@ fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
     set_dock_policy(app, mode);
     if visible {
         show_window(app);
-        if mode == WindowMode::Normal {
-            activate_later(app);
-        }
+    }
+    let settings_open = app.get_webview_window(crate::settings_window::LABEL).is_some();
+    if (visible && mode == WindowMode::Normal) || settings_open {
+        activate_later(app);
     }
     sync_mode_ui(app, mode);
     append_log(&format!("[window] mode={mode:?}"));

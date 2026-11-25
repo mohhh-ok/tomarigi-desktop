@@ -46,6 +46,7 @@ export async function runSettingsSelfTest(): Promise<void> {
     await wait(name === "window: floating" ? 4000 : 1500);
     log(`${name} found=${await run()}`);
   }
-  await wait(800);
+  await wait(1500);
+  log(`after window mode focus=${document.hasFocus()}`);
   log("done");
 }

@@ -235,3 +235,6 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
 
 `mcp-call.sh` calls one of the app's MCP tools with curl, for checks on the verify .app started with
 `TOMARIGI_AGENT_ACCESS` and a known token (README "Environment variables at launch").
+
+`settings-open-check.mjs` checks that the floating window's ⚙ and Cmd+, (Ctrl+, off macOS), and Cmd+, in the settings
+window, ask the app to open the settings window (`open_settings`); it exits 1 when one doesn't.

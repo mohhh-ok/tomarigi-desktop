@@ -4,8 +4,8 @@
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/settings-shots \
 //     node tools/settings-window-shot.mjs [section ids...]
 // The page is the mock's settings view (`?mock=1&view=settings&section=<id>`); outside the app the running projects
-// come from the mock source and agent access is off. Env: SIZES (default 760x560,560x420), LANGS (default en,ja),
-// FULL=1 also shoots each section's whole scrolled content
+// come from the mock source and agent access is off. Each section is shot at its top and scrolled to its end (`-end`).
+// Env: SIZES (default 760x560,560x420), LANGS (default en,ja)
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { launch, mockPath, routeMock } from "./mock-browser.mjs";
@@ -38,11 +38,12 @@ try {
         const path = join(OUT, `${section}-${lang}-${w}x${h}.png`);
         await page.screenshot({ path });
         console.log(path);
-        if (process.env.FULL === "1") {
-          const full = join(OUT, `${section}-${lang}-${w}x${h}-full.png`);
-          await page.locator(".settings-panel").screenshot({ path: full });
-          console.log(full);
-        }
+        // The window scrolled to the end of the section, as far as the user can scroll
+        await page.locator(".settings-content").evaluate((e) => e.scrollTo(0, e.scrollHeight));
+        await page.waitForTimeout(150);
+        const end = join(OUT, `${section}-${lang}-${w}x${h}-end.png`);
+        await page.screenshot({ path: end });
+        console.log(end);
       }
       await ctx.close();
     }

@@ -81,6 +81,7 @@ pub(crate) fn open(app: &AppHandle, section: Option<&str>) {
             win.emit_to(LABEL, "settings-section", s).ok();
         }
         focus(&win);
+        focus_later(app);
         return;
     }
     let mock = std::env::var("TOMARIGI_MOCK").is_ok_and(|v| v == "1");
@@ -110,7 +111,25 @@ pub(crate) fn open(app: &AppHandle, section: Option<&str>) {
     });
     win.show().ok();
     focus(&win);
+    focus_later(app);
     append_log("[settings-window] opened");
+}
+
+/// Focuses the window again once it is on screen and its page has started: right after building, macOS sometimes left
+/// the key window where it was (observed with the self-test)
+fn focus_later(app: &AppHandle) {
+    let handle = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(250));
+        let h = handle.clone();
+        handle
+            .run_on_main_thread(move || {
+                if let Some(w) = h.get_webview_window(LABEL) {
+                    focus(&w);
+                }
+            })
+            .ok();
+    });
 }
 
 /// Makes the window the key window. In floating mode (Accessory) the app isn't active, so it is activated first; the
@@ -284,7 +303,9 @@ pub(crate) fn start_self_test(app: &AppHandle) {
         step(500, "hide-floating", |h| {
             h.get_webview_window("main").map(|w| w.hide());
         });
-        step(26000, "show-floating", |h| crate::window::show_window(h));
+        // After the page switched the window mode to standard and back to floating: the settings window keeps the focus
+        step(19000, "after-page-test", |_| {});
+        step(1500, "show-floating", |h| crate::window::show_window(h));
         step(2000, "close", |h| {
             h.get_webview_window(LABEL).map(|w| w.close());
         });
