@@ -46,6 +46,8 @@ html[data-view="settings"] body {
   font: inherit;
   font-size: 13px;
   cursor: pointer;
+  /* A single word longer than the list (Greek "Παρακολουθούμενοι") breaks instead of running past its edge */
+  overflow-wrap: anywhere;
 }
 
 .settings-nav-item:hover {
