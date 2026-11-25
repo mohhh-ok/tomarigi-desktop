@@ -522,6 +522,39 @@ Tests:
 - `tests/voice-utterances.test.ts` (kept): the system path queues exactly as before
 - Rust tests in `tts.rs` (above)
 
+## Settings by an AI agent (MCP)
+
+The user's coding agent (Claude Code and others that speak MCP) can read and change this app's settings, so the user can say 「VOICEVOX にして」 instead of filling the settings screen (the user: 「せっていがめんどうだから、aiに設定をさせる口ってつけれる？」; of a local MCP server, a CLI subcommand, a file the agent writes, and a URL scheme, Claude recommended MCP because the agent gets the result back, e.g. whether the connection test passed; the user: 「すすめて」). The other three were not chosen (Claude's own decision, in the same recommendation): a CLI and a file return no result to the agent, and a URL scheme can be fired by any web page's link.
+
+### Requirements
+
+- In the settings, "Let an AI agent change settings" (off by default; Claude's own decision: it opens a port). Turning it on starts the server and shows the one command to register it with Claude Code, with a copy button. The user runs that command once; after that the agent sees the app's tools whenever the app runs
+- What the agent can do, as tools:
+  - Read the current settings (everything on the settings screen except API keys), and which options each one has
+  - Change any of those settings: the summary provider choice, Local AI's base URL and model, the readout voice (source, server kind, base URL, voice, model), "Read aloud" and its volume, mute and the chirp volume, the window mode, icon sets per project, the watched folders and their labels
+  - Read the lists the settings screen reads: the Local AI models, the TTS server's voices and models
+  - Run the tests the settings screen runs: the Local AI / provider connection test and the readout voice's "Play a sample", and get their result (passed or why not, and the time taken), so the agent can tell whether the setup works
+- A change by the agent goes through the same checks as the settings screen (the base URL rule, a model / voice that must be chosen, and so on) and is refused with the same reason in words when it fails. Nothing the screen can't save can be saved this way
+- API keys are never read or written through it (Claude's own decision: what the agent sends stays in its transcript and logs). When a change needs a key that isn't saved, the tool says so and the user pastes it on the settings screen
+- The user sees what the agent changed: each change made by the agent shows a short note in the app (what changed, from what to what) and is written to the app log; the settings screen, if open, shows the new values at once. No confirmation dialog per change (Claude's own decision: the user asked the agent to do it, and a dialog per change brings back the bother this removes)
+- Only the user's own agents can use it: it listens on 127.0.0.1 only, and a request without the token shown in the registration command is refused. The token can be renewed from the settings, which makes the old command stop working
+- When the app isn't running, the agent's tool call fails to connect; the tool descriptions tell the agent to ask the user to start Tomarigi
+- Turning it off stops the server at once
+
+Pass/fail:
+- With the app running and the setting on, a real Claude Code session registered with the shown command can: list the settings, switch the readout voice to a VOICEVOX server and play a sample (result returned), set Local AI's URL and model and run its connection test, add and remove a watched folder; each change shows in the app and in the app log
+- A wrong value (malformed URL, unknown voice) is refused with the screen's reason; a request with no or a wrong token is refused; with the setting off nothing listens on the port
+- Unit tests for the shared checks (each setting's rule is one function used by the screen and the tools) and for the tool layer with fakes
+
+### Basic design
+
+- Transport: MCP over Streamable HTTP at `http://127.0.0.1:<port>/mcp`, bound to 127.0.0.1 only. Default port 4844 (this repo uses 4842 and 4843 for development; 4844 was free among the author's projects); when it is taken, the settings say so and the port can be changed there (Claude's own decisions)
+- The registration command shown: `claude mcp add --transport http tomarigi http://127.0.0.1:<port>/mcp --header "Authorization: Bearer <token>"`, with `--scope user` so it works from every project (Claude's own decision). The token is random (at least 128 bits), kept with the app's secrets (the Keychain / keyring, like the API keys), never logged
+- One source of truth for settings: the settings live in the WebView's IndexedDB and are saved by the settings code there, so a tool call goes Rust (the HTTP server) → the page (an event, the way `TOMARIGI_IMPORT_KEY` hands over a key) → the same validate-and-save function the settings screen calls → the answer back to Rust. Each setting's check is one function used by both the screen and the tools; the tools don't get their own copy of the rules
+- Tool names, descriptions and errors are in English (agents read them); the note in the app is in the UI language
+- While the window is hidden or faded the server still answers (the page keeps running); tools that play a sound play it as the screen's Test does
+- Out of scope: API keys, the debug and mock settings, updates (checking / installing), and anything that isn't on the settings screen
+
 ## Platforms
 
 - macOS, Windows 10 / 11 (x64), and Linux (x64, X11). On a Wayland session the app runs through Xwayland (`GDK_BACKEND=x11` is set at launch), because pure Wayland has no always-on-top, no global cursor position, no window position restore, and no way to focus another app's window (Claude's own decision, from research)
