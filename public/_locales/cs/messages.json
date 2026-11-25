@@ -564,7 +564,7 @@
     "message": "Obnovit token"
   },
   "agentAccessNoKeyStore": {
-    "message": "K uložení tokenu je potřeba systémové úložiště klíčů, a na tomto počítači žádné není."
+    "message": "K uložení tajného tokenu je potřeba klíčenka (GNOME Keyring nebo KWallet) a na tomto počítači žádná neběží. Spusťte jednu a pak to znovu zapněte."
   },
   "agentAccessStartFailed": {
     "message": "Server se nepodařilo spustit. Důvod je v protokolu aplikace."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Hlasitost předčítání"
+  },
+  "agentAccessSecretNote": {
+    "message": "Příkaz obsahuje tajný token, kterým mohou programy na tomto počítači měnit tato nastavení. Nesdílejte ho; pokud unikne, obnovte ho."
   }
 }

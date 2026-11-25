@@ -80,7 +80,8 @@ const SCENES = [
     lang: "en",
     start: "no-key-store",
     steps: async (page) => {
-      await toggle(page).check();
+      // The switch goes back off by itself here, so it is clicked rather than checked
+      await toggle(page).click();
       await page.waitForSelector(".agent-access .judge-status-error");
     },
   },

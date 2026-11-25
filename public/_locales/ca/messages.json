@@ -564,7 +564,7 @@
     "message": "Renova el testimoni"
   },
   "agentAccessNoKeyStore": {
-    "message": "Cal el magatzem de claus del sistema per guardar el testimoni, i no n'hi ha cap disponible en aquest ordinador."
+    "message": "Cal un clauer (GNOME Keyring o KWallet) per guardar el testimoni secret, i no n'hi ha cap en marxa en aquest ordinador. Inicia'n un i torna-ho a activar."
   },
   "agentAccessStartFailed": {
     "message": "No s'ha pogut iniciar el servidor. El motiu és al registre de l'app."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Volum de lectura"
+  },
+  "agentAccessSecretNote": {
+    "message": "L'ordre conté un testimoni secret que permet als programes d'aquest ordinador canviar aquesta configuració. No el comparteixis; si es filtra, renova'l."
   }
 }

@@ -564,7 +564,7 @@
     "message": "Obnovi token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Za čuvanje tokena potrebna je sistemska pohrana ključeva, a na ovom računalu je nema."
+    "message": "Za čuvanje tajnog tokena potreban je privjesak ključeva (GNOME Keyring ili KWallet), a na ovom računalu nijedan ne radi. Pokrenite jedan pa ponovno uključite."
   },
   "agentAccessStartFailed": {
     "message": "Poslužitelj se nije mogao pokrenuti. Razlog je u zapisniku aplikacije."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Glasnoća čitanja"
+  },
+  "agentAccessSecretNote": {
+    "message": "Naredba sadrži tajni token kojim programi na ovom računalu mogu mijenjati ove postavke. Ne dijelite ga; ako procuri, obnovite ga."
   }
 }

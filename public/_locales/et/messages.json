@@ -564,7 +564,7 @@
     "message": "Uuenda luba"
   },
   "agentAccessNoKeyStore": {
-    "message": "Loa hoidmiseks on vaja süsteemi võtmehoidlat, aga selles arvutis seda pole."
+    "message": "Salajase loa hoidmiseks on vaja võtmerõngast (GNOME Keyring või KWallet), aga selles arvutis ei tööta ükski. Käivitage üks ja lülitage see uuesti sisse."
   },
   "agentAccessStartFailed": {
     "message": "Serverit ei õnnestunud käivitada. Põhjus on rakenduse logis."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Ettelugemise tugevus"
+  },
+  "agentAccessSecretNote": {
+    "message": "Käsus on salajane luba, millega selle arvuti programmid saavad neid seadeid muuta. Ärge jagage seda; kui see lekib, uuendage see."
   }
 }

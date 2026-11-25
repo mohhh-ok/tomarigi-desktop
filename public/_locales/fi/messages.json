@@ -564,7 +564,7 @@
     "message": "Uusi tunnus"
   },
   "agentAccessNoKeyStore": {
-    "message": "Tunnuksen säilyttämiseen tarvitaan järjestelmän avainsäilö, eikä sellaista ole tällä tietokoneella."
+    "message": "Salaisen tunnuksen säilyttämiseen tarvitaan avainnippu (GNOME Keyring tai KWallet), eikä kumpikaan ole käynnissä tällä tietokoneella. Käynnistä toinen ja ota tämä uudelleen käyttöön."
   },
   "agentAccessStartFailed": {
     "message": "Palvelinta ei voitu käynnistää. Syy on sovelluksen lokissa."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Lukuäänen voimakkuus"
+  },
+  "agentAccessSecretNote": {
+    "message": "Komento sisältää salaisen tunnuksen, jolla tämän tietokoneen ohjelmat voivat muuttaa näitä asetuksia. Älä jaa sitä; jos se vuotaa, uusi se."
   }
 }

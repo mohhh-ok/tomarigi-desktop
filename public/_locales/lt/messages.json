@@ -564,7 +564,7 @@
     "message": "Atnaujinti prieigos raktą"
   },
   "agentAccessNoKeyStore": {
-    "message": "Prieigos raktui laikyti reikia sistemos raktų saugyklos, o šiame kompiuteryje jos nėra."
+    "message": "Slaptam prieigos raktui laikyti reikia raktų ryšulio (GNOME Keyring arba KWallet), o šiame kompiuteryje nė vienas neveikia. Paleiskite vieną ir vėl įjunkite."
   },
   "agentAccessStartFailed": {
     "message": "Nepavyko paleisti serverio. Priežastis yra programos žurnale."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Skaitymo garsumas"
+  },
+  "agentAccessSecretNote": {
+    "message": "Komandoje yra slaptas prieigos raktas, leidžiantis šio kompiuterio programoms keisti šiuos nustatymus. Nesidalykite juo; jei nutekėtų, atnaujinkite."
   }
 }

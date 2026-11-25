@@ -564,7 +564,7 @@
     "message": "토큰 다시 만들기"
   },
   "agentAccessNoKeyStore": {
-    "message": "토큰을 보관하려면 시스템 키 저장소가 필요하지만 이 컴퓨터에서는 쓸 수 없습니다."
+    "message": "비밀 토큰을 보관할 키링(GNOME Keyring 또는 KWallet)이 필요하지만 이 컴퓨터에서 실행 중이 아닙니다. 둘 중 하나를 실행한 뒤 다시 켜세요."
   },
   "agentAccessStartFailed": {
     "message": "서버를 시작하지 못했습니다. 이유는 앱 로그에 있습니다."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "읽기 음량"
+  },
+  "agentAccessSecretNote": {
+    "message": "이 명령에는 이 컴퓨터의 프로그램이 이 설정을 바꿀 수 있는 비밀 토큰이 들어 있습니다. 공유하지 마세요. 유출되면 다시 만드세요."
   }
 }

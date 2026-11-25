@@ -564,7 +564,7 @@
     "message": "Perbaharui token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Ini memerlukan stor kunci sistem untuk menyimpan token, dan tiada yang tersedia pada komputer ini."
+    "message": "Ini memerlukan keyring (GNOME Keyring atau KWallet) untuk menyimpan token rahsia, dan tiada yang berjalan pada komputer ini. Mulakan salah satu, kemudian hidupkan semula."
   },
   "agentAccessStartFailed": {
     "message": "Pelayan tidak dapat dimulakan. Sebabnya ada dalam log aplikasi."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Kelantangan bacaan"
+  },
+  "agentAccessSecretNote": {
+    "message": "Arahan ini mengandungi token rahsia yang membolehkan program pada komputer ini menukar tetapan ini. Jangan kongsi; jika terdedah, perbaharuinya."
   }
 }

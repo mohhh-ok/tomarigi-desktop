@@ -564,7 +564,7 @@
     "message": "Token erneuern"
   },
   "agentAccessNoKeyStore": {
-    "message": "Dafür wird der Schlüsselspeicher des Systems für das Token gebraucht, und auf diesem Computer ist keiner verfügbar."
+    "message": "Dafür wird ein Schlüsselbund (GNOME Keyring oder KWallet) für das geheime Token gebraucht, und auf diesem Computer läuft keiner. Starte einen und schalte es dann wieder ein."
   },
   "agentAccessStartFailed": {
     "message": "Der Server konnte nicht starten. Der Grund steht im App-Protokoll."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Vorlese-Lautstärke"
+  },
+  "agentAccessSecretNote": {
+    "message": "Der Befehl enthält ein geheimes Token, mit dem Programme auf diesem Computer diese Einstellungen ändern können. Gib ihn nicht weiter; falls er bekannt wird, erneuere das Token."
   }
 }

@@ -61,23 +61,9 @@ export function AgentAccessSettings({
                 </>
               )}
               <p className="agent-access-hint">{t("agentAccessCommandHint")}</p>
-              <CommandBlock command={command} />
+              <CommandBlock command={command} main />
+              <p className="settings-note agent-access-secret">{t("agentAccessSecretNote")}</p>
             </>
-          )}
-          {status === "port-in-use" && (
-            <p className="judge-status judge-status-error" role="alert">
-              {t("agentAccessPortInUse")}
-            </p>
-          )}
-          {status === "no-key-store" && (
-            <p className="judge-status judge-status-error" role="alert">
-              {t("agentAccessNoKeyStore")}
-            </p>
-          )}
-          {status === "failed" && (
-            <p className="judge-status judge-status-error" role="alert">
-              {t("agentAccessStartFailed")}
-            </p>
           )}
           <div className="agent-access-actions">
             <label className="agent-access-port">
@@ -103,15 +89,32 @@ export function AgentAccessSettings({
               </button>
             )}
           </div>
-          {portInvalid && (
+          {/* Every error of the card under the port row, where the port that may need changing is */}
+          {portInvalid ? (
             <p className="judge-status judge-status-error" role="alert">
               {t("agentAccessPortInvalid")}
             </p>
+          ) : status === "port-in-use" ? (
+            <p className="judge-status judge-status-error" role="alert">
+              {t("agentAccessPortInUse")}
+            </p>
+          ) : (
+            status === "failed" && (
+              <p className="judge-status judge-status-error" role="alert">
+                {t("agentAccessStartFailed")}
+              </p>
+            )
           )}
         </div>
       )}
+      {/* The switch goes back off when it can't be on here, so this shows under it */}
+      {status === "no-key-store" && (
+        <p className="judge-status judge-status-error agent-access-indent" role="alert">
+          {t("agentAccessNoKeyStore")}
+        </p>
+      )}
       {recent.length > 0 && (
-        <div className="agent-access-recent">
+        <div className="agent-access-recent agent-access-indent">
           <h3>{t("agentAccessRecentHeading")}</h3>
           <ul>
             {recent.map((c) => (
@@ -131,7 +134,7 @@ export function AgentAccessSettings({
 
 /** A command to paste in a terminal, with a copy button. The whole command shows (it wraps) so it can be read before
  * running it */
-function CommandBlock({ command }: { command: string }) {
+function CommandBlock({ command, main = false }: { command: string; main?: boolean }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
@@ -147,8 +150,17 @@ function CommandBlock({ command }: { command: string }) {
   };
   return (
     <div className="agent-access-command">
-      <code>{command}</code>
-      <button className="small agent-access-copy" onClick={() => void copy()}>
+      {/* One span per word, kept whole, so a line breaks between words and not inside a flag ("--header"); only a word
+          longer than the line (the token) breaks inside */}
+      <code>
+        {command.split(" ").map((word, i) => (
+          <span key={i}>
+            {i > 0 && " "}
+            <span className={word.length > 24 ? "agent-access-word-long" : "agent-access-word"}>{word}</span>
+          </span>
+        ))}
+      </code>
+      <button className={main ? "small agent-access-copy agent-access-copy-main" : "small agent-access-copy"} onClick={() => void copy()}>
         {copied ? <MdCheckCircle size={14} aria-hidden="true" /> : <MdContentCopy size={14} aria-hidden="true" />}
         {copied ? t("agentAccessCopied") : t("agentAccessCopyButton")}
       </button>

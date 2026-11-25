@@ -564,7 +564,7 @@
     "message": "Obnovi žeton"
   },
   "agentAccessNoKeyStore": {
-    "message": "Za hrambo žetona je potrebna sistemska shramba ključev, ki pa v tem računalniku ni na voljo."
+    "message": "Za hrambo skrivnega žetona je potreben obesek za ključe (GNOME Keyring ali KWallet), v tem računalniku pa ne teče noben. Zaženite enega in nato znova vklopite."
   },
   "agentAccessStartFailed": {
     "message": "Strežnika ni bilo mogoče zagnati. Razlog je v dnevniku aplikacije."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Glasnost branja"
+  },
+  "agentAccessSecretNote": {
+    "message": "Ukaz vsebuje skrivni žeton, s katerim lahko programi v tem računalniku spreminjajo te nastavitve. Ne delite ga; če uide, ga obnovite."
   }
 }

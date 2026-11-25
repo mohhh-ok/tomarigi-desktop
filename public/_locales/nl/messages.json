@@ -564,7 +564,7 @@
     "message": "Token vernieuwen"
   },
   "agentAccessNoKeyStore": {
-    "message": "Hiervoor is de sleutelopslag van het systeem nodig om het token te bewaren, en die is op deze computer niet beschikbaar."
+    "message": "Hiervoor is een sleutelbos (GNOME Keyring of KWallet) nodig om het geheime token te bewaren, en er draait er geen op deze computer. Start er een en zet dit opnieuw aan."
   },
   "agentAccessStartFailed": {
     "message": "De server kon niet starten. De reden staat in het app-logboek."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Voorleesvolume"
+  },
+  "agentAccessSecretNote": {
+    "message": "De opdracht bevat een geheim token waarmee programma's op deze computer deze instellingen kunnen wijzigen. Deel het niet; vernieuw het als het uitlekt."
   }
 }

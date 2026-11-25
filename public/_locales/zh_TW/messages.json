@@ -564,7 +564,7 @@
     "message": "重新產生權杖"
   },
   "agentAccessNoKeyStore": {
-    "message": "需要系統的金鑰儲存區來保存權杖，但這台電腦上沒有可用的。"
+    "message": "需要一個鑰匙圈（GNOME Keyring 或 KWallet）來保存秘密權杖，但這台電腦上沒有執行。請先啟動其中一個，再重新開啟此項。"
   },
   "agentAccessStartFailed": {
     "message": "無法啟動伺服器。原因請見應用程式記錄。"
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "朗讀音量"
+  },
+  "agentAccessSecretNote": {
+    "message": "該指令包含一個秘密權杖，可讓這台電腦上的程式變更這些設定。請勿分享；如果外洩，請重新產生。"
   }
 }

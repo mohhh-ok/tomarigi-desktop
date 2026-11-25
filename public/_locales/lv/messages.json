@@ -564,7 +564,7 @@
     "message": "Atjaunot marķieri"
   },
   "agentAccessNoKeyStore": {
-    "message": "Marķiera glabāšanai vajag sistēmas atslēgu krātuvi, bet šajā datorā tās nav."
+    "message": "Slepenā marķiera glabāšanai vajag atslēgu saišķi (GNOME Keyring vai KWallet), bet šajā datorā neviens nedarbojas. Palaidiet vienu un ieslēdziet vēlreiz."
   },
   "agentAccessStartFailed": {
     "message": "Serveri neizdevās palaist. Iemesls ir lietotnes žurnālā."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Lasīšanas skaļums"
+  },
+  "agentAccessSecretNote": {
+    "message": "Komandā ir slepens marķieris, ar ko šī datora programmas var mainīt šos iestatījumus. Nedalieties ar to; ja tas noplūst, atjaunojiet to."
   }
 }

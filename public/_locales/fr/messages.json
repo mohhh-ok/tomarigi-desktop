@@ -564,7 +564,7 @@
     "message": "Renouveler le jeton"
   },
   "agentAccessNoKeyStore": {
-    "message": "Il faut le trousseau du système pour garder le jeton, et aucun n'est disponible sur cet ordinateur."
+    "message": "Il faut un trousseau (GNOME Keyring ou KWallet) pour garder le jeton secret, et aucun ne tourne sur cet ordinateur. Lancez-en un, puis réactivez cette option."
   },
   "agentAccessStartFailed": {
     "message": "Impossible de démarrer le serveur. La raison figure dans le journal de l'app."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Volume de lecture"
+  },
+  "agentAccessSecretNote": {
+    "message": "La commande contient un jeton secret qui permet aux programmes de cet ordinateur de modifier ces réglages. Ne le partagez pas ; s'il fuite, renouvelez-le."
   }
 }

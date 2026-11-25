@@ -564,7 +564,7 @@
     "message": "I-renew ang token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Kailangan ang key store ng system para itago ang token, at walang available sa computer na ito."
+    "message": "Kailangan ng keyring (GNOME Keyring o KWallet) para itago ang lihim na token, at walang tumatakbo sa computer na ito. Magpatakbo ng isa, saka i-on ulit ito."
   },
   "agentAccessStartFailed": {
     "message": "Hindi masimulan ang server. Nasa log ng app ang dahilan."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Lakas ng pagbasa"
+  },
+  "agentAccessSecretNote": {
+    "message": "May lihim na token ang command na ito na nagpapahintulot sa mga program sa computer na ito na baguhin ang mga setting na ito. Huwag itong ibahagi; kung kumalat, i-renew ito."
   }
 }

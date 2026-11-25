@@ -564,7 +564,7 @@
     "message": "Renovar token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Necesita el almacén de claves del sistema para guardar su token, y no hay ninguno disponible en este equipo."
+    "message": "Necesita un llavero (GNOME Keyring o KWallet) para guardar su token secreto, y no hay ninguno en marcha en este equipo. Inicia uno y vuelve a activarlo."
   },
   "agentAccessStartFailed": {
     "message": "No se pudo iniciar el servidor. El motivo está en el registro de la app."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Volumen de lectura"
+  },
+  "agentAccessSecretNote": {
+    "message": "El comando contiene un token secreto que permite a los programas de este equipo cambiar estos ajustes. No lo compartas; si se filtra, renuévalo."
   }
 }

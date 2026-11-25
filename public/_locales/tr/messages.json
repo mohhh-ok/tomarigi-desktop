@@ -564,7 +564,7 @@
     "message": "Belirteci yenile"
   },
   "agentAccessNoKeyStore": {
-    "message": "Belirteci saklamak için sistemin anahtar deposu gerekir ve bu bilgisayarda kullanılabilir değil."
+    "message": "Gizli belirteci saklamak için bir anahtarlık (GNOME Keyring veya KWallet) gerekir ve bu bilgisayarda hiçbiri çalışmıyor. Birini başlatıp yeniden açın."
   },
   "agentAccessStartFailed": {
     "message": "Sunucu başlatılamadı. Nedeni uygulama günlüğünde."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Okuma ses düzeyi"
+  },
+  "agentAccessSecretNote": {
+    "message": "Komut, bu bilgisayardaki programların bu ayarları değiştirmesine izin veren gizli bir belirteç içerir. Paylaşmayın; sızarsa yenileyin."
   }
 }

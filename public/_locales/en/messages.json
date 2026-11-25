@@ -564,7 +564,7 @@
     "message": "Renew token"
   },
   "agentAccessNoKeyStore": {
-    "message": "This needs the system's key store to keep its token, and none is available on this computer."
+    "message": "This needs a keyring to keep its secret token (GNOME Keyring or KWallet), and none is running on this computer. Start one, then turn this on again."
   },
   "agentAccessStartFailed": {
     "message": "Couldn't start the server. The app log has the reason."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Readout volume"
+  },
+  "agentAccessSecretNote": {
+    "message": "The command contains a secret token that lets programs on this computer change these settings. Don't share it; if it gets out, renew it."
   }
 }

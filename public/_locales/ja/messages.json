@@ -564,7 +564,7 @@
     "message": "トークンを作り直す"
   },
   "agentAccessNoKeyStore": {
-    "message": "トークンを置くのにシステムの鍵置き場が要りますが、このコンピューターでは使えません。"
+    "message": "秘密のトークンを置くキーリング（GNOME Keyring か KWallet）が要りますが、このコンピューターでは動いていません。どちらかを起動してから、もう一度オンにしてください。"
   },
   "agentAccessStartFailed": {
     "message": "サーバーを起動できませんでした。理由はアプリのログにあります。"
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "読み上げの音量"
+  },
+  "agentAccessSecretNote": {
+    "message": "コマンドには、このコンピューターのプログラムがこれらの設定を変えられる秘密のトークンが入っています。人に渡さないでください。漏れたら作り直してください。"
   }
 }

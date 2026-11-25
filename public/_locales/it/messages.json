@@ -564,7 +564,7 @@
     "message": "Rinnova token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Serve l'archivio chiavi del sistema per conservare il token, e su questo computer non ce n'è uno disponibile."
+    "message": "Serve un portachiavi (GNOME Keyring o KWallet) per conservare il token segreto, e su questo computer non ne è attivo nessuno. Avviane uno, poi riattiva l'opzione."
   },
   "agentAccessStartFailed": {
     "message": "Impossibile avviare il server. Il motivo è nel registro dell'app."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Volume di lettura"
+  },
+  "agentAccessSecretNote": {
+    "message": "Il comando contiene un token segreto che permette ai programmi di questo computer di modificare queste impostazioni. Non condividerlo; se trapela, rinnovalo."
   }
 }

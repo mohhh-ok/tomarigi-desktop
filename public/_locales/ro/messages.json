@@ -564,7 +564,7 @@
     "message": "Reînnoiește tokenul"
   },
   "agentAccessNoKeyStore": {
-    "message": "Are nevoie de depozitul de chei al sistemului pentru token, iar pe acest computer nu există unul disponibil."
+    "message": "Este nevoie de un inel de chei (GNOME Keyring sau KWallet) pentru tokenul secret, iar pe acest computer nu rulează niciunul. Pornește unul, apoi activează din nou."
   },
   "agentAccessStartFailed": {
     "message": "Serverul nu a putut porni. Motivul este în jurnalul aplicației."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Volumul citirii"
+  },
+  "agentAccessSecretNote": {
+    "message": "Comanda conține un token secret care le permite programelor de pe acest computer să modifice aceste setări. Nu-l partaja; dacă se scurge, reînnoiește-l."
   }
 }

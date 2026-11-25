@@ -564,7 +564,7 @@
     "message": "Odnów token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Do przechowania tokenu potrzebny jest systemowy magazyn kluczy, a na tym komputerze go nie ma."
+    "message": "Do przechowania tajnego tokenu potrzebny jest pęk kluczy (GNOME Keyring lub KWallet), a na tym komputerze żaden nie działa. Uruchom jeden i włącz to ponownie."
   },
   "agentAccessStartFailed": {
     "message": "Nie udało się uruchomić serwera. Przyczyna jest w dzienniku aplikacji."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Głośność czytania"
+  },
+  "agentAccessSecretNote": {
+    "message": "Polecenie zawiera tajny token, który pozwala programom na tym komputerze zmieniać te ustawienia. Nie udostępniaj go; jeśli wycieknie, odnów go."
   }
 }

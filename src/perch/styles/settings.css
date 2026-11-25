@@ -566,7 +566,8 @@ button.remove {
   font-variant-numeric: tabular-nums;
 }
 
-button.update-install {
+button.update-install,
+button.agent-access-copy-main {
   padding: 7px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -575,7 +576,8 @@ button.update-install {
   color: #e8c27e;
 }
 
-button.update-install:hover {
+button.update-install:hover,
+button.agent-access-copy-main:hover {
   background: rgba(217, 176, 106, 0.26);
 }
 
@@ -711,7 +713,8 @@ button.update-install:hover {
 
 /* AI agent (settings/agent-access-settings.tsx). The switch, then, while on, the command to run once: the card's one
    thing to do, so it is the brightest block; the port and "Renew token" are small controls under it */
-.agent-access-description {
+.agent-access-description,
+.agent-access-indent {
   padding-left: 22px;
 }
 
@@ -744,9 +747,17 @@ button.update-install:hover {
   align-self: stretch;
   font-size: 12px;
   line-height: 1.5;
-  overflow-wrap: anywhere;
   color: #d9b06a;
   user-select: all;
+}
+
+/* A word of the command stays on one line; the token, longer than any line, breaks where it must */
+.agent-access-word {
+  white-space: nowrap;
+}
+
+.agent-access-word-long {
+  overflow-wrap: anywhere;
 }
 
 .agent-access-copy {
@@ -776,7 +787,11 @@ button.update-install:hover {
 }
 
 .agent-access-recent {
-  margin-top: 14px;
+  margin-top: 18px;
+}
+
+.agent-access-secret {
+  margin: -4px 0 12px;
 }
 
 .agent-access-recent h3 {
@@ -819,7 +834,7 @@ button.update-install:hover {
   padding: 8px 12px;
   border: 1px solid #5a5244;
   border-radius: 8px;
-  background: rgba(30, 29, 23, 0.96);
+  background: #1e1d17;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   font-size: 12px;
   line-height: 1.5;

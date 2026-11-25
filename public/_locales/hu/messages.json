@@ -564,7 +564,7 @@
     "message": "Token megújítása"
   },
   "agentAccessNoKeyStore": {
-    "message": "A token tárolásához a rendszer kulcstárolója kell, és ezen a gépen nincs ilyen."
+    "message": "A titkos token tárolásához kulcstartó kell (GNOME Keyring vagy KWallet), és ezen a gépen egyik sem fut. Indíts el egyet, majd kapcsold be újra."
   },
   "agentAccessStartFailed": {
     "message": "A szervert nem sikerült elindítani. Az ok az alkalmazás naplójában van."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Felolvasás hangereje"
+  },
+  "agentAccessSecretNote": {
+    "message": "A parancs titkos tokent tartalmaz, amellyel a gép programjai módosíthatják ezeket a beállításokat. Ne oszd meg; ha kiszivárog, újítsd meg."
   }
 }

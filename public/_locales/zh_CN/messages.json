@@ -564,7 +564,7 @@
     "message": "重新生成令牌"
   },
   "agentAccessNoKeyStore": {
-    "message": "需要系统的密钥存储来保存令牌，但这台电脑上没有可用的。"
+    "message": "需要一个钥匙环（GNOME Keyring 或 KWallet）来保存秘密令牌，但这台电脑上没有运行。请先启动其中一个，再重新打开此项。"
   },
   "agentAccessStartFailed": {
     "message": "无法启动服务器。原因见应用日志。"
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "朗读音量"
+  },
+  "agentAccessSecretNote": {
+    "message": "该命令包含一个秘密令牌，可让这台电脑上的程序更改这些设置。请勿分享；如果泄露，请重新生成。"
   }
 }

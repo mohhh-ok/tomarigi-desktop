@@ -564,7 +564,7 @@
     "message": "Tạo lại mã"
   },
   "agentAccessNoKeyStore": {
-    "message": "Cần kho khóa của hệ thống để lưu mã, nhưng máy tính này không có."
+    "message": "Cần một keyring (GNOME Keyring hoặc KWallet) để lưu mã bí mật, nhưng máy này không chạy cái nào. Hãy khởi động một cái rồi bật lại."
   },
   "agentAccessStartFailed": {
     "message": "Không khởi động được máy chủ. Lý do có trong nhật ký ứng dụng."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Âm lượng đọc"
+  },
+  "agentAccessSecretNote": {
+    "message": "Lệnh này chứa một mã bí mật cho phép các chương trình trên máy này thay đổi các cài đặt này. Đừng chia sẻ; nếu bị lộ, hãy tạo lại."
   }
 }

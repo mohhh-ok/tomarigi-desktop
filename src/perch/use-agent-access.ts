@@ -93,6 +93,12 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
       log(`[mcp] start failed port=${port}: ${reason.slice(0, 120)}`);
       setCommand(null);
       setStatus(reason === "port-in-use" ? "port-in-use" : reason === "no-key-store" ? "no-key-store" : "failed");
+      // Without a key store it can't be on at all on this computer, so the switch goes back off
+      if (reason === "no-key-store") {
+        settingRef.current = { ...settingRef.current, enabled: false };
+        setSetting(settingRef.current);
+        void kvPut(KEY_AGENT_ACCESS, settingRef.current);
+      }
       return false;
     }
   }, []);
@@ -124,6 +130,7 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
   const changeEnabled = useCallback(
     (enabled: boolean) => {
       save({ ...settingRef.current, enabled });
+      setStatus(enabled ? "starting" : "off");
       if (enabled) {
         void start(settingRef.current.port);
       } else {

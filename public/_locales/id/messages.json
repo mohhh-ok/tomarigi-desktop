@@ -564,7 +564,7 @@
     "message": "Perbarui token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Ini memerlukan penyimpanan kunci sistem untuk menyimpan token, dan tidak tersedia di komputer ini."
+    "message": "Ini memerlukan keyring (GNOME Keyring atau KWallet) untuk menyimpan token rahasia, dan tidak ada yang berjalan di komputer ini. Jalankan salah satunya, lalu aktifkan lagi."
   },
   "agentAccessStartFailed": {
     "message": "Server tidak dapat dimulai. Alasannya ada di log aplikasi."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Volume pembacaan"
+  },
+  "agentAccessSecretNote": {
+    "message": "Perintah ini berisi token rahasia yang memungkinkan program di komputer ini mengubah pengaturan ini. Jangan bagikan; jika bocor, perbarui."
   }
 }

@@ -564,7 +564,7 @@
     "message": "Forny token"
   },
   "agentAccessNoKeyStore": {
-    "message": "Dette kræver systemets nøglelager til at gemme tokenet, og der er ikke noget tilgængeligt på denne computer."
+    "message": "Dette kræver en nøglering (GNOME Keyring eller KWallet) til det hemmelige token, og ingen kører på denne computer. Start en, og slå dette til igen."
   },
   "agentAccessStartFailed": {
     "message": "Serveren kunne ikke starte. Årsagen står i appens log."
@@ -592,5 +592,8 @@
   },
   "agentNoteReadAloudVolume": {
     "message": "Oplæsningslydstyrke"
+  },
+  "agentAccessSecretNote": {
+    "message": "Kommandoen indeholder et hemmeligt token, der lader programmer på denne computer ændre indstillingerne. Del det ikke; forny det, hvis det slipper ud."
   }
 }
