@@ -95,3 +95,28 @@ html[data-view="settings"] body {
   padding-top: 0;
   border-top: none;
 }
+
+/* One look per kind of button on the settings page (docs/design.md, "Clarity of the settings window"). Buttons don't
+   inherit the page's font by default (English showed an Arial-like face), and the small ones differed in height between
+   plain, busy (inline-flex) and ✕ buttons. The section's one main action keeps its larger look. Scoped to this page, so the
+   floating window's header is untouched */
+html[data-view="settings"] button {
+  font-family: inherit;
+}
+
+html[data-view="settings"] button.small:not(.agent-access-copy-main) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 28px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 6px;
+}
+
+html[data-view="settings"] .root-add-button {
+  margin-top: 12px;
+}

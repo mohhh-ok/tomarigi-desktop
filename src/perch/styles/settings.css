@@ -270,11 +270,6 @@
   color: #d4cfc2;
 }
 
-/* Placeholder for the × in the default row (RootManager in settings/root-manager.tsx). Same box as button.small, but invisible */
-.root-remove-placeholder {
-  visibility: hidden;
-}
-
 .badge-error {
   background: rgba(255, 110, 90, 0.12);
   color: #d97e6a;
@@ -555,6 +550,7 @@ button.remove {
 
 .icon-set-toggle {
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .icon-set-empty {
