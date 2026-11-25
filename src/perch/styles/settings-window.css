@@ -120,3 +120,17 @@ html[data-view="settings"] button.small:not(.agent-access-copy-main) {
 html[data-view="settings"] .root-add-button {
   margin-top: 12px;
 }
+
+/* The icon set rows share their columns, so the pictures stay in one column when the buttons' labels ("Use Cat",
+   "Use Gnome") differ in width */
+html[data-view="settings"] .icon-set-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 8px;
+}
+
+html[data-view="settings"] .icon-set-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
