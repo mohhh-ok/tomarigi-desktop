@@ -18,6 +18,7 @@ import {
   type AgentToolDeps,
   type SettingsSnapshot,
 } from "@/lib/agent-tools";
+import { createServerSwitch } from "./server-switch";
 
 const KEY_AGENT_ACCESS = "agentAccess";
 /** What the settings window asks the floating window to do that isn't a saved setting (docs/design.md "Settings window") */
@@ -84,28 +85,35 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
   const settingRef = useRef(setting);
   settingRef.current = setting;
   const nextId = useRef(0);
+  const [server] = useState(() =>
+    createServerSwitch({
+      start: (port) => invoke<string>("mcp_start", { port, tools: AGENT_TOOLS }),
+      stop: () => invoke<void>("mcp_stop"),
+    }),
+  );
 
   const start = useCallback(async (port: number) => {
     setStatus("starting");
-    try {
-      const cmd = await invoke<string>("mcp_start", { port, tools: AGENT_TOOLS });
-      setCommand(cmd);
+    const result = await server.start(port);
+    // A later start or stop overtook this one and sets the state itself
+    if (!result) return false;
+    if (result.ok) {
+      setCommand(result.command);
       setStatus("on");
       return true;
-    } catch (e) {
-      const reason = String(e);
-      log(`[mcp] start failed port=${port}: ${reason.slice(0, 120)}`);
-      setCommand(null);
-      setStatus(reason === "port-in-use" ? "port-in-use" : reason === "no-key-store" ? "no-key-store" : "failed");
-      // Without a key store it can't be on at all on this computer, so the switch goes back off
-      if (reason === "no-key-store") {
-        settingRef.current = { ...settingRef.current, enabled: false };
-        setSetting(settingRef.current);
-        void kvPut(KEY_AGENT_ACCESS, settingRef.current);
-      }
-      return false;
     }
-  }, []);
+    const reason = result.reason;
+    log(`[mcp] start failed port=${port}: ${reason.slice(0, 120)}`);
+    setCommand(null);
+    setStatus(reason === "port-in-use" ? "port-in-use" : reason === "no-key-store" ? "no-key-store" : "failed");
+    // Without a key store it can't be on at all on this computer, so the switch goes back off
+    if (reason === "no-key-store") {
+      settingRef.current = { ...settingRef.current, enabled: false };
+      setSetting(settingRef.current);
+      void kvPut(KEY_AGENT_ACCESS, settingRef.current);
+    }
+    return false;
+  }, [server]);
 
   const save = useCallback((next: AgentAccessSetting) => {
     settingRef.current = next;
@@ -138,12 +146,12 @@ export function useAgentAccess(ready: boolean, deps: AgentAccessDeps) {
       if (enabled) {
         void start(settingRef.current.port);
       } else {
-        void invoke("mcp_stop").catch(() => {});
+        void server.stop();
         setStatus("off");
         setCommand(null);
       }
     },
-    [start],
+    [start, server],
   );
 
   const changeEnabled = useCallback(

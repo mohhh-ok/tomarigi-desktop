@@ -134,10 +134,19 @@ impl ServerHandler for SettingsTools {
     }
 }
 
-/// A running server: cancelling `stop` ends the accept loop and drops the listener
+/// A running server: cancelling `stop` ends the accept loop, and the listener is dropped when `accept_loop` ends
 struct Running {
     port: u16,
     stop: CancellationToken,
+    accept_loop: tokio::task::JoinHandle<()>,
+}
+
+impl Running {
+    /// Returns once nothing listens on the port: cancelling alone leaves the listener open until the loop's task runs
+    async fn shut(mut self) {
+        self.stop.cancel();
+        let _ = (&mut self.accept_loop).await;
+    }
 }
 
 impl Drop for Running {
@@ -145,6 +154,40 @@ impl Drop for Running {
         self.stop.cancel();
     }
 }
+
+/// Starts and stops one server at a time. The lock is held from stopping the old server to the new one's bind, so a
+/// stop that comes meanwhile waits and then stops the new one, and a start never binds while the old listener is open
+#[derive(Default)]
+struct Server {
+    running: tokio::sync::Mutex<Option<Running>>,
+}
+
+impl Server {
+    async fn start(&self, port: u16, token: TokenFn, handler: SettingsTools) -> Result<(), String> {
+        let mut running = self.running.lock().await;
+        if let Some(old) = running.take() {
+            old.shut().await;
+        }
+        let stop = CancellationToken::new();
+        let accept_loop = serve(port, token, handler, stop.clone()).await?;
+        *running = Some(Running { port, stop, accept_loop });
+        Ok(())
+    }
+
+    /// False when nothing was running
+    async fn stop(&self) -> bool {
+        let mut running = self.running.lock().await;
+        let Some(old) = running.take() else { return false };
+        old.shut().await;
+        true
+    }
+
+    async fn port(&self) -> Option<u16> {
+        self.running.lock().await.as_ref().map(|r| r.port)
+    }
+}
+
+type TokenFn = Arc<dyn Fn() -> Option<String> + Send + Sync>;
 
 type BoxBody = http_body_util::combinators::BoxBody<Bytes, Infallible>;
 
@@ -165,21 +208,38 @@ fn authorized(req: &Request<Incoming>, token: &str) -> bool {
     same_secret(value.as_bytes(), expected.as_bytes())
 }
 
-/// Binds 127.0.0.1:<port> and serves until `stop` is cancelled. `token` is read on every request, so a renewed token
-/// takes effect at once
+/// A process this app starts (`ps`, `lsof`, a terminal's CLI) gets a copy of every open socket between its fork and
+/// its exec, so the listener a stop just closed can stay open for that moment. A port taken that briefly is tried again;
+/// one another program holds stays taken and answers `port-in-use`
+const BIND_RETRIES: u32 = 10;
+const BIND_RETRY_WAIT: Duration = Duration::from_millis(50);
+
+async fn bind(port: u16) -> Result<tokio::net::TcpListener, String> {
+    let mut tries = 0;
+    loop {
+        match tokio::net::TcpListener::bind(("127.0.0.1", port)).await {
+            Ok(listener) => return Ok(listener),
+            Err(e) if e.kind() == std::io::ErrorKind::AddrInUse => {
+                tries += 1;
+                if tries > BIND_RETRIES {
+                    return Err("port-in-use".to_string());
+                }
+                tokio::time::sleep(BIND_RETRY_WAIT).await;
+            }
+            Err(e) => return Err(format!("bind: {e}")),
+        }
+    }
+}
+
+/// Binds 127.0.0.1:<port> and serves until `stop` is cancelled; the returned task owns the listener. `token` is read on
+/// every request, so a renewed token takes effect at once
 async fn serve(
     port: u16,
-    token: Arc<dyn Fn() -> Option<String> + Send + Sync>,
+    token: TokenFn,
     handler: SettingsTools,
     stop: CancellationToken,
-) -> Result<(), String> {
-    let listener = tokio::net::TcpListener::bind(("127.0.0.1", port)).await.map_err(|e| {
-        if e.kind() == std::io::ErrorKind::AddrInUse {
-            "port-in-use".to_string()
-        } else {
-            format!("bind: {e}")
-        }
-    })?;
+) -> Result<tokio::task::JoinHandle<()>, String> {
+    let listener = bind(port).await?;
     let mut config = StreamableHttpServerConfig::default();
     // Stateless, one JSON answer per call: nothing to lose when the app restarts
     config.legacy_session_mode = false;
@@ -190,7 +250,7 @@ async fn serve(
     config.allowed_origins = vec![format!("http://127.0.0.1:{port}")];
     config.cancellation_token = stop.child_token();
     let mcp = StreamableHttpService::new(move || Ok(handler.clone()), LocalSessionManager::default().into(), config);
-    tokio::spawn(async move {
+    Ok(tokio::spawn(async move {
         loop {
             let accepted = tokio::select! {
                 _ = stop.cancelled() => break,
@@ -226,8 +286,7 @@ async fn serve(
                 }
             });
         }
-    });
-    Ok(())
+    }))
 }
 
 /// The one command the user runs to register the server with Claude Code
@@ -238,7 +297,7 @@ pub(crate) fn registration_command(port: u16, token: &str) -> String {
 }
 
 struct State {
-    running: Mutex<Option<Running>>,
+    server: Server,
     tools: Arc<Mutex<Vec<Tool>>>,
     pending: Arc<Pending>,
 }
@@ -246,7 +305,7 @@ struct State {
 fn state() -> &'static State {
     static STATE: std::sync::OnceLock<State> = std::sync::OnceLock::new();
     STATE.get_or_init(|| State {
-        running: Mutex::new(None),
+        server: Server::default(),
         tools: Arc::new(Mutex::new(Vec::new())),
         pending: Arc::new(Pending::default()),
     })
@@ -260,9 +319,6 @@ pub(crate) async fn mcp_start(app: AppHandle, port: u16, tools: Value) -> Result
     let tools: Vec<Tool> = serde_json::from_value(tools).map_err(|e| format!("tools: {e}"))?;
     let s = state();
     *s.tools.lock().unwrap() = tools;
-    // The old one is stopped first, so the same port can be bound again
-    s.running.lock().unwrap().take();
-    let stop = CancellationToken::new();
     let handler = SettingsTools {
         tools: s.tools.clone(),
         pending: s.pending.clone(),
@@ -271,18 +327,18 @@ pub(crate) async fn mcp_start(app: AppHandle, port: u16, tools: Value) -> Result
             app.emit_to("main", "mcp-call", payload).ok();
         }),
     };
-    serve(port, Arc::new(|| mcp_token().ok()), handler, stop.clone()).await?;
-    *s.running.lock().unwrap() = Some(Running { port, stop });
+    s.server.start(port, Arc::new(|| mcp_token().ok()), handler).await?;
     append_log(&format!("[mcp] start port={port}"));
     Ok(registration_command(port, &token))
 }
 
 /// Stops the server: nothing listens on the port afterwards
 #[tauri::command]
-pub(crate) fn mcp_stop() {
-    if state().running.lock().unwrap().take().is_some() {
+pub(crate) async fn mcp_stop() -> Result<(), String> {
+    if state().server.stop().await {
         append_log("[mcp] stop");
     }
+    Ok(())
 }
 
 #[tauri::command]
@@ -310,8 +366,8 @@ pub(crate) fn agent_access_import() -> Option<String> {
 
 /// The port of the running server, if any
 #[tauri::command]
-pub(crate) fn mcp_running_port() -> Option<u16> {
-    state().running.lock().unwrap().as_ref().map(|r| r.port)
+pub(crate) async fn mcp_running_port() -> Result<Option<u16>, String> {
+    Ok(state().server.port().await)
 }
 
 #[cfg(test)]
@@ -329,20 +385,42 @@ mod tests {
         .unwrap()
     }
 
-    /// A server whose tools answer at once with the tool's name, like the page would
-    async fn start(port: u16) -> CancellationToken {
+    /// Tools that answer at once with the tool's name, like the page would
+    fn handler() -> SettingsTools {
         let pending = Arc::new(Pending::default());
         let answer = pending.clone();
-        let handler = SettingsTools {
+        SettingsTools {
             tools: Arc::new(Mutex::new(tools())),
             pending,
             dispatch: Arc::new(move |id, name, _| {
                 answer.complete(id, ToolReply { ok: true, text: format!("ran {name}"), data: None })
             }),
-        };
+        }
+    }
+
+    fn token() -> TokenFn {
+        Arc::new(|| Some(TOKEN.to_string()))
+    }
+
+    async fn start(port: u16) -> CancellationToken {
         let stop = CancellationToken::new();
-        serve(port, Arc::new(|| Some(TOKEN.to_string())), handler, stop.clone()).await.unwrap();
+        serve(port, token(), handler(), stop.clone()).await.unwrap();
         stop
+    }
+
+    async fn listening(port: u16) -> bool {
+        tokio::net::TcpStream::connect(("127.0.0.1", port)).await.is_ok()
+    }
+
+    /// Other tests start processes, and each holds a copy of the listener between its fork and its exec (see `bind`)
+    async fn stops_listening(port: u16) -> bool {
+        for _ in 0..BIND_RETRIES {
+            if !listening(port).await {
+                return true;
+            }
+            tokio::time::sleep(BIND_RETRY_WAIT).await;
+        }
+        false
     }
 
     async fn post(port: u16, auth: Option<&str>, origin: Option<&str>, body: &str) -> (u16, String) {
@@ -417,12 +495,45 @@ mod tests {
 
     #[tokio::test]
     async fn after_stopping_nothing_listens_and_the_port_can_be_bound_again() {
-        let stop = start(48445).await;
-        stop.cancel();
-        tokio::time::sleep(Duration::from_millis(100)).await;
-        assert!(tokio::net::TcpStream::connect(("127.0.0.1", 48445)).await.is_err());
-        let again = start(48445).await;
-        again.cancel();
+        let server = Server::default();
+        server.start(48445, token(), handler()).await.unwrap();
+        assert!(listening(48445).await);
+        assert!(server.stop().await);
+        assert!(stops_listening(48445).await);
+        let _held = bind(48445).await.unwrap();
+    }
+
+    // Not the default current-thread runtime: there the old accept loop ends at the first await anyway, which would hide
+    // a start that binds before waiting for it
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn starting_again_on_the_same_port_right_after_a_start_binds() {
+        let server = Server::default();
+        for _ in 0..20 {
+            server.start(48447, token(), handler()).await.unwrap();
+        }
+        assert_eq!(server.port().await, Some(48447));
+        assert!(server.stop().await);
+        assert!(stops_listening(48447).await);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn a_stop_that_waits_for_a_start_stops_the_new_server() {
+        let server = Arc::new(Server::default());
+        let guard = server.running.lock().await;
+        let starting = tokio::spawn({
+            let server = server.clone();
+            async move { server.start(48449, token(), handler()).await }
+        });
+        tokio::time::sleep(Duration::from_millis(20)).await;
+        let stopping = tokio::spawn({
+            let server = server.clone();
+            async move { server.stop().await }
+        });
+        tokio::time::sleep(Duration::from_millis(20)).await;
+        drop(guard);
+        starting.await.unwrap().unwrap();
+        assert!(stopping.await.unwrap(), "the stop that came during the start stops the server it started");
+        assert!(stops_listening(48449).await);
     }
 
     #[tokio::test]

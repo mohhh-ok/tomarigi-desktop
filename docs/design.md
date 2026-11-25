@@ -665,8 +665,10 @@ Dependencies (`src-tauri/Cargo.toml`):
 
 Rust (`src-tauri/src/mcp.rs`, new; registered in `lib.rs`):
 - `McpServer` state in a `Mutex`: the running server's port and `CancellationToken`, the tool list handed over by the page, the pending calls (`HashMap<u64, oneshot::Sender<ToolReply>>`)
-- `mcp_start(port, tools) → Result<String /* the registration command */, String>`: binds `127.0.0.1:<port>` (an error `port-in-use` when the bind fails with `AddrInUse`, so the settings can say so), stops a server already running, then spawns the accept loop. `tools` is the JSON tool list from `src/lib/agent-tools.ts`, kept as is for `tools/list`
-- `mcp_stop()`: cancels the token; the accept loop ends and the listener is dropped, so nothing listens on the port. Called when the setting is turned off
+- `mcp_start(port, tools) → Result<String /* the registration command */, String>`: stops a server already running, binds `127.0.0.1:<port>` (an error `port-in-use` when the bind fails with `AddrInUse`, so the settings can say so), then spawns the accept loop. `tools` is the JSON tool list from `src/lib/agent-tools.ts`, kept as is for `tools/list`
+- `mcp_stop()`: cancels the token and waits for the accept loop's task to end, which drops the listener, so nothing listens on the port when it returns. Called when the setting is turned off
+- Start and stop go through one `Server` that holds an async lock from stopping the old server to the new one's bind: a stop that comes during a start waits and then stops the new server (not nothing, which left the port listening with the setting off), and a start binds only after the old listener is gone (cancelling alone left it open until the old task ran, so the same port could answer `port-in-use`). A bind that fails with `AddrInUse` is tried again up to 10 times 50 ms apart: a process the app starts (`ps`, `lsof`) holds a copy of every open socket between its fork and its exec, so the listener just closed can stay open for that moment (seen when the liveness tests ran beside the MCP tests); a port another program holds still answers `port-in-use`, half a second later
+- The page sends each `mcp_start` / `mcp_stop` only after the one before it has answered (`src/perch/server-switch.ts`), because Tauri runs each async command in its own task and two invokes can reach Rust in either order. A start that a later start or stop overtook doesn't set the status, so turning the setting on and off at once ends off
 - `mcp_reply(id, reply)`: the page's answer to one call; completes its `oneshot`
 - `mcp_renew_token() → String`: a new token, saved, and the new command. The running server reads the current token on every request, so the old command stops working at once without a restart
 - `mcp_command(port) → String`: the command shown, built in Rust only: `claude mcp add --scope user --transport http tomarigi http://127.0.0.1:<port>/mcp --header "Authorization: Bearer <token>"`
@@ -709,7 +711,8 @@ The page:
 Tests:
 - `tests/settings-checks.test.ts`: each rule's codes
 - `tests/agent-tools.test.ts`: each tool with fake `deps`: a valid change calls the save function once and answers ok; a wrong value is refused with the English text of the screen's message and saves nothing; `get_settings` has no key values; `set_summary_provider` for a provider without a key says to paste it on the settings screen
-- `cargo test --lib` (`mcp.rs`): with an explicit port (48441–48449, never the default): no token → 401, a wrong token → 401, the right token → `initialize` and `tools/list` answer; after `mcp_stop` the port can be bound again; the command string; the token is 64 hex characters
+- `cargo test --lib` (`mcp.rs`): with an explicit port (48441–48449, never the default): no token → 401, a wrong token → 401, the right token → `initialize` and `tools/list` answer; after `mcp_stop` the port can be bound again with no wait; starting again on the same port right away binds; a stop during a start stops the new server; the command string; the token is 64 hex characters
+- `tests/server-switch.test.ts`: on then off at once sends `mcp_stop` after the start has answered and drops the start's result, so the last state is off; of two starts the last gives the result; a failed start says why and the next call still runs
 
 Requirement → where it is met:
 
