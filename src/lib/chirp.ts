@@ -43,6 +43,12 @@ export function primeAudio(): void {
   if (ctx.state === "suspended") void ctx.resume();
 }
 
+/** The AudioContext once a user action has created it (primeAudio). The readout plays a local TTS server's audio on
+ * it, through its own gain, not masterGain (lib/voice.ts) */
+export function audioContext(): AudioContext | undefined {
+  return ctx;
+}
+
 /**
  * Chirp volume. Same module-variable approach as setVoiceVolume in lib/voice.ts (see the comment
  * there). Kept as a simple setting that just writes masterGain.gain.value directly (each note's

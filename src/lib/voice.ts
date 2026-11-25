@@ -1,11 +1,17 @@
 // Reads events aloud (a separate layer from the sound synthesis in chirp.ts: this one is text).
-// Uses window.speechSynthesis in the WebView.
-// Serializing multiple simultaneous events is left to speechSynthesis's native queue;
-// here we only push one utterance at a time onto the queue.
+// With the system voice (the default) it uses window.speechSynthesis in the WebView, and serializing multiple
+// simultaneous events is left to speechSynthesis's native queue. With a local TTS server, utterances go through
+// ReadoutQueue (lib/readout-queue.ts), which keeps the same order and falls back to the system voice
+// (docs/design.md "Readout voice (local TTS server)").
 
+import { invoke } from "@tauri-apps/api/core";
 import { t, uiLanguage } from "./i18n";
 import { loadActiveAiProvider } from "./api-keys";
 import { summarizeDoneEvent } from "./summarize";
+import { audioContext } from "./chirp";
+import { routeOf, SYSTEM_VOICE, type LocalTtsConfig, type ReadoutVoice } from "./readout-voice";
+import { ReadoutQueue, TTS_WAIT_MS, type ReadoutTag } from "./readout-queue";
+import { synthesize } from "./tts-server";
 import type { SessionEvent } from "./sessions";
 
 /**
@@ -29,6 +35,14 @@ type VoiceMessageName = "eventWaitingVoice";
 const VOICE_KEY: Partial<Record<SessionEvent["type"], VoiceMessageName>> = {
   waiting: "eventWaitingVoice",
 };
+
+/**
+ * Whether anything can read aloud: the system voice, or a local TTS server that is chosen and set up. Gates the
+ * "Read aloud" checkbox, its volume, and the menu bar item
+ */
+export function readoutAvailable(): boolean {
+  return speechAvailable() || (readoutVoice.source === "local" && readoutVoice.local !== undefined);
+}
 
 /** Whether events of this type are read aloud: done (its own branch in speakEvent) or a type with a template in
     VOICE_KEY. concierge-readout.ts holds exactly these types while the Concierge tab is open */
@@ -56,6 +70,122 @@ let voiceVolume = 1;
 /** Called from settings (App.tsx). Assumes out-of-range values were already rejected by the caller (loadVoiceVolume). */
 export function setVoiceVolume(volume: number): void {
   voiceVolume = volume;
+}
+
+// The chosen voice. A module variable for the same reason as voiceVolume: a change while a done waits for its summary
+// applies to that readout
+let readoutVoice: ReadoutVoice = SYSTEM_VOICE;
+
+/** Called from settings (use-settings.ts). What is queued for the other path is stopped, so the two don't overlap */
+export function setReadoutVoice(voice: ReadoutVoice): void {
+  const pathChanged = (voice.source === "local") !== (readoutVoice.source === "local");
+  readoutVoice = voice;
+  if (pathChanged) cancelSpeech();
+}
+
+function appLog(line: string): void {
+  void invoke("log", { line }).catch(() => {});
+}
+
+let playingSource: AudioBufferSourceNode | undefined;
+
+/** Plays audio bytes on the chirp AudioContext through a gain of its own (the readout volume, not the chirp volume).
+ * Throws when there is no AudioContext yet (before the first user action) or the bytes can't be decoded */
+async function playAudio(audio: ArrayBuffer, volume: number): Promise<void> {
+  const ctx = audioContext();
+  if (!ctx) throw new Error("no audio context");
+  if (ctx.state === "suspended") await ctx.resume();
+  const buffer = await ctx.decodeAudioData(audio.slice(0));
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  gain.gain.value = volume;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(ctx.destination);
+  playingSource = source;
+  await new Promise<void>((resolve) => {
+    source.onended = () => resolve();
+    source.start();
+  });
+  if (playingSource === source) playingSource = undefined;
+}
+
+function stopAudio(): void {
+  try {
+    playingSource?.stop();
+  } catch {
+    // Already stopped
+  }
+  playingSource = undefined;
+}
+
+// In case speechSynthesis never sends end for an utterance, the queue moves on after this long (Claude's own decision)
+const SYSTEM_SPEAK_BASE_MS = 2_000;
+const SYSTEM_SPEAK_PER_CHAR_MS = 250;
+
+/** One system-voice utterance inside ReadoutQueue, awaited to its end so the next one doesn't play over it */
+function speakSystem(text: string, lang: string, volume: number): Promise<void> {
+  return new Promise((resolve) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.volume = volume;
+    const timer = setTimeout(resolve, SYSTEM_SPEAK_BASE_MS + text.length * SYSTEM_SPEAK_PER_CHAR_MS);
+    const finish = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    speechSynthesis.speak(utterance);
+  });
+}
+
+const readoutQueue = new ReadoutQueue({
+  route: (lang) => routeOf(readoutVoice, lang, speechAvailable()),
+  serverKind: () => readoutVoice.local?.kind,
+  synthesize: (text) =>
+    readoutVoice.local
+      ? synthesize(readoutVoice.local, text, TTS_WAIT_MS + 1_000)
+      : Promise.resolve({ ok: false, error: "not-set-up" }),
+  playAudio,
+  speakSystem,
+  stopAudio,
+  stopSystem: () => {
+    if (speechAvailable()) speechSynthesis.cancel();
+  },
+  systemAvailable: speechAvailable,
+  wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  now: () => performance.now(),
+  volume: () => voiceVolume,
+  log: appLog,
+});
+
+/** What the settings' Test of a local TTS server ended with */
+export type ReadoutTestResult = { ok: true; ms: number } | { ok: false; error: string };
+
+// The Test waits longer than a readout: a first request may load the model, and the Test is where the user learns
+// how long that takes (Claude's own decision)
+const TEST_WAIT_MS = 30_000;
+
+/** Plays a sample through the server at the readout volume, with no fallback. The caller primes the AudioContext
+ * (primeAudio) in the click, since playback needs a user action */
+export async function testReadoutVoice(config: LocalTtsConfig, sample: string): Promise<ReadoutTestResult> {
+  const started = performance.now();
+  const result = await synthesize(config, sample, TEST_WAIT_MS);
+  const ms = Math.round(performance.now() - started);
+  const line = `[voice] for=test server=${config.kind} ms=${ms}`;
+  if (!result.ok) {
+    appLog(`${line} used=none error=${result.error.split(":")[0]}`);
+    return { ok: false, error: result.error };
+  }
+  try {
+    await playAudio(result.audio, voiceVolume);
+  } catch {
+    appLog(`${line} used=none error=audio`);
+    return { ok: false, error: "audio" };
+  }
+  appLog(`${line} used=server`);
+  return { ok: true, ms };
 }
 
 /**
@@ -109,7 +239,12 @@ function sanitizeProjectForSpeech(raw: string): string {
 // Speech primitive used by both speakEvent and speakDoneEvent. Pushes separate utterances onto
 // speechSynthesis's native queue and uses the gap between utterances as the separator (see the
 // comment in speakEvent for why)
-function enqueueUtterance(text: string, lang: string): void {
+function enqueueUtterance(text: string, lang: string, tag: ReadoutTag): void {
+  if (readoutVoice.source === "local") {
+    readoutQueue.enqueue(text, lang, tag);
+    return;
+  }
+  if (!speechAvailable()) return;
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
   utterance.volume = voiceVolume;
@@ -118,9 +253,9 @@ function enqueueUtterance(text: string, lang: string): void {
 
 // The display name, then the body, as two utterances (done readout, concierge suggestions). Each text is already
 // sanitized by the caller; an empty one is not queued, since an empty utterance only adds a gap
-function enqueueNameThenBody(name: string, body: string | undefined, lang: string): void {
-  if (name) enqueueUtterance(name, lang);
-  if (body) enqueueUtterance(body, lang);
+function enqueueNameThenBody(name: string, body: string | undefined, lang: string, tag: ReadoutTag): void {
+  if (name) enqueueUtterance(name, lang, tag);
+  if (body) enqueueUtterance(body, lang, tag);
 }
 
 /**
@@ -137,7 +272,7 @@ function enqueueNameThenBody(name: string, body: string | undefined, lang: strin
  * on a path where the done summary readout has already succeeded (see speakDoneEvent).
  */
 export function speakEvent(event: SessionEvent): void {
-  if (!speechAvailable()) return;
+  if (!readoutAvailable()) return;
   const snippet = event.snippet ? sanitizeSnippetForSpeech(event.snippet) : undefined;
   const project = sanitizeProjectForSpeech(event.project);
   // No separator symbol is used — not just ".", any symbol may be read literally as "dot" etc.
@@ -147,12 +282,12 @@ export function speakEvent(event: SessionEvent): void {
   if (event.type === "done") {
     // For done, the template sentence (e.g. "... has finished") is noisy, so skip it and read only
     // the project name + prompt (just the project name if there is no snippet)
-    enqueueNameThenBody(project, snippet, lang);
+    enqueueNameThenBody(project, snippet, lang, "done");
     return;
   }
   const key = VOICE_KEY[event.type];
   if (!key) return;
-  enqueueNameThenBody(t(key, project), snippet, lang);
+  enqueueNameThenBody(t(key, project), snippet, lang, "waiting");
 }
 
 /**
@@ -184,13 +319,13 @@ function extractLastSentence(text: string, lang: string): string | undefined {
  * single call of this function, so it never speaks twice alongside speakEvent.
  */
 function speakDoneFallback(event: SessionEvent, lang: string): void {
-  if (!speechAvailable()) return;
+  if (!readoutAvailable()) return;
   const lastSentence = event.assistantText ? extractLastSentence(event.assistantText, lang) : undefined;
   if (!lastSentence) {
     speakEvent(event);
     return;
   }
-  enqueueNameThenBody(sanitizeProjectForSpeech(event.project), lastSentence, lang);
+  enqueueNameThenBody(sanitizeProjectForSpeech(event.project), lastSentence, lang, "done");
 }
 
 // Timeout for fetching the summary. To keep a stuck BYOK call from delaying or dropping the done
@@ -253,7 +388,7 @@ export async function speakDoneEvent(
     speakDoneFallback(event, lang);
     return;
   }
-  if (!speechAvailable()) return; // Reject environments without speech before calling the summary API
+  if (!readoutAvailable()) return; // Reject environments without speech before calling the summary API
 
   const provider = await loadActiveAiProvider();
   if (!stillEnabled()) return;
@@ -283,7 +418,7 @@ export async function speakDoneEvent(
     return;
   }
 
-  enqueueNameThenBody(sanitizeProjectForSpeech(event.project), summary, lang);
+  enqueueNameThenBody(sanitizeProjectForSpeech(event.project), summary, lang, "done");
 }
 
 // Sanitizing only for the summary readout. Reuses the same symbol removal as sanitizeSnippetForSpeech
@@ -304,15 +439,16 @@ function sanitizeSummaryForSpeech(raw: string): string {
  * sentence), in the order given. The caller applies the "Read aloud" setting as for speakEvent
  */
 export function speakSuggestions(list: readonly { name: string; text: string }[]): void {
-  if (!speechAvailable()) return;
+  if (!readoutAvailable()) return;
   const lang = uiLanguage();
   for (const s of list) {
-    enqueueNameThenBody(sanitizeProjectForSpeech(s.name), sanitizeSnippetForSpeech(s.text), lang);
+    enqueueNameThenBody(sanitizeProjectForSpeech(s.name), sanitizeSnippetForSpeech(s.text), lang, "concierge");
   }
 }
 
 /** Stops all playing and queued utterances (for turning the readout toggle OFF) */
 export function cancelSpeech(): void {
+  readoutQueue.cancel();
   if (!speechAvailable()) return;
   speechSynthesis.cancel();
 }

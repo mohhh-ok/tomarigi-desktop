@@ -269,8 +269,8 @@ pub(crate) fn key_delete(provider: String) -> Result<(), String> {
 
 #[derive(Serialize)]
 pub(crate) struct HttpReply {
-    status: u16,
-    body: String,
+    pub(crate) status: u16,
+    pub(crate) body: String,
 }
 
 /// A call without a key is treated the same as a 401 (JS shows it as an auth failure)
@@ -336,7 +336,7 @@ const LOCAL_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(90);
 const LOCAL_MODELS_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 
 /// `<base URL>/<path>`. Only http(s) URLs are accepted; a trailing slash on the base URL is allowed
-fn local_url(base_url: &str, path: &str) -> Result<String, String> {
+pub(crate) fn local_url(base_url: &str, path: &str) -> Result<String, String> {
     let base = base_url.trim().trim_end_matches('/');
     let parsed = reqwest::Url::parse(base).map_err(|e| format!("invalid base url: {e}"))?;
     if !matches!(parsed.scheme(), "http" | "https") {
@@ -383,12 +383,12 @@ pub(crate) async fn local_models(base_url: String) -> Result<HttpReply, String> 
 }
 
 /// The base URL is the user's own setting, so errors (shown to JS and written to the app log) leave it out
-fn local_error(e: reqwest::Error) -> String {
+pub(crate) fn local_error(e: reqwest::Error) -> String {
     e.without_url().to_string()
 }
 
 /// Requests to the local server go only to the URL the user set: redirects are not followed
-fn local_client() -> reqwest::Client {
+pub(crate) fn local_client() -> reqwest::Client {
     reqwest::Client::builder().redirect(reqwest::redirect::Policy::none()).build().unwrap_or_default()
 }
 

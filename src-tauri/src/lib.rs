@@ -23,6 +23,7 @@ mod keys;
 mod liveness;
 mod opencode;
 mod tray;
+mod tts;
 mod updater;
 mod window;
 #[cfg(target_os = "linux")]
@@ -342,6 +343,9 @@ pub fn run() {
             keys::local_chat,
             keys::local_models,
             keys::local_ai_import,
+            tts::tts_speech,
+            tts::tts_list,
+            tts::local_tts_import,
             keys::key_backend,
             keys::key_webview_storage_own,
             keys::key_status,
