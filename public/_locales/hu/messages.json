@@ -543,7 +543,7 @@
     "message": "Futtasd ezt egyszer egy terminálban. Utána kérd meg az ügynököt, pl. „Állítsd a felolvasó hangot VOICEVOX-ra”."
   },
   "agentAccessReplaceHint": {
-    "message": "A parancs megváltozott, a korábbi már nem működik. Előbb töröld a régi regisztrációt, aztán futtasd a fenti parancsot:"
+    "message": "A parancs megváltozott, a korábbi már nem működik. Előbb töröld a régi regisztrációt:"
   },
   "agentAccessCopyButton": {
     "message": "Parancs másolása"

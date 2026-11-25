@@ -543,7 +543,7 @@
     "message": "Kör detta en gång i en terminal. Be sedan agenten, t.ex. ”Byt uppläsningsrösten till VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Kommandot har ändrats, så det du körde tidigare fungerar inte längre. Ta först bort den gamla registreringen och kör sedan kommandot ovan:"
+    "message": "Kommandot har ändrats, så det du körde tidigare fungerar inte längre. Ta först bort den gamla registreringen:"
   },
   "agentAccessCopyButton": {
     "message": "Kopiera kommando"

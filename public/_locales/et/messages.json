@@ -543,7 +543,7 @@
     "message": "Käivitage see terminalis üks kord. Seejärel paluge agendil näiteks: „Vaheta ettelugemise hääl VOICEVOX-i vastu“."
   },
   "agentAccessReplaceHint": {
-    "message": "Käsk muutus, nii et varem käivitatud käsk enam ei tööta. Eemaldage kõigepealt vana registreering ja käivitage siis ülalolev käsk:"
+    "message": "Käsk muutus, nii et varem käivitatud käsk enam ei tööta. Eemaldage kõigepealt vana registreering:"
   },
   "agentAccessCopyButton": {
     "message": "Kopeeri käsk"

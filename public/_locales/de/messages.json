@@ -543,7 +543,7 @@
     "message": "Führe das einmal in einem Terminal aus. Danach bitte den Agenten, z. B. „Stell die Vorlesestimme auf VOICEVOX um“."
   },
   "agentAccessReplaceHint": {
-    "message": "Der Befehl hat sich geändert, der frühere funktioniert nicht mehr. Entferne zuerst die alte Registrierung und führe dann den Befehl oben aus:"
+    "message": "Der Befehl hat sich geändert, der frühere funktioniert nicht mehr. Entferne zuerst die alte Registrierung:"
   },
   "agentAccessCopyButton": {
     "message": "Befehl kopieren"

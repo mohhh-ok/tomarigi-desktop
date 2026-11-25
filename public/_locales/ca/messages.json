@@ -543,7 +543,7 @@
     "message": "Executa això una vegada en un terminal. Després demana-ho a l'agent, per exemple: «Canvia la veu de lectura a VOICEVOX»."
   },
   "agentAccessReplaceHint": {
-    "message": "L'ordre ha canviat, així que la que vas executar abans ja no funciona. Treu primer el registre antic i després executa l'ordre de dalt:"
+    "message": "L'ordre ha canviat, així que la que vas executar abans ja no funciona. Primer treu el registre antic:"
   },
   "agentAccessCopyButton": {
     "message": "Copia l'ordre"

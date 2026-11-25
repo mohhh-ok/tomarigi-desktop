@@ -727,10 +727,12 @@ button.update-install:hover {
   color: #d8d3c6;
 }
 
+/* The command takes the full width (it is long and wraps); the copy button sits under it, on the right */
 .agent-access-command {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
   margin-bottom: 12px;
   padding: 8px 10px;
   border: 1px solid #4a463c;
@@ -739,8 +741,7 @@ button.update-install:hover {
 }
 
 .agent-access-command code {
-  flex: 1;
-  min-width: 0;
+  align-self: stretch;
   font-size: 12px;
   line-height: 1.5;
   overflow-wrap: anywhere;

@@ -543,7 +543,7 @@
     "message": "Bunu bir terminalde bir kez çalıştırın. Sonra ajandan isteyin, örneğin: “Okuma sesini VOICEVOX yap”."
   },
   "agentAccessReplaceHint": {
-    "message": "Komut değişti, daha önce çalıştırdığınız artık çalışmıyor. Önce eski kaydı kaldırın, sonra yukarıdaki komutu çalıştırın:"
+    "message": "Komut değişti, daha önce çalıştırdığınız artık çalışmıyor. Önce eski kaydı kaldırın:"
   },
   "agentAccessCopyButton": {
     "message": "Komutu kopyala"

@@ -204,3 +204,19 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
 ```
 
 Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<scene>-<width>.png`.
+
+## agent-access-shot.mjs
+
+Shoots the settings' "AI agent" card in each state (off, on with the command, after "Renew token", port in use, an
+invalid port, no key store) and the note shown when the agent changes a setting, for a UI check (docs/design.md
+"Settings by an AI agent (MCP)"). The page's calls to Rust are answered as `mcp.rs` answers them, and a tool call is
+sent to the page's own "mcp-call" listener, so a change runs through the app's real tool layer. Needs a `vite build`
+output (`DIST`) and Playwright ("Playwright" above).
+
+```sh
+DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/agent-shots \
+  node tools/agent-access-shot.mjs [scene ids...]
+```
+
+Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<scene>-<width>.png` (and
+`changed-ja-card-<width>.png`, the card's list after the note is gone).

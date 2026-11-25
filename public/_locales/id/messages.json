@@ -543,7 +543,7 @@
     "message": "Jalankan ini sekali di terminal. Lalu minta agen, misalnya: “Ganti suara pembaca ke VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Perintahnya berubah, jadi yang dijalankan sebelumnya tidak berfungsi lagi. Hapus dulu pendaftaran lama, lalu jalankan perintah di atas:"
+    "message": "Perintahnya berubah, jadi yang dijalankan sebelumnya tidak berfungsi lagi. Hapus dulu pendaftaran lama:"
   },
   "agentAccessCopyButton": {
     "message": "Salin perintah"

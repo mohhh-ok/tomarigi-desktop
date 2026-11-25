@@ -53,14 +53,15 @@ export function AgentAccessSettings({
         <div className="agent-access-body">
           {command && (
             <>
-              <p className="agent-access-hint">{t("agentAccessCommandHint")}</p>
-              <CommandBlock command={command} />
+              {/* In the order they are run: the old registration is removed before the new command */}
               {replaced && (
                 <>
                   <p className="agent-access-hint">{t("agentAccessReplaceHint")}</p>
                   <CommandBlock command={REMOVE_COMMAND} />
                 </>
               )}
+              <p className="agent-access-hint">{t("agentAccessCommandHint")}</p>
+              <CommandBlock command={command} />
             </>
           )}
           {status === "port-in-use" && (

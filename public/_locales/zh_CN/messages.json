@@ -543,7 +543,7 @@
     "message": "在终端中运行一次此命令。之后就可以对代理说，例如“把朗读的声音换成 VOICEVOX”。"
   },
   "agentAccessReplaceHint": {
-    "message": "命令已更改，之前运行的命令不再有效。请先删除旧的注册，然后运行上面的命令："
+    "message": "命令已更改，之前运行的命令不再有效。请先删除旧的注册："
   },
   "agentAccessCopyButton": {
     "message": "复制命令"

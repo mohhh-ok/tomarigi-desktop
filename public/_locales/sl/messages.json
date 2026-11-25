@@ -543,7 +543,7 @@
     "message": "To enkrat zaženite v terminalu. Nato agenta prosite, npr. »Preklopi glas branja na VOICEVOX«."
   },
   "agentAccessReplaceHint": {
-    "message": "Ukaz se je spremenil, zato prejšnji ne deluje več. Najprej odstranite staro registracijo, nato zaženite zgornji ukaz:"
+    "message": "Ukaz se je spremenil, zato prejšnji ne deluje več. Najprej odstranite staro registracijo:"
   },
   "agentAccessCopyButton": {
     "message": "Kopiraj ukaz"

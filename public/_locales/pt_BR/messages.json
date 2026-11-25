@@ -543,7 +543,7 @@
     "message": "Execute isto uma vez em um terminal. Depois peça ao agente, por exemplo: “Mude a voz de leitura para VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "O comando mudou, então o que você executou antes não funciona mais. Remova primeiro o registro antigo e depois execute o comando acima:"
+    "message": "O comando mudou, então o que você executou antes não funciona mais. Primeiro remova o registro antigo:"
   },
   "agentAccessCopyButton": {
     "message": "Copiar comando"

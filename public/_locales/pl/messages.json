@@ -543,7 +543,7 @@
     "message": "Uruchom to raz w terminalu. Potem poproś agenta, np. „Zmień głos czytania na VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Polecenie się zmieniło, więc poprzednie już nie działa. Najpierw usuń starą rejestrację, a potem uruchom polecenie powyżej:"
+    "message": "Polecenie się zmieniło, więc poprzednie już nie działa. Najpierw usuń starą rejestrację:"
   },
   "agentAccessCopyButton": {
     "message": "Kopiuj polecenie"

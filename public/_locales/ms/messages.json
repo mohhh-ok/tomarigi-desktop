@@ -543,7 +543,7 @@
     "message": "Jalankan ini sekali dalam terminal. Kemudian minta ejen, contohnya: “Tukar suara bacaan kepada VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Arahan telah berubah, jadi yang dijalankan sebelum ini tidak berfungsi lagi. Buang pendaftaran lama dahulu, kemudian jalankan arahan di atas:"
+    "message": "Arahan telah berubah, jadi yang dijalankan sebelum ini tidak berfungsi lagi. Buang pendaftaran lama dahulu:"
   },
   "agentAccessCopyButton": {
     "message": "Salin arahan"

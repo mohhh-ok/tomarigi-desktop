@@ -543,7 +543,7 @@
     "message": "Spustite to raz v termináli. Potom agenta požiadajte, napr. „Prepni hlas predčítania na VOICEVOX“."
   },
   "agentAccessReplaceHint": {
-    "message": "Príkaz sa zmenil, takže ten predchádzajúci už nefunguje. Najprv odstráňte starú registráciu a potom spustite príkaz vyššie:"
+    "message": "Príkaz sa zmenil, takže ten predchádzajúci už nefunguje. Najprv odstráňte starú registráciu:"
   },
   "agentAccessCopyButton": {
     "message": "Kopírovať príkaz"

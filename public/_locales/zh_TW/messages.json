@@ -543,7 +543,7 @@
     "message": "在終端機中執行一次此指令。之後就可以對代理說，例如「把朗讀的聲音換成 VOICEVOX」。"
   },
   "agentAccessReplaceHint": {
-    "message": "指令已變更，之前執行的指令不再有效。請先刪除舊的註冊，然後執行上面的指令："
+    "message": "指令已變更，之前執行的指令不再有效。請先刪除舊的註冊："
   },
   "agentAccessCopyButton": {
     "message": "複製指令"

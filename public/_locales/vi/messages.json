@@ -543,7 +543,7 @@
     "message": "Chạy lệnh này một lần trong terminal. Sau đó nhờ tác nhân, ví dụ: “Đổi giọng đọc sang VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Lệnh đã thay đổi nên lệnh bạn chạy trước đây không còn dùng được. Hãy xóa đăng ký cũ trước, rồi chạy lệnh ở trên:"
+    "message": "Lệnh đã thay đổi nên lệnh bạn chạy trước đây không còn dùng được. Hãy xóa đăng ký cũ trước:"
   },
   "agentAccessCopyButton": {
     "message": "Sao chép lệnh"

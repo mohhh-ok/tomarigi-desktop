@@ -543,7 +543,7 @@
     "message": "Suorita tämä kerran päätteessä. Pyydä sitten agenttia, esim. ”Vaihda lukuääni VOICEVOXiin”."
   },
   "agentAccessReplaceHint": {
-    "message": "Komento muuttui, joten aiemmin suorittamasi ei enää toimi. Poista ensin vanha rekisteröinti ja suorita sitten yllä oleva komento:"
+    "message": "Komento muuttui, joten aiemmin suorittamasi ei enää toimi. Poista ensin vanha rekisteröinti:"
   },
   "agentAccessCopyButton": {
     "message": "Kopioi komento"

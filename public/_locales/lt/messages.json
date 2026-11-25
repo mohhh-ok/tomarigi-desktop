@@ -543,7 +543,7 @@
     "message": "Paleiskite tai vieną kartą terminale. Tada paprašykite agento, pvz., „Perjunk skaitymo balsą į VOICEVOX“."
   },
   "agentAccessReplaceHint": {
-    "message": "Komanda pasikeitė, todėl ankstesnė nebeveikia. Pirmiausia pašalinkite seną registraciją, tada paleiskite komandą viršuje:"
+    "message": "Komanda pasikeitė, todėl ankstesnė nebeveikia. Pirmiausia pašalinkite seną registraciją:"
   },
   "agentAccessCopyButton": {
     "message": "Kopijuoti komandą"

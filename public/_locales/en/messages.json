@@ -543,7 +543,7 @@
     "message": "Run this once in a terminal. Then ask the agent, e.g. “Switch the readout voice to VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "The command changed, so the one you ran before no longer works. Remove the old registration first, then run the command above:"
+    "message": "The command changed, so the one you ran before no longer works. First remove the old registration:"
   },
   "agentAccessCopyButton": {
     "message": "Copy command"

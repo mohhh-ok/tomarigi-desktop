@@ -543,7 +543,7 @@
     "message": "Rulează asta o dată într-un terminal. Apoi cere-i agentului, de exemplu: „Schimbă vocea de citire pe VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Comanda s-a schimbat, deci cea rulată înainte nu mai funcționează. Elimină mai întâi vechea înregistrare, apoi rulează comanda de mai sus:"
+    "message": "Comanda s-a schimbat, deci cea rulată înainte nu mai funcționează. Elimină mai întâi vechea înregistrare:"
   },
   "agentAccessCopyButton": {
     "message": "Copiază comanda"

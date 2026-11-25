@@ -543,7 +543,7 @@
     "message": "Pokrenite ovo jednom u terminalu. Zatim zamolite agenta, npr. „Prebaci glas čitanja na VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Naredba se promijenila pa ona koju ste prije pokrenuli više ne radi. Najprije uklonite staru registraciju, a zatim pokrenite naredbu iznad:"
+    "message": "Naredba se promijenila pa ona koju ste prije pokrenuli više ne radi. Najprije uklonite staru registraciju:"
   },
   "agentAccessCopyButton": {
     "message": "Kopiraj naredbu"

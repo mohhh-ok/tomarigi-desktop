@@ -543,7 +543,7 @@
     "message": "Kjør dette én gang i en terminal. Be deretter agenten, f.eks. «Bytt opplesningsstemmen til VOICEVOX»."
   },
   "agentAccessReplaceHint": {
-    "message": "Kommandoen er endret, så den du kjørte før virker ikke lenger. Fjern først den gamle registreringen, og kjør deretter kommandoen over:"
+    "message": "Kommandoen er endret, så den du kjørte før virker ikke lenger. Fjern først den gamle registreringen:"
   },
   "agentAccessCopyButton": {
     "message": "Kopier kommando"

@@ -543,7 +543,7 @@
     "message": "Patakbuhin ito nang isang beses sa terminal. Pagkatapos ay sabihin sa agent, halimbawa: “Gawing VOICEVOX ang boses ng pagbasa”."
   },
   "agentAccessReplaceHint": {
-    "message": "Nagbago ang command, kaya hindi na gagana ang pinatakbo mo dati. Alisin muna ang lumang rehistro, saka patakbuhin ang command sa itaas:"
+    "message": "Nagbago ang command, kaya hindi na gagana ang pinatakbo mo dati. Alisin muna ang lumang rehistro:"
   },
   "agentAccessCopyButton": {
     "message": "Kopyahin ang command"

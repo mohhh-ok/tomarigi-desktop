@@ -543,7 +543,7 @@
     "message": "Palaidiet šo vienreiz terminālī. Pēc tam palūdziet aģentam, piem., “Pārslēdz lasīšanas balsi uz VOICEVOX”."
   },
   "agentAccessReplaceHint": {
-    "message": "Komanda ir mainījusies, tāpēc iepriekšējā vairs nedarbojas. Vispirms noņemiet veco reģistrāciju, tad palaidiet augstāk esošo komandu:"
+    "message": "Komanda ir mainījusies, tāpēc iepriekšējā vairs nedarbojas. Vispirms noņemiet veco reģistrāciju:"
   },
   "agentAccessCopyButton": {
     "message": "Kopēt komandu"
