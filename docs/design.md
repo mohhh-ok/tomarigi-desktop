@@ -126,7 +126,7 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
 - The × at the right end of the header hides the window (bring it back from the menu bar icon). Its label says "hide window", not "close", so it isn't mistaken for leaving settings or a dialog
 - The header and the row under it (the tabs, or the settings bar while in settings) stay at the top; only the content below them scrolls. The add-folder dialog follows the same rule: its title and × stay in view and only its content scrolls
 - The debug log is a screen like settings: it replaces the tabs' content under the header (the header buttons stay), shows a "‹ Back" row in place of the tabs, and closes with Back, the debug button again, or Esc. Settings and the debug log are never open at the same time
-- Settings: ⚙ in the header opens it. While open, the tab row is replaced by a bar with "‹ Back" and the "Settings" title. Back, ⚙ again, or Esc (when no dialog or inline edit is open) returns to the tab that was showing
+- Settings: ⚙ in the header opens the settings window (see "Settings window"). Until that is built, the settings screen replaces the tab row with a bar with "‹ Back" and the "Settings" title, and Back, ⚙ again, or Esc (when no dialog or inline edit is open) returns to the tab that was showing
 - Single instance (tauri-plugin-single-instance). A second launch shows the existing window and exits
 - Window mode: switch between floating and standard windows, from the settings screen or the menu bar menu
   - Floating (default): a floating NSPanel (tauri-nspanel). Transparent, frameless, always on top, and shown above full-screen spaces too. It can be dragged from anywhere on its background. The window has a shadow. The app stays out of the Dock and Cmd+Tab (activation policy Accessory)
@@ -149,6 +149,35 @@ A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watc
     | The mute icon a single-color icon like the others | `MdNotifications` / `MdNotificationsOff` from the same `react-icons/md` set, 16px, `currentColor`; `title` as the debug and close buttons |
     | Sound on and muted told apart (a bell, a crossed bell) | The two icons by `muted`, as the emoji were |
 
+## Settings window
+
+Settings open in a window of their own instead of inside the small floating window (the user: 「設定画面がみづらいのをなんとかしたい。設定が増えたのに画面がちいさいまま。どうしよう。ブラウザで設定画面を開くようにするかどうかあるいは独自画面か。どくじがめんがいいのかな」; Claude recommended a window of the app's own over a browser page, since a browser page can't reach the app's saved settings or its Rust functions without another local HTTP endpoint to guard; the user: 「どくじがめんでやって」).
+
+### Requirements
+
+- One settings window, opened from ⚙ in the floating window's header, from a new "Settings…" item in the menu bar menu (the taskbar menu on Windows / Linux), and with Cmd+, (Ctrl+, on Windows / Linux) while a window of the app is focused. When it is already open, it comes to the front instead of opening a second one
+- It is a standard window whatever the floating / standard mode is: a title bar, not always on top, can be moved, resized and minimized, and takes keyboard focus when opened so its fields can be typed in at once. It opens at a size where every section reads without squeezing (default about 760×560, smallest about 560×420; Claude's own decision) and reopens at the size and place it was closed at
+- Sections listed on the left, the chosen section's settings on the right; only the right side scrolls. Sections (Claude's own decision, from the cards the screen has now): Sound and readout (notify with sound, its volume and previews, read aloud, its volume, the readout voice), AI for summaries (keys, Local AI, which provider runs summaries and the concierge), Concierge (its look), Watched folders, Icon sets, Window (floating / standard), AI agent access, Updates. The section last shown is shown again on the next open
+- Everything that can be set today can be set there, with the same checks, wording, tests (connection test, sample readout, sound previews) and dialogs (adding a folder, the folder picker); nothing is lost in the move
+- A change takes effect at once, as now: birds, sounds, readout, summaries and the window mode follow it without reopening anything. A change made elsewhere while the settings window is open (the menu bar's "Read aloud" or window mode, an AI agent through the MCP tools, the floating window's mute button) shows in the settings window at once, and the other way round
+- The floating window no longer shows settings inside it; it keeps its tabs. The debug log stays where it is (out of scope)
+- In the UI language, with the app's look (dark, the same cards and controls)
+- macOS, Windows and Linux
+
+Pass/fail:
+- Open it from all three places; a second open brings the same window to the front; close and reopen keeps size, place and section
+- With both windows open: change each kind of setting in the settings window and see the floating window follow (a sound preview, mute, read aloud, readout voice, window mode, icon set, an added folder showing its sessions); change "Read aloud" from the menu bar and through an MCP tool and see the settings window follow
+- Type into a field right after opening it from the floating window in floating mode (focus is taken)
+- UI check of every section at the default and the smallest size, in Japanese and English
+
+### Basic design
+
+- A second window of the same app (Tauri window label `settings`) loading the same frontend, with the section in the URL (`?view=settings&section=<id>`; the app's rule that a screen is told by its URL). Created when first opened and destroyed when closed, so it costs nothing while closed (Claude's own decision); its size, place and section are saved and restored
+- The settings stay where they are (IndexedDB of the app's WebView, keys in the OS store through Rust); both windows load the same origin, so they read and write the same store. That the two windows share the store is checked on macOS first, and on Windows / Linux builds in CI where possible; if a platform doesn't share it, the implementing session reports back before working around it
+- One owner of the running state: the floating window's page keeps doing what the settings drive (sounds, readout, summaries, the MCP calls, the window mode). Every save, wherever it comes from, goes through the same save functions and then tells every window which setting changed (an app-wide event); each window reloads that setting. No window keeps its own copy that can go stale
+- In floating mode the app is an Accessory app (no Dock icon) and its panel doesn't take focus; opening the settings window activates the app so the window takes focus, and closing it returns to the previous state without showing a Dock icon in floating mode
+- The menu bar menu gets "Settings…" after Show / Hide
+- Out of scope: a browser page, changing what each setting does, the debug log, the floating window's tabs
 
 ## Fade until hovered
 
