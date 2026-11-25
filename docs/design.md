@@ -423,7 +423,7 @@ The readout can use a TTS server running locally (or on the LAN) in place of the
 - VOICEVOX-compatible servers read Japanese only, so while the UI language isn't Japanese, readout uses the system voice even when such a server is chosen, and the settings say so under the choice (Claude's own decision)
 - The settings let the user hear the voice before relying on it: a "Test" plays a short sample through the server with the chosen voice, and says what went wrong when it fails (not running, wrong kind of server, no such voice)
 - Where the system has no speech engine (some Linux builds), "Read aloud" can be turned on while a local server is chosen; without the fallback voice, a failed utterance is skipped and logged (Claude's own decision)
-- With VOICEVOX-compatible servers, the settings show the credit 「VOICEVOX:<voice name>」 next to the chosen voice (Claude's own decision, from the terms; may be changed)
+- When the server is VOICEVOX ENGINE itself, the settings show the credit 「VOICEVOX:<voice name>」 next to the chosen voice. Not for AivisSpeech Engine or another VOICEVOX-compatible server: the credit is required by VOICEVOX's terms, AivisSpeech's engine needs no credit, and its voices aren't VOICEVOX's (Claude's own decision, from the terms; may be changed; the implementing session pointed out that a credit on every VOICEVOX-compatible server would be wrong for AivisSpeech). Which engine it is comes from what the server says about itself (e.g. its engine manifest), not from the port
 
 Pass/fail:
 - Unit tests (scenes) for the choice between server and system voice: server answers in time / error / timeout / late audio dropped / English UI with VOICEVOX / no system voice / queue order with several events
