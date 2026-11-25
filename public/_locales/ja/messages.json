@@ -239,7 +239,7 @@
     "message": "要約とコンシェルジュに使う"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "要約に使う AI"
   },
   "aiApiKeysDescription": {
     "message": "任意設定です。吹き出しの要約、コンシェルジュ、完了の読み上げ要約に使います。複数を設定した場合は、使うものを選べます。"

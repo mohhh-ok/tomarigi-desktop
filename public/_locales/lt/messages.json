@@ -239,7 +239,7 @@
     "message": "Naudoti santraukoms ir konsjeržui"
   },
   "aiApiKeysHeading": {
-    "message": "DI"
+    "message": "DI santraukoms"
   },
   "aiApiKeysDescription": {
     "message": "Neprivaloma. Naudojama kalbos debesėlių santraukoms, konsjeržui ir baigtų įvykių balso santraukoms. Jei nustatyta daugiau nei viena, pasirinkite, kurią naudoti."

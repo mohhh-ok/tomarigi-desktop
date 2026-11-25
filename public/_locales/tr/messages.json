@@ -239,7 +239,7 @@
     "message": "Özetler ve konsiyerj için kullan"
   },
   "aiApiKeysHeading": {
-    "message": "Yapay zekâ"
+    "message": "Özetler için yapay zekâ"
   },
   "aiApiKeysDescription": {
     "message": "İsteğe bağlı. Konuşma balonu özetleri, konsiyerj ve tamamlanan olayların sesli özetleri için kullanılır. Birden fazla ayarlanırsa hangisinin kullanılacağını seçin."

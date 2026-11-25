@@ -239,7 +239,7 @@
     "message": "Použít pro shrnutí a concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI pro shrnutí"
   },
   "aiApiKeysDescription": {
     "message": "Volitelné. Používá se pro shrnutí v bublinách, concierge a hlasová shrnutí dokončených událostí. Pokud je nastaveno více, vyberte, který použít."

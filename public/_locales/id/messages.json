@@ -239,7 +239,7 @@
     "message": "Pakai untuk ringkasan dan concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI untuk ringkasan"
   },
   "aiApiKeysDescription": {
     "message": "Opsional. Dipakai untuk ringkasan balon ucapan, concierge, dan ringkasan suara peristiwa selesai. Jika lebih dari satu diatur, pilih yang dipakai."

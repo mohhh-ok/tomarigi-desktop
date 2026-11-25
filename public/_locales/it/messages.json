@@ -239,7 +239,7 @@
     "message": "Usa per riassunti e concierge"
   },
   "aiApiKeysHeading": {
-    "message": "IA"
+    "message": "IA per i riassunti"
   },
   "aiApiKeysDescription": {
     "message": "Facoltativo. Usato per i riassunti nei fumetti, il concierge e i riassunti vocali degli eventi completati. Se ne configuri più di uno, scegli quale usare."

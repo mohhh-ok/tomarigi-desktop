@@ -239,7 +239,7 @@
     "message": "用於摘要和禮賓員"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "用於摘要的 AI"
   },
   "aiApiKeysDescription": {
     "message": "選用。用於氣泡摘要、禮賓員和完成事件的語音摘要。如果設定了多個，可選擇要使用的一個。"

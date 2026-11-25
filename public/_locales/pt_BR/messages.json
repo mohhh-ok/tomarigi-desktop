@@ -239,7 +239,7 @@
     "message": "Usar para resumos e o concierge"
   },
   "aiApiKeysHeading": {
-    "message": "IA"
+    "message": "IA para os resumos"
   },
   "aiApiKeysDescription": {
     "message": "Opcional. Usado para resumos dos balões, o concierge e resumos de voz de eventos concluídos. Se configurar mais de um, escolha qual usar."

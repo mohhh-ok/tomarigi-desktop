@@ -239,7 +239,7 @@
     "message": "Gamitin para sa mga buod at sa concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI para sa mga buod"
   },
   "aiApiKeysDescription": {
     "message": "Opsyonal. Ginagamit para sa mga buod sa speech bubble, sa concierge, at sa mga buod na binabasa nang malakas ng mga natapos na event. Kung higit sa isa ang naka-set up, piliin kung alin ang gagamitin."

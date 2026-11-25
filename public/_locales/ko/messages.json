@@ -239,7 +239,7 @@
     "message": "요약과 컨시어지에 사용"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "요약에 쓰는 AI"
   },
   "aiApiKeysDescription": {
     "message": "선택 사항입니다. 말풍선 요약, 컨시어지, 완료 이벤트 음성 요약에 사용합니다. 여러 개를 설정하면 사용할 것을 선택할 수 있습니다."

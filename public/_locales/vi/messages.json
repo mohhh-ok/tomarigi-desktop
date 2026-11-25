@@ -239,7 +239,7 @@
     "message": "Dùng cho tóm tắt và concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI để tóm tắt"
   },
   "aiApiKeysDescription": {
     "message": "Tùy chọn. Dùng cho tóm tắt trong bong bóng thoại, concierge và tóm tắt giọng nói của sự kiện hoàn tất. Nếu thiết lập nhiều hơn một, hãy chọn cái để dùng."

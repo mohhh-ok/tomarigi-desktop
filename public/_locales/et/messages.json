@@ -239,7 +239,7 @@
     "message": "Kasuta kokkuvõteteks ja concierge’i jaoks"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI kokkuvõtete jaoks"
   },
   "aiApiKeysDescription": {
     "message": "Valikuline. Kasutatakse kõnemullide kokkuvõteteks, concierge’i jaoks ja lõpetatud sündmuste häälkokkuvõteteks. Kui seadistatud on mitu, valige, millist kasutada."

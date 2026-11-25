@@ -239,7 +239,7 @@
     "message": "Folosește pentru rezumate și concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI pentru rezumate"
   },
   "aiApiKeysDescription": {
     "message": "Opțional. Folosit pentru rezumatele din baloane, concierge și rezumatele vocale ale evenimentelor finalizate. Dacă sunt configurate mai multe, alegeți pe care îl folosiți."

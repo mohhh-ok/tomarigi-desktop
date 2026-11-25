@@ -239,7 +239,7 @@
     "message": "Käytä tiivistelmiin ja conciergeen"
   },
   "aiApiKeysHeading": {
-    "message": "Tekoäly"
+    "message": "Tekoäly tiivistelmiin"
   },
   "aiApiKeysDescription": {
     "message": "Valinnainen. Käytetään puhekuplien tiivistelmiin, conciergeen ja valmiiden tapahtumien äänitiivistelmiin. Jos useampi on määritetty, valitse käytettävä."

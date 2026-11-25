@@ -239,7 +239,7 @@
     "message": "Bruk til sammendrag og conciergen"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI for sammendrag"
   },
   "aiApiKeysDescription": {
     "message": "Valgfritt. Brukes til sammendrag i snakkebobler, conciergen og opplest sammendrag av fullførte hendelser. Er mer enn én satt opp, velger du hvilken som brukes."

@@ -239,7 +239,7 @@
     "message": "Använd för sammanfattningar och conciergen"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI för sammanfattningar"
   },
   "aiApiKeysDescription": {
     "message": "Valfritt. Används för sammanfattningar i pratbubblor, conciergen och upplästa sammanfattningar av klara händelser. Om fler än en är inställd väljer du vilken som används."

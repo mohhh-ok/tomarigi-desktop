@@ -239,7 +239,7 @@
     "message": "Für Zusammenfassungen und den Concierge verwenden"
   },
   "aiApiKeysHeading": {
-    "message": "KI"
+    "message": "KI für Zusammenfassungen"
   },
   "aiApiKeysDescription": {
     "message": "Optional. Wird für Zusammenfassungen in Sprechblasen, den Concierge und Sprachzusammenfassungen abgeschlossener Ereignisse verwendet. Ist mehr als einer eingerichtet, wähle, welcher genutzt wird."

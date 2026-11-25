@@ -239,7 +239,7 @@
     "message": "Összefoglalókhoz és a concierge-hez"
   },
   "aiApiKeysHeading": {
-    "message": "MI"
+    "message": "MI az összefoglalókhoz"
   },
   "aiApiKeysDescription": {
     "message": "Nem kötelező. A szövegbuborékok összefoglalóihoz, a concierge-hez és a befejezett események felolvasott összefoglalóihoz használatos. Ha több is be van állítva, válassza ki, melyiket használja."

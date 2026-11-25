@@ -5,7 +5,7 @@
 //     node tools/settings-window-shot.mjs [section ids...]
 // The page is the mock's settings view (`?mock=1&view=settings&section=<id>`); outside the app the running projects
 // come from the mock source and agent access is off. Each section is shot at its top and scrolled to its end (`-end`).
-// Env: SIZES (default 760x560,560x420), LANGS (default en,ja)
+// Env: SIZES (default 760x560,560x420), LANGS (default en,ja; any browser locale, e.g. el or de)
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { launch, mockPath, routeMock } from "./mock-browser.mjs";
@@ -27,7 +27,7 @@ try {
       const ctx = await browser.newContext({
         viewport: { width: w, height: h },
         deviceScaleFactor: 2,
-        locale: lang === "ja" ? "ja-JP" : "en-US",
+        locale: { en: "en-US", ja: "ja-JP" }[lang] ?? lang,
       });
       const page = await ctx.newPage();
       await routeMock(page, ORIGIN, DIST);

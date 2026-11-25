@@ -239,7 +239,7 @@
     "message": "Brug til opsummeringer og conciergen"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI til opsummeringer"
   },
   "aiApiKeysDescription": {
     "message": "Valgfrit. Bruges til opsummeringer i talebobler, conciergen og oplæste opsummeringer af færdige hændelser. Er mere end én sat op, vælger du, hvilken der bruges."

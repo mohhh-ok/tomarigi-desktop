@@ -239,7 +239,7 @@
     "message": "Koristi za sažetke i concierge"
   },
   "aiApiKeysHeading": {
-    "message": "UI"
+    "message": "UI za sažetke"
   },
   "aiApiKeysDescription": {
     "message": "Neobavezno. Koristi se za sažetke u oblačićima, concierge i glasovne sažetke završenih događaja. Ako je postavljeno više njih, odaberite koji koristiti."

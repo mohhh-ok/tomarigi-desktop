@@ -239,7 +239,7 @@
     "message": "Uporabi za povzetke in concierge"
   },
   "aiApiKeysHeading": {
-    "message": "UI"
+    "message": "UI za povzetke"
   },
   "aiApiKeysDescription": {
     "message": "Neobvezno. Uporablja se za povzetke v oblačkih, concierge in glasovne povzetke končanih dogodkov. Če je nastavljenih več, izberite, katerega uporabiti."

@@ -239,7 +239,7 @@
     "message": "Używaj do podsumowań i konsjerża"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI do podsumowań"
   },
   "aiApiKeysDescription": {
     "message": "Opcjonalne. Używane do podsumowań w dymkach, konsjerża i głosowych podsumowań zakończonych zdarzeń. Jeśli skonfigurowano więcej niż jeden, wybierz, którego używać."

@@ -239,7 +239,7 @@
     "message": "Use for summaries and the concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI for summaries"
   },
   "aiApiKeysDescription": {
     "message": "Optional. Used for speech bubble summaries, the concierge, and voice summaries of done events. If more than one is set up, choose which one to use."

@@ -239,7 +239,7 @@
     "message": "Použiť na zhrnutia a concierge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI na zhrnutia"
   },
   "aiApiKeysDescription": {
     "message": "Voliteľné. Používa sa na zhrnutia v bublinách, concierge a hlasové zhrnutia dokončených udalostí. Ak je nastavených viac, vyberte, ktorý sa použije."

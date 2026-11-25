@@ -239,7 +239,7 @@
     "message": "Fes-lo servir per als resums i el conserge"
   },
   "aiApiKeysHeading": {
-    "message": "IA"
+    "message": "IA per als resums"
   },
   "aiApiKeysDescription": {
     "message": "Opcional. S’utilitza per als resums de les bombolles, el conserge i els resums de veu dels esdeveniments acabats. Si n’hi ha més d’un de configurat, tria quin fer servir."

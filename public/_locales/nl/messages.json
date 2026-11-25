@@ -239,7 +239,7 @@
     "message": "Gebruiken voor samenvattingen en de conciërge"
   },
   "aiApiKeysHeading": {
-    "message": "AI"
+    "message": "AI voor samenvattingen"
   },
   "aiApiKeysDescription": {
     "message": "Optioneel. Gebruikt voor samenvattingen in tekstballonnen, de conciërge en gesproken samenvattingen van voltooide gebeurtenissen. Is er meer dan één ingesteld, kies dan welke je gebruikt."

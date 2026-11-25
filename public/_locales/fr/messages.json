@@ -239,7 +239,7 @@
     "message": "Utiliser pour les résumés et le concierge"
   },
   "aiApiKeysHeading": {
-    "message": "IA"
+    "message": "IA pour les résumés"
   },
   "aiApiKeysDescription": {
     "message": "Facultatif. Utilisé pour les résumés des bulles, le concierge et les résumés vocaux des événements terminés. Si plusieurs sont configurés, choisissez celui à utiliser."

@@ -239,7 +239,7 @@
     "message": "Usar para resúmenes y el conserje"
   },
   "aiApiKeysHeading": {
-    "message": "IA"
+    "message": "IA para los resúmenes"
   },
   "aiApiKeysDescription": {
     "message": "Opcional. Se usa para los resúmenes de los bocadillos, el conserje y los resúmenes de voz de eventos completados. Si configuras más de uno, elige cuál usar."
