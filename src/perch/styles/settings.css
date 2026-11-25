@@ -853,16 +853,21 @@ button.agent-access-copy-main:hover {
 
 .agent-change-note-close {
   float: right;
-  margin: -2px -6px 0 8px;
-  padding: 2px;
-  border: none;
-  background: none;
-  color: #a8a294;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -4px -8px 0 8px;
+  padding: 0;
+  border: 1px solid #5a5244;
+  border-radius: 6px;
+  background: #2a2820;
+  color: #e6e1d3;
   cursor: pointer;
 }
 
 .agent-change-note-close:hover {
-  color: #e6e1d3;
+  background: #3a372c;
 }
 
 .agent-change-note-title {

@@ -11,7 +11,7 @@ export function AgentChangeNote({ notes, onDismiss }: { notes: AgentChangeEntry[
   return (
     <div className="agent-change-note" role="status">
       <button className="agent-change-note-close" onClick={onDismiss} aria-label={t("agentNoteDismiss")} title={t("agentNoteDismiss")}>
-        <MdClose size={14} />
+        <MdClose size={16} />
       </button>
       <p className="agent-change-note-title">{t("agentNoteTitle")}</p>
       <ul>
