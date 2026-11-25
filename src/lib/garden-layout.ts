@@ -1,12 +1,10 @@
 // Persisting node positions in the Garden tab (issue #12).
 //
-// Stored through idb in the same "tomarigi" DB / "kv" store as lib/settings-store.ts (IndexedDB was chosen in the tomarigi Chrome
-// extension to avoid the "storage" permission; the desktop app keeps the same store).
+// Stored in the app's key-value store (lib/kv.ts; IndexedDB was chosen in the tomarigi Chrome extension to avoid the
+// "storage" permission; the desktop app keeps the same store).
 
-import { openDB, type IDBPDatabase } from "idb";
+import { kvGet, kvPut } from "./kv";
 
-const DB_NAME = "tomarigi";
-const STORE = "kv";
 const KEY_GARDEN_POSITIONS = "gardenPositions";
 
 /** A dragged position as saved: the bird's center (x) and top edge (y), as % of the garden. Used when the bird first
@@ -20,16 +18,8 @@ export interface GardenPosition {
   front?: number;
 }
 
-function db(): Promise<IDBPDatabase> {
-  return openDB(DB_NAME, 1, {
-    upgrade(d) {
-      if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
-    },
-  });
-}
-
 export async function loadGardenPositions(): Promise<Record<string, GardenPosition>> {
-  const saved = (await (await db()).get(STORE, KEY_GARDEN_POSITIONS)) as
+  const saved = (await kvGet(KEY_GARDEN_POSITIONS)) as
     | Record<string, GardenPosition>
     | undefined;
   return saved ?? {};
@@ -38,7 +28,7 @@ export async function loadGardenPositions(): Promise<Record<string, GardenPositi
 export async function saveGardenPositions(
   positions: Record<string, GardenPosition>,
 ): Promise<void> {
-  await (await db()).put(STORE, positions, KEY_GARDEN_POSITIONS);
+  await kvPut(KEY_GARDEN_POSITIONS, positions);
 }
 
 // Makes a deterministic non-negative integer from a string (a simple FNV-like hash). Randomness would

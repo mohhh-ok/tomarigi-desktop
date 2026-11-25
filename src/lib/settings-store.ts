@@ -1,14 +1,12 @@
 // Settings kept in the WebView's IndexedDB: watched folders, sound and readout settings, and the event log
 import { invoke } from "@tauri-apps/api/core";
-import { openDB, type IDBPDatabase } from "idb";
+import { kvGet, kvPut } from "./kv";
 import { isReadableDir, NativeDirectoryHandle } from "./native-fs";
 import { AGENTS, agentOf, type AgentKind } from "./agents";
 import { pathKey } from "./paths";
 import { checkNewRoot } from "./settings-checks";
 import { CONCIERGE_LOOKS, DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "./concierge";
 
-const DB_NAME = "tomarigi";
-const STORE = "kv";
 const KEY_ROOTS = "roots";
 const KEY_MUTED = "muted";
 const KEY_VOICE_ENABLED = "voiceEnabled";
@@ -17,26 +15,8 @@ const KEY_CHIRP_VOLUME = "chirpVolume";
 const KEY_CONCIERGE_LOOK = "conciergeLook";
 const KEY_OPEN_TAB = "openTab";
 
-function db(): Promise<IDBPDatabase> {
-  return openDB(DB_NAME, 1, {
-    upgrade(d) {
-      d.createObjectStore(STORE);
-    },
-  });
-}
-
-/** Reads one value of the settings store (lib/api-keys.ts also keeps its entries here) */
-export async function kvGet(key: string): Promise<unknown> {
-  return (await db()).get(STORE, key);
-}
-
-export async function kvPut(key: string, value: unknown): Promise<void> {
-  await (await db()).put(STORE, value, key);
-}
-
-export async function kvDelete(key: string): Promise<void> {
-  await (await db()).delete(STORE, key);
-}
+// The store itself (and kvDelete) is lib/kv.ts; re-exported for the callers that read settings from here
+export { kvDelete, kvGet, kvPut } from "./kv";
 
 // Which agent a watched folder belongs to (lib/agents.ts)
 export type RootKind = AgentKind;

@@ -1,6 +1,6 @@
 // Persists per-project icon set assignments (issue #14).
 //
-// Like garden-layout.ts, this uses the "tomarigi" DB / "kv" store through idb.
+// Like garden-layout.ts, this uses the app's key-value store (lib/kv.ts).
 //
 // The key is the project identifier within the data source (same vocabulary as SessionView.slug in lib/session-types.ts).
 // rootId isn't part of the key — when the same project path is seen from several roots,
@@ -12,11 +12,9 @@
 // and display, so it's kept in the same place as BirdState (lib/session-types.ts).
 // src/perch/icon-sets.ts imports this type and builds the image table.
 
-import { openDB, type IDBPDatabase } from "idb";
+import { kvDelete, kvGet, kvPut } from "./kv";
 
-const DB_NAME = "tomarigi";
-const STORE = "kv";
-const KEY_ICON_SET_ASSIGNMENTS = "projectIconSets";
+export const KEY_ICON_SET_ASSIGNMENTS = "projectIconSets";
 // Leftover key from the old unreleased approach (regex rules). Deleted when found on load
 const KEY_ICON_SET_RULES_LEGACY = "iconSetRules";
 
@@ -50,14 +48,6 @@ function isIconSetAssignment(value: unknown): value is IconSetAssignment {
   return isIconSetId(v.set) && typeof v.label === "string";
 }
 
-function db(): Promise<IDBPDatabase> {
-  return openDB(DB_NAME, 1, {
-    upgrade(d) {
-      if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
-    },
-  });
-}
-
 /**
  * Saved assignments (slug → {set, label}). Broken entries (e.g. leftovers from a set removed in the
  * future) are removed on load. When nothing is saved, an empty object (= always resolves to DEFAULT_ICON_SET).
@@ -65,10 +55,9 @@ function db(): Promise<IDBPDatabase> {
  * an entry whose set is DEFAULT_ICON_SET is never expected to be saved.
  */
 export async function loadIconSetAssignments(): Promise<IconSetAssignments> {
-  const d = await db();
-  // Clean up leftovers from the old unreleased approach (regex rules). No-op if none exist
-  await d.delete(STORE, KEY_ICON_SET_RULES_LEGACY);
-  const saved = (await d.get(STORE, KEY_ICON_SET_ASSIGNMENTS)) as unknown;
+  // Clean up leftovers from the old unreleased approach (regex rules), once
+  if ((await kvGet(KEY_ICON_SET_RULES_LEGACY)) !== undefined) await kvDelete(KEY_ICON_SET_RULES_LEGACY);
+  const saved = (await kvGet(KEY_ICON_SET_ASSIGNMENTS)) as unknown;
   if (typeof saved !== "object" || saved === null) return {};
   const out: IconSetAssignments = {};
   for (const [slug, value] of Object.entries(saved as Record<string, unknown>)) {
@@ -78,7 +67,7 @@ export async function loadIconSetAssignments(): Promise<IconSetAssignments> {
 }
 
 export async function saveIconSetAssignments(assignments: IconSetAssignments): Promise<void> {
-  await (await db()).put(STORE, assignments, KEY_ICON_SET_ASSIGNMENTS);
+  await kvPut(KEY_ICON_SET_ASSIGNMENTS, assignments);
 }
 
 /** Resolves slug → IconSetId. DEFAULT_ICON_SET (birds) if there's no assignment. */

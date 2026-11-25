@@ -1,6 +1,7 @@
 // BYOK API keys, the Local AI settings, and the provider used for summaries (docs/design.md "BYOK API keys")
 import { invoke } from "@tauri-apps/api/core";
-import { kvDelete, kvGet, kvPut } from "./settings-store";
+import { kvDelete, kvGet, kvPut } from "./kv";
+import { API_KEYS_SETTING, notifySettingChanged } from "./settings-sync";
 
 // Names the API keys are saved under in IndexedDB. Used for the webview store (TOMARIGI_KEY_BACKEND=webview) and for migrating keys left by older versions and by dev before it used the Keychain (initApiKeys).
 // Anthropic keeps its old name "judgeApiKey" (so keys from older versions can be read)
@@ -125,6 +126,7 @@ export async function loadRetiredKeysSaved(): Promise<RetiredKeyProvider[]> {
 export async function deleteRetiredKey(provider: RetiredKeyProvider): Promise<void> {
   await invoke("key_delete", { provider });
   if (await idbKeysOwned(await apiKeyBackend())) await kvDelete(RETIRED_KEY_IDB_KEYS[provider]);
+  notifySettingChanged(API_KEYS_SETTING);
 }
 
 /** Saves a key (replacing works the same way). webview also writes to IndexedDB */
@@ -133,6 +135,7 @@ export async function saveApiKey(provider: ApiKeyProvider, value: string): Promi
   if ((await apiKeyBackend()) === "webview") {
     await kvPut(API_KEY_IDB_KEYS[provider], value);
   }
+  notifySettingChanged(API_KEYS_SETTING);
 }
 
 export async function deleteApiKey(provider: ApiKeyProvider): Promise<void> {
@@ -140,6 +143,7 @@ export async function deleteApiKey(provider: ApiKeyProvider): Promise<void> {
   // If it's still in IndexedDB (webview, or left from before migration), delete it. Not when IndexedDB isn't this
   // identifier's own (idbKeysOwned)
   if (await idbKeysOwned(await apiKeyBackend())) await kvDelete(API_KEY_IDB_KEYS[provider]);
+  notifySettingChanged(API_KEYS_SETTING);
 }
 
 /** Provider used for summaries and the concierge when more than one is set up. Saved independently of the keys themselves. */
