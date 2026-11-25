@@ -21,6 +21,7 @@ mod focus;
 mod garden_grow;
 mod keys;
 mod liveness;
+mod mcp;
 mod opencode;
 mod tray;
 mod tts;
@@ -360,7 +361,12 @@ pub fn run() {
             opencode::opencode_tail,
             updater::update_status,
             updater::update_check,
-            updater::update_install
+            updater::update_install,
+            mcp::mcp_start,
+            mcp::mcp_stop,
+            mcp::mcp_reply,
+            mcp::mcp_renew_token,
+            mcp::mcp_running_port
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

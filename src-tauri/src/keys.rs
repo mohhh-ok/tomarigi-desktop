@@ -221,6 +221,51 @@ fn store_key(provider: &str, value: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Where the MCP token lives: the same OS store item service as the API keys, under its own account (docs/design.md
+/// "Settings by an AI agent (MCP)"). Never logged and never one of the BYOK providers
+const MCP_TOKEN_ACCOUNT: &str = "mcp-token";
+
+/// 32 random bytes as hex (256 bits)
+pub(crate) fn new_mcp_token() -> String {
+    let mut bytes = [0u8; 32];
+    getrandom::fill(&mut bytes).expect("the OS random source");
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// The token the MCP server accepts, made and saved on first use. With TOMARIGI_KEY_BACKEND=webview it lives in memory
+/// only (new on every launch); where the OS store can't be used there is none (`no-key-store`)
+pub(crate) fn mcp_token() -> Result<String, String> {
+    if let Some(token) = cache_get(MCP_TOKEN_ACCOUNT) {
+        return Ok(token);
+    }
+    let token = match key_store() {
+        KeyStore::Keychain { service } => match os_store::get(service, MCP_TOKEN_ACCOUNT) {
+            Some(saved) if !saved.is_empty() => saved,
+            _ => {
+                let token = new_mcp_token();
+                os_store::set(service, MCP_TOKEN_ACCOUNT, &token)?;
+                token
+            }
+        },
+        KeyStore::WebView => new_mcp_token(),
+        KeyStore::Unavailable(_) => return Err("no-key-store".into()),
+    };
+    cache_set(MCP_TOKEN_ACCOUNT, Some(token.clone()));
+    Ok(token)
+}
+
+/// A new token, saved in place of the old one (the old registration command stops working)
+pub(crate) fn renew_mcp_token() -> Result<String, String> {
+    let token = new_mcp_token();
+    match key_store() {
+        KeyStore::Keychain { service } => os_store::set(service, MCP_TOKEN_ACCOUNT, &token)?,
+        KeyStore::WebView => {}
+        KeyStore::Unavailable(_) => return Err("no-key-store".into()),
+    }
+    cache_set(MCP_TOKEN_ACCOUNT, Some(token.clone()));
+    Ok(token)
+}
+
 /// The store. JS checks this and saves to IndexedDB only for webview (TOMARIGI_KEY_BACKEND=webview); "unavailable" makes the settings say keys
 /// can't be saved
 #[tauri::command]
