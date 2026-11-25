@@ -213,7 +213,7 @@ The icon set's button:
 - The button says what it changes the row to: 「{set}にする」 / "Use {set}" (new key `iconSetUseButton` with the placeholder `set`, all locales), e.g. 「ネコにする」. The image left of it stays the current set. `iconSetToggleAria` stays as the aria-label (with the row and the current set), the ⇄ goes
 
 Editing a watched folder's label:
-- While editing, the row is the field, then 「保存」 and 「取り消し」 (`byokSaveButton` / `cancelButton`, both existing keys), both `button.small`. The badges and ✕ are hidden while editing, so the row fits at 560 px
+- While editing, the row is the field, then 「保存」 and 「キャンセル」 (`byokSaveButton` / `cancelButton`, both existing keys), both `button.small`. The badges and ✕ are hidden while editing, so the row fits at 560 px
 - Enter saves and Esc cancels as before. Leaving the field still saves, except when the focus moves to the row's own Save / Cancel (`relatedTarget` inside the row), so Tab to Cancel and a click on Cancel don't save first
 
 Buttons and row edges:
