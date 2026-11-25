@@ -555,6 +555,82 @@ Pass/fail:
 - While the window is hidden or faded the server still answers (the page keeps running); tools that play a sound play it as the screen's Test does
 - Out of scope: API keys, the debug and mock settings, updates (checking / installing), and anything that isn't on the settings screen
 
+### Detailed design
+
+Written by the session that implements it, from the code as of 2dfdb2a. All of it is Claude's own decision and may be changed.
+
+Dependencies (`src-tauri/Cargo.toml`):
+- `rmcp` 3.11 (the official Rust SDK, https://github.com/modelcontextprotocol/rust-sdk) with `default-features = false, features = ["server", "transport-streamable-http-server"]`. It speaks the protocol (initialize, version negotiation, `tools/list`, `tools/call`, JSON-RPC errors) and its `StreamableHttpService` is a `tower` service that checks the `Host` header against loopback names by default (against DNS rebinding). Hand-writing the protocol was not chosen: the version negotiation and the transport's rules change between spec versions, and the SDK follows them
+- `hyper` 1 (`server`, `http1`) and `hyper-util` 0.1 (`tokio`) to serve that service on a `tokio::net::TcpListener`, the way rmcp's own tests serve it without axum (`tests/test_unix_socket_transport.rs` in the crate). Both are already in `Cargo.lock` through `reqwest`. axum was not chosen: one route doesn't need a router
+- `tokio` 1 (`net`) and `tokio-util` 0.7 (the `CancellationToken` rmcp's config takes), both already in the lock through tauri; `getrandom` 0.3 for the token (already in the lock)
+- No new npm package
+
+Rust (`src-tauri/src/mcp.rs`, new; registered in `lib.rs`):
+- `McpServer` state in a `Mutex`: the running server's port and `CancellationToken`, the tool list handed over by the page, the pending calls (`HashMap<u64, oneshot::Sender<ToolReply>>`)
+- `mcp_start(port, tools) → Result<String /* the registration command */, String>`: binds `127.0.0.1:<port>` (an error `port-in-use` when the bind fails with `AddrInUse`, so the settings can say so), stops a server already running, then spawns the accept loop. `tools` is the JSON tool list from `src/lib/agent-tools.ts`, kept as is for `tools/list`
+- `mcp_stop()`: cancels the token; the accept loop ends and the listener is dropped, so nothing listens on the port. Called when the setting is turned off
+- `mcp_reply(id, reply)`: the page's answer to one call; completes its `oneshot`
+- `mcp_renew_token() → String`: a new token, saved, and the new command. The running server reads the current token on every request, so the old command stops working at once without a restart
+- `mcp_command(port) → String`: the command shown, built in Rust only: `claude mcp add --scope user --transport http tomarigi http://127.0.0.1:<port>/mcp --header "Authorization: Bearer <token>"`
+- Each connection: a `hyper::service::service_fn` that first compares `Authorization` with `Bearer <token>` (constant time) and answers 401 with no body when it is missing or wrong, then answers 404 for any path but `/mcp`, then hands the request to `StreamableHttpService`. Config: `legacy_session_mode: false` and `json_response: true` (stateless, one JSON answer per call; no session to lose when the app restarts), `allowed_origins: ["http://127.0.0.1:<port>"]` so a request a web page sends carries an `Origin` that is refused
+- `ServerHandler` (rmcp): `list_tools` returns the page's list; `call_tool` gives the call an id, `emit("mcp-call", { id, name, arguments })` to the main window, and waits for `mcp_reply` up to 60 s (the sample's Test waits 30 s; Claude's own decision). The reply `{ ok, text, data? }` becomes a `CallToolResult` with `is_error = !ok`, the text as text content and `data` as `structured_content`. No answer in time → an error result "Tomarigi didn't answer. Make sure its window has loaded (reopen it from the menu bar icon)". `get_info`'s `instructions` say what the tools are for, and that a failed connection means Tomarigi isn't running and the user should start it
+- The token (`keys.rs`, new functions beside the BYOK keys): 32 random bytes as hex (256 bits), saved in the OS store under the same service as the API keys with the account `mcp-token`, read once and cached. With `TOMARIGI_KEY_BACKEND=webview` (only for checking the key migration) it lives in memory and is new on every launch; where the OS store is unavailable (Linux without Secret Service) `mcp_start` fails with `no-key-store` and the settings say the feature needs one. The token is never logged; log lines say `[mcp] start port=4844`, `[mcp] stop`, `[mcp] refused 401`, `[mcp] call <tool> ok|error ms=<n>`
+- The server task runs on tauri's async runtime; it keeps answering while the window is hidden or faded (the page isn't unloaded)
+
+The page:
+- `src/lib/settings-checks.ts` (new): one pure function per rule, returning a problem code or nothing; the screen and the tools call the same functions
+  - `checkLocalAi({ baseUrl, model })` → `url-invalid` (the rule of `isValidBaseUrl`, which moves here) / `model-missing`
+  - `checkLocalTts({ kind, baseUrl, voice, model })` → `url-invalid` / `model-missing` (OpenAI-compatible) / `voice-missing`
+  - `checkVoiceInList(voice, options)` → `no-voice` when the server's list was read and doesn't have it (the screen chooses from that list, so it can't save one that isn't there)
+  - `checkProviderChoice(provider, setUp)` → `no-key` (Anthropic / OpenAI without a saved key) / `local-not-set-up`
+  - `checkVolume(percent)` → `volume-range` (an integer 0–100, the slider's range)
+  - `checkNewRoot(existing, path)` → `duplicate` (with `samePath`, as `pickNewRoot`) / `path-not-absolute` / `not-readable` (`isReadableDir`); `checkRootLabel(label)` → `label-empty`; `checkRootRemovable(root)` → `builtin`
+  - `checkIconSet(id)`, `checkConciergeLook(look)`, `checkWindowMode(mode)` → `unknown-option`
+  - Each code maps to a message key the screen already shows where it has one (`localAiUrlInvalid`, `duplicateRootMessage`, `readoutTestNoVoice`, ...) and to new keys for the ones only the tools can hit (a path typed by the agent, a value outside the choices). The tools answer with the English text of the same key, read from `public/_locales/en/messages.json` (imported, so it is the same sentence the English screen shows)
+- `src/lib/agent-tools.ts` (new): the tool list (names, English descriptions, JSON Schemas) and `runAgentTool(name, args, deps) → { ok, text, data? }`. `deps` is an interface of the screen's own load / save / test / list functions, so tests pass fakes. Tools (Claude's own decision on the split: one tool per card of the settings screen, so a change is one call and its checks are that card's):
+  - `get_settings`: every setting below with its current value and its choices; whether each API key is saved (true/false only); the watched folders (id, agent, label, path, default or added, readable); the projects for icon sets (slug, name, running); the agent-access port
+  - `set_summary_provider { provider }`
+  - `set_local_ai { base_url, model }`, `remove_local_ai {}`
+  - `set_readout_voice { source, server?: { kind, base_url, voice, model? } }`: with a server, it reads the voice list and the engine manifest like the screen, so the saved config has the same `voiceLabel`, `speaker` and `voicevoxCredit`. The voice may be given as the list's value or its label (「四国めたん（ノーマル）」); when the list can't be read the voice is kept as typed, as on the screen, and the answer says the list couldn't be read
+  - `set_sound { chirps?, chirp_volume?, read_aloud?, read_aloud_volume? }` (volumes in percent, as the sliders show)
+  - `set_window_mode { mode: "floating" | "normal" }` → `invoke("set_window_mode")`, as the screen's radio does (Rust saves it)
+  - `set_icon_set { project, set }` (project: a slug or a name from `get_settings`)
+  - `set_concierge_look { look }`: the concierge's look is on the settings screen too, so it is included (Claude's own decision; the requirement's list doesn't name it)
+  - `add_watched_folder { agent, path, label? }` (no folder picker: the agent gives the path; the label defaults as on the screen), `rename_watched_folder { id, label }`, `remove_watched_folder { id }`
+  - `list_local_ai_models { base_url? }`, `list_tts_voices { kind, base_url }` (OpenAI-compatible: voices and models)
+  - `test_ai_connection { provider, base_url?, model? }`: Local with the given (unsaved) URL and model or the saved ones, as the screen's test of a draft; Anthropic / OpenAI with the saved key, `no-key` when there is none. Answers passed or the failure kind in words, and `ms`
+  - `play_readout_sample { server? }`: the saved server, or a given draft; `testReadoutVoice` as the screen's button. Answers passed with `ms`, or the screen's failure reason (`classifyTestError`). Playback without a click: where the WebView needs a user action before the AudioContext runs, the request still runs and the answer says the server answered (with `ms`) but the app couldn't play sound until the window is clicked once (`error=audio`). Whether WKWebView needs that click is checked on the real app before this is final
+- `src/perch/use-roots.ts` (new): the watched-folder state and operations moved out of `App.tsx` (`addRoot(kind)` with the picker, `addRootAt(kind, path, label?)`, `removeRoot`, `renameRoot`), each running its check from `settings-checks.ts`, so the screen and the tools share them
+- `src/perch/use-agent-access.ts` (new): the setting `agentAccess = { enabled, port }` in the settings store (default `{ enabled: false, port: 4844 }`); at startup, when enabled, `mcp_start(port, AGENT_TOOLS)`. Listens to `mcp-call`, runs `runAgentTool` with `deps` built from `useSettings`, `useRoots`, the icon-set rows and the window mode (read through refs, so a call sees the latest values), and answers with `mcp_reply`. Each change that was saved adds a note and logs `[mcp] changed <setting>` (no values that could be secrets; URLs and voice names are settings, and they are logged as the screen's saves log them)
+- The note (`src/perch/agent-change-note.tsx`, new): a small bar at the top of the page, 「AI エージェントが変更: 読み上げの声 システムの声 → VOICEVOX（四国めたん（ノーマル））」, for 6 seconds, several stacked. The settings card also lists this launch's changes (the last 10), so a change made while the window was hidden can still be seen. The settings screen shows the new values at once because the tools save through the same React state
+- The settings card (`src/perch/settings/agent-access-settings.tsx`, new; after "Window" and before "Updates"): the checkbox "Let an AI agent change settings"; when on, the command in a code block with a copy button, a line "Run this once in a terminal. Then ask Claude Code, e.g. 「読み上げを VOICEVOX にして」", the port field (changed on blur; refused like the screen's other fields when not 1024–65535), "port in use" with a hint to change it, and "Renew token" (the old command stops working; the card says to run the new one, which replaces the old registration). Texts in `scripts/locales/agent-access.mjs` (new), every language
+
+Tests:
+- `tests/settings-checks.test.ts`: each rule's codes
+- `tests/agent-tools.test.ts`: each tool with fake `deps`: a valid change calls the save function once and answers ok; a wrong value is refused with the English text of the screen's message and saves nothing; `get_settings` has no key values; `set_summary_provider` for a provider without a key says to paste it on the settings screen
+- `cargo test --lib` (`mcp.rs`): with an explicit port (48441–48449, never the default): no token → 401, a wrong token → 401, the right token → `initialize` and `tools/list` answer; after `mcp_stop` the port can be bound again; the command string; the token is 64 hex characters
+
+Requirement → where it is met:
+
+| Requirement / design item | Where |
+|---|---|
+| Setting off by default; on starts the server and shows the command with copy | `use-agent-access.ts` (`agentAccess`), `agent-access-settings.tsx`, `mcp_start` / `mcp_command` |
+| Registered once, tools whenever the app runs | `--scope user` in `mcp_command`; `mcp_start` at startup when enabled |
+| Read settings (no keys) and their choices | `get_settings` in `agent-tools.ts` |
+| Change each listed setting | `set_*` / `*_watched_folder` tools → `useSettings` / `useRoots` / `set_window_mode` |
+| Read the lists | `list_local_ai_models`, `list_tts_voices` (`fetchLocalModels`, `fetchTtsVoices`, `fetchTtsModels`) |
+| Run the tests with result and time | `test_ai_connection`, `play_readout_sample` |
+| Same checks, same reason in words | `settings-checks.ts`, used by `ai-key-settings.tsx`, `readout-voice-settings.tsx`, `use-roots.ts` and `agent-tools.ts`; English text from `en/messages.json` |
+| No API keys | no tool takes or returns one; `no-key` answer points to the settings screen |
+| Note in the app, app log, screen updates at once | `agent-change-note.tsx`, the card's list, `[mcp] changed`, shared React state |
+| 127.0.0.1 only, token, renew | `mcp.rs` bind and 401, `mcp_renew_token`, token in `keys.rs` |
+| App not running → tell the user to start it | `instructions` and tool descriptions |
+| Off stops at once | `mcp_stop` (cancel token, listener dropped) |
+| Port 4844, taken → say so, changeable | `port-in-use` from `mcp_start`, port field in the card |
+| Tool texts in English, note in UI language | `agent-tools.ts` / `agent-change-note.tsx` + locales |
+| Out of scope (keys, debug/mock, updates) | not in the tool list |
+| Unit tests | `tests/settings-checks.test.ts`, `tests/agent-tools.test.ts`, `mcp.rs` tests |
+
 ## Platforms
 
 - macOS, Windows 10 / 11 (x64), and Linux (x64, X11). On a Wayland session the app runs through Xwayland (`GDK_BACKEND=x11` is set at launch), because pure Wayland has no always-on-top, no global cursor position, no window position restore, and no way to focus another app's window (Claude's own decision, from research)
