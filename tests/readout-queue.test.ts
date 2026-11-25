@@ -53,9 +53,12 @@ function scene(options: { voice?: ReadoutVoice; systemAvailable?: boolean } = {}
       requests.set(text, d);
       return d.promise;
     },
-    playAudio: (audio) => start(`server:${new TextDecoder().decode(audio)}`),
+    playAudio: (audio, _volume, signal) => {
+      const p = start(`server:${new TextDecoder().decode(audio)}`);
+      signal.addEventListener("abort", () => playing?.end(), { once: true });
+      return p;
+    },
     speakSystem: (text) => start(`system:${text}`),
-    stopAudio: () => playing?.end(),
     stopSystem: () => playing?.end(),
     systemAvailable: () => systemAvailable,
     wait: (ms) => {
@@ -199,7 +202,6 @@ describe("ReadoutQueue", () => {
         throw new Error("no audio context");
       },
       speakSystem: async (text) => void s.played.push(`system:${text}`),
-      stopAudio: () => {},
       stopSystem: () => {},
       systemAvailable: () => true,
       wait: () => new Promise(() => {}),
@@ -228,5 +230,92 @@ describe("ReadoutQueue", () => {
     s.queue.enqueue("site", "ja", "waiting");
     await s.answer("site");
     expect(s.played).toEqual(["server:app", "server:site"]);
+  });
+
+  test("cancel while the audio is still being decoded: nothing sounds, and the system voice does not take over", async () => {
+    const decoding = deferred<void>();
+    const sounded: string[] = [];
+    const spoken: string[] = [];
+    const q = new ReadoutQueue({
+      route: () => "server",
+      serverKind: () => "openai",
+      synthesize: async () => ({ ok: true, audio: audioOf("x") }),
+      // Like the real one: checks the signal after its await and plays nothing if it was aborted
+      playAudio: async (_audio, _volume, signal) => {
+        await decoding.promise;
+        if (signal.aborted) return;
+        sounded.push("server");
+      },
+      speakSystem: async (text) => void spoken.push(text),
+      systemAvailable: () => true,
+      stopSystem: () => {},
+      wait: () => new Promise(() => {}),
+      now: () => 0,
+      volume: () => 1,
+      log: () => {},
+    });
+    q.enqueue("app", "en", "done");
+    await flush();
+    q.cancel();
+    decoding.resolve();
+    await flush();
+    await flush();
+    expect(sounded).toEqual([]);
+    expect(spoken).toEqual([]);
+  });
+
+  test("cancel while playAudio is about to fail: the system voice does not read it", async () => {
+    const failing = deferred<void>();
+    const spoken: string[] = [];
+    const q = new ReadoutQueue({
+      route: () => "server",
+      serverKind: () => "openai",
+      synthesize: async () => ({ ok: true, audio: audioOf("x") }),
+      playAudio: async () => {
+        await failing.promise;
+        throw new Error("undecodable");
+      },
+      speakSystem: async (text) => void spoken.push(text),
+      systemAvailable: () => true,
+      stopSystem: () => {},
+      wait: () => new Promise(() => {}),
+      now: () => 0,
+      volume: () => 1,
+      log: () => {},
+    });
+    q.enqueue("app", "en", "done");
+    await flush();
+    q.cancel();
+    failing.resolve();
+    await flush();
+    await flush();
+    expect(spoken).toEqual([]);
+  });
+
+  test("cancel aborts only the signal of the generation it ends; the next readout gets a fresh one", async () => {
+    const signals: AbortSignal[] = [];
+    const q = new ReadoutQueue({
+      route: () => "server",
+      serverKind: () => "openai",
+      synthesize: async () => ({ ok: true, audio: audioOf("x") }),
+      playAudio: (_a, _v, signal) => {
+        signals.push(signal);
+        return new Promise<void>((resolve) => signal.addEventListener("abort", () => resolve(), { once: true }));
+      },
+      speakSystem: async () => {},
+      systemAvailable: () => true,
+      stopSystem: () => {},
+      wait: () => new Promise(() => {}),
+      now: () => 0,
+      volume: () => 1,
+      log: () => {},
+    });
+    q.enqueue("a", "en", "done");
+    await flush();
+    q.cancel();
+    q.enqueue("b", "en", "done");
+    await flush();
+    await flush();
+    expect(signals.map((s) => s.aborted)).toEqual([true, false]);
   });
 });

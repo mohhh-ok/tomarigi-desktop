@@ -87,11 +87,12 @@ function appLog(line: string): void {
   void invoke("log", { line }).catch(() => {});
 }
 
-let playingSource: AudioBufferSourceNode | undefined;
-
 /** Plays audio bytes on the chirp AudioContext through a gain of its own (the readout volume, not the chirp volume).
- * Throws when the context can't run (the WebView wants a user action first) or the bytes can't be decoded */
-async function playAudio(audio: ArrayBuffer, volume: number): Promise<void> {
+ * `signal` stops this one playback: it is checked after every await, so an abort during the resume or decode wait plays
+ * nothing, and one during playback stops the source. Throws when the context can't run (the WebView wants a user
+ * action first) or the bytes can't be decoded */
+export async function playAudio(audio: ArrayBuffer, volume: number, signal: AbortSignal): Promise<void> {
+  if (signal.aborted) return;
   // Before the first click there may be no context yet; where the WebView lets audio start without one, it runs now
   if (!audioContext()) primeAudio();
   const ctx = audioContext();
@@ -99,30 +100,33 @@ async function playAudio(audio: ArrayBuffer, volume: number): Promise<void> {
   if (ctx.state === "suspended") {
     // resume() never settles while a user action is required, so it isn't waited on for long
     await Promise.race([ctx.resume(), new Promise((resolve) => setTimeout(resolve, 300))]);
+    if (signal.aborted) return;
   }
   if (ctx.state !== "running") throw new Error("audio context not running");
   const buffer = await ctx.decodeAudioData(audio.slice(0));
+  if (signal.aborted) return;
   const source = ctx.createBufferSource();
   const gain = ctx.createGain();
   gain.gain.value = volume;
   source.buffer = buffer;
   source.connect(gain);
   gain.connect(ctx.destination);
-  playingSource = source;
   await new Promise<void>((resolve) => {
-    source.onended = () => resolve();
+    const onAbort = () => {
+      try {
+        source.stop();
+      } catch {
+        // Already stopped
+      }
+      resolve();
+    };
+    source.onended = () => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
     source.start();
   });
-  if (playingSource === source) playingSource = undefined;
-}
-
-function stopAudio(): void {
-  try {
-    playingSource?.stop();
-  } catch {
-    // Already stopped
-  }
-  playingSource = undefined;
 }
 
 // In case speechSynthesis never sends end for an utterance, the queue moves on after this long (Claude's own decision)
@@ -155,7 +159,6 @@ const readoutQueue = new ReadoutQueue({
       : Promise.resolve({ ok: false, error: "not-set-up" }),
   playAudio,
   speakSystem,
-  stopAudio,
   stopSystem: () => {
     if (speechAvailable()) speechSynthesis.cancel();
   },
@@ -173,7 +176,8 @@ export type ReadoutTestResult = { ok: true; ms: number } | { ok: false; error: s
 // how long that takes (Claude's own decision)
 const TEST_WAIT_MS = 30_000;
 
-/** Plays a sample through the server at the readout volume, with no fallback. The caller primes the AudioContext
+/** Plays a sample through the server at the readout volume, with no fallback. It has its own abort handle, so it is
+ * not stopped by cancelSpeech() and doesn't stop a readout. The caller primes the AudioContext
  * (primeAudio) in the click, since playback needs a user action */
 export async function testReadoutVoice(config: LocalTtsConfig, sample: string): Promise<ReadoutTestResult> {
   const started = performance.now();
@@ -185,7 +189,7 @@ export async function testReadoutVoice(config: LocalTtsConfig, sample: string): 
     return { ok: false, error: result.error };
   }
   try {
-    await playAudio(result.audio, voiceVolume);
+    await playAudio(result.audio, voiceVolume, new AbortController().signal);
   } catch {
     appLog(`${line} used=none error=audio`);
     return { ok: false, error: "audio" };

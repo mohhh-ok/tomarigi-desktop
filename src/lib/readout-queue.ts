@@ -18,11 +18,11 @@ export interface ReadoutDeps {
   /** The server kind, for the log line */
   serverKind(): TtsKind | undefined;
   synthesize(text: string, lang: string): Promise<SynthesisResult>;
-  /** Resolves when the audio has played (or failed to). Throws when it can't be played at all */
-  playAudio(audio: ArrayBuffer, volume: number): Promise<void>;
+  /** Resolves when the audio has played (or failed to), or at once when `signal` aborts (it must then play nothing, even
+      if it is still waiting to decode). Throws when it can't be played at all */
+  playAudio(audio: ArrayBuffer, volume: number, signal: AbortSignal): Promise<void>;
   /** Resolves when the utterance has been spoken (or failed to) */
   speakSystem(text: string, lang: string, volume: number): Promise<void>;
-  stopAudio(): void;
   stopSystem(): void;
   systemAvailable(): boolean;
   wait(ms: number): Promise<void>;
@@ -50,6 +50,8 @@ export class ReadoutQueue {
   private items: Item[] = [];
   private playing = false;
   private generation = 0;
+  // One per generation; cancel() aborts it, which stops the audio of that generation however far along it is
+  private abort = new AbortController();
 
   constructor(private deps: ReadoutDeps) {}
 
@@ -106,27 +108,30 @@ export class ReadoutQueue {
     if (this.playing) return;
     this.playing = true;
     const generation = this.generation;
+    const signal = this.abort.signal;
     try {
       while (this.items.length > 0 && generation === this.generation) {
         const item = this.items[0];
         const settled = await item.settled;
         if (generation !== this.generation) return;
         this.items.shift();
-        await this.play(item, settled);
+        await this.play(item, settled, signal);
       }
     } finally {
       if (generation === this.generation) this.playing = false;
     }
   }
 
-  private async play(item: Item, settled: Settled): Promise<void> {
+  private async play(item: Item, settled: Settled, signal: AbortSignal): Promise<void> {
     if (settled.use === "none") return;
     if (settled.use === "server") {
       try {
-        await this.deps.playAudio(settled.audio, this.deps.volume());
+        await this.deps.playAudio(settled.audio, this.deps.volume(), signal);
         item.logLine?.("server");
         return;
       } catch {
+        // Cancelled meanwhile: nothing more is read, by any voice
+        if (signal.aborted) return;
         // Couldn't be played (no audio context before the first click, or undecodable): read it with the system voice
         const fallback = this.deps.systemAvailable();
         item.logLine?.(fallback ? "system" : "none", "audio");
@@ -143,7 +148,8 @@ export class ReadoutQueue {
     for (const item of this.items) item.logLine?.("none", "cancelled");
     this.items = [];
     this.playing = false;
-    this.deps.stopAudio();
+    this.abort.abort();
+    this.abort = new AbortController();
     this.deps.stopSystem();
   }
 }
