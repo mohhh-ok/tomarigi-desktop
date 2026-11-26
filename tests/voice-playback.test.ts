@@ -3,7 +3,7 @@
 // (local TTS server)")
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 
-mock.module("@tauri-apps/api/core", () => ({ invoke: async () => {} }));
+mock.module("@tauri-apps/api/core", () => ({ isTauri: () => false, invoke: async () => {} }));
 
 const g = globalThis as Record<string, unknown>;
 g.location = { search: "" };

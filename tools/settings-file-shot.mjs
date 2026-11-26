@@ -79,6 +79,8 @@ try {
             open.onupgradeneeded = () => open.result.createObjectStore("kv");
             open.onsuccess = () => open.result.transaction("kv", "readwrite").objectStore("kv").put("shown", "mcpRemovedNote");
           }
+          // What Tauri sets in the app; lib/kv.ts sends the settings of the file to Rust only then
+          window.isTauri = true;
           window.__TAURI_INTERNALS__ = {
             metadata: { currentWindow: { label }, currentWebview: { windowLabel: label, label } },
             transformCallback: (cb) => {

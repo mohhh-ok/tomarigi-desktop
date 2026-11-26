@@ -3,6 +3,7 @@
 // every other key (the last section shown, notes closed, the event log, turn verdicts, garden positions, caches) is in
 // the "tomarigi" IndexedDB, store "kv" (the windows load the same origin). Every write goes through kvPut / kvDelete,
 // which tell the other windows (lib/settings-sync.ts). Outside the app (the browser mock) everything is in IndexedDB
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { openDB, type IDBPDatabase } from "idb";
 import { notifySettingChanged } from "./settings-sync";
 import { FIELD_OF_STORE_KEY, fromFile, toFile, voiceInfoOf, type FileField, type VoiceInfo } from "./settings-file-fields";
@@ -20,20 +21,11 @@ function db(): Promise<IDBPDatabase> {
   });
 }
 
-function inApp(): boolean {
-  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
-
 type RoutedField = Exclude<FileField, "windowMode">;
 
 function routed(key: string): RoutedField | undefined {
   const field = FIELD_OF_STORE_KEY[key];
-  return field && field !== "windowMode" && inApp() ? field : undefined;
-}
-
-async function invoke<T>(cmd: string, args: Record<string, unknown>): Promise<T> {
-  const core = await import("@tauri-apps/api/core");
-  return core.invoke<T>(cmd, args);
+  return field && field !== "windowMode" && isTauri() ? field : undefined;
 }
 
 /** IndexedDB itself, whatever the key: the settings an earlier version saved there (read once, to make the file) */

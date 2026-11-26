@@ -4,6 +4,7 @@ import { afterEach, describe, expect, mock, test } from "bun:test";
 
 const invoked: { cmd: string; args: unknown }[] = [];
 mock.module("@tauri-apps/api/core", () => ({
+  isTauri: () => false,
   invoke: async (cmd: string, args: unknown) => {
     invoked.push({ cmd, args });
   },

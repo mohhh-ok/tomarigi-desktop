@@ -6,6 +6,7 @@ import type { MessageName } from "./i18n";
 import type { TtsKind } from "./readout-voice";
 import type { TtsVoiceOption } from "./tts-server";
 import { AGENTS } from "./agents";
+import { isRecord } from "./agent-tail";
 import { ICON_SET_IDS, type IconSetId } from "./icon-set-store";
 import { CONCIERGE_LOOKS, type ConciergeLook } from "./concierge";
 import { WINDOW_MODES, type WindowMode } from "./window-mode";
@@ -132,12 +133,11 @@ export function stableJson(value: unknown): string {
 }
 
 const same = (a: unknown, b: unknown) => stableJson(a) === stableJson(b);
-const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : undefined);
 
 
 function serverOf(raw: unknown): FileServer | SettingsProblem {
-  if (!isObject(raw)) return "wrong-type";
+  if (!isRecord(raw)) return "wrong-type";
   if (checkOption(raw.kind, TTS_KINDS)) return "unknown-option";
   const kind = raw.kind as TtsKind;
   const baseUrl = str(raw.baseUrl);
@@ -211,11 +211,11 @@ export async function applyFileDoc(
       case "conciergeLook":
         return optionText(field, v);
       case "iconSets":
-        return listText(Object.values(isObject(v) ? (v as Record<string, { set: IconSetId; label: string }>) : {}).map((e) => `${e.label}: ${iconSetText(e)}`));
+        return listText(Object.values(isRecord(v) ? (v as Record<string, { set: IconSetId; label: string }>) : {}).map((e) => `${e.label}: ${iconSetText(e)}`));
       case "watchedFolders":
         return listText((Array.isArray(v) ? (v as FileFolder[]) : []).map(folderText));
       case "defaultFolderLabels":
-        return listText(Object.entries(isObject(v) ? (v as Record<string, string>) : {}).map(([a, l]) => `${agentLabel(a)}: ${l}`));
+        return listText(Object.entries(isRecord(v) ? (v as Record<string, string>) : {}).map(([a, l]) => `${agentLabel(a)}: ${l}`));
     }
   };
 
@@ -256,7 +256,7 @@ export async function applyFileDoc(
         break;
       }
       case "readoutVoice": {
-        if (!isObject(raw)) {
+        if (!isRecord(raw)) {
           refuse("wrong-type");
           break;
         }
@@ -306,7 +306,7 @@ export async function applyFileDoc(
           accept(null, [{ setting: name, from: (applied.localAi as { model?: string } | null)?.model ?? notSet, to: notSet }]);
           break;
         }
-        if (!isObject(raw) || str(raw.baseUrl) === undefined || str(raw.model) === undefined) {
+        if (!isRecord(raw) || str(raw.baseUrl) === undefined || str(raw.model) === undefined) {
           refuse("wrong-type");
           break;
         }
@@ -325,7 +325,7 @@ export async function applyFileDoc(
         }
         const problem =
           checkOption(raw, PROVIDERS) ??
-          checkProviderChoice(raw as (typeof PROVIDERS)[number], { ...deps.keySaved, local: isObject(next.localAi) });
+          checkProviderChoice(raw as (typeof PROVIDERS)[number], { ...deps.keySaved, local: isRecord(next.localAi) });
         if (problem) refuse(problem);
         else accept(raw, [{ setting: name, from: providerName(applied.summaryProvider), to: providerName(raw) }]);
         break;
@@ -339,16 +339,16 @@ export async function applyFileDoc(
         break;
       }
       case "iconSets": {
-        if (!isObject(raw)) {
+        if (!isRecord(raw)) {
           refuse("wrong-type");
           break;
         }
-        const before = (isObject(applied.iconSets) ? applied.iconSets : {}) as Record<string, { set: IconSetId; label: string }>;
+        const before = (isRecord(applied.iconSets) ? applied.iconSets : {}) as Record<string, { set: IconSetId; label: string }>;
         const value: Record<string, { set: IconSetId; label: string }> = {};
         const changes: FileChange[] = [];
         for (const [slug, entry] of Object.entries(raw)) {
-          const label = isObject(entry) ? str(entry.label) : undefined;
-          const problem = !isObject(entry) || label === undefined ? "wrong-type" : checkOption(entry.set, ICON_SET_IDS);
+          const label = isRecord(entry) ? str(entry.label) : undefined;
+          const problem = !isRecord(entry) || label === undefined ? "wrong-type" : checkOption(entry.set, ICON_SET_IDS);
           if (problem) {
             refuse(problem, { name: label || slug, key: `${field}.${slug}`, value: entry, previous: iconSetText(before[slug]) });
             if (before[slug]) value[slug] = before[slug];
@@ -377,9 +377,9 @@ export async function applyFileDoc(
         const taken: { path: string }[] = deps.defaultRootPaths.map((path) => ({ path }));
         const changes: FileChange[] = [];
         for (const [index, entry] of raw.entries()) {
-          const path = isObject(entry) ? str(entry.path) : undefined;
-          const label = isObject(entry) ? str(entry.label) : undefined;
-          const id = isObject(entry) && path !== undefined ? folderIdOf({ id: str(entry.id), path }) : undefined;
+          const path = isRecord(entry) ? str(entry.path) : undefined;
+          const label = isRecord(entry) ? str(entry.label) : undefined;
+          const id = isRecord(entry) && path !== undefined ? folderIdOf({ id: str(entry.id), path }) : undefined;
           const old = id ? beforeById.get(id) : undefined;
           const keep = () => {
             if (!old) return;
@@ -388,7 +388,7 @@ export async function applyFileDoc(
           };
           const refuseEntry = (problem: SettingsProblem) =>
             refuse(problem, { name: label || path || "?", key: `${field}[${index}]`, value: entry, previous: old ? folderText(old) : notSet });
-          if (!isObject(entry) || path === undefined || label === undefined || id === undefined) {
+          if (!isRecord(entry) || path === undefined || label === undefined || id === undefined) {
             refuseEntry("wrong-type");
             keep();
             continue;
@@ -418,11 +418,11 @@ export async function applyFileDoc(
         break;
       }
       case "defaultFolderLabels": {
-        if (!isObject(raw)) {
+        if (!isRecord(raw)) {
           refuse("wrong-type");
           break;
         }
-        const before = (isObject(applied.defaultFolderLabels) ? applied.defaultFolderLabels : {}) as Record<string, string>;
+        const before = (isRecord(applied.defaultFolderLabels) ? applied.defaultFolderLabels : {}) as Record<string, string>;
         const value: Record<string, string> = {};
         const changes: FileChange[] = [];
         for (const [agent, label] of Object.entries(raw)) {

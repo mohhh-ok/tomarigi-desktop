@@ -4,6 +4,7 @@ import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
 
 const invoked: { cmd: string; args: Record<string, unknown> }[] = [];
 mock.module("@tauri-apps/api/core", () => ({
+  isTauri: () => false,
   invoke: async (cmd: string, args: Record<string, unknown>) => {
     invoked.push({ cmd, args });
     // The server is down: every utterance falls back to the system voice

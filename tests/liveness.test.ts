@@ -62,6 +62,7 @@ const sideChatRecords = new Map<string, boolean>();
 const sideChatAsks: string[][] = [];
 
 mock.module("@tauri-apps/api/core", () => ({
+  isTauri: () => false,
   invoke: async (cmd: string, args: Record<string, never>) => {
     switch (cmd) {
       case "fs_list":

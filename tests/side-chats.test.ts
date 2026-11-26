@@ -2,7 +2,7 @@
 // forked sessions of the Claude desktop app"); the listing that drops them is tested in tests/liveness.test.ts
 import { describe, expect, mock, test } from "bun:test";
 
-mock.module("@tauri-apps/api/core", () => ({ invoke: async () => ({ answers: [], reliable: true }) }));
+mock.module("@tauri-apps/api/core", () => ({ isTauri: () => false, invoke: async () => ({ answers: [], reliable: true }) }));
 const { hostIdsToAsk, isSideChat, forgetSideChats, hostIdOfTranscript } = await import("../src/lib/side-chats.ts");
 const { sessionEventCache } = await import("../src/lib/session-store.ts");
 import type { LiveSession, SessionEvent } from "../src/lib/session-types.ts";
