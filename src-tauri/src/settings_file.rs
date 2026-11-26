@@ -40,6 +40,9 @@ const SCHEMA_TEXT: &str = include_str!("../settings-file/settings.schema.json");
 /// How often the worker looks at the file and writes pending saves: an edit is seen within this, and a dragged slider
 /// writes at most 4 times a second
 const TICK: Duration = Duration::from_millis(250);
+/// After a write fails (another program holding the file open on Windows, permissions, a full disk), the next try waits
+/// this long, so a failure that lasts doesn't write, log and keep a copy 4 times a second
+const RETRY: Duration = Duration::from_secs(5);
 
 #[derive(Clone, Debug)]
 pub(crate) struct Paths {
@@ -91,6 +94,21 @@ pub(crate) enum Event {
     Unreadable { line: usize, column: usize },
     InvalidKept,
     Rewritten,
+    /// The first failed write of a run of failures (the next ones aren't logged)
+    WriteFailed,
+    /// The first write that worked after a failure
+    WroteAgain,
+}
+
+impl Event {
+    /// The log line of an event that only goes to the log
+    fn log_line(&self) -> Option<&'static str> {
+        match self {
+            Event::WriteFailed => Some("[settings-file] couldn't write the file"),
+            Event::WroteAgain => Some("[settings-file] wrote again after a failure"),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Default)]
@@ -104,6 +122,12 @@ pub(crate) struct State {
     last_meta: Option<(SystemTime, u64)>,
     last_write: Option<Instant>,
     wrote: bool,
+    /// When the last write failed, while writes keep failing
+    failed_at: Option<Instant>,
+    /// The unreadable text already copied to settings.invalid.json, so a write failing again doesn't copy it again
+    kept_invalid: Option<String>,
+    #[cfg(test)]
+    tries: u32,
     /// The page has loaded the file once (settings_file_fill); before that the worker leaves the file alone
     pub ready: bool,
 }
@@ -223,9 +247,13 @@ impl State {
         if !self.ready {
             return events;
         }
-        let changed = self.look(paths, &mut events);
-        if !changed && !self.dirty.is_empty() && self.last_write.is_none_or(|t| now.duration_since(t) >= TICK) {
-            self.write_dirty(paths, &mut events);
+        let waits = self.look(paths, now, &mut events);
+        if !waits
+            && !self.dirty.is_empty()
+            && self.last_write.is_none_or(|t| now.duration_since(t) >= TICK)
+            && self.may_write(now)
+        {
+            self.write_dirty(paths, now, &mut events);
         }
         if std::mem::take(&mut self.wrote) {
             self.last_write = Some(now);
@@ -238,15 +266,20 @@ impl State {
         events
     }
 
-    /// Returns true when the file was edited by someone else (the write then waits for the next tick)
-    fn look(&mut self, paths: &Paths, events: &mut Vec<Event>) -> bool {
+    fn may_write(&self, now: Instant) -> bool {
+        self.failed_at.is_none_or(|t| now.duration_since(t) >= RETRY)
+    }
+
+    /// Returns true when the write of this tick waits: the file was edited by someone else (taken first), or a write
+    /// was tried already (one try a tick)
+    fn look(&mut self, paths: &Paths, now: Instant, events: &mut Vec<Event>) -> bool {
         let meta = meta_of(&paths.settings);
         if meta.is_none() {
-            if !self.applied.is_empty() {
+            if !self.applied.is_empty() && self.may_write(now) {
                 // Written before and gone now: deleted. Never written: the first file, made from the applied values
                 let deleted = self.last_text.is_some();
-                if !self.write_doc(paths, self.applied.clone()) {
-                    return false;
+                if !self.write_doc(paths, self.applied.clone(), now, events) {
+                    return true;
                 }
                 self.dirty.clear();
                 if deleted {
@@ -274,7 +307,7 @@ impl State {
         true
     }
 
-    fn write_dirty(&mut self, paths: &Paths, events: &mut Vec<Event>) {
+    fn write_dirty(&mut self, paths: &Paths, now: Instant, events: &mut Vec<Event>) {
         let disk = std::fs::read_to_string(&paths.settings).ok();
         if disk.is_some() && disk != self.last_text {
             // Changed since the worker last looked: the next tick takes it as an edit first
@@ -284,8 +317,11 @@ impl State {
         let mut doc = match disk.as_deref().map(parse) {
             Some(Ok(doc)) => doc,
             Some(Err(_)) => {
-                let _ = write_atomic(&paths.invalid.with_extension("json.tmp"), &paths.invalid, disk.as_deref().unwrap_or(""));
-                events.push(Event::InvalidKept);
+                if self.kept_invalid != disk {
+                    let _ = write_atomic(&paths.invalid.with_extension("json.tmp"), &paths.invalid, disk.as_deref().unwrap_or(""));
+                    events.push(Event::InvalidKept);
+                    self.kept_invalid = disk.clone();
+                }
                 self.applied.clone()
             }
             None => self.applied.clone(),
@@ -297,24 +333,35 @@ impl State {
                 None => doc.remove(key),
             };
         }
-        if !self.write_doc(paths, doc) {
-            // Written again at the next tick, with any saves made in between
+        if !self.write_doc(paths, doc, now, events) {
+            // Written again at a later try (RETRY), with any saves made in between
             self.dirty.extend(keys);
         }
     }
 
-    fn write_doc(&mut self, paths: &Paths, mut doc: Map<String, Value>) -> bool {
+    fn write_doc(&mut self, paths: &Paths, mut doc: Map<String, Value>, now: Instant, events: &mut Vec<Event>) -> bool {
         doc.insert("$schema".into(), Value::String(SCHEMA_REF.into()));
         let text = pretty(&doc);
+        #[cfg(test)]
+        {
+            self.tries += 1;
+        }
         if write_atomic(&paths.tmp, &paths.settings, &text).is_ok() {
             self.last_meta = meta_of(&paths.settings);
             self.last_text = Some(text);
             self.wrote = true;
+            self.kept_invalid = None;
+            if self.failed_at.take().is_some() {
+                events.push(Event::WroteAgain);
+            }
             #[cfg(debug_assertions)]
             append_log("[settings-file] wrote");
             true
         } else {
-            append_log("[settings-file] couldn't write the file");
+            if self.failed_at.is_none() {
+                events.push(Event::WriteFailed);
+            }
+            self.failed_at = Some(now);
             false
         }
     }
@@ -399,17 +446,23 @@ fn start_worker(app: AppHandle) {
                     let _ = app.emit_to("main", "settings-file-invalid-kept", ());
                 }
                 Event::Rewritten => append_log("[settings-file] rewritten (the file was deleted)"),
+                Event::WriteFailed | Event::WroteAgain => {
+                    if let Some(line) = event.log_line() {
+                        append_log(line);
+                    }
+                }
             }
         }
     });
 }
 
-/// Pending saves are written at once when the app quits
+/// Pending saves are written at once when the app quits, even while a failed write waits for its retry
 pub(crate) fn flush() {
     with(|s| {
         if !s.state.dirty.is_empty() {
             let mut events = Vec::new();
-            s.state.write_dirty(&s.paths, &mut events);
+            s.state.write_dirty(&s.paths, Instant::now(), &mut events);
+            events.iter().filter_map(Event::log_line).for_each(append_log);
         }
     });
 }
@@ -654,7 +707,7 @@ mod tests {
         std::fs::write(&paths.settings, r#"{"chirps": true, "readAloud": true}"#).unwrap();
         s.last_meta = meta_of(&paths.settings);
         let mut events = Vec::new();
-        s.write_dirty(&paths, &mut events);
+        s.write_dirty(&paths, Instant::now(), &mut events);
         assert_eq!(disk(&paths)["readAloud"], json!(true));
         let events = s.tick(&paths, Instant::now() + TICK);
         let before = obj(json!({"$schema": SCHEMA_REF, "chirps": true, "readAloud": false}));
@@ -682,8 +735,19 @@ mod tests {
         assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": false, "readAloud": true}));
     }
 
+    /// Ticks every 250 ms over `span` after `from`, gathering the events
+    fn ticks(s: &mut State, paths: &Paths, from: Instant, span: Duration) -> Vec<Event> {
+        let mut events = Vec::new();
+        let mut t = TICK;
+        while t <= span {
+            events.extend(s.tick(paths, from + t));
+            t += TICK;
+        }
+        events
+    }
+
     #[test]
-    fn a_save_that_couldnt_be_written_is_written_at_the_next_tick() {
+    fn a_save_that_couldnt_be_written_is_tried_again_every_5_seconds_and_logged_once() {
         let paths = temp_paths("write-fails");
         let mut s = ready(json!({"chirps": true}));
         s.dirty.insert("chirps".into());
@@ -692,13 +756,61 @@ mod tests {
         s.set("chirps", json!(false));
         // A folder where the temporary file goes makes the write fail
         std::fs::create_dir(&paths.tmp).unwrap();
-        s.tick(&paths, start + TICK);
+        s.tries = 0;
+        let events = ticks(&mut s, &paths, start, RETRY * 2);
+        // Tried at 250 ms and 5.25 s; the next try would be at 10.25 s
+        assert_eq!(s.tries, 2);
+        assert_eq!(events, vec![Event::WriteFailed]);
         assert_eq!(disk(&paths)["chirps"], json!(true));
         assert!(s.dirty.contains("chirps"));
         std::fs::remove_dir(&paths.tmp).unwrap();
-        s.tick(&paths, start + TICK * 2);
+        let events = ticks(&mut s, &paths, start + RETRY * 2, RETRY);
+        assert_eq!(events, vec![Event::WroteAgain]);
         assert_eq!(disk(&paths)["chirps"], json!(false));
         assert!(s.dirty.is_empty());
+        // Back to the 250 ms spacing once a write works
+        s.set("chirps", json!(true));
+        let after = start + RETRY * 3 + TICK;
+        assert!(s.tick(&paths, after).is_empty());
+        assert_eq!(disk(&paths)["chirps"], json!(true));
+    }
+
+    #[test]
+    fn an_unreadable_file_that_cant_be_written_is_kept_and_noted_once() {
+        let paths = temp_paths("invalid-write-fails");
+        let text = "{\n  \"chirps\": x\n}";
+        std::fs::write(&paths.settings, text).unwrap();
+        let mut s = State { applied: obj(json!({"chirps": true})), ..State::default() };
+        assert!(matches!(s.read(&paths), Read::Unreadable { .. }));
+        s.fill(&paths, Map::new());
+        s.set("chirps", json!(false));
+        std::fs::create_dir(&paths.tmp).unwrap();
+        let start = Instant::now();
+        let events = ticks(&mut s, &paths, start, RETRY * 3);
+        assert_eq!(events, vec![Event::InvalidKept, Event::WriteFailed]);
+        assert_eq!(std::fs::read_to_string(&paths.settings).unwrap(), text);
+        std::fs::remove_dir(&paths.tmp).unwrap();
+        let events = ticks(&mut s, &paths, start + RETRY * 3, RETRY);
+        assert_eq!(events, vec![Event::WroteAgain]);
+        assert_eq!(std::fs::read_to_string(&paths.invalid).unwrap(), text);
+        assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": false}));
+    }
+
+    #[test]
+    fn a_missing_file_that_cant_be_written_is_tried_once_a_tick_at_most() {
+        let paths = temp_paths("missing-write-fails");
+        let mut s = ready(json!({"chirps": true}));
+        s.dirty.insert("chirps".into());
+        std::fs::create_dir(&paths.tmp).unwrap();
+        let start = Instant::now();
+        assert_eq!(s.tick(&paths, start), vec![Event::WriteFailed]);
+        assert_eq!(s.tries, 1);
+        let events = ticks(&mut s, &paths, start, RETRY - TICK);
+        assert!(events.is_empty());
+        assert_eq!(s.tries, 1);
+        std::fs::remove_dir(&paths.tmp).unwrap();
+        assert_eq!(s.tick(&paths, start + RETRY), vec![Event::WroteAgain]);
+        assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": true}));
     }
 
     #[test]
@@ -710,10 +822,10 @@ mod tests {
         s.set("chirps", json!(false));
         std::fs::create_dir(&paths.tmp).unwrap();
         let mut events = Vec::new();
-        s.write_dirty(&paths, &mut events);
+        s.write_dirty(&paths, Instant::now(), &mut events);
         assert!(s.dirty.contains("chirps"));
         std::fs::remove_dir(&paths.tmp).unwrap();
-        s.write_dirty(&paths, &mut events);
+        s.write_dirty(&paths, Instant::now(), &mut events);
         assert_eq!(disk(&paths)["chirps"], json!(false));
     }
 
