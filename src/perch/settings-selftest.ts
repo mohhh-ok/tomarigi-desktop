@@ -35,6 +35,15 @@ export async function runSettingsSelfTest(): Promise<void> {
   const steps: [string, () => Promise<boolean>][] = [
     ["sound: toggle notify with sound", async () => (await nav(0), click(".voice-controls input[type=checkbox]"))],
     ["sound: chirp volume 40", async () => slide(".voice-controls .volume-slider", 40)],
+    // 1,000 saves in quick succession, as a long drag gives: the settings file is written at most once a tick
+    ["sound: drag chirp volume 1000 times", async () => {
+      let found = true;
+      for (let i = 0; i < 1000; i++) {
+        found = slide(".voice-controls .volume-slider", 1 + (i % 99)) && found;
+        await wait(10);
+      }
+      return found && slide(".voice-controls .volume-slider", 40);
+    }],
     ["sound: toggle read aloud", async () => click(".voice-controls input[type=checkbox]", 1)],
     ["sound: readout voice system", async () => click(".readout-voice input[type=radio]:not(:checked)")],
     ["concierge: other look", async () => (await nav(2), click(".concierge-look input:not(:checked)"))],
