@@ -68,6 +68,8 @@ Claude のデスクトップアプリ: デスクトップアプリの Code タ�
 
 ビルドなど開発の手順は [README.md](README.md)（英語）にあります。
 
+秘密情報は commit の前（`.githooks/pre-commit`）と CI（`.github/workflows/gitleaks.yml`）で gitleaks が検査します。入れ方は `brew install gitleaks` で、`bun install` が `core.hooksPath` を `.githooks` に設定します。
+
 ## ライセンス
 
 MIT（LICENSE を参照）。キャラクター画像（`src/assets/`）は OpenAI の gpt-image で生成したもので、同じ MIT ライセンスで配布しています。

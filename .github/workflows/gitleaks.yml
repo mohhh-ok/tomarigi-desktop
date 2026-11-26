@@ -1,0 +1,24 @@
+name: gitleaks
+
+on:
+  push:
+  pull_request:
+
+# checkout は contents: read、PR の commit の一覧と行コメントは pull-requests: write が要る。
+# push のときの action は GET /users/{username} しか呼ばない
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # action の既定は古い版 (8.24.3) で、手元 (.githooks/pre-commit) と検出のルールがずれるため合わせる
+          GITLEAKS_VERSION: 8.30.1

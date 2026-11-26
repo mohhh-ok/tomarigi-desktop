@@ -70,6 +70,8 @@ Earlier versions let an agent change settings through an MCP server; it was remo
 
 The design spec lives in docs/design.md.
 
+Secrets are scanned with gitleaks before each commit (`.githooks/pre-commit`) and in CI (`.github/workflows/gitleaks.yml`). Install it with `brew install gitleaks`; `bun install` sets `core.hooksPath` to `.githooks`.
+
 ### Build
 
 ```sh
