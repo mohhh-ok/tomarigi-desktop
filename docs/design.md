@@ -706,6 +706,117 @@ Pass/fail:
 - Out of scope: settings that aren't on the settings screen (debug, mock, updates), a file format other than JSON, a CLI
 - The implementing session updates the other sections that mention MCP or IndexedDB as the settings' store ("Settings window", the README's environment variables and checks) in the same work
 
+### Detailed design
+
+Written by the implementing session; Claude's own decisions unless said otherwise.
+
+(a) The file's shape. Top-level keys are flat, one per setting, camelCase, so an agent changes one key without reading a nested structure. Pretty-printed with 2 spaces; keys sorted (serde_json's map), which puts `$schema` first:
+
+```json
+{
+  "$schema": "./settings.schema.json",
+  "chirpVolume": 100,
+  "chirps": true,
+  "conciergeLook": "owl",
+  "defaultFolderLabels": { "claude": "Claude Code" },
+  "iconSets": { "-Users-me-Dev-app": { "label": "app", "set": "cat" } },
+  "localAi": { "baseUrl": "http://localhost:11434/v1", "model": "qwen3:8b" },
+  "readAloud": false,
+  "readAloudVolume": 100,
+  "readoutVoice": { "server": { "baseUrl": "http://localhost:50021", "kind": "voicevox", "voice": "2" }, "source": "local" },
+  "summaryProvider": "local",
+  "watchedFolders": [{ "agent": "codex", "id": "6f1c…", "label": "Codex work", "path": "/Users/me/.codex-work" }],
+  "windowMode": "floating"
+}
+```
+
+| File key | Value | Store key it stands for (today's IndexedDB key) | Check (lib/settings-checks.ts, the screen's functions) |
+|---|---|---|---|
+| `chirps` | boolean | `muted` (inverted) | boolean |
+| `chirpVolume` | integer 0–100 (percent, as the slider) | `chirpVolume` (0–1) | `checkVolume` |
+| `readAloud` | boolean | `voiceEnabled` | boolean |
+| `readAloudVolume` | integer 0–100 | `voiceVolume` (0–1) | `checkVolume` |
+| `readoutVoice` | `{ source: "system" \| "local", server?: { kind: "voicevox" \| "openai", baseUrl, voice, model? } }` | `readoutVoice` | `checkOption`, `checkLocalTts`, `checkVoiceInList` against the server's list when it can be read |
+| `summaryProvider` | `"anthropic" \| "openai" \| "local"` or `null` | `aiProvider` | `checkOption`, `checkProviderChoice` |
+| `localAi` | `{ baseUrl, model }` or `null` | `localAi` | `checkLocalAi` |
+| `windowMode` | `"floating" \| "normal"` | Rust's `window-mode.json` | `checkOption` |
+| `conciergeLook` | `"owl" \| "penguin"` | `conciergeLook` | `checkOption` |
+| `iconSets` | `{ <project key>: { set, label } }` | `projectIconSets` | `checkOption` per entry; `birds` (the default) drops the entry, as on the screen |
+| `watchedFolders` | `[{ agent, path, label, id? }]`, the folders the user added | `roots` | `checkOption` (agent), `checkTypedRootPath`, `checkNewRoot`, readable, `checkRootLabel`, per entry |
+| `defaultFolderLabels` | `{ <agent>: label }`, the labels of the default folders | `defaultRootLabels` | `checkOption` (agent), `checkRootLabel` |
+
+- `watchedFolders[].id` is the folder's id, which session ids start with (lib/agents.ts), so it stays across launches. The app writes it; an entry an agent adds without one gets `path:<pathKey(path)>`, the same on every launch without writing it back. An entry is matched to the current folders by `id`, else by `samePath`
+- The readout voice's label, speaker name and VOICEVOX credit are not in the file (an agent would leave them stale). They are looked up from the server when a server, kind or voice is applied (`GET /speakers` and the engine manifest, as the screen's card does) and kept in IndexedDB under `readoutVoiceInfo`, keyed by kind, base URL and voice: a cache, not a setting. A miss at launch (the file was edited while the app was closed) is looked up in the background; until then the voice shows by its id and no credit
+- A top-level key left out keeps its value (deleting a key is not a reset, as deleting the file isn't). `localAi: null` removes Local AI as the screen's Delete does
+- Applied in the order of the table except `localAi` before `summaryProvider`, so a file that sets up Local AI and chooses it in one save passes `checkProviderChoice`
+
+(b) Who does what.
+- Rust `src-tauri/src/settings_file.rs` owns the files: the paths, the applied values (the last values that passed, file-shaped), writing, and noticing edits. It never checks a setting's meaning; the checks stay in the page's functions (one function for the screen and the file)
+- The floating window's page (the owner, as for every setting) checks an edit (`src/lib/settings-file.ts`, pure functions with unit tests: the table above, the conversions both ways, `applyFileDoc(doc, applied, deps)` → accepted / refused / ignored / API-key fields / the change lines for the note) and runs it (`src/perch/use-settings-file.ts`: the startup, the listeners, the notes, this launch's list, the `[settings-file]` log lines)
+- `lib/kv.ts` routes the store keys of the table to Rust and keeps every other key in IndexedDB (window size and place are Rust's, the last section, the event log, turn verdicts, garden positions, notes closed): `kvGet(key)` → `settings_get(field)` and the conversion; `kvPut` → `settings_set(field, value)`; `notifySettingChanged` as now. So `settings-store.ts`, `api-keys.ts`, `readout-voice.ts`, `icon-set-store.ts` and every caller keep their functions. Outside the app (the browser mock, no Tauri) the keys stay in IndexedDB
+- Commands (the app's own windows only, through Tauri's invoke; nothing outside the app can call them): `settings_file_open`, `settings_file_init(doc)`, `settings_get(field)`, `settings_set(field, value)`, `settings_accept(field, value)`, `settings_file_paths`
+
+(c) Paths. From the identifier: `net.mohtech.tomarigi-desktop` → `~/.tomarigi/`; `….dev` → `~/.tomarigi/dev/`; `….verify` → `~/.tomarigi/verify/`; any other suffix → `~/.tomarigi/<suffix>/`. Debug builds only: `TOMARIGI_SETTINGS_FILE=<path>` puts `settings.json` at that path, with the other files beside it. The folder is made with 0700 and the files with 0600 on macOS / Linux, as the log (folder paths and server URLs are the user's)
+
+(d) Launch.
+1. Rust (setup, before the window): resolves the paths; writes `README.md` and `settings.schema.json` from the text built in with `include_str!` (`src-tauri/settings-file/README.md`, `settings.schema.json`), filling in only the paths and the version; deletes the MCP token from the OS store (every launch; nothing when it's gone); reads `settings.json`; reads the last applied values from `settings-applied.json` in the app's config folder (below); takes `windowMode` from the file if it is one of the two, else from the applied values, else from `window-mode.json` (the version before), else floating
+2. The owner page, before loading the folders and the settings (App.tsx's startup load), calls `settings_file_open` → `missing` / `ok` / `unreadable` with the file's values or the line and column
+3. `missing` with no applied values: the first launch of this version. The page reads the table's keys from IndexedDB (they are left there), builds the file with `fileDocFromStore`, and `settings_file_init` writes it. If `agentAccess.enabled` was true in IndexedDB, `mcpRemovedNote` is set to `shown` in IndexedDB. Log `[settings-file] created from the earlier settings`
+4. `missing` with applied values (deleted while the app was closed): written from the applied values
+5. `ok`: `applyFileDoc` against the applied values; a key that differs is checked and, when it passes, applied without a note; a refused one keeps the applied value and gets a note and a log line. Keys the app doesn't know get one note per launch
+6. `unreadable`: nothing is applied, the applied values are used, and the note says the line and column
+
+`settings-applied.json` (in the app's config folder beside `window-mode.json`, not where users and agents look) holds the values that passed, so that "the previous value stays" also holds across a launch: an edit made while the app was closed that fails, or a file broken at launch, falls back to the values of the last run, not to the defaults. It is replaced in place with the file, at most a few times a second. This is a second file beside the four the basic design lists; it is a copy, read only for the fallback, never by agents (the file is the source of truth; the copy is what was taken from it)
+
+(e) While the app runs.
+- Rust's worker thread wakes every 250 ms: (1) a `stat` of `settings.json`; when the modified time or size changed, it reads the text; text equal to what the app wrote last is its own write and is skipped. Otherwise: not valid JSON → log `[settings-file] unreadable <line>:<column>` (serde_json's) and emit `settings-file-unreadable` to the owner; valid → emit `settings-file-edited` with the values. A missing file is written again from the applied values (log `[settings-file] rewritten (the file was deleted)`). Polling instead of OS file events (no new dependency; editors that save by rename and network home folders behave the same; one `stat` per 250 ms). So an edit is seen within 250 ms and applied well within 1 second
+- (2) Writes: `settings_set` (a save from the screen, the menu bar, the mute button) puts the value in the applied values and marks the key dirty; the worker writes dirty keys at most every 250 ms (a dragged slider writes at most 4 times a second; the last value is always written). A write reads the file first: valid → only the dirty keys are replaced, so a refused value or a key the app doesn't know in other keys stays as the user wrote it; not valid → the text is copied to `settings.invalid.json` (replaced), the file is written from the applied values, and `settings-file-invalid-kept` is emitted for the note. If the file changed since the worker last looked, step (1) runs first and the write waits for the next tick, so an edit and a save at the same moment don't lose the edit. Written as `settings.json.tmp` then renamed over (rename replaces on Windows too). On exit (`RunEvent::Exit`) dirty keys are written at once
+- The owner, on `settings-file-edited`: `applyFileDoc`; for each accepted key `settings_accept(field, value)` (applied values only; the file is not written, so the user's text stays as it is) and `notifySettingChanged(storeKey)` with `from: "settings-file"`, so every window, the owner included, reloads it as it reloads another window's save; `windowMode` goes to `set_window_mode`'s switch without writing the file. Then the note: title 「設定ファイルから変更」, one line per change 「<setting>: <from> → <to>」 (the describers of the agent tools, moved), and one line per refused value 「<setting>: <reason>（前の値のまま）」; 6 seconds, ×, stacked (the agent note's component, renamed). Each goes into this launch's list (the last 10) and the log: `[settings-file] applied <file key>` / `[settings-file] refused <file key>: <English reason>`; URLs and voice names may be in the line, never a key. A key whose name looks like a secret (`apiKey`, `*Key`, `*Token`, `*Secret`, any case) is never read; the note says API keys go on the settings screen
+- Every refused reason is said in the UI language: the messages that were English for the agent alone (`path-not-absolute`, `network-path`, `not-readable`, `label-empty`, `builtin`, `unknown-option`, `volume-range`, `no-key`, `local-not-set-up`) get locale keys; the log uses the English text. `server-not-local` and `checkAgentServerUrl` are removed
+
+(f) README.md and the schema. Fixed text in `src-tauri/settings-file/`, written by Rust with `{{SETTINGS}}`, `{{SCHEMA}}`, `{{LOG}}`, `{{VERSION}}` replaced, nothing from the page. The README's first line says the app rewrites it at every launch. A unit test (vitest) reads the schema and checks that its keys are the table's and that its enums equal `AGENTS`, `ICON_SET_IDS`, `CONCIERGE_LOOKS`, `WINDOW_MODES`, the TTS kinds and the providers, so the text can't drift from the code. Contents of the README: what the file is; edit one key, save, and the app applies it within a second with a note (it must be running, else at the next launch); left-out keys keep their values; the voice and model lists (`curl <baseUrl>/speakers` for VOICEVOX, `curl <baseUrl>/v1/models` or `<baseUrl>/models` for OpenAI-compatible bases that end in `/v1`); where the result is: `grep '\[settings-file\]' <log>` (the last lines say applied / refused with the reason); API keys aren't in the file; don't touch `id`
+
+(g) The "Settings file" section (replaces "AI agent", `agent` → `settingsFile` in `settings-sections.ts`; a saved `agent` section opens `settingsFile`). Top to bottom: one line on what the file is; the path (`~/.tomarigi/settings.json` shown with `~`) with a copy button; "Show in Finder" / "Show in Explorer" / "Show in file manager" (`revealItemInDir` of the opener plugin, capability `opener:allow-reveal-item-in-dir`); "Copy instructions for an agent", copying 「Tomarigi の設定を変えて: 〇〇。やり方は ~/.tomarigi/README.md」 (the build's folder; `〇〇` is where the user writes what they want, said in the line under the button); "Changes from the file in this launch" with the time, the change or the refused reason (the last 10, the floating window's list sent with the settings runtime as the agent list was); the MCP removal note (below)
+
+(h) MCP removed. Deleted: `src-tauri/src/mcp.rs`, its commands, `mcp_token` / `renew_mcp_token` / the stdin import in `keys.rs` (one `delete_mcp_token` kept for (d)1), `agent_access_import`; the crates only it used (`rmcp`, `hyper`, `hyper-util`, `http-body-util`, `tokio-util`, `tower-service`, `getrandom` if nothing else uses it; `tokio` stays if `tauri::async_runtime` users need it, checked by building); `src/lib/agent-tools.ts` (its describers move to `settings-file.ts`); `src/perch/use-agent-access.ts`, `agent-command.ts`, `server-switch.ts` if nothing else uses it, `settings/agent-access-settings.tsx`; `scripts/locales/agent-access.mjs` (replaced by `settings-file.mjs`, every locale); `tools/mcp-call.sh`, `tools/agent-access-shot.mjs` (replaced by a shot of the new section); `TOMARIGI_AGENT_ACCESS`. The note: when `mcpRemovedNote` is `shown`, the section shows 「AI エージェントに設定を変えさせる機能（MCP）はなくなりました。設定は設定ファイルで変えます」, one line why (「アプリの中から AI エージェントへ指示を送れる経路をなくすためです」), `claude mcp remove --scope user tomarigi` with a copy button, and ×; × sets it to `closed`. The floating window doesn't show it (the section is where the MCP card was)
+
+(i) Other sections changed in the same work: "Settings window" (the store is the settings file through Rust; the startup imports lose `TOMARIGI_AGENT_ACCESS`; the MCP calls leave "one owner"; the agent's tools in the list of who saves become "an edit of the settings file"), "BYOK API keys" and "Readout voice" where they say IndexedDB holds Local AI and the voice, README and README.ja "AI agent" → "Settings file" and the environment variables (`TOMARIGI_SETTINGS_FILE` in, `TOMARIGI_AGENT_ACCESS` out), tools/README.md
+
+Requirement → where it is met:
+
+| Requirement / basic design | Where |
+|---|---|
+| Updating keeps every setting; the file holds them | (d)3 `fileDocFromStore` from IndexedDB; window mode from `window-mode.json` (d)1 |
+| MCP note once, why, the remove command, until closed | (h) `mcpRemovedNote` |
+| Never editing the file: the screen as before, the file follows | (b) kv routing; (e)(2) writes |
+| Agent: copy a short instruction, paste, the app changes with a note | (g), (f) README, (e) |
+| Editors complete from `$schema` | (a) `$schema`, (f) schema |
+| Every screen setting except API keys | (a) table; secret-looking keys (e) |
+| Pretty JSON, no comments, `$schema` | (a) |
+| Applied within 1 s with the note; settings window follows; closed-app edits at launch without a note | (e)(1) 250 ms poll, `notifySettingChanged`; (d)5 |
+| Same check as the screen; refused keeps the previous value, others applied, reason in note / section / log, file not rewritten | (a) table, (e) `settings_accept` doesn't write; (e)(2) only dirty keys replaced; (d) `settings-applied.json` |
+| Any host for server URLs | `checkAgentServerUrl` removed (e) |
+| Invalid JSON: nothing applied, line and column; a screen save keeps the text in `settings.invalid.json` with a note | (e)(1), (e)(2) |
+| Unknown keys kept and reported once per launch; API keys never read | (e)(2) only dirty keys replaced; (d)5; (e) secret-looking keys |
+| Deleted file written again; no file at launch written | (e)(1), (d)3–4 |
+| App's own writes give no note; slider ≤ a few writes a second | (e)(1) own text skipped; (e)(2) 250 ms |
+| No half-written file | (e)(2) tmp + rename |
+| Schema in English with the list endpoints, written every launch | (f), (d)1 |
+| Log lines | (e), (d) |
+| README for agents, English, rewritten every launch, says so | (f), (d)1 |
+| Short instruction pointing at the README, the build's folder | (g) |
+| macOS, Windows, Linux | (c) home on every OS; rename; `revealItemInDir` on all three; polling |
+| No port, no token, no registration UI, dependencies removed; token deleted | (h), (d)1 |
+| README every language, `TOMARIGI_AGENT_ACCESS` and `mcp-call.sh` removed | (h), (i) |
+| Places per build, debug override | (c) |
+| One source of truth; IndexedDB copied once and left | (b), (d)3 |
+| Nothing goes into an agent's context | (b) commands are the app's own; (h) |
+| README and schema text fixed in Rust | (f) |
+| Volume | (e)(2) one file each, replaced; plus `settings-applied.json` (d) |
+| The section's contents | (g) |
+
+Pass/fail, how each is shown: the verify .app with `TOMARIGI_SETTINGS_FILE` unset, so it uses `~/.tomarigi/verify/`; the update case by launching the verify .app of `main` (with MCP on through its `TOMARIGI_AGENT_ACCESS`) and then this branch's; `lsof -iTCP:4844`; `security find-generic-password` for the token; the log's `[settings-file]` lines and the file's text before and after; screenshots of the note and the section (ja, en); `claude -p` given the copied instruction and 「読み上げを VOICEVOX にして」 with a VOICEVOX-compatible engine on this machine; the counts of writes from the log (a debug-only `[settings-file] wrote` line) for the slider; and the volume after 1,000 screen saves (a debug-build loop through `settings_set`) and 1,000 file edits (a script that rewrites one key 1,000 times, 300 ms apart): the files in the folder, their sizes, the log's growth
+
 ## Platforms
 
 - macOS, Windows 10 / 11 (x64), and Linux (x64, X11). On a Wayland session the app runs through Xwayland (`GDK_BACKEND=x11` is set at launch), because pure Wayland has no always-on-top, no global cursor position, no window position restore, and no way to focus another app's window (Claude's own decision, from research)
