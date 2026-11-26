@@ -1342,7 +1342,7 @@ mod tests {
         std::fs::create_dir_all(&dir).unwrap();
         const FIRST: &str = r#"{"type":"user","timestamp":"2026-01-01T00:00:00.000Z","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"担当: review"}}"#;
         const SEND: &str = r#"{"type":"assistant","timestamp":"2026-01-01T00:03:00.000Z","message":{"content":[{"type":"tool_use","id":"t1","name":"SendMessage","input":{"to":"hub-19","message":"決めてほしいこと"}}]}}"#;
-        const REPLY: &str = r#"{"type":"assistant","timestamp":"2026-01-01T00:03:10.000Z","message":{"content":[{"type":"text","text":"親に決めてほしいこと（返事待ち）"}]}}"#;
+        const REPLY: &str = r#"{"type":"assistant","timestamp":"2026-01-01T00:03:10.000Z","message":{"content":[{"type":"text","text":"確認したいこと（返事待ち）"}]}}"#;
         const ANSWER: &str = r#"{"type":"user","isMeta":true,"timestamp":"2026-01-01T00:03:15.000Z","turnOrigin":"peer","origin":{"kind":"peer","from":"uds:/tmp/cc-socks/111.sock","verifiedPeerPid":111,"name":"hub-19"},"message":{"content":"x"}}"#;
         let lines = [FIRST, SEND, REPLY, ANSWER];
         let path = dir.join("0.jsonl");

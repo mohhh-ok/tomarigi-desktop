@@ -1,7 +1,7 @@
 // The question a child's reply asks reaches its parent when the reply's own turn sent the parent a message, read from
 // the ledger of what each turn sent (docs/design.md "Sessions started by another session"). The scene is the reported
 // one, with made-up names: a child started by another session reviewed branches in a turn 270 lines long, sent its parent
-// the report and its questions with SendMessage, ended its turn with「親に決めてほしいこと（返事待ち）」, and its parent's
+// the report and its questions with SendMessage, ended its turn with「確認したいこと（返事待ち）」, and its parent's
 // answer arrived 4 seconds later as a meta line starting the next turn. The prompt of that turn was out of the tail
 // window, and the parent's answer started a new turn that had sent nothing, so the app took the question as the user's,
 // the concierge advised replying to it, and it was read aloud
@@ -60,7 +60,7 @@ const WORK = Array.from({ length: 135 }, (_, i) => [
 const REPLY = {
   type: "assistant",
   timestamp: at(190_453),
-  message: { content: [{ type: "text", text: "4 本のうち、いま取り込むべきなのは 1 本です。\n\n親に決めてほしいこと（返事待ち）:\n1. 次の版上げ\n2. 取り込む時期\n3. 監視の設定" }] },
+  message: { content: [{ type: "text", text: "調べた結果をまとめました。\n\n確認したいこと（返事待ち）:\n1. 次の版上げ\n2. 取り込む時期\n3. 監視の設定" }] },
 };
 const TURN_END = { type: "system", subtype: "turn_duration", timestamp: at(191_060) };
 const ANSWER = {
