@@ -6,7 +6,7 @@ import { isReadableDir, NativeDirectoryHandle } from "./native-fs";
 import { AGENTS, agentOf, type AgentKind } from "./agents";
 import { pathKey } from "./paths";
 import { checkNewRoot } from "./settings-checks";
-import { CONCIERGE_LOOKS, DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "./concierge";
+import { CONCIERGE_LOOKS, DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "./concierge-look";
 
 export const KEY_ROOTS = "roots";
 export const KEY_MUTED = "muted";

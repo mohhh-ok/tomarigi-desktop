@@ -18,7 +18,7 @@ import {
   loadConciergeLook,
   saveConciergeLook,
 } from "@/lib/settings-store";
-import { DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "@/lib/concierge";
+import { DEFAULT_CONCIERGE_LOOK, type ConciergeLook } from "@/lib/concierge-look";
 import {
   anyAiProviderSetUp,
   deleteAiProvider,

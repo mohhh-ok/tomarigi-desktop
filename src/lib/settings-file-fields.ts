@@ -2,6 +2,8 @@
 // Detailed design (a)). Pure conversions, both ways, so lib/kv.ts can keep the store's functions and callers as they
 // are while the values live in the file. No Tauri imports: lib/kv.ts imports this
 import { pathKey } from "./paths";
+import { DEFAULT_CONCIERGE_LOOK } from "./concierge-look";
+import { DEFAULT_WINDOW_MODE } from "./window-mode";
 import type { LocalTtsConfig, ReadoutVoice, TtsKind } from "./readout-voice";
 
 /** Every key of the file, in the order an edit is applied (localAi before summaryProvider, so a file that sets up
@@ -36,6 +38,10 @@ export const STORE_KEY_OF: Record<Exclude<FileField, "windowMode">, string> = {
   watchedFolders: "roots",
   defaultFolderLabels: "defaultRootLabels",
 };
+
+/** The fields whose value in the file may be null (the schema allows it: "not set"). Any other field read as null at
+ * launch is taken as nothing saved and written again with its default */
+export const NULLABLE_FIELDS: readonly FileField[] = ["localAi", "summaryProvider"];
 
 export const FIELD_OF_STORE_KEY: Record<string, FileField> = Object.fromEntries(
   Object.entries(STORE_KEY_OF).map(([field, key]) => [key, field as FileField]),
@@ -105,8 +111,9 @@ export function toFile(field: Exclude<FileField, "windowMode">, value: unknown):
     }
     case "localAi":
     case "summaryProvider":
-    case "conciergeLook":
       return value ?? null;
+    case "conciergeLook":
+      return value ?? DEFAULT_CONCIERGE_LOOK;
     case "iconSets":
     case "defaultFolderLabels":
       return value && typeof value === "object" ? value : {};
@@ -115,6 +122,23 @@ export function toFile(field: Exclude<FileField, "windowMode">, value: unknown):
       return roots.map((r) => ({ agent: r.kind, path: r.path, label: r.label, id: r.id }));
     }
   }
+}
+
+/** A null the schema doesn't allow for the field (an earlier version wrote it for nothing saved): read as nothing saved */
+export function isUnsetNull(field: string, value: unknown): boolean {
+  return value === null && (FILE_FIELDS as readonly string[]).includes(field) && !NULLABLE_FIELDS.includes(field as FileField);
+}
+
+/** `doc` without the nulls of isUnsetNull */
+export function withoutUnsetNulls<T extends Record<string, unknown>>(doc: T): T {
+  return Object.fromEntries(Object.entries(doc).filter(([k, v]) => !isUnsetNull(k, v))) as T;
+}
+
+/** The file as it is with nothing saved: what the screen shows then */
+export function defaultFileDoc(): Record<FileField, unknown> {
+  const doc = { windowMode: DEFAULT_WINDOW_MODE } as Record<FileField, unknown>;
+  for (const field of FILE_FIELDS) if (field !== "windowMode") doc[field] = toFile(field, undefined);
+  return doc;
 }
 
 /** The info to keep beside the file when the store saves a readout voice */

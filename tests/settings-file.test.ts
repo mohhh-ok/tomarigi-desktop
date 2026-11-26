@@ -4,11 +4,22 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { applyFileDoc, stableJson, type ApplyDeps, type FileDoc } from "../src/lib/settings-file";
-import { FILE_FIELDS, folderIdOf, fromFile, looksSecret, STORE_KEY_OF, toFile } from "../src/lib/settings-file-fields";
+import {
+  defaultFileDoc,
+  FILE_FIELDS,
+  folderIdOf,
+  fromFile,
+  isUnsetNull,
+  looksSecret,
+  NULLABLE_FIELDS,
+  STORE_KEY_OF,
+  toFile,
+  withoutUnsetNulls,
+} from "../src/lib/settings-file-fields";
 import { AGENTS } from "../src/lib/agents";
 import { ICON_SET_IDS } from "../src/lib/icon-set-store";
-import { CONCIERGE_LOOKS } from "../src/lib/concierge";
-import { WINDOW_MODES } from "../src/lib/window-mode";
+import { CONCIERGE_LOOKS, DEFAULT_CONCIERGE_LOOK } from "../src/lib/concierge-look";
+import { DEFAULT_WINDOW_MODE, WINDOW_MODES } from "../src/lib/window-mode";
 
 const VOICES = [
   { value: "2", label: "四国めたん（ノーマル）", speaker: "四国めたん" },
@@ -47,26 +58,29 @@ const APPLIED: FileDoc = {
   defaultFolderLabels: {},
 };
 
+/** A value saved for every store key the file stands for */
+const STORE: Record<string, unknown> = {
+  muted: true,
+  chirpVolume: 0.4,
+  voiceEnabled: true,
+  voiceVolume: 1,
+  readoutVoice: {
+    source: "local",
+    local: { kind: "voicevox", baseUrl: "http://localhost:50021", voice: "2", voiceLabel: "四国めたん（ノーマル）", speaker: "四国めたん", voicevoxCredit: true },
+  },
+  localAi: { baseUrl: "http://localhost:11434/v1", model: "qwen3" },
+  aiProvider: "local",
+  conciergeLook: "penguin",
+  projectIconSets: { "-Users-x-app": { set: "cat", label: "app" } },
+  roots: [{ id: "f1", kind: "codex", label: "Codex work", path: "/Users/x/.codex-work" }],
+  defaultRootLabels: { claude: "Mine" },
+};
+
 const edit = (over: FileDoc) => ({ ...APPLIED, ...over });
 
 describe("file values and the store's", () => {
   test("each store value goes into the file and comes back the same", () => {
-    const store: Record<string, unknown> = {
-      muted: true,
-      chirpVolume: 0.4,
-      voiceEnabled: true,
-      voiceVolume: 1,
-      readoutVoice: {
-        source: "local",
-        local: { kind: "voicevox", baseUrl: "http://localhost:50021", voice: "2", voiceLabel: "四国めたん（ノーマル）", speaker: "四国めたん", voicevoxCredit: true },
-      },
-      localAi: { baseUrl: "http://localhost:11434/v1", model: "qwen3" },
-      aiProvider: "local",
-      conciergeLook: "penguin",
-      projectIconSets: { "-Users-x-app": { set: "cat", label: "app" } },
-      roots: [{ id: "f1", kind: "codex", label: "Codex work", path: "/Users/x/.codex-work" }],
-      defaultRootLabels: { claude: "Mine" },
-    };
+    const store = STORE;
     const info = { "voicevox http://localhost:50021 2": { voiceLabel: "四国めたん（ノーマル）", speaker: "四国めたん", voicevoxCredit: true } };
     for (const field of FILE_FIELDS) {
       if (field === "windowMode") continue;
@@ -88,6 +102,17 @@ describe("file values and the store's", () => {
     expect(toFile("chirpVolume", undefined)).toBe(100);
     expect(toFile("readoutVoice", undefined)).toEqual({ source: "system" });
     expect(toFile("watchedFolders", undefined)).toEqual([]);
+    expect(toFile("conciergeLook", undefined)).toBe(DEFAULT_CONCIERGE_LOOK);
+    expect(defaultFileDoc().windowMode).toBe(DEFAULT_WINDOW_MODE);
+  });
+
+  test("a null the schema doesn't allow is nothing saved; the schema's own nulls are kept", () => {
+    expect(isUnsetNull("conciergeLook", null)).toBe(true);
+    expect(isUnsetNull("localAi", null)).toBe(false);
+    expect(isUnsetNull("summaryProvider", null)).toBe(false);
+    expect(isUnsetNull("theme", null)).toBe(false);
+    expect(withoutUnsetNulls({ conciergeLook: null, localAi: null, chirps: true })).toEqual({ localAi: null, chirps: true });
+    expect(fromFile("conciergeLook", null)).toBeUndefined();
   });
 
   test("a folder an agent adds without an id gets one from its path, the same every time", () => {
@@ -276,9 +301,75 @@ describe("the built-in texts and Rust's key list", () => {
     expect(props.readoutVoice.properties.server.properties.kind.enum.sort()).toEqual(["openai", "voicevox"]);
   });
 
+  test("the fields that may be null are the ones whose schema allows null", () => {
+    const nullable = FILE_FIELDS.filter((f) => schemaProblems(props[f], null, f).length === 0);
+    expect(nullable.sort()).toEqual([...NULLABLE_FIELDS].sort());
+  });
+
+  /** The file as the app writes it from the store's values (windowMode is Rust's) */
+  const fileOf = (store: Record<string, unknown>, windowMode: unknown) =>
+    Object.fromEntries(FILE_FIELDS.map((f) => [f, f === "windowMode" ? windowMode : toFile(f, store[STORE_KEY_OF[f]])]));
+
+  test("the check finds a value the schema doesn't allow", () => {
+    expect(schemaProblems(schema, { ...defaultFileDoc(), conciergeLook: null })).toEqual(["conciergeLook: null is not one of the choices"]);
+    expect(schemaProblems(schema, { ...defaultFileDoc(), chirpVolume: 101 })).toEqual(["chirpVolume: above 100"]);
+  });
+
+  test("the file written with nothing saved fits the schema", () => {
+    const doc = defaultFileDoc();
+    expect(Object.keys(doc).sort()).toEqual([...FILE_FIELDS].sort());
+    expect(schemaProblems(schema, doc)).toEqual([]);
+    expect(schemaProblems(schema, fileOf({}, DEFAULT_WINDOW_MODE))).toEqual([]);
+  });
+
+  test("the file written with a value saved for every setting fits the schema", () => {
+    const storeKeys = Object.values(STORE_KEY_OF);
+    expect(Object.keys(STORE).sort()).toEqual([...storeKeys].sort());
+    const openai = {
+      ...STORE,
+      readoutVoice: { source: "system", local: { kind: "openai", baseUrl: "http://localhost:8880/v1", voice: "af_heart", model: "kokoro" } },
+      localAi: undefined,
+      aiProvider: "openai",
+    };
+    for (const [store, mode] of [[STORE, "normal"], [openai, "floating"]] as const) {
+      expect(schemaProblems(schema, fileOf(store, mode))).toEqual([]);
+    }
+  });
+
   test("Rust keeps the same keys (FIELDS in settings_file.rs)", () => {
     const rust = readFileSync("src-tauri/src/settings_file.rs", "utf8");
     const list = /pub\(crate\) const FIELDS: \[&str; \d+\] = \[([^\]]*)\]/.exec(rust)?.[1] ?? "";
     expect([...list.matchAll(/"(\w+)"/g)].map((m) => m[1]).sort()).toEqual([...FILE_FIELDS].sort());
   });
 });
+
+/** The parts of JSON Schema settings.schema.json uses, enough to say whether a file the app writes fits it */
+function schemaProblems(s: Record<string, any>, v: unknown, at = ""): string[] {
+  const here = at === "" ? "(file)" : at;
+  if (s.oneOf) {
+    const fits = (s.oneOf as Record<string, any>[]).filter((o) => schemaProblems(o, v, at).length === 0).length;
+    return fits === 1 ? [] : [`${here}: fits ${fits} of oneOf`];
+  }
+  if (s.enum && !(s.enum as unknown[]).includes(v)) return [`${here}: ${JSON.stringify(v)} is not one of the choices`];
+  const kind = v === null ? "null" : Array.isArray(v) ? "array" : Number.isInteger(v) ? "integer" : typeof v;
+  if (s.type && !(s.type === kind || (s.type === "number" && kind === "integer"))) return [`${here}: ${kind}, not ${s.type}`];
+  const out: string[] = [];
+  if (typeof v === "number") {
+    if (s.minimum !== undefined && v < s.minimum) out.push(`${here}: below ${s.minimum}`);
+    if (s.maximum !== undefined && v > s.maximum) out.push(`${here}: above ${s.maximum}`);
+  }
+  if (typeof v === "string" && s.minLength !== undefined && v.length < s.minLength) out.push(`${here}: shorter than ${s.minLength}`);
+  if (Array.isArray(v) && s.items) v.forEach((item, i) => out.push(...schemaProblems(s.items, item, `${at}[${i}]`)));
+  if (kind === "object") {
+    const o = v as Record<string, unknown>;
+    for (const key of s.required ?? []) if (!(key in o)) out.push(`${here}: no ${key}`);
+    for (const [key, value] of Object.entries(o)) {
+      const path = at === "" ? key : `${at}.${key}`;
+      if (s.propertyNames?.enum && !s.propertyNames.enum.includes(key)) out.push(`${path}: not an allowed key`);
+      const sub = s.properties?.[key] ?? s.additionalProperties;
+      if (sub === false) out.push(`${path}: not in the schema`);
+      else if (sub && sub !== true) out.push(...schemaProblems(sub, value, path));
+    }
+  }
+  return out;
+}

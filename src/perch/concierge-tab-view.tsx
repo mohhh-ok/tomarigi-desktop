@@ -3,7 +3,8 @@
 // dragging it moves the floating window, which is the concierge's size. It reports the size the window needs for it
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
-import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
+import type { ConciergeAdvice } from "@/lib/concierge";
+import type { ConciergeLook } from "@/lib/concierge-look";
 import { conciergeStatusLines, type ShownSuggestion } from "@/lib/concierge-status";
 import { PLACE_EDGE_PX } from "@/lib/garden-place";
 import type { SessionView } from "@/lib/sessions";

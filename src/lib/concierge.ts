@@ -15,12 +15,6 @@ import { isChickRunning } from "./session-activity";
 import type { AiProvider } from "./api-keys";
 import type { SessionEvent, SessionView, WaitingOn } from "./session-types";
 
-/** The concierge's looks the user picks between in settings; the same image in every icon set */
-export const CONCIERGE_LOOKS = ["owl", "penguin"] as const;
-export type ConciergeLook = (typeof CONCIERGE_LOOKS)[number];
-/** The owl (Claude's own decision, docs/design.md "Concierge") */
-export const DEFAULT_CONCIERGE_LOOK: ConciergeLook = "owl";
-
 /** Changes that come together within this long make one request */
 export const CONCIERGE_DEBOUNCE_MS = 3_000;
 /** At most one request this often; changes inside it are merged into one request when it ends */

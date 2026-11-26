@@ -4,7 +4,8 @@
 // ConciergeGlyph
 import type { CSSProperties } from "react";
 import { t } from "@/lib/i18n";
-import { CONCIERGE_LOOKS, type ConciergeAdvice, type ConciergeLook } from "@/lib/concierge";
+import type { ConciergeAdvice } from "@/lib/concierge";
+import { CONCIERGE_LOOKS, type ConciergeLook } from "@/lib/concierge-look";
 import owlImg from "@/assets/concierge/owl.webp";
 import penguinImg from "@/assets/concierge/penguin.webp";
 import { SpeechBubble } from "./bubble";

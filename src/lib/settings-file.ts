@@ -8,7 +8,7 @@ import type { TtsVoiceOption } from "./tts-server";
 import { AGENTS } from "./agents";
 import { isRecord } from "./agent-tail";
 import { ICON_SET_IDS, type IconSetId } from "./icon-set-store";
-import { CONCIERGE_LOOKS, type ConciergeLook } from "./concierge";
+import { CONCIERGE_LOOKS, type ConciergeLook } from "./concierge-look";
 import { WINDOW_MODES, type WindowMode } from "./window-mode";
 import {
   checkLocalAi,

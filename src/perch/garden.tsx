@@ -46,7 +46,8 @@ import { bubbleText, GardenBubble } from "./bubble";
 import { BirdGlyph } from "./bird-glyph";
 import { StatusParts } from "./bird-status";
 import { CONCIERGE_ID, ConciergeGlyph } from "./concierge";
-import type { ConciergeAdvice, ConciergeLook } from "@/lib/concierge";
+import type { ConciergeAdvice } from "@/lib/concierge";
+import type { ConciergeLook } from "@/lib/concierge-look";
 import { aboveTail, bubbleReach, bubbleReachUp, bubbleRoomFor, layoutBubbles, type BubblePlace, type LaidBird } from "./garden-bubbles";
 import { SessionName, sessionNameClass } from "./session-name";
 import {

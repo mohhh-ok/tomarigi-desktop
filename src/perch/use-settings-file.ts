@@ -13,7 +13,16 @@ import { fetchIsVoicevoxEngine, fetchTtsVoices } from "@/lib/tts-server";
 import { FROM_SETTINGS_FILE, notifySettingChanged } from "@/lib/settings-sync";
 import { problemMessage, problemText } from "@/lib/settings-checks";
 import { applyFileDoc, type ApplyResult, type FileDoc } from "@/lib/settings-file";
-import { FILE_FIELDS, STORE_KEY_OF, toFile, type FileField } from "@/lib/settings-file-fields";
+import {
+  defaultFileDoc,
+  FILE_FIELDS,
+  isUnsetNull,
+  STORE_KEY_OF,
+  toFile,
+  withoutUnsetNulls,
+  type FileField,
+} from "@/lib/settings-file-fields";
+import { DEFAULT_WINDOW_MODE } from "@/lib/window-mode";
 
 /** Whether the settings show the note that the MCP server was removed: "shown" until the user closes it */
 export const KEY_MCP_REMOVED_NOTE = "mcpRemovedNote";
@@ -53,15 +62,9 @@ async function readApplied(): Promise<FileDoc> {
 async function fileDocFromStore(): Promise<FileDoc> {
   const doc: FileDoc = {};
   for (const field of FILE_FIELDS) {
-    if (field === "windowMode") doc.windowMode = await invoke<string>("get_window_mode").catch(() => "floating");
+    if (field === "windowMode") doc.windowMode = await invoke<string>("get_window_mode").catch(() => DEFAULT_WINDOW_MODE);
     else doc[field] = toFile(field, await idbGet(STORE_KEY_OF[field]));
   }
-  return doc;
-}
-
-function defaultsDoc(): FileDoc {
-  const doc: FileDoc = { windowMode: "floating" };
-  for (const field of FILE_FIELDS) if (field !== "windowMode") doc[field] = toFile(field, undefined);
   return doc;
 }
 
@@ -138,7 +141,11 @@ export function useSettingsFile() {
   const loadOnce = useCallback(async () => {
     const opened = await invoke<Opened | null>("settings_file_open").catch(() => null);
     if (!opened) return;
-    let base: FileDoc = { ...defaultsDoc(), ...opened.applied };
+    let base: FileDoc = { ...defaultFileDoc(), ...withoutUnsetNulls(opened.applied) };
+    // A null the schema doesn't allow is nothing saved: the value in use becomes the default, and a file holding it
+    // is written again (the same as a key missing from the file)
+    const nullApplied = FILE_FIELDS.filter((f) => isUnsetNull(f, opened.applied[f]));
+    const nullInFile = FILE_FIELDS.filter((f) => isUnsetNull(f, opened.doc?.[f]));
     if (Object.keys(opened.applied).length === 0) {
       base = await fileDocFromStore();
       const access = (await idbGet("agentAccess")) as { enabled?: unknown } | undefined;
@@ -147,14 +154,22 @@ export function useSettingsFile() {
       }
       log("[settings-file] taking the earlier settings");
     }
+    for (const field of nullApplied) {
+      await invoke("settings_accept", { field, value: base[field] });
+      log(`[settings-file] ${field} was null in use: took the default`);
+    }
     if (opened.state === "ok" && opened.doc) {
-      const result = await applyFileDoc(opened.doc, base, base, await applyDeps(), await loadVoiceInfo());
+      const result = await applyFileDoc(withoutUnsetNulls(opened.doc), base, base, await applyDeps(), await loadVoiceInfo());
       await accept(result);
       report(result, false);
     } else if (opened.state === "unreadable") {
       say([{ text: t("settingsFileUnreadable", [String(opened.line), String(opened.column)]), problem: true, unreadable: true }]);
     }
     await invoke("settings_file_fill", { values: base });
+    for (const field of nullInFile) {
+      await invoke("settings_set", { field, value: base[field] });
+      log(`[settings-file] ${field} was null in the file: wrote the value in use`);
+    }
   }, [report, say]);
 
   const load = useCallback(() => (loading.current ??= loadOnce()), [loadOnce]);
