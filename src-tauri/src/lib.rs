@@ -65,6 +65,10 @@ pub(crate) fn log_dir() -> PathBuf {
 const LOG_LIMIT: u64 = 10 * 1024 * 1024;
 
 pub(crate) fn append_log(line: &str) {
+    // Unit tests run the code that logs; their lines would land in the user's own log, shared with every build
+    if cfg!(test) {
+        return;
+    }
     let ts = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis())
