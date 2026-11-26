@@ -95,7 +95,6 @@ export function useSettingsFile() {
   const [recent, setRecent] = useState<FileNoteLine[]>([]);
   const [notes, setNotes] = useState<FileNoteLine[]>([]);
   const nextId = useRef(0);
-  const seen = useRef<FileDoc | null>(null);
   const reported = useRef(new Set<string>());
   const busy = useRef(Promise.resolve());
 
@@ -130,8 +129,11 @@ export function useSettingsFile() {
     [say],
   );
 
-  /** At launch, before the folders and the settings are loaded. Outside the app it does nothing */
-  const load = useCallback(async () => {
+  const loading = useRef<Promise<void> | null>(null);
+
+  /** At launch, before the folders and the settings are loaded. Outside the app it does nothing. Runs once even when
+   * React runs the startup effect twice (StrictMode in dev) */
+  const loadOnce = useCallback(async () => {
     const opened = await invoke<Opened | null>("settings_file_open").catch(() => null);
     if (!opened) return;
     let base: FileDoc = { ...defaultsDoc(), ...opened.applied };
@@ -147,19 +149,20 @@ export function useSettingsFile() {
       const result = await applyFileDoc(opened.doc, base, base, await applyDeps(), await loadVoiceInfo());
       await accept(result);
       report(result, false);
-      seen.current = opened.doc;
     } else if (opened.state === "unreadable") {
       say([{ text: t("settingsFileUnreadable", [String(opened.line), String(opened.column)]), problem: true }]);
     }
     await invoke("settings_file_fill", { values: base });
   }, [report, say]);
 
+  const load = useCallback(() => (loading.current ??= loadOnce()), [loadOnce]);
+
   const onEdited = useCallback(
-    (doc: FileDoc) => {
+    ({ doc, before }: { doc: FileDoc; before: FileDoc | null }) => {
       busy.current = busy.current.then(async () => {
         const applied = await readApplied();
-        const result = await applyFileDoc(doc, seen.current ?? applied, applied, await applyDeps(), await loadVoiceInfo());
-        seen.current = doc;
+        // Only the keys this edit changed: a refused value left in the file isn't refused again on the next edit
+        const result = await applyFileDoc(doc, before ?? applied, applied, await applyDeps(), await loadVoiceInfo());
         await accept(result);
         report(result, true);
       }).catch((e) => log(`[settings-file] failed to apply: ${String(e).slice(0, 120)}`));
@@ -169,7 +172,7 @@ export function useSettingsFile() {
 
   useEffect(() => {
     const stops = [
-      listen<FileDoc>("settings-file-edited", (e) => onEdited(e.payload)),
+      listen<{ doc: FileDoc; before: FileDoc | null }>("settings-file-edited", (e) => onEdited(e.payload)),
       listen<[number, number]>("settings-file-unreadable", (e) =>
         say([{ text: t("settingsFileUnreadable", [String(e.payload[0]), String(e.payload[1])]), problem: true }]),
       ),

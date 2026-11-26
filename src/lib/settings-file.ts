@@ -141,7 +141,7 @@ function describeVoice(say: ApplyDeps["say"], v: unknown, info: VoiceInfo | unde
 }
 
 /**
- * Checks the keys of `doc` that differ from `seen` (the file as it was last taken; at launch the applied values), against
+ * Checks the keys of `doc` that differ from `seen` (the file as it was before this edit; at launch the applied values), against
  * `applied` (the values in use, file-shaped). `voiceInfo` is what is known of the applied voice
  */
 export async function applyFileDoc(

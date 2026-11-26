@@ -117,7 +117,7 @@ try {
       await page.goto(`${ORIGIN}${mockPath(scene.note ? "" : "view=settings&section=settingsFile")}`);
       if (scene.note) {
         await page.waitForFunction(() => window.__hasListener("settings-file-edited"), null, { timeout: 15000 });
-        await page.evaluate((doc) => window.__send("settings-file-edited", doc), scene.note);
+        await page.evaluate(([doc, before]) => window.__send("settings-file-edited", { doc, before }), [scene.note, APPLIED]);
         await page.waitForSelector(".settings-file-note", { timeout: 5000 });
       } else {
         await page.waitForSelector(".settings-file", { timeout: 15000 });

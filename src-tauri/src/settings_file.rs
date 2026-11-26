@@ -85,7 +85,9 @@ pub(crate) fn display_path(home: &Path, path: &Path) -> String {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Event {
-    Edited(Map<String, Value>),
+    /// The file as it is now, and as it was before the edit (what the app wrote last or saw last), so the page checks
+    /// only the keys the edit changed
+    Edited { doc: Map<String, Value>, before: Option<Map<String, Value>> },
     Unreadable { line: usize, column: usize },
     InvalidKept,
     Rewritten,
@@ -217,9 +219,13 @@ impl State {
         let meta = meta_of(&paths.settings);
         if meta.is_none() {
             if !self.applied.is_empty() {
+                // Written before and gone now: deleted. Never written: the first file, made from the applied values
+                let deleted = self.last_text.is_some();
                 self.write_doc(paths, self.applied.clone());
                 self.dirty.clear();
-                events.push(Event::Rewritten);
+                if deleted {
+                    events.push(Event::Rewritten);
+                }
             }
             return false;
         }
@@ -231,11 +237,11 @@ impl State {
         if self.last_text.as_deref() == Some(text.as_str()) {
             return false;
         }
-        self.last_text = Some(text.clone());
+        let before = self.last_text.replace(text.clone()).and_then(|t| parse(&t).ok());
         match parse(&text) {
             Ok(doc) => {
                 self.mark_missing(&doc);
-                events.push(Event::Edited(doc));
+                events.push(Event::Edited { doc, before });
             }
             Err((line, column)) => events.push(Event::Unreadable { line, column }),
         }
@@ -349,8 +355,8 @@ fn start_worker(app: AppHandle) {
         let events = with(|s| s.state.tick(&s.paths, Instant::now())).unwrap_or_default();
         for event in events {
             match event {
-                Event::Edited(doc) => {
-                    let _ = app.emit_to("main", "settings-file-edited", doc);
+                Event::Edited { doc, before } => {
+                    let _ = app.emit_to("main", "settings-file-edited", serde_json::json!({ "doc": doc, "before": before }));
                 }
                 Event::Unreadable { line, column } => {
                     append_log(&format!("[settings-file] unreadable {line}:{column}"));
@@ -549,7 +555,8 @@ mod tests {
         s.tick(&paths, Instant::now());
         write_later(&paths.settings, r#"{"chirps": false}"#);
         let events = s.tick(&paths, Instant::now() + TICK);
-        assert_eq!(events, vec![Event::Edited(obj(json!({"chirps": false})))]);
+        let written = obj(json!({"$schema": SCHEMA_REF, "chirps": true, "conciergeLook": "owl"}));
+        assert_eq!(events, vec![Event::Edited { doc: obj(json!({"chirps": false})), before: Some(written) }]);
         s.accept("chirps", json!(false));
         assert!(s.tick(&paths, Instant::now() + TICK * 2).is_empty());
         assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": false, "conciergeLook": "owl"}));
@@ -583,6 +590,14 @@ mod tests {
     }
 
     #[test]
+    fn the_first_file_is_written_without_calling_it_deleted() {
+        let paths = temp_paths("first");
+        let mut s = ready(json!({"chirps": true}));
+        assert!(s.tick(&paths, Instant::now()).is_empty());
+        assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": true}));
+    }
+
+    #[test]
     fn saves_in_quick_succession_are_written_at_most_once_a_tick() {
         let paths = temp_paths("slider");
         let mut s = ready(json!({"chirpVolume": 100}));
@@ -610,7 +625,8 @@ mod tests {
         s.write_dirty(&paths, &mut events);
         assert_eq!(disk(&paths)["readAloud"], json!(true));
         let events = s.tick(&paths, Instant::now() + TICK);
-        assert_eq!(events, vec![Event::Edited(obj(json!({"chirps": true, "readAloud": true})))]);
+        let before = obj(json!({"$schema": SCHEMA_REF, "chirps": true, "readAloud": false}));
+        assert_eq!(events, vec![Event::Edited { doc: obj(json!({"chirps": true, "readAloud": true})), before: Some(before) }]);
     }
 
     #[test]

@@ -713,6 +713,10 @@ button.settings-file-copy-main:hover {
 }
 
 
+.settings-file > .settings-note {
+  margin: 0 0 10px;
+}
+
 /* Settings file (settings/settings-file-settings.tsx). The path with its buttons, then the instruction for an agent: the
    section's one thing to do, so its copy button is the bright one; this launch's list under it */
 .settings-file-path,
