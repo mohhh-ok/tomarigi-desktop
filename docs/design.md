@@ -674,7 +674,8 @@ What the file holds and how edits are taken:
 - An agent or an editor never reads a half-written file from the app (the app writes a new file and renames it over the old one)
 - The schema file `settings.schema.json` describes every key in English (agents read it): what it does, its allowed values, and for voices and models how to get the list from the server (VOICEVOX `GET <baseUrl>/speakers`, OpenAI-compatible `GET <baseUrl>/v1/models`). The app writes it at every launch, so it matches the running version
 - The log has one line per applied change and per refused value, `[settings-file] applied <setting>` / `[settings-file] refused <setting>: <reason>` / `[settings-file] unreadable <line>:<column>`, with no value that could be a secret (URLs and voice names are settings and are logged as the screen's saves log them)
-- The copied instruction for the agent says: the file's path, the schema's path, that the app applies a save at once, that the result is in the log's `[settings-file]` lines (with the log's path), and that API keys can't be set there
+- A `README.md` for agents sits beside the file (the user: 「settings.jsonといっしょに、aiむけの文書もいれれる？自動更新する前提で。README.mdとかかな」). In English (Claude's own decision, as the schema): what the file is, how to change a setting and that the app applies a save at once, how to get the lists of voices and models from the servers, where the result is (the log's path and its `[settings-file]` lines), that API keys can't be set there and go on the settings screen, and that the app must be running for an edit to show at once (otherwise at the next launch). The app writes it at every launch, so it always matches the running version; an edit to it by hand is replaced at the next launch, and it says so at the top
+- The copied instruction for the agent is short and points at that README: 「Tomarigi の設定を変えて: <what you want>。やり方は ~/.tomarigi/README.md」 (the path of the build's own folder)
 - macOS, Windows and Linux
 
 MCP removed:
@@ -689,16 +690,18 @@ Pass/fail:
 - Broken JSON applies nothing and says where; then a save from the screen keeps the broken text in `settings.invalid.json`
 - A save from the screen updates the file and shows no note; dragging a volume slider for a few seconds writes the file only a few times a second
 - Edit the file while the app is closed; launch: applied
+- `README.md` and `settings.schema.json` are there after launch and match the version; an edit to the README by hand is replaced at the next launch
 - dev, verify and the everyday build each use their own file
 - Volume (below) measured after 1,000 saves from the screen and 1,000 edits of the file
 - Unit tests for reading, checking and merging the file (each setting's check is the screen's function), and UI check of the "Settings file" section in Japanese and English
 
 ### Basic design
 
-- Place: the everyday build `~/.tomarigi/settings.json`; dev `~/.tomarigi/dev/settings.json`; verify `~/.tomarigi/verify/settings.json`, each with its `settings.schema.json` and `settings.invalid.json` beside it (`~` is the home folder on every platform, as `~/.tomarigi/vscode/` already is). Debug builds only: `TOMARIGI_SETTINGS_FILE=<path>` uses another file for a check (Claude's own decisions; the everyday path is the one users and agents are told)
+- Place: the everyday build `~/.tomarigi/settings.json`; dev `~/.tomarigi/dev/settings.json`; verify `~/.tomarigi/verify/settings.json`, each with its `README.md`, `settings.schema.json` and `settings.invalid.json` beside it (`~` is the home folder on every platform, as `~/.tomarigi/vscode/` already is). Debug builds only: `TOMARIGI_SETTINGS_FILE=<path>` uses another file for a check (Claude's own decisions; the everyday path is the one users and agents are told)
 - One source of truth: the file is the settings' store; the screen's saves write it and every window reloads from it through the app-wide `settings-changed` event, as now. The values these settings had in IndexedDB are copied into the file once (when there is no file yet) and then no longer read; they are left in IndexedDB, not deleted, so going back to the previous version keeps its settings (Claude's own decision). API keys stay in the OS store through Rust (`keys.rs`), untouched
-- Nothing goes from Tomarigi into an agent's context except what the agent chooses to read (the file, the schema, the log). No listener, no IPC an outside program can call to change settings
-- Volume: one `settings.json` of a few KB and one `settings.schema.json`, both replaced in place; one `settings.invalid.json` at most, replaced each time; no other file is created per save. The log gets one line per applied or refused change and is already rotated at 10 MB (README "Other notes")
+- Nothing goes from Tomarigi into an agent's context except what the agent chooses to read (the file, the README, the schema, the log). No listener, no IPC an outside program can call to change settings
+- The README and the schema are fixed text built into the app at build time and written by Rust, with only the paths filled in; the page's JavaScript never supplies their text, so a compromise of only the page can't change what agents are told to do (Claude's own decision, for the reason MCP was removed)
+- Volume: one `settings.json` of a few KB, one `README.md` and one `settings.schema.json`, all replaced in place; one `settings.invalid.json` at most, replaced each time; no other file is created per save. The log gets one line per applied or refused change and is already rotated at 10 MB (README "Other notes")
 - The settings window's section "AI agent access" becomes "Settings file": the path with a copy button, a button that shows the file in the file manager (Finder / Explorer / the Linux file manager), "Copy instructions for an agent", this launch's changes from the file and refused values (the last 10, as the agent card listed), and the MCP removal note when it applies
 - Out of scope: settings that aren't on the settings screen (debug, mock, updates), a file format other than JSON, a CLI
 - The implementing session updates the other sections that mention MCP or IndexedDB as the settings' store ("Settings window", the README's environment variables and checks) in the same work
