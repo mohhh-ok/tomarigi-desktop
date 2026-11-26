@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Převzato ze souboru od tohoto spuštění"
+    "message": "Změny ze souboru nastavení (toto spuštění)"
   },
   "settingsFileNoteTitle": {
     "message": "Změněno ze souboru nastavení"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (ponechána předchozí hodnota)",
+    "message": "$SETTING$: $VALUE$ nelze použít. $REASON$ (ponechána předchozí hodnota $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Byla odebrána, aby nic uvnitř aplikace nemohlo posílat pokyny vašim AI agentům."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Pokud jste ji registrovali v Claude Code, spusťte jednou v terminálu tento příkaz a registraci zrušte:"
+    "message": "Pokud jste Tomarigi zaregistrovali v Claude Code, spusťte toto jednou v terminálu a registraci zrušte:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Pokud jste jej zaregistrovali v jiném agentovi, odeberte tomarigi z nastavení MCP daného agenta."
   },
   "settingsFileCopyCommand": {
     "message": "Kopírovat příkaz"
@@ -642,7 +651,7 @@
     "message": "Místní AI není nastavena. Nejprve zadejte localAi (baseUrl a model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Hlasitost je celé číslo od 0 do 100 (procenta)."
+    "message": "Napište celé číslo od 0 do 100 (procenta)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Zadejte složku jako absolutní cestu bez \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nenastaveno"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI pro shrnutí"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Hlasitost zvuku"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Hlasitost předčítání"
   }
 }

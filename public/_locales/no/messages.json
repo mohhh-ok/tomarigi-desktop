@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Hentet fra filen siden denne oppstarten"
+    "message": "Endringer fra innstillingsfilen (denne oppstarten)"
   },
   "settingsFileNoteTitle": {
     "message": "Endret fra innstillingsfilen"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (forrige verdi beholdes)",
+    "message": "$SETTING$: $VALUE$ kan ikke brukes. $REASON$ (forrige verdi $PREVIOUS$ beholdes)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Den ble fjernet slik at ingenting i appen kan sende instruksjoner til KI-agentene dine."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Hvis du registrerte den i Claude Code, kjør dette én gang i en terminal for å avregistrere den:"
+    "message": "Hvis du registrerte Tomarigi i Claude Code, kjør dette én gang i en terminal for å fjerne registreringen:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Hvis du registrerte den i en annen agent, fjern tomarigi fra MCP-innstillingene til den agenten."
   },
   "settingsFileCopyCommand": {
     "message": "Kopier kommando"
@@ -642,7 +651,7 @@
     "message": "Lokal KI er ikke satt opp. Angi først localAi (baseUrl og model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Et volum er et heltall fra 0 til 100 (prosent)."
+    "message": "Skriv et heltall fra 0 til 100 (prosent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Oppgi mappen som en absolutt bane uten \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Ikke angitt"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "KI for sammendrag"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Lydvolum"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Opplesningsvolum"
   }
 }

@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Hämtat från filen sedan den här starten"
+    "message": "Ändringar från inställningsfilen (den här starten)"
   },
   "settingsFileNoteTitle": {
     "message": "Ändrat från inställningsfilen"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (tidigare värde behålls)",
+    "message": "$SETTING$: $VALUE$ går inte att använda. $REASON$ (tidigare värde $PREVIOUS$ behålls)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Den togs bort så att inget i appen kan skicka instruktioner till dina AI-agenter."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Om du registrerade den i Claude Code, kör detta en gång i en terminal för att avregistrera den:"
+    "message": "Om du registrerade Tomarigi i Claude Code, kör detta en gång i en terminal för att ta bort registreringen:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Om du registrerade den i en annan agent, ta bort tomarigi från den agentens MCP-inställningar."
   },
   "settingsFileCopyCommand": {
     "message": "Kopiera kommando"
@@ -642,7 +651,7 @@
     "message": "Lokal AI är inte inställd. Ange först localAi (baseUrl och model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "En volym är ett heltal från 0 till 100 (procent)."
+    "message": "Skriv ett heltal från 0 till 100 (procent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Ange mappen som en absolut sökväg utan \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Inte angivet"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI för sammanfattningar"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Ljudvolym"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Uppläsningsvolym"
   }
 }

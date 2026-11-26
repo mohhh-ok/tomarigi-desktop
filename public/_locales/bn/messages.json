@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "এই চালুর পর ফাইল থেকে নেওয়া"
+    "message": "সেটিংস ফাইল থেকে পরিবর্তন (এই চালুতে)"
   },
   "settingsFileNoteTitle": {
     "message": "সেটিংস ফাইল থেকে বদলানো"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (আগের মান রাখা হয়েছে)",
+    "message": "$SETTING$: $VALUE$ ব্যবহার করা যায় না। $REASON$ (আগের মান $PREVIOUS$ রাখা হয়েছে)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "এটি সরানো হয়েছে যাতে অ্যাপের ভেতর থেকে কিছুই আপনার AI এজেন্টদের নির্দেশ পাঠাতে না পারে।"
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Claude Code-এ নিবন্ধন করে থাকলে, তা মুছতে টার্মিনালে এটি একবার চালান:"
+    "message": "আপনি যদি Claude Code-এ Tomarigi নিবন্ধন করে থাকেন, নিবন্ধন মুছতে টার্মিনালে এটি একবার চালান:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "অন্য কোনো এজেন্টে নিবন্ধন করে থাকলে, সেই এজেন্টের MCP সেটিংস থেকে tomarigi মুছুন।"
   },
   "settingsFileCopyCommand": {
     "message": "কমান্ড কপি করুন"
@@ -642,7 +651,7 @@
     "message": "লোকাল AI সেট করা নেই। আগে localAi (baseUrl ও model) লিখুন।"
   },
   "settingsProblemVolumeRange": {
-    "message": "ভলিউম 0 থেকে 100 পর্যন্ত একটি পূর্ণসংখ্যা (শতাংশ)।"
+    "message": "0 থেকে 100 পর্যন্ত একটি পূর্ণসংখ্যা (শতাংশ) লিখুন।"
   },
   "settingsProblemPathNotAbsolute": {
     "message": "ফোল্ডারটি \"..\" ছাড়া একটি পূর্ণ পাথ হিসেবে লিখুন।"
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "সেট করা নেই"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "সারাংশের জন্য AI"
-  },
-  "settingsFileChirpVolume": {
-    "message": "শব্দের ভলিউম"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "পড়ার ভলিউম"
   }
 }

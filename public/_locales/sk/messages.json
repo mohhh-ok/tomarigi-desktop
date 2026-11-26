@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Prevzaté zo súboru od tohto spustenia"
+    "message": "Zmeny zo súboru nastavení (toto spustenie)"
   },
   "settingsFileNoteTitle": {
     "message": "Zmenené zo súboru nastavení"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (ponechaná predchádzajúca hodnota)",
+    "message": "$SETTING$: $VALUE$ nemožno použiť. $REASON$ (ponechaná predchádzajúca hodnota $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Bola odstránená, aby nič vnútri aplikácie nemohlo posielať pokyny vašim AI agentom."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Ak ste ju registrovali v Claude Code, spustite raz v termináli tento príkaz a registráciu zrušte:"
+    "message": "Ak ste Tomarigi zaregistrovali v Claude Code, spustite toto raz v termináli a registráciu zrušte:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Ak ste ho zaregistrovali v inom agentovi, odstráňte tomarigi z nastavení MCP daného agenta."
   },
   "settingsFileCopyCommand": {
     "message": "Kopírovať príkaz"
@@ -642,7 +651,7 @@
     "message": "Miestna AI nie je nastavená. Najprv zadajte localAi (baseUrl a model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Hlasitosť je celé číslo od 0 do 100 (percentá)."
+    "message": "Napíšte celé číslo od 0 do 100 (percentá)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Zadajte priečinok ako absolútnu cestu bez \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nenastavené"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI na zhrnutia"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Hlasitosť zvuku"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Hlasitosť predčítania"
   }
 }

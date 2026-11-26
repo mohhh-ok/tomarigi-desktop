@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Pres del fitxer des d'aquest inici"
+    "message": "Canvis des del fitxer de configuració (aquest inici)"
   },
   "settingsFileNoteTitle": {
     "message": "Canviat des del fitxer de configuració"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (es manté el valor anterior)",
+    "message": "$SETTING$: no es pot fer servir $VALUE$. $REASON$ (es manté el valor anterior, $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "S'ha eliminat perquè res dins de l'app pugui enviar instruccions als teus agents d'IA."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Si el vas registrar a Claude Code, executa això una vegada en un terminal per treure'l:"
+    "message": "Si vas registrar Tomarigi a Claude Code, executa això una vegada en un terminal per treure'n el registre:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Si el vas registrar en un altre agent, treu tomarigi de la configuració MCP d'aquell agent."
   },
   "settingsFileCopyCommand": {
     "message": "Copia l'ordre"
@@ -642,7 +651,7 @@
     "message": "La IA local no està configurada. Indica primer localAi (baseUrl i model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "El volum és un nombre enter de 0 a 100 (percentatge)."
+    "message": "Escriu un nombre enter de 0 a 100 (percentatge)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Indica la carpeta amb un camí absolut sense \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Sense definir"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "IA per als resums"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volum del so"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Volum de lectura"
   }
 }

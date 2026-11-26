@@ -47,6 +47,7 @@ export function SettingsFileSettings({
           <p className="settings-file-hint">{t("settingsFileMcpRemovedWhy")}</p>
           <p className="settings-file-hint">{t("settingsFileMcpRemoveHint")}</p>
           <CodeBlock text={REMOVE_COMMAND} label={t("settingsFileCopyCommand")} />
+          <p className="settings-file-hint">{t("settingsFileMcpRemoveOther")}</p>
         </div>
       )}
       <p className="settings-note">{t("settingsFileDescription")}</p>

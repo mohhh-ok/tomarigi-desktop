@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Seit diesem Start aus der Datei übernommen"
+    "message": "Änderungen aus der Einstellungsdatei (dieser Start)"
   },
   "settingsFileNoteTitle": {
     "message": "Aus der Einstellungsdatei geändert"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (vorheriger Wert bleibt)",
+    "message": "$SETTING$: $VALUE$ ist nicht möglich. $REASON$ (vorheriger Wert $PREVIOUS$ bleibt)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Es wurde entfernt, damit nichts in der App Ihren KI-Agenten Anweisungen schicken kann."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Wenn Sie es bei Claude Code registriert haben, führen Sie dies einmal im Terminal aus, um es zu entfernen:"
+    "message": "Wenn Sie Tomarigi in Claude Code registriert haben, führen Sie dies einmal im Terminal aus, um es zu entfernen:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Wenn Sie es in einem anderen Agenten registriert haben, entfernen Sie tomarigi aus dessen MCP-Einstellungen."
   },
   "settingsFileCopyCommand": {
     "message": "Befehl kopieren"
@@ -642,7 +651,7 @@
     "message": "Die lokale KI ist nicht eingerichtet. Geben Sie zuerst localAi an (baseUrl und model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Eine Lautstärke ist eine ganze Zahl von 0 bis 100 (Prozent)."
+    "message": "Schreiben Sie eine ganze Zahl von 0 bis 100 (Prozent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Geben Sie den Ordner als absoluten Pfad ohne \"..\" an."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nicht festgelegt"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "KI für Zusammenfassungen"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Lautstärke der Töne"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Vorlese-Lautstärke"
   }
 }

@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Recebido do ficheiro nesta execução"
+    "message": "Alterações vindas do ficheiro de definições (nesta execução)"
   },
   "settingsFileNoteTitle": {
     "message": "Alterado pelo ficheiro de definições"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (mantido o valor anterior)",
+    "message": "$SETTING$: não é possível usar $VALUE$. $REASON$ (mantido o valor anterior, $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Foi removido para que nada dentro da app possa enviar instruções aos seus agentes de IA."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Se o registou no Claude Code, execute isto uma vez num terminal para remover o registo:"
+    "message": "Se registou o Tomarigi no Claude Code, execute isto uma vez num terminal para remover o registo:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Se o registou noutro agente, remova tomarigi das definições de MCP desse agente."
   },
   "settingsFileCopyCommand": {
     "message": "Copiar comando"
@@ -642,7 +651,7 @@
     "message": "A IA local não está configurada. Indique antes localAi (baseUrl e model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "O volume é um número inteiro de 0 a 100 (percentagem)."
+    "message": "Escreva um número inteiro de 0 a 100 (percentagem)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Indique a pasta como um caminho absoluto sem \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Não definido"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "IA para resumos"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volume do som"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Volume da leitura"
   }
 }

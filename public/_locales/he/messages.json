@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "מה שנלקח מהקובץ מאז ההפעלה הזו"
+    "message": "שינויים מקובץ ההגדרות (ההפעלה הזו)"
   },
   "settingsFileNoteTitle": {
     "message": "שונה מקובץ ההגדרות"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (הערך הקודם נשמר)",
+    "message": "$SETTING$: אי אפשר להשתמש ב-$VALUE$. $REASON$ (הערך הקודם נשמר: $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "הוא הוסר כדי שדבר בתוך האפליקציה לא יוכל לשלוח הוראות לסוכני ה-AI שלכם."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "אם רשמתם אותו ב-Claude Code, הריצו פעם אחת בטרמינל כדי לבטל את הרישום:"
+    "message": "אם רשמתם את Tomarigi ב-Claude Code, הריצו את זה פעם אחת בטרמינל כדי לבטל את הרישום:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "אם רשמתם אותו בסוכן אחר, הסירו את tomarigi מהגדרות ה-MCP של אותו סוכן."
   },
   "settingsFileCopyCommand": {
     "message": "העתקת הפקודה"
@@ -642,7 +651,7 @@
     "message": "AI מקומי לא הוגדר. ציינו קודם את localAi ‏(baseUrl ו-model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "עוצמה היא מספר שלם מ-0 עד 100 (אחוזים)."
+    "message": "כתבו מספר שלם בין 0 ל-100 (אחוזים)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "ציינו את התיקייה בנתיב מוחלט בלי \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "לא הוגדר"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI לסיכומים"
-  },
-  "settingsFileChirpVolume": {
-    "message": "עוצמת הצליל"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "עוצמת ההקראה"
   }
 }

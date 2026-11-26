@@ -227,6 +227,7 @@ export const KEYS = [
   "settingsFileMcpRemoved",
   "settingsFileMcpRemovedWhy",
   "settingsFileMcpRemoveHint",
+  "settingsFileMcpRemoveOther",
   "settingsFileCopyCommand",
   "settingsFileCloseNote",
   "settingsProblemNoServer",
@@ -245,9 +246,6 @@ export const KEYS = [
   "settingsFileOn",
   "settingsFileOff",
   "settingsFileNotSet",
-  "settingsFileSummaryProvider",
-  "settingsFileChirpVolume",
-  "settingsFileReadAloudVolume",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).
@@ -278,7 +276,7 @@ export const PLACEHOLDERS = {
   conciergeSummaryMore: { count: "$1" },
   conciergeSummaryNow: { state: "$1" },
   settingsFileInstructions: { readme: "$1" },
-  settingsFileRefusedLine: { setting: "$1", reason: "$2" },
+  settingsFileRefusedLine: { setting: "$1", value: "$2", reason: "$3", previous: "$4" },
   settingsFileUnreadable: { line: "$1", column: "$2" },
   settingsFileIgnoredKeys: { keys: "$1" },
   settingsFileSecretKeys: { keys: "$1" },

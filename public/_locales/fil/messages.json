@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Kinuha mula sa file sa pagbukas na ito"
+    "message": "Mga pagbabago mula sa file ng mga setting (sa pagbukas na ito)"
   },
   "settingsFileNoteTitle": {
     "message": "Binago mula sa file ng mga setting"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (pinanatili ang dating halaga)",
+    "message": "$SETTING$: hindi magagamit ang $VALUE$. $REASON$ (pinanatili ang dating halaga, $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Inalis ito para walang anuman sa loob ng app ang makapagpadala ng utos sa iyong mga AI agent."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Kung inirehistro mo ito sa Claude Code, patakbuhin ito nang isang beses sa terminal para tanggalin:"
+    "message": "Kung nairehistro mo ang Tomarigi sa Claude Code, patakbuhin ito nang isang beses sa terminal para alisin ang rehistro:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Kung nairehistro mo ito sa ibang agent, alisin ang tomarigi sa mga setting ng MCP ng agent na iyon."
   },
   "settingsFileCopyCommand": {
     "message": "Kopyahin ang command"
@@ -642,7 +651,7 @@
     "message": "Hindi pa naka-set up ang lokal na AI. Ilagay muna ang localAi (baseUrl at model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Ang volume ay buong numero mula 0 hanggang 100 (porsiyento)."
+    "message": "Isulat ang buong bilang mula 0 hanggang 100 (porsiyento)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Ilagay ang folder bilang absolute path na walang \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Hindi nakatakda"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI para sa mga buod"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Lakas ng tunog"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Lakas ng pagbasa"
   }
 }

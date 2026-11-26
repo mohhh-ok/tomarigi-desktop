@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Uit het bestand overgenomen sinds deze start"
+    "message": "Wijzigingen uit het instellingenbestand (deze start)"
   },
   "settingsFileNoteTitle": {
     "message": "Gewijzigd via het instellingenbestand"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (vorige waarde blijft)",
+    "message": "$SETTING$: $VALUE$ kan niet. $REASON$ (vorige waarde $PREVIOUS$ blijft)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Het is verwijderd zodat niets in de app instructies naar je AI-agents kan sturen."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Als je het bij Claude Code had geregistreerd, voer dit één keer uit in een terminal om het te verwijderen:"
+    "message": "Als je Tomarigi in Claude Code hebt geregistreerd, voer dit één keer uit in een terminal om het te verwijderen:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Als je het bij een andere agent hebt geregistreerd, verwijder tomarigi uit de MCP-instellingen van die agent."
   },
   "settingsFileCopyCommand": {
     "message": "Opdracht kopiëren"
@@ -642,7 +651,7 @@
     "message": "Lokale AI is niet ingesteld. Geef eerst localAi op (baseUrl en model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Een volume is een geheel getal van 0 tot 100 (procent)."
+    "message": "Schrijf een geheel getal van 0 tot 100 (procent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Geef de map op als absoluut pad zonder \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Niet ingesteld"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI voor samenvattingen"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volume van geluid"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Voorleesvolume"
   }
 }

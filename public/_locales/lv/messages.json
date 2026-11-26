@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Paņemts no faila kopš šīs palaišanas"
+    "message": "Izmaiņas no iestatījumu faila (šī palaišana)"
   },
   "settingsFileNoteTitle": {
     "message": "Mainīts no iestatījumu faila"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (saglabāta iepriekšējā vērtība)",
+    "message": "$SETTING$: $VALUE$ nevar izmantot. $REASON$ (saglabāta iepriekšējā vērtība $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Noņemts, lai nekas lietotnē nevarētu sūtīt norādījumus jūsu MI aģentiem."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Ja to reģistrējāt Claude Code, vienreiz palaidiet šo terminālī, lai noņemtu reģistrāciju:"
+    "message": "Ja reģistrējāt Tomarigi programmā Claude Code, vienreiz palaidiet šo terminālī, lai noņemtu reģistrāciju:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Ja reģistrējāt to citā aģentā, noņemiet tomarigi no šī aģenta MCP iestatījumiem."
   },
   "settingsFileCopyCommand": {
     "message": "Kopēt komandu"
@@ -642,7 +651,7 @@
     "message": "Vietējais MI nav iestatīts. Vispirms norādiet localAi (baseUrl un model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Skaļums ir vesels skaitlis no 0 līdz 100 (procenti)."
+    "message": "Ierakstiet veselu skaitli no 0 līdz 100 (procenti)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Norādiet mapi kā absolūtu ceļu bez \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nav iestatīts"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "MI kopsavilkumiem"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Skaņas skaļums"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Lasīšanas skaļums"
   }
 }

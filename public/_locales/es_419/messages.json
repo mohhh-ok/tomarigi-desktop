@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Tomado del archivo en este inicio"
+    "message": "Cambios desde el archivo de configuración (este inicio)"
   },
   "settingsFileNoteTitle": {
     "message": "Cambiado desde el archivo de configuración"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (se mantiene el valor anterior)",
+    "message": "$SETTING$: no se puede usar $VALUE$. $REASON$ (se mantiene el valor anterior, $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Se quitó para que nada dentro de la app pueda enviar instrucciones a tus agentes de IA."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Si lo registraste en Claude Code, ejecuta esto una vez en una terminal para quitarlo:"
+    "message": "Si registraste Tomarigi en Claude Code, ejecuta esto una vez en una terminal para quitarlo:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Si lo registraste en otro agente, quita tomarigi de la configuración de MCP de ese agente."
   },
   "settingsFileCopyCommand": {
     "message": "Copiar comando"
@@ -642,7 +651,7 @@
     "message": "La IA local no está configurada. Indica antes localAi (baseUrl y model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "El volumen es un número entero de 0 a 100 (porcentaje)."
+    "message": "Escribe un número entero de 0 a 100 (porcentaje)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Indica la carpeta con una ruta absoluta sin \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Sin configurar"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "IA para resúmenes"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volumen del sonido"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Volumen de lectura"
   }
 }

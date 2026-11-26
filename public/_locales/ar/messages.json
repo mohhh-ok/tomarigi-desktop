@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "ما أُخذ من الملف منذ هذا التشغيل"
+    "message": "التغييرات من ملف الإعدادات (هذا التشغيل)"
   },
   "settingsFileNoteTitle": {
     "message": "تغيير من ملف الإعدادات"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (بقيت القيمة السابقة)",
+    "message": "$SETTING$: لا يمكن استخدام $VALUE$. $REASON$ (بقيت القيمة السابقة: $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "أُزيلت حتى لا يستطيع أي شيء داخل التطبيق إرسال تعليمات إلى وكلاء الذكاء الاصطناعي لديك."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "إذا كنت سجّلته في Claude Code، فشغّل هذا مرة واحدة في الطرفية لإلغاء تسجيله:"
+    "message": "إذا سجّلت Tomarigi في Claude Code، فشغّل هذا مرة واحدة في الطرفية لإلغاء التسجيل:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "إذا سجّلته في وكيل آخر، فاحذف tomarigi من إعدادات MCP لذلك الوكيل."
   },
   "settingsFileCopyCommand": {
     "message": "نسخ الأمر"
@@ -642,7 +651,7 @@
     "message": "الذكاء الاصطناعي المحلي غير مُعدّ. حدّد أولًا localAi ‏(baseUrl وmodel)."
   },
   "settingsProblemVolumeRange": {
-    "message": "مستوى الصوت عدد صحيح من 0 إلى 100 (نسبة مئوية)."
+    "message": "اكتب عددًا صحيحًا من 0 إلى 100 (نسبة مئوية)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "اكتب المجلد بمسار مطلق بدون \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "غير معيّن"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "الذكاء الاصطناعي للملخصات"
-  },
-  "settingsFileChirpVolume": {
-    "message": "مستوى الصوت"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "مستوى صوت القراءة"
   }
 }

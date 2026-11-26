@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Diambil dari file sejak dibuka kali ini"
+    "message": "Perubahan dari file pengaturan (sejak dibuka kali ini)"
   },
   "settingsFileNoteTitle": {
     "message": "Diubah dari file pengaturan"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (nilai sebelumnya dipertahankan)",
+    "message": "$SETTING$: $VALUE$ tidak bisa dipakai. $REASON$ (nilai sebelumnya $PREVIOUS$ dipertahankan)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Fitur ini dihapus agar tidak ada apa pun di dalam aplikasi yang bisa mengirim instruksi ke agen AI Anda."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Jika Anda mendaftarkannya di Claude Code, jalankan ini sekali di terminal untuk menghapus pendaftarannya:"
+    "message": "Jika Anda mendaftarkan Tomarigi di Claude Code, jalankan ini sekali di terminal untuk menghapus pendaftarannya:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Jika Anda mendaftarkannya di agen lain, hapus tomarigi dari pengaturan MCP agen itu."
   },
   "settingsFileCopyCommand": {
     "message": "Salin perintah"
@@ -642,7 +651,7 @@
     "message": "AI lokal belum diatur. Tulis dulu localAi (baseUrl dan model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Volume adalah bilangan bulat 0 sampai 100 (persen)."
+    "message": "Tulis bilangan bulat dari 0 sampai 100 (persen)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Tulis folder sebagai jalur absolut tanpa \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Belum diatur"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI untuk ringkasan"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volume suara"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Volume pembacaan"
   }
 }

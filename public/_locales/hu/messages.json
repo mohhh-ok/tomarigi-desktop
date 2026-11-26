@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "A fájlból átvett változások ebben a futásban"
+    "message": "Változások a beállításfájlból (ez a futás)"
   },
   "settingsFileNoteTitle": {
     "message": "Módosítva a beállításfájlból"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (az előző érték maradt)",
+    "message": "$SETTING$: a(z) $VALUE$ nem használható. $REASON$ (az előző érték maradt: $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Azért szűnt meg, hogy az alkalmazáson belülről semmi ne küldhessen utasítást az MI-ügynökeinek."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Ha regisztrálta a Claude Code-ban, futtassa ezt egyszer egy terminálban a regisztráció törléséhez:"
+    "message": "Ha regisztrálta a Tomarigit a Claude Code-ban, futtassa ezt egyszer egy terminálban a regisztráció törléséhez:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Ha másik ügynökben regisztrálta, törölje a tomarigit annak az ügynöknek az MCP-beállításaiból."
   },
   "settingsFileCopyCommand": {
     "message": "Parancs másolása"
@@ -642,7 +651,7 @@
     "message": "A helyi MI nincs beállítva. Először adja meg a localAi értéket (baseUrl és model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "A hangerő 0 és 100 közötti egész szám (százalék)."
+    "message": "Írjon egy 0 és 100 közötti egész számot (százalék)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "A mappát \"..\" nélküli abszolút útvonalként adja meg."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nincs beállítva"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "MI az összefoglalókhoz"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Hangerő"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Felolvasás hangereje"
   }
 }

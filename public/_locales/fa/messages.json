@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "دریافت‌شده از فایل در این اجرا"
+    "message": "تغییرات از فایل تنظیمات (این اجرا)"
   },
   "settingsFileNoteTitle": {
     "message": "تغییر از فایل تنظیمات"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (مقدار قبلی ماند)",
+    "message": "$SETTING$: نمی‌توان از $VALUE$ استفاده کرد. $REASON$ (مقدار قبلی ماند: $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "حذف شد تا هیچ چیزی در داخل برنامه نتواند به عامل‌های هوش مصنوعی شما دستور بفرستد."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "اگر آن را در Claude Code ثبت کرده بودید، این را یک بار در ترمینال اجرا کنید تا ثبت حذف شود:"
+    "message": "اگر Tomarigi را در Claude Code ثبت کرده بودید، این را یک بار در ترمینال اجرا کنید تا ثبت حذف شود:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "اگر آن را در عامل دیگری ثبت کرده بودید، tomarigi را از تنظیمات MCP آن عامل حذف کنید."
   },
   "settingsFileCopyCommand": {
     "message": "کپی فرمان"
@@ -642,7 +651,7 @@
     "message": "هوش مصنوعی محلی تنظیم نشده است. اول localAi (baseUrl و model) را بنویسید."
   },
   "settingsProblemVolumeRange": {
-    "message": "بلندی صدا عددی صحیح از ۰ تا ۱۰۰ است (درصد)."
+    "message": "یک عدد صحیح از 0 تا 100 (درصد) بنویسید."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "پوشه را با مسیر مطلق و بدون \"..\" بنویسید."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "تنظیم نشده"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "هوش مصنوعی برای خلاصه‌ها"
-  },
-  "settingsFileChirpVolume": {
-    "message": "بلندی صدا"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "بلندی خواندن"
   }
 }

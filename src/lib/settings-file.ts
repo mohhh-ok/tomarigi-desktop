@@ -56,6 +56,10 @@ export interface FileRefusal {
   field: FileField;
   /** The setting in the UI language, with the entry when it is one of a list */
   setting: string;
+  /** What the file had, as JSON (cut when long) */
+  value: string;
+  /** The value kept, said as a change would say it */
+  previous: string;
   problem: SettingsProblem;
 }
 
@@ -86,21 +90,32 @@ const ICON_SET_TEXT: Record<IconSetId, MessageName> = {
 const LOOK_TEXT: Record<ConciergeLook, MessageName> = { owl: "conciergeLookOwl", penguin: "conciergeLookPenguin" };
 const WINDOW_TEXT: Record<WindowMode, MessageName> = { floating: "windowModeFloating", normal: "windowModeNormal" };
 
-/** The setting each key is, as the screen names it */
-export const FIELD_NAME: Record<FileField, MessageName> = {
-  chirps: "soundEnableLabel",
-  chirpVolume: "settingsFileChirpVolume",
-  readAloud: "voiceEnableLabel",
-  readAloudVolume: "settingsFileReadAloudVolume",
-  readoutVoice: "readoutVoiceLabel",
-  localAi: "localAiHeading",
-  summaryProvider: "settingsFileSummaryProvider",
-  windowMode: "windowModeHeading",
-  conciergeLook: "conciergeName",
-  iconSets: "iconSetHeading",
-  watchedFolders: "rootsHeading",
-  defaultFolderLabels: "rootsHeading",
+/** The setting each key is, as the screen names it: the words a user sees on the way to it, outermost first */
+export const FIELD_NAME: Record<FileField, MessageName[]> = {
+  chirps: ["soundEnableLabel"],
+  chirpVolume: ["soundEnableLabel", "voiceVolumeLabel"],
+  readAloud: ["voiceEnableLabel"],
+  readAloudVolume: ["voiceEnableLabel", "voiceVolumeLabel"],
+  readoutVoice: ["readoutVoiceLabel"],
+  localAi: ["aiApiKeysHeading", "localAiHeading"],
+  summaryProvider: ["aiApiKeysHeading"],
+  windowMode: ["windowModeHeading"],
+  conciergeLook: ["conciergeName"],
+  iconSets: ["iconSetHeading"],
+  watchedFolders: ["rootsHeading"],
+  defaultFolderLabels: ["rootsHeading"],
 };
+
+/** Between the words of a setting's name, and before a list's entry */
+export const NAME_SEPARATOR = " › ";
+
+const SHOWN_VALUE_MAX = 60;
+
+/** A value as the file has it, for a refused line */
+export function shownValue(value: unknown): string {
+  const text = value === undefined ? "null" : JSON.stringify(value);
+  return text.length > SHOWN_VALUE_MAX ? `${text.slice(0, SHOWN_VALUE_MAX - 1)}…` : text;
+}
 
 /** JSON with sorted keys, so two values compare equal whatever order a writer put their keys in */
 export function stableJson(value: unknown): string {
@@ -162,13 +177,60 @@ export async function applyFileDoc(
   const onOff = (v: unknown) => say(v === true ? "settingsFileOn" : "settingsFileOff");
   const pct = (v: unknown) => `${typeof v === "number" ? v : 100}%`;
   const notSet = say("settingsFileNotSet");
+  const providerName = (p: unknown) =>
+    typeof p === "string" && p in PROVIDER_NAME ? PROVIDER_NAME[p as keyof typeof PROVIDER_NAME] : notSet;
+  const optionText = (field: "windowMode" | "conciergeLook", v: unknown) => {
+    const text: Record<string, MessageName> = field === "windowMode" ? WINDOW_TEXT : LOOK_TEXT;
+    return typeof v === "string" && text[v] ? say(text[v]) : notSet;
+  };
+  const iconSetText = (entry: { set: IconSetId } | undefined) => say(ICON_SET_TEXT[entry?.set ?? "birds"]);
+  const folderText = (f: FileFolder) => `${f.label} (${f.path})`;
+  const listText = (items: string[]) => (items.length > 0 ? items.join(", ") : notSet);
+  /** A whole value in use, said as a change says it */
+  const describe = (field: FileField, v: unknown): string => {
+    switch (field) {
+      case "chirps":
+      case "readAloud":
+        return onOff(v);
+      case "chirpVolume":
+      case "readAloudVolume":
+        return pct(v);
+      case "readoutVoice": {
+        const server = (v as FileReadoutVoice | undefined)?.server;
+        return describeVoice(say, v, server ? voiceInfo[voiceInfoKey(server)] : undefined);
+      }
+      case "localAi": {
+        const c = v as { baseUrl: string; model: string } | null | undefined;
+        return c ? `${c.baseUrl} ${c.model}` : notSet;
+      }
+      case "summaryProvider":
+        return providerName(v);
+      case "windowMode":
+      case "conciergeLook":
+        return optionText(field, v);
+      case "iconSets":
+        return listText(Object.values(isObject(v) ? (v as Record<string, { set: IconSetId; label: string }>) : {}).map((e) => `${e.label}: ${iconSetText(e)}`));
+      case "watchedFolders":
+        return listText((Array.isArray(v) ? (v as FileFolder[]) : []).map(folderText));
+      case "defaultFolderLabels":
+        return listText(Object.entries(isObject(v) ? (v as Record<string, string>) : {}).map(([a, l]) => `${agentLabel(a)}: ${l}`));
+    }
+  };
 
   for (const field of FILE_FIELDS) {
     if (!(field in doc) || same(doc[field], seen[field])) continue;
     const raw = doc[field];
-    const name = say(FIELD_NAME[field]);
-    const refuse = (problem: SettingsProblem, entry?: string) =>
-      result.refused.push({ field, setting: entry ? `${name}: ${entry}` : name, problem });
+    const name = FIELD_NAME[field].map((k) => say(k)).join(NAME_SEPARATOR);
+    const entryName = (entry: string) => `${name}${NAME_SEPARATOR}${entry}`;
+    /** Without `entry`, the whole value is refused and the whole value in use stays */
+    const refuse = (problem: SettingsProblem, entry?: { name: string; value: unknown; previous: string }) =>
+      result.refused.push({
+        field,
+        setting: entry ? entryName(entry.name) : name,
+        value: shownValue(entry ? entry.value : raw),
+        previous: entry ? entry.previous : describe(field, applied[field]),
+        problem,
+      });
     const accept = (value: unknown, changes: FileChange[]) => {
       if (same(value, applied[field])) return;
       next[field] = value;
@@ -222,7 +284,7 @@ export async function applyFileDoc(
           ]);
           const notListed = checkVoiceInList(server.voice, voices?.map((o) => o.value));
           if (notListed) {
-            refuse(notListed);
+            refuse(notListed, { name: say("readoutVoiceNameLabel"), value: server.voice, previous: describe(field, applied[field]) });
             break;
           }
           const option = voices?.find((o) => o.value === server!.voice);
@@ -249,34 +311,28 @@ export async function applyFileDoc(
         const problem = checkLocalAi(config);
         if (problem) refuse(problem);
         else {
-          const before = applied.localAi as { baseUrl: string; model: string } | null | undefined;
-          accept(config, [
-            { setting: name, from: before ? `${before.baseUrl} ${before.model}` : notSet, to: `${config.baseUrl} ${config.model}` },
-          ]);
+          accept(config, [{ setting: name, from: describe(field, applied.localAi), to: describe(field, config) }]);
         }
         break;
       }
       case "summaryProvider": {
-        const nameOf = (p: unknown) => (typeof p === "string" && p in PROVIDER_NAME ? PROVIDER_NAME[p as keyof typeof PROVIDER_NAME] : notSet);
         if (raw === null) {
-          accept(null, [{ setting: name, from: nameOf(applied.summaryProvider), to: notSet }]);
+          accept(null, [{ setting: name, from: providerName(applied.summaryProvider), to: notSet }]);
           break;
         }
         const problem =
           checkOption(raw, PROVIDERS) ??
           checkProviderChoice(raw as (typeof PROVIDERS)[number], { ...deps.keySaved, local: isObject(next.localAi) });
         if (problem) refuse(problem);
-        else accept(raw, [{ setting: name, from: nameOf(applied.summaryProvider), to: nameOf(raw) }]);
+        else accept(raw, [{ setting: name, from: providerName(applied.summaryProvider), to: providerName(raw) }]);
         break;
       }
       case "windowMode":
       case "conciergeLook": {
         const options: readonly string[] = field === "windowMode" ? WINDOW_MODES : CONCIERGE_LOOKS;
-        const text: Record<string, MessageName> = field === "windowMode" ? WINDOW_TEXT : LOOK_TEXT;
         const problem = checkOption(raw, options);
-        const said = (v: unknown) => (typeof v === "string" && text[v] ? say(text[v]) : notSet);
         if (problem) refuse(problem);
-        else accept(raw, [{ setting: name, from: said(applied[field]), to: said(raw) }]);
+        else accept(raw, [{ setting: name, from: optionText(field, applied[field]), to: optionText(field, raw) }]);
         break;
       }
       case "iconSets": {
@@ -291,7 +347,7 @@ export async function applyFileDoc(
           const label = isObject(entry) ? str(entry.label) : undefined;
           const problem = !isObject(entry) || label === undefined ? "wrong-type" : checkOption(entry.set, ICON_SET_IDS);
           if (problem) {
-            refuse(problem, label || slug);
+            refuse(problem, { name: label || slug, value: entry, previous: iconSetText(before[slug]) });
             if (before[slug]) value[slug] = before[slug];
             continue;
           }
@@ -299,10 +355,10 @@ export async function applyFileDoc(
           // birds is the default: choosing it removes the entry, as on the screen
           if (set !== "birds") value[slug] = { set, label: label! };
           const from = before[slug]?.set ?? "birds";
-          if (from !== set) changes.push({ setting: `${name}: ${label}`, from: say(ICON_SET_TEXT[from]), to: say(ICON_SET_TEXT[set]) });
+          if (from !== set) changes.push({ setting: entryName(label!), from: say(ICON_SET_TEXT[from]), to: say(ICON_SET_TEXT[set]) });
         }
         for (const [slug, entry] of Object.entries(before)) {
-          if (!(slug in raw)) changes.push({ setting: `${name}: ${entry.label}`, from: say(ICON_SET_TEXT[entry.set]), to: say(ICON_SET_TEXT.birds) });
+          if (!(slug in raw)) changes.push({ setting: entryName(entry.label), from: iconSetText(entry), to: iconSetText(undefined) });
         }
         accept(value, changes);
         break;
@@ -327,8 +383,10 @@ export async function applyFileDoc(
             value.push(old);
             taken.push(old);
           };
+          const refuseEntry = (problem: SettingsProblem) =>
+            refuse(problem, { name: label || path || "?", value: entry, previous: old ? folderText(old) : notSet });
           if (!isObject(entry) || path === undefined || label === undefined || id === undefined) {
-            refuse("wrong-type", label || path);
+            refuseEntry("wrong-type");
             keep();
             continue;
           }
@@ -339,19 +397,19 @@ export async function applyFileDoc(
             (unchangedPlace ? undefined : (checkTypedRootPath(path) ?? checkNewRoot(taken, path))) ??
             (unchangedPlace || (await deps.readable(path)) ? undefined : "not-readable");
           if (problem) {
-            refuse(problem, label || path);
+            refuseEntry(problem);
             keep();
             continue;
           }
           const folder: FileFolder = { agent: entry.agent as string, path, label, id };
           value.push(folder);
           taken.push(folder);
-          if (!old) changes.push({ setting: name, from: notSet, to: `${label} (${path})` });
+          if (!old) changes.push({ setting: name, from: notSet, to: folderText(folder) });
           else if (old.label !== label || old.path !== path) changes.push({ setting: name, from: old.label, to: label });
         }
         const kept = new Set(value.map((f) => folderIdOf(f)));
         for (const f of before) {
-          if (!kept.has(folderIdOf(f))) changes.push({ setting: name, from: `${f.label} (${f.path})`, to: notSet });
+          if (!kept.has(folderIdOf(f))) changes.push({ setting: name, from: folderText(f), to: notSet });
         }
         accept(value, changes);
         break;
@@ -368,7 +426,7 @@ export async function applyFileDoc(
           const text = str(label);
           const problem = checkOption(agent, AGENT_KINDS) ?? (text === undefined ? "wrong-type" : checkRootLabel(text));
           if (problem) {
-            refuse(problem, agent);
+            refuse(problem, { name: agent, value: label, previous: before[agent] ?? agentLabel(agent) });
             if (before[agent]) value[agent] = before[agent];
             continue;
           }

@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "この起動で設定ファイルから受け取ったもの"
+    "message": "設定ファイルからの変更（この起動中）"
   },
   "settingsFileNoteTitle": {
     "message": "設定ファイルから変更"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$（前の値のまま）",
+    "message": "$SETTING$: $VALUE$ は使えません。$REASON$（前の値 $PREVIOUS$ のまま）",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "アプリの中から AI エージェントへ指示を送れる経路をなくすためです。"
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Claude Code に登録していた場合は、ターミナルで次を 1 回実行して登録を消してください:"
+    "message": "Claude Code に Tomarigi を登録していた場合は、ターミナルで次を 1 回実行して登録を消してください:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "ほかのエージェントに登録していた場合は、そのエージェントの MCP の設定から tomarigi を消してください。"
   },
   "settingsFileCopyCommand": {
     "message": "コマンドをコピー"
@@ -642,7 +651,7 @@
     "message": "ローカル AI が未設定です。先に localAi（baseUrl と model）を書いてください。"
   },
   "settingsProblemVolumeRange": {
-    "message": "音量は 0 から 100 までの整数（パーセント）です。"
+    "message": "0 から 100 までの整数（パーセント）で書いてください。"
   },
   "settingsProblemPathNotAbsolute": {
     "message": "フォルダは \"..\" を含まない絶対パスで書いてください。"
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "未設定"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "要約に使う AI"
-  },
-  "settingsFileChirpVolume": {
-    "message": "音の音量"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "読み上げの音量"
   }
 }

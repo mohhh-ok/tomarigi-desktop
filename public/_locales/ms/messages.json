@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Diambil daripada fail sejak dibuka kali ini"
+    "message": "Perubahan daripada fail tetapan (sejak dibuka kali ini)"
   },
   "settingsFileNoteTitle": {
     "message": "Ditukar daripada fail tetapan"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (nilai sebelumnya dikekalkan)",
+    "message": "$SETTING$: $VALUE$ tidak boleh digunakan. $REASON$ (nilai sebelumnya $PREVIOUS$ dikekalkan)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Ia dibuang supaya tiada apa-apa dalam apl boleh menghantar arahan kepada ejen AI anda."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Jika anda mendaftarkannya dalam Claude Code, jalankan ini sekali dalam terminal untuk membuang pendaftaran:"
+    "message": "Jika anda mendaftarkan Tomarigi dalam Claude Code, jalankan ini sekali dalam terminal untuk memadam pendaftarannya:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Jika anda mendaftarkannya dalam ejen lain, padam tomarigi daripada tetapan MCP ejen itu."
   },
   "settingsFileCopyCommand": {
     "message": "Salin perintah"
@@ -642,7 +651,7 @@
     "message": "AI setempat belum disediakan. Tulis dahulu localAi (baseUrl dan model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Kelantangan ialah nombor bulat dari 0 hingga 100 (peratus)."
+    "message": "Tulis nombor bulat dari 0 hingga 100 (peratus)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Tulis folder sebagai laluan mutlak tanpa \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Belum ditetapkan"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI untuk ringkasan"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Kelantangan bunyi"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Kelantangan bacaan"
   }
 }

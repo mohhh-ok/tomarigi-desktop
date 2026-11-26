@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Bu açılışta dosyadan alınanlar"
+    "message": "Ayar dosyasından gelen değişiklikler (bu açılış)"
   },
   "settingsFileNoteTitle": {
     "message": "Ayar dosyasından değiştirildi"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (önceki değer korundu)",
+    "message": "$SETTING$: $VALUE$ kullanılamaz. $REASON$ (önceki değer $PREVIOUS$ korundu)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Uygulamanın içinden yapay zekâ ajanlarınıza talimat gönderilememesi için kaldırıldı."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Claude Code'a kaydettiyseniz kaydı silmek için bunu terminalde bir kez çalıştırın:"
+    "message": "Tomarigi'yi Claude Code'a kaydettiyseniz, kaydı silmek için bunu terminalde bir kez çalıştırın:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Başka bir ajana kaydettiyseniz, tomarigi'yi o ajanın MCP ayarlarından silin."
   },
   "settingsFileCopyCommand": {
     "message": "Komutu kopyala"
@@ -642,7 +651,7 @@
     "message": "Yerel yapay zekâ kurulu değil. Önce localAi (baseUrl ve model) yazın."
   },
   "settingsProblemVolumeRange": {
-    "message": "Ses düzeyi 0 ile 100 arasında bir tam sayıdır (yüzde)."
+    "message": "0 ile 100 arasında bir tam sayı (yüzde) yazın."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Klasörü \"..\" içermeyen mutlak bir yol olarak yazın."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Ayarlanmadı"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "Özetler için yapay zekâ"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Ses düzeyi"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Okuma ses düzeyi"
   }
 }

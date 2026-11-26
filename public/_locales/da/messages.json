@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Hentet fra filen siden denne start"
+    "message": "Ændringer fra indstillingsfilen (denne start)"
   },
   "settingsFileNoteTitle": {
     "message": "Ændret fra indstillingsfilen"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (forrige værdi beholdes)",
+    "message": "$SETTING$: $VALUE$ kan ikke bruges. $REASON$ (forrige værdi $PREVIOUS$ beholdes)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Den blev fjernet, så intet i appen kan sende instruktioner til dine AI-agenter."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Hvis du registrerede den i Claude Code, så kør dette én gang i en terminal for at afregistrere den:"
+    "message": "Hvis du registrerede Tomarigi i Claude Code, så kør dette én gang i en terminal for at fjerne registreringen:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Hvis du registrerede den i en anden agent, så fjern tomarigi fra den agents MCP-indstillinger."
   },
   "settingsFileCopyCommand": {
     "message": "Kopiér kommando"
@@ -642,7 +651,7 @@
     "message": "Lokal AI er ikke sat op. Angiv først localAi (baseUrl og model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "En lydstyrke er et heltal fra 0 til 100 (procent)."
+    "message": "Skriv et heltal fra 0 til 100 (procent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Angiv mappen som en absolut sti uden \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Ikke angivet"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI til resuméer"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Lydstyrke"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Oplæsningslydstyrke"
   }
 }

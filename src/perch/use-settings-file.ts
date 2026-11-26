@@ -88,7 +88,7 @@ async function accept(result: ApplyResult): Promise<void> {
     log(`[settings-file] applied ${field}`);
     if (field !== "windowMode") notifySettingChanged(STORE_KEY_OF[field as Exclude<FileField, "windowMode">], FROM_SETTINGS_FILE);
   }
-  for (const r of result.refused) log(`[settings-file] refused ${r.field}: ${problemText(r.problem)}`);
+  for (const r of result.refused) log(`[settings-file] refused ${r.field} ${r.value}: ${problemText(r.problem)}`);
 }
 
 export function useSettingsFile() {
@@ -113,7 +113,7 @@ export function useSettingsFile() {
       const lines: { text: string; problem: boolean }[] = [];
       if (withChanges) for (const c of result.changes) lines.push({ text: `${c.setting}: ${c.from} → ${c.to}`, problem: false });
       for (const r of result.refused) {
-        lines.push({ text: t("settingsFileRefusedLine", [r.setting, problemMessage(r.problem)]), problem: true });
+        lines.push({ text: t("settingsFileRefusedLine", [r.setting, r.value, problemMessage(r.problem), r.previous]), problem: true });
       }
       const fresh = (keys: string[]) => keys.filter((k) => !reported.current.has(k));
       const unknown = fresh(result.unknown);

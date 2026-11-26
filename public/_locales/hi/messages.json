@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "इस बार खुलने के बाद फ़ाइल से लिया गया"
+    "message": "सेटिंग्स फ़ाइल से बदलाव (इस बार खुलने में)"
   },
   "settingsFileNoteTitle": {
     "message": "सेटिंग्स फ़ाइल से बदला गया"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (पिछला मान रखा गया)",
+    "message": "$SETTING$: $VALUE$ इस्तेमाल नहीं हो सकता। $REASON$ (पिछला मान $PREVIOUS$ रखा गया)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "इसे इसलिए हटाया गया ताकि ऐप के अंदर से कुछ भी आपके AI एजेंटों को निर्देश न भेज सके।"
   },
   "settingsFileMcpRemoveHint": {
-    "message": "अगर आपने इसे Claude Code में रजिस्टर किया था, तो इसे हटाने के लिए टर्मिनल में यह एक बार चलाएँ:"
+    "message": "अगर आपने Tomarigi को Claude Code में रजिस्टर किया था, तो रजिस्ट्रेशन हटाने के लिए टर्मिनल में इसे एक बार चलाएँ:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "अगर आपने इसे किसी दूसरे एजेंट में रजिस्टर किया था, तो उस एजेंट की MCP सेटिंग्स से tomarigi हटाएँ।"
   },
   "settingsFileCopyCommand": {
     "message": "कमांड कॉपी करें"
@@ -642,7 +651,7 @@
     "message": "लोकल AI सेट नहीं है। पहले localAi (baseUrl और model) लिखें।"
   },
   "settingsProblemVolumeRange": {
-    "message": "वॉल्यूम 0 से 100 तक का पूर्णांक (प्रतिशत) होता है।"
+    "message": "0 से 100 तक की पूर्ण संख्या (प्रतिशत) लिखें।"
   },
   "settingsProblemPathNotAbsolute": {
     "message": "फ़ोल्डर को \"..\" के बिना पूर्ण पथ के रूप में लिखें।"
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "सेट नहीं"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "सारांश के लिए AI"
-  },
-  "settingsFileChirpVolume": {
-    "message": "आवाज़ का वॉल्यूम"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "पढ़ने का वॉल्यूम"
   }
 }

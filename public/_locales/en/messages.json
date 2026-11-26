@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Taken from the file in this launch"
+    "message": "Changes from the settings file (this launch)"
   },
   "settingsFileNoteTitle": {
     "message": "Changed from the settings file"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (kept the previous value)",
+    "message": "$SETTING$: $VALUE$ can't be used. $REASON$ (kept the previous value, $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "It was removed so that nothing inside the app can send instructions to your AI agents."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "If you registered it with Claude Code, run this once in a terminal to unregister it:"
+    "message": "If you registered Tomarigi with Claude Code, run this once in a terminal to unregister it:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "If you registered it with another agent, remove tomarigi from that agent's MCP settings."
   },
   "settingsFileCopyCommand": {
     "message": "Copy command"
@@ -642,7 +651,7 @@
     "message": "Local AI isn't set up. Set localAi (baseUrl and model) first."
   },
   "settingsProblemVolumeRange": {
-    "message": "A volume is a whole number from 0 to 100 (percent)."
+    "message": "Write a whole number from 0 to 100 (percent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Give the folder as an absolute path without \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Not set"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI for summaries"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Sound volume"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Readout volume"
   }
 }

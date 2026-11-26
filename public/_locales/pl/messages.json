@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Pobrane z pliku od tego uruchomienia"
+    "message": "Zmiany z pliku ustawień (to uruchomienie)"
   },
   "settingsFileNoteTitle": {
     "message": "Zmieniono z pliku ustawień"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (pozostaje poprzednia wartość)",
+    "message": "$SETTING$: nie można użyć $VALUE$. $REASON$ (pozostaje poprzednia wartość: $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Usunięto ją, aby nic wewnątrz aplikacji nie mogło wysyłać poleceń do twoich agentów AI."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Jeśli zarejestrowano ją w Claude Code, uruchom raz w terminalu, aby usunąć rejestrację:"
+    "message": "Jeśli zarejestrowano Tomarigi w Claude Code, uruchom to raz w terminalu, aby je wyrejestrować:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Jeśli zarejestrowano go w innym agencie, usuń tomarigi z ustawień MCP tego agenta."
   },
   "settingsFileCopyCommand": {
     "message": "Kopiuj polecenie"
@@ -642,7 +651,7 @@
     "message": "Lokalne AI nie jest skonfigurowane. Najpierw podaj localAi (baseUrl i model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Głośność to liczba całkowita od 0 do 100 (procent)."
+    "message": "Wpisz liczbę całkowitą od 0 do 100 (procent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Podaj folder jako ścieżkę bezwzględną bez \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nie ustawiono"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI do podsumowań"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Głośność dźwięku"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Głośność czytania"
   }
 }

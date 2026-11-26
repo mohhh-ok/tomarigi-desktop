@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Отримано з файлу з цього запуску"
+    "message": "Зміни з файлу налаштувань (цей запуск)"
   },
   "settingsFileNoteTitle": {
     "message": "Змінено з файлу налаштувань"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (залишено попереднє значення)",
+    "message": "$SETTING$: не можна використати $VALUE$. $REASON$ (залишено попереднє значення: $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Її вилучено, щоб ніщо всередині застосунку не могло надсилати вказівки вашим ШІ-агентам."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Якщо ви реєстрували його в Claude Code, виконайте це один раз у терміналі, щоб видалити реєстрацію:"
+    "message": "Якщо ви реєстрували Tomarigi в Claude Code, виконайте це один раз у терміналі, щоб видалити реєстрацію:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Якщо ви реєстрували його в іншому агенті, видаліть tomarigi з налаштувань MCP цього агента."
   },
   "settingsFileCopyCommand": {
     "message": "Копіювати команду"
@@ -642,7 +651,7 @@
     "message": "Локальний ШІ не налаштовано. Спершу вкажіть localAi (baseUrl і model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Гучність — ціле число від 0 до 100 (відсотки)."
+    "message": "Вкажіть ціле число від 0 до 100 (відсотки)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Вкажіть теку абсолютним шляхом без \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Не задано"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "ШІ для підсумків"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Гучність звуку"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Гучність озвучення"
   }
 }

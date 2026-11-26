@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Preluat din fișier la această pornire"
+    "message": "Modificări din fișierul de setări (această pornire)"
   },
   "settingsFileNoteTitle": {
     "message": "Modificat din fișierul de setări"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (s-a păstrat valoarea anterioară)",
+    "message": "$SETTING$: $VALUE$ nu poate fi folosit. $REASON$ (s-a păstrat valoarea anterioară, $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "A fost eliminat ca nimic din aplicație să nu poată trimite instrucțiuni agenților AI."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Dacă l-ați înregistrat în Claude Code, rulați o dată în terminal pentru a-l dezînregistra:"
+    "message": "Dacă ați înregistrat Tomarigi în Claude Code, rulați aceasta o dată într-un terminal pentru a anula înregistrarea:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Dacă l-ați înregistrat în alt agent, eliminați tomarigi din setările MCP ale acelui agent."
   },
   "settingsFileCopyCommand": {
     "message": "Copiază comanda"
@@ -642,7 +651,7 @@
     "message": "AI-ul local nu este configurat. Indicați întâi localAi (baseUrl și model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Volumul este un număr întreg de la 0 la 100 (procent)."
+    "message": "Scrieți un număr întreg de la 0 la 100 (procente)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Indicați dosarul ca o cale absolută fără \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nesetat"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI pentru rezumate"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volumul sunetului"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Volumul citirii"
   }
 }

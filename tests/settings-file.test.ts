@@ -111,7 +111,7 @@ describe("applyFileDoc", () => {
       { field: "readAloud", value: true },
     ]);
     expect(r.changes).toEqual([
-      { setting: "settingsFileChirpVolume", from: "100%", to: "40%" },
+      { setting: "soundEnableLabel › voiceVolumeLabel", from: "100%", to: "40%" },
       { setting: "voiceEnableLabel", from: "settingsFileOff", to: "settingsFileOn" },
     ]);
     expect(r.refused).toEqual([]);
@@ -129,6 +129,9 @@ describe("applyFileDoc", () => {
       ["chirpVolume", "volume-range"],
       ["localAi", "url-invalid"],
     ]);
+    // Said so the line reads as how to fix it: what was written and what stays
+    expect(r.refused[0]).toMatchObject({ setting: "soundEnableLabel › voiceVolumeLabel", value: "140", previous: "100%" });
+    expect(r.refused[1]).toMatchObject({ value: '{"baseUrl":"localhost:11434","model":"q"}', previous: "settingsFileNotSet" });
   });
 
   test("any host is fine for a server URL, as on the screen", async () => {
@@ -225,7 +228,8 @@ describe("applyFileDoc", () => {
       deps(),
     );
     expect(r.accepted).toEqual([{ field: "iconSets", value: { b: { set: "frog", label: "B" }, c: { set: "robot", label: "C" } } }]);
-    expect(r.refused.map((x) => [x.setting, x.problem])).toEqual([["iconSetHeading: B", "unknown-option"]]);
+    expect(r.refused[0]).toMatchObject({ value: '{"set":"dragon","label":"B"}', previous: "iconSetFrog" });
+    expect(r.refused.map((x) => [x.setting, x.problem])).toEqual([["iconSetHeading › B", "unknown-option"]]);
   });
 
   test("unknown keys and secret-looking keys are reported, never applied", async () => {

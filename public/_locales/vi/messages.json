@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Đã nhận từ tệp từ lần mở này"
+    "message": "Thay đổi từ tệp cài đặt (lần mở này)"
   },
   "settingsFileNoteTitle": {
     "message": "Thay đổi từ tệp cài đặt"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (giữ giá trị cũ)",
+    "message": "$SETTING$: không dùng được $VALUE$. $REASON$ (giữ giá trị cũ $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Tính năng này bị gỡ để không gì bên trong ứng dụng có thể gửi chỉ dẫn tới các tác nhân AI của bạn."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Nếu bạn đã đăng ký trong Claude Code, hãy chạy lệnh này một lần trong terminal để gỡ đăng ký:"
+    "message": "Nếu bạn đã đăng ký Tomarigi trong Claude Code, hãy chạy lệnh này một lần trong terminal để gỡ đăng ký:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Nếu bạn đã đăng ký trong agent khác, hãy xóa tomarigi khỏi phần cài đặt MCP của agent đó."
   },
   "settingsFileCopyCommand": {
     "message": "Sao chép lệnh"
@@ -642,7 +651,7 @@
     "message": "AI cục bộ chưa được thiết lập. Hãy ghi localAi (baseUrl và model) trước."
   },
   "settingsProblemVolumeRange": {
-    "message": "Âm lượng là số nguyên từ 0 đến 100 (phần trăm)."
+    "message": "Hãy ghi một số nguyên từ 0 đến 100 (phần trăm)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Ghi thư mục bằng đường dẫn tuyệt đối không có \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Chưa đặt"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI để tóm tắt"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Âm lượng âm báo"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Âm lượng đọc"
   }
 }

@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Pris dans le fichier depuis ce lancement"
+    "message": "Changements venant du fichier de réglages (ce lancement)"
   },
   "settingsFileNoteTitle": {
     "message": "Modifié depuis le fichier de réglages"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$ : $REASON$ (valeur précédente conservée)",
+    "message": "$SETTING$ : impossible d'utiliser $VALUE$. $REASON$ (valeur précédente conservée : $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Il a été supprimé pour que rien dans l'app ne puisse envoyer d'instructions à vos agents IA."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Si vous l'aviez enregistré dans Claude Code, exécutez ceci une fois dans un terminal pour le retirer :"
+    "message": "Si vous avez enregistré Tomarigi dans Claude Code, exécutez ceci une fois dans un terminal pour le retirer :"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Si vous l'avez enregistré dans un autre agent, retirez tomarigi des réglages MCP de cet agent."
   },
   "settingsFileCopyCommand": {
     "message": "Copier la commande"
@@ -642,7 +651,7 @@
     "message": "L'IA locale n'est pas configurée. Indiquez d'abord localAi (baseUrl et model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Un volume est un nombre entier de 0 à 100 (pourcentage)."
+    "message": "Écrivez un nombre entier de 0 à 100 (pourcentage)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Indiquez le dossier par un chemin absolu sans \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Non défini"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "IA des résumés"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volume du son"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Volume de lecture"
   }
 }

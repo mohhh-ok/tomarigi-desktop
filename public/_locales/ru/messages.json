@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Получено из файла с этого запуска"
+    "message": "Изменения из файла настроек (этот запуск)"
   },
   "settingsFileNoteTitle": {
     "message": "Изменено из файла настроек"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (оставлено прежнее значение)",
+    "message": "$SETTING$: нельзя использовать $VALUE$. $REASON$ (оставлено прежнее значение: $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Она удалена, чтобы ничто внутри приложения не могло отправлять указания вашим ИИ-агентам."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Если вы регистрировали его в Claude Code, выполните это один раз в терминале, чтобы удалить регистрацию:"
+    "message": "Если вы регистрировали Tomarigi в Claude Code, выполните это один раз в терминале, чтобы удалить регистрацию:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Если вы регистрировали его в другом агенте, удалите tomarigi из настроек MCP этого агента."
   },
   "settingsFileCopyCommand": {
     "message": "Копировать команду"
@@ -642,7 +651,7 @@
     "message": "Локальный ИИ не настроен. Сначала укажите localAi (baseUrl и model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Громкость — целое число от 0 до 100 (проценты)."
+    "message": "Укажите целое число от 0 до 100 (проценты)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Укажите папку абсолютным путём без \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Не задано"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "ИИ для сводок"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Громкость звука"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Громкость озвучки"
   }
 }

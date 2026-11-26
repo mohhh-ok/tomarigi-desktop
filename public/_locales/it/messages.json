@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Preso dal file in questo avvio"
+    "message": "Modifiche dal file delle impostazioni (questo avvio)"
   },
   "settingsFileNoteTitle": {
     "message": "Modificato dal file delle impostazioni"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (resta il valore precedente)",
+    "message": "$SETTING$: non si può usare $VALUE$. $REASON$ (resta il valore precedente, $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "È stato rimosso perché nulla all'interno dell'app possa inviare istruzioni ai tuoi agenti IA."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Se l'avevi registrato in Claude Code, esegui una volta questo comando in un terminale per rimuoverlo:"
+    "message": "Se hai registrato Tomarigi in Claude Code, esegui questo una volta in un terminale per rimuoverlo:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Se l'hai registrato in un altro agente, rimuovi tomarigi dalle impostazioni MCP di quell'agente."
   },
   "settingsFileCopyCommand": {
     "message": "Copia comando"
@@ -642,7 +651,7 @@
     "message": "L'IA locale non è configurata. Indica prima localAi (baseUrl e model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Il volume è un numero intero da 0 a 100 (percentuale)."
+    "message": "Scrivi un numero intero da 0 a 100 (percentuale)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Indica la cartella con un percorso assoluto senza \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Non impostato"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "IA per i riepiloghi"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Volume del suono"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Volume di lettura"
   }
 }

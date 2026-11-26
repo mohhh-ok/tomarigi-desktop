@@ -27,13 +27,13 @@ const now = Date.now();
 const RECENT = {
   ja: [
     { id: 3, at: now, text: "読み上げの声: システムの声 → VOICEVOX: 四国めたん（ノーマル）", problem: false },
-    { id: 2, at: now, text: "音の音量: 100% → 40%", problem: false },
-    { id: 1, at: now - 60_000, text: "読み上げの音量: 音量は 0 から 100 までの整数（パーセント）です。（前の値のまま）", problem: true },
+    { id: 2, at: now, text: "音で知らせる › 音量: 100% → 40%", problem: false },
+    { id: 1, at: now - 60_000, text: "声で読み上げる › 音量: 140 は使えません。0 から 100 までの整数（パーセント）で書いてください。（前の値 60% のまま）", problem: true },
   ],
   en: [
     { id: 3, at: now, text: "Readout voice: System voice → VOICEVOX: Shikoku Metan (Normal)", problem: false },
-    { id: 2, at: now, text: "Sound volume: 100% → 40%", problem: false },
-    { id: 1, at: now - 60_000, text: "Readout volume: A volume is a whole number from 0 to 100 (percent). (kept the previous value)", problem: true },
+    { id: 2, at: now, text: "Notify with sound › Volume: 100% → 40%", problem: false },
+    { id: 1, at: now - 60_000, text: "Read aloud with voice › Volume: 140 can't be used. Write a whole number from 0 to 100 (percent). (kept the previous value, 60%)", problem: true },
   ],
 };
 const APPLIED = { chirps: true, chirpVolume: 100, readAloud: false, readAloudVolume: 100, readoutVoice: { source: "system" }, localAi: null, summaryProvider: null, windowMode: "floating", conciergeLook: "owl", iconSets: {}, watchedFolders: [], defaultFolderLabels: {} };

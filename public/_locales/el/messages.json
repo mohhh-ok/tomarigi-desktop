@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Από το αρχείο σε αυτή την εκκίνηση"
+    "message": "Αλλαγές από το αρχείο ρυθμίσεων (αυτή η εκκίνηση)"
   },
   "settingsFileNoteTitle": {
     "message": "Αλλαγή από το αρχείο ρυθμίσεων"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (διατηρήθηκε η προηγούμενη τιμή)",
+    "message": "$SETTING$: δεν μπορεί να χρησιμοποιηθεί το $VALUE$. $REASON$ (διατηρήθηκε η προηγούμενη τιμή $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Αφαιρέθηκε ώστε τίποτα μέσα στην εφαρμογή να μην μπορεί να στέλνει οδηγίες στους πράκτορες AI σας."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Αν το είχατε καταχωρίσει στο Claude Code, εκτελέστε μία φορά σε τερματικό για να το αφαιρέσετε:"
+    "message": "Αν είχατε καταχωρίσει το Tomarigi στο Claude Code, εκτελέστε αυτό μία φορά σε τερματικό για να καταργήσετε την καταχώριση:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Αν το είχατε καταχωρίσει σε άλλον πράκτορα, αφαιρέστε το tomarigi από τις ρυθμίσεις MCP εκείνου του πράκτορα."
   },
   "settingsFileCopyCommand": {
     "message": "Αντιγραφή εντολής"
@@ -642,7 +651,7 @@
     "message": "Η τοπική AI δεν έχει ρυθμιστεί. Ορίστε πρώτα το localAi (baseUrl και model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Η ένταση είναι ακέραιος από 0 έως 100 (ποσοστό)."
+    "message": "Γράψτε έναν ακέραιο από 0 έως 100 (ποσοστό)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Δώστε τον φάκελο ως απόλυτη διαδρομή χωρίς \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Δεν έχει οριστεί"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI για περιλήψεις"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Ένταση ήχου"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Ένταση ανάγνωσης"
   }
 }

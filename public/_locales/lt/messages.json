@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Paimta iš failo nuo šio paleidimo"
+    "message": "Pakeitimai iš nustatymų failo (šis paleidimas)"
   },
   "settingsFileNoteTitle": {
     "message": "Pakeista iš nustatymų failo"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (palikta ankstesnė reikšmė)",
+    "message": "$SETTING$: $VALUE$ negalima naudoti. $REASON$ (palikta ankstesnė reikšmė $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Pašalinta, kad niekas programoje negalėtų siųsti nurodymų jūsų DI agentams."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Jei jį užregistravote Claude Code, vieną kartą paleiskite tai terminale ir panaikinkite registraciją:"
+    "message": "Jei Tomarigi registravote Claude Code, vieną kartą paleiskite tai terminale, kad pašalintumėte registraciją:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Jei registravote jį kitame agente, pašalinkite tomarigi iš to agento MCP nustatymų."
   },
   "settingsFileCopyCommand": {
     "message": "Kopijuoti komandą"
@@ -642,7 +651,7 @@
     "message": "Vietinis DI nenustatytas. Pirmiausia nurodykite localAi (baseUrl ir model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Garsumas yra sveikasis skaičius nuo 0 iki 100 (procentai)."
+    "message": "Įrašykite sveikąjį skaičių nuo 0 iki 100 (procentai)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Nurodykite aplanką kaip absoliutų kelią be \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nenustatyta"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "DI santraukoms"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Garso garsumas"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Skaitymo garsumas"
   }
 }

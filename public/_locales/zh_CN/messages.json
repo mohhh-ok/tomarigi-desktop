@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "本次启动从文件读取的更改"
+    "message": "来自设置文件的更改（本次启动）"
   },
   "settingsFileNoteTitle": {
     "message": "来自设置文件的更改"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$：$REASON$（保留原值）",
+    "message": "$SETTING$：不能使用 $VALUE$。$REASON$（保留原值 $PREVIOUS$）",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "移除它是为了让应用内部无法向你的 AI 代理发送指令。"
   },
   "settingsFileMcpRemoveHint": {
-    "message": "如果你曾在 Claude Code 中注册过它，请在终端运行一次下面的命令取消注册："
+    "message": "如果你曾在 Claude Code 中注册 Tomarigi，请在终端中运行一次以下命令来取消注册："
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "如果你在其他代理中注册过，请从该代理的 MCP 设置中删除 tomarigi。"
   },
   "settingsFileCopyCommand": {
     "message": "复制命令"
@@ -642,7 +651,7 @@
     "message": "本地 AI 尚未设置。请先填写 localAi（baseUrl 和 model）。"
   },
   "settingsProblemVolumeRange": {
-    "message": "音量是 0 到 100 的整数（百分比）。"
+    "message": "请写 0 到 100 之间的整数（百分比）。"
   },
   "settingsProblemPathNotAbsolute": {
     "message": "请用不含 \"..\" 的绝对路径写出文件夹。"
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "未设置"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "用于摘要的 AI"
-  },
-  "settingsFileChirpVolume": {
-    "message": "提示音音量"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "朗读音量"
   }
 }

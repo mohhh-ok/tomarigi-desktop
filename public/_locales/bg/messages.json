@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Взето от файла при това стартиране"
+    "message": "Промени от файла с настройки (това стартиране)"
   },
   "settingsFileNoteTitle": {
     "message": "Променено от файла с настройки"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (запазена е предишната стойност)",
+    "message": "$SETTING$: $VALUE$ не може да се използва. $REASON$ (запазена е предишната стойност $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Премахнато е, за да не може нищо в приложението да изпраща указания на вашите AI агенти."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Ако сте го регистрирали в Claude Code, изпълнете това веднъж в терминал, за да премахнете регистрацията:"
+    "message": "Ако сте регистрирали Tomarigi в Claude Code, изпълнете това веднъж в терминал, за да премахнете регистрацията:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Ако сте го регистрирали в друг агент, премахнете tomarigi от MCP настройките на този агент."
   },
   "settingsFileCopyCommand": {
     "message": "Копирай командата"
@@ -642,7 +651,7 @@
     "message": "Локалният AI не е настроен. Първо задайте localAi (baseUrl и model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Силата е цяло число от 0 до 100 (проценти)."
+    "message": "Напишете цяло число от 0 до 100 (процент)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Посочете папката като абсолютен път без \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Не е зададено"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI за обобщения"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Сила на звука"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Сила на четенето"
   }
 }

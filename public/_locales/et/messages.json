@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Failist võetud selle käivituse ajal"
+    "message": "Muudatused seadete failist (see käivitus)"
   },
   "settingsFileNoteTitle": {
     "message": "Muudetud seadete failist"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (jäeti eelmine väärtus)",
+    "message": "$SETTING$: $VALUE$ ei sobi. $REASON$ (jäeti eelmine väärtus $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "See eemaldati, et miski rakenduse sees ei saaks teie tehisintellekti agentidele juhiseid saata."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Kui registreerisite selle Claude Code'is, käivitage see üks kord terminalis, et registreering eemaldada:"
+    "message": "Kui registreerisite Tomarigi Claude Code'is, käivitage see üks kord terminalis, et registreering eemaldada:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Kui registreerisite selle mõnes teises agendis, eemaldage tomarigi selle agendi MCP seadetest."
   },
   "settingsFileCopyCommand": {
     "message": "Kopeeri käsk"
@@ -642,7 +651,7 @@
     "message": "Kohalik tehisintellekt pole seadistatud. Märkige esmalt localAi (baseUrl ja model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Helitugevus on täisarv 0 kuni 100 (protsent)."
+    "message": "Kirjutage täisarv 0 kuni 100 (protsent)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Märkige kaust absoluutse teena ilma \"..\"-ta."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Määramata"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "Tehisintellekt kokkuvõteteks"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Heli tugevus"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Ettelugemise tugevus"
   }
 }

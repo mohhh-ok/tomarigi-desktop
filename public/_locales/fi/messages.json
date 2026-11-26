@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Tiedostosta otetut tämän käynnistyksen aikana"
+    "message": "Muutokset asetustiedostosta (tämä käynnistys)"
   },
   "settingsFileNoteTitle": {
     "message": "Muutettu asetustiedostosta"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (edellinen arvo säilyy)",
+    "message": "$SETTING$: arvoa $VALUE$ ei voi käyttää. $REASON$ (edellinen arvo $PREVIOUS$ säilyy)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Se poistettiin, jotta mikään sovelluksen sisällä ei voi lähettää ohjeita tekoälyagenteillesi."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Jos rekisteröit sen Claude Codeen, poista rekisteröinti ajamalla tämä kerran päätteessä:"
+    "message": "Jos rekisteröit Tomarigin Claude Codeen, poista rekisteröinti suorittamalla tämä kerran päätteessä:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Jos rekisteröit sen toiseen agenttiin, poista tomarigi sen agentin MCP-asetuksista."
   },
   "settingsFileCopyCommand": {
     "message": "Kopioi komento"
@@ -642,7 +651,7 @@
     "message": "Paikallista tekoälyä ei ole asetettu. Anna ensin localAi (baseUrl ja model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Äänenvoimakkuus on kokonaisluku 0–100 (prosenttia)."
+    "message": "Kirjoita kokonaisluku väliltä 0–100 (prosenttia)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Anna kansio absoluuttisena polkuna ilman \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Ei asetettu"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "Tekoäly yhteenvetoihin"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Äänen voimakkuus"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Lukuäänen voimakkuus"
   }
 }

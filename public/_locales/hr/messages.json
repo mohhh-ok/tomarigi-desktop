@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "Preuzeto iz datoteke od ovog pokretanja"
+    "message": "Promjene iz datoteke postavki (ovo pokretanje)"
   },
   "settingsFileNoteTitle": {
     "message": "Promijenjeno iz datoteke postavki"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (zadržana prethodna vrijednost)",
+    "message": "$SETTING$: $VALUE$ se ne može koristiti. $REASON$ (zadržana prethodna vrijednost $PREVIOUS$)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "Uklonjeno je kako ništa unutar aplikacije ne bi moglo slati upute vašim AI agentima."
   },
   "settingsFileMcpRemoveHint": {
-    "message": "Ako ste ga registrirali u Claude Codeu, jednom pokrenite ovo u terminalu da uklonite registraciju:"
+    "message": "Ako ste registrirali Tomarigi u Claude Code, pokrenite ovo jednom u terminalu da biste uklonili registraciju:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "Ako ste ga registrirali u drugom agentu, uklonite tomarigi iz MCP postavki tog agenta."
   },
   "settingsFileCopyCommand": {
     "message": "Kopiraj naredbu"
@@ -642,7 +651,7 @@
     "message": "Lokalni AI nije postavljen. Najprije navedite localAi (baseUrl i model)."
   },
   "settingsProblemVolumeRange": {
-    "message": "Glasnoća je cijeli broj od 0 do 100 (postotak)."
+    "message": "Upišite cijeli broj od 0 do 100 (postotak)."
   },
   "settingsProblemPathNotAbsolute": {
     "message": "Navedite mapu kao apsolutnu putanju bez \"..\"."
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "Nije postavljeno"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI za sažetke"
-  },
-  "settingsFileChirpVolume": {
-    "message": "Glasnoća zvuka"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "Glasnoća čitanja"
   }
 }

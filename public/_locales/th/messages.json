@@ -571,19 +571,25 @@
     }
   },
   "settingsFileRecentHeading": {
-    "message": "ที่รับจากไฟล์ตั้งแต่เปิดครั้งนี้"
+    "message": "การเปลี่ยนแปลงจากไฟล์การตั้งค่า (การเปิดครั้งนี้)"
   },
   "settingsFileNoteTitle": {
     "message": "เปลี่ยนจากไฟล์การตั้งค่า"
   },
   "settingsFileRefusedLine": {
-    "message": "$SETTING$: $REASON$ (คงค่าเดิมไว้)",
+    "message": "$SETTING$: ใช้ $VALUE$ ไม่ได้ $REASON$ (คงค่าเดิม $PREVIOUS$ ไว้)",
     "placeholders": {
       "setting": {
         "content": "$1"
       },
-      "reason": {
+      "value": {
         "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      },
+      "previous": {
+        "content": "$4"
       }
     }
   },
@@ -624,7 +630,10 @@
     "message": "นำออกเพื่อไม่ให้มีสิ่งใดในแอปส่งคำสั่งไปยังเอเจนต์ AI ของคุณได้"
   },
   "settingsFileMcpRemoveHint": {
-    "message": "ถ้าเคยลงทะเบียนไว้ใน Claude Code ให้รันคำสั่งนี้หนึ่งครั้งในเทอร์มินัลเพื่อยกเลิก:"
+    "message": "ถ้าคุณเคยลงทะเบียน Tomarigi ไว้ใน Claude Code ให้รันคำสั่งนี้ในเทอร์มินัลหนึ่งครั้งเพื่อยกเลิกการลงทะเบียน:"
+  },
+  "settingsFileMcpRemoveOther": {
+    "message": "ถ้าเคยลงทะเบียนไว้กับเอเจนต์อื่น ให้ลบ tomarigi ออกจากการตั้งค่า MCP ของเอเจนต์นั้น"
   },
   "settingsFileCopyCommand": {
     "message": "คัดลอกคำสั่ง"
@@ -642,7 +651,7 @@
     "message": "ยังไม่ได้ตั้ง AI ในเครื่อง ให้ระบุ localAi (baseUrl และ model) ก่อน"
   },
   "settingsProblemVolumeRange": {
-    "message": "ระดับเสียงเป็นจำนวนเต็ม 0 ถึง 100 (เปอร์เซ็นต์)"
+    "message": "เขียนเป็นจำนวนเต็มตั้งแต่ 0 ถึง 100 (เปอร์เซ็นต์)"
   },
   "settingsProblemPathNotAbsolute": {
     "message": "ระบุโฟลเดอร์เป็นพาธเต็มที่ไม่มี \"..\""
@@ -679,14 +688,5 @@
   },
   "settingsFileNotSet": {
     "message": "ยังไม่ได้ตั้ง"
-  },
-  "settingsFileSummaryProvider": {
-    "message": "AI สำหรับสรุป"
-  },
-  "settingsFileChirpVolume": {
-    "message": "ระดับเสียงแจ้งเตือน"
-  },
-  "settingsFileReadAloudVolume": {
-    "message": "ระดับเสียงอ่าน"
   }
 }
