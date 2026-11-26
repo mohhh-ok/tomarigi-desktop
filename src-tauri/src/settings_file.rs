@@ -590,6 +590,22 @@ mod tests {
     }
 
     #[test]
+    fn a_value_set_back_by_hand_after_a_save_from_the_screen_is_an_edit_with_the_save_before_it() {
+        let paths = temp_paths("setback");
+        let mut s = ready(json!({"chirps": true}));
+        s.dirty.insert("chirps".into());
+        let start = Instant::now();
+        s.tick(&paths, start);
+        s.set("chirps", json!(false));
+        s.tick(&paths, start + TICK);
+        assert_eq!(disk(&paths)["chirps"], json!(false));
+        write_later(&paths.settings, r#"{"$schema": "./settings.schema.json", "chirps": true}"#);
+        let events = s.tick(&paths, start + TICK * 2);
+        let before = obj(json!({"$schema": SCHEMA_REF, "chirps": false}));
+        assert_eq!(events, vec![Event::Edited { doc: obj(json!({"$schema": SCHEMA_REF, "chirps": true})), before: Some(before) }]);
+    }
+
+    #[test]
     fn the_first_file_is_written_without_calling_it_deleted() {
         let paths = temp_paths("first");
         let mut s = ready(json!({"chirps": true}));

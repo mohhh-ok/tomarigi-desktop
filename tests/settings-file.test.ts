@@ -235,6 +235,12 @@ describe("applyFileDoc", () => {
     expect(r.accepted).toEqual([]);
   });
 
+  test("a value set back by hand after a save from the screen is taken: it is compared with the file before the edit", async () => {
+    const saved = edit({ chirps: false });
+    const r = await applyFileDoc(edit({ chirps: true }), saved, saved, deps());
+    expect(r.accepted).toEqual([{ field: "chirps", value: true }]);
+  });
+
   test("a key left out is not a change", async () => {
     const { chirps: _, ...rest } = APPLIED;
     const r = await applyFileDoc(rest, APPLIED, APPLIED, deps());
