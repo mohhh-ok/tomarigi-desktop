@@ -314,14 +314,20 @@ impl State {
             self.last_meta = None;
             return;
         }
+        let mut unreadable = false;
         let mut doc = match disk.as_deref().map(parse) {
             Some(Ok(doc)) => doc,
             Some(Err(_)) => {
+                // The user's text is copied first; when it can't be, the file isn't written over (kept for a later try)
                 if self.kept_invalid != disk {
-                    let _ = write_atomic(&paths.invalid.with_extension("json.tmp"), &paths.invalid, disk.as_deref().unwrap_or(""));
-                    events.push(Event::InvalidKept);
+                    let text = disk.as_deref().unwrap_or("");
+                    if write_atomic(&paths.invalid.with_extension("json.tmp"), &paths.invalid, text).is_err() {
+                        self.failed(now, events);
+                        return;
+                    }
                     self.kept_invalid = disk.clone();
                 }
+                unreadable = true;
                 self.applied.clone()
             }
             None => self.applied.clone(),
@@ -336,7 +342,16 @@ impl State {
         if !self.write_doc(paths, doc, now, events) {
             // Written again at a later try (RETRY), with any saves made in between
             self.dirty.extend(keys);
+        } else if unreadable {
+            events.push(Event::InvalidKept);
         }
+    }
+
+    fn failed(&mut self, now: Instant, events: &mut Vec<Event>) {
+        if self.failed_at.is_none() {
+            events.push(Event::WriteFailed);
+        }
+        self.failed_at = Some(now);
     }
 
     fn write_doc(&mut self, paths: &Paths, mut doc: Map<String, Value>, now: Instant, events: &mut Vec<Event>) -> bool {
@@ -358,10 +373,7 @@ impl State {
             append_log("[settings-file] wrote");
             true
         } else {
-            if self.failed_at.is_none() {
-                events.push(Event::WriteFailed);
-            }
-            self.failed_at = Some(now);
+            self.failed(now, events);
             false
         }
     }
@@ -787,11 +799,35 @@ mod tests {
         std::fs::create_dir(&paths.tmp).unwrap();
         let start = Instant::now();
         let events = ticks(&mut s, &paths, start, RETRY * 3);
-        assert_eq!(events, vec![Event::InvalidKept, Event::WriteFailed]);
+        assert_eq!(events, vec![Event::WriteFailed]);
         assert_eq!(std::fs::read_to_string(&paths.settings).unwrap(), text);
         std::fs::remove_dir(&paths.tmp).unwrap();
         let events = ticks(&mut s, &paths, start + RETRY * 3, RETRY);
-        assert_eq!(events, vec![Event::WroteAgain]);
+        assert_eq!(events, vec![Event::WroteAgain, Event::InvalidKept]);
+        assert_eq!(std::fs::read_to_string(&paths.invalid).unwrap(), text);
+        assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": false}));
+    }
+
+    #[test]
+    fn an_unreadable_file_isnt_written_over_until_its_text_is_copied() {
+        let paths = temp_paths("invalid-copy-fails");
+        let text = "{\n  \"chirps\": x\n}";
+        std::fs::write(&paths.settings, text).unwrap();
+        let mut s = State { applied: obj(json!({"chirps": true})), ..State::default() };
+        assert!(matches!(s.read(&paths), Read::Unreadable { .. }));
+        s.fill(&paths, Map::new());
+        s.set("chirps", json!(false));
+        let copy_tmp = paths.invalid.with_extension("json.tmp");
+        std::fs::create_dir(&copy_tmp).unwrap();
+        let start = Instant::now();
+        let events = ticks(&mut s, &paths, start, RETRY * 2);
+        assert_eq!(events, vec![Event::WriteFailed]);
+        assert_eq!(std::fs::read_to_string(&paths.settings).unwrap(), text);
+        assert!(!paths.invalid.exists());
+        assert!(s.dirty.contains("chirps"));
+        std::fs::remove_dir(&copy_tmp).unwrap();
+        let events = ticks(&mut s, &paths, start + RETRY * 2, RETRY);
+        assert_eq!(events, vec![Event::WroteAgain, Event::InvalidKept]);
         assert_eq!(std::fs::read_to_string(&paths.invalid).unwrap(), text);
         assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": false}));
     }
