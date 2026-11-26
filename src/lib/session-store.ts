@@ -3,6 +3,7 @@
 // scanState / eventLogState, since a module can't reassign a binding it imported
 import type { FirstPrompt } from "./watching";
 import type { LatestTurn } from "./watching-turns";
+import type { TurnSends } from "./turn-sends";
 import type { TailInfo } from "./transcript";
 import type { BackgroundTask, BirdState, ChickMeta, FoundEntry, SessionEvent, Wake } from "./session-types";
 
@@ -58,6 +59,9 @@ export const peerScanOffset = new Map<string, number>();
 // lib/watching.ts). Tells a session started by another session (docs/design.md "Watching")
 export const firstPromptCache = new Map<string, FirstPrompt>();
 export const latestTurns = new Map<string, LatestTurn>();
+// key: session (view id). What its last few turns sent to other sessions (lib/turn-sends.ts), from the whole-file read
+// and the tail window. Kept across scans: a long turn's prompt and its early messages fall out of the tail window
+export const turnSendsCache = new Map<string, TurnSends[]>();
 // Machine state and last write time of each session (sessionId) in the previous scan. Used to decide whether
 // a peer is active, and for the watching done suppression (peers are passed in the same way as chicks)
 export const lastPeerStates = new Map<string, { state: BirdState; lastWriteAt: number }>();
@@ -146,6 +150,7 @@ export function pruneCaches(found: FoundEntry[], skippedIds: Set<string>): void 
   for (const key of peerScanOffset.keys()) if (!liveIds.has(key)) peerScanOffset.delete(key);
   for (const key of firstPromptCache.keys()) if (!liveIds.has(key)) firstPromptCache.delete(key);
   for (const key of latestTurns.keys()) if (!liveIds.has(key)) latestTurns.delete(key);
+  for (const key of turnSendsCache.keys()) if (!liveIds.has(key)) turnSendsCache.delete(key);
   for (const key of desktopHostByViewId.keys()) if (!liveIds.has(key)) desktopHostByViewId.delete(key);
   // Card keys start with the view id (cardKey in lib/proposals.ts)
   for (const key of startedCardCache) if (!liveIds.has(key.split("\n")[0])) startedCardCache.delete(key);

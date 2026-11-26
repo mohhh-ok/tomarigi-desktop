@@ -11,6 +11,15 @@ import type { WatchLinks } from "../src/lib/session-watch.ts";
 import { readTail } from "../src/lib/transcript.ts";
 import { waitsOnDeveloper } from "../src/lib/turn-verdict.ts";
 import { askSentToParent, takenOverByParent, takenOverWorld } from "../src/lib/watching.ts";
+import { rememberTurnSends, turnSentToAt } from "../src/lib/turn-sends.ts";
+import type { TailInfo } from "../src/lib/transcript.ts";
+
+/** What the reply's turn sent, as lib/sessions.ts reads it: one tail read into a fresh ledger */
+function replySentTo(tail: TailInfo): string[] | undefined {
+  const ledgers = new Map();
+  rememberTurnSends(ledgers, "v", tail.turnSends!);
+  return turnSentToAt(ledgers.get("v"), tail.events.at(-1)?.at);
+}
 
 function fileOf(lines: object[]): NativeFile {
   const text = lines.map((l) => JSON.stringify(l)).join("\n") + "\n";
@@ -87,10 +96,10 @@ describe("the question a child's reply asks, by whether its turn sent its parent
   test("the reported child: its last turn sent nothing to its parent, so its question waits on the user", async () => {
     const tail = await readTail(fileOf(CHILD_LINES));
     // The last turn was started by its own child's message and only ran a command
-    expect(tail.lastTurnSentTo).toEqual([]);
+    expect(replySentTo(tail)).toEqual([]);
     const world = takenOverWorld(watchOf());
     expect(takenOverByParent("child", world)).toBe(true);
-    expect(askSentToParent("child", tail.lastTurnSentTo, world)).toBe(false);
+    expect(askSentToParent("child", replySentTo(tail), world)).toBe(false);
 
     // The app's facts when it was left out: done, its turn verdict asking, its parent taking it over
     const child: SessionView = {
@@ -122,8 +131,8 @@ describe("the question a child's reply asks, by whether its turn sent its parent
 
   test("a turn that sent a message to its own child doesn't count as sending to its parent", async () => {
     const tail = await readTail(fileOf(CHILD_LINES.slice(0, 8)));
-    expect(tail.lastTurnSentTo).toEqual([GRANDCHILD.name]);
-    expect(askSentToParent("child", tail.lastTurnSentTo, takenOverWorld(watchOf()))).toBe(false);
+    expect(replySentTo(tail)).toEqual([GRANDCHILD.name]);
+    expect(askSentToParent("child", replySentTo(tail), takenOverWorld(watchOf()))).toBe(false);
   });
 
   test("a turn that sent its question to the parent is taken over", async () => {
@@ -136,9 +145,9 @@ describe("the question a child's reply asks, by whether its turn sent its parent
         say(520, "親に、コンテナを立ててよいかを聞きました。返事を待っています。"),
       ]),
     );
-    expect(tail.lastTurnSentTo).toEqual([HUB.name]);
+    expect(replySentTo(tail)).toEqual([HUB.name]);
     const world = takenOverWorld(watchOf());
-    expect(askSentToParent("child", tail.lastTurnSentTo, world)).toBe(true);
+    expect(askSentToParent("child", replySentTo(tail), world)).toBe(true);
     const child: SessionView = {
       id: "child",
       project: "app-x",
@@ -152,8 +161,8 @@ describe("the question a child's reply asks, by whether its turn sent its parent
     expect(waitsOnDeveloper(child)).toBe(false);
   });
 
-  test("a window that doesn't reach the turn's prompt doesn't say what the turn sent", async () => {
+  test("a window that doesn't reach the turn's prompt still counts the messages it read", async () => {
     const tail = await readTail(fileOf([tool(10, "SendMessage", { to: HUB.name, message: "x" }), result(11), say(20, "済みました")]));
-    expect(tail.lastTurnSentTo).toBeUndefined();
+    expect(replySentTo(tail)).toEqual([HUB.name]);
   });
 });

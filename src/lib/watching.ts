@@ -178,7 +178,7 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
 }
 
 /**
- * Whether a message the session's latest turn sent (TailInfo.lastTurnSentTo) went to a linked session that counts as
+ * Whether a message the turn of the session's reply sent (turnSentToAt in lib/turn-sends.ts) went to a linked session that counts as
  * its parent (isParentOf): then the question its reply asks reached the parent, which takes it over (parentCanAnswer
  * in lib/turn-verdict.ts; docs/design.md "Sessions started by another session"). A message to another session (its own
  * child, a sibling) doesn't count

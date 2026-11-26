@@ -261,9 +261,19 @@ function enqueueUtterance(text: string, lang: string, tag: ReadoutTag): void {
   speechSynthesis.speak(utterance);
 }
 
+const READOUT_LOG_CHARS = 60;
+
+/** The log line of one readout: what it is for, the session's display name, and the start of the body */
+function readoutLogLine(tag: ReadoutTag, name: string, body: string | undefined): string {
+  const head = (body ?? "").replace(/\s+/g, " ").slice(0, READOUT_LOG_CHARS);
+  return `[readout] for=${tag} session=${JSON.stringify(name)} text=${JSON.stringify(head)}`;
+}
+
 // The display name, then the body, as two utterances (done readout, concierge suggestions). Each text is already
 // sanitized by the caller; an empty one is not queued, since an empty utterance only adds a gap
-function enqueueNameThenBody(name: string, body: string | undefined, lang: string, tag: ReadoutTag): void {
+function enqueueNameThenBody(name: string, body: string | undefined, lang: string, tag: ReadoutTag, session = name): void {
+  // Every readout of a session comes here, so the log tells what was read aloud and for whom
+  appLog(readoutLogLine(tag, session, body));
   if (name) enqueueUtterance(name, lang, tag);
   if (body) enqueueUtterance(body, lang, tag);
 }
@@ -297,7 +307,7 @@ export function speakEvent(event: SessionEvent): void {
   }
   const key = VOICE_KEY[event.type];
   if (!key) return;
-  enqueueNameThenBody(t(key, project), snippet, lang, "waiting");
+  enqueueNameThenBody(t(key, project), snippet, lang, "waiting", project);
 }
 
 /**

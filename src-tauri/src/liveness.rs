@@ -231,6 +231,20 @@ pub(crate) struct PeerScan {
     start: u64,
     /// Position read up to (the next read starts here). Does not include a last line cut off midway
     end: u64,
+    /// Each prompt that starts a turn in the part read (the first prompt too), with the sessions messaged after it in
+    /// that part (SendMessage's to, the desktop app's send_message's session_id). The question a reply asks reaches the
+    /// parent only when the reply's own turn sent it a message (turnSentToAt in lib/turn-sends.ts)
+    turn_sends: Vec<TurnSends>,
+    /// The sessions messaged in the part read before its first turn start: they belong to the turn that ran then
+    sent_before_turn: Vec<String>,
+}
+
+#[derive(Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct TurnSends {
+    /// Timestamp of the prompt that started the turn
+    start_at: String,
+    sent_to: Vec<String>,
 }
 
 /// Drops the display " [ref]" from a SendMessage recipient. "main" (the parent conversation) is not a link between
@@ -417,6 +431,8 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
     let mut last_turn_starter: Option<TurnStarter> = None;
     let mut turn_peers: Vec<PeerRef> = Vec::new();
     let mut turn_started = false;
+    let mut turn_sends: Vec<TurnSends> = Vec::new();
+    let mut sent_before_turn: Vec<String> = Vec::new();
     for line in buf[..complete].split(|&b| b == b'\n') {
         // After the first prompt (read in an earlier scan when start isn't 0), the prompts that start a turn; the last
         // one read decides
@@ -431,6 +447,9 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                     last_turn_starter = Some(starter);
                     turn_peers.clear();
                     turn_started = true;
+                    if let Some(at) = entry.get("timestamp").and_then(|t| t.as_str()) {
+                        turn_sends.push(TurnSends { start_at: at.to_string(), sent_to: Vec::new() });
+                    }
                 } else if typed_midwork(&entry) {
                     last_turn_starter = Some(TurnStarter::Typed);
                 } else if let Some(peer) = queued_peer(&entry) {
@@ -471,6 +490,7 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                                 session_start_at: session_start_at.clone(),
                                 at: at.to_string(),
                             });
+                            turn_sends.push(TurnSends { start_at: at.to_string(), sent_to: Vec::new() });
                             looking_for_first = false;
                         }
                     }
@@ -515,6 +535,10 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
                         None
                     };
                     if let Some(name) = name {
+                        match turn_sends.last_mut() {
+                            Some(turn) => turn.sent_to.push(name.clone()),
+                            None => sent_before_turn.push(name.clone()),
+                        }
                         names.push((name, at.to_string()));
                     }
                 }
@@ -572,7 +596,17 @@ pub(crate) fn scan_peer_names(path: &str, start: u64) -> Result<PeerScan, String
             _ => {}
         }
     }
-    Ok(PeerScan { names, first_prompt, last_turn_starter, turn_peers, turn_started, start, end: start + complete as u64 })
+    Ok(PeerScan {
+        names,
+        first_prompt,
+        last_turn_starter,
+        turn_peers,
+        turn_started,
+        start,
+        end: start + complete as u64,
+        turn_sends,
+        sent_before_turn,
+    })
 }
 
 #[derive(Serialize)]
@@ -1296,6 +1330,31 @@ mod tests {
             let offset: usize = lines[..*from].iter().map(|l| l.len() + 1).sum();
             assert_eq!(typed(scan_peer_names(p, offset as u64).unwrap()), *want_later, "{scene} (later scan from line {from})");
         }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// What each turn sent to other sessions, in the shape of a child that asked its parent: its first prompt, a
+    /// SendMessage to its parent, its reply, then the parent's answer starting the next turn. A later read that starts
+    /// after the prompt gives the send as sent before its first turn start (lib/turn-sends.ts)
+    #[test]
+    fn scan_peer_names_reads_each_turns_sends() {
+        let dir = std::env::temp_dir().join(format!("tomarigi-turn-sends-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        const FIRST: &str = r#"{"type":"user","timestamp":"2026-01-01T00:00:00.000Z","turnOrigin":"human","origin":{"kind":"human"},"message":{"content":"担当: review"}}"#;
+        const SEND: &str = r#"{"type":"assistant","timestamp":"2026-01-01T00:03:00.000Z","message":{"content":[{"type":"tool_use","id":"t1","name":"SendMessage","input":{"to":"hub-19","message":"決めてほしいこと"}}]}}"#;
+        const REPLY: &str = r#"{"type":"assistant","timestamp":"2026-01-01T00:03:10.000Z","message":{"content":[{"type":"text","text":"親に決めてほしいこと（返事待ち）"}]}}"#;
+        const ANSWER: &str = r#"{"type":"user","isMeta":true,"timestamp":"2026-01-01T00:03:15.000Z","turnOrigin":"peer","origin":{"kind":"peer","from":"uds:/tmp/cc-socks/111.sock","verifiedPeerPid":111,"name":"hub-19"},"message":{"content":"x"}}"#;
+        let lines = [FIRST, SEND, REPLY, ANSWER];
+        let path = dir.join("0.jsonl");
+        std::fs::write(&path, lines.join("\n") + "\n").unwrap();
+        let p = path.to_str().unwrap();
+        let turn = |at: &str, sent: &[&str]| TurnSends { start_at: at.into(), sent_to: sent.iter().map(|s| s.to_string()).collect() };
+        let top = scan_peer_names(p, 0).unwrap();
+        assert_eq!(top.turn_sends, vec![turn("2026-01-01T00:00:00.000Z", &["hub-19"]), turn("2026-01-01T00:03:15.000Z", &[])]);
+        assert!(top.sent_before_turn.is_empty());
+        let later = scan_peer_names(p, (FIRST.len() + 1) as u64).unwrap();
+        assert_eq!(later.turn_sends, vec![turn("2026-01-01T00:03:15.000Z", &[])]);
+        assert_eq!(later.sent_before_turn, vec!["hub-19".to_string()]);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

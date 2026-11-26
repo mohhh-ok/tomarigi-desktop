@@ -1,6 +1,6 @@
 import { asBlocks, messageText, toolResultText, type TranscriptEntry } from "./transcript-entry";
 // The sessions a session exchanged messages with, and where its turns start, from its transcript lines (TailInfo.peerNames,
-// lastTurnSentTo; docs/design.md "Watching")
+// turnSends; docs/design.md "Watching")
 
 const CROSS_SESSION_FROM_NAME = /<cross-session-message\b[^>]*\bfrom-name="([^"]+)"/g;
 // The Claude desktop app's session id, the address of its sessions (docs/design.md "Watching")
@@ -84,7 +84,7 @@ export function collectPeerNames(entry: TranscriptEntry): string[] {
 }
 
 /** The sessions an assistant line sends a message to: input.to of SendMessage, session_id of the desktop app's
- * send_message (collectPeerNames, TailInfo.lastTurnSentTo) */
+ * send_message (collectPeerNames, TailInfo.turnSends) */
 export function sentPeerNamesOf(entry: TranscriptEntry): string[] {
   if (entry.type !== "assistant") return [];
   const names: string[] = [];

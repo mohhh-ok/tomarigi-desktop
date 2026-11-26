@@ -14,7 +14,9 @@ import {
   peerScanOffset,
   scanState,
   startedCardCache,
+  turnSendsCache,
 } from "./session-store";
+import { rememberTurnSends, turnSendsOfScan, type TurnSendsScan } from "./turn-sends";
 import { pendingProposalsOf } from "./transcript-desktop";
 import { cardKey } from "./proposals";
 import { sessionIdOfViewId } from "./session-liveness";
@@ -50,12 +52,15 @@ export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: Li
     claudeEntries.map(async (f) => {
       const start = peerScanOffset.get(f.id) ?? 0;
       try {
-        const scan = await invoke<TurnRead & { names: [string, string][]; firstPrompt?: FirstPrompt | null; end: number }>(
+        const scan = await invoke<
+          TurnRead & { names: [string, string][]; firstPrompt?: FirstPrompt | null; end: number } & TurnSendsScan
+        >(
           "scan_peer_names",
           { path: f.file.path, start },
         );
         if (scan.firstPrompt) firstPromptCache.set(f.id, scan.firstPrompt);
         rememberLatestTurn(latestTurns, f.id, scan);
+        rememberTurnSends(turnSendsCache, f.id, turnSendsOfScan(scan), { replace: scan.start === 0 });
         // The first prompt is read from the top only, so the offset stays at the top until it has come (a session
         // just started may not have written it yet; the file is still small then)
         if (firstPromptCache.has(f.id)) peerScanOffset.set(f.id, scan.end);

@@ -14,7 +14,8 @@ import type {
   ScanResult,
   SessionView,
 } from "./session-types";
-import { lastPeerStates, pruneCaches, scanState, snippetCache } from "./session-store";
+import { lastPeerStates, pruneCaches, scanState, snippetCache, turnSendsCache } from "./session-store";
+import { rememberTurnSends, turnSentToAt } from "./turn-sends";
 import { sessionIdOfViewId, settleLiveness } from "./session-liveness";
 import { feedTurnMessages, turnUserMessages } from "./session-tail";
 import { assignSdkChicks, chickListsOf, isSdkSession } from "./session-chicks";
@@ -207,7 +208,11 @@ function buildViews(
     const watched = peersWatchedBy(sessionIdOfViewId(id), peers, linkWorld);
     const watching = watchingCount(displayState, watched, now, writtenAt);
     const takenOver = takenOverByParent(sessionIdOfViewId(id), linkWorld);
-    const sentToParent = takenOver && askSentToParent(sessionIdOfViewId(id), tail.lastTurnSentTo, linkWorld);
+    // The sends of the turn its reply (its last event) belongs to: a prompt after the reply starts a new turn that hasn't
+    // replied yet (docs/design.md "Sessions started by another session")
+    if (tail.turnSends) rememberTurnSends(turnSendsCache, id, tail.turnSends);
+    const replyTurnSentTo = turnSentToAt(turnSendsCache.get(id), tail.events.at(-1)?.at);
+    const sentToParent = takenOver && askSentToParent(sessionIdOfViewId(id), replyTurnSentTo, linkWorld);
     const last = tail.events[tail.events.length - 1];
     const reply =
       (displayState === "done" || displayState === "dozing") &&

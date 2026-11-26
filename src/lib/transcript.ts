@@ -5,6 +5,7 @@ import { collectChickSignals, handBackOf, trackTools } from "./transcript-chicks
 import { collectWakes } from "./transcript-wakes";
 import { collectPeerNames, firstPromptStarterOf, isFirstPromptCandidate, sentPeerNamesOf, startsTurn } from "./transcript-peers";
 import { desktopAskOf, proposalResultsOf, settledProposalOf, START_SESSION_TOOL } from "./transcript-desktop";
+import type { TurnSendsRead } from "./turn-sends";
 // Reads Claude Code transcripts (~/.claude/projects/<slug>/<sessionId>.jsonl).
 // The format is a Claude Code internal detail and can change without notice, so parsing is
 // confined to this file and the transcript-*.ts files it reads lines with (transcript-entry.ts: a line's shape;
@@ -76,10 +77,12 @@ export interface TailInfo {
   // window, lib/session-store.ts (peerNameCache) keeps it across scans.
   // Used to decide the link for watching (docs/design.md "Watching")
   peerNames: Map<string, number>;
-  // The sessions its latest turn sent a message to (SendMessage's to, the desktop app's send_message's session_id), as
-  // peerNames names them; undefined when the window doesn't reach the prompt that started the turn. A parent takes over
-  // the question a reply asks only when the turn sent it a message (askSentToParent in lib/watching.ts)
-  lastTurnSentTo?: string[];
+  // The sessions each turn in the window sent a message to (SendMessage's to, the desktop app's send_message's
+  // session_id), as peerNames names them, with the sends before the window's first turn start. A parent takes over the
+  // question a reply asks only when the reply's turn sent it a message (askSentToParent in lib/watching.ts); the window
+  // misses a long turn's start, so lib/session-store.ts keeps a ledger across scans (turnSendsCache, lib/turn-sends.ts).
+  // Absent for agents whose sessions don't message each other
+  turnSends?: TurnSendsRead;
   // The last line with a time (the away recap aside) is the one Claude Code writes when a turn is over (`system` /
   // `turn_duration`): the session is done at once rather than working for WRITING_MS after its last write (deriveState
   // in lib/bird-state.ts). Any later line with a time clears it (a queued message, another session's message, the next
@@ -282,7 +285,7 @@ async function readWindow(
   // The first prompt is seen only when the window starts at the top of the file
   let lookingForFirst = !truncated;
   const startSessionCalls = new Set<string>();
-  let turnSentTo: string[] | undefined;
+  const turnSends: TurnSendsRead = { turns: [], sentBefore: [] };
   let turnEnded = false;
   const openTools = new Set<string>();
   let handBackId: string | undefined;
@@ -334,8 +337,12 @@ async function readWindow(
         peerNames.set(name, Math.max(peerNames.get(name) ?? 0, at));
       }
     }
-    if (startsTurn(entry)) turnSentTo = [];
-    else if (turnSentTo && !(entry.isSidechain && !includeSidechain)) turnSentTo.push(...sentPeerNamesOf(entry));
+    if (startsTurn(entry)) {
+      if (at !== null) turnSends.turns.push({ startAt: at, sentTo: [] });
+    } else if (!(entry.isSidechain && !includeSidechain)) {
+      const sent = sentPeerNamesOf(entry);
+      if (sent.length > 0) (turnSends.turns.at(-1)?.sentTo ?? turnSends.sentBefore).push(...sent);
+    }
     if (entry.type === "continued-in" && typeof entry.continuedInSessionId === "string") {
       continuedIn = entry.continuedInSessionId;
     }
@@ -370,7 +377,7 @@ async function readWindow(
     backgroundTaskStarts,
     ...((wakeStarts.size > 0 || wakeEnds.size > 0) && { wakes: { starts: wakeStarts, ends: wakeEnds } }),
     peerNames,
-    ...(turnSentTo && { lastTurnSentTo: [...new Set(turnSentTo)] }),
+    turnSends,
     ...(turnEnded && { turnEnded: true as const }),
     ...(openTools.size > 0 && { toolOpen: true as const }),
     ...(handBackId !== undefined && { handedBack: true as const }),

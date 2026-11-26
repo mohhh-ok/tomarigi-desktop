@@ -49,6 +49,7 @@ describe("readout through a local TTS server", () => {
     expect(invoked.filter((c) => c.cmd === "tts_speech").map((c) => c.args.text)).toEqual(["app", "Review the diff"]);
     const lines = invoked.filter((c) => c.cmd === "log").map((c) => String(c.args.line));
     expect(lines).toEqual([
+      '[readout] for=concierge session="app" text="Review the diff"',
       expect.stringMatching(/^\[voice\] for=concierge server=voicevox ms=\d+ used=system error=network$/),
       expect.stringMatching(/^\[voice\] for=concierge server=voicevox ms=\d+ used=system error=network$/),
     ]);
@@ -61,7 +62,8 @@ describe("readout through a local TTS server", () => {
     speakEvent({ key: "k", sessionId: "s", type: "waiting", project: "app", snippet: "Which layout?", at: 0 });
     await settle();
     const lines = invoked.filter((c) => c.cmd === "log").map((c) => String(c.args.line));
-    expect(lines.length).toBeGreaterThan(0);
-    expect(lines.every((l) => l.startsWith("[voice] for=waiting "))).toBe(true);
+    expect(lines[0]).toBe('[readout] for=waiting session="app" text="Which layout?"');
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines.slice(1).every((l) => l.startsWith("[voice] for=waiting "))).toBe(true);
   });
 });
