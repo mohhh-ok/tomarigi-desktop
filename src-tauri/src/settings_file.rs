@@ -187,6 +187,30 @@ impl State {
         self.applied_dirty = true;
     }
 
+    /// After the page has loaded the file at launch: every table key the applied values don't have yet gets the page's
+    /// value (the first launch: the earlier settings from IndexedDB; else the defaults) and keys missing from the file
+    /// are written. A file that isn't valid JSON is left as it is until the screen saves
+    pub(crate) fn fill(&mut self, paths: &Paths, values: Map<String, Value>) {
+        let file = std::fs::read_to_string(&paths.settings).ok().map(|t| parse(&t));
+        let unreadable = matches!(file, Some(Err(_)));
+        for (key, value) in values {
+            if !FIELDS.contains(&key.as_str()) || self.applied.contains_key(&key) {
+                continue;
+            }
+            if unreadable {
+                self.accept(&key, value);
+            } else {
+                self.set(&key, value);
+            }
+        }
+        match file {
+            Some(Ok(doc)) => self.mark_missing(&doc),
+            Some(Err(_)) => {}
+            None => self.dirty.extend(self.applied.keys().cloned()),
+        }
+        self.ready = true;
+    }
+
     /// A value from the file that passed: applied, the file isn't written
     pub(crate) fn accept(&mut self, key: &str, value: Value) {
         self.applied.insert(key.to_string(), value);
@@ -221,7 +245,9 @@ impl State {
             if !self.applied.is_empty() {
                 // Written before and gone now: deleted. Never written: the first file, made from the applied values
                 let deleted = self.last_text.is_some();
-                self.write_doc(paths, self.applied.clone());
+                if !self.write_doc(paths, self.applied.clone()) {
+                    return false;
+                }
                 self.dirty.clear();
                 if deleted {
                     events.push(Event::Rewritten);
@@ -264,16 +290,20 @@ impl State {
             }
             None => self.applied.clone(),
         };
-        for key in std::mem::take(&mut self.dirty) {
-            match self.applied.get(&key) {
-                Some(v) => doc.insert(key, v.clone()),
-                None => doc.remove(&key),
+        let keys = std::mem::take(&mut self.dirty);
+        for key in &keys {
+            match self.applied.get(key) {
+                Some(v) => doc.insert(key.clone(), v.clone()),
+                None => doc.remove(key),
             };
         }
-        self.write_doc(paths, doc);
+        if !self.write_doc(paths, doc) {
+            // Written again at the next tick, with any saves made in between
+            self.dirty.extend(keys);
+        }
     }
 
-    fn write_doc(&mut self, paths: &Paths, mut doc: Map<String, Value>) {
+    fn write_doc(&mut self, paths: &Paths, mut doc: Map<String, Value>) -> bool {
         doc.insert("$schema".into(), Value::String(SCHEMA_REF.into()));
         let text = pretty(&doc);
         if write_atomic(&paths.tmp, &paths.settings, &text).is_ok() {
@@ -282,8 +312,10 @@ impl State {
             self.wrote = true;
             #[cfg(debug_assertions)]
             append_log("[settings-file] wrote");
+            true
         } else {
             append_log("[settings-file] couldn't write the file");
+            false
         }
     }
 }
@@ -427,26 +459,10 @@ pub(crate) fn settings_file_open() -> Option<Opened> {
     })
 }
 
-/// After the page has loaded the file at launch: every table key the applied values don't have yet gets the page's
-/// value (the first launch: the earlier settings from IndexedDB; else the defaults), keys missing from the file are
-/// written, and the worker starts looking at the file
+/// After the page has loaded the file at launch (State::fill); the worker starts looking at the file
 #[tauri::command]
 pub(crate) fn settings_file_fill(values: Map<String, Value>) {
-    with(|s| {
-        let file = std::fs::read_to_string(&s.paths.settings).ok().and_then(|t| parse(&t).ok());
-        for (key, value) in values {
-            if !FIELDS.contains(&key.as_str()) || s.state.applied.contains_key(&key) {
-                continue;
-            }
-            s.state.set(&key, value);
-        }
-        if let Some(doc) = file {
-            s.state.mark_missing(&doc);
-        } else {
-            s.state.dirty.extend(s.state.applied.keys().cloned());
-        }
-        s.state.ready = true;
-    });
+    with(|s| s.state.fill(&s.paths, values));
 }
 
 #[tauri::command]
@@ -643,6 +659,62 @@ mod tests {
         let events = s.tick(&paths, Instant::now() + TICK);
         let before = obj(json!({"$schema": SCHEMA_REF, "chirps": true, "readAloud": false}));
         assert_eq!(events, vec![Event::Edited { doc: obj(json!({"chirps": true, "readAloud": true})), before: Some(before) }]);
+    }
+
+    #[test]
+    fn a_file_unreadable_at_launch_is_left_alone_until_the_screen_saves() {
+        let paths = temp_paths("unreadable-launch");
+        let text = "{\n  \"chirps\": x\n}";
+        std::fs::write(&paths.settings, text).unwrap();
+        let mut s = State { applied: obj(json!({"chirps": true})), ..State::default() };
+        assert!(matches!(s.read(&paths), Read::Unreadable { line: 2, .. }));
+        s.fill(&paths, obj(json!({"chirps": false, "readAloud": true})));
+        assert_eq!(s.applied, obj(json!({"chirps": true, "readAloud": true})));
+        let start = Instant::now();
+        for i in 0..4 {
+            assert!(s.tick(&paths, start + TICK * i).is_empty());
+        }
+        assert_eq!(std::fs::read_to_string(&paths.settings).unwrap(), text);
+        assert!(!paths.invalid.exists());
+        s.set("chirps", json!(false));
+        assert_eq!(s.tick(&paths, start + TICK * 4), vec![Event::InvalidKept]);
+        assert_eq!(std::fs::read_to_string(&paths.invalid).unwrap(), text);
+        assert_eq!(disk(&paths), json!({"$schema": SCHEMA_REF, "chirps": false, "readAloud": true}));
+    }
+
+    #[test]
+    fn a_save_that_couldnt_be_written_is_written_at_the_next_tick() {
+        let paths = temp_paths("write-fails");
+        let mut s = ready(json!({"chirps": true}));
+        s.dirty.insert("chirps".into());
+        let start = Instant::now();
+        s.tick(&paths, start);
+        s.set("chirps", json!(false));
+        // A folder where the temporary file goes makes the write fail
+        std::fs::create_dir(&paths.tmp).unwrap();
+        s.tick(&paths, start + TICK);
+        assert_eq!(disk(&paths)["chirps"], json!(true));
+        assert!(s.dirty.contains("chirps"));
+        std::fs::remove_dir(&paths.tmp).unwrap();
+        s.tick(&paths, start + TICK * 2);
+        assert_eq!(disk(&paths)["chirps"], json!(false));
+        assert!(s.dirty.is_empty());
+    }
+
+    #[test]
+    fn a_save_that_couldnt_be_written_at_quit_is_kept_for_the_next_write() {
+        let paths = temp_paths("flush-fails");
+        let mut s = ready(json!({"chirps": true}));
+        s.dirty.insert("chirps".into());
+        s.tick(&paths, Instant::now());
+        s.set("chirps", json!(false));
+        std::fs::create_dir(&paths.tmp).unwrap();
+        let mut events = Vec::new();
+        s.write_dirty(&paths, &mut events);
+        assert!(s.dirty.contains("chirps"));
+        std::fs::remove_dir(&paths.tmp).unwrap();
+        s.write_dirty(&paths, &mut events);
+        assert_eq!(disk(&paths)["chirps"], json!(false));
     }
 
     #[test]
