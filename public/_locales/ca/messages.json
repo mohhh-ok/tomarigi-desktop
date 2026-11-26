@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Activa «Llegeix amb veu» a dalt per sentir les lectures."
   },
-  "agentAccessHeading": {
-    "message": "Agent d'IA"
+  "settingsFileHeading": {
+    "message": "Fitxer de configuració"
   },
-  "agentAccessEnable": {
-    "message": "Permet que un agent d'IA canviï la configuració"
+  "settingsFileDescription": {
+    "message": "Tota la configuració d'aquesta pantalla, excepte les claus d'API, també és en aquest fitxer. Edita'l i Tomarigi aplica el canvi de seguida."
   },
-  "agentAccessDescription": {
-    "message": "El teu agent de programació (Claude Code o un altre compatible amb MCP, la manera habitual de connectar agents amb apps) pot llegir i canviar la configuració d'aquesta pantalla, provar la connexió i reproduir una mostra. Les claus d'API es queden aquí: l'agent no les pot llegir ni definir."
+  "settingsFileCopyPath": {
+    "message": "Copia el camí"
   },
-  "agentAccessCommandHint": {
-    "message": "Executa això una vegada en un terminal. Després demana-ho a l'agent, per exemple: «Canvia la veu de lectura a VOICEVOX»."
+  "settingsFileRevealMac": {
+    "message": "Mostra al Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "L'ordre ha canviat, així que la que vas executar abans ja no funciona. Primer treu el registre antic:"
+  "settingsFileRevealWindows": {
+    "message": "Mostra a l'Explorador"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Copia l'ordre de registre"
+  "settingsFileRevealLinux": {
+    "message": "Mostra al gestor de fitxers"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Copia l'ordre d'eliminació"
+  "settingsFileAgentHeading": {
+    "message": "Demana-ho a un agent d'IA"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Copia l'URL"
+  "settingsFileAgentHint": {
+    "message": "Copia això, canvia ○○ pel que vulguis (p. ex., «llegeix en veu alta amb VOICEVOX») i enganxa-ho al teu agent de programació."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Copia el testimoni"
+  "settingsFileCopyInstructions": {
+    "message": "Copia les instruccions per a un agent"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Canvia la configuració de Tomarigi: ○○. Com fer-ho: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Pres del fitxer des d'aquest inici"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Canviat des del fitxer de configuració"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (es manté el valor anterior)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "El fitxer de configuració no és un JSON vàlid (línia $LINE$, columna $COLUMN$). Tota la configuració es manté fins que es corregeixi.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "No s'ha pogut llegir el fitxer de configuració, així que el seu text s'ha desat a settings.invalid.json abans de desar."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Les claus que Tomarigi no coneix s'han deixat tal com eren i s'han ignorat: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Les claus d'API no es llegeixen mai del fitxer; enganxa-les a Configuració → IA per als resums. Ignorades: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "S'ha eliminat «Permet que un agent d'IA canviï la configuració» (MCP). Ara la configuració es canvia amb el fitxer de sota."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "S'ha eliminat perquè res dins de l'app pugui enviar instruccions als teus agents d'IA."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Si el vas registrar a Claude Code, executa això una vegada en un terminal per treure'l:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Copia l'ordre"
+  },
+  "settingsFileCloseNote": {
+    "message": "Tanca aquest avís"
+  },
+  "settingsProblemNoServer": {
+    "message": "Per fer servir la veu local, indica un servidor TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "No hi ha cap clau d'API desada per a aquest proveïdor. Enganxa-la abans a Configuració → IA per als resums."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "La IA local no està configurada. Indica primer localAi (baseUrl i model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "El volum és un nombre enter de 0 a 100 (percentatge)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Indica la carpeta amb un camí absolut sense \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "No es poden vigilar camins de xarxa. Indica una carpeta d'aquest ordinador."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Aquesta carpeta no existeix o no es pot llegir."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "El nom no pot estar buit."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Les carpetes predeterminades sempre es vigilen i no es poden treure."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "No és cap de les opcions (vegeu settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "No és el tipus de valor que admet aquesta configuració (vegeu settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Tanca"
+  },
+  "settingsFileCopied": {
     "message": "Copiat"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Introdueix un port entre 1024 i 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "No s'ha pogut iniciar: una altra app fa servir aquest port. Escriu un altre port i prem Retorn per tornar-ho a provar."
-  },
-  "agentAccessRenewButton": {
-    "message": "Renova el testimoni"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Cal un clauer (GNOME Keyring o KWallet) per guardar el testimoni secret, i no n'hi ha cap en marxa en aquest ordinador. Inicia'n un i torna-ho a activar."
-  },
-  "agentAccessStartFailed": {
-    "message": "No s'ha pogut iniciar el servidor. El motiu és al registre de l'app."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Canviat per l'agent"
-  },
-  "agentNoteTitle": {
-    "message": "L'agent d'IA ha canviat una configuració"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Activat"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Desactivat"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Sense definir"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "IA per als resums"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Volum del so"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Volum de lectura"
-  },
-  "agentAccessSecretNote": {
-    "message": "L'ordre conté un testimoni secret que permet als programes d'aquest ordinador canviar aquesta configuració. No el comparteixis; si es filtra, renova'l."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Per a un altre agent compatible amb MCP, posa l'URL i el testimoni de sota a la configuració MCP d'aquest agent (capçalera: Authorization: Bearer <testimoni>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Tanca"
   }
 }

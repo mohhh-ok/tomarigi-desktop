@@ -1,7 +1,8 @@
 // Telling every window of the app that a saved setting changed (docs/design.md "Settings window", Detailed design (b)).
 // kvPut / kvDelete (lib/kv.ts) and the API key functions (lib/api-keys.ts) call notifySettingChanged, so a save from any
-// window, the menu bar, or an AI agent's tool passes here. Only the key's name is sent, never its value: API keys can be
-// in IndexedDB with the webview key store
+// window or the menu bar passes here; an edit of the settings file is told with `from` "settings-file", so every window,
+// the one that applied it included, reloads it. Only the key's name is sent, never its value: API keys can be in
+// IndexedDB with the webview key store
 //
 // The Tauri modules are imported when first used: lib/kv.ts is imported by modules the unit tests load with parts of
 // @tauri-apps/api mocked, and a static import here failed those tests on exports the mocks don't have
@@ -28,10 +29,14 @@ export function windowLabel(): Promise<string | null> {
   return label;
 }
 
-export function notifySettingChanged(key: string): void {
+/** Who saved an edit of the settings file (no window has it as its label) */
+export const FROM_SETTINGS_FILE = "settings-file";
+
+export function notifySettingChanged(key: string, by?: string): void {
   void (async () => {
-    const from = await windowLabel();
-    if (from === null) return;
+    const self = await windowLabel();
+    if (self === null) return;
+    const from = by ?? self;
     const { emit } = await import("@tauri-apps/api/event");
     await emit(SETTINGS_CHANGED, { key, from } satisfies SettingsChange);
   })().catch(() => {});

@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "I-on ang \"Basahin gamit ang boses\" sa itaas para marinig ang pagbasa."
   },
-  "agentAccessHeading": {
-    "message": "AI agent"
+  "settingsFileHeading": {
+    "message": "File ng mga setting"
   },
-  "agentAccessEnable": {
-    "message": "Hayaang baguhin ng AI agent ang mga setting"
+  "settingsFileDescription": {
+    "message": "Nakasulat din sa file na ito ang lahat ng setting sa screen na ito maliban sa mga API key. I-edit ang file at agad itong ilalapat ng Tomarigi."
   },
-  "agentAccessDescription": {
-    "message": "Mababasa at mababago ng iyong coding agent (Claude Code o iba pang sumusuporta sa MCP, ang karaniwang paraan ng pagkonekta ng mga agent sa mga app) ang mga setting sa screen na ito, masusubok ang koneksyon, at makapagpapatugtog ng sample. Nananatili rito ang mga API key: hindi ito mababasa o maitatakda ng agent."
+  "settingsFileCopyPath": {
+    "message": "Kopyahin ang path"
   },
-  "agentAccessCommandHint": {
-    "message": "Patakbuhin ito nang isang beses sa terminal. Pagkatapos ay sabihin sa agent, halimbawa: “Gawing VOICEVOX ang boses ng pagbasa”."
+  "settingsFileRevealMac": {
+    "message": "Ipakita sa Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Nagbago ang command, kaya hindi na gagana ang pinatakbo mo dati. Alisin muna ang lumang rehistro:"
+  "settingsFileRevealWindows": {
+    "message": "Ipakita sa Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopyahin ang command sa pag-register"
+  "settingsFileRevealLinux": {
+    "message": "Ipakita sa file manager"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopyahin ang command sa pag-alis"
+  "settingsFileAgentHeading": {
+    "message": "Ipagawa sa AI agent"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopyahin ang URL"
+  "settingsFileAgentHint": {
+    "message": "Kopyahin ito, palitan ang ○○ ng gusto mo (hal. “basahin nang malakas gamit ang VOICEVOX”), at i-paste sa iyong coding agent."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopyahin ang token"
+  "settingsFileCopyInstructions": {
+    "message": "Kopyahin ang tagubilin para sa agent"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Baguhin ang mga setting ng Tomarigi: ○○. Paano: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Kinuha mula sa file sa pagbukas na ito"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Binago mula sa file ng mga setting"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (pinanatili ang dating halaga)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Hindi valid na JSON ang file ng mga setting (linya $LINE$, column $COLUMN$). Mananatili ang bawat setting hanggang maayos ito.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Hindi mabasa ang file ng mga setting, kaya itinabi ang laman nito sa settings.invalid.json bago mag-save."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Iniwan at hindi pinansin ang mga key na hindi kilala ng Tomarigi: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Hindi kailanman binabasa mula sa file ang mga API key; i-paste ang mga ito sa Settings → AI para sa mga buod. Hindi pinansin: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "Inalis na ang “Hayaang baguhin ng AI agent ang mga setting” (MCP). Ngayon, binabago ang mga setting sa file sa ibaba."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Inalis ito para walang anuman sa loob ng app ang makapagpadala ng utos sa iyong mga AI agent."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Kung inirehistro mo ito sa Claude Code, patakbuhin ito nang isang beses sa terminal para tanggalin:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopyahin ang command"
+  },
+  "settingsFileCloseNote": {
+    "message": "Isara ang paalalang ito"
+  },
+  "settingsProblemNoServer": {
+    "message": "Para gamitin ang lokal na boses, ilagay ang TTS server (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Walang naka-save na API key para sa provider na ito. I-paste muna ito sa Settings → AI para sa mga buod."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Hindi pa naka-set up ang lokal na AI. Ilagay muna ang localAi (baseUrl at model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Ang volume ay buong numero mula 0 hanggang 100 (porsiyento)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Ilagay ang folder bilang absolute path na walang \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Hindi mababantayan ang mga network path. Maglagay ng folder sa computer na ito."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Wala ang folder na iyon o hindi ito mabasa."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Hindi puwedeng walang laman ang pangalan."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Laging binabantayan ang mga default na folder at hindi matatanggal."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Hindi ito isa sa mga pagpipilian (tingnan ang settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Hindi ito ang uri ng halagang tinatanggap ng setting na ito (tingnan ang settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Isara"
+  },
+  "settingsFileCopied": {
     "message": "Nakopya"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Maglagay ng port mula 1024 hanggang 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Hindi masimulan: may ibang app na gumagamit ng port na ito. Maglagay ng ibang port at pindutin ang Enter para subukan ulit."
-  },
-  "agentAccessRenewButton": {
-    "message": "I-renew ang token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Kailangan ng keyring (GNOME Keyring o KWallet) para itago ang lihim na token, at walang tumatakbo sa computer na ito. Magpatakbo ng isa, saka i-on ulit ito."
-  },
-  "agentAccessStartFailed": {
-    "message": "Hindi masimulan ang server. Nasa log ng app ang dahilan."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Binago ng agent"
-  },
-  "agentNoteTitle": {
-    "message": "Binago ng AI agent ang isang setting"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Naka-on"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Naka-off"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Hindi nakatakda"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI para sa mga buod"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Lakas ng tunog"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Lakas ng pagbasa"
-  },
-  "agentAccessSecretNote": {
-    "message": "May lihim na token ang command na ito na nagpapahintulot sa mga program sa computer na ito na baguhin ang mga setting na ito. Huwag itong ibahagi; kung kumalat, i-renew ito."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Para sa ibang agent na gumagamit ng MCP, ilagay ang URL at token sa ibaba sa MCP settings ng agent na iyon (header: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Isara"
   }
 }

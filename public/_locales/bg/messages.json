@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Включете „Прочитане на глас“ по-горе, за да чувате прочитанията."
   },
-  "agentAccessHeading": {
-    "message": "AI агент"
+  "settingsFileHeading": {
+    "message": "Файл с настройки"
   },
-  "agentAccessEnable": {
-    "message": "Позволи на AI агент да променя настройките"
+  "settingsFileDescription": {
+    "message": "Всички настройки на този екран без API ключовете са записани и в този файл. Редактирайте файла и Tomarigi веднага прилага промяната."
   },
-  "agentAccessDescription": {
-    "message": "Вашият агент за програмиране (Claude Code или друг, който поддържа MCP – обичайния начин за свързване на агенти с приложения) може да чете и променя настройките на този екран, да тества връзката и да пуска мостра. API ключовете остават тук: агентът не може да ги чете или задава."
+  "settingsFileCopyPath": {
+    "message": "Копирай пътя"
   },
-  "agentAccessCommandHint": {
-    "message": "Изпълнете това веднъж в терминал. След това помолете агента, напр. „Смени гласа за четене на VOICEVOX“."
+  "settingsFileRevealMac": {
+    "message": "Покажи във Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Командата се промени и предишната вече не работи. Първо премахнете старата регистрация:"
+  "settingsFileRevealWindows": {
+    "message": "Покажи в Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Копиране на командата за регистрация"
+  "settingsFileRevealLinux": {
+    "message": "Покажи във файловия мениджър"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Копиране на командата за премахване"
+  "settingsFileAgentHeading": {
+    "message": "Помолете AI агент"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Копиране на URL"
+  "settingsFileAgentHint": {
+    "message": "Копирайте това, заменете ○○ с желаното (напр. „чети с VOICEVOX“) и го поставете в агента си за програмиране."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Копиране на токена"
+  "settingsFileCopyInstructions": {
+    "message": "Копирай инструкциите за агент"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Промени настройките на Tomarigi: ○○. Как: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Взето от файла при това стартиране"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Променено от файла с настройки"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (запазена е предишната стойност)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Файлът с настройки не е валиден JSON (ред $LINE$, колона $COLUMN$). Докато не бъде поправен, всички настройки остават.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Файлът с настройки не можа да се прочете, затова текстът му е запазен в settings.invalid.json преди записа."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Ключовете, които Tomarigi не познава, са оставени и пренебрегнати: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API ключовете никога не се четат от файла; поставете ги в Настройки → AI за обобщения. Пренебрегнати: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "„AI агент да променя настройките“ (MCP) е премахнато. Настройките вече се променят чрез файла по-долу."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Премахнато е, за да не може нищо в приложението да изпраща указания на вашите AI агенти."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Ако сте го регистрирали в Claude Code, изпълнете това веднъж в терминал, за да премахнете регистрацията:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Копирай командата"
+  },
+  "settingsFileCloseNote": {
+    "message": "Затвори съобщението"
+  },
+  "settingsProblemNoServer": {
+    "message": "За локалния глас задайте TTS сървър (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Няма запазен API ключ за този доставчик. Първо го поставете в Настройки → AI за обобщения."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Локалният AI не е настроен. Първо задайте localAi (baseUrl и model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Силата е цяло число от 0 до 100 (проценти)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Посочете папката като абсолютен път без \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Мрежови пътища не могат да се следят. Посочете папка на този компютър."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Папката не съществува или не може да се прочете."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Името не може да е празно."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Папките по подразбиране се следят винаги и не могат да се премахнат."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Това не е една от възможностите (вижте settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Това не е видът стойност, който настройката приема (вижте settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Затвори"
+  },
+  "settingsFileCopied": {
     "message": "Копирано"
   },
-  "agentAccessPortLabel": {
-    "message": "Порт"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Въведете порт от 1024 до 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Не можа да стартира: друго приложение използва този порт. Въведете друг порт и натиснете Enter, за да опитате отново."
-  },
-  "agentAccessRenewButton": {
-    "message": "Подновяване на токена"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Нужен ключодържател (GNOME Keyring или KWallet) за тайния токен, а на този компютър не работи нито един. Стартирайте един и включете отново."
-  },
-  "agentAccessStartFailed": {
-    "message": "Сървърът не можа да стартира. Причината е в дневника на приложението."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Променено от агента"
-  },
-  "agentNoteTitle": {
-    "message": "AI агентът промени настройка"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Вкл."
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Изкл."
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Не е зададено"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI за обобщения"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Сила на звука"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Сила на четенето"
-  },
-  "agentAccessSecretNote": {
-    "message": "Командата съдържа таен токен, с който програмите на този компютър могат да променят тези настройки. Не го споделяйте; ако изтече, подновете го."
-  },
-  "agentAccessOtherAgents": {
-    "message": "За друг агент с поддръжка на MCP въведете URL адреса и токена по-долу в неговите MCP настройки (заглавка: Authorization: Bearer <токен>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Затвори"
   }
 }

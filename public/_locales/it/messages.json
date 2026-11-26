@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Attiva «Leggi ad alta voce» qui sopra per sentire le letture."
   },
-  "agentAccessHeading": {
-    "message": "Agente IA"
+  "settingsFileHeading": {
+    "message": "File delle impostazioni"
   },
-  "agentAccessEnable": {
-    "message": "Consenti a un agente IA di modificare le impostazioni"
+  "settingsFileDescription": {
+    "message": "Tutte le impostazioni di questa schermata, tranne le chiavi API, sono scritte anche in questo file. Modificalo e Tomarigi applica subito la modifica."
   },
-  "agentAccessDescription": {
-    "message": "Il tuo agente di programmazione (Claude Code o un altro compatibile con MCP, il modo comune di collegare gli agenti alle app) può leggere e modificare le impostazioni di questa schermata, provare la connessione e riprodurre un esempio. Le chiavi API restano qui: l'agente non può leggerle né impostarle."
+  "settingsFileCopyPath": {
+    "message": "Copia percorso"
   },
-  "agentAccessCommandHint": {
-    "message": "Esegui questo comando una volta in un terminale. Poi chiedi all'agente, ad esempio: «Passa la voce di lettura a VOICEVOX»."
+  "settingsFileRevealMac": {
+    "message": "Mostra nel Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Il comando è cambiato, quindi quello eseguito prima non funziona più. Rimuovi prima la vecchia registrazione:"
+  "settingsFileRevealWindows": {
+    "message": "Mostra in Esplora file"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Copia comando di registrazione"
+  "settingsFileRevealLinux": {
+    "message": "Mostra nel gestore file"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Copia comando di rimozione"
+  "settingsFileAgentHeading": {
+    "message": "Chiedere a un agente IA"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Copia URL"
+  "settingsFileAgentHint": {
+    "message": "Copia questo testo, sostituisci ○○ con ciò che vuoi (es. «leggi ad alta voce con VOICEVOX») e incollalo nel tuo agente di programmazione."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Copia token"
+  "settingsFileCopyInstructions": {
+    "message": "Copia le istruzioni per un agente"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Cambia le impostazioni di Tomarigi: ○○. Come fare: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Preso dal file in questo avvio"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Modificato dal file delle impostazioni"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (resta il valore precedente)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Il file delle impostazioni non è JSON valido (riga $LINE$, colonna $COLUMN$). Ogni impostazione mantiene il suo valore finché non viene corretto.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Il file delle impostazioni non era leggibile, quindi il testo è stato conservato in settings.invalid.json prima di salvare."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Le chiavi che Tomarigi non conosce sono state lasciate com'erano e ignorate: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Le chiavi API non vengono mai lette dal file; incollale in Impostazioni → IA per i riepiloghi. Ignorate: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "«Consenti a un agente IA di modificare le impostazioni» (MCP) è stato rimosso. Ora le impostazioni si cambiano dal file qui sotto."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "È stato rimosso perché nulla all'interno dell'app possa inviare istruzioni ai tuoi agenti IA."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Se l'avevi registrato in Claude Code, esegui una volta questo comando in un terminale per rimuoverlo:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Copia comando"
+  },
+  "settingsFileCloseNote": {
+    "message": "Chiudi questo avviso"
+  },
+  "settingsProblemNoServer": {
+    "message": "Per usare la voce locale, indica un server TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Non c'è una chiave API salvata per questo fornitore. Incollala prima in Impostazioni → IA per i riepiloghi."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "L'IA locale non è configurata. Indica prima localAi (baseUrl e model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Il volume è un numero intero da 0 a 100 (percentuale)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Indica la cartella con un percorso assoluto senza \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "I percorsi di rete non possono essere osservati. Indica una cartella di questo computer."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Quella cartella non esiste o non è leggibile."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Il nome non può essere vuoto."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Le cartelle predefinite sono sempre osservate e non si possono rimuovere."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Non è una delle scelte possibili (vedi settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Non è il tipo di valore che questa impostazione accetta (vedi settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Chiudi"
+  },
+  "settingsFileCopied": {
     "message": "Copiato"
   },
-  "agentAccessPortLabel": {
-    "message": "Porta"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Inserisci una porta da 1024 a 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Impossibile avviare: un'altra app sta usando questa porta. Inserisci un'altra porta e premi Invio per riprovare."
-  },
-  "agentAccessRenewButton": {
-    "message": "Rinnova token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Serve un portachiavi (GNOME Keyring o KWallet) per conservare il token segreto, e su questo computer non ne è attivo nessuno. Avviane uno, poi riattiva l'opzione."
-  },
-  "agentAccessStartFailed": {
-    "message": "Impossibile avviare il server. Il motivo è nel registro dell'app."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Modificato dall'agente"
-  },
-  "agentNoteTitle": {
-    "message": "L'agente IA ha modificato un'impostazione"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Attivo"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Disattivo"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Non impostato"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "IA per i riepiloghi"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Volume del suono"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Volume di lettura"
-  },
-  "agentAccessSecretNote": {
-    "message": "Il comando contiene un token segreto che permette ai programmi di questo computer di modificare queste impostazioni. Non condividerlo; se trapela, rinnovalo."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Per un altro agente compatibile con MCP, inserisci l'URL e il token qui sotto nelle impostazioni MCP di quell'agente (intestazione: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Chiudi"
   }
 }

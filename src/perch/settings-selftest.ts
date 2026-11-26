@@ -1,7 +1,7 @@
 // The settings page's half of TOMARIGI_SETTINGS_TEST (src-tauri/src/settings_window.rs; debug builds only): with the
 // floating window hidden, it changes settings through the page's own controls, one every 1.5 seconds, and logs each
 // step as `[settings-test]`. The floating window logs its reloads (`[settings-sync] main reloads …`), and the check
-// reads the floating window's values through the MCP get_settings tool (README)
+// reads the values the app applied in the settings file (README)
 import { invoke } from "@tauri-apps/api/core";
 
 const log = (line: string) => void invoke("log", { line: `[settings-test] page ${line}` }).catch(() => {});

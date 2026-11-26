@@ -104,7 +104,7 @@ html[data-view="settings"] button {
   font-family: inherit;
 }
 
-html[data-view="settings"] button.small:not(.agent-access-copy-main) {
+html[data-view="settings"] button.small:not(.settings-file-copy-main) {
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Lai dzirdētu lasīšanu, augšā ieslēdziet “Lasīt ar balsi”."
   },
-  "agentAccessHeading": {
-    "message": "MI aģents"
+  "settingsFileHeading": {
+    "message": "Iestatījumu fails"
   },
-  "agentAccessEnable": {
-    "message": "Ļaut MI aģentam mainīt iestatījumus"
+  "settingsFileDescription": {
+    "message": "Visi šī ekrāna iestatījumi, izņemot API atslēgas, ir ierakstīti arī šajā failā. Rediģējiet failu, un Tomarigi izmaiņas piemēro uzreiz."
   },
-  "agentAccessDescription": {
-    "message": "Jūsu programēšanas aģents (Claude Code vai cits, kas atbalsta MCP – ierasto veidu, kā savienot aģentus ar lietotnēm) var lasīt un mainīt šī ekrāna iestatījumus, pārbaudīt savienojumu un atskaņot paraugu. API atslēgas paliek šeit: aģents tās nevar nolasīt vai iestatīt."
+  "settingsFileCopyPath": {
+    "message": "Kopēt ceļu"
   },
-  "agentAccessCommandHint": {
-    "message": "Palaidiet šo vienreiz terminālī. Pēc tam palūdziet aģentam, piem., “Pārslēdz lasīšanas balsi uz VOICEVOX”."
+  "settingsFileRevealMac": {
+    "message": "Rādīt Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Komanda ir mainījusies, tāpēc iepriekšējā vairs nedarbojas. Vispirms noņemiet veco reģistrāciju:"
+  "settingsFileRevealWindows": {
+    "message": "Rādīt Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopēt reģistrācijas komandu"
+  "settingsFileRevealLinux": {
+    "message": "Rādīt failu pārvaldniekā"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopēt noņemšanas komandu"
+  "settingsFileAgentHeading": {
+    "message": "Palūdziet MI aģentam"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopēt URL"
+  "settingsFileAgentHint": {
+    "message": "Nokopējiet šo, aizstājiet ○○ ar vēlamo (piem., „lasi ar VOICEVOX”) un ielīmējiet savā programmēšanas aģentā."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopēt marķieri"
+  "settingsFileCopyInstructions": {
+    "message": "Kopēt norādījumus aģentam"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Maini Tomarigi iestatījumus: ○○. Kā: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Paņemts no faila kopš šīs palaišanas"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Mainīts no iestatījumu faila"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (saglabāta iepriekšējā vērtība)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Iestatījumu fails nav derīgs JSON ($LINE$. rinda, $COLUMN$. kolonna). Kamēr tas nav izlabots, visi iestatījumi paliek.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Iestatījumu failu nevarēja nolasīt, tāpēc pirms saglabāšanas tā teksts saglabāts settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Atslēgas, ko Tomarigi nepazīst, atstātas kā ir un ignorētas: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API atslēgas no faila nekad netiek lasītas; ielīmējiet tās sadaļā Iestatījumi → MI kopsavilkumiem. Ignorētas: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "„Ļaut MI aģentam mainīt iestatījumus” (MCP) ir noņemts. Tagad iestatījumus maina zemāk esošajā failā."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Noņemts, lai nekas lietotnē nevarētu sūtīt norādījumus jūsu MI aģentiem."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Ja to reģistrējāt Claude Code, vienreiz palaidiet šo terminālī, lai noņemtu reģistrāciju:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopēt komandu"
+  },
+  "settingsFileCloseNote": {
+    "message": "Aizvērt šo paziņojumu"
+  },
+  "settingsProblemNoServer": {
+    "message": "Vietējai balsij norādiet TTS serveri (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Šim pakalpojuma sniedzējam nav saglabāta API atslēga. Vispirms ielīmējiet to sadaļā Iestatījumi → MI kopsavilkumiem."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Vietējais MI nav iestatīts. Vispirms norādiet localAi (baseUrl un model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Skaļums ir vesels skaitlis no 0 līdz 100 (procenti)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Norādiet mapi kā absolūtu ceļu bez \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Tīkla ceļus nevar novērot. Norādiet mapi šajā datorā."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Šī mape nepastāv vai nav nolasāma."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Nosaukums nevar būt tukšs."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Noklusējuma mapes tiek novērotas vienmēr, un tās nevar noņemt."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Tā nav neviena no izvēlēm (skatiet settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Šis iestatījums nepieņem šāda veida vērtību (skatiet settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Aizvērt"
+  },
+  "settingsFileCopied": {
     "message": "Nokopēts"
   },
-  "agentAccessPortLabel": {
-    "message": "Ports"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Ievadiet portu no 1024 līdz 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Neizdevās palaist: šo portu izmanto cita lietotne. Ievadiet citu portu un nospiediet Enter, lai mēģinātu vēlreiz."
-  },
-  "agentAccessRenewButton": {
-    "message": "Atjaunot marķieri"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Slepenā marķiera glabāšanai vajag atslēgu saišķi (GNOME Keyring vai KWallet), bet šajā datorā neviens nedarbojas. Palaidiet vienu un ieslēdziet vēlreiz."
-  },
-  "agentAccessStartFailed": {
-    "message": "Serveri neizdevās palaist. Iemesls ir lietotnes žurnālā."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Mainījis aģents"
-  },
-  "agentNoteTitle": {
-    "message": "MI aģents mainīja iestatījumu"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Iesl."
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Izsl."
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Nav iestatīts"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "MI kopsavilkumiem"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Skaņas skaļums"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Lasīšanas skaļums"
-  },
-  "agentAccessSecretNote": {
-    "message": "Komandā ir slepens marķieris, ar ko šī datora programmas var mainīt šos iestatījumus. Nedalieties ar to; ja tas noplūst, atjaunojiet to."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Citam aģentam, kas atbalsta MCP, ievadiet tālāk norādīto URL un marķieri šī aģenta MCP iestatījumos (galvene: Authorization: Bearer <marķieris>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Aizvērt"
   }
 }

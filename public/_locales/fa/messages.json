@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "برای شنیدن خواندن، «خواندن با صدا» را در بالا روشن کنید."
   },
-  "agentAccessHeading": {
-    "message": "عامل هوش مصنوعی"
+  "settingsFileHeading": {
+    "message": "فایل تنظیمات"
   },
-  "agentAccessEnable": {
-    "message": "اجازه به عامل هوش مصنوعی برای تغییر تنظیمات"
+  "settingsFileDescription": {
+    "message": "همه تنظیمات این صفحه به‌جز کلیدهای API در این فایل هم نوشته می‌شوند. فایل را ویرایش کنید تا Tomarigi تغییر را فوراً اعمال کند."
   },
-  "agentAccessDescription": {
-    "message": "عامل برنامه‌نویسی شما (Claude Code یا دیگری که MCP، روش رایج وصل کردن عامل‌ها به برنامه‌ها، را پشتیبانی می‌کند) می‌تواند تنظیمات این صفحه را بخواند و تغییر دهد، اتصال را آزمایش کند و نمونه پخش کند. کلیدهای API همین‌جا می‌مانند: عامل نمی‌تواند آن‌ها را بخواند یا تنظیم کند."
+  "settingsFileCopyPath": {
+    "message": "کپی مسیر"
   },
-  "agentAccessCommandHint": {
-    "message": "این را یک بار در ترمینال اجرا کنید. سپس از عامل بخواهید، مثلاً: «صدای خواندن را VOICEVOX کن»."
+  "settingsFileRevealMac": {
+    "message": "نمایش در Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "فرمان تغییر کرد و فرمان قبلی دیگر کار نمی‌کند. اول ثبت قدیمی را حذف کنید:"
+  "settingsFileRevealWindows": {
+    "message": "نمایش در Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "کپی فرمان ثبت"
+  "settingsFileRevealLinux": {
+    "message": "نمایش در مدیر فایل"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "کپی فرمان حذف"
+  "settingsFileAgentHeading": {
+    "message": "از عامل هوش مصنوعی بخواهید"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "کپی URL"
+  "settingsFileAgentHint": {
+    "message": "این را کپی کنید، ○○ را با چیزی که می‌خواهید عوض کنید (مثلاً «با VOICEVOX بخوان») و در عامل برنامه‌نویسی خود بچسبانید."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "کپی توکن"
+  "settingsFileCopyInstructions": {
+    "message": "کپی دستور برای عامل"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "تنظیمات Tomarigi را تغییر بده: ○○. روش: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "دریافت‌شده از فایل در این اجرا"
+  },
+  "settingsFileNoteTitle": {
+    "message": "تغییر از فایل تنظیمات"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (مقدار قبلی ماند)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "فایل تنظیمات JSON معتبر نیست (خط $LINE$، ستون $COLUMN$). تا درست شدن آن، همه تنظیمات مقدار فعلی را نگه می‌دارند.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "فایل تنظیمات خوانده نشد، پس متن آن پیش از ذخیره در settings.invalid.json نگه داشته شد."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "کلیدهایی که Tomarigi نمی‌شناسد همان‌طور ماندند و نادیده گرفته شدند: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "کلیدهای API هرگز از فایل خوانده نمی‌شوند؛ آن‌ها را در تنظیمات ← هوش مصنوعی برای خلاصه‌ها بچسبانید. نادیده گرفته شد: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "«اجازه به عامل هوش مصنوعی برای تغییر تنظیمات» (MCP) حذف شد. اکنون تنظیمات با فایل زیر تغییر می‌کنند."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "حذف شد تا هیچ چیزی در داخل برنامه نتواند به عامل‌های هوش مصنوعی شما دستور بفرستد."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "اگر آن را در Claude Code ثبت کرده بودید، این را یک بار در ترمینال اجرا کنید تا ثبت حذف شود:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "کپی فرمان"
+  },
+  "settingsFileCloseNote": {
+    "message": "بستن این پیام"
+  },
+  "settingsProblemNoServer": {
+    "message": "برای استفاده از صدای محلی، یک سرور TTS بنویسید (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "کلید API برای این ارائه‌دهنده ذخیره نشده است. اول آن را در تنظیمات ← هوش مصنوعی برای خلاصه‌ها بچسبانید."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "هوش مصنوعی محلی تنظیم نشده است. اول localAi (baseUrl و model) را بنویسید."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "بلندی صدا عددی صحیح از ۰ تا ۱۰۰ است (درصد)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "پوشه را با مسیر مطلق و بدون \"..\" بنویسید."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "مسیرهای شبکه را نمی‌توان زیر نظر گرفت. پوشه‌ای در همین رایانه بنویسید."
+  },
+  "settingsProblemNotReadable": {
+    "message": "این پوشه وجود ندارد یا خوانده نمی‌شود."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "نام نمی‌تواند خالی باشد."
+  },
+  "settingsProblemBuiltin": {
+    "message": "پوشه‌های پیش‌فرض همیشه زیر نظرند و حذف نمی‌شوند."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "این یکی از گزینه‌ها نیست (settings.schema.json را ببینید)."
+  },
+  "settingsProblemWrongType": {
+    "message": "این نوع مقداری نیست که این تنظیم می‌پذیرد (settings.schema.json را ببینید)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "بستن"
+  },
+  "settingsFileCopied": {
     "message": "کپی شد"
   },
-  "agentAccessPortLabel": {
-    "message": "پورت"
-  },
-  "agentAccessPortInvalid": {
-    "message": "پورتی بین ۱۰۲۴ تا ۶۵۵۳۵ وارد کنید."
-  },
-  "agentAccessPortInUse": {
-    "message": "شروع نشد: برنامه دیگری از این پورت استفاده می‌کند. پورت دیگری وارد کنید و Enter را بزنید تا دوباره امتحان شود."
-  },
-  "agentAccessRenewButton": {
-    "message": "تجدید توکن"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "برای نگه‌داشتن توکن محرمانه به یک دسته‌کلید (GNOME Keyring یا KWallet) نیاز است و هیچ‌کدام روی این رایانه اجرا نمی‌شود. یکی را اجرا کنید و دوباره روشن کنید."
-  },
-  "agentAccessStartFailed": {
-    "message": "سرور راه‌اندازی نشد. دلیل آن در گزارش برنامه است."
-  },
-  "agentAccessRecentHeading": {
-    "message": "تغییرات عامل"
-  },
-  "agentNoteTitle": {
-    "message": "عامل هوش مصنوعی یک تنظیم را تغییر داد"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "روشن"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "خاموش"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "تنظیم نشده"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "هوش مصنوعی برای خلاصه‌ها"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "بلندی صدا"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "بلندی خواندن"
-  },
-  "agentAccessSecretNote": {
-    "message": "این فرمان یک توکن محرمانه دارد که به برنامه‌های این رایانه اجازه می‌دهد این تنظیمات را تغییر دهند. آن را به کسی ندهید؛ اگر فاش شد، تجدیدش کنید."
-  },
-  "agentAccessOtherAgents": {
-    "message": "برای عامل دیگری که از MCP پشتیبانی می‌کند، URL و توکن زیر را در تنظیمات MCP آن عامل وارد کنید (سرآیند: Authorization: Bearer <توکن>)."
-  },
-  "agentNoteDismiss": {
-    "message": "بستن"
   }
 }

@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "पढ़कर सुनाना सुनने के लिए ऊपर \"आवाज़ से पढ़ें\" चालू करें।"
   },
-  "agentAccessHeading": {
-    "message": "AI एजेंट"
+  "settingsFileHeading": {
+    "message": "सेटिंग्स फ़ाइल"
   },
-  "agentAccessEnable": {
-    "message": "AI एजेंट को सेटिंग बदलने दें"
+  "settingsFileDescription": {
+    "message": "API कुंजियों को छोड़कर इस स्क्रीन की सभी सेटिंग्स इस फ़ाइल में भी लिखी हैं। फ़ाइल बदलें, Tomarigi बदलाव तुरंत लागू कर देगा।"
   },
-  "agentAccessDescription": {
-    "message": "आपका कोडिंग एजेंट (Claude Code या MCP — एजेंट को ऐप से जोड़ने का आम तरीका — इस्तेमाल करने वाला कोई और) इस स्क्रीन की सेटिंग पढ़ और बदल सकता है, कनेक्शन टेस्ट कर सकता है और नमूना चला सकता है। API कुंजियाँ यहीं रहती हैं: एजेंट उन्हें पढ़ या सेट नहीं कर सकता।"
+  "settingsFileCopyPath": {
+    "message": "पथ कॉपी करें"
   },
-  "agentAccessCommandHint": {
-    "message": "इसे टर्मिनल में एक बार चलाएँ। फिर एजेंट से कहें, जैसे “पढ़ने की आवाज़ VOICEVOX कर दो”।"
+  "settingsFileRevealMac": {
+    "message": "Finder में दिखाएँ"
   },
-  "agentAccessReplaceHint": {
-    "message": "कमांड बदल गया है, पहले वाला अब काम नहीं करेगा। पहले पुराना रजिस्ट्रेशन हटाएँ:"
+  "settingsFileRevealWindows": {
+    "message": "एक्सप्लोरर में दिखाएँ"
   },
-  "agentAccessCopyAddButton": {
-    "message": "रजिस्टर कमांड कॉपी करें"
+  "settingsFileRevealLinux": {
+    "message": "फ़ाइल मैनेजर में दिखाएँ"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "हटाने की कमांड कॉपी करें"
+  "settingsFileAgentHeading": {
+    "message": "AI एजेंट से कहें"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "URL कॉपी करें"
+  "settingsFileAgentHint": {
+    "message": "इसे कॉपी करें, ○○ की जगह अपनी बात लिखें (जैसे “VOICEVOX से पढ़कर सुनाओ”), और अपने कोडिंग एजेंट में पेस्ट करें।"
   },
-  "agentAccessCopyTokenButton": {
-    "message": "टोकन कॉपी करें"
+  "settingsFileCopyInstructions": {
+    "message": "एजेंट के लिए निर्देश कॉपी करें"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Tomarigi की सेटिंग बदलो: ○○। तरीका: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "इस बार खुलने के बाद फ़ाइल से लिया गया"
+  },
+  "settingsFileNoteTitle": {
+    "message": "सेटिंग्स फ़ाइल से बदला गया"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (पिछला मान रखा गया)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "सेटिंग्स फ़ाइल मान्य JSON नहीं है (पंक्ति $LINE$, स्तंभ $COLUMN$)। ठीक होने तक हर सेटिंग अपना मान रखती है।",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "सेटिंग्स फ़ाइल पढ़ी नहीं जा सकी, इसलिए सहेजने से पहले उसका पाठ settings.invalid.json में रखा गया।"
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "जिन कुंजियों को Tomarigi नहीं जानता, उन्हें वैसे ही छोड़कर अनदेखा किया गया: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API कुंजियाँ फ़ाइल से कभी नहीं पढ़ी जातीं; उन्हें सेटिंग्स → सारांश के लिए AI में पेस्ट करें। अनदेखा: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“AI एजेंट को सेटिंग बदलने दें” (MCP) हटा दिया गया है। अब सेटिंग नीचे की फ़ाइल से बदली जाती हैं।"
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "इसे इसलिए हटाया गया ताकि ऐप के अंदर से कुछ भी आपके AI एजेंटों को निर्देश न भेज सके।"
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "अगर आपने इसे Claude Code में रजिस्टर किया था, तो इसे हटाने के लिए टर्मिनल में यह एक बार चलाएँ:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "कमांड कॉपी करें"
+  },
+  "settingsFileCloseNote": {
+    "message": "यह सूचना बंद करें"
+  },
+  "settingsProblemNoServer": {
+    "message": "लोकल आवाज़ के लिए TTS सर्वर (readoutVoice.server) लिखें।"
+  },
+  "settingsProblemNoKey": {
+    "message": "इस प्रदाता के लिए कोई API कुंजी सहेजी नहीं गई है। पहले उसे सेटिंग्स → सारांश के लिए AI में पेस्ट करें।"
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "लोकल AI सेट नहीं है। पहले localAi (baseUrl और model) लिखें।"
+  },
+  "settingsProblemVolumeRange": {
+    "message": "वॉल्यूम 0 से 100 तक का पूर्णांक (प्रतिशत) होता है।"
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "फ़ोल्डर को \"..\" के बिना पूर्ण पथ के रूप में लिखें।"
+  },
+  "settingsProblemNetworkPath": {
+    "message": "नेटवर्क पथ देखे नहीं जा सकते। इस कंप्यूटर का कोई फ़ोल्डर लिखें।"
+  },
+  "settingsProblemNotReadable": {
+    "message": "वह फ़ोल्डर मौजूद नहीं है या पढ़ा नहीं जा सकता।"
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "नाम खाली नहीं हो सकता।"
+  },
+  "settingsProblemBuiltin": {
+    "message": "डिफ़ॉल्ट फ़ोल्डर हमेशा देखे जाते हैं और हटाए नहीं जा सकते।"
+  },
+  "settingsProblemUnknownOption": {
+    "message": "यह विकल्पों में से नहीं है (settings.schema.json देखें)।"
+  },
+  "settingsProblemWrongType": {
+    "message": "यह इस सेटिंग का स्वीकार्य मान प्रकार नहीं है (settings.schema.json देखें)।"
+  },
+  "settingsFileNoteDismiss": {
+    "message": "बंद करें"
+  },
+  "settingsFileCopied": {
     "message": "कॉपी हो गया"
   },
-  "agentAccessPortLabel": {
-    "message": "पोर्ट"
-  },
-  "agentAccessPortInvalid": {
-    "message": "1024 से 65535 के बीच का पोर्ट डालें।"
-  },
-  "agentAccessPortInUse": {
-    "message": "शुरू नहीं हो सका: यह पोर्ट कोई और ऐप इस्तेमाल कर रहा है। दूसरा पोर्ट डालें और फिर से कोशिश करने के लिए Enter दबाएँ।"
-  },
-  "agentAccessRenewButton": {
-    "message": "टोकन नया बनाएँ"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "गुप्त टोकन रखने के लिए कीरिंग (GNOME Keyring या KWallet) चाहिए, और इस कंप्यूटर पर कोई नहीं चल रहा। एक चालू करें, फिर इसे दोबारा चालू करें।"
-  },
-  "agentAccessStartFailed": {
-    "message": "सर्वर शुरू नहीं हो सका। वजह ऐप लॉग में है।"
-  },
-  "agentAccessRecentHeading": {
-    "message": "एजेंट ने बदला"
-  },
-  "agentNoteTitle": {
-    "message": "AI एजेंट ने एक सेटिंग बदली"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "चालू"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "बंद"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "सेट नहीं"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "सारांश के लिए AI"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "आवाज़ का वॉल्यूम"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "पढ़ने का वॉल्यूम"
-  },
-  "agentAccessSecretNote": {
-    "message": "इस कमांड में एक गुप्त टोकन है जिससे इस कंप्यूटर के प्रोग्राम ये सेटिंग बदल सकते हैं। इसे साझा न करें; लीक हो जाए तो नया बनाएँ।"
-  },
-  "agentAccessOtherAgents": {
-    "message": "MCP इस्तेमाल करने वाले किसी दूसरे एजेंट के लिए, नीचे दिया URL और टोकन उस एजेंट की MCP सेटिंग में डालें (हेडर: Authorization: Bearer <टोकन>)।"
-  },
-  "agentNoteDismiss": {
-    "message": "बंद करें"
   }
 }

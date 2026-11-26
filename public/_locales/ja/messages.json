@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "読み上げを聞くには、上の「声で読み上げる」をオンにしてください。"
   },
-  "agentAccessHeading": {
-    "message": "AI エージェント"
+  "settingsFileHeading": {
+    "message": "設定ファイル"
   },
-  "agentAccessEnable": {
-    "message": "AI エージェントに設定を変えさせる"
+  "settingsFileDescription": {
+    "message": "この画面の設定は、API キーを除いてこのファイルにも書かれています。ファイルを書き換えると、Tomarigi はすぐに反映します。"
   },
-  "agentAccessDescription": {
-    "message": "コーディングエージェント（Claude Code など、MCP というエージェントとアプリをつなぐ仕組みに対応したもの）が、この画面の設定を読み書きし、接続テストや試しの読み上げを行えます。API キーはこの画面だけで扱い、エージェントは読むことも設定することもできません。"
+  "settingsFileCopyPath": {
+    "message": "パスをコピー"
   },
-  "agentAccessCommandHint": {
-    "message": "ターミナルでこれを 1 回実行してください。あとはエージェントに「読み上げの声を VOICEVOX にして」のように頼めます。"
+  "settingsFileRevealMac": {
+    "message": "Finder で表示"
   },
-  "agentAccessReplaceHint": {
-    "message": "コマンドが変わったので、前に実行したものはもう使えません。先に古い登録を消してください:"
+  "settingsFileRevealWindows": {
+    "message": "エクスプローラーで表示"
   },
-  "agentAccessCopyAddButton": {
-    "message": "登録コマンドをコピー"
+  "settingsFileRevealLinux": {
+    "message": "ファイルマネージャーで表示"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "削除コマンドをコピー"
+  "settingsFileAgentHeading": {
+    "message": "AI エージェントに頼む"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "URL をコピー"
+  "settingsFileAgentHint": {
+    "message": "これをコピーし、○○ を変えたい内容（例:「読み上げを VOICEVOX にして」）に書き換えて、コーディングエージェントに貼ってください。"
   },
-  "agentAccessCopyTokenButton": {
-    "message": "トークンをコピー"
+  "settingsFileCopyInstructions": {
+    "message": "エージェントへの頼み方をコピー"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Tomarigi の設定を変えて: ○○。やり方は $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "この起動で設定ファイルから受け取ったもの"
+  },
+  "settingsFileNoteTitle": {
+    "message": "設定ファイルから変更"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$（前の値のまま）",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "設定ファイルを JSON として読めません（$LINE$ 行 $COLUMN$ 文字目）。直るまで、どの設定も今の値のままです。",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "設定ファイルが読めなかったので、中身を settings.invalid.json に残してから保存しました。"
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Tomarigi の知らないキーは、そのまま残して無視しました: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API キーはファイルからは読みません。設定の「要約に使う AI」に貼ってください。無視したキー: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "「AI エージェントに設定を変えさせる」（MCP）はなくなりました。設定は、下の設定ファイルで変えます。"
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "アプリの中から AI エージェントへ指示を送れる経路をなくすためです。"
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Claude Code に登録していた場合は、ターミナルで次を 1 回実行して登録を消してください:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "コマンドをコピー"
+  },
+  "settingsFileCloseNote": {
+    "message": "このお知らせを閉じる"
+  },
+  "settingsProblemNoServer": {
+    "message": "ローカルの声を使うには、TTS サーバー（readoutVoice.server）を書いてください。"
+  },
+  "settingsProblemNoKey": {
+    "message": "この提供元の API キーが保存されていません。先に設定の「要約に使う AI」に貼ってください。"
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "ローカル AI が未設定です。先に localAi（baseUrl と model）を書いてください。"
+  },
+  "settingsProblemVolumeRange": {
+    "message": "音量は 0 から 100 までの整数（パーセント）です。"
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "フォルダは \"..\" を含まない絶対パスで書いてください。"
+  },
+  "settingsProblemNetworkPath": {
+    "message": "ネットワーク上のパスは見張れません。このコンピュータのフォルダを書いてください。"
+  },
+  "settingsProblemNotReadable": {
+    "message": "そのフォルダは存在しないか、読めません。"
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "名前は空にできません。"
+  },
+  "settingsProblemBuiltin": {
+    "message": "既定のフォルダは常に見張られ、外せません。"
+  },
+  "settingsProblemUnknownOption": {
+    "message": "選べる値のどれでもありません（settings.schema.json を見てください）。"
+  },
+  "settingsProblemWrongType": {
+    "message": "この設定が受け取る形の値ではありません（settings.schema.json を見てください）。"
+  },
+  "settingsFileNoteDismiss": {
+    "message": "閉じる"
+  },
+  "settingsFileCopied": {
     "message": "コピーしました"
   },
-  "agentAccessPortLabel": {
-    "message": "ポート"
-  },
-  "agentAccessPortInvalid": {
-    "message": "1024〜65535 のポートを入力してください。"
-  },
-  "agentAccessPortInUse": {
-    "message": "このポートは別のアプリが使っているため、始められませんでした。別のポートを入力して Enter を押すと、もう一度始めます。"
-  },
-  "agentAccessRenewButton": {
-    "message": "トークンを作り直す"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "秘密のトークンを置くキーリング（GNOME Keyring か KWallet）が要りますが、このコンピューターでは動いていません。どちらかを起動してから、もう一度オンにしてください。"
-  },
-  "agentAccessStartFailed": {
-    "message": "サーバーを起動できませんでした。理由はアプリのログにあります。"
-  },
-  "agentAccessRecentHeading": {
-    "message": "エージェントが変えた設定"
-  },
-  "agentNoteTitle": {
-    "message": "AI エージェントが設定を変えました"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "オン"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "オフ"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "未設定"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "要約に使う AI"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "音の音量"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "読み上げの音量"
-  },
-  "agentAccessSecretNote": {
-    "message": "コマンドには、このコンピューターのプログラムがこれらの設定を変えられる秘密のトークンが入っています。人に渡さないでください。漏れたら作り直してください。"
-  },
-  "agentAccessOtherAgents": {
-    "message": "ほかの MCP を使えるエージェントでは、下の URL とトークンを、そのエージェントの MCP 設定に入れてください（ヘッダーは Authorization: Bearer <トークン>）。"
-  },
-  "agentNoteDismiss": {
-    "message": "閉じる"
   }
 }

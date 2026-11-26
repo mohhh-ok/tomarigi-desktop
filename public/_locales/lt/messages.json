@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Kad girdėtumėte skaitymą, viršuje įjunkite „Skaityti balsu“."
   },
-  "agentAccessHeading": {
-    "message": "DI agentas"
+  "settingsFileHeading": {
+    "message": "Nustatymų failas"
   },
-  "agentAccessEnable": {
-    "message": "Leisti DI agentui keisti nustatymus"
+  "settingsFileDescription": {
+    "message": "Visi šio ekrano nustatymai, išskyrus API raktus, įrašyti ir šiame faile. Pakeiskite failą ir Tomarigi iš karto pritaikys pakeitimą."
   },
-  "agentAccessDescription": {
-    "message": "Jūsų programavimo agentas (Claude Code ar kitas, palaikantis MCP – įprastą būdą sujungti agentus su programomis) gali skaityti ir keisti šio ekrano nustatymus, tikrinti ryšį ir paleisti pavyzdį. API raktai lieka čia: agentas negali jų skaityti ar nustatyti."
+  "settingsFileCopyPath": {
+    "message": "Kopijuoti kelią"
   },
-  "agentAccessCommandHint": {
-    "message": "Paleiskite tai vieną kartą terminale. Tada paprašykite agento, pvz., „Perjunk skaitymo balsą į VOICEVOX“."
+  "settingsFileRevealMac": {
+    "message": "Rodyti Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Komanda pasikeitė, todėl ankstesnė nebeveikia. Pirmiausia pašalinkite seną registraciją:"
+  "settingsFileRevealWindows": {
+    "message": "Rodyti naršyklėje Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopijuoti registravimo komandą"
+  "settingsFileRevealLinux": {
+    "message": "Rodyti failų tvarkyklėje"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopijuoti šalinimo komandą"
+  "settingsFileAgentHeading": {
+    "message": "Paprašykite DI agento"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopijuoti URL"
+  "settingsFileAgentHint": {
+    "message": "Nukopijuokite tai, ○○ pakeiskite tuo, ko norite (pvz., „skaityk su VOICEVOX“), ir įklijuokite savo programavimo agentui."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopijuoti prieigos raktą"
+  "settingsFileCopyInstructions": {
+    "message": "Kopijuoti nurodymus agentui"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Pakeisk Tomarigi nustatymus: ○○. Kaip: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Paimta iš failo nuo šio paleidimo"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Pakeista iš nustatymų failo"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (palikta ankstesnė reikšmė)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Nustatymų failas nėra tinkamas JSON ($LINE$ eilutė, $COLUMN$ stulpelis). Kol jis nepataisytas, visi nustatymai lieka tokie patys.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Nustatymų failo nepavyko perskaityti, todėl prieš įrašant jo tekstas išsaugotas settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Raktai, kurių Tomarigi nežino, palikti kaip buvo ir nepaisomi: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API raktai iš failo niekada neskaitomi; įklijuokite juos skiltyje Nustatymai → DI santraukoms. Nepaisyta: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "„Leisti DI agentui keisti nustatymus“ (MCP) pašalinta. Dabar nustatymai keičiami toliau esančiame faile."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Pašalinta, kad niekas programoje negalėtų siųsti nurodymų jūsų DI agentams."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Jei jį užregistravote Claude Code, vieną kartą paleiskite tai terminale ir panaikinkite registraciją:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopijuoti komandą"
+  },
+  "settingsFileCloseNote": {
+    "message": "Uždaryti šį pranešimą"
+  },
+  "settingsProblemNoServer": {
+    "message": "Vietiniam balsui nurodykite TTS serverį (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Šiam teikėjui neišsaugotas API raktas. Pirmiausia įklijuokite jį skiltyje Nustatymai → DI santraukoms."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Vietinis DI nenustatytas. Pirmiausia nurodykite localAi (baseUrl ir model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Garsumas yra sveikasis skaičius nuo 0 iki 100 (procentai)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Nurodykite aplanką kaip absoliutų kelią be \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Tinklo kelių stebėti negalima. Nurodykite aplanką šiame kompiuteryje."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Tokio aplanko nėra arba jo negalima perskaityti."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Pavadinimas negali būti tuščias."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Numatytieji aplankai stebimi visada ir jų pašalinti negalima."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Tai ne viena iš galimų reikšmių (žr. settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Šis nustatymas tokio tipo reikšmės nepriima (žr. settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Uždaryti"
+  },
+  "settingsFileCopied": {
     "message": "Nukopijuota"
   },
-  "agentAccessPortLabel": {
-    "message": "Prievadas"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Įveskite prievadą nuo 1024 iki 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Nepavyko paleisti: šį prievadą naudoja kita programa. Įveskite kitą prievadą ir paspauskite Enter, kad bandytumėte dar kartą."
-  },
-  "agentAccessRenewButton": {
-    "message": "Atnaujinti prieigos raktą"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Slaptam prieigos raktui laikyti reikia raktų ryšulio (GNOME Keyring arba KWallet), o šiame kompiuteryje nė vienas neveikia. Paleiskite vieną ir vėl įjunkite."
-  },
-  "agentAccessStartFailed": {
-    "message": "Nepavyko paleisti serverio. Priežastis yra programos žurnale."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Pakeitė agentas"
-  },
-  "agentNoteTitle": {
-    "message": "DI agentas pakeitė nustatymą"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Įj."
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Išj."
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Nenustatyta"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "DI santraukoms"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Garso garsumas"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Skaitymo garsumas"
-  },
-  "agentAccessSecretNote": {
-    "message": "Komandoje yra slaptas prieigos raktas, leidžiantis šio kompiuterio programoms keisti šiuos nustatymus. Nesidalykite juo; jei nutekėtų, atnaujinkite."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Kitam MCP palaikančiam agentui toliau pateiktą URL ir prieigos raktą įrašykite į to agento MCP nustatymus (antraštė: Authorization: Bearer <raktas>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Uždaryti"
   }
 }

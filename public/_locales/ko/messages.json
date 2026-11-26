@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "읽어주기를 들으려면 위의 '음성으로 읽어주기'를 켜세요."
   },
-  "agentAccessHeading": {
-    "message": "AI 에이전트"
+  "settingsFileHeading": {
+    "message": "설정 파일"
   },
-  "agentAccessEnable": {
-    "message": "AI 에이전트가 설정을 바꿀 수 있게 하기"
+  "settingsFileDescription": {
+    "message": "API 키를 제외한 이 화면의 모든 설정은 이 파일에도 저장됩니다. 파일을 고치면 Tomarigi가 바로 반영합니다."
   },
-  "agentAccessDescription": {
-    "message": "코딩 에이전트(Claude Code 등, 에이전트를 앱에 연결하는 방식인 MCP를 지원하는 에이전트)가 이 화면의 설정을 읽고 바꾸며, 연결 테스트와 샘플 재생을 할 수 있습니다. API 키는 이 화면에서만 다루며 에이전트는 읽거나 설정할 수 없습니다."
+  "settingsFileCopyPath": {
+    "message": "경로 복사"
   },
-  "agentAccessCommandHint": {
-    "message": "터미널에서 이것을 한 번 실행하세요. 그다음 에이전트에게 \"읽기 음성을 VOICEVOX로 바꿔 줘\"처럼 부탁하면 됩니다."
+  "settingsFileRevealMac": {
+    "message": "Finder에서 보기"
   },
-  "agentAccessReplaceHint": {
-    "message": "명령이 바뀌어 전에 실행한 것은 더 이상 쓸 수 없습니다. 먼저 이전 등록을 지우세요:"
+  "settingsFileRevealWindows": {
+    "message": "탐색기에서 보기"
   },
-  "agentAccessCopyAddButton": {
-    "message": "등록 명령 복사"
+  "settingsFileRevealLinux": {
+    "message": "파일 관리자에서 보기"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "삭제 명령 복사"
+  "settingsFileAgentHeading": {
+    "message": "AI 에이전트에게 맡기기"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "URL 복사"
+  "settingsFileAgentHint": {
+    "message": "이것을 복사해 ○○을 원하는 내용(예: “VOICEVOX로 읽어 줘”)으로 바꾼 뒤 코딩 에이전트에 붙여 넣으세요."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "토큰 복사"
+  "settingsFileCopyInstructions": {
+    "message": "에이전트용 안내 복사"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Tomarigi 설정을 바꿔 줘: ○○. 방법은 $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "이번 실행에서 파일로 받은 변경"
+  },
+  "settingsFileNoteTitle": {
+    "message": "설정 파일에서 변경"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (이전 값 유지)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "설정 파일이 올바른 JSON이 아닙니다($LINE$행 $COLUMN$열). 고칠 때까지 모든 설정은 지금 값 그대로입니다.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "설정 파일을 읽을 수 없어, 저장하기 전에 내용을 settings.invalid.json에 남겼습니다."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Tomarigi가 모르는 키는 그대로 두고 무시했습니다: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API 키는 파일에서 읽지 않습니다. 설정의 “요약에 쓰는 AI”에 붙여 넣으세요. 무시한 키: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“AI 에이전트가 설정을 바꿀 수 있게 하기”(MCP)는 없어졌습니다. 이제 아래의 설정 파일로 설정을 바꿉니다."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "앱 안에서 AI 에이전트에게 지시를 보낼 수 있는 길을 없애기 위해서입니다."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Claude Code에 등록했다면 터미널에서 다음을 한 번 실행해 등록을 지우세요:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "명령 복사"
+  },
+  "settingsFileCloseNote": {
+    "message": "이 안내 닫기"
+  },
+  "settingsProblemNoServer": {
+    "message": "로컬 음성을 쓰려면 TTS 서버(readoutVoice.server)를 적어 주세요."
+  },
+  "settingsProblemNoKey": {
+    "message": "이 제공자의 API 키가 저장되어 있지 않습니다. 먼저 설정의 “요약에 쓰는 AI”에 붙여 넣으세요."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "로컬 AI가 설정되지 않았습니다. 먼저 localAi(baseUrl과 model)를 적어 주세요."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "음량은 0부터 100까지의 정수(퍼센트)입니다."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "폴더는 \"..\"가 없는 절대 경로로 적어 주세요."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "네트워크 경로는 감시할 수 없습니다. 이 컴퓨터의 폴더를 적어 주세요."
+  },
+  "settingsProblemNotReadable": {
+    "message": "그 폴더가 없거나 읽을 수 없습니다."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "이름은 비워 둘 수 없습니다."
+  },
+  "settingsProblemBuiltin": {
+    "message": "기본 폴더는 항상 감시되며 뺄 수 없습니다."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "선택할 수 있는 값이 아닙니다(settings.schema.json 참고)."
+  },
+  "settingsProblemWrongType": {
+    "message": "이 설정이 받는 형식의 값이 아닙니다(settings.schema.json 참고)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "닫기"
+  },
+  "settingsFileCopied": {
     "message": "복사했습니다"
   },
-  "agentAccessPortLabel": {
-    "message": "포트"
-  },
-  "agentAccessPortInvalid": {
-    "message": "1024~65535 사이의 포트를 입력하세요."
-  },
-  "agentAccessPortInUse": {
-    "message": "시작하지 못했습니다. 다른 앱이 이 포트를 쓰고 있습니다. 다른 포트를 입력하고 Enter를 누르면 다시 시도합니다."
-  },
-  "agentAccessRenewButton": {
-    "message": "토큰 다시 만들기"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "비밀 토큰을 보관할 키링(GNOME Keyring 또는 KWallet)이 필요하지만 이 컴퓨터에서 실행 중이 아닙니다. 둘 중 하나를 실행한 뒤 다시 켜세요."
-  },
-  "agentAccessStartFailed": {
-    "message": "서버를 시작하지 못했습니다. 이유는 앱 로그에 있습니다."
-  },
-  "agentAccessRecentHeading": {
-    "message": "에이전트가 바꾼 설정"
-  },
-  "agentNoteTitle": {
-    "message": "AI 에이전트가 설정을 바꿨습니다"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "켬"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "끔"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "설정 안 됨"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "요약에 쓰는 AI"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "알림음 음량"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "읽기 음량"
-  },
-  "agentAccessSecretNote": {
-    "message": "이 명령에는 이 컴퓨터의 프로그램이 이 설정을 바꿀 수 있는 비밀 토큰이 들어 있습니다. 공유하지 마세요. 유출되면 다시 만드세요."
-  },
-  "agentAccessOtherAgents": {
-    "message": "MCP를 쓰는 다른 에이전트에서는 아래 URL과 토큰을 그 에이전트의 MCP 설정에 넣으세요(헤더: Authorization: Bearer <토큰>)."
-  },
-  "agentNoteDismiss": {
-    "message": "닫기"
   }
 }

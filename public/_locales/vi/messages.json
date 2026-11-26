@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Bật \"Đọc bằng giọng nói\" ở trên để nghe đọc."
   },
-  "agentAccessHeading": {
-    "message": "Tác nhân AI"
+  "settingsFileHeading": {
+    "message": "Tệp cài đặt"
   },
-  "agentAccessEnable": {
-    "message": "Cho phép tác nhân AI thay đổi cài đặt"
+  "settingsFileDescription": {
+    "message": "Mọi cài đặt trên màn hình này, trừ khóa API, cũng được ghi trong tệp này. Sửa tệp là Tomarigi áp dụng thay đổi ngay."
   },
-  "agentAccessDescription": {
-    "message": "Tác nhân lập trình của bạn (Claude Code hoặc tác nhân khác hỗ trợ MCP, cách phổ biến để kết nối tác nhân với ứng dụng) có thể đọc và thay đổi cài đặt trên màn hình này, kiểm tra kết nối và phát thử. Khóa API vẫn ở đây: tác nhân không thể đọc hay đặt chúng."
+  "settingsFileCopyPath": {
+    "message": "Sao chép đường dẫn"
   },
-  "agentAccessCommandHint": {
-    "message": "Chạy lệnh này một lần trong terminal. Sau đó nhờ tác nhân, ví dụ: “Đổi giọng đọc sang VOICEVOX”."
+  "settingsFileRevealMac": {
+    "message": "Hiện trong Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Lệnh đã thay đổi nên lệnh bạn chạy trước đây không còn dùng được. Hãy xóa đăng ký cũ trước:"
+  "settingsFileRevealWindows": {
+    "message": "Hiện trong Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Sao chép lệnh đăng ký"
+  "settingsFileRevealLinux": {
+    "message": "Hiện trong trình quản lý tệp"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Sao chép lệnh xóa"
+  "settingsFileAgentHeading": {
+    "message": "Nhờ tác nhân AI"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Sao chép URL"
+  "settingsFileAgentHint": {
+    "message": "Sao chép đoạn này, thay ○○ bằng điều bạn muốn (vd: “đọc bằng VOICEVOX”) rồi dán vào tác nhân lập trình của bạn."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Sao chép token"
+  "settingsFileCopyInstructions": {
+    "message": "Sao chép hướng dẫn cho tác nhân"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Đổi cài đặt của Tomarigi: ○○. Cách làm: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Đã nhận từ tệp từ lần mở này"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Thay đổi từ tệp cài đặt"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (giữ giá trị cũ)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Tệp cài đặt không phải JSON hợp lệ (dòng $LINE$, cột $COLUMN$). Mọi cài đặt giữ nguyên giá trị cho đến khi sửa xong.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Không đọc được tệp cài đặt, nên nội dung của nó được giữ trong settings.invalid.json trước khi lưu."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Các khóa Tomarigi không biết được giữ nguyên và bỏ qua: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Khóa API không bao giờ được đọc từ tệp; hãy dán vào Cài đặt → AI để tóm tắt. Đã bỏ qua: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“Cho phép tác nhân AI đổi cài đặt” (MCP) đã bị gỡ. Giờ cài đặt được đổi qua tệp bên dưới."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Tính năng này bị gỡ để không gì bên trong ứng dụng có thể gửi chỉ dẫn tới các tác nhân AI của bạn."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Nếu bạn đã đăng ký trong Claude Code, hãy chạy lệnh này một lần trong terminal để gỡ đăng ký:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Sao chép lệnh"
+  },
+  "settingsFileCloseNote": {
+    "message": "Đóng thông báo này"
+  },
+  "settingsProblemNoServer": {
+    "message": "Để dùng giọng cục bộ, hãy ghi máy chủ TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Chưa lưu khóa API cho nhà cung cấp này. Hãy dán vào Cài đặt → AI để tóm tắt trước."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "AI cục bộ chưa được thiết lập. Hãy ghi localAi (baseUrl và model) trước."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Âm lượng là số nguyên từ 0 đến 100 (phần trăm)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Ghi thư mục bằng đường dẫn tuyệt đối không có \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Không thể theo dõi đường dẫn mạng. Hãy ghi một thư mục trên máy này."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Thư mục đó không tồn tại hoặc không đọc được."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Tên không được để trống."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Các thư mục mặc định luôn được theo dõi và không thể gỡ."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Đó không phải là một lựa chọn hợp lệ (xem settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Đó không phải kiểu giá trị mà cài đặt này nhận (xem settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Đóng"
+  },
+  "settingsFileCopied": {
     "message": "Đã sao chép"
   },
-  "agentAccessPortLabel": {
-    "message": "Cổng"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Nhập cổng từ 1024 đến 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Không thể khởi động: một ứng dụng khác đang dùng cổng này. Nhập cổng khác rồi nhấn Enter để thử lại."
-  },
-  "agentAccessRenewButton": {
-    "message": "Tạo lại mã"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Cần một keyring (GNOME Keyring hoặc KWallet) để lưu mã bí mật, nhưng máy này không chạy cái nào. Hãy khởi động một cái rồi bật lại."
-  },
-  "agentAccessStartFailed": {
-    "message": "Không khởi động được máy chủ. Lý do có trong nhật ký ứng dụng."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Tác nhân đã đổi"
-  },
-  "agentNoteTitle": {
-    "message": "Tác nhân AI đã đổi một cài đặt"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Bật"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Tắt"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Chưa đặt"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI để tóm tắt"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Âm lượng âm báo"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Âm lượng đọc"
-  },
-  "agentAccessSecretNote": {
-    "message": "Lệnh này chứa một mã bí mật cho phép các chương trình trên máy này thay đổi các cài đặt này. Đừng chia sẻ; nếu bị lộ, hãy tạo lại."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Với tác nhân khác hỗ trợ MCP, hãy đưa URL và token bên dưới vào cài đặt MCP của tác nhân đó (header: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Đóng"
   }
 }

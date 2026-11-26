@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "要聽到朗讀，請開啟上方的「用語音朗讀」。"
   },
-  "agentAccessHeading": {
-    "message": "AI 代理"
+  "settingsFileHeading": {
+    "message": "設定檔"
   },
-  "agentAccessEnable": {
-    "message": "允許 AI 代理變更設定"
+  "settingsFileDescription": {
+    "message": "除 API 金鑰外，此畫面上的所有設定也寫在這個檔案裡。編輯檔案後，Tomarigi 會立即套用變更。"
   },
-  "agentAccessDescription": {
-    "message": "你的程式設計代理（Claude Code 或其他支援 MCP（代理連接應用程式的通用方式）的代理）可以讀取和變更此頁面上的設定，執行連線測試並試聽。API 金鑰只在這裡管理，代理無法讀取或設定。"
+  "settingsFileCopyPath": {
+    "message": "複製路徑"
   },
-  "agentAccessCommandHint": {
-    "message": "在終端機中執行一次此指令。之後就可以對代理說，例如「把朗讀的聲音換成 VOICEVOX」。"
+  "settingsFileRevealMac": {
+    "message": "在 Finder 中顯示"
   },
-  "agentAccessReplaceHint": {
-    "message": "指令已變更，之前執行的指令不再有效。請先刪除舊的註冊："
+  "settingsFileRevealWindows": {
+    "message": "在檔案總管中顯示"
   },
-  "agentAccessCopyAddButton": {
-    "message": "複製註冊命令"
+  "settingsFileRevealLinux": {
+    "message": "在檔案管理員中顯示"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "複製刪除命令"
+  "settingsFileAgentHeading": {
+    "message": "請 AI 代理變更"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "複製 URL"
+  "settingsFileAgentHint": {
+    "message": "複製下面的內容，把 ○○ 換成你想要的變更（例如「用 VOICEVOX 朗讀」），然後貼給你的程式設計代理。"
   },
-  "agentAccessCopyTokenButton": {
-    "message": "複製權杖"
+  "settingsFileCopyInstructions": {
+    "message": "複製給代理的說明"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "修改 Tomarigi 的設定：○○。方法見 $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "本次啟動從檔案讀取的變更"
+  },
+  "settingsFileNoteTitle": {
+    "message": "來自設定檔的變更"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$：$REASON$（保留原值）",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "設定檔不是有效的 JSON（第 $LINE$ 行第 $COLUMN$ 欄）。修好之前，所有設定維持目前的值。",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "設定檔無法讀取，因此在儲存前把內容保留到了 settings.invalid.json。"
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Tomarigi 不認得的鍵已原樣保留並忽略：$KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "不會從檔案讀取 API 金鑰，請貼到設定的「用於摘要的 AI」中。已忽略：$KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "「允許 AI 代理變更設定」（MCP）已移除。現在透過下面的設定檔變更設定。"
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "移除它是為了讓應用程式內部無法向你的 AI 代理傳送指令。"
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "如果你曾在 Claude Code 中註冊過它，請在終端機執行一次下面的指令取消註冊："
+  },
+  "settingsFileCopyCommand": {
+    "message": "複製指令"
+  },
+  "settingsFileCloseNote": {
+    "message": "關閉此提示"
+  },
+  "settingsProblemNoServer": {
+    "message": "要使用本機語音，請填寫 TTS 伺服器（readoutVoice.server）。"
+  },
+  "settingsProblemNoKey": {
+    "message": "此提供者尚未儲存 API 金鑰。請先貼到設定的「用於摘要的 AI」中。"
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "本機 AI 尚未設定。請先填寫 localAi（baseUrl 與 model）。"
+  },
+  "settingsProblemVolumeRange": {
+    "message": "音量是 0 到 100 的整數（百分比）。"
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "請用不含 \"..\" 的絕對路徑寫出資料夾。"
+  },
+  "settingsProblemNetworkPath": {
+    "message": "無法監看網路路徑。請填寫這台電腦上的資料夾。"
+  },
+  "settingsProblemNotReadable": {
+    "message": "該資料夾不存在或無法讀取。"
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "名稱不能為空。"
+  },
+  "settingsProblemBuiltin": {
+    "message": "預設資料夾一律受監看，無法移除。"
+  },
+  "settingsProblemUnknownOption": {
+    "message": "這不是可選的值之一（見 settings.schema.json）。"
+  },
+  "settingsProblemWrongType": {
+    "message": "這不是此設定接受的值類型（見 settings.schema.json）。"
+  },
+  "settingsFileNoteDismiss": {
+    "message": "關閉"
+  },
+  "settingsFileCopied": {
     "message": "已複製"
   },
-  "agentAccessPortLabel": {
-    "message": "連接埠"
-  },
-  "agentAccessPortInvalid": {
-    "message": "請輸入 1024 到 65535 之間的連接埠。"
-  },
-  "agentAccessPortInUse": {
-    "message": "無法啟動：此連接埠已被其他應用程式使用。輸入另一個連接埠並按 Enter 即可重試。"
-  },
-  "agentAccessRenewButton": {
-    "message": "重新產生權杖"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "需要一個鑰匙圈（GNOME Keyring 或 KWallet）來保存秘密權杖，但這台電腦上沒有執行。請先啟動其中一個，再重新開啟此項。"
-  },
-  "agentAccessStartFailed": {
-    "message": "無法啟動伺服器。原因請見應用程式記錄。"
-  },
-  "agentAccessRecentHeading": {
-    "message": "代理變更的設定"
-  },
-  "agentNoteTitle": {
-    "message": "AI 代理變更了設定"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "開"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "關"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "未設定"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "用於摘要的 AI"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "提示音音量"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "朗讀音量"
-  },
-  "agentAccessSecretNote": {
-    "message": "該指令包含一個秘密權杖，可讓這台電腦上的程式變更這些設定。請勿分享；如果外洩，請重新產生。"
-  },
-  "agentAccessOtherAgents": {
-    "message": "若是其他支援 MCP 的代理，請把下方的 URL 和權杖填入該代理的 MCP 設定（標頭：Authorization: Bearer <權杖>）。"
-  },
-  "agentNoteDismiss": {
-    "message": "關閉"
   }
 }

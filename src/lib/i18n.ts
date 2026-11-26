@@ -33,8 +33,8 @@ export function t(key: MessageName, substitutions?: string | string[]): string {
   return resolveIn(fallbackDict, key, substitutions);
 }
 
-/** The English message whatever the UI language: what the AI agent's tools answer with, so a refused change says the
- * sentence the English settings screen shows (docs/design.md "Settings by an AI agent (MCP)") */
+/** The English message whatever the UI language: what the log says of a refused value of the settings file
+ * (docs/design.md "Settings file") */
 export function englishText(key: MessageName, substitutions?: string | string[]): string {
   return resolveIn(en as MessageDict, key, substitutions);
 }

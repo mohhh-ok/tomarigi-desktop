@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Aktifkan \"Bacakan dengan suara\" di atas untuk mendengar bacaan."
   },
-  "agentAccessHeading": {
-    "message": "Agen AI"
+  "settingsFileHeading": {
+    "message": "File pengaturan"
   },
-  "agentAccessEnable": {
-    "message": "Izinkan agen AI mengubah pengaturan"
+  "settingsFileDescription": {
+    "message": "Semua pengaturan di layar ini kecuali kunci API juga ditulis di file ini. Ubah file-nya dan Tomarigi langsung menerapkan perubahannya."
   },
-  "agentAccessDescription": {
-    "message": "Agen coding Anda (Claude Code atau lainnya yang mendukung MCP, cara umum menghubungkan agen ke aplikasi) dapat membaca dan mengubah pengaturan di layar ini, menguji koneksi, dan memutar contoh. Kunci API tetap di sini: agen tidak dapat membaca atau mengaturnya."
+  "settingsFileCopyPath": {
+    "message": "Salin jalur"
   },
-  "agentAccessCommandHint": {
-    "message": "Jalankan ini sekali di terminal. Lalu minta agen, misalnya: “Ganti suara pembaca ke VOICEVOX”."
+  "settingsFileRevealMac": {
+    "message": "Tampilkan di Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Perintahnya berubah, jadi yang dijalankan sebelumnya tidak berfungsi lagi. Hapus dulu pendaftaran lama:"
+  "settingsFileRevealWindows": {
+    "message": "Tampilkan di Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Salin perintah pendaftaran"
+  "settingsFileRevealLinux": {
+    "message": "Tampilkan di pengelola file"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Salin perintah penghapusan"
+  "settingsFileAgentHeading": {
+    "message": "Minta agen AI"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Salin URL"
+  "settingsFileAgentHint": {
+    "message": "Salin ini, ganti ○○ dengan yang Anda inginkan (mis. “bacakan dengan VOICEVOX”), lalu tempelkan ke agen coding Anda."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Salin token"
+  "settingsFileCopyInstructions": {
+    "message": "Salin instruksi untuk agen"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Ubah pengaturan Tomarigi: ○○. Caranya: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Diambil dari file sejak dibuka kali ini"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Diubah dari file pengaturan"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (nilai sebelumnya dipertahankan)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "File pengaturan bukan JSON yang valid (baris $LINE$, kolom $COLUMN$). Semua pengaturan tetap seperti sekarang sampai diperbaiki.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "File pengaturan tidak bisa dibaca, jadi isinya disimpan di settings.invalid.json sebelum menyimpan."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Kunci yang tidak dikenal Tomarigi dibiarkan apa adanya dan diabaikan: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Kunci API tidak pernah dibaca dari file; tempelkan di Pengaturan → AI untuk ringkasan. Diabaikan: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“Izinkan agen AI mengubah pengaturan” (MCP) sudah dihapus. Sekarang pengaturan diubah lewat file di bawah."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Fitur ini dihapus agar tidak ada apa pun di dalam aplikasi yang bisa mengirim instruksi ke agen AI Anda."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Jika Anda mendaftarkannya di Claude Code, jalankan ini sekali di terminal untuk menghapus pendaftarannya:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Salin perintah"
+  },
+  "settingsFileCloseNote": {
+    "message": "Tutup pemberitahuan ini"
+  },
+  "settingsProblemNoServer": {
+    "message": "Untuk memakai suara lokal, tulis server TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Belum ada kunci API tersimpan untuk penyedia ini. Tempelkan dulu di Pengaturan → AI untuk ringkasan."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "AI lokal belum diatur. Tulis dulu localAi (baseUrl dan model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Volume adalah bilangan bulat 0 sampai 100 (persen)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Tulis folder sebagai jalur absolut tanpa \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Jalur jaringan tidak bisa dipantau. Tulis folder di komputer ini."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Folder itu tidak ada atau tidak bisa dibaca."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Nama tidak boleh kosong."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Folder bawaan selalu dipantau dan tidak bisa dihapus."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Itu bukan salah satu pilihan (lihat settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Itu bukan jenis nilai yang diterima pengaturan ini (lihat settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Tutup"
+  },
+  "settingsFileCopied": {
     "message": "Disalin"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Masukkan port dari 1024 sampai 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Tidak bisa dimulai: aplikasi lain sedang memakai port ini. Masukkan port lain lalu tekan Enter untuk mencoba lagi."
-  },
-  "agentAccessRenewButton": {
-    "message": "Perbarui token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Ini memerlukan keyring (GNOME Keyring atau KWallet) untuk menyimpan token rahasia, dan tidak ada yang berjalan di komputer ini. Jalankan salah satunya, lalu aktifkan lagi."
-  },
-  "agentAccessStartFailed": {
-    "message": "Server tidak dapat dimulai. Alasannya ada di log aplikasi."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Diubah oleh agen"
-  },
-  "agentNoteTitle": {
-    "message": "Agen AI mengubah pengaturan"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Aktif"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Nonaktif"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Belum diatur"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI untuk ringkasan"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Volume suara"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Volume pembacaan"
-  },
-  "agentAccessSecretNote": {
-    "message": "Perintah ini berisi token rahasia yang memungkinkan program di komputer ini mengubah pengaturan ini. Jangan bagikan; jika bocor, perbarui."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Untuk agen lain yang mendukung MCP, masukkan URL dan token di bawah ke pengaturan MCP agen tersebut (header: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Tutup"
   }
 }

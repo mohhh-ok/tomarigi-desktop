@@ -32,18 +32,6 @@ rusqlite = { version = "0.37", features = ["bundled"] }
 # Updates the app from latest.json on the newest GitHub Release (updater.rs; docs/design.md "Updates"). 2.10 or later
 # for .deb; 2.14 or later for zip 9 (the Windows update's unzip; zip before 9.0.5 has Dependabot's alerts #6-#8)
 tauri-plugin-updater = "~2.14"
-# The MCP server for AI agents that change settings (mcp.rs; docs/design.md "Settings by an AI agent (MCP)"): the
-# official Rust SDK's Streamable HTTP server, served with hyper on a tokio listener bound to 127.0.0.1
-rmcp = { version = "3.11", default-features = false, features = ["server", "transport-streamable-http-server"] }
-hyper = { version = "1", features = ["server", "http1"] }
-hyper-util = { version = "0.1", features = ["tokio"] }
-http-body-util = "0.1"
-tokio = { version = "1", features = ["net", "sync", "time", "rt", "macros"] }
-tokio-util = "0.7"
-tower-service = "0.3"
-# The MCP token (keys.rs)
-getrandom = "0.3"
-
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

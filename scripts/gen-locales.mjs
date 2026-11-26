@@ -30,13 +30,13 @@ import concierge from "./locales/concierge.mjs";
 import update from "./locales/update.mjs";
 import localAi from "./locales/local-ai.mjs";
 import readoutVoice from "./locales/readout-voice.mjs";
-import agentAccess from "./locales/agent-access.mjs";
+import settingsFile from "./locales/settings-file.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "..", "public", "_locales");
 
 // Merge the groups into one table. The same key appearing in two groups is an accident, so fail.
-const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge, update, localAi, readoutVoice, agentAccess };
+const GROUPS = { bird, event, perch, time, setup, root, sound, byok, voice, meta, iconset, desktop, window, ask, concierge, update, localAi, readoutVoice, settingsFile };
 
 const MERGED = {};
 for (const [groupName, table] of Object.entries(GROUPS)) {
@@ -207,33 +207,47 @@ export const KEYS = [
   "readoutTestSample",
   "readoutTestSampleJa",
   "readoutNeedsReadAloud",
-  "agentAccessHeading",
-  "agentAccessEnable",
-  "agentAccessDescription",
-  "agentAccessCommandHint",
-  "agentAccessReplaceHint",
-  "agentAccessCopyAddButton",
-  "agentAccessCopyRemoveButton",
-  "agentAccessCopyUrlButton",
-  "agentAccessCopyTokenButton",
-  "agentAccessCopied",
-  "agentAccessPortLabel",
-  "agentAccessPortInvalid",
-  "agentAccessPortInUse",
-  "agentAccessRenewButton",
-  "agentAccessNoKeyStore",
-  "agentAccessStartFailed",
-  "agentAccessRecentHeading",
-  "agentNoteTitle",
-  "agentNoteOn",
-  "agentNoteOff",
-  "agentNoteNotSet",
-  "agentNoteSummaryProvider",
-  "agentNoteChirpVolume",
-  "agentNoteReadAloudVolume",
-  "agentAccessSecretNote",
-  "agentAccessOtherAgents",
-  "agentNoteDismiss",
+  "settingsFileHeading",
+  "settingsFileDescription",
+  "settingsFileCopyPath",
+  "settingsFileRevealMac",
+  "settingsFileRevealWindows",
+  "settingsFileRevealLinux",
+  "settingsFileAgentHeading",
+  "settingsFileAgentHint",
+  "settingsFileCopyInstructions",
+  "settingsFileInstructions",
+  "settingsFileRecentHeading",
+  "settingsFileNoteTitle",
+  "settingsFileRefusedLine",
+  "settingsFileUnreadable",
+  "settingsFileInvalidKept",
+  "settingsFileIgnoredKeys",
+  "settingsFileSecretKeys",
+  "settingsFileMcpRemoved",
+  "settingsFileMcpRemovedWhy",
+  "settingsFileMcpRemoveHint",
+  "settingsFileCopyCommand",
+  "settingsFileCloseNote",
+  "settingsProblemNoServer",
+  "settingsProblemNoKey",
+  "settingsProblemLocalNotSetUp",
+  "settingsProblemVolumeRange",
+  "settingsProblemPathNotAbsolute",
+  "settingsProblemNetworkPath",
+  "settingsProblemNotReadable",
+  "settingsProblemLabelEmpty",
+  "settingsProblemBuiltin",
+  "settingsProblemUnknownOption",
+  "settingsProblemWrongType",
+  "settingsFileNoteDismiss",
+  "settingsFileCopied",
+  "settingsFileOn",
+  "settingsFileOff",
+  "settingsFileNotSet",
+  "settingsFileSummaryProvider",
+  "settingsFileChirpVolume",
+  "settingsFileReadAloudVolume",
 ];
 
 // Consistency check between KEYS and the group files (error immediately if a key is missing on either side).
@@ -263,6 +277,11 @@ export const PLACEHOLDERS = {
   conciergeOnlyWaiting: { count: "$1" },
   conciergeSummaryMore: { count: "$1" },
   conciergeSummaryNow: { state: "$1" },
+  settingsFileInstructions: { readme: "$1" },
+  settingsFileRefusedLine: { setting: "$1", reason: "$2" },
+  settingsFileUnreadable: { line: "$1", column: "$2" },
+  settingsFileIgnoredKeys: { keys: "$1" },
+  settingsFileSecretKeys: { keys: "$1" },
 };
 
 // default_locale. English is the fallback for users of unsupported languages.

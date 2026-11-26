@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Abyste slyšeli čtení, zapněte výše „Číst nahlas“."
   },
-  "agentAccessHeading": {
-    "message": "AI agent"
+  "settingsFileHeading": {
+    "message": "Soubor nastavení"
   },
-  "agentAccessEnable": {
-    "message": "Povolit AI agentovi měnit nastavení"
+  "settingsFileDescription": {
+    "message": "Všechna nastavení na této obrazovce kromě klíčů API jsou zapsána i v tomto souboru. Upravte soubor a Tomarigi změnu hned použije."
   },
-  "agentAccessDescription": {
-    "message": "Váš programovací agent (Claude Code nebo jiný, který umí MCP, běžný způsob propojení agentů s aplikacemi) může číst a měnit nastavení na této obrazovce, testovat připojení a přehrát ukázku. Klíče API zůstávají tady: agent je nemůže číst ani nastavit."
+  "settingsFileCopyPath": {
+    "message": "Kopírovat cestu"
   },
-  "agentAccessCommandHint": {
-    "message": "Spusťte to jednou v terminálu. Pak agenta požádejte, např. „Přepni hlas předčítání na VOICEVOX“."
+  "settingsFileRevealMac": {
+    "message": "Zobrazit ve Finderu"
   },
-  "agentAccessReplaceHint": {
-    "message": "Příkaz se změnil, takže ten dřívější už nefunguje. Nejdřív odstraňte starou registraci:"
+  "settingsFileRevealWindows": {
+    "message": "Zobrazit v Průzkumníkovi"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopírovat registrační příkaz"
+  "settingsFileRevealLinux": {
+    "message": "Zobrazit ve správci souborů"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopírovat příkaz k odebrání"
+  "settingsFileAgentHeading": {
+    "message": "Požádat AI agenta"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopírovat URL"
+  "settingsFileAgentHint": {
+    "message": "Zkopírujte to, nahraďte ○○ tím, co chcete (např. „předčítej přes VOICEVOX“), a vložte to svému programovacímu agentovi."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopírovat token"
+  "settingsFileCopyInstructions": {
+    "message": "Kopírovat pokyny pro agenta"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Změň nastavení Tomarigi: ○○. Jak na to: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Převzato ze souboru od tohoto spuštění"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Změněno ze souboru nastavení"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (ponechána předchozí hodnota)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Soubor nastavení není platný JSON (řádek $LINE$, sloupec $COLUMN$). Dokud se neopraví, všechna nastavení zůstávají.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Soubor nastavení nešel přečíst, proto byl jeho text před uložením zachován v settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Klíče, které Tomarigi nezná, zůstaly beze změny a byly ignorovány: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Klíče API se ze souboru nikdy nečtou; vložte je v Nastavení → AI pro shrnutí. Ignorováno: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "Funkce „Nechat AI agenta měnit nastavení“ (MCP) byla odebrána. Nastavení se nyní mění v souboru níže."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Byla odebrána, aby nic uvnitř aplikace nemohlo posílat pokyny vašim AI agentům."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Pokud jste ji registrovali v Claude Code, spusťte jednou v terminálu tento příkaz a registraci zrušte:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopírovat příkaz"
+  },
+  "settingsFileCloseNote": {
+    "message": "Zavřít toto upozornění"
+  },
+  "settingsProblemNoServer": {
+    "message": "Pro místní hlas zadejte server TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Pro tohoto poskytovatele není uložen klíč API. Nejprve ho vložte v Nastavení → AI pro shrnutí."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Místní AI není nastavena. Nejprve zadejte localAi (baseUrl a model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Hlasitost je celé číslo od 0 do 100 (procenta)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Zadejte složku jako absolutní cestu bez \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Síťové cesty nelze sledovat. Zadejte složku na tomto počítači."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Složka neexistuje nebo ji nelze číst."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Název nemůže být prázdný."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Výchozí složky se sledují vždy a nelze je odebrat."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "To není žádná z možností (viz settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Toto nastavení takový typ hodnoty nepřijímá (viz settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Zavřít"
+  },
+  "settingsFileCopied": {
     "message": "Zkopírováno"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Zadejte port od 1024 do 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Nepodařilo se spustit: tento port používá jiná aplikace. Zadejte jiný port a stisknutím Enter to zkuste znovu."
-  },
-  "agentAccessRenewButton": {
-    "message": "Obnovit token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "K uložení tajného tokenu je potřeba klíčenka (GNOME Keyring nebo KWallet) a na tomto počítači žádná neběží. Spusťte jednu a pak to znovu zapněte."
-  },
-  "agentAccessStartFailed": {
-    "message": "Server se nepodařilo spustit. Důvod je v protokolu aplikace."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Změněno agentem"
-  },
-  "agentNoteTitle": {
-    "message": "AI agent změnil nastavení"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Zap."
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Vyp."
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Nenastaveno"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI pro shrnutí"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Hlasitost zvuku"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Hlasitost předčítání"
-  },
-  "agentAccessSecretNote": {
-    "message": "Příkaz obsahuje tajný token, kterým mohou programy na tomto počítači měnit tato nastavení. Nesdílejte ho; pokud unikne, obnovte ho."
-  },
-  "agentAccessOtherAgents": {
-    "message": "U jiného agenta s podporou MCP zadejte URL a token níže do jeho nastavení MCP (hlavička: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Zavřít"
   }
 }

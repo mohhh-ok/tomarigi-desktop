@@ -8,7 +8,7 @@ import { primeAudio } from "@/lib/chirp";
 import type { RootEntry } from "@/lib/settings-store";
 import { ConciergeSettings } from "./concierge";
 import type { PerchSource } from "./source";
-import { AgentAccessSettings } from "./settings/agent-access-settings";
+import { SettingsFileSettings, type SettingsFilePaths } from "./settings/settings-file-settings";
 import { AiKeySettings } from "./settings/ai-key-settings";
 import { IconSetSettings } from "./settings/icon-set-settings";
 import { RootAddDialog } from "./settings/root-add-dialog";
@@ -27,7 +27,9 @@ import {
   type SettingsSection,
 } from "./settings-sections";
 import { iconSetRowsOf, runningProjects, useSettingsRuntime, EMPTY_RUNTIME } from "./settings-runtime";
-import { useAgentAccessView } from "./use-agent-access";
+import { KEY_MCP_REMOVED_NOTE } from "./use-settings-file";
+import { kvGet, kvPut } from "@/lib/kv";
+import { onSettingsChanged } from "@/lib/settings-sync";
 import { useRoots } from "./use-roots";
 import { useSettings } from "./use-settings";
 import { useUpdates } from "./use-updates";
@@ -47,7 +49,7 @@ export default function SettingsApp({ source }: { source: PerchSource }) {
     const { views } = await source.scan([]);
     return { ...EMPTY_RUNTIME, running: runningProjects(views) };
   });
-  const agentAccess = useAgentAccessView(runtime.agent);
+  const fileSection = useSettingsFileSection();
   const [editing, setEditing] = useState<Editing | null>(null);
   const [rootDialogOpen, setRootDialogOpen] = useState(() => params.get("dialog") === "add-folder");
   const contentRef = useRef<HTMLDivElement>(null);
@@ -220,18 +222,14 @@ export default function SettingsApp({ source }: { source: PerchSource }) {
         );
       case "window":
         return <WindowModeSettings mode={windowMode} onChange={setWindowMode} />;
-      case "agent":
+      case "settingsFile":
         return (
-          <AgentAccessSettings
-            enabled={agentAccess.enabled}
-            port={agentAccess.port}
-            status={agentAccess.status}
-            command={agentAccess.command}
-            replaced={agentAccess.replaced}
-            recent={agentAccess.recent}
-            onEnabled={agentAccess.changeEnabled}
-            onPort={agentAccess.changePort}
-            onRenew={() => void agentAccess.renewToken()}
+          <SettingsFileSettings
+            paths={fileSection.paths}
+            recent={runtime.settingsFile}
+            mcpNote={fileSection.mcpNote}
+            onCloseMcpNote={fileSection.closeMcpNote}
+            onReveal={(path) => void import("@tauri-apps/plugin-opener").then((m) => m.revealItemInDir(path)).catch(() => {})}
           />
         );
       case "updates":
@@ -291,4 +289,24 @@ export function useSettingsShortcut(): void {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
+}
+
+/** The settings file's paths (from Rust) and whether the MCP removal note still shows */
+function useSettingsFileSection() {
+  const [paths, setPaths] = useState<SettingsFilePaths | null>(null);
+  const [mcpNote, setMcpNote] = useState(false);
+  useEffect(() => {
+    // Outside the app (the browser mock) the everyday build's paths, so the section can be looked at
+    void invoke<SettingsFilePaths | null>("settings_file_paths").then(setPaths, () =>
+      setPaths({ settings: "~/.tomarigi/settings.json", settingsAbsolute: "", readme: "~/.tomarigi/README.md", log: "" }),
+    );
+    const load = () => void kvGet(KEY_MCP_REMOVED_NOTE).then((v) => setMcpNote(v === "shown"), () => {});
+    load();
+    return onSettingsChanged([KEY_MCP_REMOVED_NOTE], load);
+  }, []);
+  const closeMcpNote = () => {
+    setMcpNote(false);
+    void kvPut(KEY_MCP_REMOVED_NOTE, "closed");
+  };
+  return { paths, mcpNote, closeMcpNote };
 }

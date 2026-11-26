@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "เปิด \"อ่านออกเสียง\" ด้านบนเพื่อฟังการอ่าน"
   },
-  "agentAccessHeading": {
-    "message": "เอเจนต์ AI"
+  "settingsFileHeading": {
+    "message": "ไฟล์การตั้งค่า"
   },
-  "agentAccessEnable": {
-    "message": "ให้เอเจนต์ AI เปลี่ยนการตั้งค่าได้"
+  "settingsFileDescription": {
+    "message": "การตั้งค่าทั้งหมดในหน้านี้ยกเว้นคีย์ API ถูกเขียนไว้ในไฟล์นี้ด้วย แก้ไขไฟล์แล้ว Tomarigi จะใช้การเปลี่ยนแปลงทันที"
   },
-  "agentAccessDescription": {
-    "message": "เอเจนต์เขียนโค้ดของคุณ (Claude Code หรือตัวอื่นที่รองรับ MCP ซึ่งเป็นวิธีทั่วไปในการเชื่อมเอเจนต์กับแอป) อ่านและเปลี่ยนการตั้งค่าในหน้านี้ ทดสอบการเชื่อมต่อ และเล่นตัวอย่างได้ คีย์ API อยู่ที่นี่เท่านั้น เอเจนต์อ่านหรือตั้งค่าไม่ได้"
+  "settingsFileCopyPath": {
+    "message": "คัดลอกพาธ"
   },
-  "agentAccessCommandHint": {
-    "message": "รันคำสั่งนี้ในเทอร์มินัลครั้งเดียว จากนั้นสั่งเอเจนต์ได้ เช่น “เปลี่ยนเสียงอ่านเป็น VOICEVOX”"
+  "settingsFileRevealMac": {
+    "message": "แสดงใน Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "คำสั่งเปลี่ยนแล้ว คำสั่งเดิมใช้ไม่ได้อีก ให้ลบการลงทะเบียนเก่าก่อน:"
+  "settingsFileRevealWindows": {
+    "message": "แสดงใน Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "คัดลอกคำสั่งลงทะเบียน"
+  "settingsFileRevealLinux": {
+    "message": "แสดงในตัวจัดการไฟล์"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "คัดลอกคำสั่งลบ"
+  "settingsFileAgentHeading": {
+    "message": "ให้เอเจนต์ AI ทำ"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "คัดลอก URL"
+  "settingsFileAgentHint": {
+    "message": "คัดลอกข้อความนี้ แทน ○○ ด้วยสิ่งที่ต้องการ (เช่น “อ่านออกเสียงด้วย VOICEVOX”) แล้ววางในเอเจนต์เขียนโค้ดของคุณ"
   },
-  "agentAccessCopyTokenButton": {
-    "message": "คัดลอกโทเค็น"
+  "settingsFileCopyInstructions": {
+    "message": "คัดลอกคำสั่งสำหรับเอเจนต์"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "เปลี่ยนการตั้งค่า Tomarigi: ○○ วิธีทำ: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "ที่รับจากไฟล์ตั้งแต่เปิดครั้งนี้"
+  },
+  "settingsFileNoteTitle": {
+    "message": "เปลี่ยนจากไฟล์การตั้งค่า"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (คงค่าเดิมไว้)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "ไฟล์การตั้งค่าไม่ใช่ JSON ที่ถูกต้อง (บรรทัด $LINE$ คอลัมน์ $COLUMN$) การตั้งค่าทั้งหมดคงค่าเดิมจนกว่าจะแก้",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "อ่านไฟล์การตั้งค่าไม่ได้ จึงเก็บข้อความไว้ใน settings.invalid.json ก่อนบันทึก"
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "คีย์ที่ Tomarigi ไม่รู้จักถูกเก็บไว้ตามเดิมและไม่ถูกใช้: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "ไม่อ่านคีย์ API จากไฟล์ ให้วางในการตั้งค่า → AI สำหรับสรุป ไม่ได้ใช้: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“ให้เอเจนต์ AI เปลี่ยนการตั้งค่า” (MCP) ถูกนำออกแล้ว ตอนนี้เปลี่ยนการตั้งค่าผ่านไฟล์ด้านล่าง"
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "นำออกเพื่อไม่ให้มีสิ่งใดในแอปส่งคำสั่งไปยังเอเจนต์ AI ของคุณได้"
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "ถ้าเคยลงทะเบียนไว้ใน Claude Code ให้รันคำสั่งนี้หนึ่งครั้งในเทอร์มินัลเพื่อยกเลิก:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "คัดลอกคำสั่ง"
+  },
+  "settingsFileCloseNote": {
+    "message": "ปิดข้อความนี้"
+  },
+  "settingsProblemNoServer": {
+    "message": "หากจะใช้เสียงในเครื่อง ให้ระบุเซิร์ฟเวอร์ TTS (readoutVoice.server)"
+  },
+  "settingsProblemNoKey": {
+    "message": "ยังไม่มีคีย์ API ของผู้ให้บริการนี้ ให้วางในการตั้งค่า → AI สำหรับสรุป ก่อน"
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "ยังไม่ได้ตั้ง AI ในเครื่อง ให้ระบุ localAi (baseUrl และ model) ก่อน"
+  },
+  "settingsProblemVolumeRange": {
+    "message": "ระดับเสียงเป็นจำนวนเต็ม 0 ถึง 100 (เปอร์เซ็นต์)"
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "ระบุโฟลเดอร์เป็นพาธเต็มที่ไม่มี \"..\""
+  },
+  "settingsProblemNetworkPath": {
+    "message": "ไม่สามารถเฝ้าดูพาธบนเครือข่ายได้ ให้ระบุโฟลเดอร์ในคอมพิวเตอร์เครื่องนี้"
+  },
+  "settingsProblemNotReadable": {
+    "message": "ไม่มีโฟลเดอร์นั้นหรืออ่านไม่ได้"
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "ชื่อต้องไม่ว่าง"
+  },
+  "settingsProblemBuiltin": {
+    "message": "โฟลเดอร์เริ่มต้นถูกเฝ้าดูเสมอและนำออกไม่ได้"
+  },
+  "settingsProblemUnknownOption": {
+    "message": "ไม่ใช่ตัวเลือกที่มีให้ (ดู settings.schema.json)"
+  },
+  "settingsProblemWrongType": {
+    "message": "ไม่ใช่ชนิดค่าที่การตั้งค่านี้รับ (ดู settings.schema.json)"
+  },
+  "settingsFileNoteDismiss": {
+    "message": "ปิด"
+  },
+  "settingsFileCopied": {
     "message": "คัดลอกแล้ว"
   },
-  "agentAccessPortLabel": {
-    "message": "พอร์ต"
-  },
-  "agentAccessPortInvalid": {
-    "message": "ใส่พอร์ตระหว่าง 1024 ถึง 65535"
-  },
-  "agentAccessPortInUse": {
-    "message": "เริ่มไม่ได้ เพราะมีแอปอื่นใช้พอร์ตนี้อยู่ ใส่พอร์ตอื่นแล้วกด Enter เพื่อลองอีกครั้ง"
-  },
-  "agentAccessRenewButton": {
-    "message": "สร้างโทเค็นใหม่"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "ต้องใช้พวงกุญแจ (GNOME Keyring หรือ KWallet) เพื่อเก็บโทเค็นลับ แต่ไม่มีตัวใดทำงานอยู่บนคอมพิวเตอร์นี้ ให้เปิดตัวใดตัวหนึ่งแล้วเปิดตัวเลือกนี้อีกครั้ง"
-  },
-  "agentAccessStartFailed": {
-    "message": "เริ่มเซิร์ฟเวอร์ไม่ได้ ดูสาเหตุได้ในบันทึกของแอป"
-  },
-  "agentAccessRecentHeading": {
-    "message": "ที่เอเจนต์เปลี่ยน"
-  },
-  "agentNoteTitle": {
-    "message": "เอเจนต์ AI เปลี่ยนการตั้งค่า"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "เปิด"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "ปิด"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "ยังไม่ได้ตั้ง"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI สำหรับสรุป"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "ระดับเสียงแจ้งเตือน"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "ระดับเสียงอ่าน"
-  },
-  "agentAccessSecretNote": {
-    "message": "คำสั่งนี้มีโทเค็นลับที่ทำให้โปรแกรมในคอมพิวเตอร์นี้เปลี่ยนการตั้งค่าเหล่านี้ได้ อย่าแชร์ให้ใคร ถ้ารั่วไหลให้สร้างใหม่"
-  },
-  "agentAccessOtherAgents": {
-    "message": "สำหรับเอเจนต์อื่นที่ใช้ MCP ได้ ให้ใส่ URL และโทเค็นด้านล่างในการตั้งค่า MCP ของเอเจนต์นั้น (เฮดเดอร์: Authorization: Bearer <โทเค็น>)"
-  },
-  "agentNoteDismiss": {
-    "message": "ปิด"
   }
 }

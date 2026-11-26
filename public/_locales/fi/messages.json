@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Kytke yllä ”Lue ääneen” päälle, niin kuulet lukemiset."
   },
-  "agentAccessHeading": {
-    "message": "Tekoälyagentti"
+  "settingsFileHeading": {
+    "message": "Asetustiedosto"
   },
-  "agentAccessEnable": {
-    "message": "Salli tekoälyagentin muuttaa asetuksia"
+  "settingsFileDescription": {
+    "message": "Kaikki tämän näkymän asetukset API-avaimia lukuun ottamatta ovat myös tässä tiedostossa. Muokkaa tiedostoa, niin Tomarigi ottaa muutoksen heti käyttöön."
   },
-  "agentAccessDescription": {
-    "message": "Koodausagenttisi (Claude Code tai muu, joka tukee MCP:tä, tavallista tapaa yhdistää agentit sovelluksiin) voi lukea ja muuttaa tämän näkymän asetuksia, testata yhteyden ja toistaa näytteen. API-avaimet pysyvät täällä: agentti ei voi lukea tai asettaa niitä."
+  "settingsFileCopyPath": {
+    "message": "Kopioi polku"
   },
-  "agentAccessCommandHint": {
-    "message": "Suorita tämä kerran päätteessä. Pyydä sitten agenttia, esim. ”Vaihda lukuääni VOICEVOXiin”."
+  "settingsFileRevealMac": {
+    "message": "Näytä Finderissa"
   },
-  "agentAccessReplaceHint": {
-    "message": "Komento muuttui, joten aiemmin suorittamasi ei enää toimi. Poista ensin vanha rekisteröinti:"
+  "settingsFileRevealWindows": {
+    "message": "Näytä Resurssienhallinnassa"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopioi rekisteröintikomento"
+  "settingsFileRevealLinux": {
+    "message": "Näytä tiedostonhallinnassa"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopioi poistokomento"
+  "settingsFileAgentHeading": {
+    "message": "Pyydä tekoälyagenttia"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopioi URL"
+  "settingsFileAgentHint": {
+    "message": "Kopioi tämä, vaihda ○○ siihen, mitä haluat (esim. ”lue ääneen VOICEVOXilla”), ja liitä se koodausagenttiisi."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopioi tunnus"
+  "settingsFileCopyInstructions": {
+    "message": "Kopioi ohjeet agentille"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Muuta Tomarigin asetuksia: ○○. Ohjeet: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Tiedostosta otetut tämän käynnistyksen aikana"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Muutettu asetustiedostosta"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (edellinen arvo säilyy)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Asetustiedosto ei ole kelvollista JSONia (rivi $LINE$, sarake $COLUMN$). Kaikki asetukset säilyvät, kunnes se korjataan.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Asetustiedostoa ei voitu lukea, joten sen teksti tallennettiin tiedostoon settings.invalid.json ennen tallennusta."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Avaimet, joita Tomarigi ei tunne, jätettiin ennalleen ja ohitettiin: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API-avaimia ei koskaan lueta tiedostosta; liitä ne kohtaan Asetukset → Tekoäly yhteenvetoihin. Ohitettu: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "”Anna tekoälyagentin muuttaa asetuksia” (MCP) on poistettu. Asetuksia muutetaan nyt alla olevalla tiedostolla."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Se poistettiin, jotta mikään sovelluksen sisällä ei voi lähettää ohjeita tekoälyagenteillesi."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Jos rekisteröit sen Claude Codeen, poista rekisteröinti ajamalla tämä kerran päätteessä:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopioi komento"
+  },
+  "settingsFileCloseNote": {
+    "message": "Sulje tämä ilmoitus"
+  },
+  "settingsProblemNoServer": {
+    "message": "Anna TTS-palvelin (readoutVoice.server), jotta paikallista ääntä voi käyttää."
+  },
+  "settingsProblemNoKey": {
+    "message": "Tälle palveluntarjoajalle ei ole tallennettu API-avainta. Liitä se ensin kohtaan Asetukset → Tekoäly yhteenvetoihin."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Paikallista tekoälyä ei ole asetettu. Anna ensin localAi (baseUrl ja model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Äänenvoimakkuus on kokonaisluku 0–100 (prosenttia)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Anna kansio absoluuttisena polkuna ilman \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Verkkopolkuja ei voi seurata. Anna kansio tältä tietokoneelta."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Kansiota ei ole tai sitä ei voi lukea."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Nimi ei voi olla tyhjä."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Oletuskansioita seurataan aina, eikä niitä voi poistaa."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Se ei ole mikään vaihtoehdoista (katso settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Asetus ei ota tämäntyyppistä arvoa (katso settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Sulje"
+  },
+  "settingsFileCopied": {
     "message": "Kopioitu"
   },
-  "agentAccessPortLabel": {
-    "message": "Portti"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Anna portti väliltä 1024–65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Käynnistys ei onnistunut: toinen sovellus käyttää tätä porttia. Anna toinen portti ja yritä uudelleen painamalla Enter."
-  },
-  "agentAccessRenewButton": {
-    "message": "Uusi tunnus"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Salaisen tunnuksen säilyttämiseen tarvitaan avainnippu (GNOME Keyring tai KWallet), eikä kumpikaan ole käynnissä tällä tietokoneella. Käynnistä toinen ja ota tämä uudelleen käyttöön."
-  },
-  "agentAccessStartFailed": {
-    "message": "Palvelinta ei voitu käynnistää. Syy on sovelluksen lokissa."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Agentin muuttamat"
-  },
-  "agentNoteTitle": {
-    "message": "Tekoälyagentti muutti asetusta"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Päällä"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Pois"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Ei asetettu"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "Tekoäly yhteenvetoihin"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Äänen voimakkuus"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Lukuäänen voimakkuus"
-  },
-  "agentAccessSecretNote": {
-    "message": "Komento sisältää salaisen tunnuksen, jolla tämän tietokoneen ohjelmat voivat muuttaa näitä asetuksia. Älä jaa sitä; jos se vuotaa, uusi se."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Jos käytät muuta MCP:tä tukevaa agenttia, lisää alla oleva URL ja tunnus sen MCP-asetuksiin (otsake: Authorization: Bearer <tunnus>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Sulje"
   }
 }

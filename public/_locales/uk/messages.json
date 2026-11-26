@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Щоб чути читання, увімкніть вище «Читати вголос»."
   },
-  "agentAccessHeading": {
-    "message": "ШІ-агент"
+  "settingsFileHeading": {
+    "message": "Файл налаштувань"
   },
-  "agentAccessEnable": {
-    "message": "Дозволити ШІ-агенту змінювати налаштування"
+  "settingsFileDescription": {
+    "message": "Усі налаштування цього екрана, крім ключів API, записані й у цьому файлі. Змініть файл — Tomarigi одразу застосує зміну."
   },
-  "agentAccessDescription": {
-    "message": "Ваш агент для програмування (Claude Code або інший із підтримкою MCP — звичайного способу підключати агентів до застосунків) може читати й змінювати налаштування на цьому екрані, перевіряти з'єднання та відтворювати зразок. API-ключі лишаються тут: агент не може їх читати чи задавати."
+  "settingsFileCopyPath": {
+    "message": "Копіювати шлях"
   },
-  "agentAccessCommandHint": {
-    "message": "Виконайте це один раз у терміналі. Потім попросіть агента, наприклад: «Перемкни голос озвучення на VOICEVOX»."
+  "settingsFileRevealMac": {
+    "message": "Показати у Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Команда змінилася, попередня більше не працює. Спочатку видаліть стару реєстрацію:"
+  "settingsFileRevealWindows": {
+    "message": "Показати в Провіднику"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Копіювати команду реєстрації"
+  "settingsFileRevealLinux": {
+    "message": "Показати у файловому менеджері"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Копіювати команду видалення"
+  "settingsFileAgentHeading": {
+    "message": "Попросити ШІ-агента"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Копіювати URL"
+  "settingsFileAgentHint": {
+    "message": "Скопіюйте це, замініть ○○ на те, що потрібно (наприклад, «озвучуй через VOICEVOX»), і вставте у свого агента для програмування."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Копіювати токен"
+  "settingsFileCopyInstructions": {
+    "message": "Копіювати вказівки для агента"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Зміни налаштування Tomarigi: ○○. Як це зробити: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Отримано з файлу з цього запуску"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Змінено з файлу налаштувань"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (залишено попереднє значення)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Файл налаштувань — некоректний JSON (рядок $LINE$, стовпець $COLUMN$). Поки його не виправлено, усі налаштування лишаються як є.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Файл налаштувань не читався, тож перед збереженням його текст збережено в settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Невідомі Tomarigi ключі залишено як є та пропущено: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Ключі API з файлу не читаються; вставте їх у Налаштування → ШІ для підсумків. Пропущено: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "Функцію «Дозволити ШІ-агенту змінювати налаштування» (MCP) вилучено. Тепер налаштування змінюються через файл нижче."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Її вилучено, щоб ніщо всередині застосунку не могло надсилати вказівки вашим ШІ-агентам."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Якщо ви реєстрували його в Claude Code, виконайте це один раз у терміналі, щоб видалити реєстрацію:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Копіювати команду"
+  },
+  "settingsFileCloseNote": {
+    "message": "Закрити це повідомлення"
+  },
+  "settingsProblemNoServer": {
+    "message": "Щоб використати локальний голос, вкажіть TTS-сервер (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Для цього постачальника не збережено ключ API. Спершу вставте його в Налаштування → ШІ для підсумків."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Локальний ШІ не налаштовано. Спершу вкажіть localAi (baseUrl і model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Гучність — ціле число від 0 до 100 (відсотки)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Вкажіть теку абсолютним шляхом без \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Мережеві шляхи не можна відстежувати. Вкажіть теку на цьому комп'ютері."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Ця тека не існує або не читається."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Назва не може бути порожньою."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Типові теки відстежуються завжди, їх не можна прибрати."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Це не один із варіантів (див. settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Це не той тип значення, який приймає налаштування (див. settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Закрити"
+  },
+  "settingsFileCopied": {
     "message": "Скопійовано"
   },
-  "agentAccessPortLabel": {
-    "message": "Порт"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Введіть порт від 1024 до 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Не вдалося запустити: цей порт зайнятий іншим застосунком. Введіть інший порт і натисніть Enter, щоб спробувати знову."
-  },
-  "agentAccessRenewButton": {
-    "message": "Оновити токен"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Для зберігання секретного токена потрібна в'язка ключів (GNOME Keyring або KWallet), а на цьому комп'ютері вона не запущена. Запустіть одну з них і ввімкніть знову."
-  },
-  "agentAccessStartFailed": {
-    "message": "Не вдалося запустити сервер. Причина — у журналі застосунку."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Змінено агентом"
-  },
-  "agentNoteTitle": {
-    "message": "ШІ-агент змінив налаштування"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Увімк."
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Вимк."
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Не задано"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "ШІ для підсумків"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Гучність звуку"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Гучність озвучення"
-  },
-  "agentAccessSecretNote": {
-    "message": "Команда містить секретний токен, що дозволяє програмам на цьому комп'ютері змінювати ці налаштування. Не діліться ним; якщо він витік, оновіть його."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Для іншого агента з підтримкою MCP вкажіть URL і токен нижче в його налаштуваннях MCP (заголовок: Authorization: Bearer <токен>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Закрити"
   }
 }

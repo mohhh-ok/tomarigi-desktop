@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Če želite slišati branje, zgoraj vklopite »Preberi z glasom«."
   },
-  "agentAccessHeading": {
-    "message": "Agent UI"
+  "settingsFileHeading": {
+    "message": "Datoteka nastavitev"
   },
-  "agentAccessEnable": {
-    "message": "Dovoli agentu UI spreminjati nastavitve"
+  "settingsFileDescription": {
+    "message": "Vse nastavitve na tem zaslonu razen ključev API so zapisane tudi v tej datoteki. Uredite datoteko in Tomarigi spremembo takoj uporabi."
   },
-  "agentAccessDescription": {
-    "message": "Vaš agent za programiranje (Claude Code ali drug, ki podpira MCP, običajen način povezovanja agentov z aplikacijami) lahko bere in spreminja nastavitve na tem zaslonu, preizkusi povezavo in predvaja vzorec. Ključi API ostanejo tukaj: agent jih ne more brati ali nastaviti."
+  "settingsFileCopyPath": {
+    "message": "Kopiraj pot"
   },
-  "agentAccessCommandHint": {
-    "message": "To enkrat zaženite v terminalu. Nato agenta prosite, npr. »Preklopi glas branja na VOICEVOX«."
+  "settingsFileRevealMac": {
+    "message": "Pokaži v Finderju"
   },
-  "agentAccessReplaceHint": {
-    "message": "Ukaz se je spremenil, zato prejšnji ne deluje več. Najprej odstranite staro registracijo:"
+  "settingsFileRevealWindows": {
+    "message": "Pokaži v Raziskovalcu"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopiraj ukaz za registracijo"
+  "settingsFileRevealLinux": {
+    "message": "Pokaži v upravitelju datotek"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopiraj ukaz za odstranitev"
+  "settingsFileAgentHeading": {
+    "message": "Prosite agenta UI"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopiraj URL"
+  "settingsFileAgentHint": {
+    "message": "Kopirajte to, zamenjajte ○○ s tem, kar želite (npr. „beri z VOICEVOX“), in prilepite v svojega agenta za programiranje."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopiraj žeton"
+  "settingsFileCopyInstructions": {
+    "message": "Kopiraj navodila za agenta"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Spremeni nastavitve Tomarigi: ○○. Kako: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Prevzeto iz datoteke od tega zagona"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Spremenjeno iz datoteke nastavitev"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (ohranjena prejšnja vrednost)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Datoteka nastavitev ni veljaven JSON (vrstica $LINE$, stolpec $COLUMN$). Dokler je ne popravite, vse nastavitve ostanejo.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Datoteke nastavitev ni bilo mogoče prebrati, zato je bilo njeno besedilo pred shranjevanjem ohranjeno v settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Ključi, ki jih Tomarigi ne pozna, so ostali nespremenjeni in prezrti: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Ključev API se iz datoteke nikoli ne bere; prilepite jih v Nastavitve → UI za povzetke. Prezrto: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "„Dovoli agentu UI spreminjati nastavitve“ (MCP) je odstranjeno. Nastavitve se zdaj spreminjajo v datoteki spodaj."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Odstranjeno je, da nič znotraj aplikacije ne more pošiljati navodil vašim agentom UI."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Če ste ga registrirali v Claude Code, enkrat zaženite to v terminalu, da odstranite registracijo:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopiraj ukaz"
+  },
+  "settingsFileCloseNote": {
+    "message": "Zapri to obvestilo"
+  },
+  "settingsProblemNoServer": {
+    "message": "Za lokalni glas navedite strežnik TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Za tega ponudnika ni shranjenega ključa API. Najprej ga prilepite v Nastavitve → UI za povzetke."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Lokalni UI ni nastavljen. Najprej navedite localAi (baseUrl in model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Glasnost je celo število od 0 do 100 (odstotki)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Navedite mapo kot absolutno pot brez \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Omrežnih poti ni mogoče spremljati. Navedite mapo v tem računalniku."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Ta mapa ne obstaja ali je ni mogoče brati."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Ime ne sme biti prazno."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Privzete mape se vedno spremljajo in jih ni mogoče odstraniti."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "To ni ena od možnosti (glejte settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Ta nastavitev ne sprejme takšne vrste vrednosti (glejte settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Zapri"
+  },
+  "settingsFileCopied": {
     "message": "Kopirano"
   },
-  "agentAccessPortLabel": {
-    "message": "Vrata"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Vnesite vrata od 1024 do 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Zagon ni uspel: ta vrata uporablja druga aplikacija. Vnesite druga vrata in pritisnite Enter za ponoven poskus."
-  },
-  "agentAccessRenewButton": {
-    "message": "Obnovi žeton"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Za hrambo skrivnega žetona je potreben obesek za ključe (GNOME Keyring ali KWallet), v tem računalniku pa ne teče noben. Zaženite enega in nato znova vklopite."
-  },
-  "agentAccessStartFailed": {
-    "message": "Strežnika ni bilo mogoče zagnati. Razlog je v dnevniku aplikacije."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Spremenil agent"
-  },
-  "agentNoteTitle": {
-    "message": "Agent UI je spremenil nastavitev"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Vklop"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Izklop"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Ni nastavljeno"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "UI za povzetke"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Glasnost zvoka"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Glasnost branja"
-  },
-  "agentAccessSecretNote": {
-    "message": "Ukaz vsebuje skrivni žeton, s katerim lahko programi v tem računalniku spreminjajo te nastavitve. Ne delite ga; če uide, ga obnovite."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Za drugega agenta, ki podpira MCP, vnesite spodnji URL in žeton v njegove nastavitve MCP (glava: Authorization: Bearer <žeton>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Zapri"
   }
 }

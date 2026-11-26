@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "כדי לשמוע הקראות, הפעילו למעלה את „הקראה בקול”."
   },
-  "agentAccessHeading": {
-    "message": "סוכן AI"
+  "settingsFileHeading": {
+    "message": "קובץ ההגדרות"
   },
-  "agentAccessEnable": {
-    "message": "לאפשר לסוכן AI לשנות הגדרות"
+  "settingsFileDescription": {
+    "message": "כל ההגדרות במסך הזה, מלבד מפתחות API, כתובות גם בקובץ הזה. ערכו את הקובץ ו-Tomarigi יחיל את השינוי מיד."
   },
-  "agentAccessDescription": {
-    "message": "סוכן הקוד שלך (Claude Code או אחר שתומך ב-MCP, הדרך המקובלת לחבר סוכנים לאפליקציות) יכול לקרוא ולשנות את ההגדרות במסך הזה, לבדוק את החיבור ולהשמיע דוגמה. מפתחות API נשארים כאן: הסוכן לא יכול לקרוא או להגדיר אותם."
+  "settingsFileCopyPath": {
+    "message": "העתקת הנתיב"
   },
-  "agentAccessCommandHint": {
-    "message": "הריצו את זה פעם אחת בטרמינל. אחר כך בקשו מהסוכן, למשל: ״תחליף את קול ההקראה ל-VOICEVOX״."
+  "settingsFileRevealMac": {
+    "message": "הצגה ב-Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "הפקודה השתנתה, והקודמת כבר לא עובדת. הסירו קודם את הרישום הישן:"
+  "settingsFileRevealWindows": {
+    "message": "הצגה בסייר"
   },
-  "agentAccessCopyAddButton": {
-    "message": "העתקת פקודת הרישום"
+  "settingsFileRevealLinux": {
+    "message": "הצגה במנהל הקבצים"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "העתקת פקודת ההסרה"
+  "settingsFileAgentHeading": {
+    "message": "לבקש מסוכן AI"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "העתקת URL"
+  "settingsFileAgentHint": {
+    "message": "העתיקו את זה, החליפו את ○○ במה שאתם רוצים (למשל “הקראה עם VOICEVOX”) והדביקו בסוכן הקוד שלכם."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "העתקת הטוקן"
+  "settingsFileCopyInstructions": {
+    "message": "העתקת הוראות לסוכן"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "שנה את ההגדרות של Tomarigi: ○○. איך: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "מה שנלקח מהקובץ מאז ההפעלה הזו"
+  },
+  "settingsFileNoteTitle": {
+    "message": "שונה מקובץ ההגדרות"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (הערך הקודם נשמר)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "קובץ ההגדרות אינו JSON תקין (שורה $LINE$, עמודה $COLUMN$). כל ההגדרות שומרות על ערכן עד שיתוקן.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "לא ניתן היה לקרוא את קובץ ההגדרות, ולכן הטקסט שלו נשמר ב-settings.invalid.json לפני השמירה."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "מפתחות ש-Tomarigi לא מכיר נשארו כמו שהם והמערכת התעלמה מהם: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "מפתחות API אף פעם לא נקראים מהקובץ; הדביקו אותם בהגדרות ← AI לסיכומים. התעלמנו מ: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“לאפשר לסוכן AI לשנות הגדרות” (MCP) הוסר. עכשיו משנים הגדרות דרך הקובץ שלמטה."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "הוא הוסר כדי שדבר בתוך האפליקציה לא יוכל לשלוח הוראות לסוכני ה-AI שלכם."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "אם רשמתם אותו ב-Claude Code, הריצו פעם אחת בטרמינל כדי לבטל את הרישום:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "העתקת הפקודה"
+  },
+  "settingsFileCloseNote": {
+    "message": "סגירת ההודעה"
+  },
+  "settingsProblemNoServer": {
+    "message": "כדי להשתמש בקול המקומי, ציינו שרת TTS ‏(readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "לא נשמר מפתח API לספק הזה. הדביקו אותו קודם בהגדרות ← AI לסיכומים."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "AI מקומי לא הוגדר. ציינו קודם את localAi ‏(baseUrl ו-model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "עוצמה היא מספר שלם מ-0 עד 100 (אחוזים)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "ציינו את התיקייה בנתיב מוחלט בלי \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "אי אפשר לעקוב אחרי נתיבי רשת. ציינו תיקייה במחשב הזה."
+  },
+  "settingsProblemNotReadable": {
+    "message": "התיקייה לא קיימת או שאי אפשר לקרוא אותה."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "השם לא יכול להיות ריק."
+  },
+  "settingsProblemBuiltin": {
+    "message": "תיקיות ברירת המחדל תמיד במעקב ואי אפשר להסיר אותן."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "זו לא אחת מהאפשרויות (ראו settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "זה לא סוג הערך שההגדרה הזו מקבלת (ראו settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "סגירה"
+  },
+  "settingsFileCopied": {
     "message": "הועתק"
   },
-  "agentAccessPortLabel": {
-    "message": "פורט"
-  },
-  "agentAccessPortInvalid": {
-    "message": "הזינו פורט בין 1024 ל-65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "לא ניתן להפעיל: אפליקציה אחרת משתמשת בפורט הזה. הזינו פורט אחר והקישו Enter כדי לנסות שוב."
-  },
-  "agentAccessRenewButton": {
-    "message": "חידוש האסימון"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "כדי לשמור את האסימון הסודי צריך מחזיק מפתחות (GNOME Keyring או KWallet), ואף אחד מהם לא פועל במחשב הזה. הפעילו אחד מהם ואז הפעילו את זה שוב."
-  },
-  "agentAccessStartFailed": {
-    "message": "לא ניתן היה להפעיל את השרת. הסיבה מופיעה ביומן האפליקציה."
-  },
-  "agentAccessRecentHeading": {
-    "message": "שונה על ידי הסוכן"
-  },
-  "agentNoteTitle": {
-    "message": "סוכן ה-AI שינה הגדרה"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "פועל"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "כבוי"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "לא הוגדר"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI לסיכומים"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "עוצמת הצליל"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "עוצמת ההקראה"
-  },
-  "agentAccessSecretNote": {
-    "message": "הפקודה כוללת אסימון סודי שמאפשר לתוכנות במחשב הזה לשנות את ההגדרות האלה. אל תשתפו אותו; אם הוא דלף, חדשו אותו."
-  },
-  "agentAccessOtherAgents": {
-    "message": "עבור סוכן אחר שתומך ב-MCP, הכניסו את ה-URL והטוקן שלמטה להגדרות ה-MCP של אותו סוכן (כותרת: Authorization: Bearer <טוקן>)."
-  },
-  "agentNoteDismiss": {
-    "message": "סגירה"
   }
 }

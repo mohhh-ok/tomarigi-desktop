@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Slå på «Les opp med stemme» over for å høre opplesningene."
   },
-  "agentAccessHeading": {
-    "message": "KI-agent"
+  "settingsFileHeading": {
+    "message": "Innstillingsfil"
   },
-  "agentAccessEnable": {
-    "message": "La en KI-agent endre innstillinger"
+  "settingsFileDescription": {
+    "message": "Alle innstillingene på denne skjermen unntatt API-nøkler står også i denne filen. Rediger filen, så tar Tomarigi i bruk endringen med en gang."
   },
-  "agentAccessDescription": {
-    "message": "Kodeagenten din (Claude Code eller en annen som støtter MCP, den vanlige måten å koble agenter til apper på) kan lese og endre innstillingene på denne skjermen, teste tilkoblingen og spille av en prøve. API-nøkler blir her: agenten kan ikke lese eller angi dem."
+  "settingsFileCopyPath": {
+    "message": "Kopier bane"
   },
-  "agentAccessCommandHint": {
-    "message": "Kjør dette én gang i en terminal. Be deretter agenten, f.eks. «Bytt opplesningsstemmen til VOICEVOX»."
+  "settingsFileRevealMac": {
+    "message": "Vis i Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Kommandoen er endret, så den du kjørte før virker ikke lenger. Fjern først den gamle registreringen:"
+  "settingsFileRevealWindows": {
+    "message": "Vis i Utforsker"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopier registreringskommando"
+  "settingsFileRevealLinux": {
+    "message": "Vis i filbehandleren"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopier fjerningskommando"
+  "settingsFileAgentHeading": {
+    "message": "Be en KI-agent"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopier URL"
+  "settingsFileAgentHint": {
+    "message": "Kopier dette, bytt ut ○○ med det du vil (f.eks. «les opp med VOICEVOX»), og lim det inn i kodeagenten din."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopier token"
+  "settingsFileCopyInstructions": {
+    "message": "Kopier instruksjoner til en agent"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Endre innstillingene i Tomarigi: ○○. Slik gjør du det: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Hentet fra filen siden denne oppstarten"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Endret fra innstillingsfilen"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (forrige verdi beholdes)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Innstillingsfilen er ikke gyldig JSON (linje $LINE$, kolonne $COLUMN$). Alle innstillinger beholder verdien til den er rettet.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Innstillingsfilen kunne ikke leses, så teksten ble tatt vare på i settings.invalid.json før lagring."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Nøkler Tomarigi ikke kjenner, ble latt stå og ignorert: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API-nøkler leses aldri fra filen; lim dem inn under Innstillinger → KI for sammendrag. Ignorert: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "«La en KI-agent endre innstillinger» (MCP) er fjernet. Innstillinger endres nå via filen nedenfor."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Den ble fjernet slik at ingenting i appen kan sende instruksjoner til KI-agentene dine."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Hvis du registrerte den i Claude Code, kjør dette én gang i en terminal for å avregistrere den:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopier kommando"
+  },
+  "settingsFileCloseNote": {
+    "message": "Lukk denne meldingen"
+  },
+  "settingsProblemNoServer": {
+    "message": "Angi en TTS-server (readoutVoice.server) for å bruke den lokale stemmen."
+  },
+  "settingsProblemNoKey": {
+    "message": "Ingen API-nøkkel er lagret for denne leverandøren. Lim den først inn under Innstillinger → KI for sammendrag."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Lokal KI er ikke satt opp. Angi først localAi (baseUrl og model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Et volum er et heltall fra 0 til 100 (prosent)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Oppgi mappen som en absolutt bane uten \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Nettverksbaner kan ikke overvåkes. Oppgi en mappe på denne datamaskinen."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Mappen finnes ikke eller kan ikke leses."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Navnet kan ikke være tomt."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Standardmappene overvåkes alltid og kan ikke fjernes."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Det er ikke et av valgene (se settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Det er ikke den typen verdi innstillingen tar (se settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Lukk"
+  },
+  "settingsFileCopied": {
     "message": "Kopiert"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Skriv inn en port fra 1024 til 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Kunne ikke starte: en annen app bruker denne porten. Skriv inn en annen port og trykk Enter for å prøve igjen."
-  },
-  "agentAccessRenewButton": {
-    "message": "Forny token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Dette krever en nøkkelring (GNOME Keyring eller KWallet) for det hemmelige tokenet, og ingen kjører på denne datamaskinen. Start en, og slå dette på igjen."
-  },
-  "agentAccessStartFailed": {
-    "message": "Serveren kunne ikke starte. Årsaken står i appens logg."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Endret av agenten"
-  },
-  "agentNoteTitle": {
-    "message": "KI-agenten endret en innstilling"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "På"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Av"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Ikke angitt"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "KI for sammendrag"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Lydvolum"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Opplesningsvolum"
-  },
-  "agentAccessSecretNote": {
-    "message": "Kommandoen inneholder et hemmelig token som lar programmer på denne datamaskinen endre innstillingene. Ikke del det; forny det hvis det lekker."
-  },
-  "agentAccessOtherAgents": {
-    "message": "For en annen agent med MCP legger du inn URL-en og tokenet nedenfor i agentens MCP-innstillinger (header: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Lukk"
   }
 }

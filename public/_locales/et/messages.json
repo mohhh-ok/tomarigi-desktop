@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Ettelugemise kuulmiseks lülita ülal sisse „Loe häälega ette”."
   },
-  "agentAccessHeading": {
-    "message": "Tehisintellekti agent"
+  "settingsFileHeading": {
+    "message": "Seadete fail"
   },
-  "agentAccessEnable": {
-    "message": "Luba tehisintellekti agendil seadeid muuta"
+  "settingsFileDescription": {
+    "message": "Kõik selle ekraani seaded peale API-võtmete on kirjas ka selles failis. Muutke faili ja Tomarigi rakendab muudatuse kohe."
   },
-  "agentAccessDescription": {
-    "message": "Sinu kodeerimisagent (Claude Code või muu, mis toetab MCP-d, tavalist viisi agentide ühendamiseks rakendustega) saab selle ekraani seadeid lugeda ja muuta, ühendust testida ja näidist esitada. API-võtmed jäävad siia: agent ei saa neid lugeda ega määrata."
+  "settingsFileCopyPath": {
+    "message": "Kopeeri tee"
   },
-  "agentAccessCommandHint": {
-    "message": "Käivitage see terminalis üks kord. Seejärel paluge agendil näiteks: „Vaheta ettelugemise hääl VOICEVOX-i vastu“."
+  "settingsFileRevealMac": {
+    "message": "Näita Finderis"
   },
-  "agentAccessReplaceHint": {
-    "message": "Käsk muutus, nii et varem käivitatud käsk enam ei tööta. Eemaldage kõigepealt vana registreering:"
+  "settingsFileRevealWindows": {
+    "message": "Näita Exploreris"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopeeri registreerimiskäsk"
+  "settingsFileRevealLinux": {
+    "message": "Näita failihalduris"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopeeri eemaldamiskäsk"
+  "settingsFileAgentHeading": {
+    "message": "Paluge tehisintellekti agenti"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopeeri URL"
+  "settingsFileAgentHint": {
+    "message": "Kopeerige see, asendage ○○ sellega, mida soovite (nt „loe VOICEVOXiga ette“), ja kleepige see oma kodeerimisagendile."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopeeri tõend"
+  "settingsFileCopyInstructions": {
+    "message": "Kopeeri juhised agendile"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Muuda Tomarigi seadeid: ○○. Kuidas: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Failist võetud selle käivituse ajal"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Muudetud seadete failist"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (jäeti eelmine väärtus)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Seadete fail ei ole korrektne JSON (rida $LINE$, veerg $COLUMN$). Kuni see on parandamata, jäävad kõik seaded samaks.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Seadete faili ei saanud lugeda, seega selle tekst jäeti enne salvestamist faili settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Võtmed, mida Tomarigi ei tunne, jäeti alles ja neid eirati: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API-võtmeid failist kunagi ei loeta; kleepige need jaotisse Seaded → Tehisintellekt kokkuvõteteks. Eiratud: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "„Luba tehisintellekti agendil seadeid muuta“ (MCP) on eemaldatud. Seadeid muudetakse nüüd allolevas failis."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "See eemaldati, et miski rakenduse sees ei saaks teie tehisintellekti agentidele juhiseid saata."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Kui registreerisite selle Claude Code'is, käivitage see üks kord terminalis, et registreering eemaldada:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopeeri käsk"
+  },
+  "settingsFileCloseNote": {
+    "message": "Sulge see teade"
+  },
+  "settingsProblemNoServer": {
+    "message": "Kohaliku hääle jaoks märkige TTS-server (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Selle teenusepakkuja API-võtit pole salvestatud. Kleepige see esmalt jaotisse Seaded → Tehisintellekt kokkuvõteteks."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Kohalik tehisintellekt pole seadistatud. Märkige esmalt localAi (baseUrl ja model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Helitugevus on täisarv 0 kuni 100 (protsent)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Märkige kaust absoluutse teena ilma \"..\"-ta."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Võrguteid ei saa jälgida. Märkige kaust selles arvutis."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Seda kausta pole või seda ei saa lugeda."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Nimi ei tohi olla tühi."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Vaikekaustu jälgitakse alati ja neid ei saa eemaldada."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "See pole ükski valikutest (vt settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "See seade ei võta sellist tüüpi väärtust (vt settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Sulge"
+  },
+  "settingsFileCopied": {
     "message": "Kopeeritud"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Sisestage port vahemikus 1024–65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Käivitamine ebaõnnestus: seda porti kasutab teine rakendus. Sisestage teine port ja vajutage uuesti proovimiseks Enter."
-  },
-  "agentAccessRenewButton": {
-    "message": "Uuenda luba"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Salajase loa hoidmiseks on vaja võtmerõngast (GNOME Keyring või KWallet), aga selles arvutis ei tööta ükski. Käivitage üks ja lülitage see uuesti sisse."
-  },
-  "agentAccessStartFailed": {
-    "message": "Serverit ei õnnestunud käivitada. Põhjus on rakenduse logis."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Agendi muudetud"
-  },
-  "agentNoteTitle": {
-    "message": "Tehisintellekti agent muutis seadet"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Sees"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Väljas"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Määramata"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "Tehisintellekt kokkuvõteteks"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Heli tugevus"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Ettelugemise tugevus"
-  },
-  "agentAccessSecretNote": {
-    "message": "Käsus on salajane luba, millega selle arvuti programmid saavad neid seadeid muuta. Ärge jagage seda; kui see lekib, uuendage see."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Muu MCP-d toetava agendi puhul lisage allolev URL ja tõend selle agendi MCP-seadetesse (päis: Authorization: Bearer <tõend>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Sulge"
   }
 }

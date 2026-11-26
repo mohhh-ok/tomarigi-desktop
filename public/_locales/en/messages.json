@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Turn on \"Read aloud with voice\" above to hear readouts."
   },
-  "agentAccessHeading": {
-    "message": "AI agent"
+  "settingsFileHeading": {
+    "message": "Settings file"
   },
-  "agentAccessEnable": {
-    "message": "Let an AI agent change settings"
+  "settingsFileDescription": {
+    "message": "Every setting on this screen except API keys is also written in this file. Edit the file and Tomarigi applies the change at once."
   },
-  "agentAccessDescription": {
-    "message": "Your coding agent (Claude Code, or another that supports MCP, the common way agents connect to apps) can read and change the settings on this screen, run the connection test and play a sample. API keys stay here: the agent can't read or set them."
+  "settingsFileCopyPath": {
+    "message": "Copy path"
   },
-  "agentAccessCommandHint": {
-    "message": "Run this once in a terminal. Then ask the agent, e.g. “Switch the readout voice to VOICEVOX”."
+  "settingsFileRevealMac": {
+    "message": "Show in Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "The command changed, so the one you ran before no longer works. First remove the old registration:"
+  "settingsFileRevealWindows": {
+    "message": "Show in Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Copy register command"
+  "settingsFileRevealLinux": {
+    "message": "Show in file manager"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Copy remove command"
+  "settingsFileAgentHeading": {
+    "message": "Ask an AI agent"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Copy URL"
+  "settingsFileAgentHint": {
+    "message": "Copy this, replace ○○ with what you want (e.g. “read aloud with VOICEVOX”), and paste it into your coding agent."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Copy token"
+  "settingsFileCopyInstructions": {
+    "message": "Copy instructions for an agent"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Change Tomarigi's settings: ○○. How: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Taken from the file in this launch"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Changed from the settings file"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (kept the previous value)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "The settings file isn't valid JSON (line $LINE$, column $COLUMN$). Every setting keeps its value until it is fixed.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "The settings file couldn't be read, so its text was kept in settings.invalid.json before saving."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Keys Tomarigi doesn't know were left as they are and ignored: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API keys are never read from the file; paste them in Settings → AI for summaries. Ignored: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“Let an AI agent change settings” (MCP) has been removed. Settings are now changed through the settings file below."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "It was removed so that nothing inside the app can send instructions to your AI agents."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "If you registered it with Claude Code, run this once in a terminal to unregister it:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Copy command"
+  },
+  "settingsFileCloseNote": {
+    "message": "Close this note"
+  },
+  "settingsProblemNoServer": {
+    "message": "Set a TTS server (readoutVoice.server) to use the local voice."
+  },
+  "settingsProblemNoKey": {
+    "message": "No API key is saved for this provider. Paste it in Settings → AI for summaries first."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Local AI isn't set up. Set localAi (baseUrl and model) first."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "A volume is a whole number from 0 to 100 (percent)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Give the folder as an absolute path without \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Network paths can't be watched. Give a folder on this computer."
+  },
+  "settingsProblemNotReadable": {
+    "message": "That folder doesn't exist or can't be read."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "A label can't be empty."
+  },
+  "settingsProblemBuiltin": {
+    "message": "The default folders are always watched and can't be removed."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "That isn't one of the choices (see settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "That isn't the kind of value this setting takes (see settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Close"
+  },
+  "settingsFileCopied": {
     "message": "Copied"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Enter a port from 1024 to 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Couldn't start: another app is using this port. Enter another port and press Enter to try again."
-  },
-  "agentAccessRenewButton": {
-    "message": "Renew token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "This needs a keyring to keep its secret token (GNOME Keyring or KWallet), and none is running on this computer. Start one, then turn this on again."
-  },
-  "agentAccessStartFailed": {
-    "message": "Couldn't start the server. The app log has the reason."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Changed by the agent"
-  },
-  "agentNoteTitle": {
-    "message": "The AI agent changed a setting"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "On"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Off"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Not set"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI for summaries"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Sound volume"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Readout volume"
-  },
-  "agentAccessSecretNote": {
-    "message": "The command contains a secret token that lets programs on this computer change these settings. Don't share it; if it gets out, renew it."
-  },
-  "agentAccessOtherAgents": {
-    "message": "For another agent that speaks MCP, put the URL and the token below in that agent's MCP settings (header: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Close"
   }
 }

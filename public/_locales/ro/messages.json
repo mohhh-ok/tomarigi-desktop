@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Activează „Citește cu voce” de mai sus ca să auzi citirile."
   },
-  "agentAccessHeading": {
-    "message": "Agent AI"
+  "settingsFileHeading": {
+    "message": "Fișierul de setări"
   },
-  "agentAccessEnable": {
-    "message": "Permite unui agent AI să modifice setările"
+  "settingsFileDescription": {
+    "message": "Toate setările de pe acest ecran, în afară de cheile API, sunt scrise și în acest fișier. Editați fișierul și Tomarigi aplică imediat schimbarea."
   },
-  "agentAccessDescription": {
-    "message": "Agentul tău de programare (Claude Code sau altul compatibil cu MCP, modul obișnuit de a conecta agenții la aplicații) poate citi și modifica setările de pe acest ecran, poate testa conexiunea și poate reda o mostră. Cheile API rămân aici: agentul nu le poate citi sau seta."
+  "settingsFileCopyPath": {
+    "message": "Copiază calea"
   },
-  "agentAccessCommandHint": {
-    "message": "Rulează asta o dată într-un terminal. Apoi cere-i agentului, de exemplu: „Schimbă vocea de citire pe VOICEVOX”."
+  "settingsFileRevealMac": {
+    "message": "Afișează în Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Comanda s-a schimbat, deci cea rulată înainte nu mai funcționează. Elimină mai întâi vechea înregistrare:"
+  "settingsFileRevealWindows": {
+    "message": "Afișează în Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Copiază comanda de înregistrare"
+  "settingsFileRevealLinux": {
+    "message": "Afișează în managerul de fișiere"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Copiază comanda de eliminare"
+  "settingsFileAgentHeading": {
+    "message": "Cereți unui agent AI"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Copiază URL-ul"
+  "settingsFileAgentHint": {
+    "message": "Copiați acest text, înlocuiți ○○ cu ce doriți (de ex. „citește cu VOICEVOX”) și lipiți-l în agentul de programare."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Copiază tokenul"
+  "settingsFileCopyInstructions": {
+    "message": "Copiază instrucțiunile pentru agent"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Schimbă setările Tomarigi: ○○. Cum: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Preluat din fișier la această pornire"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Modificat din fișierul de setări"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (s-a păstrat valoarea anterioară)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Fișierul de setări nu este JSON valid (linia $LINE$, coloana $COLUMN$). Toate setările își păstrează valoarea până la corectare.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Fișierul de setări nu a putut fi citit, așa că textul lui a fost păstrat în settings.invalid.json înainte de salvare."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Cheile pe care Tomarigi nu le cunoaște au rămas neschimbate și au fost ignorate: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Cheile API nu sunt citite niciodată din fișier; lipiți-le în Setări → AI pentru rezumate. Ignorate: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "„Permite unui agent AI să modifice setările” (MCP) a fost eliminat. Setările se schimbă acum din fișierul de mai jos."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "A fost eliminat ca nimic din aplicație să nu poată trimite instrucțiuni agenților AI."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Dacă l-ați înregistrat în Claude Code, rulați o dată în terminal pentru a-l dezînregistra:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Copiază comanda"
+  },
+  "settingsFileCloseNote": {
+    "message": "Închide acest anunț"
+  },
+  "settingsProblemNoServer": {
+    "message": "Pentru vocea locală, indicați un server TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Nu există o cheie API salvată pentru acest furnizor. Lipiți-o întâi în Setări → AI pentru rezumate."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "AI-ul local nu este configurat. Indicați întâi localAi (baseUrl și model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Volumul este un număr întreg de la 0 la 100 (procent)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Indicați dosarul ca o cale absolută fără \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Căile de rețea nu pot fi urmărite. Indicați un dosar de pe acest computer."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Dosarul nu există sau nu poate fi citit."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Numele nu poate fi gol."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Dosarele implicite sunt urmărite mereu și nu pot fi eliminate."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Nu este una dintre opțiuni (vedeți settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Nu este tipul de valoare pe care îl acceptă această setare (vedeți settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Închide"
+  },
+  "settingsFileCopied": {
     "message": "Copiat"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Introdu un port între 1024 și 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Nu a putut porni: altă aplicație folosește acest port. Introdu alt port și apasă Enter pentru a încerca din nou."
-  },
-  "agentAccessRenewButton": {
-    "message": "Reînnoiește tokenul"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Este nevoie de un inel de chei (GNOME Keyring sau KWallet) pentru tokenul secret, iar pe acest computer nu rulează niciunul. Pornește unul, apoi activează din nou."
-  },
-  "agentAccessStartFailed": {
-    "message": "Serverul nu a putut porni. Motivul este în jurnalul aplicației."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Modificat de agent"
-  },
-  "agentNoteTitle": {
-    "message": "Agentul AI a modificat o setare"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Pornit"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Oprit"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Nesetat"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI pentru rezumate"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Volumul sunetului"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Volumul citirii"
-  },
-  "agentAccessSecretNote": {
-    "message": "Comanda conține un token secret care le permite programelor de pe acest computer să modifice aceste setări. Nu-l partaja; dacă se scurge, reînnoiește-l."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Pentru alt agent compatibil cu MCP, pune URL-ul și tokenul de mai jos în setările MCP ale agentului (antet: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Închide"
   }
 }

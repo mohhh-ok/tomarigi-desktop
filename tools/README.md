@@ -205,37 +205,33 @@ DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/
 
 Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<scene>-<width>.png`.
 
-## agent-access-shot.mjs
+## settings-file-shot.mjs
 
-Shoots the settings' "AI agent" card in each state (off, on with the command, after "Renew token", port in use, an
-invalid port, no key store) and the note shown when the agent changes a setting, for a UI check (docs/design.md
-"Settings by an AI agent (MCP)"). The page's calls to Rust are answered as `mcp.rs` answers them, and a tool call is
-sent to the page's own "mcp-call" listener, so a change runs through the app's real tool layer. Needs a `vite build`
-output (`DIST`) and Playwright ("Playwright" above).
+Shoots the settings' "Settings file" section (as it opens, with this launch's list, with the note that the MCP server was
+removed) and the note the floating window shows when an edit of the settings file is taken, in Japanese and English, for
+a UI check (docs/design.md "Settings file"). The page's calls to Rust are answered as `settings_file.rs` answers them, and
+the edit is sent to the page's own "settings-file-edited" listener, so it runs through the app's real checks. Needs a
+`vite build` output (`DIST`) and Playwright ("Playwright" above).
 
 ```sh
-DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/agent-shots \
-  node tools/agent-access-shot.mjs [scene ids...]
+DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/settings-file-shots \
+  node tools/settings-file-shot.mjs [scene ids...]
 ```
 
-Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<scene>-<width>.png` (and
-`changed-ja-card-<width>.png`, the card's list after the note is gone).
+Env: `SIZES` (default `760x560,560x420`). Writes `<OUT>/<scene>-<width>x<height>.png`.
 
 ## Settings window
 
 `settings-window-shot.mjs` shoots every section of the settings window (`?mock=1&view=settings&section=<id>`) at its
 default and smallest size (760x560 and 560x420) in English and Japanese, for a UI check, plus a folder label being edited
-(`-editing`) and the icon sets after one press (`-pressed`). `agent-access-shot.mjs` shoots
-its "AI agent" section in each state the floating window can send it, and the floating window's note. Both need a
+(`-editing`) and the icon sets after one press (`-pressed`). `settings-file-shot.mjs` shoots
+its "Settings file" section and the floating window's note. Both need a
 `vite build` output (`DIST`) and Playwright ("Playwright" above); no dev server or port.
 
 ```sh
 DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/settings-shots \
   node tools/settings-window-shot.mjs [section ids...]
 ```
-
-`mcp-call.sh` calls one of the app's MCP tools with curl, for checks on the verify .app started with
-`TOMARIGI_AGENT_ACCESS` and a known token (README "Environment variables at launch").
 
 `settings-open-check.mjs` checks that the floating window's ⚙ and Cmd+, (Ctrl+, off macOS), and Cmd+, in the settings
 window, ask the app to open the settings window (`open_settings`); it exits 1 when one doesn't.

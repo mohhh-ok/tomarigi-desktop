@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "فعّل «القراءة بصوت عالٍ» في الأعلى لسماع القراءة."
   },
-  "agentAccessHeading": {
-    "message": "وكيل الذكاء الاصطناعي"
+  "settingsFileHeading": {
+    "message": "ملف الإعدادات"
   },
-  "agentAccessEnable": {
-    "message": "السماح لوكيل ذكاء اصطناعي بتغيير الإعدادات"
+  "settingsFileDescription": {
+    "message": "كل إعدادات هذه الشاشة، باستثناء مفاتيح API، مكتوبة أيضًا في هذا الملف. عدّل الملف وسيطبّق Tomarigi التغيير فورًا."
   },
-  "agentAccessDescription": {
-    "message": "يمكن لوكيل البرمجة لديك (Claude Code أو غيره ممن يدعم MCP، الطريقة الشائعة لربط الوكلاء بالتطبيقات) قراءة الإعدادات في هذه الشاشة وتغييرها، واختبار الاتصال، وتشغيل عينة. تبقى مفاتيح API هنا: لا يستطيع الوكيل قراءتها أو تعيينها."
+  "settingsFileCopyPath": {
+    "message": "نسخ المسار"
   },
-  "agentAccessCommandHint": {
-    "message": "شغّل هذا مرة واحدة في الطرفية. ثم اطلب من الوكيل مثلاً: «غيّر صوت القراءة إلى VOICEVOX»."
+  "settingsFileRevealMac": {
+    "message": "عرض في Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "تغيّر الأمر، فلم يعد الأمر السابق يعمل. أزل التسجيل القديم أولاً:"
+  "settingsFileRevealWindows": {
+    "message": "عرض في المستكشف"
   },
-  "agentAccessCopyAddButton": {
-    "message": "نسخ أمر التسجيل"
+  "settingsFileRevealLinux": {
+    "message": "عرض في مدير الملفات"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "نسخ أمر الإزالة"
+  "settingsFileAgentHeading": {
+    "message": "اطلب من وكيل ذكاء اصطناعي"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "نسخ عنوان URL"
+  "settingsFileAgentHint": {
+    "message": "انسخ هذا، واستبدل ○○ بما تريد (مثل «اقرأ بصوت VOICEVOX»)، ثم الصقه في وكيل البرمجة."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "نسخ الرمز المميز"
+  "settingsFileCopyInstructions": {
+    "message": "نسخ التعليمات للوكيل"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "غيّر إعدادات Tomarigi: ○○. الطريقة: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "ما أُخذ من الملف منذ هذا التشغيل"
+  },
+  "settingsFileNoteTitle": {
+    "message": "تغيير من ملف الإعدادات"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (بقيت القيمة السابقة)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "ملف الإعدادات ليس JSON صالحًا (السطر $LINE$، العمود $COLUMN$). تبقى كل الإعدادات على قيمها حتى يُصلَح.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "تعذّرت قراءة ملف الإعدادات، فحُفظ نصّه في settings.invalid.json قبل الحفظ."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "تُركت المفاتيح التي لا يعرفها Tomarigi كما هي وتم تجاهلها: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "لا تُقرأ مفاتيح API من الملف أبدًا؛ الصقها في الإعدادات ← الذكاء الاصطناعي للملخصات. تم تجاهل: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "أُزيلت ميزة «السماح لوكيل ذكاء اصطناعي بتغيير الإعدادات» (MCP). تُغيَّر الإعدادات الآن عبر الملف أدناه."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "أُزيلت حتى لا يستطيع أي شيء داخل التطبيق إرسال تعليمات إلى وكلاء الذكاء الاصطناعي لديك."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "إذا كنت سجّلته في Claude Code، فشغّل هذا مرة واحدة في الطرفية لإلغاء تسجيله:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "نسخ الأمر"
+  },
+  "settingsFileCloseNote": {
+    "message": "إغلاق هذا التنبيه"
+  },
+  "settingsProblemNoServer": {
+    "message": "لاستخدام الصوت المحلي، حدّد خادم TTS ‏(readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "لا يوجد مفتاح API محفوظ لهذا المزوّد. الصقه أولًا في الإعدادات ← الذكاء الاصطناعي للملخصات."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "الذكاء الاصطناعي المحلي غير مُعدّ. حدّد أولًا localAi ‏(baseUrl وmodel)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "مستوى الصوت عدد صحيح من 0 إلى 100 (نسبة مئوية)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "اكتب المجلد بمسار مطلق بدون \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "لا يمكن مراقبة مسارات الشبكة. حدّد مجلدًا على هذا الكمبيوتر."
+  },
+  "settingsProblemNotReadable": {
+    "message": "هذا المجلد غير موجود أو لا يمكن قراءته."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "لا يمكن أن يكون الاسم فارغًا."
+  },
+  "settingsProblemBuiltin": {
+    "message": "المجلدات الافتراضية مراقَبة دائمًا ولا يمكن إزالتها."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "هذه ليست من الخيارات المتاحة (راجع settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "ليست هذه نوع القيمة التي يقبلها هذا الإعداد (راجع settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "إغلاق"
+  },
+  "settingsFileCopied": {
     "message": "تم النسخ"
   },
-  "agentAccessPortLabel": {
-    "message": "المنفذ"
-  },
-  "agentAccessPortInvalid": {
-    "message": "أدخل منفذًا من 1024 إلى 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "تعذّر البدء: يستخدم تطبيق آخر هذا المنفذ. أدخل منفذًا آخر واضغط Enter للمحاولة مرة أخرى."
-  },
-  "agentAccessRenewButton": {
-    "message": "تجديد الرمز"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "يحتاج هذا إلى حلقة مفاتيح (GNOME Keyring أو KWallet) لحفظ الرمز السري، ولا تعمل أي منها على هذا الحاسوب. شغّل واحدة ثم فعّل هذا من جديد."
-  },
-  "agentAccessStartFailed": {
-    "message": "تعذّر تشغيل الخادم. السبب موجود في سجل التطبيق."
-  },
-  "agentAccessRecentHeading": {
-    "message": "ما غيّره الوكيل"
-  },
-  "agentNoteTitle": {
-    "message": "غيّر وكيل الذكاء الاصطناعي إعدادًا"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "تشغيل"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "إيقاف"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "غير معيّن"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "الذكاء الاصطناعي للملخصات"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "مستوى الصوت"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "مستوى صوت القراءة"
-  },
-  "agentAccessSecretNote": {
-    "message": "يحتوي الأمر على رمز سري يتيح لبرامج هذا الحاسوب تغيير هذه الإعدادات. لا تشاركه، وإن تسرّب فجدّده."
-  },
-  "agentAccessOtherAgents": {
-    "message": "لوكيل آخر يدعم MCP، ضع عنوان URL والرمز المميز أدناه في إعدادات MCP لذلك الوكيل (الترويسة: Authorization: Bearer <الرمز>)."
-  },
-  "agentNoteDismiss": {
-    "message": "إغلاق"
   }
 }

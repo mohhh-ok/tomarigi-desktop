@@ -12,6 +12,7 @@
 //   screen). Saves and restores the mode, and the position and size per mode
 // - garden_grow: grows the floating window when the Garden's birds don't fit, without saving the grown frame
 // - fade: the floating window's Garden fades until a bird is hovered
+// - settings_file: the settings file, its README and schema, and noticing edits (docs/design.md "Settings file")
 // - settings_window: the settings window (docs/design.md "Settings window")
 // - tray: menu bar icon (show/hide, settings, window mode, updates, quit). Shown in the Dock and Cmd+Tab only in standard window mode
 // - updater: checks for, downloads, and installs app updates (docs/design.md "Updates")
@@ -22,8 +23,8 @@ mod focus;
 mod garden_grow;
 mod keys;
 mod liveness;
-mod mcp;
 mod opencode;
+mod settings_file;
 mod settings_window;
 mod tray;
 mod tts;
@@ -47,7 +48,7 @@ use window::{
 /// A folder of this user on every OS, since another user could plant a folder or a link in a shared /tmp:
 /// ~/Library/Logs/tomarigi-desktop on macOS, `$XDG_STATE_HOME` (or ~/.local/state)/tomarigi-desktop on Linux, the user's
 /// temp folder on Windows
-fn log_dir() -> PathBuf {
+pub(crate) fn log_dir() -> PathBuf {
     #[cfg(windows)]
     return std::env::temp_dir().join("tomarigi-desktop");
     #[cfg(target_os = "linux")]
@@ -179,7 +180,6 @@ pub fn run() {
             // Decide the BYOK key store from the identifier (docs/design.md "BYOK API keys")
             init_key_store(&app.config().identifier);
             import_key_from_stdin(app.handle());
-            keys::import_mcp_token_from_stdin();
             let win = app.get_webview_window("main").expect("main window");
             // TOMARIGI_MOCK=1 enables mock mode (adds ?mock=1 to the page URL, read in src/perch/boot.tsx).
             // TOMARIGI_QUERY="tab=perch&settings=1" etc. sets the screen at launch (for screenshot checks; see the
@@ -201,7 +201,8 @@ pub fn run() {
                     Err(e) => append_log(&format!("[launch-query] couldn't read the window URL: {e}")),
                 }
             }
-            let mode = load_mode(app.handle());
+            // The settings file holds the window mode; window-mode.json is read only when moving from the version before
+            let mode = settings_file::init(app.handle(), || load_mode(app.handle()));
             *WINDOW_MODE.lock().unwrap() = mode;
             set_dock_policy(app.handle(), mode);
             // For the standard window, add the title bar before restoring the position (same order as switch_mode_step)
@@ -367,15 +368,20 @@ pub fn run() {
             updater::update_status,
             updater::update_check,
             updater::update_install,
-            mcp::mcp_start,
-            mcp::mcp_stop,
-            mcp::mcp_reply,
-            mcp::mcp_renew_token,
-            mcp::mcp_running_port,
-            mcp::agent_access_import
+            settings_file::settings_file_open,
+            settings_file::settings_file_fill,
+            settings_file::settings_get,
+            settings_file::settings_set,
+            settings_file::settings_accept,
+            settings_file::settings_file_paths
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_, event| {
+            if let tauri::RunEvent::Exit = event {
+                settings_file::flush();
+            }
+        });
 }
 
 /// The URL to open at launch for TOMARIGI_MOCK / TOMARIGI_QUERY: `current` (the URL the window is loading) with

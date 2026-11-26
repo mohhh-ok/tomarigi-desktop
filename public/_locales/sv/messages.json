@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Slå på ”Läs upp med röst” ovan för att höra uppläsningarna."
   },
-  "agentAccessHeading": {
-    "message": "AI-agent"
+  "settingsFileHeading": {
+    "message": "Inställningsfil"
   },
-  "agentAccessEnable": {
-    "message": "Låt en AI-agent ändra inställningar"
+  "settingsFileDescription": {
+    "message": "Alla inställningar på den här skärmen utom API-nycklar står också i den här filen. Redigera filen så tillämpar Tomarigi ändringen direkt."
   },
-  "agentAccessDescription": {
-    "message": "Din kodagent (Claude Code eller en annan som stöder MCP, det vanliga sättet att koppla agenter till appar) kan läsa och ändra inställningarna på den här skärmen, testa anslutningen och spela upp ett prov. API-nycklar stannar här: agenten kan inte läsa eller ange dem."
+  "settingsFileCopyPath": {
+    "message": "Kopiera sökväg"
   },
-  "agentAccessCommandHint": {
-    "message": "Kör detta en gång i en terminal. Be sedan agenten, t.ex. ”Byt uppläsningsrösten till VOICEVOX”."
+  "settingsFileRevealMac": {
+    "message": "Visa i Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Kommandot har ändrats, så det du körde tidigare fungerar inte längre. Ta först bort den gamla registreringen:"
+  "settingsFileRevealWindows": {
+    "message": "Visa i Utforskaren"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kopiera registreringskommando"
+  "settingsFileRevealLinux": {
+    "message": "Visa i filhanteraren"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kopiera borttagningskommando"
+  "settingsFileAgentHeading": {
+    "message": "Be en AI-agent"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Kopiera URL"
+  "settingsFileAgentHint": {
+    "message": "Kopiera detta, byt ○○ mot det du vill (t.ex. ”läs upp med VOICEVOX”) och klistra in det i din kodagent."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Kopiera token"
+  "settingsFileCopyInstructions": {
+    "message": "Kopiera instruktioner till en agent"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Ändra Tomarigis inställningar: ○○. Så här: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Hämtat från filen sedan den här starten"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Ändrat från inställningsfilen"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (tidigare värde behålls)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Inställningsfilen är inte giltig JSON (rad $LINE$, kolumn $COLUMN$). Alla inställningar behåller sina värden tills den är rättad.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Inställningsfilen gick inte att läsa, så texten sparades i settings.invalid.json innan den skrevs om."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Nycklar som Tomarigi inte känner till lämnades kvar och ignorerades: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API-nycklar läses aldrig från filen; klistra in dem under Inställningar → AI för sammanfattningar. Ignorerade: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "”Låt en AI-agent ändra inställningar” (MCP) har tagits bort. Inställningar ändras nu via filen nedan."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Den togs bort så att inget i appen kan skicka instruktioner till dina AI-agenter."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Om du registrerade den i Claude Code, kör detta en gång i en terminal för att avregistrera den:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Kopiera kommando"
+  },
+  "settingsFileCloseNote": {
+    "message": "Stäng meddelandet"
+  },
+  "settingsProblemNoServer": {
+    "message": "Ange en TTS-server (readoutVoice.server) för att använda den lokala rösten."
+  },
+  "settingsProblemNoKey": {
+    "message": "Ingen API-nyckel är sparad för den här leverantören. Klistra först in den under Inställningar → AI för sammanfattningar."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Lokal AI är inte inställd. Ange först localAi (baseUrl och model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "En volym är ett heltal från 0 till 100 (procent)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Ange mappen som en absolut sökväg utan \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Nätverkssökvägar kan inte bevakas. Ange en mapp på den här datorn."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Mappen finns inte eller kan inte läsas."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Namnet får inte vara tomt."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Standardmapparna bevakas alltid och kan inte tas bort."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Det är inte ett av alternativen (se settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Det är inte den sortens värde som inställningen tar (se settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Stäng"
+  },
+  "settingsFileCopied": {
     "message": "Kopierat"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Ange en port från 1024 till 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Kunde inte starta: en annan app använder den här porten. Ange en annan port och tryck på Retur för att försöka igen."
-  },
-  "agentAccessRenewButton": {
-    "message": "Förnya token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Det här kräver en nyckelring (GNOME Keyring eller KWallet) för den hemliga token, och ingen körs på den här datorn. Starta en och slå sedan på detta igen."
-  },
-  "agentAccessStartFailed": {
-    "message": "Servern kunde inte starta. Orsaken finns i appens logg."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Ändrat av agenten"
-  },
-  "agentNoteTitle": {
-    "message": "AI-agenten ändrade en inställning"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "På"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Av"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Inte angivet"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI för sammanfattningar"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Ljudvolym"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Uppläsningsvolym"
-  },
-  "agentAccessSecretNote": {
-    "message": "Kommandot innehåller en hemlig token som låter program på den här datorn ändra inställningarna. Dela den inte; förnya den om den läcker."
-  },
-  "agentAccessOtherAgents": {
-    "message": "För en annan agent med MCP anger du URL:en och token nedan i den agentens MCP-inställningar (huvud: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Stäng"
   }
 }

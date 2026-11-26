@@ -21,10 +21,9 @@ import { BackBar } from "./back-bar";
 import { RootAddDialog } from "./settings/root-add-dialog";
 import { useSettings } from "./use-settings";
 import { useRoots } from "./use-roots";
-import { useAgentAccess } from "./use-agent-access";
-import { DEFAULT_ICON_SET } from "@/lib/icon-set-store";
-import { AgentChangeNote } from "./agent-change-note";
-import { iconSetRowsOf, runningProjects, usePublishSettingsRuntime } from "./settings-runtime";
+import { useSettingsFile } from "./use-settings-file";
+import { SettingsFileNote } from "./settings-file-note";
+import { runningProjects, usePublishSettingsRuntime } from "./settings-runtime";
 import { useSettingsShortcut } from "./settings-app";
 import { turnKey, useTurnJudgements } from "./use-turn-judgements";
 import { useConcierge } from "./use-concierge";
@@ -90,6 +89,7 @@ export default function App({
 }) {
   const [phase, setPhase] = useState<Phase>("loading");
   const rootsApi = useRoots(source);
+  const settingsFile = useSettingsFile();
   const { roots, perms, addMessage, addRoot } = rootsApi;
   const [brokenIds, setBrokenIds] = useState<string[]>([]);
   const [sessions, setSessions] = useState<SessionView[]>([]);
@@ -116,28 +116,12 @@ export default function App({
   const {
     muted,
     mutedRef,
-    chirpVolume,
     voiceEnabledRef,
-    voiceVolume,
-    readoutVoice,
-    changeReadoutSource,
-    saveLocalTts,
-    runTtsTest,
-    aiKeySet,
-    aiProvider,
-    localAi,
     summarySetUp,
     iconSetAssignments,
     loadSettings,
     toggleMuted,
-    changeVoiceVolume,
-    changeChirpVolume,
-    saveLocalAi,
-    removeLocalAi,
-    selectAiProvider,
-    assignIconSet,
     conciergeLook,
-    changeConciergeLook,
   } = settingsApi;
   const { requestJudgements, displaySessions } = useTurnJudgements(sessions, summarySetUp);
   // When opened directly with ?debug=1, the debug log starts open. After that the URL is never touched;
@@ -177,6 +161,8 @@ export default function App({
     void (async () => {
       // The mock source (source.usesRoots === false) doesn't use the roots/perms subsystem at all; it skips the
       // setup screen, watched folder settings, and permission checks entirely (use-roots.ts)
+      // The settings file first: the folders and the settings are read from what it applied (docs/design.md "Settings file")
+      await settingsFile.load();
       await rootsApi.loadAll();
       await loadSettings();
       setPhase("ready");
@@ -428,75 +414,19 @@ export default function App({
     displaySessions.length + (concierge.shown ? 1 : 0),
   );
 
-  // Rows of the icon set settings, for the AI agent's tools and the settings window (settings-runtime.ts)
+  // Rows of the icon set settings, for the settings window (settings-runtime.ts)
   const running = useMemo(() => runningProjects(sessions), [sessions]);
-  const iconSetRows = useMemo(() => iconSetRowsOf(running, iconSetAssignments), [running, iconSetAssignments]);
-
-  // The AI agent's settings tools (docs/design.md "Settings by an AI agent (MCP)") call the same functions as the
-  // controls below, so the screen shows their changes at once
-  const agentAccess = useAgentAccess(phase === "ready", {
-    snapshot: () => ({
-      aiProvider,
-      keySaved: aiKeySet,
-      localAi,
-      readoutVoice,
-      chirps: !mutedRef.current,
-      chirpVolume,
-      readAloud: voiceEnabledRef.current,
-      readAloudVolume: voiceVolume,
-      windowMode,
-      conciergeLook,
-      iconSets: iconSetRows.map((r) => ({
-        slug: r.slug,
-        name: r.label,
-        running: r.running,
-        set: iconSetAssignments[r.slug]?.set ?? DEFAULT_ICON_SET,
-      })),
-      folders: rootsApi.rootsRef.current.map((r) => ({
-        id: r.id,
-        agent: r.kind,
-        label: r.label,
-        path: r.path,
-        builtin: r.builtin,
-        readable: perms[r.id] === "granted",
-      })),
-    }),
-    selectAiProvider,
-    saveLocalAi,
-    removeLocalAi,
-    setReadoutSource: changeReadoutSource,
-    saveLocalTts,
-    setChirps: (on) => settingsApi.changeMuted(!on),
-    setChirpVolume: changeChirpVolume,
-    setReadAloud: settingsApi.changeVoiceEnabled,
-    setReadAloudVolume: changeVoiceVolume,
-    setWindowMode: (mode) => invoke("set_window_mode", { mode }),
-    assignIconSet,
-    setConciergeLook: changeConciergeLook,
-    addFolder: async (agent, path, label) => {
-      const added = await rootsApi.addRootAt(agent, path, label);
-      return typeof added === "string" ? added : { id: added.id, label: added.label };
-    },
-    removeFolder: rootsApi.removeRoot,
-    renameFolder: rootsApi.renameRoot,
-    playSample: runTtsTest,
-  });
 
   // What the settings window shows but isn't saved (docs/design.md "Settings window")
   usePublishSettingsRuntime({
     running,
     brokenIds,
-    agent: {
-      status: agentAccess.status,
-      command: agentAccess.command,
-      replaced: agentAccess.replaced,
-      recent: agentAccess.recent,
-    },
+    settingsFile: settingsFile.recent,
   });
 
   return (
     <main className="page">
-      <AgentChangeNote notes={agentAccess.notes} onDismiss={agentAccess.dismissNotes} />
+      <SettingsFileNote notes={settingsFile.notes} onDismiss={settingsFile.dismissNotes} />
       <div className="page-header">
         {/* The window handle while the Garden is faded (docs/design.md "Fade until hovered") */}
         <h1 className="brand fade-handle" onPointerDown={onFadeHandlePointerDown}>

@@ -78,20 +78,11 @@ fn mode_path(app: &AppHandle) -> Option<PathBuf> {
     app.path().app_config_dir().ok().map(|d| d.join("window-mode.json"))
 }
 
-pub(crate) fn load_mode(app: &AppHandle) -> WindowMode {
+/// The mode the version before saved; read only when there is no mode in the settings file yet
+pub(crate) fn load_mode(app: &AppHandle) -> Option<WindowMode> {
     mode_path(app)
         .and_then(|path| std::fs::read_to_string(path).ok())
         .and_then(|text| serde_json::from_str::<WindowMode>(&text).ok())
-        .unwrap_or(WindowMode::Floating)
-}
-
-fn write_json<T: Serialize>(path: PathBuf, value: &T) {
-    if let Some(dir) = path.parent() {
-        let _ = std::fs::create_dir_all(dir);
-    }
-    if let Ok(json) = serde_json::to_string(value) {
-        let _ = std::fs::write(path, json);
-    }
 }
 
 /// Position and size are kept separately per mode (so a maximized size isn't carried into the floating window).
@@ -551,9 +542,7 @@ fn switch_mode_step(app: &AppHandle, mode: WindowMode, mut p: SwitchProgress) {
         return;
     }
     *WINDOW_MODE.lock().unwrap() = mode;
-    if let Some(path) = mode_path(app) {
-        write_json(path, &mode);
-    }
+    crate::settings_file::window_mode_switched(mode);
     let visible = win.is_visible().unwrap_or(false);
     match mode {
         WindowMode::Floating => make_floating(&win),

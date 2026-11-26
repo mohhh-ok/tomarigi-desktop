@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "A felolvasások hallásához kapcsold be fent a „Felolvasás hanggal” beállítást."
   },
-  "agentAccessHeading": {
-    "message": "MI-ügynök"
+  "settingsFileHeading": {
+    "message": "Beállításfájl"
   },
-  "agentAccessEnable": {
-    "message": "MI-ügynök módosíthatja a beállításokat"
+  "settingsFileDescription": {
+    "message": "A képernyő minden beállítása az API-kulcsok kivételével ebben a fájlban is szerepel. Szerkessze a fájlt, és a Tomarigi azonnal alkalmazza a változást."
   },
-  "agentAccessDescription": {
-    "message": "A kódoló ügynököd (Claude Code vagy más ügynök, amely támogatja az MCP-t, az ügynökök és alkalmazások összekötésének szokásos módját) olvashatja és módosíthatja ennek a képernyőnek a beállításait, tesztelheti a kapcsolatot és lejátszhat egy mintát. Az API-kulcsok itt maradnak: az ügynök nem olvashatja és nem állíthatja be őket."
+  "settingsFileCopyPath": {
+    "message": "Útvonal másolása"
   },
-  "agentAccessCommandHint": {
-    "message": "Futtasd ezt egyszer egy terminálban. Utána kérd meg az ügynököt, pl. „Állítsd a felolvasó hangot VOICEVOX-ra”."
+  "settingsFileRevealMac": {
+    "message": "Megjelenítés a Finderben"
   },
-  "agentAccessReplaceHint": {
-    "message": "A parancs megváltozott, a korábbi már nem működik. Előbb töröld a régi regisztrációt:"
+  "settingsFileRevealWindows": {
+    "message": "Megjelenítés az Intézőben"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Regisztrációs parancs másolása"
+  "settingsFileRevealLinux": {
+    "message": "Megjelenítés a fájlkezelőben"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Eltávolító parancs másolása"
+  "settingsFileAgentHeading": {
+    "message": "MI-ügynök megkérése"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "URL másolása"
+  "settingsFileAgentHint": {
+    "message": "Másolja ki, írja át a ○○ részt arra, amit szeretne (pl. „olvass fel VOICEVOX-szal”), és illessze be a kódoló ügynökébe."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Token másolása"
+  "settingsFileCopyInstructions": {
+    "message": "Utasítás másolása ügynöknek"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Módosítsd a Tomarigi beállításait: ○○. Hogyan: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "A fájlból átvett változások ebben a futásban"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Módosítva a beállításfájlból"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (az előző érték maradt)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "A beállításfájl nem érvényes JSON ($LINE$. sor, $COLUMN$. oszlop). Amíg nincs javítva, minden beállítás marad.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "A beállításfájl nem volt olvasható, ezért mentés előtt a szövege a settings.invalid.json fájlba került."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "A Tomarigi által nem ismert kulcsok változatlanul maradtak, és figyelmen kívül hagyta őket: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Az API-kulcsokat sosem olvassa a fájlból; illessze be őket a Beállítások → MI az összefoglalókhoz részbe. Figyelmen kívül hagyva: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "A „MI-ügynök módosíthatja a beállításokat” (MCP) megszűnt. A beállításokat mostantól a lenti fájlban lehet módosítani."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Azért szűnt meg, hogy az alkalmazáson belülről semmi ne küldhessen utasítást az MI-ügynökeinek."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Ha regisztrálta a Claude Code-ban, futtassa ezt egyszer egy terminálban a regisztráció törléséhez:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Parancs másolása"
+  },
+  "settingsFileCloseNote": {
+    "message": "Értesítés bezárása"
+  },
+  "settingsProblemNoServer": {
+    "message": "A helyi hanghoz adjon meg egy TTS-kiszolgálót (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Ehhez a szolgáltatóhoz nincs mentett API-kulcs. Először illessze be a Beállítások → MI az összefoglalókhoz részbe."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "A helyi MI nincs beállítva. Először adja meg a localAi értéket (baseUrl és model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "A hangerő 0 és 100 közötti egész szám (százalék)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "A mappát \"..\" nélküli abszolút útvonalként adja meg."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Hálózati útvonal nem figyelhető. Adjon meg egy mappát ezen a gépen."
+  },
+  "settingsProblemNotReadable": {
+    "message": "A mappa nem létezik, vagy nem olvasható."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "A név nem lehet üres."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Az alapértelmezett mappákat mindig figyeli, ezek nem távolíthatók el."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Ez nem a választható értékek egyike (lásd settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Ez a beállítás nem ilyen típusú értéket fogad (lásd settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Bezárás"
+  },
+  "settingsFileCopied": {
     "message": "Másolva"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Adj meg egy portot 1024 és 65535 között."
-  },
-  "agentAccessPortInUse": {
-    "message": "Nem sikerült elindítani: ezt a portot egy másik alkalmazás használja. Adj meg másik portot, és nyomj Entert az újrapróbáláshoz."
-  },
-  "agentAccessRenewButton": {
-    "message": "Token megújítása"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "A titkos token tárolásához kulcstartó kell (GNOME Keyring vagy KWallet), és ezen a gépen egyik sem fut. Indíts el egyet, majd kapcsold be újra."
-  },
-  "agentAccessStartFailed": {
-    "message": "A szervert nem sikerült elindítani. Az ok az alkalmazás naplójában van."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Az ügynök módosításai"
-  },
-  "agentNoteTitle": {
-    "message": "Az MI-ügynök módosított egy beállítást"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Be"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Ki"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Nincs beállítva"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "MI az összefoglalókhoz"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Hangerő"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Felolvasás hangereje"
-  },
-  "agentAccessSecretNote": {
-    "message": "A parancs titkos tokent tartalmaz, amellyel a gép programjai módosíthatják ezeket a beállításokat. Ne oszd meg; ha kiszivárog, újítsd meg."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Más MCP-t támogató ügynöknél add meg az alábbi URL-t és tokent az ügynök MCP-beállításaiban (fejléc: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Bezárás"
   }
 }

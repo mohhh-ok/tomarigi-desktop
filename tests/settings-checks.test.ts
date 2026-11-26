@@ -1,8 +1,6 @@
-// The rules shared by the settings screen and the AI agent's tools (lib/settings-checks.ts; docs/design.md "Settings by
-// an AI agent (MCP)")
+// The rules shared by the settings screen and the settings file (lib/settings-checks.ts; docs/design.md "Settings file")
 import { expect, test } from "bun:test";
 import {
-  checkAgentServerUrl,
   checkLocalAi,
   checkLocalTts,
   checkNewRoot,
@@ -64,7 +62,7 @@ test("a new watched folder: absolute with no .., not watched yet", () => {
   expect(checkNewRoot([{ path: "C:\\Users\\x\\.codex" }], "C:/Users/x/.codex")).toBe("duplicate");
 });
 
-test("a path the agent types: no network path, which Windows would reach just to read it", () => {
+test("a path in the settings file: no network path, which Windows would reach just to read it", () => {
   expect(checkTypedRootPath("\\\\server\\share")).toBe("network-path");
   expect(checkTypedRootPath("//server/share")).toBe("network-path");
   expect(checkTypedRootPath("/Users/x/work")).toBeUndefined();
@@ -79,37 +77,4 @@ test("labels, default folders and choices", () => {
   expect(checkOption("cat", ["birds", "cat"])).toBeUndefined();
   expect(checkOption("dog", ["birds", "cat"])).toBe("unknown-option");
   expect(checkOption(3, ["birds"])).toBe("unknown-option");
-});
-
-test("a server the agent gives must be on this computer or the local network", () => {
-  for (const ok of [
-    "http://localhost:11434/v1",
-    "http://ollama.local:11434/v1",
-    "http://127.0.0.1:50021",
-    "http://127.8.9.10",
-    "http://[::1]:8880/v1",
-    "http://10.0.0.5:1234/v1",
-    "http://172.16.0.1",
-    "http://172.31.255.255",
-    "https://192.168.1.5:1234/v1/",
-    "http://169.254.1.1",
-    "http://[fd12:3456::1]",
-    "http://[fe80::1]",
-    "http://[::ffff:10.0.0.1]",
-    "http://[::ffff:192.168.0.2]:50021",
-  ]) {
-    expect([ok, checkAgentServerUrl(ok)]).toEqual([ok, undefined]);
-  }
-  for (const no of [
-    "https://api.example.com/v1",
-    "http://8.8.8.8",
-    "http://localhost.example.com",
-    "http://[::ffff:8.8.8.8]",
-    "http://172.32.0.1",
-    "http://[2001:db8::1]",
-    "http://.local",
-  ]) {
-    expect([no, checkAgentServerUrl(no)]).toEqual([no, "server-not-local"]);
-  }
-  expect(checkAgentServerUrl("not a url")).toBe("url-invalid");
 });

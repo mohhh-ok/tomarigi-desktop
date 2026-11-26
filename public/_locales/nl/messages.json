@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Zet \"Voorlezen met stem\" hierboven aan om het voorlezen te horen."
   },
-  "agentAccessHeading": {
-    "message": "AI-agent"
+  "settingsFileHeading": {
+    "message": "Instellingenbestand"
   },
-  "agentAccessEnable": {
-    "message": "Een AI-agent instellingen laten wijzigen"
+  "settingsFileDescription": {
+    "message": "Alle instellingen op dit scherm behalve API-sleutels staan ook in dit bestand. Bewerk het bestand en Tomarigi past de wijziging meteen toe."
   },
-  "agentAccessDescription": {
-    "message": "Je codeeragent (Claude Code of een andere die MCP ondersteunt, de gangbare manier om agents met apps te verbinden) kan de instellingen op dit scherm lezen en wijzigen, de verbinding testen en een voorbeeld afspelen. API-sleutels blijven hier: de agent kan ze niet lezen of instellen."
+  "settingsFileCopyPath": {
+    "message": "Pad kopiëren"
   },
-  "agentAccessCommandHint": {
-    "message": "Voer dit één keer uit in een terminal. Vraag de agent daarna bijvoorbeeld: ‘Zet de voorleesstem op VOICEVOX’."
+  "settingsFileRevealMac": {
+    "message": "Toon in Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "De opdracht is gewijzigd, dus de vorige werkt niet meer. Verwijder eerst de oude registratie:"
+  "settingsFileRevealWindows": {
+    "message": "Toon in Verkenner"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Registratieopdracht kopiëren"
+  "settingsFileRevealLinux": {
+    "message": "Toon in bestandsbeheer"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Verwijderopdracht kopiëren"
+  "settingsFileAgentHeading": {
+    "message": "Een AI-agent vragen"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "URL kopiëren"
+  "settingsFileAgentHint": {
+    "message": "Kopieer dit, vervang ○○ door wat je wilt (bijv. ‘lees voor met VOICEVOX’) en plak het in je codeeragent."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Token kopiëren"
+  "settingsFileCopyInstructions": {
+    "message": "Instructies voor een agent kopiëren"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Wijzig de instellingen van Tomarigi: ○○. Hoe: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Uit het bestand overgenomen sinds deze start"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Gewijzigd via het instellingenbestand"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (vorige waarde blijft)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Het instellingenbestand is geen geldige JSON (regel $LINE$, kolom $COLUMN$). Alle instellingen houden hun waarde tot het is hersteld.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Het instellingenbestand was niet leesbaar; de tekst is vóór het opslaan bewaard in settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Sleutels die Tomarigi niet kent, zijn blijven staan en genegeerd: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API-sleutels worden nooit uit het bestand gelezen; plak ze bij Instellingen → AI voor samenvattingen. Genegeerd: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "‘Een AI-agent instellingen laten wijzigen’ (MCP) is verwijderd. Instellingen wijzig je nu via het bestand hieronder."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Het is verwijderd zodat niets in de app instructies naar je AI-agents kan sturen."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Als je het bij Claude Code had geregistreerd, voer dit één keer uit in een terminal om het te verwijderen:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Opdracht kopiëren"
+  },
+  "settingsFileCloseNote": {
+    "message": "Deze melding sluiten"
+  },
+  "settingsProblemNoServer": {
+    "message": "Geef een TTS-server op (readoutVoice.server) om de lokale stem te gebruiken."
+  },
+  "settingsProblemNoKey": {
+    "message": "Er is geen API-sleutel opgeslagen voor deze aanbieder. Plak die eerst bij Instellingen → AI voor samenvattingen."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Lokale AI is niet ingesteld. Geef eerst localAi op (baseUrl en model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Een volume is een geheel getal van 0 tot 100 (procent)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Geef de map op als absoluut pad zonder \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Netwerkpaden kunnen niet worden gevolgd. Geef een map op deze computer op."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Die map bestaat niet of is niet leesbaar."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "De naam mag niet leeg zijn."
+  },
+  "settingsProblemBuiltin": {
+    "message": "De standaardmappen worden altijd gevolgd en kunnen niet worden verwijderd."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Dat is geen van de keuzes (zie settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Dat is niet het soort waarde dat deze instelling aanneemt (zie settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Sluiten"
+  },
+  "settingsFileCopied": {
     "message": "Gekopieerd"
   },
-  "agentAccessPortLabel": {
-    "message": "Poort"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Voer een poort in van 1024 tot 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Kon niet starten: een andere app gebruikt deze poort. Voer een andere poort in en druk op Enter om het opnieuw te proberen."
-  },
-  "agentAccessRenewButton": {
-    "message": "Token vernieuwen"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Hiervoor is een sleutelbos (GNOME Keyring of KWallet) nodig om het geheime token te bewaren, en er draait er geen op deze computer. Start er een en zet dit opnieuw aan."
-  },
-  "agentAccessStartFailed": {
-    "message": "De server kon niet starten. De reden staat in het app-logboek."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Gewijzigd door de agent"
-  },
-  "agentNoteTitle": {
-    "message": "De AI-agent heeft een instelling gewijzigd"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Aan"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Uit"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Niet ingesteld"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI voor samenvattingen"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Volume van geluid"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Voorleesvolume"
-  },
-  "agentAccessSecretNote": {
-    "message": "De opdracht bevat een geheim token waarmee programma's op deze computer deze instellingen kunnen wijzigen. Deel het niet; vernieuw het als het uitlekt."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Voor een andere agent met MCP zet je de URL en het token hieronder in de MCP-instellingen van die agent (header: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Sluiten"
   }
 }

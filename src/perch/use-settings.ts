@@ -223,7 +223,7 @@ export function useSettings(role: SettingsRole) {
   }, [role, loadSound, loadReadout, loadAi, loadLooks]);
 
   // A save in another window (the settings window, or the floating window's mute button, the menu bar's "Read aloud"
-  // and the AI agent's tools, which the floating window runs) reloads what changed (docs/design.md "Settings window")
+  // and an edit of the settings file) reloads what changed (docs/design.md "Settings window")
   useEffect(
     () =>
       onSettingsChanged(

@@ -496,7 +496,7 @@ button.remove {
 .icon-sets,
 .concierge-settings,
 .window-mode,
-.agent-access,
+.settings-file,
 .update-settings {
   margin-top: 28px;
   padding-top: 16px;
@@ -506,7 +506,7 @@ button.remove {
 .icon-sets h2,
 .concierge-settings h2,
 .window-mode h2,
-.agent-access h2,
+.settings-file h2,
 .update-settings h2 {
   margin: 0 0 10px;
   font-size: 13px;
@@ -569,7 +569,7 @@ button.remove {
 }
 
 button.update-install,
-button.agent-access-copy-main {
+button.settings-file-copy-main {
   padding: 7px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -579,7 +579,7 @@ button.agent-access-copy-main {
 }
 
 button.update-install:hover,
-button.agent-access-copy-main:hover {
+button.settings-file-copy-main:hover {
   background: rgba(217, 176, 106, 0.26);
 }
 
@@ -713,27 +713,10 @@ button.agent-access-copy-main:hover {
 }
 
 
-/* AI agent (settings/agent-access-settings.tsx). The switch, then, while on, the command to run once: the card's one
-   thing to do, so it is the brightest block; the port and "Renew token" are small controls under it */
-.agent-access-description,
-.agent-access-indent {
-  padding-left: 22px;
-}
-
-.agent-access-body {
-  margin-top: 12px;
-  padding-left: 22px;
-}
-
-.agent-access-hint {
-  margin: 0 0 6px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #d8d3c6;
-}
-
-/* The command takes the full width (it is long and wraps); the copy button sits under it, on the right */
-.agent-access-command {
+/* Settings file (settings/settings-file-settings.tsx). The path with its buttons, then the instruction for an agent: the
+   section's one thing to do, so its copy button is the bright one; this launch's list under it */
+.settings-file-path,
+.settings-file-code {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -745,100 +728,52 @@ button.agent-access-copy-main:hover {
   background: #1b1a15;
 }
 
-.agent-access-command code {
+.settings-file-path code,
+.settings-file-code code {
   align-self: stretch;
+  overflow-wrap: anywhere;
   font-size: 12px;
   line-height: 1.5;
   color: #d9b06a;
   user-select: all;
 }
 
-/* A word of the command stays on one line; the token, longer than any line, breaks where it must */
-.agent-access-word {
-  white-space: nowrap;
+.settings-file-path-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.agent-access-word-long {
-  overflow-wrap: anywhere;
-}
-
-.agent-access-copy {
+.settings-file-copy {
   flex: none;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.agent-access-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.agent-access-port {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.agent-access-port-input.judge-key-input {
-  flex: none;
-  width: 72px;
-  font-variant-numeric: tabular-nums;
-}
-
-.agent-access-recent {
-  margin-top: 18px;
-}
-
-.agent-access-secret {
-  margin: -4px 0 12px;
-}
-
-.agent-access-other {
-  margin: 0 0 16px;
-}
-
-.agent-access-other .settings-note {
-  margin-bottom: 6px;
-}
-
-/* The URL or the token, its copy button under it as in the command block, so it reads the same in every language and width */
-.agent-access-part {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  margin-bottom: 6px;
-  padding: 6px 6px 6px 10px;
-  border: 1px solid #4a463c;
-  border-radius: 6px;
-  background: #1b1a15;
-}
-
-.agent-access-part code {
-  align-self: stretch;
-  overflow-wrap: anywhere;
-  font-size: 12px;
-  color: #d9b06a;
-  user-select: all;
-}
-
-.agent-access-recent h3 {
-  margin: 0 0 6px;
+.settings-file-subheading,
+.settings-file-recent h3 {
+  margin: 18px 0 6px;
   font-size: 12px;
   font-weight: 600;
   color: #a49f92;
 }
 
-.agent-access-recent ul {
+.settings-file-hint {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d8d3c6;
+}
+
+.settings-file-recent ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.agent-access-recent li {
+.settings-file-recent li {
   display: flex;
   gap: 8px;
   padding: 4px 0;
@@ -846,17 +781,60 @@ button.agent-access-copy-main:hover {
   line-height: 1.5;
   color: #d8d3c6;
   border-bottom: 1px solid #232219;
+  overflow-wrap: anywhere;
 }
 
-.agent-access-time {
+.settings-file-time {
   flex: none;
   color: #8d887c;
   font-variant-numeric: tabular-nums;
 }
 
-/* The note when the agent changes a setting (agent-change-note.tsx): over the top of the window for a few seconds,
-   on every screen, so it is seen wherever the user is */
-.agent-change-note {
+.settings-file-recent li.settings-file-problem,
+.settings-file-note li.settings-file-problem {
+  color: #e8a08a;
+}
+
+/* The note that the MCP server was removed: above the section's contents until it is closed */
+.settings-file-mcp {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #5a5244;
+  border-radius: 8px;
+  background: #22201a;
+}
+
+.settings-file-mcp-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e1d3;
+}
+
+.settings-file-mcp-close,
+.settings-file-note-close {
+  float: right;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -4px -8px 0 8px;
+  padding: 0;
+  border: 1px solid #5a5244;
+  border-radius: 6px;
+  background: #2a2820;
+  color: #e6e1d3;
+  cursor: pointer;
+}
+
+.settings-file-mcp-close:hover,
+.settings-file-note-close:hover {
+  background: #3a372c;
+}
+
+/* The note when an edit of the settings file is taken (settings-file-note.tsx): over the top of the window for a few
+   seconds, on every screen, so it is seen wherever the user is */
+.settings-file-note {
   position: fixed;
   top: 8px;
   left: 8px;
@@ -872,32 +850,13 @@ button.agent-access-copy-main:hover {
   color: #e6e1d3;
 }
 
-.agent-change-note-close {
-  float: right;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  margin: -4px -8px 0 8px;
-  padding: 0;
-  border: 1px solid #5a5244;
-  border-radius: 6px;
-  background: #2a2820;
-  color: #e6e1d3;
-  cursor: pointer;
-}
-
-.agent-change-note-close:hover {
-  background: #3a372c;
-}
-
-.agent-change-note-title {
+.settings-file-note-title {
   margin: 0 0 2px;
   font-weight: 600;
   color: #d9b06a;
 }
 
-.agent-change-note ul {
+.settings-file-note ul {
   list-style: none;
   margin: 0;
   padding: 0;

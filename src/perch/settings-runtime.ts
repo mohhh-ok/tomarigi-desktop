@@ -1,11 +1,11 @@
-// What the settings window shows but nobody saves: it lives in the floating window, which scans and runs the MCP server
+// What the settings window shows but nobody saves: it lives in the floating window, which scans and takes the settings file's edits
 // (docs/design.md "Settings window", "One owner of the running state"). The floating window sends it to the settings
 // window when it changes and when the settings page asks on load
 import { useEffect, useRef, useState } from "react";
 import type { IconSetAssignments } from "@/lib/icon-set-store";
 import type { SessionView } from "@/lib/sessions";
 import type { IconSetRow } from "./settings/icon-set-settings";
-import { AGENT_ACCESS_OFF, type AgentAccessRuntime } from "./use-agent-access";
+import type { FileNoteLine } from "./use-settings-file";
 
 const RUNTIME_EVENT = "settings-runtime";
 const REQUEST_EVENT = "settings-runtime-request";
@@ -20,10 +20,11 @@ export interface SettingsRuntime {
   running: RunningProject[];
   /** Watched folders that failed to scan */
   brokenIds: string[];
-  agent: AgentAccessRuntime;
+  /** This launch's changes from the settings file and refused values, latest first */
+  settingsFile: FileNoteLine[];
 }
 
-export const EMPTY_RUNTIME: SettingsRuntime = { running: [], brokenIds: [], agent: AGENT_ACCESS_OFF };
+export const EMPTY_RUNTIME: SettingsRuntime = { running: [], brokenIds: [], settingsFile: [] };
 
 /** The current sessions' projects, one per slug, by label. Sessions are sorted by time since their last write, which
  * changes on every poll, so keeping their order would reorder the rows' controls every 3 seconds */

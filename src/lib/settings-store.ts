@@ -1,4 +1,5 @@
-// Settings kept in the WebView's IndexedDB: watched folders, sound and readout settings, and the event log
+// Settings kept in the app's store (lib/kv.ts: the settings file, or IndexedDB for what isn't a setting): watched folders,
+// sound and readout settings, and the event log
 import { invoke } from "@tauri-apps/api/core";
 import { kvGet, kvPut } from "./kv";
 import { isReadableDir, NativeDirectoryHandle } from "./native-fs";
@@ -108,9 +109,9 @@ export async function pickNewRoot(
   return newRoot(existing, kind, path);
 }
 
-/** A folder added by the user (from the picker, or a path the AI agent gives). The label defaults to the agent's name,
- * numbered when taken. Doesn't check or save: the caller runs checkNewRoot and saveRoots */
-export function newRoot(existing: RootEntry[], kind: RootKind, path: string, label?: string): RootEntry {
+/** A folder added by the user from the picker. The label defaults to the agent's name, numbered when taken. Doesn't
+ * check or save: the caller runs checkNewRoot and saveRoots */
+function newRoot(existing: RootEntry[], kind: RootKind, path: string, label?: string): RootEntry {
   return withHandle({
     id: crypto.randomUUID(),
     kind,

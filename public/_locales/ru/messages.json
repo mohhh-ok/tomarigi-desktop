@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Чтобы слышать чтение, включите выше «Читать вслух»."
   },
-  "agentAccessHeading": {
-    "message": "ИИ-агент"
+  "settingsFileHeading": {
+    "message": "Файл настроек"
   },
-  "agentAccessEnable": {
-    "message": "Разрешить ИИ-агенту менять настройки"
+  "settingsFileDescription": {
+    "message": "Все настройки этого экрана, кроме ключей API, записаны и в этом файле. Измените файл — Tomarigi сразу применит изменение."
   },
-  "agentAccessDescription": {
-    "message": "Ваш агент для программирования (Claude Code или другой с поддержкой MCP — обычного способа подключать агентов к приложениям) может читать и менять настройки на этом экране, проверять подключение и воспроизводить образец. API-ключи остаются здесь: агент не может их читать или задавать."
+  "settingsFileCopyPath": {
+    "message": "Копировать путь"
   },
-  "agentAccessCommandHint": {
-    "message": "Выполните это один раз в терминале. Потом попросите агента, например: «Переключи голос озвучки на VOICEVOX»."
+  "settingsFileRevealMac": {
+    "message": "Показать в Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Команда изменилась, прежняя больше не работает. Сначала удалите старую регистрацию:"
+  "settingsFileRevealWindows": {
+    "message": "Показать в Проводнике"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Копировать команду регистрации"
+  "settingsFileRevealLinux": {
+    "message": "Показать в файловом менеджере"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Копировать команду удаления"
+  "settingsFileAgentHeading": {
+    "message": "Попросить ИИ-агента"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Копировать URL"
+  "settingsFileAgentHint": {
+    "message": "Скопируйте это, замените ○○ на то, что нужно (например, «озвучивай через VOICEVOX»), и вставьте в своего агента для программирования."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Копировать токен"
+  "settingsFileCopyInstructions": {
+    "message": "Копировать указания для агента"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Измени настройки Tomarigi: ○○. Как это сделать: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Получено из файла с этого запуска"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Изменено из файла настроек"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (оставлено прежнее значение)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Файл настроек — не корректный JSON (строка $LINE$, столбец $COLUMN$). Пока он не исправлен, все настройки остаются прежними.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Файл настроек не читался, поэтому перед сохранением его текст сохранён в settings.invalid.json."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Неизвестные Tomarigi ключи оставлены как есть и пропущены: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Ключи API из файла не читаются; вставьте их в Настройки → ИИ для сводок. Пропущено: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "Функция «Разрешить ИИ-агенту менять настройки» (MCP) удалена. Теперь настройки меняются через файл ниже."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Она удалена, чтобы ничто внутри приложения не могло отправлять указания вашим ИИ-агентам."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Если вы регистрировали его в Claude Code, выполните это один раз в терминале, чтобы удалить регистрацию:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Копировать команду"
+  },
+  "settingsFileCloseNote": {
+    "message": "Закрыть это сообщение"
+  },
+  "settingsProblemNoServer": {
+    "message": "Чтобы использовать локальный голос, укажите TTS-сервер (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Для этого провайдера не сохранён ключ API. Сначала вставьте его в Настройки → ИИ для сводок."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Локальный ИИ не настроен. Сначала укажите localAi (baseUrl и model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Громкость — целое число от 0 до 100 (проценты)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Укажите папку абсолютным путём без \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Сетевые пути нельзя отслеживать. Укажите папку на этом компьютере."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Эта папка не существует или не читается."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Имя не может быть пустым."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Папки по умолчанию отслеживаются всегда, их нельзя убрать."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Это не один из вариантов (см. settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Это не тот тип значения, который принимает настройка (см. settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Закрыть"
+  },
+  "settingsFileCopied": {
     "message": "Скопировано"
   },
-  "agentAccessPortLabel": {
-    "message": "Порт"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Введите порт от 1024 до 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Не удалось запустить: этот порт занят другим приложением. Введите другой порт и нажмите Enter, чтобы попробовать снова."
-  },
-  "agentAccessRenewButton": {
-    "message": "Обновить токен"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Для хранения секретного токена нужна связка ключей (GNOME Keyring или KWallet), а на этом компьютере она не запущена. Запустите одну из них и включите снова."
-  },
-  "agentAccessStartFailed": {
-    "message": "Не удалось запустить сервер. Причина — в журнале приложения."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Изменено агентом"
-  },
-  "agentNoteTitle": {
-    "message": "ИИ-агент изменил настройку"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Вкл."
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Выкл."
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Не задано"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "ИИ для сводок"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Громкость звука"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Громкость озвучки"
-  },
-  "agentAccessSecretNote": {
-    "message": "Команда содержит секретный токен, позволяющий программам на этом компьютере менять эти настройки. Не делитесь им; если он утёк, обновите его."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Для другого агента с поддержкой MCP укажите URL и токен ниже в его настройках MCP (заголовок: Authorization: Bearer <токен>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Закрыть"
   }
 }

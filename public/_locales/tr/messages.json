@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Okumaları duymak için yukarıdaki \"Sesli oku\"yu açın."
   },
-  "agentAccessHeading": {
-    "message": "Yapay zekâ ajanı"
+  "settingsFileHeading": {
+    "message": "Ayar dosyası"
   },
-  "agentAccessEnable": {
-    "message": "Bir yapay zekâ ajanının ayarları değiştirmesine izin ver"
+  "settingsFileDescription": {
+    "message": "Bu ekrandaki API anahtarları dışındaki tüm ayarlar bu dosyada da yazılıdır. Dosyayı düzenlerseniz Tomarigi değişikliği hemen uygular."
   },
-  "agentAccessDescription": {
-    "message": "Kodlama ajanınız (Claude Code veya ajanları uygulamalara bağlamanın yaygın yolu olan MCP’yi destekleyen başka bir ajan) bu ekrandaki ayarları okuyup değiştirebilir, bağlantıyı test edebilir ve örnek çalabilir. API anahtarları burada kalır: ajan bunları okuyamaz veya ayarlayamaz."
+  "settingsFileCopyPath": {
+    "message": "Yolu kopyala"
   },
-  "agentAccessCommandHint": {
-    "message": "Bunu bir terminalde bir kez çalıştırın. Sonra ajandan isteyin, örneğin: “Okuma sesini VOICEVOX yap”."
+  "settingsFileRevealMac": {
+    "message": "Finder'da göster"
   },
-  "agentAccessReplaceHint": {
-    "message": "Komut değişti, daha önce çalıştırdığınız artık çalışmıyor. Önce eski kaydı kaldırın:"
+  "settingsFileRevealWindows": {
+    "message": "Gezgin'de göster"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Kayıt komutunu kopyala"
+  "settingsFileRevealLinux": {
+    "message": "Dosya yöneticisinde göster"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Kaldırma komutunu kopyala"
+  "settingsFileAgentHeading": {
+    "message": "Yapay zekâ ajanından iste"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "URL'yi kopyala"
+  "settingsFileAgentHint": {
+    "message": "Bunu kopyalayın, ○○ yerine istediğinizi yazın (ör. “VOICEVOX ile sesli oku”) ve kodlama ajanınıza yapıştırın."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Belirteci kopyala"
+  "settingsFileCopyInstructions": {
+    "message": "Ajan için talimatı kopyala"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Tomarigi ayarlarını değiştir: ○○. Nasıl yapılır: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Bu açılışta dosyadan alınanlar"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Ayar dosyasından değiştirildi"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (önceki değer korundu)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Ayar dosyası geçerli bir JSON değil (satır $LINE$, sütun $COLUMN$). Düzeltilene kadar tüm ayarlar mevcut değerini korur.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Ayar dosyası okunamadı; kaydetmeden önce içeriği settings.invalid.json dosyasında saklandı."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Tomarigi'nin bilmediği anahtarlar olduğu gibi bırakıldı ve yok sayıldı: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "API anahtarları dosyadan asla okunmaz; Ayarlar → Özetler için yapay zekâ bölümüne yapıştırın. Yok sayılan: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“Yapay zekâ ajanının ayarları değiştirmesine izin ver” (MCP) kaldırıldı. Ayarlar artık aşağıdaki dosyayla değiştirilir."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Uygulamanın içinden yapay zekâ ajanlarınıza talimat gönderilememesi için kaldırıldı."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Claude Code'a kaydettiyseniz kaydı silmek için bunu terminalde bir kez çalıştırın:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Komutu kopyala"
+  },
+  "settingsFileCloseNote": {
+    "message": "Bu notu kapat"
+  },
+  "settingsProblemNoServer": {
+    "message": "Yerel sesi kullanmak için bir TTS sunucusu yazın (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Bu sağlayıcı için kayıtlı API anahtarı yok. Önce Ayarlar → Özetler için yapay zekâ bölümüne yapıştırın."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "Yerel yapay zekâ kurulu değil. Önce localAi (baseUrl ve model) yazın."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Ses düzeyi 0 ile 100 arasında bir tam sayıdır (yüzde)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Klasörü \"..\" içermeyen mutlak bir yol olarak yazın."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Ağ yolları izlenemez. Bu bilgisayardaki bir klasörü yazın."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Bu klasör yok ya da okunamıyor."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Ad boş olamaz."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Varsayılan klasörler her zaman izlenir ve kaldırılamaz."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Bu, seçeneklerden biri değil (bkz. settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Bu ayarın aldığı türde bir değer değil (bkz. settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Kapat"
+  },
+  "settingsFileCopied": {
     "message": "Kopyalandı"
   },
-  "agentAccessPortLabel": {
-    "message": "Bağlantı noktası"
-  },
-  "agentAccessPortInvalid": {
-    "message": "1024 ile 65535 arasında bir bağlantı noktası girin."
-  },
-  "agentAccessPortInUse": {
-    "message": "Başlatılamadı: bu bağlantı noktasını başka bir uygulama kullanıyor. Başka bir bağlantı noktası girip yeniden denemek için Enter'a basın."
-  },
-  "agentAccessRenewButton": {
-    "message": "Belirteci yenile"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Gizli belirteci saklamak için bir anahtarlık (GNOME Keyring veya KWallet) gerekir ve bu bilgisayarda hiçbiri çalışmıyor. Birini başlatıp yeniden açın."
-  },
-  "agentAccessStartFailed": {
-    "message": "Sunucu başlatılamadı. Nedeni uygulama günlüğünde."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Ajanın değiştirdikleri"
-  },
-  "agentNoteTitle": {
-    "message": "Yapay zekâ ajanı bir ayarı değiştirdi"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Açık"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Kapalı"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Ayarlanmadı"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "Özetler için yapay zekâ"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Ses düzeyi"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Okuma ses düzeyi"
-  },
-  "agentAccessSecretNote": {
-    "message": "Komut, bu bilgisayardaki programların bu ayarları değiştirmesine izin veren gizli bir belirteç içerir. Paylaşmayın; sızarsa yenileyin."
-  },
-  "agentAccessOtherAgents": {
-    "message": "MCP destekleyen başka bir ajan için aşağıdaki URL'yi ve belirteci o ajanın MCP ayarlarına yazın (başlık: Authorization: Bearer <belirteç>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Kapat"
   }
 }

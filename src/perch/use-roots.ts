@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
-import { isReadableDir } from "@/lib/native-fs";
 import {
-  checkNewRoot,
   checkRootLabel,
   checkRootRemovable,
-  checkTypedRootPath,
   type SettingsProblem,
 } from "@/lib/settings-checks";
 import { onSettingsChanged } from "@/lib/settings-sync";
@@ -13,7 +10,6 @@ import {
   KEY_DEFAULT_ROOT_LABELS,
   KEY_ROOTS,
   loadRoots,
-  newRoot,
   pickNewRoot,
   queryRead,
   saveRoots,
@@ -22,9 +18,8 @@ import {
 } from "@/lib/settings-store";
 import type { PerchSource } from "./source";
 
-/** The watched folders: their state, read permission, and the operations the settings screen and the AI agent's tools
- * share (docs/design.md "Watched folders", "Settings by an AI agent (MCP)"). Each operation reads the latest list from
- * a ref, so two calls in a row (the agent's) don't work on a stale copy */
+/** The watched folders: their state, read permission, and the settings screen's operations (docs/design.md "Watched
+ * folders"). Each operation reads the latest list from a ref, so two calls in a row don't work on a stale copy */
 export function useRoots(source: PerchSource) {
   const [roots, setRootsState] = useState<RootEntry[]>([]);
   const [perms, setPerms] = useState<Record<string, PermissionState>>({});
@@ -50,7 +45,7 @@ export function useRoots(source: PerchSource) {
     }
   }, [source, setRoots]);
 
-  // A folder added, removed or renamed in another window (the settings window, or the AI agent's tools run by the
+  // A folder added, removed or renamed in another window (the settings window, or an edit of the settings file taken by the
   // floating window): the floating window scans the new list, the settings window shows it
   useEffect(
     () => (source.usesRoots ? onSettingsChanged([KEY_ROOTS, KEY_DEFAULT_ROOT_LABELS], () => void loadAll()) : undefined),
@@ -100,22 +95,6 @@ export function useRoots(source: PerchSource) {
     [source, append],
   );
 
-  /** From the AI agent: a path it gives, through the same check as the picker's (plus absolute and readable, which the
-   * picker guarantees) */
-  const addRootAt = useCallback(
-    async (kind: RootKind, path: string, label?: string): Promise<SettingsProblem | RootEntry> => {
-      const trimmed = path.trim();
-      // The file system is read only once the path passes the other rules
-      const problem = checkTypedRootPath(trimmed) ?? checkNewRoot(rootsRef.current, trimmed);
-      if (problem) return problem;
-      if (!(await isReadableDir(trimmed))) return "not-readable";
-      const root = newRoot(rootsRef.current, kind, trimmed, label);
-      await append(root);
-      return root;
-    },
-    [append],
-  );
-
   const removeRoot = useCallback(
     async (id: string): Promise<SettingsProblem | undefined> => {
       const root = rootsRef.current.find((r) => r.id === id);
@@ -147,5 +126,5 @@ export function useRoots(source: PerchSource) {
     [persist, setRoots],
   );
 
-  return { roots, rootsRef, perms, addMessage, loadAll, addRoot, addRootAt, removeRoot, renameRoot };
+  return { roots, rootsRef, perms, addMessage, loadAll, addRoot, removeRoot, renameRoot };
 }

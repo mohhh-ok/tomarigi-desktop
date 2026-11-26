@@ -535,85 +535,158 @@
   "readoutNeedsReadAloud": {
     "message": "Hidupkan \"Baca dengan suara\" di atas untuk mendengar bacaan."
   },
-  "agentAccessHeading": {
-    "message": "Ejen AI"
+  "settingsFileHeading": {
+    "message": "Fail tetapan"
   },
-  "agentAccessEnable": {
-    "message": "Benarkan ejen AI menukar tetapan"
+  "settingsFileDescription": {
+    "message": "Semua tetapan pada skrin ini kecuali kunci API turut ditulis dalam fail ini. Sunting fail itu dan Tomarigi terus menggunakan perubahan."
   },
-  "agentAccessDescription": {
-    "message": "Ejen pengekodan anda (Claude Code atau yang lain yang menyokong MCP, cara biasa menghubungkan ejen dengan aplikasi) boleh membaca dan menukar tetapan pada skrin ini, menguji sambungan dan memainkan sampel. Kunci API kekal di sini: ejen tidak boleh membaca atau menetapkannya."
+  "settingsFileCopyPath": {
+    "message": "Salin laluan"
   },
-  "agentAccessCommandHint": {
-    "message": "Jalankan ini sekali dalam terminal. Kemudian minta ejen, contohnya: “Tukar suara bacaan kepada VOICEVOX”."
+  "settingsFileRevealMac": {
+    "message": "Tunjukkan dalam Finder"
   },
-  "agentAccessReplaceHint": {
-    "message": "Arahan telah berubah, jadi yang dijalankan sebelum ini tidak berfungsi lagi. Buang pendaftaran lama dahulu:"
+  "settingsFileRevealWindows": {
+    "message": "Tunjukkan dalam Explorer"
   },
-  "agentAccessCopyAddButton": {
-    "message": "Salin arahan pendaftaran"
+  "settingsFileRevealLinux": {
+    "message": "Tunjukkan dalam pengurus fail"
   },
-  "agentAccessCopyRemoveButton": {
-    "message": "Salin arahan pengalihan"
+  "settingsFileAgentHeading": {
+    "message": "Minta ejen AI"
   },
-  "agentAccessCopyUrlButton": {
-    "message": "Salin URL"
+  "settingsFileAgentHint": {
+    "message": "Salin ini, gantikan ○○ dengan apa yang anda mahu (cth. “baca dengan VOICEVOX”), kemudian tampal ke dalam ejen pengekodan anda."
   },
-  "agentAccessCopyTokenButton": {
-    "message": "Salin token"
+  "settingsFileCopyInstructions": {
+    "message": "Salin arahan untuk ejen"
   },
-  "agentAccessCopied": {
+  "settingsFileInstructions": {
+    "message": "Tukar tetapan Tomarigi: ○○. Caranya: $README$",
+    "placeholders": {
+      "readme": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileRecentHeading": {
+    "message": "Diambil daripada fail sejak dibuka kali ini"
+  },
+  "settingsFileNoteTitle": {
+    "message": "Ditukar daripada fail tetapan"
+  },
+  "settingsFileRefusedLine": {
+    "message": "$SETTING$: $REASON$ (nilai sebelumnya dikekalkan)",
+    "placeholders": {
+      "setting": {
+        "content": "$1"
+      },
+      "reason": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileUnreadable": {
+    "message": "Fail tetapan bukan JSON yang sah (baris $LINE$, lajur $COLUMN$). Semua tetapan kekal sehingga ia dibetulkan.",
+    "placeholders": {
+      "line": {
+        "content": "$1"
+      },
+      "column": {
+        "content": "$2"
+      }
+    }
+  },
+  "settingsFileInvalidKept": {
+    "message": "Fail tetapan tidak dapat dibaca, jadi kandungannya disimpan dalam settings.invalid.json sebelum menyimpan."
+  },
+  "settingsFileIgnoredKeys": {
+    "message": "Kunci yang tidak dikenali Tomarigi dibiarkan seperti asal dan diabaikan: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileSecretKeys": {
+    "message": "Kunci API tidak pernah dibaca daripada fail; tampalkannya dalam Tetapan → AI untuk ringkasan. Diabaikan: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsFileMcpRemoved": {
+    "message": "“Benarkan ejen AI menukar tetapan” (MCP) telah dibuang. Kini tetapan ditukar melalui fail di bawah."
+  },
+  "settingsFileMcpRemovedWhy": {
+    "message": "Ia dibuang supaya tiada apa-apa dalam apl boleh menghantar arahan kepada ejen AI anda."
+  },
+  "settingsFileMcpRemoveHint": {
+    "message": "Jika anda mendaftarkannya dalam Claude Code, jalankan ini sekali dalam terminal untuk membuang pendaftaran:"
+  },
+  "settingsFileCopyCommand": {
+    "message": "Salin perintah"
+  },
+  "settingsFileCloseNote": {
+    "message": "Tutup notis ini"
+  },
+  "settingsProblemNoServer": {
+    "message": "Untuk guna suara setempat, tulis pelayan TTS (readoutVoice.server)."
+  },
+  "settingsProblemNoKey": {
+    "message": "Tiada kunci API disimpan untuk penyedia ini. Tampalkannya dahulu dalam Tetapan → AI untuk ringkasan."
+  },
+  "settingsProblemLocalNotSetUp": {
+    "message": "AI setempat belum disediakan. Tulis dahulu localAi (baseUrl dan model)."
+  },
+  "settingsProblemVolumeRange": {
+    "message": "Kelantangan ialah nombor bulat dari 0 hingga 100 (peratus)."
+  },
+  "settingsProblemPathNotAbsolute": {
+    "message": "Tulis folder sebagai laluan mutlak tanpa \"..\"."
+  },
+  "settingsProblemNetworkPath": {
+    "message": "Laluan rangkaian tidak boleh dipantau. Tulis folder pada komputer ini."
+  },
+  "settingsProblemNotReadable": {
+    "message": "Folder itu tidak wujud atau tidak boleh dibaca."
+  },
+  "settingsProblemLabelEmpty": {
+    "message": "Nama tidak boleh kosong."
+  },
+  "settingsProblemBuiltin": {
+    "message": "Folder lalai sentiasa dipantau dan tidak boleh dibuang."
+  },
+  "settingsProblemUnknownOption": {
+    "message": "Itu bukan salah satu pilihan (lihat settings.schema.json)."
+  },
+  "settingsProblemWrongType": {
+    "message": "Itu bukan jenis nilai yang diterima tetapan ini (lihat settings.schema.json)."
+  },
+  "settingsFileNoteDismiss": {
+    "message": "Tutup"
+  },
+  "settingsFileCopied": {
     "message": "Disalin"
   },
-  "agentAccessPortLabel": {
-    "message": "Port"
-  },
-  "agentAccessPortInvalid": {
-    "message": "Masukkan port dari 1024 hingga 65535."
-  },
-  "agentAccessPortInUse": {
-    "message": "Tidak dapat dimulakan: aplikasi lain sedang menggunakan port ini. Masukkan port lain dan tekan Enter untuk mencuba lagi."
-  },
-  "agentAccessRenewButton": {
-    "message": "Perbaharui token"
-  },
-  "agentAccessNoKeyStore": {
-    "message": "Ini memerlukan keyring (GNOME Keyring atau KWallet) untuk menyimpan token rahsia, dan tiada yang berjalan pada komputer ini. Mulakan salah satu, kemudian hidupkan semula."
-  },
-  "agentAccessStartFailed": {
-    "message": "Pelayan tidak dapat dimulakan. Sebabnya ada dalam log aplikasi."
-  },
-  "agentAccessRecentHeading": {
-    "message": "Ditukar oleh ejen"
-  },
-  "agentNoteTitle": {
-    "message": "Ejen AI menukar tetapan"
-  },
-  "agentNoteOn": {
+  "settingsFileOn": {
     "message": "Hidup"
   },
-  "agentNoteOff": {
+  "settingsFileOff": {
     "message": "Mati"
   },
-  "agentNoteNotSet": {
+  "settingsFileNotSet": {
     "message": "Belum ditetapkan"
   },
-  "agentNoteSummaryProvider": {
+  "settingsFileSummaryProvider": {
     "message": "AI untuk ringkasan"
   },
-  "agentNoteChirpVolume": {
+  "settingsFileChirpVolume": {
     "message": "Kelantangan bunyi"
   },
-  "agentNoteReadAloudVolume": {
+  "settingsFileReadAloudVolume": {
     "message": "Kelantangan bacaan"
-  },
-  "agentAccessSecretNote": {
-    "message": "Arahan ini mengandungi token rahsia yang membolehkan program pada komputer ini menukar tetapan ini. Jangan kongsi; jika terdedah, perbaharuinya."
-  },
-  "agentAccessOtherAgents": {
-    "message": "Untuk ejen lain yang menyokong MCP, masukkan URL dan token di bawah ke dalam tetapan MCP ejen itu (pengepala: Authorization: Bearer <token>)."
-  },
-  "agentNoteDismiss": {
-    "message": "Tutup"
   }
 }

@@ -3,7 +3,7 @@
 import type { MessageName } from "@/lib/i18n";
 import { kvGet, kvPut } from "@/lib/kv";
 
-export const SETTINGS_SECTIONS = ["sound", "ai", "concierge", "folders", "icons", "window", "agent", "updates"] as const;
+export const SETTINGS_SECTIONS = ["sound", "ai", "concierge", "folders", "icons", "window", "settingsFile", "updates"] as const;
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 
 /** The left list's words: the same as each section's heading */
@@ -14,13 +14,15 @@ export const SECTION_LABEL: Record<SettingsSection, MessageName> = {
   folders: "rootsHeading",
   icons: "iconSetHeading",
   window: "windowModeHeading",
-  agent: "agentAccessHeading",
+  settingsFile: "settingsFileHeading",
   updates: "updatesHeading",
 };
 
 const KEY_SETTINGS_SECTION = "settingsSection";
 
 export function sectionOf(value: unknown): SettingsSection | null {
+  // The section was "agent" while it was the MCP card
+  if (value === "agent") return "settingsFile";
   return SETTINGS_SECTIONS.includes(value as SettingsSection) ? (value as SettingsSection) : null;
 }
 

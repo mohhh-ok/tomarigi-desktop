@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tomarigi settings",
+  "description": "The settings of Tomarigi {{VERSION}}, a desktop app that shows the user's coding agent sessions. Tomarigi rewrites this schema at every launch. Read README.md beside it first. Change one key, save, and the running app applies it within a second; a key left out keeps its value. API keys are not in this file: they go on Tomarigi's settings screen.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string", "description": "Points editors at this schema. Leave it as is." },
+    "chirps": { "type": "boolean", "description": "Play a short sound when a session needs the user or finishes." },
+    "chirpVolume": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Volume of the chirps, in percent." },
+    "readAloud": { "type": "boolean", "description": "Read events aloud (a session needs the user, finishes, a summary)." },
+    "readAloudVolume": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Volume of the readout, in percent." },
+    "readoutVoice": {
+      "type": "object",
+      "description": "Which voice reads aloud: the system's voice, or a TTS server. The server is kept when source goes back to system.",
+      "properties": {
+        "source": { "enum": ["system", "local"], "description": "system: the operating system's voice. local: the TTS server in `server`." },
+        "server": {
+          "type": "object",
+          "description": "A TTS server. The app checks that the voice is in the server's list when it can read the list.",
+          "properties": {
+            "kind": {
+              "enum": ["voicevox", "openai"],
+              "description": "voicevox: a VOICEVOX-compatible engine (VOICEVOX ENGINE, AivisSpeech); reads Japanese only. openai: an OpenAI-compatible speech server (Kokoro-FastAPI, mlx-audio)."
+            },
+            "baseUrl": {
+              "type": "string",
+              "description": "http(s) URL without a query. voicevox: e.g. http://localhost:50021. openai: the base that ends in /v1, e.g. http://localhost:8880/v1."
+            },
+            "voice": {
+              "type": "string",
+              "description": "voicevox: a style id as a string, e.g. \"2\"; list them with `curl <baseUrl>/speakers` (each speaker's styles[].id, named by speaker name and style name). openai: a voice name the server knows (e.g. \"af_heart\" on Kokoro-FastAPI); see the server's documentation, some list them at `<baseUrl>/audio/voices`."
+            },
+            "model": {
+              "type": "string",
+              "description": "openai only, required there: a model; list them with `curl <baseUrl>/models`."
+            }
+          },
+          "required": ["kind", "baseUrl", "voice"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["source"],
+      "additionalProperties": false
+    },
+    "summaryProvider": {
+      "enum": ["anthropic", "openai", "local", null],
+      "description": "Which AI writes the summaries and runs the concierge. anthropic and openai need an API key saved on the settings screen; local needs localAi."
+    },
+    "localAi": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "baseUrl": {
+              "type": "string",
+              "description": "An OpenAI-compatible server's base URL, ending in /v1 (Ollama: http://localhost:11434/v1, LM Studio: http://localhost:1234/v1)."
+            },
+            "model": { "type": "string", "description": "A model the server has; list them with `curl <baseUrl>/models`." }
+          },
+          "required": ["baseUrl", "model"],
+          "additionalProperties": false
+        },
+        { "type": "null" }
+      ],
+      "description": "Local AI: an OpenAI-compatible server for the summaries. null removes it."
+    },
+    "windowMode": {
+      "enum": ["floating", "normal"],
+      "description": "floating: a small window that floats above the others. normal: a standard window with a title bar."
+    },
+    "conciergeLook": { "enum": ["owl", "penguin"], "description": "The concierge's look." },
+    "iconSets": {
+      "type": "object",
+      "description": "Per project: which icon set its sessions show. The key is the project's key as Tomarigi writes it here (the app adds a project when the user picks a set for it on the screen). birds is the default and removes the entry.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "set": { "enum": ["birds", "gnome", "cat", "robot", "frog"] },
+          "label": { "type": "string", "description": "The project's name, shown on the settings screen." }
+        },
+        "required": ["set", "label"],
+        "additionalProperties": false
+      }
+    },
+    "watchedFolders": {
+      "type": "array",
+      "description": "Folders the user added for Tomarigi to watch, besides the default folder of each agent (always watched, not listed here). To add one, append { agent, path, label }; to stop watching, remove its entry.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "enum": ["claude", "codex", "qwen", "copilot", "gemini", "opencode", "cursor"],
+            "description": "Whose sessions the folder holds: claude (Claude Code, like ~/.claude/projects), codex (Codex, like ~/.codex), qwen (Qwen Code), copilot (GitHub Copilot CLI), gemini (Gemini CLI), opencode (OpenCode), cursor (Cursor CLI)."
+          },
+          "path": { "type": "string", "description": "Absolute path of a folder on this computer that exists, without \"..\". Not a network path." },
+          "label": { "type": "string", "minLength": 1, "description": "The name shown for the folder." },
+          "id": { "type": "string", "description": "Written by Tomarigi. Leave it as is; leave it out when adding a folder." }
+        },
+        "required": ["agent", "path", "label"],
+        "additionalProperties": false
+      }
+    },
+    "defaultFolderLabels": {
+      "type": "object",
+      "description": "Names shown for the default folders, by agent.",
+      "propertyNames": { "enum": ["claude", "codex", "qwen", "copilot", "gemini", "opencode", "cursor"] },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    }
+  }
+}
