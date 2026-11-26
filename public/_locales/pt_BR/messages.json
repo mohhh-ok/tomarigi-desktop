@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Alterado pelo arquivo de configurações"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Não foi possível ler o arquivo de configurações"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: não é possível usar $VALUE$. $REASON$ (mantido o valor anterior, $PREVIOUS$)",
     "placeholders": {

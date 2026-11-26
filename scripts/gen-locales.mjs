@@ -219,6 +219,7 @@ export const KEYS = [
   "settingsFileInstructions",
   "settingsFileRecentHeading",
   "settingsFileNoteTitle",
+  "settingsFileUnreadableTitle",
   "settingsFileRefusedLine",
   "settingsFileUnreadable",
   "settingsFileInvalidKept",

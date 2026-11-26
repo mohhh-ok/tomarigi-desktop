@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Muudetud seadete failist"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Seadete faili ei saanud lugeda"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ ei sobi. $REASON$ (jäeti eelmine väärtus $PREVIOUS$)",
     "placeholders": {

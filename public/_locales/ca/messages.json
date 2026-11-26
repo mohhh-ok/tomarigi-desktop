@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Canviat des del fitxer de configuració"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "No s'ha pogut llegir el fitxer de configuració"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: no es pot fer servir $VALUE$. $REASON$ (es manté el valor anterior, $PREVIOUS$)",
     "placeholders": {

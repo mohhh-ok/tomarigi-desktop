@@ -130,7 +130,7 @@ describe("applyFileDoc", () => {
       ["localAi", "url-invalid"],
     ]);
     // Said so the line reads as how to fix it: what was written and what stays
-    expect(r.refused[0]).toMatchObject({ setting: "soundEnableLabel › voiceVolumeLabel", value: "140", previous: "100%" });
+    expect(r.refused[0]).toMatchObject({ setting: "soundEnableLabel › voiceVolumeLabel", key: "chirpVolume", value: "140", previous: "100%" });
     expect(r.refused[1]).toMatchObject({ value: '{"baseUrl":"localhost:11434","model":"q"}', previous: "settingsFileNotSet" });
   });
 
@@ -228,7 +228,7 @@ describe("applyFileDoc", () => {
       deps(),
     );
     expect(r.accepted).toEqual([{ field: "iconSets", value: { b: { set: "frog", label: "B" }, c: { set: "robot", label: "C" } } }]);
-    expect(r.refused[0]).toMatchObject({ value: '{"set":"dragon","label":"B"}', previous: "iconSetFrog" });
+    expect(r.refused[0]).toMatchObject({ key: "iconSets.b", value: '{"set":"dragon","label":"B"}', previous: "iconSetFrog" });
     expect(r.refused.map((x) => [x.setting, x.problem])).toEqual([["iconSetHeading › B", "unknown-option"]]);
   });
 

@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Ayar dosyasından değiştirildi"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Ayar dosyası okunamadı"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ kullanılamaz. $REASON$ (önceki değer $PREVIOUS$ korundu)",
     "placeholders": {

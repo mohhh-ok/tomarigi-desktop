@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Αλλαγή από το αρχείο ρυθμίσεων"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Δεν ήταν δυνατή η ανάγνωση του αρχείου ρυθμίσεων"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: δεν μπορεί να χρησιμοποιηθεί το $VALUE$. $REASON$ (διατηρήθηκε η προηγούμενη τιμή $PREVIOUS$)",
     "placeholders": {

@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Променено от файла с настройки"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Файлът с настройки не можа да бъде прочетен"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ не може да се използва. $REASON$ (запазена е предишната стойност $PREVIOUS$)",
     "placeholders": {

@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Módosítva a beállításfájlból"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "A beállításfájl nem olvasható"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: a(z) $VALUE$ nem használható. $REASON$ (az előző érték maradt: $PREVIOUS$)",
     "placeholders": {

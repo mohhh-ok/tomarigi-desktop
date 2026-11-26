@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "تغییر از فایل تنظیمات"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "فایل تنظیمات خوانده نشد"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: نمی‌توان از $VALUE$ استفاده کرد. $REASON$ (مقدار قبلی ماند: $PREVIOUS$)",
     "placeholders": {

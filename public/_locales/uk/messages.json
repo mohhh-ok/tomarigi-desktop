@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Змінено з файлу налаштувань"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Не вдалося прочитати файл налаштувань"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: не можна використати $VALUE$. $REASON$ (залишено попереднє значення: $PREVIOUS$)",
     "placeholders": {

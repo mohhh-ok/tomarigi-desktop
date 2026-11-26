@@ -28,12 +28,12 @@ const RECENT = {
   ja: [
     { id: 3, at: now, text: "読み上げの声: システムの声 → VOICEVOX: 四国めたん（ノーマル）", problem: false },
     { id: 2, at: now, text: "音で知らせる › 音量: 100% → 40%", problem: false },
-    { id: 1, at: now - 60_000, text: "声で読み上げる › 音量: 140 は使えません。0 から 100 までの整数（パーセント）で書いてください。（前の値 60% のまま）", problem: true },
+    { id: 1, at: now - 60_000, text: "声で読み上げる › 音量 (readAloudVolume): 140 は使えません。0 から 100 までの整数（パーセント）で書いてください。（前の値 60% のまま）", problem: true },
   ],
   en: [
     { id: 3, at: now, text: "Readout voice: System voice → VOICEVOX: Shikoku Metan (Normal)", problem: false },
     { id: 2, at: now, text: "Notify with sound › Volume: 100% → 40%", problem: false },
-    { id: 1, at: now - 60_000, text: "Read aloud with voice › Volume: 140 can't be used. Write a whole number from 0 to 100 (percent). (kept the previous value, 60%)", problem: true },
+    { id: 1, at: now - 60_000, text: "Read aloud with voice › Volume (readAloudVolume): 140 can't be used. Write a whole number from 0 to 100 (percent). (kept the previous value, 60%)", problem: true },
   ],
 };
 const APPLIED = { chirps: true, chirpVolume: 100, readAloud: false, readAloudVolume: 100, readoutVoice: { source: "system" }, localAi: null, summaryProvider: null, windowMode: "floating", conciergeLook: "owl", iconSets: {}, watchedFolders: [], defaultFolderLabels: {} };
@@ -45,6 +45,7 @@ for (const lang of ["ja", "en"]) {
   SCENES.push({ id: `section-list-${lang}`, lang, recent: RECENT[lang] });
   SCENES.push({ id: `section-mcp-${lang}`, lang, recent: [], mcpNote: true });
   SCENES.push({ id: `note-${lang}`, lang, note: { ...APPLIED, chirpVolume: 40, readAloudVolume: 140, conciergeLook: "penguin" } });
+  SCENES.push({ id: `note-unreadable-${lang}`, lang, unreadable: [4, 13] });
 }
 
 const only = process.argv.slice(2);
@@ -112,10 +113,14 @@ try {
             },
           };
         },
-        [scene.note ? "main" : "settings", scene.recent ?? [], scene.mcpNote === true, PATHS, APPLIED],
+        [scene.note || scene.unreadable ? "main" : "settings", scene.recent ?? [], scene.mcpNote === true, PATHS, APPLIED],
       );
-      await page.goto(`${ORIGIN}${mockPath(scene.note ? "" : "view=settings&section=settingsFile")}`);
-      if (scene.note) {
+      await page.goto(`${ORIGIN}${mockPath(scene.note || scene.unreadable ? "" : "view=settings&section=settingsFile")}`);
+      if (scene.unreadable) {
+        await page.waitForFunction(() => window.__hasListener("settings-file-unreadable"), null, { timeout: 15000 });
+        await page.evaluate((at) => window.__send("settings-file-unreadable", at), scene.unreadable);
+        await page.waitForSelector(".settings-file-note", { timeout: 5000 });
+      } else if (scene.note) {
         await page.waitForFunction(() => window.__hasListener("settings-file-edited"), null, { timeout: 15000 });
         await page.evaluate(([doc, before]) => window.__send("settings-file-edited", { doc, before }), [scene.note, APPLIED]);
         await page.waitForSelector(".settings-file-note", { timeout: 5000 });

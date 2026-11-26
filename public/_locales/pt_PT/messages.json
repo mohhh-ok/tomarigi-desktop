@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Alterado pelo ficheiro de definições"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Não foi possível ler o ficheiro de definições"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: não é possível usar $VALUE$. $REASON$ (mantido o valor anterior, $PREVIOUS$)",
     "placeholders": {

@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Diubah dari file pengaturan"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "File pengaturan tidak bisa dibaca"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ tidak bisa dipakai. $REASON$ (nilai sebelumnya $PREVIOUS$ dipertahankan)",
     "placeholders": {

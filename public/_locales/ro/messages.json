@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Modificat din fișierul de setări"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Fișierul de setări nu a putut fi citit"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ nu poate fi folosit. $REASON$ (s-a păstrat valoarea anterioară, $PREVIOUS$)",
     "placeholders": {

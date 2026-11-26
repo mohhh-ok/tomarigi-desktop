@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Mainīts no iestatījumu faila"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Iestatījumu failu nevarēja nolasīt"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ nevar izmantot. $REASON$ (saglabāta iepriekšējā vērtība $PREVIOUS$)",
     "placeholders": {

@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Změněno ze souboru nastavení"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Soubor nastavení nelze přečíst"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ nelze použít. $REASON$ (ponechána předchozí hodnota $PREVIOUS$)",
     "placeholders": {

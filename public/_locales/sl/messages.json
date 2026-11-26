@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Spremenjeno iz datoteke nastavitev"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Datoteke nastavitev ni bilo mogoče prebrati"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ ni mogoče uporabiti. $REASON$ (ohranjena prejšnja vrednost $PREVIOUS$)",
     "placeholders": {

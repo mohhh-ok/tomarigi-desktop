@@ -329,7 +329,9 @@ button.remove {
   background: #1b1a16;
 }
 
-.ai-key-provider h3 {
+/* A heading inside a section: the same in every section that has one */
+.ai-key-provider h3,
+.settings-file h3 {
   margin: 0 0 10px;
   font-size: 13px;
   color: #d1cdc3;
@@ -713,8 +715,8 @@ button.settings-file-copy-main:hover {
 }
 
 
-.settings-file > .settings-note {
-  margin: 0 0 10px;
+.settings-file .settings-note {
+  margin: 0 0 8px;
 }
 
 /* Settings file (settings/settings-file-settings.tsx). The path with its buttons, then the instruction for an agent: the
@@ -756,19 +758,8 @@ button.settings-file-copy-main:hover {
   gap: 4px;
 }
 
-.settings-file-subheading,
-.settings-file-recent h3 {
+.settings-file h3 {
   margin: 18px 0 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #a49f92;
-}
-
-.settings-file-hint {
-  margin: 0 0 6px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #d8d3c6;
 }
 
 .settings-file-recent ul {

@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "שונה מקובץ ההגדרות"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "לא ניתן היה לקרוא את קובץ ההגדרות"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: אי אפשר להשתמש ב-$VALUE$. $REASON$ (הערך הקודם נשמר: $PREVIOUS$)",
     "placeholders": {

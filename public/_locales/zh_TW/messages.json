@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "來自設定檔的變更"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "無法讀取設定檔"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$：不能使用 $VALUE$。$REASON$（保留原值 $PREVIOUS$）",
     "placeholders": {

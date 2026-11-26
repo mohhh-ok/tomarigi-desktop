@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Muutettu asetustiedostosta"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Asetustiedostoa ei voitu lukea"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: arvoa $VALUE$ ei voi käyttää. $REASON$ (edellinen arvo $PREVIOUS$ säilyy)",
     "placeholders": {

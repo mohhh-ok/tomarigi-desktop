@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Endret fra innstillingsfilen"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Kunne ikke lese innstillingsfilen"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ kan ikke brukes. $REASON$ (forrige verdi $PREVIOUS$ beholdes)",
     "placeholders": {

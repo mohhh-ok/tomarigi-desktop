@@ -56,6 +56,8 @@ export interface FileRefusal {
   field: FileField;
   /** The setting in the UI language, with the entry when it is one of a list */
   setting: string;
+  /** Where in the file, as a reader of the JSON finds it (`readAloudVolume`, `watchedFolders[1]`) */
+  key: string;
   /** What the file had, as JSON (cut when long) */
   value: string;
   /** The value kept, said as a change would say it */
@@ -223,10 +225,11 @@ export async function applyFileDoc(
     const name = FIELD_NAME[field].map((k) => say(k)).join(NAME_SEPARATOR);
     const entryName = (entry: string) => `${name}${NAME_SEPARATOR}${entry}`;
     /** Without `entry`, the whole value is refused and the whole value in use stays */
-    const refuse = (problem: SettingsProblem, entry?: { name: string; value: unknown; previous: string }) =>
+    const refuse = (problem: SettingsProblem, entry?: { name: string; key: string; value: unknown; previous: string }) =>
       result.refused.push({
         field,
         setting: entry ? entryName(entry.name) : name,
+        key: entry ? entry.key : field,
         value: shownValue(entry ? entry.value : raw),
         previous: entry ? entry.previous : describe(field, applied[field]),
         problem,
@@ -284,7 +287,7 @@ export async function applyFileDoc(
           ]);
           const notListed = checkVoiceInList(server.voice, voices?.map((o) => o.value));
           if (notListed) {
-            refuse(notListed, { name: say("readoutVoiceNameLabel"), value: server.voice, previous: describe(field, applied[field]) });
+            refuse(notListed, { name: say("readoutVoiceNameLabel"), key: `${field}.server.voice`, value: server.voice, previous: describe(field, applied[field]) });
             break;
           }
           const option = voices?.find((o) => o.value === server!.voice);
@@ -347,7 +350,7 @@ export async function applyFileDoc(
           const label = isObject(entry) ? str(entry.label) : undefined;
           const problem = !isObject(entry) || label === undefined ? "wrong-type" : checkOption(entry.set, ICON_SET_IDS);
           if (problem) {
-            refuse(problem, { name: label || slug, value: entry, previous: iconSetText(before[slug]) });
+            refuse(problem, { name: label || slug, key: `${field}.${slug}`, value: entry, previous: iconSetText(before[slug]) });
             if (before[slug]) value[slug] = before[slug];
             continue;
           }
@@ -373,7 +376,7 @@ export async function applyFileDoc(
         const value: FileFolder[] = [];
         const taken: { path: string }[] = deps.defaultRootPaths.map((path) => ({ path }));
         const changes: FileChange[] = [];
-        for (const entry of raw) {
+        for (const [index, entry] of raw.entries()) {
           const path = isObject(entry) ? str(entry.path) : undefined;
           const label = isObject(entry) ? str(entry.label) : undefined;
           const id = isObject(entry) && path !== undefined ? folderIdOf({ id: str(entry.id), path }) : undefined;
@@ -384,7 +387,7 @@ export async function applyFileDoc(
             taken.push(old);
           };
           const refuseEntry = (problem: SettingsProblem) =>
-            refuse(problem, { name: label || path || "?", value: entry, previous: old ? folderText(old) : notSet });
+            refuse(problem, { name: label || path || "?", key: `${field}[${index}]`, value: entry, previous: old ? folderText(old) : notSet });
           if (!isObject(entry) || path === undefined || label === undefined || id === undefined) {
             refuseEntry("wrong-type");
             keep();
@@ -426,7 +429,7 @@ export async function applyFileDoc(
           const text = str(label);
           const problem = checkOption(agent, AGENT_KINDS) ?? (text === undefined ? "wrong-type" : checkRootLabel(text));
           if (problem) {
-            refuse(problem, { name: agent, value: label, previous: before[agent] ?? agentLabel(agent) });
+            refuse(problem, { name: agent, key: `${field}.${agent}`, value: label, previous: before[agent] ?? agentLabel(agent) });
             if (before[agent]) value[agent] = before[agent];
             continue;
           }

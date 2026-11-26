@@ -44,10 +44,10 @@ export function SettingsFileSettings({
             <MdClose size={16} />
           </button>
           <p className="settings-file-mcp-title">{t("settingsFileMcpRemoved")}</p>
-          <p className="settings-file-hint">{t("settingsFileMcpRemovedWhy")}</p>
-          <p className="settings-file-hint">{t("settingsFileMcpRemoveHint")}</p>
+          <p className="settings-note">{t("settingsFileMcpRemovedWhy")}</p>
+          <p className="settings-note">{t("settingsFileMcpRemoveHint")}</p>
           <CodeBlock text={REMOVE_COMMAND} label={t("settingsFileCopyCommand")} />
-          <p className="settings-file-hint">{t("settingsFileMcpRemoveOther")}</p>
+          <p className="settings-note">{t("settingsFileMcpRemoveOther")}</p>
         </div>
       )}
       <p className="settings-note">{t("settingsFileDescription")}</p>
@@ -63,8 +63,8 @@ export function SettingsFileSettings({
               </button>
             </div>
           </div>
-          <h3 className="settings-file-subheading">{t("settingsFileAgentHeading")}</h3>
-          <p className="settings-file-hint">{t("settingsFileAgentHint")}</p>
+          <h3>{t("settingsFileAgentHeading")}</h3>
+          <p className="settings-note">{t("settingsFileAgentHint")}</p>
           <CodeBlock text={t("settingsFileInstructions", paths.readme)} label={t("settingsFileCopyInstructions")} main />
         </>
       )}

@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Pakeista iš nustatymų failo"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Nepavyko perskaityti nustatymų failo"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ negalima naudoti. $REASON$ (palikta ankstesnė reikšmė $PREVIOUS$)",
     "placeholders": {

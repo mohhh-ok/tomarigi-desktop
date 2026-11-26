@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Binago mula sa file ng mga setting"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Hindi mabasa ang file ng mga setting"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: hindi magagamit ang $VALUE$. $REASON$ (pinanatili ang dating halaga, $PREVIOUS$)",
     "placeholders": {

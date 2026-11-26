@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "เปลี่ยนจากไฟล์การตั้งค่า"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "อ่านไฟล์การตั้งค่าไม่ได้"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: ใช้ $VALUE$ ไม่ได้ $REASON$ (คงค่าเดิม $PREVIOUS$ ไว้)",
     "placeholders": {

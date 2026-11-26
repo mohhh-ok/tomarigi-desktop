@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Gewijzigd via het instellingenbestand"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Kan het instellingenbestand niet lezen"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ kan niet. $REASON$ (vorige waarde $PREVIOUS$ blijft)",
     "placeholders": {

@@ -33,6 +33,8 @@ export interface FileNoteLine {
   text: string;
   /** A refused value or a file that couldn't be read (said in the error color) */
   problem: boolean;
+  /** The file couldn't be read: nothing changed, so the note doesn't say it did */
+  unreadable?: boolean;
 }
 
 const RECENT_LIMIT = 10;
@@ -88,7 +90,7 @@ async function accept(result: ApplyResult): Promise<void> {
     log(`[settings-file] applied ${field}`);
     if (field !== "windowMode") notifySettingChanged(STORE_KEY_OF[field as Exclude<FileField, "windowMode">], FROM_SETTINGS_FILE);
   }
-  for (const r of result.refused) log(`[settings-file] refused ${r.field} ${r.value}: ${problemText(r.problem)}`);
+  for (const r of result.refused) log(`[settings-file] refused ${r.key} ${r.value}: ${problemText(r.problem)}`);
 }
 
 export function useSettingsFile() {
@@ -98,7 +100,7 @@ export function useSettingsFile() {
   const reported = useRef(new Set<string>());
   const busy = useRef(Promise.resolve());
 
-  const say = useCallback((lines: { text: string; problem: boolean }[]) => {
+  const say = useCallback((lines: Omit<FileNoteLine, "id" | "at">[]) => {
     if (lines.length === 0) return;
     const at = Date.now();
     const entries = lines.map((l) => ({ ...l, id: ++nextId.current, at }));
@@ -113,7 +115,7 @@ export function useSettingsFile() {
       const lines: { text: string; problem: boolean }[] = [];
       if (withChanges) for (const c of result.changes) lines.push({ text: `${c.setting}: ${c.from} → ${c.to}`, problem: false });
       for (const r of result.refused) {
-        lines.push({ text: t("settingsFileRefusedLine", [r.setting, r.value, problemMessage(r.problem), r.previous]), problem: true });
+        lines.push({ text: t("settingsFileRefusedLine", [`${r.setting} (${r.key})`, r.value, problemMessage(r.problem), r.previous]), problem: true });
       }
       const fresh = (keys: string[]) => keys.filter((k) => !reported.current.has(k));
       const unknown = fresh(result.unknown);
@@ -150,7 +152,7 @@ export function useSettingsFile() {
       await accept(result);
       report(result, false);
     } else if (opened.state === "unreadable") {
-      say([{ text: t("settingsFileUnreadable", [String(opened.line), String(opened.column)]), problem: true }]);
+      say([{ text: t("settingsFileUnreadable", [String(opened.line), String(opened.column)]), problem: true, unreadable: true }]);
     }
     await invoke("settings_file_fill", { values: base });
   }, [report, say]);
@@ -174,9 +176,9 @@ export function useSettingsFile() {
     const stops = [
       listen<{ doc: FileDoc; before: FileDoc | null }>("settings-file-edited", (e) => onEdited(e.payload)),
       listen<[number, number]>("settings-file-unreadable", (e) =>
-        say([{ text: t("settingsFileUnreadable", [String(e.payload[0]), String(e.payload[1])]), problem: true }]),
+        say([{ text: t("settingsFileUnreadable", [String(e.payload[0]), String(e.payload[1])]), problem: true, unreadable: true }]),
       ),
-      listen("settings-file-invalid-kept", () => say([{ text: t("settingsFileInvalidKept"), problem: true }])),
+      listen("settings-file-invalid-kept", () => say([{ text: t("settingsFileInvalidKept"), problem: true, unreadable: true }])),
     ];
     return () => stops.forEach((p) => void p.then((f) => f()).catch(() => {}));
   }, [onEdited, say]);

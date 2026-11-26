@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "सेटिंग्स फ़ाइल से बदला गया"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "सेटिंग्स फ़ाइल पढ़ी नहीं जा सकी"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ इस्तेमाल नहीं हो सकता। $REASON$ (पिछला मान $PREVIOUS$ रखा गया)",
     "placeholders": {

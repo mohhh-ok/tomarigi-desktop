@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Promijenjeno iz datoteke postavki"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Datoteka postavki nije se mogla pročitati"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ se ne može koristiti. $REASON$ (zadržana prethodna vrijednost $PREVIOUS$)",
     "placeholders": {

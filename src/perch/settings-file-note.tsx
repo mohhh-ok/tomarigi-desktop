@@ -13,7 +13,9 @@ export function SettingsFileNote({ notes, onDismiss }: { notes: FileNoteLine[]; 
       <button className="settings-file-note-close" onClick={onDismiss} aria-label={t("settingsFileNoteDismiss")} title={t("settingsFileNoteDismiss")}>
         <MdClose size={16} />
       </button>
-      <p className="settings-file-note-title">{t("settingsFileNoteTitle")}</p>
+      <p className="settings-file-note-title">
+        {t(notes.every((n) => n.unreadable) ? "settingsFileUnreadableTitle" : "settingsFileNoteTitle")}
+      </p>
       <ul>
         {notes.map((n) => (
           <li key={n.id} className={n.problem ? "settings-file-problem" : undefined}>

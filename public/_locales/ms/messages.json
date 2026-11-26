@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Ditukar daripada fail tetapan"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Fail tetapan tidak dapat dibaca"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: $VALUE$ tidak boleh digunakan. $REASON$ (nilai sebelumnya $PREVIOUS$ dikekalkan)",
     "placeholders": {

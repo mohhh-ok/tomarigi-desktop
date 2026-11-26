@@ -576,6 +576,9 @@
   "settingsFileNoteTitle": {
     "message": "Thay đổi từ tệp cài đặt"
   },
+  "settingsFileUnreadableTitle": {
+    "message": "Không đọc được tệp cài đặt"
+  },
   "settingsFileRefusedLine": {
     "message": "$SETTING$: không dùng được $VALUE$. $REASON$ (giữ giá trị cũ $PREVIOUS$)",
     "placeholders": {
