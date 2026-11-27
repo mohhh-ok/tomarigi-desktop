@@ -2,6 +2,8 @@
 
 A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watches AI coding agent sessions (Claude Code / Codex and the other agents in "Agents") as birds in an always-on-top floating window. It is the desktop version of the tomarigi Chrome extension.
 
+Being reorganized (the user: 「どきゅめんとはせいりして」, after Claude noted this file had grown to about 1,280 lines): this file is split into one file per topic under `docs/design/`, and this file becomes an index with one line per topic that says when to read it (Claude's reading of the request and its own decision on the layout). The content and its meaning don't change in the split; every reference to `docs/design.md "<section>"` in the code, tests, tools, and docs points to the new file and section. Text that looks out of date is listed for the parent session to decide on, not deleted in the split
+
 ## Scope
 
 - Tabs: Concierge (always shown; see "Without a provider" under "Concierge"), Garden, Perch, and Recent activity, in that order (Garden is the default); ⚙ opens the settings window ("Settings window")
