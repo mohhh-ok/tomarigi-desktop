@@ -13,9 +13,6 @@
 #   `Bumps ... from A to B.`、件名の `from A to B`）から semver の major/minor/patch を計算する。
 # - すべての依存が minor か patch のときだけマージする。major・版の下げ・版が読めない依存が
 #   1 つでもあるか、dependabot のコミットが無いときはマージしない。
-#
-# 正本: ~/Dev/agent-config/skills/dependabot-auto-merge/scripts/dependabot-merge-decision.sh
-# （テスト: 同じディレクトリの dependabot-merge-decision.test.sh）
 set -euo pipefail
 
 LC_ALL=C "${AWK:-awk}" '
