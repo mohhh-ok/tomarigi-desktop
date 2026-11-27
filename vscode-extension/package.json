@@ -32,10 +32,10 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/vscode": "~1.90.0",
+    "@types/vscode": "~1.146.0",
     "@types/mocha": "^10",
     "@vscode/test-electron": "^3.1.0",
-    "@vscode/vsce": "^4.0.0",
+    "@vscode/vsce": "^4.1.1",
     "mocha": "^11",
     "typescript": "~6.0.3"
   }
