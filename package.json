@@ -24,7 +24,7 @@
     "@tauri-apps/plugin-opener": "^2",
     "budoux": "0.10.3",
     "idb": "^8.0.3",
-    "motion": "^13.4.2",
+    "motion": "^14.14.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.7.0"
