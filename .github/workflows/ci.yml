@@ -1,0 +1,54 @@
+# Tests and builds every push to main and every pull request. The job name `test` is the required status check on main,
+# which Dependabot's auto-merge waits for (.github/workflows/dependabot-auto-merge.yml)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # https://v2.tauri.app/start/prerequisites/ (same packages as the release-linux job)
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+
+      - uses: swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: bun install --frozen-lockfile
+
+      # Before the tests: tauri's build script needs dist/ (frontendDist) to compile the crate for cargo test
+      - run: bun run build
+
+      - run: bun run test
+
+      - name: Install the VS Code extension's packages
+        working-directory: vscode-extension
+        run: bun install --frozen-lockfile
+
+      - working-directory: vscode-extension
+        run: bun run typecheck
+
+      - working-directory: vscode-extension
+        run: bun run test
+
+      # VS Code needs a display
+      - working-directory: vscode-extension
+        run: xvfb-run -a bun run test:integration
