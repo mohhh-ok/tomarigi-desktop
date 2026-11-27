@@ -8,9 +8,10 @@
 # 終了コード: 0 = マージする / 1 = マージしない
 #
 # 判定:
-# - message の metadata（updated-dependencies）に並ぶ依存ごとに、update-type があればそれを使う。
-#   無いとき（間接依存のセキュリティ更新など）は、本文の版の差（`Updates `x` from A to B`、
-#   `Bumps ... from A to B.`、件名の `from A to B`）から semver の major/minor/patch を計算する。
+# - message の metadata（updated-dependencies）に並ぶ依存ごとに、本文の版の差（`Updates `x` from A to B`、
+#   `Bumps ... from A to B.`、件名の `from A to B`）から major/minor/patch を計算する。0.y の y・0.0.z の z が
+#   上がる更新は major と同じに扱う（dependabot の update-type はこれを semver-minor / semver-patch と書く）。
+#   update-type が major なら版の差より優先し、版の差が読めないときは update-type を使う。
 # - すべての依存が minor か patch のときだけマージする。major・版の下げ・版が読めない依存が
 #   1 つでもあるか、dependabot のコミットが無いときはマージしない。
 set -euo pipefail
@@ -32,16 +33,20 @@ function numeric(v) {
 }
 
 # 2 つの版から update-type を計算する。判定できなければ空、下げなら "downgrade"。
-function calc(from, to,    a, b, na, nb, i, x, y) {
+# 互換を壊す桁は左端の 0 でない桁なので、0.y の y・0.0.z の z が上がる更新は major と同じに扱う。
+function calc(from, to,    a, b, na, nb, n, i, k, x, y) {
   from = numeric(from); to = numeric(to)
-  if (from == "" || to == "" || from == to) return ""
-  na = split(from, a, "."); nb = split(to, b, ".")
-  for (i = 1; i <= (na > nb ? na : nb); i++) {
+  if (from == "" || to == "") return ""
+  na = split(from, a, "."); nb = split(to, b, "."); n = (na > nb ? na : nb)
+  for (i = 1; i <= n; i++) {
     x = (i <= na) ? a[i] + 0 : 0; y = (i <= nb) ? b[i] + 0 : 0
-    if (x != y) { if (y < x) return "downgrade"; break }
+    if (x != y) break
   }
-  if (a[1] + 0 != b[1] + 0) return "version-update:semver-major"
-  if (na < 2 || nb < 2 || a[2] + 0 != b[2] + 0) return "version-update:semver-minor"
+  if (i > n) return ""
+  if (y < x) return "downgrade"
+  for (k = 1; k <= na && a[k] + 0 == 0; k++) ;
+  if (i <= k) return (k > 1 ? "version-update:semver-major（0.x の互換を壊す桁）" : "version-update:semver-major")
+  if (i == 2) return "version-update:semver-minor"
   return "version-update:semver-patch"
 }
 
@@ -58,7 +63,7 @@ function fromto(line,    s, p) {
   return 1
 }
 
-function decide_record(rec,    n, lines, i, line, inyaml, ndeps, name, utype, single_from, single_to, has_single, q, key, k, t, pf, pt, nm) {
+function decide_record(rec,    n, lines, i, line, inyaml, ndeps, name, utype, single_from, single_to, has_single, q, key, k, t, c, pf, pt, nm) {
   n = split(rec, lines, "\n")
   inyaml = 0; ndeps = 0; has_single = 0
   delete name; delete utype; delete qf; delete qt; delete qn; delete qi
@@ -89,7 +94,9 @@ function decide_record(rec,    n, lines, i, line, inyaml, ndeps, name, utype, si
     nm = name[i]
     if (qn[nm] > 0) { k = ++qi[nm]; if (k <= qn[nm]) { pf = qf[nm, k]; pt = qt[nm, k] } }
     else if (ndeps == 1 && has_single) { pf = single_from; pt = single_to }
-    if (t == "") t = calc(pf, pt)
+    # dependabot は 0.x の minor も semver-minor と書くので、minor/patch のときは版の差が読めればそちらを使う
+    c = calc(pf, pt)
+    if (t == "" || (c != "" && (t == "version-update:semver-minor" || t == "version-update:semver-patch"))) t = c
     printf "%s %s -> %s: %s\n", nm, (pf == "" ? "?" : pf), (pt == "" ? "?" : pt), (t == "" ? "判定できない" : t)
     if (t == "version-update:semver-minor" || t == "version-update:semver-patch") ok++
     else bad++

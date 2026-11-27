@@ -18,6 +18,29 @@ jobs:
           sparse-checkout: .github/scripts
           persist-credentials: false
 
+      # 必須のチェックが無い既定のブランチでは --auto が CI を待たずにマージするので、その場合は止める。
+      # branch protection の API は Administration の権限が要り GITHUB_TOKEN では読めないので、
+      # Contents の read で読める Get a branch と、Metadata の read で読める rulesets の API で数える。
+      - name: Stop if the default branch has no required checks
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          classic=$(gh api "repos/$REPO/branches/$BRANCH" \
+            --jq '[(.protection.required_status_checks.contexts // [])[]] | length')
+          # rulesets が使えないプラン（無料の private）では 403 が返るので 0 件と数える
+          if ! rules=$(gh api "repos/$REPO/rules/branches/$BRANCH" \
+            --jq '[.[] | select(.type == "required_status_checks")] | length' 2>/dev/null); then
+            rules=0
+          fi
+          echo "必須のチェック: branch protection $classic 件 / rulesets $rules 件"
+          if [ "$classic" -eq 0 ] && [ "$rules" -eq 0 ]; then
+            echo "::error::$BRANCH に必須のチェックが無いので、自動マージしない（CI を待たずにマージされる）"
+            exit 1
+          fi
+
       - name: Enable auto-merge for minor/patch updates
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
