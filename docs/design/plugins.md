@@ -1,5 +1,7 @@
 # Plugins
 
+Not implemented: this file is a plan, and the code has none of it yet (no plugin settings, no hook on what the concierge says).
+
 Plugins send what the concierge says to other services such as Slack (issue #12; the user: 「コンシェルジュの喋るタイミングのフックを実装」「adaptor形式で複数設置可能」「Slackなどと連携可能にする」「Slackなどはテンプレートとして用意する」, then 「plugin機能の一つとしてのhook」「plugins > Slack > hook」)
 
 - The user's first minutes: open ⚙ settings → "Plugins" → "Add plugin" → choose Slack, paste the Incoming Webhook URL, save → "Send test" posts a sample line to the channel → from then on, each new concierge advice is posted there, while the window is hidden too

@@ -2,7 +2,7 @@
 
 A desktop app for macOS, Windows, and Linux (Tauri 2; see "Platforms") that watches AI coding agent sessions (Claude Code / Codex and the other agents in "Agents") as birds in an always-on-top floating window. It is the desktop version of the tomarigi Chrome extension.
 
-Each topic is in its own file under `docs/design/`; read the file of the topic you are changing. A reference written as `docs/design/<file>.md "<name>"` points to a heading in that file, or to the list item that starts with that name (`tests/design-refs.test.ts` checks every such reference).
+Each topic is in its own file under `docs/design/`; read the file of the topic you are changing. A reference written as `docs/design/<file>.md "<name>"` points to a heading in that file, or to the list item that starts with that name (`tests/design-refs.test.ts` checks every such reference). Records of how a decision was reached (what was tried, measured, or changed before) are kept next to the spec they explain; only text that disagrees with the code is corrected (the user's decision when the file was split).
 
 - [Scope](design/scope.md): what the app includes and leaves out; read before adding a feature or a tab
 - [Language](design/language.md): when adding or changing UI text or a locale

@@ -1,6 +1,6 @@
 # Scope
 
-- Tabs: Concierge (always shown; see "Without a provider" under "Concierge"), Garden, Perch, and Recent activity, in that order (Garden is the default); ⚙ opens the settings window ("Settings window")
+- Tabs: Concierge (always shown; see "Without a provider" under "Concierge"), Garden, Perch, and Recent activity (its tab reads "Activity", `tabEventsLabel`), in that order (Garden is the default); ⚙ opens the settings window ("Settings window")
 - Watches the transcripts of every agent in "Agents" in parallel through adapters. State is decided by local heuristics only; no hooks are installed on the agent side
 - Bird states (sprites, aura while working, motion animations), and drag placement in the Garden
 - Icon sets (birds / gnome / cat / robot / frog) assigned per project
