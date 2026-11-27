@@ -1,4 +1,4 @@
-// continuing from the reply's text holds only while something the app sees can wake the Claude Code session (docs/design.md
+// continuing from the reply's text holds only while something the app sees can wake the Claude Code session (docs/design/turn-verdicts.md
 // "Turn verdicts"): readTail's wakes, the ledger (updateWakes), wakeSourceOf and sessionContinuing. Lines shaped like the
 // records Claude Code writes for ScheduleWakeup, CronCreate, Monitor and their cancellation; ids, names and texts made up
 import { beforeEach, describe, expect, test } from "bun:test";

@@ -1,4 +1,4 @@
-// The settings file (docs/design.md "Settings file"): reading a file value as the store's and back, checking an edit
+// The settings file (docs/design/settings-file.md "Settings file"): reading a file value as the store's and back, checking an edit
 // with the screen's checks (lib/settings-file.ts) against fake servers and folders, and the built-in schema and the Rust
 // key list staying the same as the code's
 import { describe, expect, test } from "bun:test";

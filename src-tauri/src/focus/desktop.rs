@@ -1,5 +1,5 @@
 // Claude Code sessions run by the Claude desktop app (its Code tab) have no terminal pane; clicking one opens it in
-// the desktop app (docs/design.md "Jumping to the terminal pane", Claude desktop app). The app keeps one record per
+// the desktop app (docs/design/jumping-to-terminal.md "Jumping to the terminal pane", Claude desktop app). The app keeps one record per
 // session, `<claude-code-sessions>/<…>/<…>/local_<id>.json`, whose `cliSessionId` is the transcript's session id and
 // whose `sessionId` is the `local_<id>` its link opens. Not a public spec, like the transcript formats
 use std::path::{Path, PathBuf};
@@ -158,7 +158,7 @@ pub(crate) struct CardScan {
     pub(crate) reliable: bool,
 }
 
-/// The cards of parents that the user started, from the records under dir (docs/design.md "The "?" for sessions waiting
+/// The cards of parents that the user started, from the records under dir (docs/design/waiting-question-mark.md "The "?" for sessions waiting
 /// on you"). A parent without its `local_<id>` (no `hostSessionId` in its sessions/<pid>.json, e.g. its process ended)
 /// is looked up by its transcript id in all records; then the records written at or after since_ms are read for the
 /// sessions started from the parents' cards
@@ -218,7 +218,7 @@ pub(crate) fn started_cards(dir: &Path, parents: &[CardParent], since_ms: u64, n
     CardScan { hosts, spawned, read, read_at_ms: now_ms, reliable: true }
 }
 
-/// Whether a record is a side chat's (`btw` in the desktop app; docs/design.md "Side chats and forked sessions of the
+/// Whether a record is a side chat's (`btw` in the desktop app; docs/design/side-chats-and-forks.md "Side chats and forked sessions of the
 /// Claude desktop app"): `spawnedFrom.btw` is true. A fork another session started has `spawnedFrom` and
 /// `forkedFromSessionId` too, but no `btw`
 pub(crate) fn is_side_chat_record(record: &serde_json::Value) -> bool {
@@ -461,7 +461,7 @@ mod tests {
         assert_eq!(find_local_id(Path::new("/nonexistent-tomarigi"), "t-a"), None);
     }
 
-    /// Side chats (docs/design.md "Side chats and forked sessions of the Claude desktop app"): records shaped like the
+    /// Side chats (docs/design/side-chats-and-forks.md "Side chats and forked sessions of the Claude desktop app"): records shaped like the
     /// desktop app's, ids made up
     #[test]
     fn a_side_chat_is_told_by_its_record() {

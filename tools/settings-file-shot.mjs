@@ -1,5 +1,5 @@
 // Shoots the settings window's "Settings file" section and the note the floating window shows when an edit of the
-// settings file is taken, for a UI check (docs/design.md "Settings file"). Headless, from a `vite build` output, with no
+// settings file is taken, for a UI check (docs/design/settings-file.md "Settings file"). Headless, from a `vite build` output, with no
 // dev server or port (setup and the build: tools/README.md "Playwright"):
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/settings-file-shots \
 //     node tools/settings-file-shot.mjs [scene ids...]

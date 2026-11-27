@@ -34,7 +34,7 @@ export function t(key: MessageName, substitutions?: string | string[]): string {
 }
 
 /** The English message whatever the UI language: what the log says of a refused value of the settings file
- * (docs/design.md "Settings file") */
+ * (docs/design/settings-file.md "Settings file") */
 export function englishText(key: MessageName, substitutions?: string | string[]): string {
   return resolveIn(en as MessageDict, key, substitutions);
 }

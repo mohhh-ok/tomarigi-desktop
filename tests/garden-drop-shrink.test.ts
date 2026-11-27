@@ -1,5 +1,5 @@
 // When the user drops a bird or block, the window shrinks once to the smallest size at which everything on screen keeps
-// its place (docs/design.md "Layout"), so carrying a bird back in from the edge brings the window back
+// its place (docs/design/layout.md "Layout"), so carrying a bird back in from the edge brings the window back
 import { describe, expect, test } from "bun:test";
 import { gardenDropScale, type GardenFit } from "../src/lib/garden-fit.ts";
 

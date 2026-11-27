@@ -12,10 +12,10 @@
 //   screen). Saves and restores the mode, and the position and size per mode
 // - garden_grow: grows the floating window when the Garden's birds don't fit, without saving the grown frame
 // - fade: the floating window's Garden fades until a bird is hovered
-// - settings_file: the settings file, its README and schema, and noticing edits (docs/design.md "Settings file")
-// - settings_window: the settings window (docs/design.md "Settings window")
+// - settings_file: the settings file, its README and schema, and noticing edits (docs/design/settings-file.md "Settings file")
+// - settings_window: the settings window (docs/design/settings-window.md "Settings window")
 // - tray: menu bar icon (show/hide, settings, window mode, updates, quit). Shown in the Dock and Cmd+Tab only in standard window mode
-// - updater: checks for, downloads, and installs app updates (docs/design.md "Updates")
+// - updater: checks for, downloads, and installs app updates (docs/design/updates.md "Updates")
 // This file keeps the shared log / path helpers, startup (run), and the command registration
 mod fade;
 mod fs;
@@ -61,7 +61,7 @@ pub(crate) fn log_dir() -> PathBuf {
     home().join("Library/Logs/tomarigi-desktop")
 }
 
-/// The app log's size limit: past it the file becomes app-log.1.txt, so about twice this is kept (docs/design.md)
+/// The app log's size limit: past it the file becomes app-log.1.txt, so about twice this is kept (docs/design/other.md)
 const LOG_LIMIT: u64 = 10 * 1024 * 1024;
 
 pub(crate) fn append_log(line: &str) {
@@ -83,7 +83,7 @@ pub(crate) fn append_log(line: &str) {
 /// Appends text to app-log.txt in dir. When the text would take the file past limit, the file is first renamed to
 /// app-log.1.txt (replacing an older one). The size is checked on each write, so every build sharing the file rolls it
 /// over; a rename that loses a race to another build is ignored. The folder and files are the user's only (0700 and
-/// 0600; docs/design.md), since the log holds advice text. Windows: %TEMP% is already the user's own folder
+/// 0600; docs/design/other.md), since the log holds advice text. Windows: %TEMP% is already the user's own folder
 fn append_log_in(dir: &Path, text: &str, limit: u64) {
     let mut folder = std::fs::DirBuilder::new();
     folder.recursive(true);
@@ -129,7 +129,7 @@ fn log(line: &str) {
     append_log(line);
 }
 
-/// The home directory: HOME, or USERPROFILE on Windows (agent folders are under it on every OS; docs/design.md
+/// The home directory: HOME, or USERPROFILE on Windows (agent folders are under it on every OS; docs/design/platforms.md
 /// "Platforms")
 pub(crate) fn home() -> PathBuf {
     #[cfg(windows)]
@@ -140,7 +140,7 @@ pub(crate) fn home() -> PathBuf {
 }
 
 /// The Claude desktop app's session id, `local_` and then hex digits and `-` (its sessions are addressed by it;
-/// docs/design.md "Watching"). Same rule as HOST_SESSION_ID in src/lib/transcript.ts
+/// docs/design/watching.md "Watching"). Same rule as HOST_SESSION_ID in src/lib/transcript.ts
 pub(crate) fn is_host_session_id(id: &str) -> bool {
     id.strip_prefix("local_")
         .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-'))
@@ -161,7 +161,7 @@ async fn tokio_sleep(ms: u64) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Linux: on a Wayland session the app runs through Xwayland. Pure Wayland has no always-on-top, no global cursor
-    // position, no window position restore, and no way to focus another app's window (docs/design.md "Platforms").
+    // position, no window position restore, and no way to focus another app's window (docs/design/platforms.md "Platforms").
     // Set before GTK starts; a GDK_BACKEND the user set is kept
     #[cfg(target_os = "linux")]
     if std::env::var_os("GDK_BACKEND").is_none() {
@@ -181,7 +181,7 @@ pub fn run() {
     let builder = builder.plugin(tauri_nspanel::init());
     builder
         .setup(|app| {
-            // Decide the BYOK key store from the identifier (docs/design.md "BYOK API keys")
+            // Decide the BYOK key store from the identifier (docs/design/byok-api-keys.md "BYOK API keys")
             init_key_store(&app.config().identifier);
             import_key_from_stdin(app.handle());
             let win = app.get_webview_window("main").expect("main window");

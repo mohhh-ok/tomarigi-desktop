@@ -1,4 +1,4 @@
-// "Window display" on the settings screen (switching between floating and standard windows; docs/design.md "Window mode"). Strings added in tomarigi-desktop.
+// "Window display" on the settings screen (switching between floating and standard windows; docs/design/window-and-menu-bar.md "Window mode"). Strings added in tomarigi-desktop.
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {
   windowModeHeading: {

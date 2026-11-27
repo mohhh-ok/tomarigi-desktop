@@ -82,7 +82,7 @@ export function RootAddDialog({
           </button>
         </div>
         <div className="root-add-choices">
-          {/* For people who moved an agent's folder with an environment variable (docs/design.md "Watched folders") */}
+          {/* For people who moved an agent's folder with an environment variable (docs/design/watched-folders.md "Watched folders") */}
           <p className="root-add-hint root-add-moved">{t("setupMovedFolderHint")}</p>
           {ROOT_CHOICES.map((choice, index) => (
             <div key={choice.kind} className="root-add-choice">

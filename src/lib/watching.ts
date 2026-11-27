@@ -1,4 +1,4 @@
-// Watching detection (docs/design.md "Watching"). Keeps a grace period so a bird that handed work to another session and is waiting
+// Watching detection (docs/design/watching.md "Watching"). Keeps a grace period so a bird that handed work to another session and is waiting
 // stays watching between the other session's turns. Doesn't depend on UI components or Tauri (can be checked by passing a time)
 import type { BirdState } from "./sessions";
 import type { ChickView, LiveSession, PeerLink, SessionEvent } from "./session-types";
@@ -26,7 +26,7 @@ export function isPeerActive(status: string | undefined, lastState: BirdState | 
  * early when it is after every linked session's last transcript write (lastWriteAt): the session took the other session's
  * result and finished its turn. Not compared with lastActiveAt, which is the poll time while the linked session counts as
  * working and so lags its last write by seconds. A linked session whose last write isn't known keeps the grace period
- * (docs/design.md "Watching")
+ * (docs/design/watching.md "Watching")
  */
 export function watchingCount(
   ownState: BirdState,
@@ -59,12 +59,12 @@ export interface FirstPrompt {
 
 /** A first prompt at most this long after the SessionStart hook's line was given at launch (`claude "<prompt>"`), not
  * typed: in the transcripts on this machine, prompts given at launch came within 0.1 seconds, typed ones mostly after
- * several (docs/design.md "Watching", "Sessions started by another session") */
+ * several (docs/design/watching.md "Watching", "Sessions started by another session") */
 export const PROMPT_AT_LAUNCH_MS = 2_000;
 
 /**
  * Whether the session was started by another session, not by the user, and the user hasn't talked to it since
- * (docs/design.md "Watching", "Sessions started by another session").
+ * (docs/design/watching.md "Watching", "Sessions started by another session").
  * - The Claude desktop app writes the first prompt of a session started by start_session with a turnOrigin other than
  *   "human" ("sdk", "host_synthetic"); one the user started is "human"
  * - A session started in a terminal writes "human" either way. It counts as started by another session when it was
@@ -82,7 +82,7 @@ export function startedBySession(first: FirstPrompt | undefined, latestTurnTyped
 }
 
 /**
- * Whether the session is a child, for the ◎ on its state line in the Concierge tab (docs/design.md "Concierge", a child's
+ * Whether the session is a child, for the ◎ on its state line in the Concierge tab (docs/design/concierge.md "Concierge", a child's
  * dot): started by another session, read from its own first prompt only (startedBySession without the typed flag). So it
  * stays a child after the user types in it and after its parent closes, unlike parentTakesOver
  */
@@ -105,7 +105,7 @@ export function startedBefore(a: number | undefined, b: number | undefined): boo
 }
 
 /**
- * Whether a parent takes this session's results and questions (docs/design.md "Watching", "Sessions started by another
+ * Whether a parent takes this session's results and questions (docs/design/watching.md "Watching", "Sessions started by another
  * session"): it was started by another session and is linked to a parent. A parent is a linked session that started
  * before it and either was not started by another session, or was and is linked now to one older than itself. So the
  * successor of a rebirth (started later, with a name and a prompt) isn't the child of the child its predecessor
@@ -180,7 +180,7 @@ export function takenOverByParent(sessionId: string, world: LinkWorld): boolean 
 /**
  * Whether a message the turn of the session's reply sent (turnSentToAt in lib/turn-sends.ts) went to a linked session that counts as
  * its parent (isParentOf): then the question its reply asks reached the parent, which takes it over (parentCanAnswer
- * in lib/turn-verdict.ts; docs/design.md "Sessions started by another session"). A message to another session (its own
+ * in lib/turn-verdict.ts; docs/design/watching.md "Sessions started by another session"). A message to another session (its own
  * child, a sibling) doesn't count
  */
 export function askSentToParent(sessionId: string, sentTo: readonly string[] | undefined, world: LinkWorld): boolean {
@@ -209,7 +209,7 @@ function candidateOf(peer: string, sessionId: string, world: LinkWorld): ParentC
 }
 
 /**
- * The linked sessions that started this one, which it doesn't watch (docs/design.md "Watching"): for a child
+ * The linked sessions that started this one, which it doesn't watch (docs/design/watching.md "Watching"): for a child
  * (isChildSession, so also after the user typed in it, unlike takenOverByParent), the linked sessions that count as its
  * parent (isParentOf). Empty for a session no other session started
  */
@@ -224,7 +224,7 @@ export type WatchTurnBy = TurnBy | "firstOnly";
 
 /**
  * Whether a session watches a linked session, by how the linked one stands to it and who started the linked one's
- * latest turn (docs/design.md "Watching"). A parent watches its own child whatever started the child's turn (it may be
+ * latest turn (docs/design/watching.md "Watching"). A parent watches its own child whatever started the child's turn (it may be
  * woken by its own child's report). Between unrelated sessions, "unknown" and "firstOnly" are on the safe side
  */
 export const WATCHES: Readonly<Record<LinkRelation, Readonly<Record<WatchTurnBy, boolean>>>> = {
@@ -234,7 +234,7 @@ export const WATCHES: Readonly<Record<LinkRelation, Readonly<Record<WatchTurnBy,
 };
 
 /**
- * The linked sessions it watches (docs/design.md "Watching"), by WATCHES. Feeds watchingCount (and so continuing) and
+ * The linked sessions it watches (docs/design/watching.md "Watching"), by WATCHES. Feeds watchingCount (and so continuing) and
  * the done hold (peerHoldChicks); the links themselves (peers) stay
  */
 export function peersWatchedBy<P extends Pick<PeerLink, "sessionId">>(sessionId: string, peers: readonly P[], world: LinkWorld): P[] {
@@ -266,7 +266,7 @@ export function peerHoldChicks(
  * its parent) and a needs reply its parent can answer (a wrap_up's ask; parentCanAnswer in lib/turn-verdict.ts) are
  * silent, so they chirp and stay in the log and feed but aren't read aloud. A needs reply on a question tool is read
  * aloud, since only the user can answer it. A permission prompt makes no event (deriveSessionEvents makes a needs reply
- * only from a tool call in the transcript), so nothing is read for it; the concierge still counts it (docs/design.md
+ * only from a tool call in the transcript), so nothing is read for it; the concierge still counts it (docs/design/watching.md
  * "Watching")
  */
 export function silentForParent<E extends Pick<SessionEvent, "type" | "silent" | "wrapUpAsk">>(event: E, takenOver: boolean): E {
@@ -275,7 +275,7 @@ export function silentForParent<E extends Pick<SessionEvent, "type" | "silent" |
 }
 
 /**
- * Looks up the running session a peer trace names (docs/design.md "Watching", "How links are found"). A trace is a
+ * Looks up the running session a peer trace names (docs/design/watching.md "Watching", "How links are found"). A trace is a
  * name (matched against `name` in sessions/<pid>.json) or a Claude desktop app id `local_…` (matched against
  * `hostSessionId`). Returns a lookup over the given running sessions
  */

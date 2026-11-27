@@ -1,4 +1,4 @@
-// The concierge's bubble (docs/design.md "Concierge"; perch/concierge-status-report.tsx): a line per session built by the
+// The concierge's bubble (docs/design/concierge.md "Concierge"; perch/concierge-status-report.tsx): a line per session built by the
 // app as 「<name>: <text> <state>」 with the name linking to its session, then the suggestions under their heading. No
 // name is searched for in text. Dictionaries aren't loaded here, so the app's own words (t()) render empty
 import { describe, expect, test } from "bun:test";
@@ -119,7 +119,7 @@ const contrast = (a: string, b: string) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-describe("the dot at each state line's left (docs/design.md \"Concierge\")", () => {
+describe("the dot at each state line's left (docs/design/concierge.md \"Concierge\")", () => {
   test.each([
     // [scene, the session, its dot's color, its word's color, its word's weight]
     ["finished", view("s", { state: "done", summary: "ok" }), "#1d5ba6", "#6b6456", undefined],
@@ -167,7 +167,7 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
   test("the ◎ is a ring and a filled center in the dot's color, cut out of the dot's box as one image", () => {
     const child = rule(".concierge-status-dot[data-child]") ?? "";
     // The box keeps the state's color (no background of its own) and one mask cuts the ring and the center out of it,
-    // so the two can't be rounded to device px apart (docs/design.md "Concierge")
+    // so the two can't be rounded to device px apart (docs/design/concierge.md "Concierge")
     expect(child).not.toContain("background");
     expect(child).toContain("-webkit-mask: var(--child-dot-mask) center / 100% 100% no-repeat;");
     expect(child).toContain("mask: var(--child-dot-mask) center / 100% 100% no-repeat;");
@@ -211,7 +211,7 @@ describe("the dot at each state line's left (docs/design.md \"Concierge\")", () 
   });
 });
 
-// A Japanese line breaks only between phrases in WebKit too (docs/design.md "Concierge"): U+200B between phrases, only in
+// A Japanese line breaks only between phrases in WebKit too (docs/design/concierge.md "Concierge"): U+200B between phrases, only in
 // what the bubble draws; the facts the lines are built from, and so speech, logs and hooks, never get it
 describe("phrase breaks", () => {
   const ZWSP = "\u200b";

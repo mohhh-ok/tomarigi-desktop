@@ -1,6 +1,6 @@
 // A chick that handed its report back, was sent one more request with SendMessage, resumed and handed back again, 18
 // seconds after the parent's Agent tool_result. It stayed working and held its parent, which had ended its turn asking
-// the user, at working, so the concierge didn't tell the user to answer (docs/design.md "Chicks that have finished")
+// the user, at working, so the concierge didn't tell the user to answer (docs/design/finished-chicks.md "Chicks that have finished")
 import { describe, expect, test } from "bun:test";
 import type { NativeDirectoryHandle, NativeFile } from "../src/lib/native-fs.ts";
 import { readTail } from "../src/lib/transcript.ts";

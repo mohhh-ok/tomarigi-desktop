@@ -1,5 +1,5 @@
 // Shoots the Concierge tab of the mock at given window widths, for a UI check of the tab's bubble (its suggestions and
-// state lines, docs/design.md "Concierge"). Headless, from a `vite build` output, with no dev server or port
+// state lines, docs/design/concierge.md "Concierge"). Headless, from a `vite build` output, with no dev server or port
 // (setup and the build: tools/README.md "Playwright"):
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/shots \
 //     node tools/concierge-tab-shot.mjs
@@ -233,7 +233,7 @@ async function measureGaps(page) {
 /**
  * Each suggestion and state line as laid out, its visual lines joined by " / ", with 「MID」 before it when a visual line
  * breaks between two kanji or kana with no phrase break (U+200B) there, and 「SPC」 when it breaks at a space right before
- * a kanji or kana with no phrase break there (「README / を」): a break inside a phrase (docs/design.md "Concierge").
+ * a kanji or kana with no phrase break there (「README / を」): a break inside a phrase (docs/design/concierge.md "Concierge").
  * U+200B is dropped from what is printed
  */
 function laidOutLines(page) {

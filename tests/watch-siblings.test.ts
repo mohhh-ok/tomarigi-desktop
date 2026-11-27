@@ -1,5 +1,5 @@
 // Between two sessions neither started, a session watches the other only while the other's latest turn was started
-// by a message from it, or a message from it arrived during that turn (docs/design.md "Watching"). A turn started by
+// by a message from it, or a message from it arrived during that turn (docs/design/watching.md "Watching"). A turn started by
 // the user's input or by a third session's message doesn't make it watching, hold its done, or make it continuing. A
 // first prompt and a turn whose starter isn't known count as before; a parent watches its own child whatever started
 // the child's turn; the links stay.

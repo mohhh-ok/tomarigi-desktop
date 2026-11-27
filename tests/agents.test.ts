@@ -1,4 +1,4 @@
-// The adapters of docs/design.md "Agents": each format is read into the shared TailInfo, and deriveState gives the
+// The adapters of docs/design/agents.md "Agents": each format is read into the shared TailInfo, and deriveState gives the
 // same states as for Claude Code. Fixtures follow each agent's source (Qwen Code, Copilot CLI, Gemini CLI; no
 // install was available) or the shape of real files (OpenCode 1.19.0, cursor-agent 2025.09.18 / 2026.10.18), with made-up text
 import { describe, expect, test } from "bun:test";

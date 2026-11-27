@@ -348,7 +348,7 @@ describe("extractQuestion", () => {
 });
 
 describe("waitingOnOf", () => {
-  // What a waiting session waits on, for the concierge (docs/design.md "Concierge"). Claude Code writes a question
+  // What a waiting session waits on, for the concierge (docs/design/concierge.md "Concierge"). Claude Code writes a question
   // tool's tool_use only after it is answered, so while it is open only sessions/<pid>.json's waitingFor tells
   test("a question tool already in the transcript is a question", () => {
     expect(waitingOnOf(true, undefined)).toBe("question");

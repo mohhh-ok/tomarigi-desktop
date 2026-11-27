@@ -1,4 +1,4 @@
-// The concierge's look (docs/design.md "Concierge"): the image the user picked (owl or penguin), the same in every
+// The concierge's look (docs/design/concierge.md "Concierge"): the image the user picked (owl or penguin), the same in every
 // icon set so it reads as different from the session birds, the one line of advice above the Perch / Recent activity
 // lists, and the choice of look in settings. The Garden's concierge bird is a GardenNode (garden.tsx) drawn with
 // ConciergeGlyph

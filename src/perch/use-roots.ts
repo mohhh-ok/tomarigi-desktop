@@ -18,7 +18,7 @@ import {
 } from "@/lib/settings-store";
 import type { PerchSource } from "./source";
 
-/** The watched folders: their state, read permission, and the settings screen's operations (docs/design.md "Watched
+/** The watched folders: their state, read permission, and the settings screen's operations (docs/design/watched-folders.md "Watched
  * folders"). Each operation reads the latest list from a ref, so two calls in a row don't work on a stale copy */
 export function useRoots(source: PerchSource) {
   const [roots, setRootsState] = useState<RootEntry[]>([]);

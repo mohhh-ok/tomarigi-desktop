@@ -53,7 +53,7 @@ Env: `WIDTHS`, `HEIGHT`, `QUERY` (another mock scene; `preset=concierge-long&tab
 long enough to be cut at 3 lines; `preset=concierge-mixed&tab=concierge&concierge=` has Japanese lines with a long run of
 English words, which should wrap between the words), `SHOT_LANG=en`, `NAME` (the files' prefix), `LABEL` (drawn at
 the top left of each image, to tell shots apart), `REST=1` (at rest), `CSS` (a style sheet added to the page, to try a
-value before writing it, e.g. `CSS='.concierge-status-lines { --dot-nudge: 1px }'`). `WAIT` (the selector waited for, default the tab's bubble; `.garden-node.concierge` with `QUERY='preset=same-project&concierge='` shoots the Garden), `CLICK` (a selector clicked before the shot, e.g. the header's mute button). Writes `<OUT>/<NAME>-<width>.png` at `DPR`. It also prints the gaps between the bubble's line boxes: two suggestions, the suggestions and the state lines, two state lines. And the bubble body's padding as laid out, with how far the ink of everything in it (text, underlines, dots) is from each of its edges, and from the lowest box in it (the setup note's button) to its bottom, in CSS px (docs/design.md "Concierge", the bubble's own padding). `QUERY='preset=concierge-one&tab=concierge&concierge='` has one suggestion and one state line, with `&conciergeSuggestions=none` one state line only, and without `concierge=` (`preset=concierge-one&tab=concierge`) the bubble shown without a provider.
+value before writing it, e.g. `CSS='.concierge-status-lines { --dot-nudge: 1px }'`). `WAIT` (the selector waited for, default the tab's bubble; `.garden-node.concierge` with `QUERY='preset=same-project&concierge='` shoots the Garden), `CLICK` (a selector clicked before the shot, e.g. the header's mute button). Writes `<OUT>/<NAME>-<width>.png` at `DPR`. It also prints the gaps between the bubble's line boxes: two suggestions, the suggestions and the state lines, two state lines. And the bubble body's padding as laid out, with how far the ink of everything in it (text, underlines, dots) is from each of its edges, and from the lowest box in it (the setup note's button) to its bottom, in CSS px (docs/design/concierge.md "Concierge", the bubble's own padding). `QUERY='preset=concierge-one&tab=concierge&concierge='` has one suggestion and one state line, with `&conciergeSuggestions=none` one state line only, and without `concierge=` (`preset=concierge-one&tab=concierge`) the bubble shown without a provider.
 
 `ENGINE=webkit` shoots in Playwright's WebKit, the engine of the app's WebView on macOS (`bunx playwright install
 webkit` in the Playwright directory); the default is Chromium.
@@ -62,13 +62,13 @@ Run both: a dot on a fraction of a px is rounded to device px differently at eac
 It also prints each suggestion and state line as laid out, its lines joined by ` / `, with `MID` in front when a line
 breaks between two kanji or kana with no phrase break (U+200B) there (`SPC` when it breaks at a space right before a
 kanji or kana with none, 「README / を」), and writes the same to `<OUT>/<NAME>-<width>-lines.txt`
-(docs/design.md "Concierge": a Japanese line breaks only between phrases).
+(docs/design/concierge.md "Concierge": a Japanese line breaks only between phrases).
 
 After each shot it prints, per state line, how far the vertical center of the dot's ink (the pixels it paints) is
 from that of the ink of the lowercase x-height letters (a c e m n o r s u v w x z) on the line's first line, and from
 that of its kanji and kana (dot minus text; plus is lower), in device px (at `DPR`) and CSS px, and writes it to
 `<OUT>/<NAME>-<width>-dots.txt`. Against the x-height letters, every line should be within ±0.5 device px in WebKit
-(the dot sits at their middle, docs/design.md "Concierge"; the kanji and kana come out about 1px above it). Ink, not
+(the dot sits at their middle, docs/design/concierge.md "Concierge"; the kanji and kana come out about 1px above it). Ink, not
 the text's box: the box is the UI font's ascent to descent (SF, the first of `-apple-system`, with a tall ascent), so
 its middle is above where the letters are. Each file's first line names the font the Japanese is drawn in (by
 comparing a canvas drawing against candidate fonts) and the primary font's ascent and descent. The ink comes from three
@@ -82,7 +82,7 @@ be within ±0.5 device px of the ring's middle at `DPR=1` and `DPR=2` in both en
 
 ## llm-regression/
 
-The LLM regression test (docs/design.md "LLM regression test"): runs the turn verdict and the concierge on the scenes
+The LLM regression test (docs/design/llm-regression-test.md "LLM regression test"): runs the turn verdict and the concierge on the scenes
 in `cases.ts` with real models and prints the pass rate per scene and provider. Not part of `bun run test`; run it
 when `bun run test:llm:needed` says a change can change its results.
 
@@ -175,7 +175,7 @@ Env: `QUERY` (the mock's query; default the Concierge tab with `cycle=0.5`), `TA
 
 ## bubble-hit.mjs
 
-Checks in a headless browser what a click on a speech bubble reaches (docs/design.md "Fade until hovered"): the
+Checks in a headless browser what a click on a speech bubble reaches (docs/design/fade-until-hovered.md "Fade until hovered"): the
 concierge's bubble takes clicks over its whole box, its empty space included, so a bird drawn under it isn't pressed
 through it and nothing jumps; a bird's own bubble lets clicks through. Runs the mock from a `vite build` output, with no
 dev server or port, in the Garden (the concierge with a bird put under its bubble, and birds with bubbles,
@@ -195,7 +195,7 @@ any check is NG.
 
 Shoots the settings' "Readout voice" in each state (system voice, the local server's form and saved card, the
 VOICEVOX credit, the Japanese-only note, a server that isn't running, a computer without a speech engine), for a UI
-check (docs/design.md "Readout voice (local TTS server)"). Each scene is driven through the screen. The page's calls to
+check (docs/design/readout-voice.md "Readout voice (local TTS server)"). Each scene is driven through the screen. The page's calls to
 Rust are answered with what real servers answered (`tests/fixtures/tts/`); no server has to run. Needs a `vite build`
 output (`DIST`) and Playwright ("Playwright" above).
 
@@ -210,7 +210,7 @@ Env: `WIDTHS` (default `760,340,260`), `HEIGHT` (default 900). Writes `<OUT>/<sc
 
 Shoots the settings' "Settings file" section (as it opens, with this launch's list, with the note that the MCP server was
 removed) and the note the floating window shows when an edit of the settings file is taken, in Japanese and English, for
-a UI check (docs/design.md "Settings file"). The page's calls to Rust are answered as `settings_file.rs` answers them, and
+a UI check (docs/design/settings-file.md "Settings file"). The page's calls to Rust are answered as `settings_file.rs` answers them, and
 the edit is sent to the page's own "settings-file-edited" listener, so it runs through the app's real checks. Needs a
 `vite build` output (`DIST`) and Playwright ("Playwright" above).
 

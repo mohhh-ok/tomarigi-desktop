@@ -63,7 +63,7 @@ export interface TailInfo {
   // the tail window within tens of seconds, so the ledger is kept across scans in lib/session-store.ts
   // (backgroundTaskCache)
   backgroundTaskStarts: Map<string, number>;
-  // What the session set up to wake itself later, Claude Code's own tools (docs/design.md "Turn verdicts"): a
+  // What the session set up to wake itself later, Claude Code's own tools (docs/design/turn-verdicts.md "Turn verdicts"): a
   // ScheduleWakeup (key "wakeup": one pending at a time, a new one replaces it), a CronCreate ("cron:<id>") and a Monitor
   // ("monitor:<task id>"), from the results confirming them. until is when it fires or expires (absent for a recurring
   // cron or a persistent monitor). ends are when one was cancelled or stopped: ScheduleWakeup's stop, CronDelete, TaskStop,
@@ -75,7 +75,7 @@ export interface TailInfo {
   // it is origin.name on the isMeta user line (or <cross-session-message from-name="…"> in the body if
   // absent). The value is the latest time of that trace. So it doesn't vanish when it leaves the tail
   // window, lib/session-store.ts (peerNameCache) keeps it across scans.
-  // Used to decide the link for watching (docs/design.md "Watching")
+  // Used to decide the link for watching (docs/design/watching.md "Watching")
   peerNames: Map<string, number>;
   // The sessions each turn in the window sent a message to (SendMessage's to, the desktop app's send_message's
   // session_id), as peerNames names them, with the sends before the window's first turn start. A parent takes over the
@@ -90,7 +90,7 @@ export interface TailInfo {
   turnEnded?: true;
   // A tool call in the window has no result yet (a tool still running, also when the tail is the result of another call
   // made in parallel). A chick with an open tool is abandoned only after CHICK_TOOL_ABANDONED_MS (deriveState in
-  // lib/bird-state.ts; docs/design.md "Chicks that have finished")
+  // lib/bird-state.ts; docs/design/finished-chicks.md "Chicks that have finished")
   toolOpen?: true;
   // The last conversation line is a hand-back to the caller (Claude Code's SubagentHandback tool_use, or its result):
   // a chick that did this has finished, whatever the parent's records say. A later conversation line (a resume) clears it
@@ -123,7 +123,7 @@ export interface TailEvent {
   // kind === "tool_use" only: the call ends the turn asking the user to decide (the Claude desktop app's
   // mcp__ccd_turn__wrap_up with an `ask`, see desktopAskOf); question is that `ask`
   ask?: { question?: string };
-  // The Claude desktop app's session proposals in this line (docs/design.md "The "?" for sessions waiting on you"): see
+  // The Claude desktop app's session proposals in this line (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you"): see
   // ProposalTrace
   proposal?: ProposalTrace;
 }
@@ -166,9 +166,9 @@ const CLOSING_SLASH_COMMANDS = ["/clear"];
 // WRITING_MS and its turn was summarized and sent to the concierge again. Measured on the local transcripts: 3,692 of
 // 3,942 away_summary lines came more than 6 seconds after the last user / assistant line and were not followed by one
 // within 30 seconds. Other lines written late (queue-operation, api_error, ...) mostly start or belong to a turn and
-// still count (docs/design.md "Bird states")
+// still count (docs/design/bird-states.md "Bird states")
 /** The line Claude Code writes once a turn is over. In the local transcripts it always came right after the turn's last
- * assistant text (docs/design.md "Bird states") */
+ * assistant text (docs/design/bird-states.md "Bird states") */
 function isTurnEndLine(entry: TranscriptEntry): boolean {
   return entry.type === "system" && entry.subtype === "turn_duration";
 }
@@ -535,7 +535,7 @@ function commonPrefix(items: string[]): string {
 /**
  * When the session last wrote: the time of the last line with a timestamp, or the file's mtime when the tail window has
  * none. The basis of its state (sinceMs), and once it is done / dozing, when its turn ended (watchingCount's
- * ownTurnEndedAt; docs/design.md "Watching"). Chicks use the same basis for sinceMs and
+ * ownTurnEndedAt; docs/design/watching.md "Watching"). Chicks use the same basis for sinceMs and
  * for choosing parent candidates
  */
 export function lastWrittenAt(tail: Pick<TailInfo, "lastEventAt">, lastModified: number): number {

@@ -1,4 +1,4 @@
-// The Concierge tab (docs/design.md "Concierge"; concierge-tab.ts): the concierge bird and its bubble alone, at the top
+// The Concierge tab (docs/design/concierge.md "Concierge"; concierge-tab.ts): the concierge bird and its bubble alone, at the top
 // center, drawn as in the Garden (GardenNode). It isn't placed or saved like the birds:
 // dragging it moves the floating window, which is the concierge's size. It reports the size the window needs for it
 import { useEffect, useLayoutEffect, useRef, useState } from "react";

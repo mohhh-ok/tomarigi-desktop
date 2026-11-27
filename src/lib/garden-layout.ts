@@ -12,9 +12,9 @@ const KEY_GARDEN_POSITIONS = "gardenPositions";
 export interface GardenPosition {
   x: number; // % of container width
   y: number; // % of container height
-  /** The user dropped it there (or its block): it opens there even over other birds (docs/design.md "Layout") */
+  /** The user dropped it there (or its block): it opens there even over other birds (docs/design/layout.md "Layout") */
   byUser?: boolean;
-  /** The user dragged it: drawn in front of the birds and bubbles, higher in front of lower (docs/design.md "Layout") */
+  /** The user dragged it: drawn in front of the birds and bubbles, higher in front of lower (docs/design/layout.md "Layout") */
   front?: number;
 }
 
@@ -45,7 +45,7 @@ export function hashId(id: string): number {
 /**
  * What is saved after the user drops a bird: every bird where it settled on screen (center and top in px), not where
  * the pointer was released. A bird dropped onto another settles beside it, and the birds that appear on the next launch
- * are each placed at their saved spot, so the Garden opens as it was right after the drop (docs/design.md "Layout").
+ * are each placed at their saved spot, so the Garden opens as it was right after the drop (docs/design/layout.md "Layout").
  * Birds the user placed (byUser: dropped, or in a block that was) are marked, so they open there over others too.
  * Saved spots of birds not on screen are kept
  */
@@ -73,7 +73,7 @@ export function positionsAfterDrop(args: {
   return next;
 }
 
-/** Birds the user dragged, by how far in front (1 the back; docs/design.md "Layout"). Ranks are made consecutive, so
+/** Birds the user dragged, by how far in front (1 the back; docs/design/layout.md "Layout"). Ranks are made consecutive, so
     they don't grow without end as birds are dragged again and again */
 export function frontRanks(positions: Record<string, GardenPosition>): Map<string, number> {
   const fronts = [...new Set(Object.values(positions).flatMap((p) => (p.front === undefined ? [] : [p.front])))].sort(

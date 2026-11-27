@@ -49,14 +49,14 @@ export const wakeCache = new Map<string, Map<string, Wake>>();
 // Absent lostAt: something could wake it at that write. Gives SessionView.unwakeableForMs
 export const unwakeableCache = new Map<string, { writtenAt: number; lostAt?: number }>();
 
-// Watching (docs/design.md "Watching"): per session (view id), the names of peers it exchanged inter-session
+// Watching (docs/design/watching.md "Watching"): per session (view id), the names of peers it exchanged inter-session
 // messages with and the latest time for each. Kept across scans so that traces that left the tail window remain
 export const peerNameCache = new Map<string, Map<string, number>>();
 // How far into the transcript the exchange traces have been read (end of scan_peer_names in Rust). To pick up
 // traces outside the tail window too, the first read covers the whole file and later reads only the new part
 export const peerScanOffset = new Map<string, number>();
 // The first prompt of each session's transcript (view id), read once from the top of the file (FirstPrompt in
-// lib/watching.ts). Tells a session started by another session (docs/design.md "Watching")
+// lib/watching.ts). Tells a session started by another session (docs/design/watching.md "Watching")
 export const firstPromptCache = new Map<string, FirstPrompt>();
 export const latestTurns = new Map<string, LatestTurn>();
 // key: session (view id). What its last few turns sent to other sessions (lib/turn-sends.ts), from the whole-file read

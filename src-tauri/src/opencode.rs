@@ -1,4 +1,4 @@
-// ---- OpenCode sessions (docs/design.md "Agents") ----
+// ---- OpenCode sessions (docs/design/agents.md "Agents") ----
 // OpenCode keeps its sessions in a SQLite database (`~/.local/share/opencode/opencode.db`, WAL). It is opened
 // read-only, so OpenCode's own writes are never blocked. The tables are OpenCode internals (measured with
 // opencode 1.19.0: session / message / part, with message.data and part.data as JSON); the JS adapter

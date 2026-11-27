@@ -1,0 +1,15 @@
+# Updates
+
+The app updates itself with Tauri's official updater plugin (the user chose it over only telling about a new version: 「aかなぁ」)
+
+- Checked at launch and every 6 hours after that. "Check for updates" in the menu bar menu and in settings checks at once (Claude's own decision)
+- A found update is not installed by itself. The menu bar menu and settings show "Update to v<version>"; clicking it downloads, installs, and relaunches, with progress shown in settings. Nothing is added to the Garden, since it is fully transparent at rest (Claude's own decision)
+- Up to date / check failed are shown in settings only after a manual check; automatic checks stay silent when there is nothing new (Claude's own decision)
+- Where updates come from: `latest.json` on the newest published GitHub Release (`https://github.com/mohhh-ok/tomarigi-desktop/releases/latest/download/latest.json`), in the shape tauri-action makes it, written once by the release workflow's last job (docs/release.md). Draft releases aren't "latest", so users get a version only once it is published
+- Bundles: macOS `.app.tar.gz` (universal), Windows NSIS, Linux AppImage and .deb (the updater plugin supports .deb from 2.10.0)
+- Signing: update bundles are signed with an updater key pair, separate from Apple's signing (the plugin requires it). The public key is in `tauri.conf.json`. The private key and its password are GitHub secrets for CI, with a backup in Google Secret Manager (the user has no password manager: 「1passwordとかもってないんだよなぁ。google secret managerくらいしかもってない」; the project is the user's personal one (its id is in the local `.env` as `UPDATER_KEY_GCP_PROJECT`, see docs/release.md), which already keeps their other backup secrets, Claude's own decision). Losing the key would leave existing users unable to update, so the backup is required. Names and steps are in docs/release.md
+- Versions before the first one with the updater can't update themselves; their users replace the app by hand once
+- The checking, downloading, and installing are done on the Rust side (`src-tauri/src/updater.rs`), since the menu bar item has to work without the window; the window only shows the status and asks for a check or an install. So the webview gets no updater permissions, and the relaunch is Tauri's own `AppHandle::restart` instead of the process plugin (Claude's own decision)
+- Clicking the menu bar item opens the settings window on its Updates section ("Settings window"), so the result of a check and the download progress are visible (Claude's own decision)
+- The menu bar item is "Check for Updates", "Checking for Updates…" (greyed) during a manual check, "Update to v<version>" once found, and "Updating…" (greyed) while downloading and installing. Japanese / English like the rest of the menu (Claude's own decision)
+- A debug build checks `TOMARIGI_UPDATER_ENDPOINT` instead of GitHub when it is set, so the whole flow can be tried against a local `latest.json` before a release (the plugin allows http only in debug builds) (Claude's own decision)

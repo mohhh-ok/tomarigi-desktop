@@ -1,4 +1,4 @@
-// ---- Settings window (docs/design.md "Settings window") ----
+// ---- Settings window (docs/design/settings-window.md "Settings window") ----
 //
 // A standard window of its own (label `settings`) loading the same frontend with `?view=settings`. Built when opened and
 // destroyed when closed. Its size and place are saved to settings-window.json and restored when it is built again.
@@ -133,7 +133,7 @@ fn focus_later(app: &AppHandle) {
 }
 
 /// Makes the window the key window. In floating mode (Accessory) the app isn't active, so it is activated first; the
-/// activation policy isn't changed, so no Dock icon shows (checked on macOS; docs/design.md "Settings window")
+/// activation policy isn't changed, so no Dock icon shows (checked on macOS; docs/design/settings-window.md "Settings window")
 fn focus(win: &WebviewWindow) {
     #[cfg(target_os = "macos")]
     unsafe {

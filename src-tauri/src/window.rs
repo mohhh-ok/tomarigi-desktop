@@ -28,7 +28,7 @@ struct WindowState {
     height: u32,
 }
 
-/// Window mode (docs/design.md "Window and menu bar")
+/// Window mode (docs/design/window-and-menu-bar.md "Window and menu bar")
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub(crate) enum WindowMode {
@@ -206,7 +206,7 @@ pub(crate) fn ns_window(win: &WebviewWindow) -> Option<&objc2_app_kit::NSWindow>
 }
 
 /// Make the window itself transparent. The content's .page paints a translucent color, and set_backdrop's frosted
-/// glass blurs what is behind it (for both floating and standard windows; docs/design.md "Window and menu bar")
+/// glass blurs what is behind it (for both floating and standard windows; docs/design/window-and-menu-bar.md "Window and menu bar")
 #[cfg(target_os = "macos")]
 fn set_window_clear(win: &WebviewWindow) {
     use objc2::runtime::AnyObject;
@@ -299,7 +299,7 @@ fn set_backdrop(win: &WebviewWindow, radius: f64) {
     }
 }
 
-// Windows and Linux (docs/design.md "Platforms"): the same two modes with tauri's window calls. The floating window is
+// Windows and Linux (docs/design/platforms.md "Platforms"): the same two modes with tauri's window calls. The floating window is
 // transparent, borderless, always on top (a request the X11 window manager may ignore), and hidden from the taskbar.
 // The frosted background is Acrylic on Windows; Linux has none and shows the page's translucent color as is
 

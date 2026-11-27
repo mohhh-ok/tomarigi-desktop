@@ -1,4 +1,4 @@
-// Speech bubbles in the garden (docs/design.md "Layout", "Speech bubbles"): a bubble shows its whole text, wrapping past
+// Speech bubbles in the garden (docs/design/layout.md "Layout", "Speech bubbles"): a bubble shows its whole text, wrapping past
 // 180px (120px inside a watch block), and is drawn above the birds; only the status lines of a row line up below the bubbles
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
@@ -355,7 +355,7 @@ describe("layoutBubbles: a pair that can't be moved apart sideways goes above", 
 });
 
 
-// A bubble above its bird goes above the name, so the name stays readable (docs/design.md "Layout"): its bottom is 7px
+// A bubble above its bird goes above the name, so the name stays readable (docs/design/layout.md "Layout"): its bottom is 7px
 // above the name's top, and the tail passes beside the name down to the icon
 describe("layoutBubbles: above the name", () => {
   const named = (id: string, x: number, y: number): LaidBird => ({ id, x, y, nameTop: 4, iconTop: 20, iconBottom: 56 });

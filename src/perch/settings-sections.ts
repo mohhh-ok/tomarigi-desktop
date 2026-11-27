@@ -1,4 +1,4 @@
-// The settings window's sections (docs/design.md "Settings window"): their order on the left, their names, and which
+// The settings window's sections (docs/design/settings-window.md "Settings window"): their order on the left, their names, and which
 // one is open (in the URL, and saved so the next open shows it again)
 import type { MessageName } from "@/lib/i18n";
 import { kvGet, kvPut } from "@/lib/kv";

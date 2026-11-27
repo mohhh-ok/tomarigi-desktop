@@ -1,4 +1,4 @@
-// The concierge's bubble in the Concierge tab (docs/design.md "Concierge"): the suggestions that came with the advice
+// The concierge's bubble in the Concierge tab (docs/design/concierge.md "Concierge"): the suggestions that came with the advice
 // under their heading at the top, standing out, then a line per session, 「<name>: <text> <state>」, built here from the
 // app's facts (lib/concierge-status.ts) on every render, smaller and muted as the detail to read after. Each name links to its session by id; no name is searched for in text. A suggestion
 // whose session changed since it came is dimmed with its state now
@@ -15,7 +15,7 @@ import {
 import type { SessionView } from "@/lib/sessions";
 import { sinceAfterState } from "./format-time";
 
-// The birds' own state words (docs/design.md "Bird states"), so a state reads the same here as at the bird
+// The birds' own state words (docs/design/bird-states.md "Bird states"), so a state reads the same here as at the bird
 const STATE_LABEL = {
   reply: "birdWaitingLabel",
   done: "eventDoneLabel",
@@ -79,7 +79,7 @@ function Jump({ onJump, children }: { onJump: () => void; children: ReactNode })
   );
 }
 
-// A state line shows at most this many lines in all, name and state included (docs/design.md "Concierge")
+// A state line shows at most this many lines in all, name and state included (docs/design/concierge.md "Concierge")
 export const STATE_LINE_MAX_LINES = 3;
 
 /**
@@ -176,7 +176,7 @@ export function ConciergeStatusReport({
       <span ref={linesRef} className="concierge-status-lines">
         {lines.map((l) => (
           <span key={l.sessionId} className="concierge-status-line">
-            {/* Every line starts with a dot whose color tells the state (docs/design.md "Concierge"); a mark, so it isn't
+            {/* Every line starts with a dot whose color tells the state (docs/design/concierge.md "Concierge"); a mark, so it isn't
                 read as a link (its color by its state in styles/concierge.css), and the state word stays after the text so the state doesn't rest on color alone */}
             <span className="concierge-status-dot" data-status={l.status} data-child={l.child} aria-hidden="true" />
             {name(l.sessionId, l.name, true)}

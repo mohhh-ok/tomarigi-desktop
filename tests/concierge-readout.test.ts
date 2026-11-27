@@ -1,4 +1,4 @@
-// What the voice reads while the Concierge tab is open (docs/design.md "Readout in the Concierge tab"). Each scene feeds
+// What the voice reads while the Concierge tab is open (docs/design/concierge.md "Readout in the Concierge tab"). Each scene feeds
 // the app's own ConciergeReadout the same calls use-concierge.ts and App.tsx make, in order, and checks what is read
 import { describe, expect, test } from "bun:test";
 import type { ConciergeSuggestion } from "../src/lib/concierge.ts";

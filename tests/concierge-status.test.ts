@@ -1,4 +1,4 @@
-// The Concierge tab's bubble (docs/design.md "Concierge"; lib/concierge-status.ts): a line per session built by the app
+// The Concierge tab's bubble (docs/design/concierge.md "Concierge"; lib/concierge-status.ts): a line per session built by the app
 // from its own facts on every poll, and the suggestions that come with the advice, dimmed once their session changed
 import { describe, expect, test } from "bun:test";
 import {
@@ -87,7 +87,7 @@ describe("the state lines", () => {
     expect(more).toBe(3);
   });
 
-  // Which lines get the time since they finished, by where the session stands (docs/design.md "Concierge")
+  // Which lines get the time since they finished, by where the session stands (docs/design/concierge.md "Concierge")
   test.each([
     ["finished (done)", view("a", { state: "done", sinceMs: 720_000, summary: "ok" }), 720_000],
     ["finished (dozing)", view("a", { state: "dozing", sinceMs: 3_600_000, summary: "ok" }), 3_600_000],

@@ -23,7 +23,7 @@ export function codexDirOf(root: RootEntry): string {
 }
 
 // Birds are shown while their process is alive and removed right away once it ends; elapsed time plays no part
-// (docs/design.md "Removing birds of ended sessions"). The check doesn't depend on the terminal type.
+// (docs/design/removing-ended-birds.md "Removing birds of ended sessions"). The check doesn't depend on the terminal type.
 // Claude Code (including `claude -p` / SDK starts; measured with 2.1.284) writes <config>/sessions/<pid>.json right
 // after it starts and deletes it when it ends (measured: every remaining file had a live pid). The transcript isn't
 // created until the first message, so "there is a transcript but no live sessions file" normally means the process

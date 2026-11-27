@@ -1,4 +1,4 @@
-// Which Perch rows show the state and elapsed time on a second line under the name (docs/design.md "Display names")
+// Which Perch rows show the state and elapsed time on a second line under the name (docs/design/display-names.md "Display names")
 import { useLayoutEffect, useState, type RefObject } from "react";
 
 /** What decides whether a row fits on one line. Widths are the texts' own widths, not what the layout gave them, so

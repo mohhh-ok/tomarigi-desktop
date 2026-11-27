@@ -1,5 +1,5 @@
 // A Claude desktop app session that ends its turn leaving a proposal card (start_session's `Proposed "…" (task_id: …)`)
-// waits on the user to start it, as a question tool does (docs/design.md "The "?" for sessions waiting on you"). Before,
+// waits on the user to start it, as a question tool does (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you"). Before,
 // a parent ended its turn asking the user to start its card, the turn verdict was not asking, and the concierge said nothing
 // needed a reply. The wait is told from the tool calls in the transcript, not the reply's text; a card is started when
 // the desktop app's record of a session says it came from that card; the next turn ends the wait too

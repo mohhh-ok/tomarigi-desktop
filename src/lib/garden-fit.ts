@@ -1,4 +1,4 @@
-// Whether the Garden's birds fit, and how far the floating window must grow for them to fit (docs/design.md "Layout").
+// Whether the Garden's birds fit, and how far the floating window must grow for them to fit (docs/design/layout.md "Layout").
 // The Garden reports whether its actual placement (placeBoxes in lib/garden-place.ts, with the birds on screen kept
 // where they are) left a bird without a free spot. The window grows only then, and only by as much as needed.
 
@@ -9,7 +9,7 @@ import { PLACE_GAP_PX, placeBoxes, type PlaceBox, type Point } from "./garden-pl
 const GLYPH_MIN_PX = 26;
 const GLYPH_MAX_PX = 52;
 // Least garden height the window growth aims for. The garden itself has no min-height: it never grows past the
-// window (docs/design.md "Layout")
+// window (docs/design/layout.md "Layout")
 export const GARDEN_MIN_HEIGHT_PX = 220;
 
 /** Bird icon size from the garden's size (px) and the number of birds */
@@ -77,7 +77,7 @@ export interface PlacedGarden {
   /** Boxes that had no spot now: expected to move to the new room, so they don't count as moved */
   overflowIds: ReadonlySet<string>;
   /**
-   * Boxes not on screen yet: first placed in this render, which had no spot for something (docs/design.md "Layout":
+   * Boxes not on screen yet: first placed in this render, which had no spot for something (docs/design/layout.md "Layout":
    * "On screen"). After the window grows they are placed again like boxes that just appeared, so their `want` / `seed`
    * is used as is, not shifted to stay at the same place on screen
    */
@@ -212,7 +212,7 @@ export function gardenFitScale(userW: number, userH: number, fit: GardenFit, cur
 }
 
 /**
- * The one place that decides how far the window may shrink by itself (docs/design.md "Layout": birds leaving, a drop,
+ * The one place that decides how far the window may shrink by itself (docs/design/layout.md "Layout": birds leaving, a drop,
  * any render while grown): the smallest scale of the user's window size, from 1 (the user's size) up to upTo, at which
  * the actual placement (fit.simulate) gives everything a spot without moving anyone on screen. undefined when none up to
  * upTo does, or without fit.simulate to check it with. A manual resize is the user's size and doesn't come here
@@ -252,7 +252,7 @@ export function shrinkScale(userW: number, userH: number, fit: GardenFit, curren
 }
 
 /**
- * On a drop (docs/design.md "Layout"): keepPlaceScale over every size, so the window shrinks once and nothing moves.
+ * On a drop (docs/design/layout.md "Layout"): keepPlaceScale over every size, so the window shrinks once and nothing moves.
  * undefined when no size keeps everyone in place (then it doesn't shrink)
  */
 export function gardenDropScale(userW: number, userH: number, fit: GardenFit): number | undefined {
@@ -260,7 +260,7 @@ export function gardenDropScale(userW: number, userH: number, fit: GardenFit): n
 }
 
 /**
- * The fit with the bubbles past the garden's edges counted too (docs/design.md "Layout"): reach is how far down the
+ * The fit with the bubbles past the garden's edges counted too (docs/design/layout.md "Layout"): reach is how far down the
  * garden must go for the lowest bubble below its bird (garden px at gardenH, the garden's height the placement was
  * made at, edge room included), reachUp how far above the garden's top it must go for the highest bubble above its
  * bird's name (px); undefined without one. A bubble cut by the garden's edge asks the window to grow like a bird
@@ -295,7 +295,7 @@ export function withBubbleReach<F extends Pick<GardenFit, "overflow" | "simulate
 }
 
 /**
- * How far the garden can reach by growing the window (docs/design.md "Layout": a bubble past the garden's bottom stays
+ * How far the garden can reach by growing the window (docs/design/layout.md "Layout": a bubble past the garden's bottom stays
  * below, and one above its bird's name past the top stays there, while growing gives them room): h is how far down,
  * in garden px now, up how far above the garden's top. The garden at the largest scale the display's visible area
  * (area, CSS px) allows, of which the garden's bottom gets (1 - anchorY) and its top anchorY: a window in the display's
@@ -443,7 +443,7 @@ export function growStep(i: GrowInputs): {
   return { scale, needed, drop: false, kept: next, quiet: !kept && base !== null && scale === base.scale };
 }
 
-// Ids not yet settled after a placement that left something without a free spot (docs/design.md "Layout"): what was
+// Ids not yet settled after a placement that left something without a free spot (docs/design/layout.md "Layout"): what was
 // unsettled and is still shown (none when the garden changed size, as all of it was placed again), and what was first
 // placed in this render. A bird or block the user dropped in this render has its place, so it is neither
 export function nextUnsettled(

@@ -1,4 +1,4 @@
-// The settings file (docs/design.md "Settings file"): its section on the settings screen, the note shown when an edit
+// The settings file (docs/design/settings-file.md "Settings file"): its section on the settings screen, the note shown when an edit
 // of the file is taken, and why a value was refused. Shape: Record<KeyName, Record<Locale, string>>; each row lists the
 // locales in the order of LOCALES below
 const LOCALES = [

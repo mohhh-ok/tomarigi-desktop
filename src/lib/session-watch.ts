@@ -1,4 +1,4 @@
-// Watching links between sessions (docs/design.md "Watching")
+// Watching links between sessions (docs/design/watching.md "Watching")
 import { invoke } from "@tauri-apps/api/core";
 import { isChildSession, isPeerActive, peerLookup, startedBySession, type FirstPrompt } from "./watching";
 import { rememberLatestTurn, type LatestTurn, type TurnRead } from "./watching-turns";
@@ -34,7 +34,7 @@ export interface WatchLinks {
   startedCards: ReadonlySet<string>;
 }
 
-// Watching links (docs/design.md "Watching"). Match the names (or desktop app ids) of peers exchanged with against
+// Watching links (docs/design/watching.md "Watching"). Match the names (or desktop app ids) of peers exchanged with against
 // the running sessions to get sessionIds, and link both ways (a trace on either side counts as linked)
 export async function resolveWatchLinks(withTail: FoundEntry[], liveSessions: LiveSession[]): Promise<WatchLinks> {
   const peerOf = peerLookup(liveSessions);
@@ -161,7 +161,7 @@ const CARD_READ_OVERLAP_MS = 2_000;
 
 /**
  * Reads, from the desktop app's records, which of the cards that sessions' last turns left the user started
- * (desktop_started_cards in src-tauri; docs/design.md "The "?" for sessions waiting on you"), and remembers them in
+ * (desktop_started_cards in src-tauri; docs/design/waiting-question-mark.md "The "?" for sessions waiting on you"), and remembers them in
  * startedCardCache: a started card stays started. Asks only when some card isn't known to be started yet. Each card
  * remembers from when it was last read (cardReadSince), so the first read goes back to the card and later ones read only
  * records written since. A session whose sessions/<pid>.json has no `hostSessionId` (its process ended, say) is looked

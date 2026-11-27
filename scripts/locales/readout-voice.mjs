@@ -1,4 +1,4 @@
-// Readout voice: the system's or a local TTS server's (docs/design.md "Readout voice (local TTS server)").
+// Readout voice: the system's or a local TTS server's (docs/design/readout-voice.md "Readout voice (local TTS server)").
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {
   readoutVoiceLabel: {
@@ -1127,7 +1127,7 @@ export default {
     sl: "読み上げはこの声になります。",
     ca: "読み上げはこの声になります。",
   },
-  // Under the local server's card while "Read aloud" is off: the sample plays, readouts don't (docs/design.md
+  // Under the local server's card while "Read aloud" is off: the sample plays, readouts don't (docs/design/readout-voice.md
   // "Readout voice (local TTS server)")
   readoutNeedsReadAloud: {
     en: "Turn on \"Read aloud with voice\" above to hear readouts.",

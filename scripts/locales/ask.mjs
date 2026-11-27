@@ -1,4 +1,4 @@
-// The "?" on birds that need a reply and the anger mark (docs/design.md "The "?" for sessions waiting on you" and
+// The "?" on birds that need a reply and the anger mark (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you" and
 // "Anger mark for abuse toward the AI").
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {

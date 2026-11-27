@@ -146,7 +146,7 @@ export default {
     ca: "$PROJECT$ espera la teva resposta",
   },
   // Note under the "Read aloud with voice" checkbox, shown only when the WebView has no speechSynthesis (some Linux
-  // builds). Readout then works only through a local TTS server. docs/design.md "Platforms"
+  // builds). Readout then works only through a local TTS server. docs/design/platforms.md "Platforms"
   voiceUnavailable: {
     en: "This system has no speech engine, so reading aloud works only through a local speech server.",
     ja: "このシステムには音声合成の機能が無いため、読み上げはローカルの読み上げサーバーを選んだときだけ使えます。",

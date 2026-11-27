@@ -1,4 +1,4 @@
-// Who started a session's latest turn and whose messages arrived during it, as watching reads it (docs/design.md
+// Who started a session's latest turn and whose messages arrived during it, as watching reads it (docs/design/watching.md
 // "Watching"). Doesn't depend on UI components or Tauri
 import type { LiveSession } from "./session-types";
 
@@ -67,7 +67,7 @@ function pidOfSocket(from: string | undefined): number | undefined {
  * Whether a message came from the session own: by the sender's pid (`verifiedPeerPid`, else the pid in its socket
  * path) against own's pid in sessions/<pid>.json, and by its name or desktop app id (peerLookup). Own's pid changes
  * when it is resumed, so a pid that differs still counts as own's when the name or id names own. "unknown" when
- * neither tells (docs/design.md "Watching")
+ * neither tells (docs/design/watching.md "Watching")
  */
 export function turnStarterSession(
   ref: PeerRef,

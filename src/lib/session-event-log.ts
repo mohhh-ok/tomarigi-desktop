@@ -3,7 +3,7 @@ import { loadEventLog, saveEventLog } from "./settings-store";
 import type { AskJudgement, SessionEvent } from "./session-types";
 import { eventLogState, knownLogKeys, pendingLogEvents, sessionEventCache } from "./session-store";
 
-// Birds and chicks are shown while their process is alive, regardless of idle time (docs/design.md "Removing birds
+// Birds and chicks are shown while their process is alive, regardless of idle time (docs/design/removing-ended-birds.md "Removing birds
 // of ended sessions"; chicks run inside the parent's claude and go away with it). This window doesn't decide
 // whether anything is shown: Recent activity lists only events from this long ago (a feed of recent transitions,
 // capped at MAX_EVENTS)
@@ -115,7 +115,7 @@ export function saveEventLogIfDirty(): void {
 
 /**
  * Writes the turn verdict to the persistent log entry of the same turn's done event (key = sessionId:at:done), to see it
- * in the debug log screen (docs/design.md "Turn verdicts"). abusive and continuing are absent when the request failed.
+ * in the debug log screen (docs/design/turn-verdicts.md "Turn verdicts"). abusive and continuing are absent when the request failed.
  * Not written when the done isn't in the log yet (e.g. suppressed)
  */
 export function recordTurnVerdict(

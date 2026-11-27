@@ -1,5 +1,5 @@
 // What the settings window shows but nobody saves: it lives in the floating window, which scans and takes the settings file's edits
-// (docs/design.md "Settings window", "One owner of the running state"). The floating window sends it to the settings
+// (docs/design/settings-window.md "Settings window", "One owner of the running state"). The floating window sends it to the settings
 // window when it changes and when the settings page asks on load
 import { useEffect, useRef, useState } from "react";
 import type { IconSetAssignments } from "@/lib/icon-set-store";
@@ -34,7 +34,7 @@ export function runningProjects(sessions: readonly SessionView[]): RunningProjec
   for (const s of sessions) {
     if (seen.has(s.slug)) continue;
     seen.add(s.slug);
-    // Per project: the project's name, not a session's name told apart from another (docs/design.md "Display names")
+    // Per project: the project's name, not a session's name told apart from another (docs/design/display-names.md "Display names")
     running.push({ slug: s.slug, label: s.projectBase ?? s.project });
   }
   return running.sort((a, b) => a.label.localeCompare(b.label));

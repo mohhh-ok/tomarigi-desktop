@@ -1,4 +1,4 @@
-// The menu bar menu's "Read aloud" item and the settings' checkbox show the same value (docs/design.md "Window and
+// The menu bar menu's "Read aloud" item and the settings' checkbox show the same value (docs/design/window-and-menu-bar.md "Window and
 // menu bar"): the settings report their value to Rust, and a click on the menu item comes back as the new value
 import { afterEach, describe, expect, mock, test } from "bun:test";
 

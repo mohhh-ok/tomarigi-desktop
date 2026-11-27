@@ -1,4 +1,4 @@
-// While a bird or block is dragged, the window grows toward the garden's edge the pointer is near or past (docs/design.md
+// While a bird or block is dragged, the window grows toward the garden's edge the pointer is near or past (docs/design/layout.md
 // "Layout"). The page tells the Rust side where the garden's edges are, and keeps the birds on screen with the anchor
 import { describe, expect, test } from "bun:test";
 import { dragGrowRequest } from "../src/perch/garden-drag-grow.ts";

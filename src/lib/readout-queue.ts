@@ -1,4 +1,4 @@
-// The readout queue used while a local TTS server is the voice (docs/design.md "Readout voice (local TTS server)").
+// The readout queue used while a local TTS server is the voice (docs/design/readout-voice.md "Readout voice (local TTS server)").
 // speechSynthesis's own queue can't hold server audio, so this one keeps the order and plays one utterance at a time.
 // Each utterance's request is sent when it is queued; it settles to the server's audio, the system voice, or nothing,
 // at the first of: the audio came, the request failed, TTS_WAIT_MS passed since it was sent. Audio that comes after is

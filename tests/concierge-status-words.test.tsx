@@ -1,4 +1,4 @@
-// The concierge's state words are the birds' state words (docs/design.md "Concierge"): the same keys, so they read the
+// The concierge's state words are the birds' state words (docs/design/concierge.md "Concierge"): the same keys, so they read the
 // same in every language. A dictionary whose every message is its own key (with the first substitution in []) is
 // loaded for this file only, then an empty one, so the other files still render t() empty
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";

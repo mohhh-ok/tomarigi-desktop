@@ -72,7 +72,7 @@ export async function scanChicks(
   // start, are written there. Without them it stayed working for as long as the parent lived and held the parent at
   // working too (a parent that had ended its turn showed working with 10 such chicks). Those transcripts are read only
   // while a chick of depth 2 or more (or of unknown depth) has no record, and only the chicks that can have started it;
-  // each is read incrementally, like the parent (docs/design.md "Removing birds of ended sessions")
+  // each is read incrementally, like the parent (docs/design/removing-ended-birds.md "Removing birds of ended sessions")
   const callers = callerCandidates(found.map((c) => ({ ...c, resolved: doneSignalOf(chickSignals, c) !== undefined })));
   for (const c of found) {
     if (callers.has(c.id)) mergeSignals(chickSignals, await readSignalLedger(c.id, c.file));

@@ -1,4 +1,4 @@
-// Calls to a local TTS server through Rust (src-tauri/src/tts.rs) and what is read from its answers (docs/design.md
+// Calls to a local TTS server through Rust (src-tauri/src/tts.rs) and what is read from its answers (docs/design/readout-voice.md
 // "Readout voice (local TTS server)")
 import { invoke } from "@tauri-apps/api/core";
 import type { HttpReply } from "./judge";

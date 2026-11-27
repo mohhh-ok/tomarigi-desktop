@@ -1,4 +1,4 @@
-// The bird's speech bubble (docs/design.md "Speech bubbles").
+// The bird's speech bubble (docs/design/speech-bubbles.md "Speech bubbles").
 // SpeechBubble is one line within a row (Perch, Recent activity); GardenBubble is under the icon in the Garden.
 import type { CSSProperties, ReactNode } from "react";
 import { t } from "@/lib/i18n";
@@ -7,7 +7,7 @@ import type { SessionView } from "@/lib/sessions";
 /**
  * Text shown in the bubble. Not shown while working.
  * - Needs reply (question tool): the question text from the tool input. ExitPlanMode has no question text, so a fixed sentence
- * - Stopped turn (done / dozing): the line summarized with BYOK (docs/design.md "Turn verdicts"). If it needs a reply, what is
+ * - Stopped turn (done / dozing): the line summarized with BYOK (docs/design/turn-verdicts.md "Turn verdicts"). If it needs a reply, what is
  *   being asked. Without a summary provider, no bubble
  */
 export function bubbleText(s: SessionView): string | undefined {
@@ -41,7 +41,7 @@ export function SpeechBubble({
 /** A bubble in the Garden (garden.tsx): a bird's text, or what the Concierge tab shows in place of it (content: the
  * suggestions and every session's line, concierge-status-report.tsx). The concierge's bubble takes clicks over its whole
  * box at rest (.fade-box, fade-targets.ts), in the Garden and in the Concierge tab, so a click on its empty space doesn't
- * reach what is under it; a bird's bubble lets clicks through (docs/design.md "Fade until hovered") */
+ * reach what is under it; a bird's bubble lets clicks through (docs/design/fade-until-hovered.md "Fade until hovered") */
 export function GardenBubble({
   text,
   content,

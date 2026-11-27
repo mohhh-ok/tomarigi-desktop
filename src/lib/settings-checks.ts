@@ -1,5 +1,5 @@
 // The rules a setting must pass before it is saved, one function per rule, shared by the settings screen and the
-// settings file (docs/design.md "Settings file"). Each returns a problem code, or undefined when the value passes;
+// settings file (docs/design/settings-file.md "Settings file"). Each returns a problem code, or undefined when the value passes;
 // problemMessage says it in the UI language (the note) and problemText in English (the log)
 import { englishText, t, type MessageName } from "./i18n";
 import { isAbsolutePath, samePath } from "./paths";

@@ -1,5 +1,5 @@
 // Clicking a bird or row moves to the terminal pane where that agent is running (not in the tomarigi Chrome
-// extension; a feature added in the desktop version. docs/design.md "Jumping to the terminal pane").
+// extension; a feature added in the desktop version. docs/design/jumping-to-terminal.md "Jumping to the terminal pane").
 // The mapping is done on the Rust side (src-tauri/src/focus): pid → tty and ancestor processes from ps → the terminal
 // app that owns them → that terminal's adapter (Ghostty, iTerm2, Terminal.app, WezTerm, kitty, through tmux).
 // The pid comes from sessionId in <config>/sessions/<pid>.json for Claude Code (focus_session), and from the process
@@ -32,7 +32,7 @@ type FocusTarget =
       threadId: string;
     }
   | {
-      // The other agents (docs/design.md "Agents"): the pid their adapter matched on the last scan
+      // The other agents (docs/design/agents.md "Agents"): the pid their adapter matched on the last scan
       kind: "pid";
       pid: number;
     };

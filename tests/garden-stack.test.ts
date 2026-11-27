@@ -1,5 +1,5 @@
 // A bird the user dragged is drawn in front of every other bird and bubble, with its bubble, status lines and marks; the
-// last dragged frontmost, saved with the positions (docs/design.md "Layout")
+// last dragged frontmost, saved with the positions (docs/design/layout.md "Layout")
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { frontRanks, positionsAfterDrop, type GardenPosition } from "../src/lib/garden-layout.ts";
@@ -88,7 +88,7 @@ describe("gardenStack", () => {
   });
 });
 
-describe("the name and status lines of a bird in front have a backing (docs/design.md \"Layout\")", () => {
+describe("the name and status lines of a bird in front have a backing (docs/design/layout.md \"Layout\")", () => {
   test("only a bird in front (dragged or dropped by the user) is marked for it", () => {
     expect(gardenStack({ dragging: true }).inFront).toBe(true);
     expect(gardenStack({ dragging: false, front: 1 }).inFront).toBe(true);

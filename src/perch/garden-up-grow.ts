@@ -1,4 +1,4 @@
-// When growing the window up for a bubble is over (docs/design.md "Layout"). Pure computation (no DOM or Tauri
+// When growing the window up for a bubble is over (docs/design/layout.md "Layout"). Pure computation (no DOM or Tauri
 // access); garden-grow.ts keeps the anchor at y 1 until this says so
 
 /**

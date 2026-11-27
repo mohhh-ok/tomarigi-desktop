@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds the .app for verification (identifier .verify). BYOK keys live in the Keychain, so to avoid being asked for
-# Keychain permission after every rebuild, sign with the local Apple Development certificate (docs/design.md "BYOK API keys").
+# Keychain permission after every rebuild, sign with the local Apple Development certificate (docs/design/byok-api-keys.md "BYOK API keys").
 # The identity is chosen by scripts/signing-identity.sh (APPLE_SIGNING_IDENTITY, or the first Apple Development
 # certificate in the Keychain), the same as dev's cargo runner (scripts/dev-runner.sh)
 APPLE_SIGNING_IDENTITY=$(sh "$(dirname "$0")/signing-identity.sh")

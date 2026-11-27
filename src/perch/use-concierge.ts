@@ -1,5 +1,5 @@
 // Asks the concierge (lib/concierge.ts) when a session starts or stops needing a reply or finishes, and while any needs
-// a reply, and keeps its advice for the Garden's concierge bird and the line above Perch (docs/design.md "Concierge")
+// a reply, and keeps its advice for the Garden's concierge bird and the line above Perch (docs/design/concierge.md "Concierge")
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { uiLanguage } from "@/lib/i18n";
@@ -90,10 +90,10 @@ export interface ConciergeState {
   /** The current advice, with its target only while that session is still on screen */
   advice: ConciergeAdvice | null;
   /** The suggestions of the last answer while the Concierge tab is open (empty otherwise), each with its session's state
-   * when it came; they stay until the next answer (docs/design.md "Concierge") */
+   * when it came; they stay until the next answer (docs/design/concierge.md "Concierge") */
   suggestions: ShownSuggestion[];
   /** Routes a session event that passed the usual checks: "speak" reads it as outside the Concierge tab, "held" leaves
-   * it to the tab's readout (docs/design.md "Readout in the Concierge tab"), "skip" is a type that isn't read */
+   * it to the tab's readout (docs/design/concierge.md "Readout in the Concierge tab"), "skip" is a type that isn't read */
   readoutEvent: (event: SessionEvent) => "speak" | "held" | "skip";
 }
 
@@ -110,7 +110,7 @@ export interface ConciergeReadoutSink {
  * mockAdvice: a source that doesn't call the API (mock) gives the advice itself; then nothing is requested.
  * withSuggestions: the Concierge tab is open, so the advice's request also asks for suggestions. Opening it asks once,
  * after the 3 seconds without the 60, only when the suggestions at hand are none or out of date (suggestionsOutdated);
- * otherwise it isn't an input of the scheduler (docs/design.md "Concierge").
+ * otherwise it isn't an input of the scheduler (docs/design/concierge.md "Concierge").
  * mockSuggestions: the same as mockAdvice for the suggestions.
  * readout: where the Concierge tab's readout goes (concierge-readout.ts)
  */
@@ -133,7 +133,7 @@ export function useConcierge(
   const shownRef = useRef<{ advice: ConciergeAdvice; targetState?: ConciergeStateClass } | null>(null);
   const inputsRef = useRef({ sessions, events, agentOf, withSuggestions });
   inputsRef.current = { sessions, events, agentOf, withSuggestions };
-  // While the Concierge tab is open the voice reads only new suggestions (docs/design.md "Readout in the Concierge tab")
+  // While the Concierge tab is open the voice reads only new suggestions (docs/design/concierge.md "Readout in the Concierge tab")
   const readoutRef = useRef<ConciergeReadout<ShownSuggestion> | null>(null);
   readoutRef.current ??= new ConciergeReadout<ShownSuggestion>();
   const sinkRef = useRef(readout);
@@ -184,7 +184,7 @@ export function useConcierge(
           shownRef.current = null;
           setAdvice(null);
         }
-        // A temporary error is asked again after 10, 30 and 60 seconds (docs/design.md "Concierge")
+        // A temporary error is asked again after 10, 30 and 60 seconds (docs/design/concierge.md "Concierge")
         const retry = schedulerRef.current?.failed(conciergeErrorIsTemporary(result));
         if (retry) void invoke("log", { line: conciergeRetryLogLine(logContext, retry) }).catch(() => {});
         const text = `${result.kind}${result.status ? ` ${result.status}` : ""}${result.message ? ` ${result.message}` : ""}${retry ? `, retry ${retry.attempt} in ${retry.afterMs / 1000}s` : ""}`;
@@ -226,7 +226,7 @@ export function useConcierge(
         setSuggestions(shown);
         answeredAtRef.current = statusesAt(inputsRef.current.sessions);
         // Output that doesn't match is no answer for the readout: the held events are read, and the next answer is
-        // compared with the one before (docs/design.md "Readout in the Concierge tab")
+        // compared with the one before (docs/design/concierge.md "Readout in the Concierge tab")
         if (result.noMatchingJson) readHeldEvents();
         else {
           const read = readoutRef.current?.answered(shown) ?? [];
@@ -262,7 +262,7 @@ export function useConcierge(
     clearAdvice();
   }, [enabled]);
   // Opening the tab asks once when the suggestions at hand are none or out of date, at the user's pace like an answer
-  // to a waiting session (docs/design.md "Concierge"). The scheduler has seen these sessions: its effect runs first
+  // to a waiting session (docs/design/concierge.md "Concierge"). The scheduler has seen these sessions: its effect runs first
   // The readout takes the suggestions shown on opening, and the answer to the request opening asks, as seen
   useEffect(() => {
     const readout = readoutRef.current;

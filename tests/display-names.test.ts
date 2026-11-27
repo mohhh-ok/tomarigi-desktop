@@ -1,5 +1,5 @@
 // Sessions on screen that would show the same display name are told apart: by the session's own name when it
-// has one, otherwise by a number in the order they started (docs/design.md "Display names")
+// has one, otherwise by a number in the order they started (docs/design/display-names.md "Display names")
 import { describe, expect, test } from "bun:test";
 import { displayNamesOf, type NameCandidate } from "../src/lib/display-names.ts";
 

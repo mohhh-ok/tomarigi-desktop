@@ -1,4 +1,4 @@
-// Readout voice from a local TTS server (docs/design.md "Readout voice (local TTS server)"). OpenAI-compatible
+// Readout voice from a local TTS server (docs/design/readout-voice.md "Readout voice (local TTS server)"). OpenAI-compatible
 // (`/audio/speech`) and VOICEVOX-compatible (`/audio_query` then `/synthesis`). No key; the base URL, voice and model
 // are settings JS passes here. Called from Rust like the Local AI provider: VOICEVOX's CORS allows only localhost-like
 // origins, which the WebView's isn't. The base URL rule, no redirects, and no URL in errors are Local AI's (keys.rs)

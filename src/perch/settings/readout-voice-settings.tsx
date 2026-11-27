@@ -1,4 +1,4 @@
-// The readout voice: the system's or a local TTS server's (docs/design.md "Readout voice (local TTS server)"). The
+// The readout voice: the system's or a local TTS server's (docs/design/readout-voice.md "Readout voice (local TTS server)"). The
 // server's card follows Local AI's (ai-key-settings.tsx): the same list rules, the same rule for when Save and the
 // sample can be pressed, and one note per card
 import { useEffect, useRef, useState } from "react";

@@ -30,7 +30,7 @@
 }
 
 /* The Concierge tab: the concierge's picture in place of a word, as tall as a word's line so the row's height stays.
-   Not chosen it is dimmed like the other tabs' words (App.tsx; docs/design.md "Concierge") */
+   Not chosen it is dimmed like the other tabs' words (App.tsx; docs/design/concierge.md "Concierge") */
 .tab-btn-concierge {
   display: inline-flex;
   align-items: center;
@@ -45,7 +45,7 @@
 }
 
 /* Four tabs in a narrow window: tighter, like the header's buttons (base.css), so their words stay whole down to the
-   narrowest window (260px). The tabs' words are one word each for that (tabEventsLabel; docs/design.md "Concierge") */
+   narrowest window (260px). The tabs' words are one word each for that (tabEventsLabel; docs/design/concierge.md "Concierge") */
 @media (max-width: 400px) {
   .tab-btn {
     padding-left: 10px;

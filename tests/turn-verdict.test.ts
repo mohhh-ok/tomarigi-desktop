@@ -1,5 +1,5 @@
 // The turn verdict: one request per finished turn gives the speech bubble line, the "?", and the anger mark
-// (lib/summarize.ts, lib/turn-verdict.ts, turnUserMessages in lib/session-tail.ts; docs/design.md "Turn verdicts").
+// (lib/summarize.ts, lib/turn-verdict.ts, turnUserMessages in lib/session-tail.ts; docs/design/turn-verdicts.md "Turn verdicts").
 // The API is never called: summarizeTurn gets a stand-in for runJudge / runOpenAiJudge / runLocalJudge
 import { describe, expect, test } from "bun:test";
 import {
@@ -83,7 +83,7 @@ test("work handed to another session that is still going on is continuing, with 
 
 test("steps that end by asking to hear back here are asking in both requests, but not an answer in another pane", () => {
   // steps_then_say_done_here; without the sentence on another pane, OpenAI turned the relay to a child's pane to
-  // asking (docs/design.md "Turn verdicts")
+  // asking (docs/design/turn-verdicts.md "Turn verdicts")
   for (const task of [SUMMARIZE_TURN_TASK, CONFIRM_ASKING_TASK]) {
     expect(task.systemPrompt).toContain("to tell it here, in this conversation, once");
     expect(task.systemPrompt).toContain("only when the reply is asked for here, to this agent");
@@ -353,7 +353,7 @@ test("only the latest messages of a long turn are sent", () => {
 describe("every turn has a second, narrow request that sets the line and can only turn asking off (checkedVerdict)", () => {
   // app-v's report (how it took the user's words, what it would check itself, its own call on a direction,
   // a child still working) got asking yes now and then, and a check to wait on in the line most of the time; the
-  // concierge advised replying to it. The first request is left as it is (the user's decision; docs/design.md "Turn
+  // concierge advised replying to it. The first request is left as it is (the user's decision; docs/design/turn-verdicts.md "Turn
   // verdicts")
   const first = (asking: boolean): TurnVerdict => ({ line: "方針でよいか確認", asking, abusive: false, continuing: true });
   const cases: { name: string; first: TurnVerdict; answer: unknown; asking: boolean; line: string }[] = [

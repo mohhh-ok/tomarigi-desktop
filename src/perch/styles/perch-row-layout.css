@@ -85,7 +85,7 @@
 
 /* A row whose name and state word with its elapsed time don't fit on one line (two-lines, set per row by
    perch-row-fit.ts): the state word, elapsed time, working dots and tool name go to a second line under the name, lined
-   up with it, so the name gets the row's whole width (docs/design.md "Display names"). The request excerpt isn't shown
+   up with it, so the name gets the row's whole width (docs/design/display-names.md "Display names"). The request excerpt isn't shown
    (there is no room for it on the first line). .bird-row-break (empty, between the name and the status) takes a whole
    line there, so what follows it starts the second line */
 .bird-row-break {

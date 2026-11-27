@@ -4,5 +4,5 @@
 /** The concierge's looks the user picks between in settings; the same image in every icon set */
 export const CONCIERGE_LOOKS = ["owl", "penguin"] as const;
 export type ConciergeLook = (typeof CONCIERGE_LOOKS)[number];
-/** The owl (Claude's own decision, docs/design.md "Concierge") */
+/** The owl (Claude's own decision, docs/design/concierge.md "Concierge") */
 export const DEFAULT_CONCIERGE_LOOK: ConciergeLook = "owl";

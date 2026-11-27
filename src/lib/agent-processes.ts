@@ -1,4 +1,4 @@
-// Liveness of agents that write no pid file (docs/design.md "Agents"): a session is alive while a process of its
+// Liveness of agents that write no pid file (docs/design/agents.md "Agents"): a session is alive while a process of its
 // agent runs in the session's cwd. The processes come from ps (tty_processes in Rust) and their cwd from lsof
 // (process_cwds); which sessions they stand for is decided here (matchSessionsToProcesses)
 import { invoke } from "@tauri-apps/api/core";
@@ -110,7 +110,7 @@ export function earliestStart(processes: { startedAt: number }[]): number | unde
 }
 
 /**
- * Which sessions are alive (docs/design.md "Agents"): when N processes of one agent share a cwd, the N sessions in
+ * Which sessions are alive (docs/design/agents.md "Agents"): when N processes of one agent share a cwd, the N sessions in
  * that cwd written since that agent's processes started, latest first, are alive. The session written last gets
  * the newest process as its jump target; the others have no pid
  */
@@ -141,7 +141,7 @@ export interface ThreadCandidate extends SessionCandidate {
 
 /**
  * Codex threads held open by the shared app-server, matched one to one to the TUI processes in their cwd
- * (docs/design.md "Agents"). processes also holds TUIs seen before that have exited (alive: false). A thread
+ * (docs/design/agents.md "Agents"). processes also holds TUIs seen before that have exited (alive: false). A thread
  * belongs to the TUI that started last before it was created, and ends with it; of two threads for one live TUI,
  * the one written last is the one it is on. The others (resumed threads created before every known TUI there,
  * threads it left) take the live TUIs left over, written last to started last. A thread left without one is not

@@ -62,7 +62,7 @@ function withExtraBirds(data: MockData): MockData {
  * ?concierge=<text> shows the concierge with that advice (empty: a default line, in Japanese on a Japanese screen) about
  * the first bird that needs a reply, or the first bird; ?concierge=none shows it without advice. Without the parameter the
  * real concierge is asked (only with a saved key). For checking the concierge's look without calling the API
- * (docs/design.md "Concierge")
+ * (docs/design/concierge.md "Concierge")
  */
 const MOCK_CONCIERGE = new URLSearchParams(location.search).get("concierge");
 
@@ -151,7 +151,7 @@ export function createMockSource(): MockSource {
 /**
  * ?cycle=<seconds> (TOMARIGI_QUERY="preset=mix&cycle=4"): every few seconds, change one thing on the preset's birds in
  * turn (a bubble appears / goes, a tool line appears / goes, a watch link forms / goes, a bird joins / leaves). For
- * checking with timed screenshots that the Garden's other birds stay where they are (docs/design.md "Layout").
+ * checking with timed screenshots that the Garden's other birds stay where they are (docs/design/layout.md "Layout").
  * Each step is logged as "[mock-cycle] <step>"
  */
 function startCycle(get: () => MockData, set: (next: MockData) => void) {

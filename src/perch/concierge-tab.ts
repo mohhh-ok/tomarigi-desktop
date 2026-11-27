@@ -1,4 +1,4 @@
-// The Concierge tab (docs/design.md "Concierge"): only the concierge bird and its bubble. The Garden's birds are only
+// The Concierge tab (docs/design/concierge.md "Concierge"): only the concierge bird and its bubble. The Garden's birds are only
 // hidden: the Garden keeps them as they were (garden.tsx, paused) while ConciergeTabView shows the concierge. In the
 // floating window the window shrinks to the concierge (concierge_only_fit in src-tauri/src/garden_grow.rs) and goes back
 // to its exact frame from before when the tab is left (concierge_only_end)
@@ -28,7 +28,7 @@ export function conciergeTabLabel({ others, waiting }: { others: number; waiting
   };
 }
 
-/** The tabs in the tab row, in order: Concierge first, always shown, with or without a provider (docs/design.md
+/** The tabs in the tab row, in order: Concierge first, always shown, with or without a provider (docs/design/concierge.md
     "Concierge"; without one the tab says what is needed) */
 export const TABS = ["concierge", "garden", "perch", "events"] as const;
 export type Tab = (typeof TABS)[number];
@@ -38,7 +38,7 @@ export function tabsShown(): readonly Tab[] {
 }
 
 /**
- * What the Concierge tab shows (docs/design.md "Concierge"):
+ * What the Concierge tab shows (docs/design/concierge.md "Concierge"):
  * - "setup": no provider (no OpenAI / Anthropic key saved, Local not set up): the concierge with a bubble saying what it
  *   needs, that the other tabs work without a key, and a button to the settings' AI section. It doesn't depend on the
  *   sessions, since the concierge has nothing to say about them either way (Claude's own decision)

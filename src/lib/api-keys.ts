@@ -1,4 +1,4 @@
-// BYOK API keys, the Local AI settings, and the provider used for summaries (docs/design.md "BYOK API keys")
+// BYOK API keys, the Local AI settings, and the provider used for summaries (docs/design/byok-api-keys.md "BYOK API keys")
 import { invoke } from "@tauri-apps/api/core";
 import { kvDelete, kvGet, kvPut } from "./kv";
 import { API_KEYS_SETTING, notifySettingChanged } from "./settings-sync";
@@ -15,7 +15,7 @@ export const KEY_LOCAL_AI = "localAi";
 export type AiProvider = "anthropic" | "openai" | "local";
 // Providers with a key
 export type ApiKeyProvider = "anthropic" | "openai";
-// Providers no longer used. A key still saved for one can only be seen and deleted (docs/design.md "BYOK API keys":
+// Providers no longer used. A key still saved for one can only be seen and deleted (docs/design/byok-api-keys.md "BYOK API keys":
 // TypeSafe (Jev) is no longer used); nothing is sent to it
 export const RETIRED_KEY_PROVIDERS = ["typesafe"] as const;
 export type RetiredKeyProvider = (typeof RETIRED_KEY_PROVIDERS)[number];
@@ -36,7 +36,7 @@ const RETIRED_KEY_IDB_KEYS: Record<RetiredKeyProvider, string> = {
 const API_KEY_PROVIDERS = Object.keys(API_KEY_IDB_KEYS) as ApiKeyProvider[];
 
 // unavailable: the OS has no store to save to (Linux without Secret Service). Keys can't be saved and the settings
-// say so; there is no plaintext fallback (docs/design.md "Platforms")
+// say so; there is no plaintext fallback (docs/design/platforms.md "Platforms")
 export type ApiKeyBackend = "keychain" | "webview" | "unavailable";
 
 async function apiKeyBackend(): Promise<ApiKeyBackend> {
@@ -49,7 +49,7 @@ async function apiKeyBackend(): Promise<ApiKeyBackend> {
  * the WebView's storage belongs to this identifier alone (decided in Rust, webview_storage_is_own in
  * src-tauri/src/keys.rs): a macOS binary run outside a .app bundle shares one WebKit storage with dev, so touching
  * IndexedDB there would move or delete dev's keys. dev itself counts as owning it, so it moves the keys it left
- * there before it used the Keychain (docs/design.md "BYOK API keys")
+ * there before it used the Keychain (docs/design/byok-api-keys.md "BYOK API keys")
  */
 async function idbKeysOwned(backend: ApiKeyBackend): Promise<boolean> {
   if (backend === "webview") return true;
@@ -160,7 +160,7 @@ export async function deleteAiProvider(): Promise<void> {
   await kvDelete(KEY_AI_PROVIDER);
 }
 
-// ---- Local AI (docs/design.md "BYOK API keys", Local AI). Settings, not secrets: kept in IndexedDB with the others ----
+// ---- Local AI (docs/design/byok-api-keys.md "BYOK API keys", Local AI). Settings, not secrets: kept in IndexedDB with the others ----
 
 export interface LocalAiConfig {
   baseUrl: string;

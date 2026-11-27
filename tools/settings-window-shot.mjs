@@ -1,4 +1,4 @@
-// Shoots every section of the settings window (docs/design.md "Settings window") at its default and smallest size, in
+// Shoots every section of the settings window (docs/design/settings-window.md "Settings window") at its default and smallest size, in
 // English and Japanese, for a UI check. Headless, from a `vite build` output, with no dev server or port (setup and the
 // build: tools/README.md "Playwright"):
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/settings-shots \
@@ -46,7 +46,7 @@ try {
         const end = join(OUT, `${section}-${lang}-${w}x${h}-end.png`);
         await page.screenshot({ path: end });
         console.log(end);
-        // The states the clarity fixes are about (docs/design.md "Clarity of the settings window"): a label being
+        // The states the clarity fixes are about (docs/design/settings-window.md "Clarity of the settings window"): a label being
         // edited, with Save / Cancel; and an icon set's button after a press, its label then naming the next set
         if (section === "folders") {
           await page.locator(".settings-content").evaluate((e) => e.scrollTo(0, 0));

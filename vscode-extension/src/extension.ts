@@ -1,4 +1,4 @@
-// Tomarigi's VS Code extension (docs/design.md "Jumping to the terminal pane", VS Code / Cursor).
+// Tomarigi's VS Code extension (docs/design/jumping-to-terminal.md "Jumping to the terminal pane", VS Code / Cursor).
 // Each window writes its own window-addressed URI and its terminals' pids for Tomarigi, and handles that URI by
 // showing the terminal whose shell is one of the pids. A plain URI would reach only the topmost window, which is why
 // Tomarigi opens the URI of the window that has the terminal

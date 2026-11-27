@@ -1,4 +1,4 @@
-// The file each editor window writes for Tomarigi (docs/design.md "Jumping to the terminal pane", VS Code / Cursor):
+// The file each editor window writes for Tomarigi (docs/design/jumping-to-terminal.md "Jumping to the terminal pane", VS Code / Cursor):
 // ~/.tomarigi/vscode/<uriScheme>-<extension host pid>.json with a URI addressed to this window and the processId of
 // every terminal in it. Tomarigi reads it with src-tauri/src/focus/vscode.rs. Nothing here imports vscode, so it runs
 // under bun test

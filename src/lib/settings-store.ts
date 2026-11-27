@@ -52,7 +52,7 @@ function withHandle(root: Omit<RootEntry, "handle">): RootEntry {
 /**
  * Watched folders = default folders (those that exist) + folders the user added.
  * Defaults are received from Rust on every launch (not saved). Entries that older versions saved with "auto-register on first
- * launch" and that match a default path are dropped and the list is saved again (no double watching). See docs/design.md "Watched folders"
+ * launch" and that match a default path are dropped and the list is saved again (no double watching). See docs/design/watched-folders.md "Watched folders"
  */
 export async function loadRoots(): Promise<RootEntry[]> {
   // The standard folder of each agent; Rust only resolves them against the home directory
@@ -154,7 +154,7 @@ export async function saveVoiceEnabled(enabled: boolean): Promise<void> {
   await kvPut(KEY_VOICE_ENABLED, enabled);
 }
 
-/** The concierge's look (docs/design.md "Concierge"). A saved value that isn't one of the looks falls back to the default */
+/** The concierge's look (docs/design/concierge.md "Concierge"). A saved value that isn't one of the looks falls back to the default */
 export async function loadConciergeLook(): Promise<ConciergeLook> {
   const saved = await kvGet(KEY_CONCIERGE_LOOK);
   return CONCIERGE_LOOKS.includes(saved as ConciergeLook) ? (saved as ConciergeLook) : DEFAULT_CONCIERGE_LOOK;
@@ -164,7 +164,7 @@ export async function saveConciergeLook(look: ConciergeLook): Promise<void> {
   await kvPut(KEY_CONCIERGE_LOOK, look);
 }
 
-/** The open tab (docs/design.md "Concierge"), opened again after a relaunch. What was saved, as is: the caller reads it
+/** The open tab (docs/design/concierge.md "Concierge"), opened again after a relaunch. What was saved, as is: the caller reads it
  * (tabOf in perch/concierge-tab.ts) */
 export async function loadOpenTab(): Promise<unknown> {
   return kvGet(KEY_OPEN_TAB);

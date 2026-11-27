@@ -2,7 +2,7 @@
 # the Windows installer (NSIS, not code-signed) and the Linux packages (deb, AppImage) to the same draft.
 # Publish the draft by hand after checking it. Required secrets are listed in docs/release.md
 # Every build also makes signed updater bundles; the last job writes latest.json for all platforms on the release
-# (scripts/updater-json.ts), which the app's updater reads once the release is published (docs/design.md "Updates")
+# (scripts/updater-json.ts), which the app's updater reads once the release is published (docs/design/updates.md "Updates")
 # Started by hand (workflow_dispatch), it runs the same builds without signing, makes no release, and keeps the
 # bundles as workflow artifacts instead (docs/release.md "Building without a release")
 name: Release
@@ -92,7 +92,7 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" "$dmg" --clobber
 
       # A copy under a name without the version (Tomarigi-macOS.dmg here; the other jobs do the same for theirs), so
-      # moh-tech.net/tomarigi/desktop/ can link to releases/latest/download/<name> for every release (docs/design.md
+      # moh-tech.net/tomarigi/desktop/ can link to releases/latest/download/<name> for every release (docs/design/download-page.md
       # "Download page")
       - name: Attach the .dmg under a fixed name
         if: github.event_name == 'push'
@@ -185,7 +185,7 @@ jobs:
           if-no-files-found: error
 
   # Windows and Linux run after the macOS job so that it creates the draft release first and they add to it
-  # (two jobs creating the draft at once could make two drafts). docs/design.md "Platforms".
+  # (two jobs creating the draft at once could make two drafts). docs/design/platforms.md "Platforms".
   # They run at the same time. None of the tauri-action steps writes latest.json (uploadUpdaterJson: false): it reads
   # latest.json from the release, adds its platforms, and uploads it again, so two jobs doing that at once could drop
   # the other's entries. The updater-json job writes it once after all three
@@ -209,7 +209,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # Not code-signed (docs/design.md "Platforms"), so Windows shows a SmartScreen warning on first run
+      # Not code-signed (docs/design/platforms.md "Platforms"), so Windows shows a SmartScreen warning on first run
       - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         if: github.event_name == 'push'
         env:

@@ -1,4 +1,4 @@
-// Stable placement of the Garden's birds and watch blocks (docs/design.md "Layout").
+// Stable placement of the Garden's birds and watch blocks (docs/design/layout.md "Layout").
 //
 // Everything is in px of the garden (the .garden element). A box is a bird's or a block's footprint: the most room it
 // can take (bubble room, both status lines and marks included), so bubbles and status lines coming and going never
@@ -86,7 +86,7 @@ export function placeBoxes(boxes: readonly PlaceBox[], W: number, H: number): Pl
     else if (box.at && free(clamp(box.at))) spot = clamp(box.at);
     else spot = search([...placed, ...ahead]) ?? search(placed);
     if (!spot) {
-      // No free spot: the garden never grows past the window (docs/design.md "Layout"), so it overlaps instead. A box
+      // No free spot: the garden never grows past the window (docs/design/layout.md "Layout"), so it overlaps instead. A box
       // on screen stays where it is; a new one goes where it covers the least of the others, nearest to where it wanted
       overflow.push(box.id);
       const from = clamp(box.at ?? box.want ?? { x: 0, y: 0 });
@@ -109,7 +109,7 @@ function clampBox(box: PlaceBox, p: Point, W: number, H: number): Point {
 /**
  * The free spot nearest to p. Candidates are p itself, the garden's edges, and the spots right next to each placed box
  * (combined per axis), which covers every place a box can go without leaving a gap it doesn't need. When p isn't free,
- * spots whose top is level with a placed box come first, so the box lines up with a row (docs/design.md "Layout")
+ * spots whose top is level with a placed box come first, so the box lines up with a row (docs/design/layout.md "Layout")
  */
 function nearestFree(p: Point, box: PlaceBox, placed: readonly Rect[], W: number, H: number): Point | undefined {
   const maxX = W - PLACE_EDGE_PX - box.w;

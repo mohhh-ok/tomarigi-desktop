@@ -1,7 +1,7 @@
 import type { ProposalTrace, TailEvent } from "./transcript";
 import { TEXT_FIELD_LIMIT, toolResultText, type Block } from "./transcript-entry";
 // The Claude desktop app's records in a transcript: the question a turn ends on and the session proposal cards
-// (docs/design.md "The "?" for sessions waiting on you")
+// (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you")
 
 /** A text shown on one line (a wrap_up's ask, a card's title): whitespace folded, first TEXT_FIELD_LIMIT characters */
 export function oneLine(text: string): string {
@@ -13,7 +13,7 @@ export function oneLine(text: string): string {
 export const DESKTOP_WRAP_UP_TOOL = "mcp__ccd_turn__wrap_up";
 
 /**
- * Whether a tool call asks the user to decide before the session goes on (docs/design.md "The "?" for sessions
+ * Whether a tool call asks the user to decide before the session goes on (docs/design/waiting-question-mark.md "The "?" for sessions
  * waiting on you"): the desktop app's wrap_up with an `ask` that isn't blank, or with `blocked: true`. The desktop app
  * puts its question there, not in the reply's text. question is the `ask`, first 500 characters
  */
@@ -75,7 +75,7 @@ export interface TurnProposals {
 }
 
 /**
- * The proposal cards (docs/design.md "The "?" for sessions waiting on you") the last turn made and didn't withdraw or
+ * The proposal cards (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you") the last turn made and didn't withdraw or
  * start itself. A turn starts at a prompt (kind user, from the user or anything else) or
  * a closing; only what came after the last one counts. undefined when it left none
  */

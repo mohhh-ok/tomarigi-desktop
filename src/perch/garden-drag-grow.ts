@@ -1,4 +1,4 @@
-// Where a drag grows the floating window (docs/design.md "Layout"). Pure computation from the pointer and the garden's
+// Where a drag grows the floating window (docs/design/layout.md "Layout"). Pure computation from the pointer and the garden's
 // rect (no DOM or Tauri access); garden-grow.ts sends it to the Rust side (src-tauri/src/garden_grow.rs)
 
 // How close to the garden's edge the pointer must come for a drag to grow the window (CSS px; DRAG_BAND_PX in
@@ -8,7 +8,7 @@ const DRAG_BAND_PX = 24;
 export type Edges = { left: number; top: number; right: number; bottom: number };
 
 /**
- * While a bird or block is dragged (docs/design.md "Layout"): whether the pointer (client px) is within the band of the
+ * While a bird or block is dragged (docs/design/layout.md "Layout"): whether the pointer (client px) is within the band of the
  * garden's edge or past it, and if so the garden's edges inside the window (insets, for garden_drag_grow) and the part
  * of the window that stays put (the anchor, the same as drag_anchor in src-tauri/src/garden_grow.rs: the right / bottom
  * edge when growing left / up). garden: the garden's rect; only the part inside the window counts

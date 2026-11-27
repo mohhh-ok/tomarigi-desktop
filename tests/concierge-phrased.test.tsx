@@ -1,5 +1,5 @@
 // Every text the concierge's bubble draws with phrases (Japanese, Chinese) is in a part with data-phrased, which gives it
-// keep-all, and only those (docs/design.md "Concierge"; perch/concierge-status-report.tsx, Phrase): a name, a suggestion's
+// keep-all, and only those (docs/design/concierge.md "Concierge"; perch/concierge-status-report.tsx, Phrase): a name, a suggestion's
 // text, a state line's text and a suggestion's 「now」 label. The Japanese dictionary is loaded for this file only, then an
 // empty one, so the other files still render t() empty
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";

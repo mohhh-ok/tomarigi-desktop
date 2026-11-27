@@ -1,4 +1,4 @@
-// The menu bar menu's "Read aloud" item (docs/design.md "Window and menu bar"). The setting stays in IndexedDB
+// The menu bar menu's "Read aloud" item (docs/design/window-and-menu-bar.md "Window and menu bar"). The setting stays in IndexedDB
 // (voiceEnabled in lib/settings-store.ts); the settings report it to Rust (tray.rs set_voice_menu), which checks the
 // item, and a click on the item comes back as the "voice-enabled" event with the new value
 import { invoke } from "@tauri-apps/api/core";

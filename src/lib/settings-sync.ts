@@ -1,4 +1,4 @@
-// Telling every window of the app that a saved setting changed (docs/design.md "Settings window", Detailed design (b)).
+// Telling every window of the app that a saved setting changed (docs/design/settings-window.md "Settings window", Detailed design (b)).
 // kvPut / kvDelete (lib/kv.ts) and the API key functions (lib/api-keys.ts) call notifySettingChanged, so a save from any
 // window or the menu bar passes here; an edit of the settings file is told with `from` "settings-file", so every window,
 // the one that applied it included, reloads it. Only the key's name is sent, never its value: API keys can be in

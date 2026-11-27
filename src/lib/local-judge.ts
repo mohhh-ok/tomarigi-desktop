@@ -1,5 +1,5 @@
 // Structured output layer for Local AI: an OpenAI-compatible server (Ollama, LM Studio, ...) through Chat Completions
-// (docs/design.md "BYOK API keys", Local AI). No key; the base URL and model are settings. Rust's local_chat command
+// (docs/design/byok-api-keys.md "BYOK API keys", Local AI). No key; the base URL and model are settings. Rust's local_chat command
 // sends the request, like the other providers. Shares JudgeTaskDefinition / JudgeResult with lib/judge.ts.
 //
 // The output is taken with response_format json_schema (strict), not a tool call: Ollama doesn't enforce tool_choice

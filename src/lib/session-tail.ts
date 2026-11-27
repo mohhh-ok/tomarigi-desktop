@@ -44,7 +44,7 @@ const MAX_KEPT_USER_MESSAGES = 20;
 export const MAX_TURN_USER_MESSAGES = 10;
 
 /**
- * Reads transcript events in order and keeps the messages a person typed in the current turn (docs/design.md "Turn
+ * Reads transcript events in order and keeps the messages a person typed in the current turn (docs/design/turn-verdicts.md "Turn
  * verdicts", "Anger mark for abuse toward the AI"). A turn ends at an assistant text line after which the first line
  * that counts is a person's message or a command line the person started (a slash command or skill such as /push, a
  * ! command); user lines that aren't a person's (tool_result, a non-human origin, machine text) and interruptions are

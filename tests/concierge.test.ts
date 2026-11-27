@@ -1,4 +1,4 @@
-// The concierge's request, its reading of the answer, and when it is asked (lib/concierge.ts; docs/design.md
+// The concierge's request, its reading of the answer, and when it is asked (lib/concierge.ts; docs/design/concierge.md
 // "Concierge"). The API is never called: askConcierge gets a stand-in for runJudge / runOpenAiJudge
 import { describe, expect, test } from "bun:test";
 import {
@@ -307,7 +307,7 @@ test("a chick waiting on a reply holds up its parent", () => {
 describe("skippedWhileWaiting: a waiting session the developer left for another, as a fact", () => {
   // app-v asked on a question tool twice in one turn and was answered each time, then its report got asking
   // (wrongly); the concierge read the three needs_reply events as one long wait and wrote 「何度も待たせています」
-  // (docs/design.md "Concierge")
+  // (docs/design/concierge.md "Concierge")
   type E = { kind: "needs_reply" | "user_replied" | "done" | "jump"; session: string };
   const n = (session: string): E => ({ kind: "needs_reply", session });
   const r = (session: string): E => ({ kind: "user_replied", session });
@@ -1181,7 +1181,7 @@ test("the app log line of a retry names the failed request, the attempt and the 
   );
 });
 
-// ---- Suggestions of the Concierge tab (docs/design.md "Concierge"): asked with the advice, only while the tab is open ----
+// ---- Suggestions of the Concierge tab (docs/design/concierge.md "Concierge"): asked with the advice, only while the tab is open ----
 
 const suggestionPayload = () =>
   buildConciergePayload(
@@ -1347,7 +1347,7 @@ test("the suggestions are logged one per line, shown and dropped, with the reque
   ]);
 });
 
-describe("suggestions while a session needs a reply: replies first, then results to check (docs/design.md \"Concierge\")", () => {
+describe("suggestions while a session needs a reply: replies first, then results to check (docs/design/concierge.md \"Concierge\")", () => {
   const S = (session_id: string, kind: string) => ({ session_id, kind, text: "do it" });
   const waitingAndDone = (n: number) =>
     buildConciergePayload(
@@ -1443,7 +1443,7 @@ test("the tab asks no more often: what only changes a state line (a tool, a line
   expect(conciergeTriggered(before, after)).toBe(false);
 });
 
-test("sessions told apart by a number: an advice is checked against the numbered name (docs/design.md \"Display names\")", async () => {
+test("sessions told apart by a number: an advice is checked against the numbered name (docs/design/display-names.md \"Display names\")", async () => {
   const payload = buildConciergePayload(
     [
       { view: view("b1", { project: "app-p", state: "done" }) },

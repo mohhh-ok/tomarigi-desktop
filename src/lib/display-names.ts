@@ -1,4 +1,4 @@
-// Display names of the sessions on screen (docs/design.md "Display names")
+// Display names of the sessions on screen (docs/design/display-names.md "Display names")
 
 export interface NameCandidate {
   id: string;

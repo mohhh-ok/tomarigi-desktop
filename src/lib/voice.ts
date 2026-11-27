@@ -2,7 +2,7 @@
 // With the system voice (the default) it uses window.speechSynthesis in the WebView, and serializing multiple
 // simultaneous events is left to speechSynthesis's native queue. With a local TTS server, utterances go through
 // ReadoutQueue (lib/readout-queue.ts), which keeps the same order and falls back to the system voice
-// (docs/design.md "Readout voice (local TTS server)").
+// (docs/design/readout-voice.md "Readout voice (local TTS server)").
 
 import { invoke } from "@tauri-apps/api/core";
 import { t, uiLanguage } from "./i18n";
@@ -16,7 +16,7 @@ import type { SessionEvent } from "./sessions";
 
 /**
  * Whether the WebView can speak. Some Linux builds of WebKitGTK have no speechSynthesis; readout is off there and
- * the settings say so (docs/design.md "Platforms"). ?speech=none shows that state for screenshot checks
+ * the settings say so (docs/design/platforms.md "Platforms"). ?speech=none shows that state for screenshot checks
  */
 export function speechAvailable(): boolean {
   return typeof speechSynthesis !== "undefined" && new URLSearchParams(location.search).get("speech") !== "none";
@@ -51,7 +51,7 @@ export function isReadAloudType(type: SessionEvent["type"]): boolean {
 }
 
 /** Whether this event is read aloud: its type is, and it isn't one its parent takes over (SessionEvent.silent;
-    docs/design.md "Watching"). It still chirps. concierge-readout.ts holds exactly these events while the Concierge
+    docs/design/watching.md "Watching"). It still chirps. concierge-readout.ts holds exactly these events while the Concierge
     tab is open, so a silent one isn't read when a request fails either */
 export function isReadAloudEvent(event: Pick<SessionEvent, "type" | "silent">): boolean {
   return isReadAloudType(event.type) && !event.silent;
@@ -351,7 +351,7 @@ function speakDoneFallback(event: SessionEvent, lang: string): void {
 // Timeout for fetching the summary. To keep a stuck BYOK call from delaying or dropping the done
 // readout itself, give up once exceeded and fall back to the legacy behavior. Local uses the same wait, though its
 // first request may take longer while the model loads: the readout is the done signal, so it is read without the
-// summary rather than late (docs/design.md "BYOK API keys", Local AI)
+// summary rather than late (docs/design/byok-api-keys.md "BYOK API keys", Local AI)
 const SUMMARY_TIMEOUT_MS = 5_000;
 
 /** Internal marker for withTimeout only. A unique symbol so it can't collide with the verdict type */
@@ -454,7 +454,7 @@ function sanitizeSummaryForSpeech(raw: string): string {
 }
 
 /**
- * Reads the concierge's new suggestions in the Concierge tab (docs/design.md "Readout in the Concierge tab"): for each,
+ * Reads the concierge's new suggestions in the Concierge tab (docs/design/concierge.md "Readout in the Concierge tab"): for each,
  * the session's display name, then the suggestion's text, as two utterances like the done readout (no template
  * sentence), in the order given. The caller applies the "Read aloud" setting as for speakEvent
  */

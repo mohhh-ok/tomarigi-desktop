@@ -1,4 +1,4 @@
-// How far the floating window grows so the Garden's birds fit (docs/design.md "Layout"). The direction and the cap at
+// How far the floating window grows so the Garden's birds fit (docs/design/layout.md "Layout"). The direction and the cap at
 // the display's visible area are tested on the Rust side (grow_frame in src-tauri/src/garden_grow.rs)
 import {
   GARDEN_MIN_HEIGHT_PX,
@@ -143,7 +143,7 @@ describe("nextGrowScale", () => {
   });
 });
 
-describe("growStep while growth is held after a manual resize (docs/design.md \"Layout\")", () => {
+describe("growStep while growth is held after a manual resize (docs/design/layout.md \"Layout\")", () => {
   // The user resized the window by hand to 749x442 with 9 birds, then dragged a bird right: the drag grew the window and
   // the drop kept it at 1.24 (observed 2026-10-22 16:05:55)
   const user = { width: 749, height: 442 };
@@ -432,7 +432,7 @@ describe("shrinking back when birds leave, with the actual placement (gardenSimu
   });
 });
 
-// docs/design.md "Layout": "On screen" means shown in a settled place. Reproduces what was seen in the verify build: at
+// docs/design/layout.md "Layout": "On screen" means shown in a settled place. Reproduces what was seen in the verify build: at
 // launch, a watch block and 8 birds were first placed in the user's small garden (375×361, user's window 421×482), the
 // window grew, and they were kept at those places shifted to stay on screen, which split the free space; the window
 // stopped at the display's height (634×726, garden 588×605) with 5 of them overlapping
@@ -501,7 +501,7 @@ describe("birds first placed in a render that asks the window to grow are placed
   });
 });
 
-// docs/design.md "Layout": a bird or block the user dragged stays where it was dropped until dragged again. One that
+// docs/design/layout.md "Layout": a bird or block the user dragged stays where it was dropped until dragged again. One that
 // was not settled yet (first placed in a render that asked the window to grow) is placed again when the garden changes
 // size, unless the user dropped it in between
 describe("a dragged bird that was not settled stays where it was dropped when the window grows", () => {
@@ -529,7 +529,7 @@ describe("a dragged bird that was not settled stays where it was dropped when th
   });
 });
 
-// A bubble below its bird that reaches past the garden's bottom (docs/design.md "Layout"): the window grows until it
+// A bubble below its bird that reaches past the garden's bottom (docs/design/layout.md "Layout"): the window grows until it
 // fits, like for a bird without a spot, and never shrinks back to cut it
 describe("the window grows for a bubble past the garden's bottom (withBubbleReach)", () => {
   const userW = 340;

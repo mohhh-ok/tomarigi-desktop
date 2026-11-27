@@ -1,5 +1,5 @@
 // Birds are shown while their process is alive and removed once it ends, never because of elapsed time
-// (docs/design.md "Removing birds of ended sessions"). Runs the real scanSessions against fixture folders.
+// (docs/design/removing-ended-birds.md "Removing birds of ended sessions"). Runs the real scanSessions against fixture folders.
 // invoke is mocked: fs_* read the fixture files, live_sessions / live_codex_threads follow the same steps as the
 // Rust commands (ps for Claude Code, lsof on thread-writer-locks for Codex) against real processes.
 import { afterAll, describe, expect, mock, test } from "bun:test";
@@ -38,7 +38,7 @@ const focusResults = new Map<string, "pane" | "app" | "none">();
 const desktopSessions = new Set<string>();
 // live_sessions answers by configDir that bypass ps, to drive reads exactly (sessions listed as alive, reliable or not)
 const liveOverride = new Map<string, { sessions: object[]; reliable: boolean }>();
-// Agents without a pid file (docs/design.md "Agents"): stand-in processes and the command line ps shows for each.
+// Agents without a pid file (docs/design/agents.md "Agents"): stand-in processes and the command line ps shows for each.
 // tty_processes answers with the ones still alive; process_cwds runs the real lsof on them
 const agentCommands = new Map<number, { command: string; startedAtMs: number }>();
 // Lock holders that live_codex_threads reports as the shared codex app-server (Rust reads their command line)
@@ -447,7 +447,7 @@ describe("Claude Code liveness reads", () => {
   });
 });
 
-// docs/design.md "Side chats and forked sessions of the Claude desktop app". Shaped like the real records on this machine:
+// docs/design/side-chats-and-forks.md "Side chats and forked sessions of the Claude desktop app". Shaped like the real records on this machine:
 // the side chat's transcript starts with its main session's lines copied with the main session's id, its process
 // lingers idle after its turn, and its record has spawnedFrom.btw; ids and names made up
 describe("side chats of the Claude desktop app", () => {
@@ -562,7 +562,7 @@ describe("side chats of the Claude desktop app", () => {
 });
 
 describe("a Claude desktop app session that leaves a proposal card", () => {
-  // The reported scene: the parent proposed a session as a card and ended asking the user to start it (docs/design.md "The "?"
+  // The reported scene: the parent proposed a session as a card and ended asking the user to start it (docs/design/waiting-question-mark.md "The "?"
   // for sessions waiting on you"). It waits on the user until the desktop app's record of a session says it came from
   // that card, and that stays after the session ends and after this app restarts
   const PARENT_HOST = "local_0a1b2c3d-0000-4000-8000-000000000001";

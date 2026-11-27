@@ -1,5 +1,5 @@
 // LLM regression test: runs the turn verdict and the concierge on the scenes of cases.ts with real models, each scene
-// RUNS times per provider, and prints the pass rate per scene and provider (docs/design.md "Turn verdicts", "LLM
+// RUNS times per provider, and prints the pass rate per scene and provider (docs/design/turn-verdicts.md "Turn verdicts", "LLM
 // regression test"). The requests are the app's own: summarizeTurn / turnPayload (src/lib/summarize.ts) and
 // askConcierge / buildConciergePayload (src/lib/concierge.ts), through judgeRunnerFor (src/lib/ai-judge.ts). Only the
 // transport differs (fetch with keys from the environment instead of Rust; transport.ts).
@@ -149,7 +149,7 @@ function runOf(c: Case): Run {
       const shown = (r.suggestions ?? []).map((s) => `${s.kind}:${s.sessionId} ${s.text}`);
       const line = `advice=${r.verdict ? `${r.action}:${r.verdict.targetId ?? "?"} ${r.verdict.line}` : "-"} | ${shown.join(" | ")}`;
       const fail = c.check(r);
-      // Measured against the run before a prompt change, since a prompt change once tripled these (docs/design.md "No reasons in the text")
+      // Measured against the run before a prompt change, since a prompt change once tripled these (docs/design/concierge.md "No reasons in the text")
       const empty = !r.verdict && (r.suggestions ?? []).length === 0;
       return { ...(fail && { fail }), line, usage: r.usage, empty };
     },

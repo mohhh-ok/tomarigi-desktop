@@ -1,4 +1,4 @@
-// Whether anything can start a Claude Code session's next turn without the user (docs/design.md "Turn verdicts"). After
+// Whether anything can start a Claude Code session's next turn without the user (docs/design/turn-verdicts.md "Turn verdicts"). After
 // a turn ends, a session goes on only when something wakes it: a background command's or a chick's notification, a
 // message from another session, or a wakeup it scheduled. continuing from the reply's text holds only while one of
 // these is there
@@ -10,7 +10,7 @@ import { isBackgroundTaskRunning, isChickRunning } from "./session-activity";
 /**
  * How long after its start a session another session started from a terminal, still linked to no one, counts as one that
  * may report to a parent: such a child is linked only from its first message, so until then the app can't tell whose it
- * is (docs/design.md "Watching"). The same 30 minutes as TEXT_CONTINUING_EXPIRES_MS (Claude's own decision)
+ * is (docs/design/watching.md "Watching"). The same 30 minutes as TEXT_CONTINUING_EXPIRES_MS (Claude's own decision)
  */
 export const FRESH_UNLINKED_CHILD_MS = 30 * 60_000;
 

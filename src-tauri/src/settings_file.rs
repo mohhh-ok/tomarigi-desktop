@@ -1,4 +1,4 @@
-// ---- The settings file (docs/design.md "Settings file") ----
+// ---- The settings file (docs/design/settings-file.md "Settings file") ----
 // Owns the files: where they are, the applied values (the last values that passed the page's checks, file-shaped),
 // writing them, and noticing edits. It never checks what a value means: the floating window's page checks an edit with
 // the settings screen's own functions (src/lib/settings-file.ts) and tells this side what passed (settings_accept).

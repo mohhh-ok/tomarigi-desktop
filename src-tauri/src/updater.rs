@@ -1,4 +1,4 @@
-// ---- Updates (docs/design.md "Updates") ----
+// ---- Updates (docs/design/updates.md "Updates") ----
 // Checks latest.json on the newest GitHub Release at launch and every 6 hours, and through "Check for updates" in the
 // menu bar menu and settings. A found update is only installed when "Update to v<version>" is clicked: download,
 // install, relaunch. The state goes to the settings screen through the "update-status" event (src/perch/use-updates.ts)

@@ -1,5 +1,5 @@
 // Checks that the floating window's ⚙ and Cmd+, (Ctrl+, off macOS) ask the app to open the settings window, and that
-// Cmd+, in the settings window does too (docs/design.md "Settings window"). Headless, from a `vite build` output, with no
+// Cmd+, in the settings window does too (docs/design/settings-window.md "Settings window"). Headless, from a `vite build` output, with no
 // dev server or port (setup and the build: tools/README.md "Playwright"):
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright node tools/settings-open-check.mjs
 // The page's Tauri calls are recorded; each check passes when `open_settings` was called. Exits 1 when one fails

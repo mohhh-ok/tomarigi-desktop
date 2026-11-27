@@ -1,4 +1,4 @@
-// The concierge: the bird that looks at every session together and suggests what to do next (docs/design.md
+// The concierge: the bird that looks at every session together and suggests what to do next (docs/design/concierge.md
 // "Concierge"). The name is "Concierge" (ja: コンシェルジュ), the user's choice.
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {

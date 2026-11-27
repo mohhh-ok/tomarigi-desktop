@@ -7,7 +7,7 @@ use crate::window::{current_mode, WindowMode};
 #[cfg(target_os = "macos")]
 use crate::window::{find_backdrop, ns_window};
 
-// ---- Fade until hovered (docs/design.md "Fade until hovered") ----
+// ---- Fade until hovered (docs/design/fade-until-hovered.md "Fade until hovered") ----
 // At rest the floating window's Garden shows only the birds, the window handles ("Tomarigi" in the header, and the
 // Garden's empty message while it has no birds) and the concierge's speech bubble, and
 // clicks go through to the window below (ignoresMouseEvents; set_ignore_cursor_events on Windows / Linux). The WebView
@@ -296,7 +296,7 @@ pub(crate) fn start_fade_watch(app: &AppHandle) {
 mod tests {
     use super::*;
 
-    /// Fade until hovered (docs/design.md "Fade until hovered"): only a handle click shows the window, only leaving the
+    /// Fade until hovered (docs/design/fade-until-hovered.md "Fade until hovered"): only a handle click shows the window, only leaving the
     /// window fades it
     #[test]
     fn fade_reveals_on_a_handle_click_and_fades_only_after_leaving_the_window() {

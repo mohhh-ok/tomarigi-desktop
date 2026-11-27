@@ -1,4 +1,4 @@
-// A child doesn't watch the session that started it (docs/design.md "Watching"): its parent's moves don't make it
+// A child doesn't watch the session that started it (docs/design/watching.md "Watching"): its parent's moves don't make it
 // watching or continuing and don't hold its done, also after the user typed in it. The parent watches the child as
 // before, and two sessions neither started stay as they were.
 // Each scene reads the links as a scan does (takenOverWorld over a stand-in for resolveWatchLinks) and calls the

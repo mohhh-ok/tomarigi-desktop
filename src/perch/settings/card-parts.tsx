@@ -22,7 +22,7 @@ export function CancelEditButton({ onCancel, keepFieldFocus }: { onCancel: () =>
 }
 
 /** Why Save or the connection test can't be pressed yet: the one place of a card that says it, under its fields
- * (docs/design.md, Local AI). Shared by the key rows, Local AI and the local TTS server */
+ * (docs/design/byok-api-keys.md "Local AI"). Shared by the key rows, Local AI and the local TTS server */
 export function CardNote({ text, children }: { text: string; children?: ReactNode }) {
   return (
     <div className="ai-card-note">

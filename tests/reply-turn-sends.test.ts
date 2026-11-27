@@ -1,5 +1,5 @@
 // The question a child's reply asks reaches its parent when the reply's own turn sent the parent a message, read from
-// the ledger of what each turn sent (docs/design.md "Sessions started by another session"). The scene is the reported
+// the ledger of what each turn sent (docs/design/watching.md "Sessions started by another session"). The scene is the reported
 // one, with made-up names: a child started by another session reviewed branches in a turn 270 lines long, sent its parent
 // the report and its questions with SendMessage, ended its turn with「確認したいこと（返事待ち）」, and its parent's
 // answer arrived 4 seconds later as a meta line starting the next turn. The prompt of that turn was out of the tail

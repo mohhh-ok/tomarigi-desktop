@@ -1,6 +1,6 @@
 // A transcript started as a fork (a side chat of the Claude desktop app, or a fork another session started) begins with
 // its parent's lines, copied with the parent's sessionId. Every read of a main transcript skips them; a chick's
-// transcript, whose lines all carry the main session's id, is read as before (docs/design.md "Side chats and forked
+// transcript, whose lines all carry the main session's id, is read as before (docs/design/side-chats-and-forks.md "Side chats and forked
 // sessions of the Claude desktop app"). Lines shaped like the real records on this machine, ids and names made up
 import { describe, expect, test } from "bun:test";
 import type { NativeFile } from "../src/lib/native-fs.ts";

@@ -1,6 +1,6 @@
 // The LLM regression test's transport (tools/llm-regression/transport.ts) posts the app's bodies with fetch, copying
 // the URLs, headers, and timeouts of Rust's keys.rs. This checks the copy still matches keys.rs, so the test keeps
-// sending what the app sends (docs/design.md "LLM regression test")
+// sending what the app sends (docs/design/llm-regression-test.md "LLM regression test")
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { KEYS_RS_VALUES } from "../tools/llm-regression/transport.ts";

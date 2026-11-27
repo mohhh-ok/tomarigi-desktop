@@ -101,7 +101,7 @@ export async function scanSessions(roots: RootEntry[]): Promise<ScanResult> {
         rootLabel: f.rootLabel,
         // Only a name the user gave (Claude Code's /rename or --name). The one Claude Code makes up itself is the
         // project's name with a random suffix (e.g. 「app-p-cc」), which says nothing about the session
-        // (Claude's own decision, docs/design.md "Display names")
+        // (Claude's own decision, docs/design/display-names.md "Display names")
         sessionName: live?.nameSource === "user" ? live.name : undefined,
         startedAt: live?.startedAt,
       };
@@ -160,9 +160,9 @@ function buildViews(
   now: number,
 ): SessionView[] {
   const views: SessionView[] = [];
-  // Which sessions a parent takes over (docs/design.md "Watching", "Sessions started by another session")
+  // Which sessions a parent takes over (docs/design/watching.md "Watching", "Sessions started by another session")
   const linkWorld = takenOverWorld(watch);
-  // Where a child started by another session isn't linked to anyone yet (docs/design.md "Turn verdicts")
+  // Where a child started by another session isn't linked to anyone yet (docs/design/turn-verdicts.md "Turn verdicts")
   const freshChildRoots = rootsWithFreshUnlinkedChild(
     withTail
       .filter((f) => f.agent === "claude" && !f.isSdk)
@@ -204,12 +204,12 @@ function buildViews(
     const snippet = pickSnippet(tail) ?? snippetCache.get(id);
     if (snippet) snippetCache.set(id, snippet);
     // Its own turn ended at its last write (the basis of sinceMs), so the grace period ends once it finished a turn after the
-    // linked sessions last wrote (docs/design.md "Watching")
+    // linked sessions last wrote (docs/design/watching.md "Watching")
     const watched = peersWatchedBy(sessionIdOfViewId(id), peers, linkWorld);
     const watching = watchingCount(displayState, watched, now, writtenAt);
     const takenOver = takenOverByParent(sessionIdOfViewId(id), linkWorld);
     // The sends of the turn its reply (its last event) belongs to: a prompt after the reply starts a new turn that hasn't
-    // replied yet (docs/design.md "Sessions started by another session")
+    // replied yet (docs/design/watching.md "Sessions started by another session")
     if (tail.turnSends) rememberTurnSends(turnSendsCache, id, tail.turnSends);
     const replyTurnSentTo = turnSentToAt(turnSendsCache.get(id), tail.events.at(-1)?.at);
     const sentToParent = takenOver && askSentToParent(sessionIdOfViewId(id), replyTurnSentTo, linkWorld);
@@ -223,7 +223,7 @@ function buildViews(
     // The question tool's question, the desktop app's wrap_up's ask, or the titles of the cards not started
     const question = displayState === "waiting" ? wait?.question : undefined;
     feedTurnMessages(id, tail.events);
-    // The messages of the stopped turn go with its turn verdict (docs/design.md "Turn verdicts")
+    // The messages of the stopped turn go with its turn verdict (docs/design/turn-verdicts.md "Turn verdicts")
     const userMessages = reply ? turnUserMessages(id, reply.at) : undefined;
     const backgroundTasks = updateBackgroundTasks(id, tail);
     const wakes = updateWakes(id, tail);
@@ -279,7 +279,7 @@ function buildViews(
     )) {
       // The parent takes its result and its wrap_up's ask, so those aren't read aloud on their own (a question tool is;
       // a permission prompt makes no event)
-      // (silentForParent in lib/watching.ts; docs/design.md "Watching")
+      // (silentForParent in lib/watching.ts; docs/design/watching.md "Watching")
       cacheEvent(silentForParent(event, takenOver));
     }
   }

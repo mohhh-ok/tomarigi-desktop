@@ -1,4 +1,4 @@
-// Sessions started by another session (docs/design.md "Watching", "Sessions started by another session"): the parent
+// Sessions started by another session (docs/design/watching.md "Watching", "Sessions started by another session"): the parent
 // takes over their results and what it can answer (a reply that asks it, a wrap_up's ask), so those aren't read aloud
 // and the concierge doesn't ask the developer about them; a question tool or a permission prompt still waits on the
 // developer.
@@ -191,7 +191,7 @@ describe("which sessions a parent takes over", () => {
   for (const [name, scene, want] of scenes) test(name, () => expect(takenOver(scene)).toEqual(want));
 });
 
-// A child's dot in the Concierge tab (docs/design.md "Concierge"): a session started by another session is a child from
+// A child's dot in the Concierge tab (docs/design/concierge.md "Concierge"): a session started by another session is a child from
 // its own first prompt, and stays one when the takeover is lifted by the user typing in it or by its parent closing
 describe("which sessions are children (the ◎ in the Concierge tab)", () => {
   const P = { startedAt: 100, first: TYPED };
@@ -370,7 +370,7 @@ const view = (id: string, patch: Partial<SessionView> = {}): SessionView => ({
 
 const asking = { status: "asking", at: 0 } as SessionView["ask"];
 
-// Why a session stopped decides whether its parent takes it over (docs/design.md "Watching", "Sessions started by
+// Why a session stopped decides whether its parent takes it over (docs/design/watching.md "Watching", "Sessions started by
 // another session"; the user's decision): a done, or a reply that asks its parent (the turn verdict), is the parent's;
 // a permission prompt or a question tool (the machine state) only the user can answer, so the concierge advises it and
 // a question tool's needs reply is read. A permission prompt makes no event (Claude Code doesn't write it to the
@@ -426,7 +426,7 @@ describe("a session stopped, by why it stopped and whether a parent takes it ove
       { readAloud: false, needsReply: false, source: undefined, replyDrop: "parent_takes_over", status: "done", trigger: "done" },
     ],
     [
-      // The question is in its pane only: the parent never got it (docs/design.md "Sessions started by another
+      // The question is in its pane only: the parent never got it (docs/design/watching.md "Sessions started by another
       // session")
       "a child whose reply asks without a message to its parent",
       { state: "done", ask: asking, parentTakesOver: true },

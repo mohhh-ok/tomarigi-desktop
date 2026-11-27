@@ -84,7 +84,7 @@ export function RootManager({
                   {(broken || perm !== "granted") && (
                     <span className="badge badge-error">{t("badgeUnreadable")}</span>
                   )}
-                  {/* Left of "Edit label", so "Edit label" ends every row at its right edge (docs/design.md, clarity) */}
+                  {/* Left of "Edit label", so "Edit label" ends every row at its right edge (docs/design/settings-window.md "Clarity of the settings window") */}
                   {!root.builtin && (
                     <button
                       className="small remove"

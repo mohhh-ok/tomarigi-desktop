@@ -1,5 +1,5 @@
 // playAudio (lib/voice.ts) on a fake AudioContext: an abort stops that one playback however far along it is, and the
-// settings' Test plays under a handle of its own, so a readout's cancel doesn't touch it (docs/design.md "Readout voice
+// settings' Test plays under a handle of its own, so a readout's cancel doesn't touch it (docs/design/readout-voice.md "Readout voice
 // (local TTS server)")
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 

@@ -2,7 +2,7 @@
 # cargo runner on macOS (src-tauri/.cargo/config.toml). Before `tauri dev` runs target/debug/tomarigi-desktop, signs it
 # with the local Apple Development certificate and the dev identifier, so its designated requirement is the identifier
 # and the certificate instead of the cdhash and the Keychain doesn't ask for permission after every rebuild
-# (docs/design.md "BYOK API keys"). Other executables cargo runs through this (test binaries in target/debug/deps)
+# (docs/design/byok-api-keys.md "BYOK API keys"). Other executables cargo runs through this (test binaries in target/debug/deps)
 # are run as they are. Without a certificate, or if signing fails, warns and runs the binary unsigned
 exe="$1"
 case "$exe" in

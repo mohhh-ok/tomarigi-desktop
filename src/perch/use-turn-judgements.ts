@@ -20,7 +20,7 @@ import {
 
 export { turnKey };
 
-/** Per-turn requests made from each scan (docs/design.md "Turn verdicts": one verdict per finished turn, from two
+/** Per-turn requests made from each scan (docs/design/turn-verdicts.md "Turn verdicts": one verdict per finished turn, from two
  * requests (summarizeTurn), gives the speech bubble line, the "?", and the anger mark), and the sessions with those results attached for display.
  * summarySetUp: an OpenAI / Anthropic key is saved, or Local is set up */
 export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean) {
@@ -31,7 +31,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
   const requestedRef = useRef(new Set<string>());
   // The anger mark, keyed by session id: whether the latest judged turn had an abusive message, with that turn's reply
   // time. It stays until the next turn's verdict, also while the next turn is working, and isn't changed by a failed
-  // request (docs/design.md "Anger mark for abuse toward the AI"). A kept turn isn't asked again, so its mark comes
+  // request (docs/design/anger-mark.md "Anger mark for abuse toward the AI"). A kept turn isn't asked again, so its mark comes
   // from the kept answers (keptAnger) and the newer of the two is shown
   const [anger, setAnger] = useState<Record<string, Anger>>({});
   const setUpRef = useRef(false);
@@ -39,7 +39,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
     setUpRef.current = summarySetUp;
   }, [summarySetUp]);
   // The verdicts already answered, kept in the settings store: a turn in it isn't asked about again after a reload or a
-  // restart, and its first answer stays (docs/design.md "Turn verdicts"). null until loaded; nothing is asked before
+  // restart, and its first answer stays (docs/design/turn-verdicts.md "Turn verdicts"). null until loaded; nothing is asked before
   const keptRef = useRef<KeptTurnVerdicts | null>(null);
   const [kept, setKept] = useState<ReadonlyMap<string, TurnOutcome>>(new Map());
   useEffect(() => {
@@ -81,7 +81,7 @@ export function useTurnJudgements(sessions: SessionView[], summarySetUp: boolean
         const payload = turnPayload(uiLanguage(), reply.text, userMessages.map((m) => m.text));
         const result = await summarizeTurn(provider, payload);
         const outcome = turnOutcome(result);
-        // A local model's answer that isn't JSON matching the schema is no summary (docs/design.md "BYOK API keys",
+        // A local model's answer that isn't JSON matching the schema is no summary (docs/design/byok-api-keys.md "BYOK API keys",
         // Local AI), recorded as such in the app log and the debug log screen
         const noMatchingJson = !result.ok && result.noMatchingJson === true;
         const head = result.ok

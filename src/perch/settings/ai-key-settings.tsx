@@ -52,7 +52,7 @@ export function AiKeySettings({
   retiredKeys: RetiredKeyProvider[];
   // false on a computer without a key store (Linux without Secret Service): says so instead of the key rows
   storeAvailable: boolean;
-  // Local AI's base URL and model; null while not set up (docs/design.md "BYOK API keys", Local AI)
+  // Local AI's base URL and model; null while not set up (docs/design/byok-api-keys.md "BYOK API keys", Local AI)
   localAi: LocalAiConfig | null;
   selectedProvider: AiProvider | null;
   testState: Record<AiSettingsProvider, ApiKeyTestState>;
@@ -106,7 +106,7 @@ export function AiKeySettings({
           onTest={(draft) => onTest("local", draft)}
           onSelect={choosable ? () => onSelect("local") : undefined}
         />
-        {/* docs/design.md "BYOK API keys": TypeSafe (Jev) is no longer used. Shown only while its key is still saved,
+        {/* docs/design/byok-api-keys.md "BYOK API keys": TypeSafe (Jev) is no longer used. Shown only while its key is still saved,
             so it can be removed. Delete works even without a key store, where the status reads nothing saved */}
         {retiredKeys.map((provider) => (
           <RetiredKeySettings key={provider} provider={provider} onDelete={() => onDeleteRetiredKey(provider)} />
@@ -200,7 +200,7 @@ function LocalAiSettings({
   modelRef.current = model;
   // Said under the URL field as soon as the URL is wrong; it's also why Save and the test can't be pressed
   const urlInvalid = !isValidBaseUrl(baseUrl);
-  // One rule for Save and the connection test (docs/design.md, Local AI), shared with the AI agent's tools
+  // One rule for Save and the connection test (docs/design/byok-api-keys.md "Local AI"), shared with the AI agent's tools
   const canRun = checkLocalAi({ baseUrl, model }) === undefined;
   const showForm = config === null || editing;
   // What the last test ran on: the base URL and model in the form, or "saved". A result for anything else (other values

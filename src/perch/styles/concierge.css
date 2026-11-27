@@ -1,4 +1,4 @@
-/* The concierge (docs/design.md "Concierge"). Perch: its advice above the list, laid out like a
+/* The concierge (docs/design/concierge.md "Concierge"). Perch: its advice above the list, laid out like a
    Perch row and set apart from the session rows below by a panel so it doesn't read as one more session */
 .concierge-line {
   display: block;
@@ -22,7 +22,7 @@
    the empty space under it */
 
 /* The Concierge tab is open (App.tsx): said under the handle's name, inside the same backing, so it stays at rest at the
-   handle's opacity while the tab row is hidden (docs/design.md "Concierge"). The tab's name in the accent color (the
+   handle's opacity while the tab row is hidden (docs/design/concierge.md "Concierge"). The tab's name in the accent color (the
    active tab's underline), the counts in the page's text color, both smaller than the name and without its letter
    spacing */
 
@@ -85,11 +85,11 @@
    suggestions under their heading and then a line per session */
 .speech-bubble-below.concierge-report {
   --bubble-max: 240px;
-  /* docs/design.md "Concierge", the bubble's width; a bird's bubble is as wide as its text. Still capped by the frame's
+  /* docs/design/concierge.md "Concierge", the bubble's width; a bird's bubble is as wide as its text. Still capped by the frame's
      max-width in a garden narrower than this */
   width: var(--bubble-max);
   /* Its own padding, wider than a bird's one-line bubble's 2px / 7px, so a bubble of one line doesn't look cramped
-     (docs/design.md "Concierge", the bubble's own padding) */
+     (docs/design/concierge.md "Concierge", the bubble's own padding) */
   --report-pad-top: 6px;
   --report-pad-side: 8px;
   --report-pad-bottom: 6px;
@@ -100,7 +100,7 @@
   padding: var(--report-pad-top) var(--report-pad-side) var(--report-pad-bottom);
 }
 
-/* With the state colors of the state lines (docs/design.md "Concierge"), each kept at one place: the state lines'
+/* With the state colors of the state lines (docs/design/concierge.md "Concierge"), each kept at one place: the state lines'
    muted grey (the quiet words; 4.6:1 on the bubble), needing a reply's red-brown (5.0:1), done's blue (the palette has
    no blue; 5.4:1), and working's plain white dot (1.25:1, quiet on purpose: working asks nothing of the user; the user
    chose it from samples) */
@@ -115,7 +115,7 @@
      both the app's WebViews. balance was tried and broke the first line shorter, inside phrases more often.
      A state line cut at 3 lines is cut after this wrapping, since it is measured as laid out */
   text-wrap: pretty;
-  /* The bubble's gaps (docs/design.md "Concierge"): two suggestions (each often wraps, so wide enough to tell from its
+  /* The bubble's gaps (docs/design/concierge.md "Concierge"): two suggestions (each often wraps, so wide enough to tell from its
      lines), two state lines (more than the none inside one wrapped line, so where one ends and the next begins shows
      without the dots), and the suggestions and the state lines, twice the first and 3 times the second, so they read
      as two groups */
@@ -124,7 +124,7 @@
   --group-gap: 12px;
 }
 
-/* A Japanese or Chinese text breaks only between phrases, in WebKit as in Chromium (docs/design.md "Concierge"): the
+/* A Japanese or Chinese text breaks only between phrases, in WebKit as in Chromium (docs/design/concierge.md "Concierge"): the
    report puts U+200B between phrases (lib/phrase-break.ts, BudouX) and marks the part, and keep-all breaks kanji and kana
    only there and at spaces. One mechanism in both engines, in place of auto-phrase (Chromium only). Only on those parts:
    in WebKit keep-all also stops the break after a hyphen, so English names would wrap differently. A phrase wider than the
@@ -133,7 +133,7 @@
   word-break: keep-all;
 }
 
-/* The suggestions at the top stand out from the state lines below them (docs/design.md "Concierge"): the heading in
+/* The suggestions at the top stand out from the state lines below them (docs/design/concierge.md "Concierge"): the heading in
    the bubble's accent color (the deep amber of its links under the cursor, since the window's #d9b06a is too light on
    the bubble), the suggestions bold and a step larger than a bird's bubble text (11px) */
 .concierge-status-suggestions {
@@ -171,7 +171,7 @@
   --dot-size: 8px;
   --dot-gap: 4px;
   /* How far the dot is moved down from the middle of the first line's box, to sit at the middle of the lowercase
-     letters (x-height) of the session name after it (docs/design.md "Concierge"). The box's middle is where the UI
+     letters (x-height) of the session name after it (docs/design/concierge.md "Concierge"). The box's middle is where the UI
      font's ascent and descent put it, not where the letters are: in WebKit (the macOS app's WKWebView) with
      -apple-system (SF) at 10px, the ascent is 10.00 and the descent 2.00, so the box's middle is 4.00px above the
      baseline, while the ink of "x" is centered 2.65px above it (of 「完」 3.50px). Measured with
@@ -244,7 +244,7 @@
 }
 
 /* A child session's dot is a double circle (◎), so a child can be told from the rest without anything added to the line
-   (docs/design.md "Concierge"): a ring and a filled center in the state's color, inside the same 8px box, so its center
+   (docs/design/concierge.md "Concierge"): a ring and a filled center in the state's color, inside the same 8px box, so its center
    stays where the filled dot's is. The box keeps the state's color and a mask cuts the ◎ out of it, so the ring and the
    center are one image drawn into the box once and can't be rounded to device px apart: as two boxes (a ring and an
    inset center), the dot's top on a fraction of a px (the line's top plus 4.3px) put the center 1 device px low against
@@ -298,7 +298,7 @@
   outline-offset: 1px;
 }
 
-/* The bubble without a provider (concierge-setup-note.tsx, docs/design.md "Concierge"): what the concierge needs, as
+/* The bubble without a provider (concierge-setup-note.tsx, docs/design/concierge.md "Concierge"): what the concierge needs, as
    the suggestions read (12px bold), then what works without it, muted like the state lines, then the one thing to do:
    the app's own small button (button.small), dark on the light bubble so it is the part that stands out */
 .concierge-setup {

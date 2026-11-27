@@ -38,7 +38,7 @@ export function escalateWithChicks(state: BirdState, chicks: ChickView[]): BirdS
 
 // Tools with which an agent stops to ask the user: Claude Code (AskUserQuestion / ExitPlanMode), Codex
 // (request_user_input), Qwen Code (ask_user_question / exit_plan_mode), Gemini CLI and Copilot CLI (ask_user /
-// exit_plan_mode), OpenCode (question). docs/design.md "Agents"
+// exit_plan_mode), OpenCode (question). docs/design/agents.md "Agents"
 const WAITING_TOOLS = new Set([
   "AskUserQuestion",
   "ExitPlanMode",
@@ -56,7 +56,7 @@ export function isWaitingTool(toolName: string | undefined): boolean {
 /**
  * A chick with no write for a while has stopped, whatever its tail looks like: when Claude Code reports a chick's end in a
  * way the app doesn't read, this bounds how long it can look running. A chick with a tool open waits longer, as long tool
- * runs are silent (docs/design.md "Chicks that have finished")
+ * runs are silent (docs/design/finished-chicks.md "Chicks that have finished")
  */
 function abandoned(tail: TailInfo, sinceMs: number): boolean {
   return toolAbandoned(tail, sinceMs) || (!tail.toolOpen && sinceMs >= CHICK_ABANDONED_MS);
@@ -91,13 +91,13 @@ export function deriveState(
   if (tail.kind === "closed") return "dozing";
   // Stopped on a question tool for the user, or a Claude desktop app turn that ended asking the user (its wrap_up's ask,
   // with only the closing text after it): waiting regardless of recent writes, before any time check or turn verdict.
-  // A proposal card needs the app's records too, so replyWaitOf adds it (docs/design.md "The "?" for sessions waiting
+  // A proposal card needs the app's records too, so replyWaitOf adds it (docs/design/waiting-question-mark.md "The "?" for sessions waiting
   // on you")
   if (!isChick && ((tail.kind === "tool_use" && isWaitingTool(tail.toolName)) || tailWaitOf(tail.events, []))) return "waiting";
   // Chick-only priority check: if the parent ledger has a definite signal, return done/dozing regardless of
   // the tail's appearance (kind) (see the comment above). Checked before the sinceMs < WRITING_MS early return —
   // with a signal, the guess "there was a recent write, so it is working" no longer holds
-  // A chick that handed its report back to its caller has finished, by its own transcript (docs/design.md "Chicks that
+  // A chick that handed its report back to its caller has finished, by its own transcript (docs/design/finished-chicks.md "Chicks that
   // have finished")
   if (isChick && (chickDoneSignalAt !== undefined || tail.handedBack)) {
     return sinceMs >= DOZE_MS ? "dozing" : "done";
@@ -111,7 +111,7 @@ export function deriveState(
     // parent, until abandoned() holds
     return chickTailState(tail, sinceMs, ["assistant_text"]);
   }
-  // A turn Claude Code marked as over is done at once: a recent write is no sign of work then (docs/design.md "Bird
+  // A turn Claude Code marked as over is done at once: a recent write is no sign of work then (docs/design/bird-states.md "Bird
   // states")
   const ended = tail.turnEnded === true && tail.kind === "assistant_text";
   if (sinceMs < WRITING_MS && !ended) return "working";
@@ -200,7 +200,7 @@ export function deriveSdkChickState(tail: TailInfo, sinceMs: number): BirdState 
  *   with no parent candidate that fell back to adult display, isSdk) use deriveSdkChickState, as deriveState still gets
  *   stuck in working when they end on a structured output tool (tool_result; see the deriveSdkChickState comment)
  * - wait: where its wait on the user comes from, if it waits: Claude Code's own status (live), a question tool, proposal
- *   cards not started (cards), or a wrap_up's ask (replyWaitOf; docs/design.md "The "?" for sessions waiting on you").
+ *   cards not started (cards), or a wrap_up's ask (replyWaitOf; docs/design/waiting-question-mark.md "The "?" for sessions waiting on you").
  *   Not for an SDK session
  * - state: waiting when it waits, else tailState
  * - displayState: state escalated to a chick's urgency while the chick is running (escalateWithChicks)
@@ -221,7 +221,7 @@ export function birdStateOf(input: {
 }
 
 /**
- * Where a session's wait on the user comes from (docs/design.md "The "?" for sessions waiting on you"):
+ * Where a session's wait on the user comes from (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you"):
  * - claude: Claude Code's own waiting status in sessions/<pid>.json (a permission prompt, an open question)
  * - question_tool: the transcript ends on a question tool (AskUserQuestion etc.)
  * - proposal: a Claude desktop app turn that ended leaving proposal cards the user hasn't started
@@ -282,7 +282,7 @@ export function replyWaitOf(
   return { ...tailWait, waitingOn };
 }
 
-/** What a waiting session waits on (docs/design.md "Concierge"). onQuestionTool: the transcript ends on a question tool
+/** What a waiting session waits on (docs/design/concierge.md "Concierge"). onQuestionTool: the transcript ends on a question tool
  * (AskUserQuestion etc.). Otherwise Claude Code's waitingFor in sessions/<pid>.json tells: it writes a question tool's
  * tool_use only after it is answered, and puts "input needed" there while the question (or an MCP input) is open and
  * "permission prompt" (or a sandbox / worker request) while a permission prompt is (read from Claude Code 2.1.309) */

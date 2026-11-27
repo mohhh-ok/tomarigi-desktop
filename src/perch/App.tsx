@@ -73,7 +73,7 @@ function speakSessionEvent(event: SessionEvent, stillEnabled: () => boolean): vo
 type Phase = "loading" | "ready";
 
 // Tabs switch the view (Concierge, Garden, Perch, events; concierge-tab.ts). The open one is saved and opened again
-// after a relaunch. Settings are a window of their own (⚙ → open_settings; docs/design.md "Settings window")
+// after a relaunch. Settings are a window of their own (⚙ → open_settings; docs/design/settings-window.md "Settings window")
 
 // Grabbing the window background moves the whole window. Excludes clickable controls, text inputs, birds (garden
 // drag), scrolling lists, and the window handle (it drags the window itself, garden-fade.ts)
@@ -161,7 +161,7 @@ export default function App({
     void (async () => {
       // The mock source (source.usesRoots === false) doesn't use the roots/perms subsystem at all; it skips the
       // setup screen, watched folder settings, and permission checks entirely (use-roots.ts)
-      // The settings file first: the folders and the settings are read from what it applied (docs/design.md "Settings file")
+      // The settings file first: the folders and the settings are read from what it applied (docs/design/settings-file.md "Settings file")
       await settingsFile.load();
       await rootsApi.loadAll();
       await loadSettings();
@@ -233,7 +233,7 @@ export default function App({
             });
             // Readout is an opt-in setting independent of mute (chirps). See lib/voice.ts for constraints.
             // While the Concierge tab is open, done and needs reply are held and the voice reads the concierge's new
-            // suggestions instead (docs/design.md "Readout in the Concierge tab")
+            // suggestions instead (docs/design/concierge.md "Readout in the Concierge tab")
             if (voiceEnabledRef.current && conciergeReadoutEventRef.current(event) === "speak") {
               speakSessionEvent(event, () => voiceEnabledRef.current);
             }
@@ -331,7 +331,7 @@ export default function App({
             : undefined;
       const angry = angrySessions.has(e.sessionId);
       // The event keeps the name it had; the part that tells it apart is kept visible only while that is still the
-      // session's name (docs/design.md "Display names")
+      // session's name (docs/design/display-names.md "Display names")
       const session = sessionById.get(e.sessionId);
       const projectSuffix = session?.project === e.project ? session.projectSuffix : undefined;
       if (!ask && !line && !angry && !projectSuffix) return e;
@@ -339,7 +339,7 @@ export default function App({
     });
   }, [events, displaySessions]);
 
-  // The concierge (docs/design.md "Concierge"): shown while an OpenAI / Anthropic key is saved or Local is set up. It reads the same
+  // The concierge (docs/design/concierge.md "Concierge"): shown while an OpenAI / Anthropic key is saved or Local is set up. It reads the same
   // sessions and events as the screens, so it sees the turn verdicts and bubble lines they show
   const agentOfSession = useCallback(
     (id: string) => roots.find((r) => id.startsWith(`${r.id}/`))?.kind,
@@ -379,7 +379,7 @@ export default function App({
   const hasGranted = !source.usesRoots || grantedCount > 0;
 
   const showTabs = phase === "ready" && (!source.usesRoots || roots.length > 0);
-  // The Concierge tab is always there; without a provider it says what the concierge needs (docs/design.md "Concierge")
+  // The Concierge tab is always there; without a provider it says what the concierge needs (docs/design/concierge.md "Concierge")
   const tab = chosenTab;
   // The Concierge tab (concierge-tab.ts): the floating window shrinks to the concierge while it is open with nothing
   // over it; on the other tabs, settings and the debug log it is back at its frame
@@ -417,7 +417,7 @@ export default function App({
   // Rows of the icon set settings, for the settings window (settings-runtime.ts)
   const running = useMemo(() => runningProjects(sessions), [sessions]);
 
-  // What the settings window shows but isn't saved (docs/design.md "Settings window")
+  // What the settings window shows but isn't saved (docs/design/settings-window.md "Settings window")
   usePublishSettingsRuntime({
     running,
     brokenIds,
@@ -428,7 +428,7 @@ export default function App({
     <main className="page">
       <SettingsFileNote notes={settingsFile.notes} onDismiss={settingsFile.dismissNotes} />
       <div className="page-header">
-        {/* The window handle while the Garden is faded (docs/design.md "Fade until hovered") */}
+        {/* The window handle while the Garden is faded (docs/design/fade-until-hovered.md "Fade until hovered") */}
         <h1 className="brand fade-handle" onPointerDown={onFadeHandlePointerDown}>
           tomarigi
         </h1>
@@ -455,7 +455,7 @@ export default function App({
             >
               <MdBugReport size={16} />
             </button>
-            {/* Opens the settings window, or brings it to the front (docs/design.md "Settings window") */}
+            {/* Opens the settings window, or brings it to the front (docs/design/settings-window.md "Settings window") */}
             <button
               className="small"
               onClick={() => void invoke("open_settings").catch(() => {})}
@@ -479,7 +479,7 @@ export default function App({
         </div>
         {/* The Concierge tab is open: said right under the handle, on the same backing and shown at rest like it (the
             tab row is hidden then), with the other birds and how many of them need a reply. A row of its own, so the
-            window's width follows the concierge, not this text (docs/design.md "Concierge") */}
+            window's width follows the concierge, not this text (docs/design/concierge.md "Concierge") */}
         {tab === "concierge" && showTabs && !showDebug && (
           <div className="concierge-only-row">
             <ConciergeTabLabel sessions={displaySessions} />
@@ -503,7 +503,7 @@ export default function App({
                   className={`tab-btn tab-btn-${id}${tab === id ? " active" : ""}`}
                   onClick={() => setTab(id)}
                   // The Concierge tab is the concierge's picture, named in its tooltip: four words don't fit the
-                  // narrowest window (docs/design.md "Concierge")
+                  // narrowest window (docs/design/concierge.md "Concierge")
                   {...(id === "concierge" && { "aria-label": t(TAB_LABEL[id]), title: t(TAB_LABEL[id]) })}
                 >
                   {id === "concierge" ? <ConciergeGlyph look={conciergeLook} size={18} /> : t(TAB_LABEL[id])}
@@ -598,7 +598,7 @@ export default function App({
           </section>
         </>
       )}
-      {/* The debug log takes the place of the tabs' content. English only (docs/design.md "Language") */}
+      {/* The debug log takes the place of the tabs' content. English only (docs/design/language.md "Language") */}
       {showDebug && <DebugApp onClose={closeDebug} />}
       {/* Control panel only for the mock source (MockPanel passed by boot.tsx) */}
       {extraPanel}

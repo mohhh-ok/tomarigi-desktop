@@ -1,4 +1,4 @@
-// Checking an edit of the settings file (docs/design.md "Settings file", Detailed design (e)). Each key that changed
+// Checking an edit of the settings file (docs/design/settings-file.md "Settings file", Detailed design (e)). Each key that changed
 // goes through the settings screen's own checks (lib/settings-checks.ts); a key that passes is accepted, one that fails
 // keeps its applied value. Lists and maps are taken entry by entry. Said in the UI language for the note (`say`); the
 // log uses the English reason (problemText). The servers are asked through `deps`, so tests use fakes

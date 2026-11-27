@@ -1,4 +1,4 @@
-// Checks in a headless browser what a click on a speech bubble reaches (docs/design.md "Fade until hovered"): the
+// Checks in a headless browser what a click on a speech bubble reaches (docs/design/fade-until-hovered.md "Fade until hovered"): the
 // concierge's bubble takes clicks over its whole box, its empty space included, so a bird drawn under it isn't pressed
 // through it; a bird's bubble lets clicks through to what is under it. Runs the mock (?mock=1&focusable=1, where a click
 // that would jump to a pane logs "[mock] focus <id>") from a `vite build` output, with no dev server or port.

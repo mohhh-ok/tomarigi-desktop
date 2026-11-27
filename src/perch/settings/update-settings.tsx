@@ -1,4 +1,4 @@
-// "Updates" on the settings screen (docs/design.md "Updates"): the running version, "Check for updates", and once a
+// "Updates" on the settings screen (docs/design/updates.md "Updates"): the running version, "Check for updates", and once a
 // newer version is found, "Update to v<version>" with the download progress. Up to date / check failed only come
 // from a manual check (src-tauri/src/updater.rs)
 import { t } from "@/lib/i18n";

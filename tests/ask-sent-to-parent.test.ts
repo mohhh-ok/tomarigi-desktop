@@ -1,5 +1,5 @@
 // A parent takes over the question a child's reply asks only when the child's turn sent the parent a message
-// (docs/design.md "Sessions started by another session"). The scene is the reported one, with made-up names and texts:
+// (docs/design/watching.md "Sessions started by another session"). The scene is the reported one, with made-up names and texts:
 // a session another session started asked the user, in its own pane, to open a URL and allow a sign-in, while its own
 // child kept working and that child's messages started its later turns. Its turns sent messages only to its own child,
 // so the question stayed with the user, yet the concierge was given needs_reply false and never brought it up

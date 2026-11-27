@@ -1,4 +1,4 @@
-// Local AI (lib/local-judge.ts, lib/api-keys.ts; docs/design.md "BYOK API keys", Local AI). The server is never
+// Local AI (lib/local-judge.ts, lib/api-keys.ts; docs/design/byok-api-keys.md "BYOK API keys", Local AI). The server is never
 // called: the request body and the reading of reply bodies are checked as plain functions
 import { expect, test } from "bun:test";
 import {

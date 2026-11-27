@@ -1,4 +1,4 @@
-// Phrase breaks for the concierge's bubble (docs/design.md "Concierge"; lib/phrase-break.ts): U+200B between the phrases
+// Phrase breaks for the concierge's bubble (docs/design/concierge.md "Concierge"; lib/phrase-break.ts): U+200B between the phrases
 // of a text with no spaces between its words, so a line breaks only between phrases in WebKit as in Chromium
 import { describe, expect, test } from "bun:test";
 import { NO_BREAK_SPACE, PHRASE_BREAK, hasPhrases, phraseBreaks } from "../src/lib/phrase-break.ts";

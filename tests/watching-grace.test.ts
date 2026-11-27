@@ -1,4 +1,4 @@
-// The watching grace period (docs/design.md "Watching"): a session stays watching for WATCH_GRACE_MS after its linked
+// The watching grace period (docs/design/watching.md "Watching"): a session stays watching for WATCH_GRACE_MS after its linked
 // sessions last moved, unless no linked session moves now and it finished a turn after their last writes (it took their result)
 import { describe, expect, test } from "bun:test";
 import { deriveState } from "../src/lib/bird-state.ts";

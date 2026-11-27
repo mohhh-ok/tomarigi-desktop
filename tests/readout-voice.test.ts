@@ -1,4 +1,4 @@
-// The readout voice setting and what is read from a local TTS server's answers (docs/design.md "Readout voice (local
+// The readout voice setting and what is read from a local TTS server's answers (docs/design/readout-voice.md "Readout voice (local
 // TTS server)")
 import { describe, expect, test } from "bun:test";
 import {

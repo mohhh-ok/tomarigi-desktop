@@ -2,14 +2,14 @@ import type { NativeFile } from "./native-fs";
 import type { TailKind, TranscriptReadOptions } from "./transcript";
 import { asBlocks, isForeignLine, parseTimestamp, taskNotificationOf, TASK_NOTIFICATION_TAG, type TranscriptEntry } from "./transcript-entry";
 // What a parent's and a chick's transcript lines say about a chick's end (TailInfo.chickSignals, toolOpen, handedBack;
-// docs/design.md "Chicks that have finished")
+// docs/design/finished-chicks.md "Chicks that have finished")
 
 const CHICK_SIGNAL_CHUNK_BYTES = 4 * 1024 * 1024;
 
 /**
  * Collects chick completion signals (the same collectChickSignals as TailInfo.chickSignals) from the whole
  * transcript from start, not just the tail window. A long-lived parent's completion records scroll out of the
- * tail window, and a chick is shown until its completion is recorded (docs/design.md "Removing birds of ended
+ * tail window, and a chick is shown until its completion is recorded (docs/design/removing-ended-birds.md "Removing birds of ended
  * sessions"), so scanChicks (lib/session-chicks.ts) keeps the result across scans and reads only what was appended. end is the
  * position read up to; a last line cut off midway is left for the next read
  */
@@ -56,7 +56,7 @@ export async function scanChickSignals(
 }
 
 
-/** The tool a chick calls to hand its report back to its caller and stop (Claude Code, docs/design.md "Chicks that
+/** The tool a chick calls to hand its report back to its caller and stop (Claude Code, docs/design/finished-chicks.md "Chicks that
     have finished") */
 const HAND_BACK_TOOL = "SubagentHandback";
 // The parent's record of a chick's hand-back: a queue-operation whose content starts with

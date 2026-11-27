@@ -1,5 +1,5 @@
 // A bird or block the user drops stays where it was dropped, over other birds too, and reopening the Garden puts every
-// bird where it was right after the drop, overlap included (docs/design.md "Layout"; issue #3)
+// bird where it was right after the drop, overlap included (docs/design/layout.md "Layout"; issue #3)
 import { describe, expect, test } from "bun:test";
 import { hashId, positionsAfterDrop, type GardenPosition } from "../src/lib/garden-layout.ts";
 import { gardenSimulate, type PlacedGarden } from "../src/lib/garden-fit.ts";

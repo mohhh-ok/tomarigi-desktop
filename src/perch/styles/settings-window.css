@@ -1,4 +1,4 @@
-/* The settings window (docs/design.md "Settings window"; settings-app.tsx): a standard opaque window, sections listed
+/* The settings window (docs/design/settings-window.md "Settings window"; settings-app.tsx): a standard opaque window, sections listed
    on the left, the chosen one on the right. Only the right scrolls. The cards keep their styles from settings.css */
 
 html[data-view="settings"],
@@ -96,7 +96,7 @@ html[data-view="settings"] body {
   border-top: none;
 }
 
-/* One look per kind of button on the settings page (docs/design.md, "Clarity of the settings window"). Buttons don't
+/* One look per kind of button on the settings page (docs/design/settings-window.md "Clarity of the settings window"). Buttons don't
    inherit the page's font by default (English showed an Arial-like face), and the small ones differed in height between
    plain, busy (inline-flex) and ✕ buttons. The section's one main action keeps its larger look. Scoped to this page, so the
    floating window's header is untouched */

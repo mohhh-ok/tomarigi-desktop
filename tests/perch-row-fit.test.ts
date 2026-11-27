@@ -1,5 +1,5 @@
 // A Perch row shows the state on a second line only when the name and the state with its elapsed time don't fit on one
-// line; the answer comes from the texts' own widths, so it is the same on one line or two (docs/design.md "Display names")
+// line; the answer comes from the texts' own widths, so it is the same on one line or two (docs/design/display-names.md "Display names")
 import { expect, test } from "bun:test";
 import { needsTwoLines, toolFits, type RowFit } from "../src/perch/perch-row-fit.ts";
 

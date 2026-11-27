@@ -1,4 +1,4 @@
-// Grow the floating window when the Garden's birds don't fit (docs/design.md "Layout"). This decides how far (a scale
+// Grow the floating window when the Garden's birds don't fit (docs/design/layout.md "Layout"). This decides how far (a scale
 // of the user's size, gardenFitScale in lib/garden-fit.ts); the Rust side (src-tauri/src/garden_grow.rs) decides the
 // direction, caps it at the display's visible area, and keeps the user's size apart from the grown one
 import { invoke } from "@tauri-apps/api/core";
@@ -19,7 +19,7 @@ import { growsUpForBubble, upGrowDone, upGrowLeftMs, type UpGrowWait } from "./g
  * Which part of the window stays put on screen when it grows or shrinks back, per axis (0 the left / top edge, 1 the
  * right / bottom edge, 0.5 the center; garden_grow_anchor in src-tauri/src/garden_grow.rs). Fetched before each
  * resize is asked for, so it is known when the Garden sees the new size; the Garden shifts its birds by it so they
- * stay at the same place on screen (docs/design.md "Layout")
+ * stay at the same place on screen (docs/design/layout.md "Layout")
  */
 export const gardenGrowAnchor = { x: 0, y: 0 };
 
@@ -131,7 +131,7 @@ export function useGardenGrow(
       upGrown();
     }
     // A bubble above its bird's name past the garden's top, in a window in the display's upper part: grow up by itself,
-    // the bottom edge staying, like a drag pushing the top edge (docs/design.md "Layout"). Not during a drag
+    // the bottom edge staying, like a drag pushing the top edge (docs/design/layout.md "Layout"). Not during a drag
     if (fit && growsUpForBubble({ active, held, dragging: dragGrowing, growUp: fit.growUp })) {
       const wait = { gardenH: fit.gardenH, since: Date.now() };
       upGrowing = wait;
@@ -154,7 +154,7 @@ export function useGardenGrow(
       return;
     }
     // The user dropped a bird or block: shrink once to the smallest size at which nothing on screen moves (even after a
-    // manual resize, as it never goes below the user's size; docs/design.md "Layout")
+    // manual resize, as it never goes below the user's size; docs/design/layout.md "Layout")
     const seen = dropsRef.current;
     if (fit?.drops !== undefined) dropsRef.current = fit.drops;
     const dropScale =

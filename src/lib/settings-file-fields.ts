@@ -1,4 +1,4 @@
-// The settings file's keys and how each one stands for a value of the app's store (docs/design.md "Settings file",
+// The settings file's keys and how each one stands for a value of the app's store (docs/design/settings-file.md "Settings file",
 // Detailed design (a)). Pure conversions, both ways, so lib/kv.ts can keep the store's functions and callers as they
 // are while the values live in the file. No Tauri imports: lib/kv.ts imports this
 import { pathKey } from "./paths";

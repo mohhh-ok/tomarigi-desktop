@@ -140,7 +140,7 @@
   font-size: 11px;
 }
 
-/* The turn verdict of a done (docs/design.md "Turn verdicts"): asking or not, and abusive */
+/* The turn verdict of a done (docs/design/turn-verdicts.md "Turn verdicts"): asking or not, and abusive */
 .debug-log-ask {
   padding: 1px 6px;
   border-radius: 4px;

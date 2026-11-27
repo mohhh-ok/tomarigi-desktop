@@ -6,7 +6,7 @@ import type { AgentKind } from "./agents";
 
 /**
  * The turn verdict on whether the last reply waits on the user, one per turn (sessionId + time of the last reply). It
- * comes with the speech bubble summary (docs/design.md "Turn verdicts"); pending while that request runs, error when
+ * comes with the speech bubble summary (docs/design/turn-verdicts.md "Turn verdicts"); pending while that request runs, error when
  * it failed or the answer didn't match the schema
  */
 export interface AskJudgement {
@@ -22,7 +22,7 @@ export interface SessionEvent {
   sessionId: string;
   project: string;
   // The end of project that tells it apart from another session with the same name, while the session's name is still
-  // that (set for display by App.tsx from SessionView.projectSuffix; docs/design.md "Display names")
+  // that (set for display by App.tsx from SessionView.projectSuffix; docs/design/display-names.md "Display names")
   projectSuffix?: string;
   // Prompt snippet. For started it is the event's own user message; for others, the latest message
   // (pickSnippet). It is a separate field rather than embedded in the project string so that EventFeed can
@@ -73,7 +73,7 @@ export type BirdState = "working" | "waiting" | "done" | "dozing";
 /**
  * What a waiting session waits on, when known (replyWaitOf and waitingOnOf in lib/bird-state.ts; passed to the concierge
  * as waiting_on): a question (a question tool, an open question, a wrap_up's ask), a permission prompt, or a Claude
- * desktop app proposal card the user hasn't started (docs/design.md "Concierge")
+ * desktop app proposal card the user hasn't started (docs/design/concierge.md "Concierge")
  */
 export type WaitingOn = "question" | "permission" | "proposal";
 
@@ -81,10 +81,10 @@ export interface SessionView {
   id: string; // <rootId>/<slug>/<file name>
   project: string; // display name
   // The end of project that tells it apart from another session with the same name (the folder's label, the rest of a
-  // session name, the number), kept visible when the name is cut (docs/design.md "Display names")
+  // session name, the number), kept visible when the name is cut (docs/design/display-names.md "Display names")
   projectSuffix?: string;
   // The project's name, when project isn't just that (told apart from another session, or with the folder's label).
-  // For what is set per project, such as the icon set (docs/design.md "Display names")
+  // For what is set per project, such as the icon set (docs/design/display-names.md "Display names")
   projectBase?: string;
   // Project identifier within the data source. For Claude Code, the slug under projects/; for Codex,
   // `codex:<cwd>`. Key for per-project icon set assignment (issue #14). It doesn't include rootId,
@@ -102,7 +102,7 @@ export interface SessionView {
   // The turn verdict for the reply's turn. Set by App (mock writes it directly)
   ask?: AskJudgement;
   // The turn verdict's continuing for the reply's turn: the session's work goes on in the background after the turn
-  // (docs/design.md "Turn verdicts"). A fact for the concierge only; the bird's look doesn't change. Set by App
+  // (docs/design/turn-verdicts.md "Turn verdicts"). A fact for the concierge only; the bird's look doesn't change. Set by App
   continuing?: boolean;
   // The turn verdict said continuing, but TEXT_CONTINUING_EXPIRES_MS (lib/turn-verdict.ts) passed since the last write, or
   // nothing can wake the session (unwakeableForMs), so continuing is false. Asks the concierge once while dozing (the "expired" class of conciergeTriggerClasses in
@@ -116,24 +116,24 @@ export interface SessionView {
   // something can wake it, and where the app can't tell (Codex, SDK sessions)
   unwakeableForMs?: number;
   // The messages a person typed in the stopped turn, oldest first (turnUserMessages in lib/session-tail.ts). Input
-  // for the abuse verdict (docs/design.md "Anger mark for abuse toward the AI"). Untrusted input; never shown
+  // for the abuse verdict (docs/design/anger-mark.md "Anger mark for abuse toward the AI"). Untrusted input; never shown
   userMessages?: { at: number; text: string }[];
   // Whether the bird has the anger mark: the latest turn verdict said a message of that turn was abusive. It stays
   // until the next turn's verdict. Set by App (mock writes it directly)
   angry?: boolean;
   // While its own state is waiting: whether it waits on a question (a question tool) or a permission prompt, when that
-  // is known (waitingOnOf in lib/bird-state.ts). Passed to the concierge (docs/design.md "Concierge")
+  // is known (waitingOnOf in lib/bird-state.ts). Passed to the concierge (docs/design/concierge.md "Concierge")
   waitingOn?: WaitingOn;
   // While its own state is waiting: true when it waits on the Claude desktop app's wrap_up ask (pendingAskOf in
   // lib/transcript-desktop.ts), not a question tool or a permission prompt. That ask is also the session's report, so a parent
-  // that takes it over can answer it (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Watching")
+  // that takes it over can answer it (parentCanAnswer in lib/turn-verdict.ts; docs/design/watching.md "Watching")
   wrapUpAsk?: true;
   // The question text while stopped on a question tool (AskUserQuestion / request_user_input). Taken as-is
   // from the tool input (no AI). Shown in the speech bubble (perch/bubble.tsx)
   question?: string;
   // Speech bubble text summarizing the reply's turn with BYOK. Set by App (mock writes it directly)
   summary?: string;
-  // Peers connected by inter-session messages (Watching in docs/design.md). Claude Code only
+  // Peers connected by inter-session messages (Watching in docs/design/watching.md). Claude Code only
   peers?: PeerLink[];
   // Watching: the number of peers currently active while this session's own machine state is done / dozing.
   // For a grace period after the peers stop (WATCH_GRACE_MS in lib/watching.ts) it is 0 and stays watching.
@@ -141,17 +141,17 @@ export interface SessionView {
   watching?: number;
   // A parent takes this session's results and questions: it was started by another session, the user hasn't typed in
   // it since its first prompt, and it is linked to a parent (a session that started before it and either wasn't started
-  // by another session or is linked to one older than itself; takenOverByParent in lib/watching.ts; docs/design.md
+  // by another session or is linked to one older than itself; takenOverByParent in lib/watching.ts; docs/design/watching.md
   // "Watching"). Its done isn't read aloud, and the concierge doesn't ask the developer to check its result or to reply
   // to what its parent can answer: a question its reply asks when the turn sent it a message (askSentToParent), or its wrap_up's ask (parentCanAnswer in
   // lib/turn-verdict.ts). A permission prompt or a question tool is advised as usual, and a question tool's needs reply is read. Its bird gets the "?"
   parentTakesOver?: true;
   // With parentTakesOver: its latest turn sent a message to its parent (askSentToParent in lib/watching.ts), so the
   // question its reply asks reached the parent, which takes it over. Without it, a reply that asks waits on the user
-  // like any other session's (parentCanAnswer in lib/turn-verdict.ts; docs/design.md "Sessions started by another session")
+  // like any other session's (parentCanAnswer in lib/turn-verdict.ts; docs/design/watching.md "Sessions started by another session")
   askSentToParent?: true;
   // Started by another session, from its own first prompt (isChildSession in lib/watching.ts): its state line's dot in the
-  // Concierge tab is ◎ (docs/design.md "Concierge"). Unlike parentTakesOver, typing in it or its parent closing doesn't clear it
+  // Concierge tab is ◎ (docs/design/concierge.md "Concierge"). Unlike parentTakesOver, typing in it or its parent closing doesn't clear it
   child?: true;
   // Working folder and start time. Used for the watching indent on the Perch (the parent is the one started
   // first; the label is the path relative to the parent)
@@ -201,7 +201,7 @@ export interface ScanResult {
 export interface ChickScan {
   view: ChickView;
   // The parent's transcript has recorded this chick's completion (and it hasn't resumed since). Such chicks are
-  // not listed under the parent (docs/design.md "Removing birds of ended sessions") but are still passed to the
+  // not listed under the parent (docs/design/removing-ended-birds.md "Removing birds of ended sessions") but are still passed to the
   // done suppression and the parent's state escalation, which need to see that they just finished
   completed: boolean;
 }
@@ -225,7 +225,7 @@ export interface LiveSession {
    * "sandbox request", "worker request", "dialog open", ... (Claude Code's own values) */
   waitingFor?: string;
   startedAt?: number;
-  /** The Claude desktop app's local_… id of the session (watching links; docs/design.md "Watching") */
+  /** The Claude desktop app's local_… id of the session (watching links; docs/design/watching.md "Watching") */
   hostSessionId?: string;
 }
 

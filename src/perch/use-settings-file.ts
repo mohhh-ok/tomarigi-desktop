@@ -1,4 +1,4 @@
-// The settings file in the floating window, which owns the running state (docs/design.md "Settings file", Detailed
+// The settings file in the floating window, which owns the running state (docs/design/settings-file.md "Settings file", Detailed
 // design (d)(e)): reading it at launch (and making it from the earlier settings once), taking each edit through the
 // screen's checks (lib/settings-file.ts), and the note, this launch's list and the `[settings-file]` log lines
 import { useCallback, useEffect, useRef, useState } from "react";

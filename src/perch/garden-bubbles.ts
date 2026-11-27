@@ -1,4 +1,4 @@
-// Which birds outside a watch block keep the bubble room (docs/design.md "Layout"). A bubble shows its whole text and is
+// Which birds outside a watch block keep the bubble room (docs/design/layout.md "Layout"). A bubble shows its whole text and is
 // drawn above every bird (styles/speech-bubble.css), so it may cover a neighbour, and a bubble that wraps onto more
 // lines covers its own bird's status lines; the room stays one line's height. Only a bird in the same row as a bird
 // with a bubble keeps the room, so the status lines of a row line up, as in a watch block's row. Where each bubble goes
@@ -73,7 +73,7 @@ export interface BubblePlace {
 export type MeasureBubble = (id: string, max: number) => { w: number; h: number };
 
 /**
- * Where the bubbles go (docs/design.md "Layout").
+ * Where the bubbles go (docs/design/layout.md "Layout").
  * - Max width: 180px, narrowed so it stops BUBBLE_GAP_PX / 2 short of halfway to the nearest bird on each side whose
  *   bubble overlaps it vertically (its whole wrapped height, below or above its bird), and at an edge to the room to the
  *   edge plus that reach on the other side; never below a bird's width. Bubbles in a block keep their own max
@@ -251,7 +251,7 @@ function totalOverlap(birds: LaidBird[], out: Map<string, BubblePlace>): number 
   );
 }
 
-/** Top and bottom of a bubble of height h, tail not included. Above, it ends above the name (docs/design.md "Layout") */
+/** Top and bottom of a bubble of height h, tail not included. Above, it ends above the name (docs/design/layout.md "Layout") */
 function verticalSpan(b: LaidBird, h: number, above: boolean): [number, number] {
   const top = b.nameTop ?? b.iconTop;
   if (above) return [b.y + top - TAIL_PX - h, b.y + top - TAIL_PX];
@@ -370,7 +370,7 @@ const TAIL_NAME_GAP_PX = 2;
 const TAIL_END_PX = 10;
 
 /**
- * The tail of a bubble above its bird (docs/design.md "Layout"): a stem from the bubble's bottom edge straight down
+ * The tail of a bubble above its bird (docs/design/layout.md "Layout"): a stem from the bubble's bottom edge straight down
  * beside the name, on the side where the bubble has more room, to the name's bottom (knee), then a tip pointing at the
  * icon's side halfway down it, so it covers neither the name nor the icon. base and tip are px from the bubble's left
  * edge; knee and h are px down from the bubble's bottom edge to the knee and to the tip. place: the bubble's width and

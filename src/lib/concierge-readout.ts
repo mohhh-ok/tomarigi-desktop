@@ -1,4 +1,4 @@
-// What the voice reads while the Concierge tab is open (docs/design.md "Concierge", "Readout in the Concierge tab"):
+// What the voice reads while the Concierge tab is open (docs/design/concierge.md "Concierge", "Readout in the Concierge tab"):
 // only the concierge's new suggestions, not every session's done and needs reply. The per-session events are held
 // while the tab is open; they are read only when a request fails or gives no answer, and dropped when an answer comes
 // or the tab is left. Chirps are not decided here: they stay as they are.
@@ -58,7 +58,7 @@ export class ConciergeReadout<S extends ConciergeSuggestion = ConciergeSuggestio
    */
   event(event: SessionEvent): "speak" | "held" | "skip" {
     // The events read per session outside the tab are the ones held in it. A done whose parent takes it over is read
-    // neither outside nor inside (docs/design.md "Watching")
+    // neither outside nor inside (docs/design/watching.md "Watching")
     if (!isReadAloudEvent(event)) return "skip";
     if (!this.open) return "speak";
     this.held.push(event);

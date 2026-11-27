@@ -5,17 +5,17 @@ use tauri::{AppHandle, Emitter};
 use crate::append_log;
 
 // ---- BYOK API keys and the API calls that use them ----
-// docs/design.md "BYOK API keys". Key values are handled only inside Rust and never returned to the WebView JS.
+// docs/design/byok-api-keys.md "BYOK API keys". Key values are handled only inside Rust and never returned to the WebView JS.
 // The store is decided once at startup: everyday use, verify, and dev all use the OS store (items per identifier):
 // the macOS Keychain, Windows Credential Manager, or Linux Secret Service (GNOME Keyring / KWallet) through the
-// keyring crate. On Linux without Secret Service keys can't be saved; there is no plaintext fallback (docs/design.md
+// keyring crate. On Linux without Secret Service keys can't be saved; there is no plaintext fallback (docs/design/platforms.md
 // "Platforms"). dev is signed before each run by a cargo runner (scripts/dev-runner.sh) so the Keychain doesn't ask
 // after every rebuild. TOMARIGI_KEY_BACKEND=webview puts keys in the WebView's IndexedDB instead (only to check the
 // migration from it): JS keeps the keys there and passes them to Rust at startup and on save (Rust keeps them only in
 // memory). API calls that use keys are made from Rust with either store
 
 const KEY_PROVIDERS: [&str; 2] = ["anthropic", "openai"];
-/// Providers no longer used whose saved key can still be seen and deleted, never saved or sent (docs/design.md "BYOK
+/// Providers no longer used whose saved key can still be seen and deleted, never saved or sent (docs/design/byok-api-keys.md "BYOK
 /// API keys": TypeSafe (Jev) is no longer used)
 const RETIRED_KEY_PROVIDERS: [&str; 1] = ["typesafe"];
 
@@ -78,7 +78,7 @@ mod os_store {
 
 static KEY_STORE: std::sync::OnceLock<KeyStore> = std::sync::OnceLock::new();
 /// Whether the WebView's storage (IndexedDB) belongs to this identifier alone. Decided once at startup
-/// (webview_storage_is_own); JS reads and deletes keys in IndexedDB only when it does (docs/design.md "BYOK API keys")
+/// (webview_storage_is_own); JS reads and deletes keys in IndexedDB only when it does (docs/design/byok-api-keys.md "BYOK API keys")
 static WEBVIEW_STORAGE_OWN: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
 
 #[derive(Clone, Copy)]
@@ -94,7 +94,7 @@ enum Os {
 ///   (`<name>.app/Contents/MacOS/<exe>`). A binary run outside a bundle (`target/debug/tomarigi-desktop`) shares one
 ///   WebKit storage with every other unbundled build, whatever its identifier. dev (identifier ending in .dev) counts
 ///   as owning it anyway: before dev used the Keychain it was the only build that wrote keys there, so dev moves the
-///   keys it left there (docs/design.md "BYOK API keys")
+///   keys it left there (docs/design/byok-api-keys.md "BYOK API keys")
 /// - Windows and Linux: Tauri sets the webview's data directory to `app_local_data_dir`
 ///   (`<local data dir>/<identifier>`) when none is configured (tauri 2.12.5 `manager/webview.rs`; this app sets
 ///   neither `dataDirectory` nor `appDirectoriesOverride`), so it is per identifier however the binary is run
@@ -222,7 +222,7 @@ fn store_key(provider: &str, value: &str) -> Result<(), String> {
 }
 
 /// The account the removed MCP server kept its token under, in the same OS store item service as the API keys
-/// (docs/design.md "Settings file", MCP removed)
+/// (docs/design/settings-file.md "Settings file", MCP removed)
 const MCP_TOKEN_ACCOUNT: &str = "mcp-token";
 
 /// Deletes the MCP token an earlier version saved. Run at every launch; nothing happens when it is gone
@@ -337,7 +337,7 @@ pub(crate) async fn openai_responses(body: String) -> Result<HttpReply, String> 
     post_json("https://api.openai.com/v1/responses", vec![("authorization", format!("Bearer {key}"))], body).await
 }
 
-// ---- Local AI (docs/design.md "BYOK API keys", Local AI) ----
+// ---- Local AI (docs/design/byok-api-keys.md "BYOK API keys", Local AI) ----
 // An OpenAI-compatible server (Ollama, LM Studio, ...). No key; the base URL and model are settings JS keeps and
 // passes here. Called from Rust like the other providers (the WebView's origin would also hit CORS on servers that
 // don't allow it)

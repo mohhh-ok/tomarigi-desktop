@@ -1,4 +1,4 @@
-// Shared pieces of the transcript adapters added for docs/design.md "Agents" (Qwen Code, Copilot CLI, Gemini CLI,
+// Shared pieces of the transcript adapters added for docs/design/agents.md "Agents" (Qwen Code, Copilot CLI, Gemini CLI,
 // OpenCode, Cursor CLI). Each adapter turns its own format into TailEvents and builds the shared TailInfo with
 // tailFromEvents; deriveState and everything after it don't know which agent a session is
 import type { NativeFile } from "./native-fs";

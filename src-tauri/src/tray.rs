@@ -146,7 +146,7 @@ pub(crate) fn show_update_status(app: &AppHandle, status: &UpdateStatus) {
 }
 
 /// The update item: checks, or installs the found version. Either way the settings window opens on its Updates section,
-/// where the result and the progress are shown (docs/design.md "Updates", "Settings window")
+/// where the result and the progress are shown (docs/design/updates.md "Updates", "Settings window")
 fn on_update_item(app: &AppHandle) {
     settings_window::open(app, Some("updates"));
     match crate::updater::update_status(app.clone()) {

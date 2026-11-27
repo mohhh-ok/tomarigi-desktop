@@ -1,9 +1,9 @@
-// What the Garden's placement keeps between renders, and Arrange from the Garden's right-click menu (docs/design.md
+// What the Garden's placement keeps between renders, and Arrange from the Garden's right-click menu (docs/design/layout.md
 // "Layout"; issue #4): it forgets where everything is and lays the birds out again as on a launch with no saved positions
 import type { GridCell } from "./garden-watch-layout";
 import type { Point } from "@/lib/garden-place";
 
-// What the placement keeps between renders (docs/design.md "Layout": a bird or block on screen stays where it is)
+// What the placement keeps between renders (docs/design/layout.md "Layout": a bird or block on screen stays where it is)
 export interface Kept {
   // Top-left of each bird's footprint as last shown (birds in a block included, so they stay put if the block goes)
   birds: Map<string, Point>;
@@ -14,10 +14,10 @@ export interface Kept {
   // Birds and blocks that had no free spot and overlap others
   overlapping: Set<string>;
   // Birds and blocks (by their first-started bird) the user dropped where they are: kept there over others too
-  // (docs/design.md "Layout"), until dragged again or gone
+  // (docs/design/layout.md "Layout"), until dragged again or gone
   byUser: Set<string>;
   // Birds and blocks (by their first-started bird) not on screen yet: first placed in a render that had no spot for
-  // something, which asks the window to grow (docs/design.md "Layout": "On screen"). Kept where they are while the
+  // something, which asks the window to grow (docs/design/layout.md "Layout": "On screen"). Kept where they are while the
   // garden keeps that size (unsettledAt); placed again like new ones once it changes, so the places they got in the
   // small garden don't split the room the window grew for
   unsettled: Set<string>;

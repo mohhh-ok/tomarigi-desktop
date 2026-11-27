@@ -1,4 +1,4 @@
-// The Concierge tab's bubble (docs/design.md "Concierge"): a line per session built by the app from facts it already has,
+// The Concierge tab's bubble (docs/design/concierge.md "Concierge"): a line per session built by the app from facts it already has,
 // rebuilt on every poll so it never goes out of date and costs no request, and the suggestions that come with the
 // advice (askConcierge with suggestions), dimmed with their session's state now once it changed
 import type { ConciergeSuggestion } from "./concierge";
@@ -27,7 +27,7 @@ export interface StatusLine {
   text?: string;
   status: ConciergeStatus;
   sinceMs?: number;
-  /** A child session (SessionView.child): its dot is ◎ (docs/design.md "Concierge") */
+  /** A child session (SessionView.child): its dot is ◎ (docs/design/concierge.md "Concierge") */
   child?: true;
 }
 
@@ -82,7 +82,7 @@ export function statusesAt(views: SessionView[]): Map<string, ConciergeStatus> {
 /**
  * Whether the suggestions at hand need asking again when the Concierge tab is opened: none came yet (answeredAt
  * undefined), or a session changed state, came, or left since they came. Only the state counts, so a new tool line or
- * time passing doesn't (docs/design.md "Concierge")
+ * time passing doesn't (docs/design/concierge.md "Concierge")
  */
 export function suggestionsOutdated(answeredAt: ReadonlyMap<string, ConciergeStatus> | undefined, views: SessionView[]) {
   if (!answeredAt) return true;

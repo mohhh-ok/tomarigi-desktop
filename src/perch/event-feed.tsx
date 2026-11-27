@@ -66,7 +66,7 @@ export function EventFeed({
                 className={`event-card event-${kind}${e.muted ? " event-muted" : ""} ${focus.className ?? ""}`}
               >
                 <span className="event-marks">
-                  {/* The same anger mark as on the bird (docs/design.md "Anger mark for abuse toward the AI"), before
+                  {/* The same anger mark as on the bird (docs/design/anger-mark.md "Anger mark for abuse toward the AI"), before
                       the state icon like on the bird and in Perch (anger left, "?" right) */}
                   {e.angry && <BirdBadge kind="anger" inline />}
                   <EventIcon kind={kind} size={16} />

@@ -1,4 +1,4 @@
-// What each of a session's turns sent to other sessions, kept across scans (docs/design.md "Sessions started by another
+// What each of a session's turns sent to other sessions, kept across scans (docs/design/watching.md "Sessions started by another
 // session"). The question a reply asks reaches the parent only when the reply's own turn sent it a message, so the sends
 // are looked up by the turn the reply belongs to, not the latest turn: the parent's answer can start a new turn right
 // after the reply. A long turn's prompt falls out of the tail window, so the ledger is fed by the whole-file read

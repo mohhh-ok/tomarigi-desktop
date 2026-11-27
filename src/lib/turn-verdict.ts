@@ -1,11 +1,11 @@
 // The "?" and the anger mark on a bird, from the machine state and the turn verdict that comes with the speech bubble
-// summary (docs/design.md "The "?" for sessions waiting on you", "Anger mark for abuse toward the AI", "Turn verdicts").
+// summary (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you", "Anger mark for abuse toward the AI", "Turn verdicts").
 // The request itself is summarizeTurn in lib/summarize.ts
 import type { AskJudgement, BirdState, SessionView } from "./session-types";
 
 /**
  * Where a session's need for an answer comes from: the machine state waiting (a question tool, a permission prompt),
- * or the turn verdict of a stopped (done / dozing) turn asking. undefined when it needs none (docs/design.md
+ * or the turn verdict of a stopped (done / dozing) turn asking. undefined when it needs none (docs/design/concierge.md
  * "Concierge")
  */
 export function replyWaitSource(state: BirdState, ask: AskJudgement | undefined): "machine" | "verdict" | undefined {
@@ -19,7 +19,7 @@ export function needsAnswer(state: BirdState, ask: AskJudgement | undefined): bo
 }
 
 /**
- * Whether a parent that takes the session over can answer its wait (docs/design.md "Watching", "Sessions started by
+ * Whether a parent that takes the session over can answer its wait (docs/design/watching.md "Watching", "Sessions started by
  * another session"): a reply that asks, when the turn sent the parent a message (askSentToParent: the question reached
  * it), or the desktop app's wrap_up ask (wrapUpAsk), which reaches the parent as the session's report. A reply that asks
  * without a message to the parent asks whoever reads its pane, and a question tool or a permission prompt (machine) is
@@ -47,7 +47,7 @@ export function waitsOnDeveloper(
 
 /**
  * Whether to put a "?" on the bird. Only birds actually asking (needsAnswer). Watching birds don't get one even if the other session is asking
- * (docs/design.md "Watching")
+ * (docs/design/watching.md "Watching")
  */
 export function hasQuestion(s: SessionView): boolean {
   return needsAnswer(s.state, s.ask);
@@ -55,7 +55,7 @@ export function hasQuestion(s: SessionView): boolean {
 
 /**
  * How long continuing from the reply's text holds after the session last wrote to its transcript. Past it the session
- * counts as finished, so the concierge can suggest checking its result (docs/design.md "Turn verdicts"; the user: 「30min」)
+ * counts as finished, so the concierge can suggest checking its result (docs/design/turn-verdicts.md "Turn verdicts"; the user: 「30min」)
  */
 export const TEXT_CONTINUING_EXPIRES_MS = 30 * 60_000;
 
@@ -66,7 +66,7 @@ export const TEXT_CONTINUING_EXPIRES_MS = 30 * 60_000;
  * TEXT_CONTINUING_EXPIRES_MS after the last write (sinceMs), and at once when nothing the app sees can wake the session
  * (unwakeableForMs given: a Claude Code session doesn't go on by itself after its turn; wakeSourceOf in
  * lib/session-wake.ts). Then continuing is false, expired is true (so the app log can tell it from a verdict of no), and
- * expiredForMs is how long ago the earlier of the two came (docs/design.md "Turn verdicts"). Rebuilt on every poll, so it
+ * expiredForMs is how long ago the earlier of the two came (docs/design/turn-verdicts.md "Turn verdicts"). Rebuilt on every poll, so it
  * expires as time passes, without a new write
  */
 export function sessionContinuing(

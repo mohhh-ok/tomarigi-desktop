@@ -1,4 +1,4 @@
-// Grows the floating window when the Garden's birds don't fit (docs/design.md "Layout"). The page decides how far (a
+// Grows the floating window when the Garden's birds don't fit (docs/design/layout.md "Layout"). The page decides how far (a
 // scale of the user's size; src/perch/garden-grow.ts); this decides the direction, caps it at the display's visible
 // area, and keeps the user's size apart from the grown one: the grown frame is never saved, and the Moved / Resized
 // it causes are not taken for a manual move or resize.
@@ -91,7 +91,7 @@ pub(crate) struct Insets {
     pub bottom: f64,
 }
 
-/// While a bird or block is dragged (docs/design.md "Layout"): the frame `cur` grown on each axis where the pointer
+/// While a bird or block is dragged (docs/design/layout.md "Layout"): the frame `cur` grown on each axis where the pointer
 /// (physical, on screen) is within `band` of the garden's edge or past it, toward that edge only, so the garden's edge
 /// ends up `band` past the pointer. The other edge of the axis stays. Capped at the visible area `area`
 pub(crate) fn drag_grow_frame(cur: Frame, pointer: (f64, f64), insets: Insets, band: f64, area: Frame) -> Frame {
@@ -119,7 +119,7 @@ pub(crate) fn drag_anchor(cur: Frame, grown: Frame) -> (f64, f64) {
     (if grown.x < cur.x { 1.0 } else { 0.0 }, if grown.y < cur.y { 1.0 } else { 0.0 })
 }
 
-/// For a bubble above its bird's name past the garden's top (docs/design.md "Layout"): the frame `cur` grown up by `up`
+/// For a bubble above its bird's name past the garden's top (docs/design/layout.md "Layout"): the frame `cur` grown up by `up`
 /// (physical px), the bottom edge staying, capped at the visible area `area`. Used for a window in the display's upper
 /// part, which grows to fit keeping its top edge; like a drag pushing the top edge
 pub(crate) fn bubble_grow_frame(cur: Frame, up: u32, area: Frame) -> Frame {
@@ -127,7 +127,7 @@ pub(crate) fn bubble_grow_frame(cur: Frame, up: u32, area: Frame) -> Frame {
     Frame { y, height: cur.height + (cur.y - y) as u32, ..cur }
 }
 
-/// "Concierge only" (docs/design.md "Concierge"): the frame `cur` resized to `width` × `height` (physical px) toward the
+/// "Concierge only" (docs/design/concierge.md "Concierge"): the frame `cur` resized to `width` × `height` (physical px) toward the
 /// edges it sits near, decided per axis by the display's thirds as for growing (keep_of), kept inside the visible area
 /// `area`. Used both to shrink the window to the concierge and to fit it again when its bubble changes
 pub(crate) fn compact_frame(cur: Frame, width: u32, height: u32, area: Frame) -> Frame {
@@ -357,7 +357,7 @@ fn bubble_grow(app: &AppHandle, top: f64) -> bool {
 }
 
 /// A bubble above its bird's name reaches past the garden's top in a window in the display's upper part: grows the
-/// window up by `top` CSS px, the bottom edge staying (docs/design.md "Layout"). Returns whether it was resized; the
+/// window up by `top` CSS px, the bottom edge staying (docs/design/layout.md "Layout"). Returns whether it was resized; the
 /// page keeps its birds at the same place on screen with anchor y 1 until the resize arrives
 #[tauri::command]
 pub(crate) async fn garden_bubble_grow(app: AppHandle, top: f64) -> bool {

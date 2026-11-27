@@ -1,4 +1,4 @@
-// App updates (docs/design.md "Updates"). The Rust side (src-tauri/src/updater.rs) checks, downloads, and installs;
+// App updates (docs/design/updates.md "Updates"). The Rust side (src-tauri/src/updater.rs) checks, downloads, and installs;
 // this follows its status through the "update-status" event for the settings' update section
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";

@@ -1,4 +1,4 @@
-// The settings window's page (docs/design.md "Settings window"): sections listed on the left, the chosen one on the
+// The settings window's page (docs/design/settings-window.md "Settings window"): sections listed on the left, the chosen one on the
 // right. It shows and saves the settings; the floating window runs what they drive and follows each save
 // (lib/settings-sync.ts). The cards are the ones the floating window used to show
 import { useCallback, useEffect, useRef, useState } from "react";

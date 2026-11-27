@@ -1,4 +1,4 @@
-// Stacking of the garden's birds and bubbles (docs/design.md "Layout"). Bubbles are in one layer above every bird
+// Stacking of the garden's birds and bubbles (docs/design/layout.md "Layout"). Bubbles are in one layer above every bird
 // (.garden-bubble-layer), newer turns on top. A bird the user dragged comes in front instead: its node goes above the
 // bubble layer and its bubble out of the layer, just above its node, the last dragged frontmost; while dragged, above
 // all of them. Pure computation (no DOM access)

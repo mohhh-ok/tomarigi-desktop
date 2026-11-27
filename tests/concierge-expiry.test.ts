@@ -1,5 +1,5 @@
 // When continuing from a reply's text expires (TEXT_CONTINUING_EXPIRES_MS), the concierge is asked like on a finished
-// turn (docs/design.md "Turn verdicts", "Concierge"). The sessions go through the app's own path: deriveState for the
+// turn (docs/design/turn-verdicts.md "Turn verdicts", "Concierge"). The sessions go through the app's own path: deriveState for the
 // machine state, withTurnVerdict for continuing, conciergeTriggerClasses and ConciergeScheduler for the requests
 import { describe, expect, test } from "bun:test";
 import { deriveState, DOZE_MS } from "../src/lib/bird-state.ts";

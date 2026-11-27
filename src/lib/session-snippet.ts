@@ -31,7 +31,7 @@ export function pickSnippet(tail: TailInfo): string | undefined {
 }
 
 /**
- * Whether an event is a message a person typed (anger mark input; docs/design.md "Anger mark for abuse toward the AI").
+ * Whether an event is a message a person typed (anger mark input; docs/design/anger-mark.md "Anger mark for abuse toward the AI").
  * Skips lines marked as not from a person (task-notification etc.) and machine text that formatSnippet rejects (slash
  * command echoes, bash-input, [Request interrupted, ...)
  */

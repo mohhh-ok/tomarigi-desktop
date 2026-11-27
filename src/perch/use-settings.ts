@@ -71,7 +71,7 @@ import type { ApiKeyTestState } from "./settings/ai-key-settings";
 /** The settings in the settings view (sound, readout, API keys, icon sets): their state, loading, and saving.
  * App.tsx awaits loadSettings() inside its startup load, after the watched folders and before the first scan */
 /** "owner" is the floating window, which runs what the settings drive (the startup imports, the menu bar's "Read aloud",
- * stopping speech); "settings" is the settings window, which only shows and saves them (docs/design.md "Settings window") */
+ * stopping speech); "settings" is the settings window, which only shows and saves them (docs/design/settings-window.md "Settings window") */
 export type SettingsRole = "owner" | "settings";
 
 export function useSettings(role: SettingsRole) {
@@ -88,7 +88,7 @@ export function useSettings(role: SettingsRole) {
   });
   // Retired providers (TypeSafe) whose key is still saved; the settings show a row with only Delete for each
   const [retiredKeys, setRetiredKeys] = useState<RetiredKeyProvider[]>([]);
-  // Local AI's base URL and model (docs/design.md "BYOK API keys", Local AI); null while not set up
+  // Local AI's base URL and model (docs/design/byok-api-keys.md "BYOK API keys", Local AI); null while not set up
   const [localAi, setLocalAi] = useState<LocalAiConfig | null>(null);
   const [aiKeyTestState, setAiKeyTestState] = useState<Record<AiSettingsProvider, ApiKeyTestState>>({
     anthropic: { phase: "idle" },
@@ -100,9 +100,9 @@ export function useSettings(role: SettingsRole) {
   // Perch/Garden/IconSetSettings look up this map via resolveIconSet (lib/icon-set-store.ts)
   // and fall back to DEFAULT_ICON_SET when there is no assignment
   const [iconSetAssignments, setIconSetAssignments] = useState<IconSetAssignments>({});
-  // The concierge's look (docs/design.md "Concierge"), the same in every icon set
+  // The concierge's look (docs/design/concierge.md "Concierge"), the same in every icon set
   const [conciergeLook, setConciergeLook] = useState<ConciergeLook>(DEFAULT_CONCIERGE_LOOK);
-  // System voice or a local TTS server (docs/design.md "Readout voice (local TTS server)")
+  // System voice or a local TTS server (docs/design/readout-voice.md "Readout voice (local TTS server)")
   const [readoutVoice, setReadoutVoiceState] = useState<ReadoutVoice>(SYSTEM_VOICE);
   const readoutVoiceRef = useRef(readoutVoice);
   const mutedRef = useRef(muted);
@@ -192,7 +192,7 @@ export function useSettings(role: SettingsRole) {
     } else {
       await loadReadout();
     }
-    // Rust holds the keys (docs/design.md "BYOK API keys"). After migrating keys an earlier version left in IndexedDB
+    // Rust holds the keys (docs/design/byok-api-keys.md "BYOK API keys"). After migrating keys an earlier version left in IndexedDB
     // (the keychain version) and handing over from dev's IndexedDB, it only asks whether each key is saved
     try {
       await initApiKeys();
@@ -223,7 +223,7 @@ export function useSettings(role: SettingsRole) {
   }, [role, loadSound, loadReadout, loadAi, loadLooks]);
 
   // A save in another window (the settings window, or the floating window's mute button, the menu bar's "Read aloud"
-  // and an edit of the settings file) reloads what changed (docs/design.md "Settings window")
+  // and an edit of the settings file) reloads what changed (docs/design/settings-window.md "Settings window")
   useEffect(
     () =>
       onSettingsChanged(
@@ -369,7 +369,7 @@ export function useSettings(role: SettingsRole) {
     }
   }, [aiKeySet, aiProvider, localAi]);
 
-  /** Deletes a retired provider's key (docs/design.md "BYOK API keys": TypeSafe (Jev) is no longer used) */
+  /** Deletes a retired provider's key (docs/design/byok-api-keys.md "BYOK API keys": TypeSafe (Jev) is no longer used) */
   const removeRetiredKey = useCallback(async (provider: RetiredKeyProvider) => {
     await deleteRetiredKey(provider);
     setRetiredKeys(await loadRetiredKeysSaved());

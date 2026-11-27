@@ -1,4 +1,4 @@
-// Shapes of watching groups in the garden (docs/design.md "Watching"). Pure computation from sessions and sizes (no DOM
+// Shapes of watching groups in the garden (docs/design/watching.md "Watching"). Pure computation from sessions and sizes (no DOM
 // access). Where a block goes is decided with the birds by placeBoxes in lib/garden-place.ts (garden.tsx)
 import { PLACE_GAP_PX } from "@/lib/garden-place";
 import type { SessionView } from "@/lib/sessions";
@@ -17,7 +17,7 @@ export const NODE_TEXT_PX = 32;
 // styles/speech-bubble.css)
 export const BUBBLE_MAX_PX = 180;
 
-// Watching groups (docs/design.md "Watching"): each linked bird is put in a cell next to the bird it is linked to, in a
+// Watching groups (docs/design/watching.md "Watching"): each linked bird is put in a cell next to the bird it is linked to, in a
 // small grid (the block, which is not drawn), and the two are joined by a short line (watchLinePath).
 // Cell width and padding inside the block. A cell is as wide as a bird's node plus the gap between footprints, the same
 // as a bird's footprint outside a block (garden.tsx). A bubble inside a block shows its whole text but is at most a
@@ -38,7 +38,7 @@ const NODE_MARKS_PX = 14;
 /**
  * Footprint height of a bird outside a block, excluding the icon: the most it can take, with bubble room, both status
  * lines, the event marker, and (for a watching bird) the count row. Reserving all of it keeps the bird from growing
- * into a neighbour when a bubble or a tool line appears (docs/design.md "Layout")
+ * into a neighbour when a bubble or a tool line appears (docs/design/layout.md "Layout")
  */
 export function birdExtraH(session: Pick<SessionView, "watching">): number {
   return (
@@ -59,7 +59,7 @@ export interface WatchCell {
   // If any bird in the row shows a speech bubble, birds without one also reserve bubble space, so the status rows
   // line up within the row. This keeps a neighbor's speech bubble (wider than one cell) off this bird's status row
   bubbleRoom: boolean;
-  // Name of a bird inside a block (docs/design.md "Watching"). undefined for the parent and for birds in the same
+  // Name of a bird inside a block (docs/design/watching.md "Watching"). undefined for the parent and for birds in the same
   // folder as the parent. nameRoom tells whether any bird in the row has a name. If so, birds without a name also
   // reserve the name row height, so icon heights line up within the row
   label?: string;
@@ -80,7 +80,7 @@ export interface WatchShape {
   width: number;
   // Footprint height for placement. Every row is the same fixed height (name row, bubble room, both status lines,
   // count row), so a bubble, a name, or a count appearing never moves a bird in the block or grows the block into a
-  // neighbour (docs/design.md "Layout")
+  // neighbour (docs/design/layout.md "Layout")
   footH: number;
   // Rows of icons in the block (footH grows by this many icon heights)
   rows: number;
@@ -95,7 +95,7 @@ export interface WatchShape {
 
 // Cells next to a bird where a linked bird goes, in the order they are tried: the same row first, then the row below,
 // then the row above. Not straight above or below: a line there would run through the upper bird's bubble and status
-// lines. A line to a cell beside or diagonal to it passes no other bird, name, or bubble (docs/design.md "Watching")
+// lines. A line to a cell beside or diagonal to it passes no other bird, name, or bubble (docs/design/watching.md "Watching")
 const NEXT_CELLS: GridCell[] = [
   { col: 1, row: 0 },
   { col: -1, row: 0 },
@@ -282,7 +282,7 @@ type Pt = { x: number; y: number };
 
 /**
  * The watch line between two birds' icon centers a and b (px; birds next to each other), as its two ends. It is short
- * and stops well short of both icons (docs/design.md "Watching": the user wants it seen only on a closer look): at most
+ * and stops well short of both icons (docs/design/watching.md "Watching": the user wants it seen only on a closer look): at most
  * maxLen long, centered between the icons, and at least gap from either icon's center. undefined when the icons are
  * too close for any of it to show
  */

@@ -114,7 +114,7 @@ pub(crate) struct DefaultRootCandidate {
     rel: String,
 }
 
-/// Folders always watched by default (docs/design.md "Watched folders"). The list comes from the agent adapters
+/// Folders always watched by default (docs/design/watched-folders.md "Watched folders"). The list comes from the agent adapters
 /// (src/lib/agents.ts); this only resolves each against the home directory. Ones that don't exist are also
 /// returned, with exists=false (used to decide whether to drop registrations of the same path saved by earlier
 /// versions)

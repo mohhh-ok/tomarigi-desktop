@@ -1,5 +1,5 @@
 // ---- Liveness of sessions and watching links ----
-// The process lookups behind liveness are one implementation per OS (docs/design.md "Platforms"): ps and lsof on
+// The process lookups behind liveness are one implementation per OS (docs/design/platforms.md "Platforms"): ps and lsof on
 // macOS; /proc on Linux (ps only for the list of processes with a terminal); sysinfo and the Restart Manager on
 // Windows, which has neither ps nor lsof
 
@@ -10,7 +10,7 @@ use std::process::Command;
 use crate::{expand, is_host_session_id};
 use crate::fs::io_err;
 
-/// A running Claude Code session, used to look up names for watching links (docs/design.md "Watching").
+/// A running Claude Code session, used to look up names for watching links (docs/design/watching.md "Watching").
 /// Part of `<config>/sessions/<pid>.json`
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +20,7 @@ pub(crate) struct LiveSession {
     #[serde(default)]
     name: Option<String>,
     /// Who gave the name: "user" (/rename, --name) or "derived" (made up from the project's name)
-    /// (docs/design.md "Display names")
+    /// (docs/design/display-names.md "Display names")
     #[serde(default)]
     name_source: Option<String>,
     #[serde(default)]
@@ -28,18 +28,18 @@ pub(crate) struct LiveSession {
     #[serde(default)]
     status: Option<String>,
     /// What a waiting session waits on, e.g. "input needed" (a question tool) or "permission prompt"
-    /// (docs/design.md "Concierge")
+    /// (docs/design/concierge.md "Concierge")
     #[serde(default)]
     waiting_for: Option<String>,
     #[serde(default)]
     started_at: Option<f64>,
-    /// The Claude desktop app's `local_…` id of this session (watching links; docs/design.md "Watching")
+    /// The Claude desktop app's `local_…` id of this session (watching links; docs/design/watching.md "Watching")
     #[serde(default)]
     host_session_id: Option<String>,
 }
 
 /// Result of live_sessions. present is whether `<config_dir>/sessions` exists (older versions without it are not
-/// supported: there is no pid to check, so their sessions get no birds. docs/design.md "Removing birds of ended
+/// supported: there is no pid to check, so their sessions get no birds. docs/design/removing-ended-birds.md "Removing birds of ended
 /// sessions").
 /// reliable is whether this run's result can be used to say "not alive". It is false on runs where ps didn't
 /// work and on runs where reading or parsing some sessions/*.json file failed (Claude Code rewrites this file on
@@ -192,7 +192,7 @@ pub(crate) mod win {
 }
 
 
-/// The transcript's first prompt, for telling a session started by another session (docs/design.md "Watching").
+/// The transcript's first prompt, for telling a session started by another session (docs/design/watching.md "Watching").
 /// Read only when the scan starts at the top of the file
 #[derive(Serialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -217,7 +217,7 @@ pub(crate) struct PeerScan {
     /// Who started the last turn after the first prompt in the part read (turn_starter); None when the part read has
     /// none, so the previous one stands. A session started by another session whose latest turn the user started isn't
     /// taken over by its parent, and between two sessions neither started, one watches the other only while the other
-    /// works on what it sent (docs/design.md "Watching")
+    /// works on what it sent (docs/design/watching.md "Watching")
     last_turn_starter: Option<TurnStarter>,
     /// The other sessions whose messages arrived while the last turn ran (queued_command), in the part read after the
     /// last turn's start (or from the start of the read when it has no new turn: they add to the previous ones)
@@ -369,7 +369,7 @@ fn started_session_id(text: &str) -> Option<String> {
 }
 
 /// The id in the shared notes folder the desktop app names in the first prompt of a session another session started:
-/// `…/side-session-notes/local_…`, the starter's id (docs/design.md "Watching"). The id is `local_` and the hex digits
+/// `…/side-session-notes/local_…`, the starter's id (docs/design/watching.md "Watching"). The id is `local_` and the hex digits
 /// and `-` after it, as NOTES_FOLDER_ID in lib/transcript.ts
 fn notes_folder_host_id(text: &str) -> Option<String> {
     // The first place the folder is named with an id, as the regex does (not only the first place it is named)
@@ -400,7 +400,7 @@ fn message_text(content: Option<&serde_json::Value>) -> String {
 
 /// Whether a transcript line is another session's: its `sessionId` is a string other than own. A transcript started as a
 /// fork (a side chat, or a fork another session started) begins with a copy of its parent's lines, which keep the
-/// parent's `sessionId`; they aren't the session's own (docs/design.md "Side chats and forked sessions of the Claude
+/// parent's `sessionId`; they aren't the session's own (docs/design/side-chats-and-forks.md "Side chats and forked sessions of the Claude
 /// desktop app"). A line without `sessionId` counts as own. isForeignLine in lib/transcript.ts is the same rule
 fn is_foreign_line(entry: &serde_json::Value, own: &str) -> bool {
     entry.get("sessionId").and_then(|v| v.as_str()).is_some_and(|id| id != own)
@@ -620,7 +620,7 @@ pub(crate) struct CodexThread {
 }
 
 /// Result of live_codex_threads. reliable is false when lsof couldn't be run or reported an error; birds are
-/// not removed on such runs (docs/design.md "Removing birds of ended sessions")
+/// not removed on such runs (docs/design/removing-ended-birds.md "Removing birds of ended sessions")
 #[derive(Serialize)]
 pub(crate) struct CodexLiveScan {
     pub(crate) threads: Vec<CodexThread>,
@@ -833,7 +833,7 @@ mod win_rm {
     }
 }
 
-// ---- Agents without a pid file (docs/design.md "Agents") ----
+// ---- Agents without a pid file (docs/design/agents.md "Agents") ----
 
 /// A process with a terminal. started_at_ms is derived from ps's elapsed time, so it is accurate to the second
 #[derive(Serialize)]
@@ -1049,7 +1049,7 @@ fn alive_pids_blocking(pids: &[u32]) -> PidScan {
 mod tests {
     use super::*;
 
-    /// Watching links (docs/design.md "Watching"): each kind of trace, one line each, and the names it gives
+    /// Watching links (docs/design/watching.md "Watching"): each kind of trace, one line each, and the names it gives
     #[test]
     fn scan_peer_names_reads_each_kind_of_trace() {
         const ID: &str = "local_3f97c278-cf60-45f9-b227-66ded583d16f";
@@ -1193,7 +1193,7 @@ mod tests {
     }
 
     /// A transcript started as a fork begins with its parent's lines, copied with the parent's sessionId; only the
-    /// session's own lines (sessionId = the file name) are read (docs/design.md "Side chats and forked sessions of the
+    /// session's own lines (sessionId = the file name) are read (docs/design/side-chats-and-forks.md "Side chats and forked sessions of the
     /// Claude desktop app"). Scenes shaped like the real records on this machine, ids and names made up
     #[test]
     fn scan_peer_names_reads_only_the_sessions_own_lines() {
@@ -1361,7 +1361,7 @@ mod tests {
     /// Who started the latest turn and which sessions' messages arrived during it, read from lines shaped as Claude Code
     /// writes them: a message from another session that starts a turn (a meta user line, turnOrigin "peer", whose origin
     /// names the sender), one that arrives while it works (a queued_command attachment), a typed prompt, and the desktop
-    /// app's own turn (docs/design.md "Watching")
+    /// app's own turn (docs/design/watching.md "Watching")
     #[test]
     fn scan_peer_names_reads_the_latest_turns_starter_and_senders() {
         let dir = std::env::temp_dir().join(format!("tomarigi-starter-test-{}", std::process::id()));
@@ -1453,7 +1453,7 @@ mod tests {
     }
 
     /// A codex that has a thread open keeps its lock open. Once it exits the lock file stays but no longer counts
-    /// (docs/design.md "Removing birds of ended sessions")
+    /// (docs/design/removing-ended-birds.md "Removing birds of ended sessions")
     #[test]
     #[cfg(unix)]
     fn live_codex_threads_follows_the_process_holding_the_lock() {

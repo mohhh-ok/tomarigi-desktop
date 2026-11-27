@@ -1,4 +1,4 @@
-// Stable placement in the Garden (docs/design.md "Layout"): a bird or block on screen stays where it is; only one that
+// Stable placement in the Garden (docs/design/layout.md "Layout"): a bird or block on screen stays where it is; only one that
 // would overlap another or leave the garden moves, to the nearest free spot
 import { describe, expect, test } from "bun:test";
 import {
@@ -73,7 +73,7 @@ describe("placeBoxes", () => {
     const { at } = placeBoxes([bird("a", { at: a }), bird("b", { want: { x: 30, y: 20 } })], 500, 500);
     expect(at.get("a")).toEqual(a);
     expect(overlaps(at, [bird("a"), bird("b")])).toBe(false);
-    // Nearest spot level with a (docs/design.md "Layout"): right beside it, in its row
+    // Nearest spot level with a (docs/design/layout.md "Layout"): right beside it, in its row
     expect(at.get("b")).toEqual({ x: a.x + 120 + PLACE_GAP_PX, y: a.y });
   });
 

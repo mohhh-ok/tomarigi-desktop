@@ -1,4 +1,4 @@
-// What takes clicks at rest in "Fade until hovered" (docs/design.md "Fade until hovered", "Platforms"). At rest the
+// What takes clicks at rest in "Fade until hovered" (docs/design/fade-until-hovered.md "Fade until hovered", "Platforms"). At rest the
 // window lets clicks through everywhere except over these, decided on the Rust side (fade_tick in
 // src-tauri/src/fade.rs) from the rectangles garden-fade.ts measures with the selectors below. Something new that should
 // take clicks at rest gets one of these classes; nothing else does:

@@ -21,7 +21,7 @@ getIdentifier()
   })
   .catch(() => {}); // do nothing outside Tauri, e.g. static serving with ?mock=1
 const isMock = params.has("mock");
-// The settings window loads the same page with ?view=settings (docs/design.md "Settings window")
+// The settings window loads the same page with ?view=settings (docs/design/settings-window.md "Settings window")
 const isSettings = params.get("view") === "settings";
 if (isSettings) document.documentElement.dataset.view = "settings";
 

@@ -249,7 +249,7 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // The anger mark (docs/design.md "Anger mark for abuse toward the AI"). Anger only, anger with the "?" (both show:
+    // The anger mark (docs/design/anger-mark.md "Anger mark for abuse toward the AI"). Anger only, anger with the "?" (both show:
     // "?" top right, anger top left), and birds that get no mark: one whose turn wasn't abusive, and one working on a turn
     // that hasn't been judged. The dozing one shows the muted mark
     id: "anger",
@@ -394,7 +394,7 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // Long speech bubbles side by side (docs/design.md "Layout"): each bubble reaches at most halfway to the bubbles beside
+    // Long speech bubbles side by side (docs/design/layout.md "Layout"): each bubble reaches at most halfway to the bubbles beside
     // it in its row, but never below a bird's width, wrapping onto more lines
     id: "bubble-long",
     label: "Long speech bubbles",
@@ -419,7 +419,7 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // Long speech bubbles in watch blocks (docs/design.md "Layout"), in the user's layout at 16:08: three blocks (a parent
+    // Long speech bubbles in watch blocks (docs/design/layout.md "Layout"), in the user's layout at 16:08: three blocks (a parent
     // with 2 children, a parent with 2 working children, a parent with 1 working child). A block's bubbles keep 120px and
     // move sideways off the bubbles beside them. Add ?concierge=<text> for the concierge's bubble
     id: "bubble-long-watch",
@@ -437,7 +437,7 @@ export const PRESETS: Preset[] = [
     ]),
   },
   {
-    // A watch block of two rows with long speech bubbles (docs/design.md "Layout"): the first row's bubbles wrap down
+    // A watch block of two rows with long speech bubbles (docs/design/layout.md "Layout"): the first row's bubbles wrap down
     // over the second row's
     id: "bubble-long-watch-rows",
     label: "Long speech bubbles (watching, 2 rows)",
@@ -451,7 +451,7 @@ export const PRESETS: Preset[] = [
     ]),
   },
   {
-    // Watching (docs/design.md "Watching"). The parent tomarigi handed work to 3 sessions and is waiting.
+    // Watching (docs/design/watching.md "Watching"). The parent tomarigi handed work to 3 sessions and is waiting.
     // packages/api is working, apps/web needs a reply via a question tool (the "?" reaches the parent too), other-docs is done
     // (not under the parent, so it's called by its folder name). blog is a bird with no links
     id: "watching",
@@ -522,7 +522,7 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // Watching, with a bird in the same folder as the parent (docs/design.md "Watching").
+    // Watching, with a bird in the same folder as the parent (docs/design/watching.md "Watching").
     // Birds in the same folder show no name. apps/frontend/web is deep below (to check long relative paths)
     id: "watching-same",
     label: "Watching (same folder)",
@@ -577,7 +577,7 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // Watching in two steps (docs/design.md "Watching"): the parent tomarigi watches api and web, and api in turn watches
+    // Watching in two steps (docs/design/watching.md "Watching"): the parent tomarigi watches api and web, and api in turn watches
     // api-db. Each linked pair gets a line, so api-db is joined to api, not to the parent
     id: "watching-chain",
     label: "Watching (two steps)",
@@ -648,7 +648,7 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // Watching with 4 linked birds, one of which watches 2 more (docs/design.md "Watching": each linked bird sits next
+    // Watching with 4 linked birds, one of which watches 2 more (docs/design/watching.md "Watching": each linked bird sits next
     // to the bird it is linked to, beside or diagonal, and only neighbours are joined by lines)
     id: "watching-many",
     label: "Watching (4 + 2)",
@@ -739,7 +739,7 @@ export const PRESETS: Preset[] = [
   },
   {
     // Actually sends the turn verdict request (ask, summary, and angry aren't given as data), with the summary provider
-    // set up in settings (docs/design.md "Turn verdicts"). Results appear in the log ([bubble] with asking, abusive, and
+    // set up in settings (docs/design/turn-verdicts.md "Turn verdicts"). Results appear in the log ([bubble] with asking, abusive, and
     // continuing in ~/Library/Logs/tomarigi-desktop/app-log.txt) and as the bird's bubble, "?", and anger mark
     id: "verdict-live",
     label: "Real turn verdict",
@@ -786,7 +786,7 @@ export const PRESETS: Preset[] = [
       events: [],
     }),
   },
-  // The gallery images in docs/images/ (docs/design.md "Gallery images"), one preset per image. The text follows the UI
+  // The gallery images in docs/images/ (docs/design/window-and-menu-bar.md "Gallery images"), one preset per image. The text follows the UI
   // language, so the Japanese set shows no English. No tool names, since they are English identifiers in every language.
   // Project names match the terminal's tabs in scripts/gallery/stage.mjs
   {
@@ -838,7 +838,7 @@ export const PRESETS: Preset[] = [
   },
   {
     // Two sessions in the same project, told apart by a number, and two told apart by the session name the user gave one
-    // of them; the names are made by the same function as in a real scan (docs/design.md "Display names")
+    // of them; the names are made by the same function as in a real scan (docs/design/display-names.md "Display names")
     id: "same-project",
     label: "Same project twice",
     build: () => {
@@ -912,7 +912,7 @@ export const PRESETS: Preset[] = [
     },
   },
   {
-    // The Concierge tab's state lines cut at 3 lines (docs/design.md "Concierge"): a question long enough for 7 lines, a
+    // The Concierge tab's state lines cut at 3 lines (docs/design/concierge.md "Concierge"): a question long enough for 7 lines, a
     // short one, a finished turn whose summary is long and one whose summary is short, and working ones
     id: "concierge-long",
     label: "Concierge: long lines",
@@ -961,7 +961,7 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // The Concierge tab's state lines with parents, their children in each state and a session on its own (docs/design.md
+    // The Concierge tab's state lines with parents, their children in each state and a session on its own (docs/design/concierge.md
     // "Concierge", a child's dot): app-z and tomarigi are parents, app-x-c9, app-x 2 and ui-check children, app-y on its own
     id: "concierge-children",
     label: "Concierge: parents and children",
@@ -986,7 +986,7 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // With ?conciergeSuggestions=none, one state line only (docs/design.md "Concierge", the bubble's own padding)
+    // With ?conciergeSuggestions=none, one state line only (docs/design/concierge.md "Concierge", the bubble's own padding)
     id: "concierge-one",
     label: "Concierge: one session",
     build: () => ({
@@ -997,7 +997,7 @@ export const PRESETS: Preset[] = [
     }),
   },
   {
-    // A Japanese line with a long run of English words in it (docs/design.md "Concierge", a space inside a phrase): it
+    // A Japanese line with a long run of English words in it (docs/design/concierge.md "Concierge", a space inside a phrase): it
     // wraps between the English words, not inside one
     id: "concierge-mixed",
     label: "Concierge: English in a Japanese line",
@@ -1060,7 +1060,7 @@ const GALLERY: SessionView[] = [
   },
   { id: "gallery/working", project: "tomarigi", slug: "tomarigi", state: "working", sinceMs: 3_000 },
   {
-    // Hands the settings work to two sessions and watches them (docs/design.md "Watching")
+    // Hands the settings work to two sessions and watches them (docs/design/watching.md "Watching")
     id: "gallery/lead",
     project: "tomarigi",
     slug: "tomarigi",

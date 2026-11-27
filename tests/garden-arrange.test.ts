@@ -1,6 +1,6 @@
 // Arrange (the Garden's right-click menu) drops every saved position and every "placed by the user" mark, and lays the
 // birds out again as on a launch with no saved positions. The result is saved like a drop, and the window shrinks once
-// (docs/design.md "Layout"; issue #4)
+// (docs/design/layout.md "Layout"; issue #4)
 import { describe, expect, test } from "bun:test";
 import { hashId, positionsAfterDrop } from "../src/lib/garden-layout.ts";
 import { placeBoxes, type PlaceBox, type Point } from "../src/lib/garden-place.ts";

@@ -1,4 +1,4 @@
-// Windows (docs/design.md "Platforms"): processes come from sysinfo (there is no ps and no tty). Only the terminal
+// Windows (docs/design/platforms.md "Platforms"): processes come from sysinfo (there is no ps and no tty). Only the terminal
 // window is brought to the front: the nearest ancestor of the agent that has a visible top-level window, with
 // SetForegroundWindow. Windows Terminal tabs can't be addressed from outside, so a Windows Terminal window comes
 // forward on whatever tab it shows

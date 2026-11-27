@@ -5,7 +5,7 @@
    fixed px height leaves dead space at the bottom when the window is resized. So the height flows via flex from
    .page-body (#tabpanel-garden is its direct flex child), and the garden always fills "all of the window that's left at
    the moment". The garden never grows past the window and the content area never scrolls on this tab; birds that
-   don't fit overlap instead (docs/design.md "Layout"), so nothing here may be taller than the room left */
+   don't fit overlap instead (docs/design/layout.md "Layout"), so nothing here may be taller than the room left */
 #tabpanel-garden {
   flex: 1;
   display: flex;
@@ -50,7 +50,7 @@
 /* 1 session = 1 bird. No card box (border/background/padding); stack vertically with the glyph
    as the main element. Set cursor: grab/grabbing explicitly so it's clear it can be dragged.
    left is the bird's center and top its top edge, in px (garden.tsx). Anchored at the top edge so the bird doesn't
-   move when a line is added or removed under it (docs/design.md "Layout") */
+   move when a line is added or removed under it (docs/design/layout.md "Layout") */
 .garden-node {
   position: absolute;
   width: 120px;
@@ -130,7 +130,7 @@
 
 /* A bird in front of the other birds and bubbles (dragged or dropped by the user; gardenStack in garden-stack.ts): its
    name and status lines get a backing in about the garden's background color, so they stay readable over a bubble;
-   over the plain garden it hardly shows (docs/design.md "Layout"). The soft edge hides the small difference from the
+   over the plain garden it hardly shows (docs/design/layout.md "Layout"). The soft edge hides the small difference from the
    garden's gradients. At rest (Fade until hovered) the name and status lines are transparent, backing included */
 .garden {
   --garden-backing: rgb(24, 24, 26);

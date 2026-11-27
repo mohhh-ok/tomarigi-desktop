@@ -1,5 +1,5 @@
 // The readout through a local TTS server, scene by scene: when the server's audio is played, when the system voice
-// reads instead, and that the order is kept (docs/design.md "Readout voice (local TTS server)")
+// reads instead, and that the order is kept (docs/design/readout-voice.md "Readout voice (local TTS server)")
 import { describe, expect, test } from "bun:test";
 import { ReadoutQueue, TTS_WAIT_MS, type ReadoutDeps, type SynthesisResult } from "../src/lib/readout-queue.ts";
 import { routeOf, type ReadoutVoice } from "../src/lib/readout-voice.ts";

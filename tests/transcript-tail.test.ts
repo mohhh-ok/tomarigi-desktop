@@ -1,5 +1,5 @@
 // readTail's time basis (lastEventAt): lines Claude Code writes while the session sits idle must not make a finished
-// session look like it just wrote something (docs/design.md "Bird states")
+// session look like it just wrote something (docs/design/bird-states.md "Bird states")
 import { describe, expect, test } from "bun:test";
 import type { NativeFile } from "../src/lib/native-fs.ts";
 import { readTail } from "../src/lib/transcript.ts";

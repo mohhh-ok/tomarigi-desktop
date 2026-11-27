@@ -6,7 +6,7 @@ import type { BackgroundTask, ChickView } from "./session-types";
 export const CHICK_ABANDONED_MS = 10 * 60_000;
 /** The same for a chick with a tool still open. Above the longest silent tool run seen in local chick transcripts (66.8
     minutes), so a long Bash or browser run isn't cut, while a chick that died in a tool stops holding its parent
-    (docs/design.md "Chicks that have finished") */
+    (docs/design/finished-chicks.md "Chicks that have finished") */
 export const CHICK_TOOL_ABANDONED_MS = 2 * 60 * 60_000;
 // Background tasks older than this with no completion notification are not treated as running.
 // An escape hatch for when the notification line is missed (more than 64KB written between 3-second polls,

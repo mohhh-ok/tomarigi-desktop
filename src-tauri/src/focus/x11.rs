@@ -1,4 +1,4 @@
-// Linux (docs/design.md "Platforms"): processes come from /proc. A tmux pane is selected the same way as on macOS
+// Linux (docs/design/platforms.md "Platforms"): processes come from /proc. A tmux pane is selected the same way as on macOS
 // (tmux.rs); otherwise only the terminal window is brought to the front: the X11 window whose _NET_WM_PID is the
 // nearest ancestor of the agent, through _NET_ACTIVE_WINDOW (EWMH). Tabs and panes inside the terminal can't be
 // addressed. On a Wayland session only Xwayland windows are visible here, so a native Wayland terminal is not found

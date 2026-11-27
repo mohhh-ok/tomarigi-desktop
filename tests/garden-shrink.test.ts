@@ -1,5 +1,5 @@
 // The one place that decides how far the floating window shrinks by itself (keepPlaceScale in src/lib/garden-fit.ts;
-// docs/design.md "Layout"): the smallest size, never below the user's, at which every bird keeps its place on screen
+// docs/design/layout.md "Layout"): the smallest size, never below the user's, at which every bird keeps its place on screen
 import { gardenDropScale, keepPlaceScale, shrinkScale, type GardenFit } from "../src/lib/garden-fit.ts";
 
 // The user's window is 340x400, header and tabs 22x80. The birds keep their place in a garden at least `needW`x`needH`

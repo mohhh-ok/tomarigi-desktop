@@ -1,9 +1,9 @@
 import { asBlocks, messageText, toolResultText, type TranscriptEntry } from "./transcript-entry";
 // The sessions a session exchanged messages with, and where its turns start, from its transcript lines (TailInfo.peerNames,
-// turnSends; docs/design.md "Watching")
+// turnSends; docs/design/watching.md "Watching")
 
 const CROSS_SESSION_FROM_NAME = /<cross-session-message\b[^>]*\bfrom-name="([^"]+)"/g;
-// The Claude desktop app's session id, the address of its sessions (docs/design.md "Watching")
+// The Claude desktop app's session id, the address of its sessions (docs/design/watching.md "Watching")
 const HOST_SESSION_ID = /^local_[0-9a-fA-F-]+$/;
 // The text of the desktop app's start_session result: `Started session "…" (session_id: local_…, …)`
 const STARTED_SESSION_ID = /^Started session [\s\S]*?\(session_id: (local_[0-9a-fA-F-]+)[,)]/;
@@ -26,7 +26,7 @@ export function writtenByApp(turnOrigin: unknown): boolean {
 
 /**
  * The starter's id the desktop app names in the first prompt of a session another session started: its shared notes
- * folder, `…/side-session-notes/local_…` (docs/design.md "Watching"). Only for the transcript's first prompt (a user
+ * folder, `…/side-session-notes/local_…` (docs/design/watching.md "Watching"). Only for the transcript's first prompt (a user
  * line that isn't meta or a subagent's), and only when the app wrote it: a later notice may quote another folder
  */
 export function firstPromptStarterOf(entry: TranscriptEntry): string | undefined {

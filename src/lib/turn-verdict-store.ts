@@ -1,5 +1,5 @@
 // The turn verdicts already answered, kept in the settings store so that a reload or a restart doesn't ask about the
-// same turn again (docs/design.md "Turn verdicts": one verdict per turn, the first answer is the one used)
+// same turn again (docs/design/turn-verdicts.md "Turn verdicts": one verdict per turn, the first answer is the one used)
 import { kvGet, kvPut } from "./settings-store";
 import type { TurnOutcome } from "./summarize";
 
@@ -22,7 +22,7 @@ export type Anger = { at: number; angry: boolean };
 /**
  * The anger mark from a session's kept verdicts: abusive of its latest turn (by reply time) whose verdict has it. A kept
  * turn isn't asked again, so after a reload or a restart the mark comes from here, and it stays until the next turn's
- * verdict (docs/design.md "Anger mark for abuse toward the AI")
+ * verdict (docs/design/anger-mark.md "Anger mark for abuse toward the AI")
  */
 export function keptAnger(list: Iterable<[string, TurnOutcome]>, sessionId: string): Anger | undefined {
   const prefix = `${sessionId}:`;

@@ -1,4 +1,4 @@
-// Closing the label edit of a watched folder (docs/design.md "Clarity of the settings window"): only the first close
+// Closing the label edit of a watched folder (docs/design/settings-window.md "Clarity of the settings window"): only the first close
 // counts, and Cancel / Esc never save, even when a blur follows
 import { describe, expect, test } from "bun:test";
 import { finishEdit, type EditSession } from "../src/perch/settings/edit-session.ts";

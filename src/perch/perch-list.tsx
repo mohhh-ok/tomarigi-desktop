@@ -65,7 +65,7 @@ export function Perch({
       </div>
     );
   }
-  // For watching links, the one started first becomes the parent and the peers' rows are indented below it (docs/design.md "Watching")
+  // For watching links, the one started first becomes the parent and the peers' rows are indented below it (docs/design/watching.md "Watching")
   const { ordered, parentOf } = orderByWatchLinks(sessions);
   // Watching group: the parent's id (the parent itself uses its own id). Dividers inside a group are dashed; the border with the outside is solid
   const groupOf = (s: SessionView): string | undefined =>

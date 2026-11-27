@@ -1,4 +1,4 @@
-// Telling side chats of the Claude desktop app from the answers read from its records (docs/design.md "Side chats and
+// Telling side chats of the Claude desktop app from the answers read from its records (docs/design/side-chats-and-forks.md "Side chats and
 // forked sessions of the Claude desktop app"); the listing that drops them is tested in tests/liveness.test.ts
 import { describe, expect, mock, test } from "bun:test";
 

@@ -1,4 +1,4 @@
-// Side chats of the Claude desktop app (`btw`, docs/design.md "Side chats and forked sessions of the Claude desktop
+// Side chats of the Claude desktop app (`btw`, docs/design/side-chats-and-forks.md "Side chats and forked sessions of the Claude desktop
 // app"): a side chat runs as a session of its own, with its own process, sessions/<pid>.json and transcript, but it
 // appears nowhere. It is told by the desktop app's record of the session (`spawnedFrom.btw`, desktop_side_chats in
 // src-tauri), and dropped where Claude Code sessions are listed (claude in lib/agents.ts)

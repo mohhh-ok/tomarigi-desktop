@@ -1,4 +1,4 @@
-// The agents whose sessions are shown as birds (docs/design.md "Agents"). Each agent is one adapter here: its
+// The agents whose sessions are shown as birds (docs/design/agents.md "Agents"). Each agent is one adapter here: its
 // standard folder, how its sessions are listed under a watched folder, how each is read into the shared TailInfo,
 // and whether its process is alive (with the pid used for jumping). lib/sessions.ts walks the watched folders
 // through these, and everything after the listing (state, events, views) doesn't know which agent a session is
@@ -86,7 +86,7 @@ const claude: AgentAdapter = {
       }),
     );
     const live = scans.flatMap((s) => s.sessions);
-    // Side chats of the Claude desktop app appear nowhere (docs/design.md "Side chats and forked sessions of the Claude
+    // Side chats of the Claude desktop app appear nowhere (docs/design/side-chats-and-forks.md "Side chats and forked sessions of the Claude
     // desktop app"): their records are read once, and they are kept out of the live sessions the watching links are
     // matched against, so no session is linked to one or watches one
     await askSideChats(hostIdsToAsk(live, sideChatByHostId));

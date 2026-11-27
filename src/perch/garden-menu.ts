@@ -1,4 +1,4 @@
-// The Garden's right-click menu (docs/design.md "Layout"; issue #4): Arrange.
+// The Garden's right-click menu (docs/design/layout.md "Layout"; issue #4): Arrange.
 // A native menu popped up at the cursor, not one drawn in the page: at rest ("Fade until hovered") the window is fully
 // transparent and takes clicks only over birds, the handles and the concierge's bubble (fade.rs), so a menu drawn in the page would be hidden and
 // clicked through, while a native menu is its own window and shows the same at rest and when shown

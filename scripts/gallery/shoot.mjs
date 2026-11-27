@@ -1,4 +1,4 @@
-// Shoots the README / download page gallery (docs/design.md "Gallery images") into docs/images/.
+// Shoots the README / download page gallery (docs/design/window-and-menu-bar.md "Gallery images") into docs/images/.
 // The mock (?mock=1&panel=0&preset=gallery-...) is put in a frame over a desktop with a terminal (stage.mjs), English and
 // Japanese, at 3.33x (2540 / 762) CSS px. Perch and Recent activity use the default 762x570 stage (2540x1900); the
 // garden's stage is the terminal window on a desktop wallpaper, which the download page shows whole.
@@ -16,7 +16,7 @@ import { STAGE, stage } from "./stage.mjs";
 
 const IMAGES = process.env.OUT ?? new URL("../../docs/images/", import.meta.url).pathname;
 const only = process.argv.slice(2);
-// One image per message (docs/design.md "Gallery images"). The garden window is at rest, over the terminal's text and
+// One image per message (docs/design/window-and-menu-bar.md "Gallery images"). The garden window is at rest, over the terminal's text and
 // past its lower right corner onto the wallpaper, and the download page (moh-tech-net, public/tomarigi/desktop/index.html) shows
 // the image whole. Perch
 // and Recent activity are never faded; their windows are tall enough to show every row

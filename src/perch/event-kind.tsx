@@ -15,13 +15,13 @@ type EventTone = "done" | "turn" | "log";
 export const EVENT: Record<SessionEvent["type"], { label: string; tone: EventTone; icon: IconType }> = {
   started: { label: t("eventStartedLabel"), tone: "log", icon: MdPlayArrow },
   done: { label: t("eventDoneLabel"), tone: "done", icon: MdCheckCircle },
-  // The name for the state waiting on a reply is the same word across the bird state, events, and the sound setting buttons (docs/design.md "Bird states")
+  // The name for the state waiting on a reply is the same word across the bird state, events, and the sound setting buttons (docs/design/bird-states.md "Bird states")
   waiting: { label: t("birdWaitingLabel"), tone: "turn", icon: MdHelp },
   closed: { label: t("eventClosedLabel"), tone: "log", icon: MdStopCircle },
 };
 
 /** The event type as displayed. A done for a turn whose turn verdict is asking is shown as needs reply,
- * matching the "?" in the Garden and on the Perch (docs/design.md "The "?" for sessions waiting on you") */
+ * matching the "?" in the Garden and on the Perch (docs/design/waiting-question-mark.md "The "?" for sessions waiting on you") */
 export function eventKind(e: SessionEvent): SessionEvent["type"] {
   return e.type === "done" && e.ask?.status === "asking" ? "waiting" : e.type;
 }

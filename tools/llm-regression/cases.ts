@@ -1,4 +1,4 @@
-// The scenes of the LLM regression test (run.ts; docs/design.md "LLM regression test"). Each turn scene stands for a
+// The scenes of the LLM regression test (run.ts; docs/design/llm-regression-test.md "LLM regression test"). Each turn scene stands for a
 // real reply that a turn verdict once got wrong, or that a fix was measured against. Only the shape that decides the
 // verdict is kept (a report or a question, who answers where, whether something waits, whether work goes on); what
 // the work was about (features, issue numbers, files, amounts, counts, session names) is made up, so nothing of
@@ -17,7 +17,7 @@ interface Strictness {
 export interface TurnCase extends Strictness {
   kind: "turn";
   name: string;
-  /** Why the scene is here (docs/design.md "Turn verdicts" has the history) */
+  /** Why the scene is here (docs/design/turn-verdicts.md "Turn verdicts" has the history) */
   why: string;
   /** The user's messages of the turn, oldest first, as the app sends them */
   user?: string[];
@@ -60,7 +60,7 @@ const said = (r: Extract<ConciergeResult, { ok: true }>) => [
   ...(r.verdict?.targetId ? [{ id: r.verdict.targetId, kind: r.action ?? "none", text: r.verdict.line }] : []),
 ];
 
-/** A reason or a state in an advice or a suggestion (docs/design.md "No reasons in the text"). 先に says the order, not why */
+/** A reason or a state in an advice or a suggestion (docs/design/concierge.md "No reasons in the text"). 先に says the order, not why */
 const REASON = /ので|ため|から[、,]|スキップ|待たせ|待って|待ち|待機|長く|何度|繰り返|ずっと|止ま|because|since|skip|wait|again|long|held|block|stopped/i;
 
 export const CASES: Case[] = [
@@ -89,7 +89,7 @@ export const CASES: Case[] = [
 
 まだ push していないコミットが main に 4 つあります（部品の一覧・仕様・設定 2 件）。`,
     want: { asking: false, continuing: true },
-    // The same misreading shows more often in the line than in asking (docs/design.md "Turn verdicts"), and only now
+    // The same misreading shows more often in the line than in asking (docs/design/turn-verdicts.md "Turn verdicts"), and only now
     // and then (Claude's own decision: 32 runs, every one required to pass)
     lineMustNot: /push[^。]*?(判断|可否|承認|指示)[^。]*?(待|ください|必要|を確認)/,
     runs: 32,
@@ -261,7 +261,7 @@ export const CASES: Case[] = [
     why:
       "Two numbered decisions at the end, with children started: asking. continuing isn't checked: the children said " +
       "they started, so the app sees them through the watch link and the session is continuing from that, whatever " +
-      "the reply's continuing says (sessionContinuing); Haiku says no here (docs/design.md \"Turn verdicts\")",
+      "the reply's continuing says (sessionContinuing); Haiku says no here (docs/design/turn-verdicts.md \"Turn verdicts\")",
     reply: `朝の見回りを終えました。
 
 - 届いていた書類を保存し、その知らせは既読にしました。
@@ -407,7 +407,7 @@ https://www.example.com/help
   {
     // asking is not checked: Haiku said yes in 6 of 16 runs (prompt unchanged), and a check that fails on
     // every run of the test would hide the other scenes' results. It is kept to measure that rate when the prompt
-    // changes (docs/design.md "Turn verdicts", one verdict per turn)
+    // changes (docs/design/turn-verdicts.md "Turn verdicts", one verdict per turn)
     kind: "turn",
     name: "reminder_of_earlier_sign_in",
     why:
@@ -421,7 +421,7 @@ https://www.example.com/help
     want: { continuing: true },
   },
   {
-    // asking is not checked: Haiku says yes here (docs/design.md "Turn verdicts", the step only the user can take)
+    // asking is not checked: Haiku says yes here (docs/design/turn-verdicts.md "Turn verdicts", the step only the user can take)
     kind: "turn",
     name: "type_approval_in_child_pane",
     why: "The child's work waits on the user typing in the child's pane; nothing goes on until then",

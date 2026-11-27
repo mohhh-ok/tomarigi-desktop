@@ -89,7 +89,7 @@ function measureGarden(el: HTMLElement): GardenSize {
 // Keep speech bubbles this far inside the garden frame
 const BUBBLE_EDGE_PX = 4;
 // A bird's footprint is a bird's width (.garden-node). Its bubble may be wider and is drawn over the neighbours
-// (docs/design.md "Layout")
+// (docs/design/layout.md "Layout")
 const FOOT_W = NODE_WIDTH_PX;
 
 type BubbleRange = { lo: number; hi: number };
@@ -113,7 +113,7 @@ function bubbleVars(x: number, range: BubbleRange, max?: number, shift?: number)
 
 // Usual height of a bird's name row (.garden-name: 11px text + 3px margin), until the icon's position is measured
 const WATCH_NAME_ROW_PX = 16;
-// Watch lines are kept short and away from the icons, so they are seen only on a closer look (docs/design.md
+// Watch lines are kept short and away from the icons, so they are seen only on a closer look (docs/design/watching.md
 // "Watching"): room between a line's end and the icon's edge, and the longest a line gets (px)
 const WATCH_LINE_GAP_PX = 18;
 const WATCH_LINE_MAX_PX = 36;
@@ -157,7 +157,7 @@ export function Garden({
   paused = false,
 }: {
   sessions: SessionView[];
-  // The concierge bird (docs/design.md "Concierge"): absent when it isn't shown, advice null when it has none
+  // The concierge bird (docs/design/concierge.md "Concierge"): absent when it isn't shown, advice null when it has none
   concierge?: { advice: ConciergeAdvice | null; look: ConciergeLook };
   hasGranted: boolean;
   // slug → assignment map (same meaning as in Perch in perch-list.tsx; passed from App.tsx)
@@ -301,7 +301,7 @@ export function Garden({
     setDropCount((n) => n + 1);
   }, []);
   // Arrange (the right-click menu): forget every saved spot, the user's marks and where everything is, and lay the birds
-  // out again on the next render as on a launch with no saved positions (docs/design.md "Layout"). The icon size is
+  // out again on the next render as on a launch with no saved positions (docs/design/layout.md "Layout"). The icon size is
   // worked out again as on a launch too
   const arrange = useCallback(() => {
     // Not while hidden by the Concierge tab (the mock's button can ask then)
@@ -326,12 +326,12 @@ export function Garden({
     h: number;
   } | null>(null);
 
-  // Every session whose process is alive is a node in the garden, dozing ones included (docs/design.md
-  // "Garden layout"). The useLayoutEffect below must be called on every render (Rules of Hooks), so
+  // Every session whose process is alive is a node in the garden, dozing ones included (docs/design/layout.md
+  // "Layout"). The useLayoutEffect below must be called on every render (Rules of Hooks), so
   // compute this before the sessions.length===0 early return
   const liveIds = sessions.map((s) => s.id);
   const [bubbleLayer, setBubbleLayer] = useState<HTMLDivElement | null>(null);
-  // Dragging a watching group (docs/design.md "Watching": dragging moves the whole block)
+  // Dragging a watching group (docs/design/watching.md "Watching": dragging moves the whole block)
   const [groupDrag, setGroupDrag] = useState<GroupDrag | null>(null);
   // When speech bubbles overlap, stack birds whose turn ended more recently (smaller sinceMs) on top
   const bubbleOrder = new Map(
@@ -348,7 +348,7 @@ export function Garden({
   // the whole page went blank (observed)
   const W = containerSize.w;
   // The garden is exactly the room left in the window: it never grows past it and the content area never scrolls
-  // (docs/design.md "Layout")
+  // (docs/design/layout.md "Layout")
   const baseH = containerSize.viewH;
   const ready = W > 0 && containerSize.viewH > 0 && positions !== null && sessions.length > 0;
   const kept = keptRef.current;
@@ -381,7 +381,7 @@ export function Garden({
     );
   };
   // The icon grows only when birds left and nothing on screen would have to move for it; it never grows with the
-  // window (a larger icon makes every bird taller and would push neighbours away; docs/design.md "Layout")
+  // window (a larger icon makes every bird taller and would push neighbours away; docs/design/layout.md "Layout")
   if (containerSize.w > 0 && containerSize.viewH > 0) {
     const computed = gardenGlyphSize(containerSize.w, containerSize.viewH, sessions.length);
     const held = glyphSizeRef.current;
@@ -393,7 +393,7 @@ export function Garden({
   }
   const glyphSize = glyphSizeRef.current ?? 30;
 
-  // Placement (docs/design.md "Layout"). A bird or block on screen stays where it is; only one that would overlap
+  // Placement (docs/design/layout.md "Layout"). A bird or block on screen stays where it is; only one that would overlap
   // another or leave the garden moves, to the nearest free spot. The garden is never taller than the window; if
   // something has no free spot, the window is asked to grow (onFit) and meanwhile that one overlaps others
   const shapes = watchShapes(sessions, glyphSize, keptGrid);
@@ -470,7 +470,7 @@ export function Garden({
       // appears with every bird at the spot saved for being dropped there
       const beforeByUser = [...kept.blocks].some(([root, b]) => b === before && kept.byUser.has(root));
       const savedByUser = shape.memberIds.every((id) => appearing.has(id) && positions[id]?.byUser);
-      // A block the user drops stays where it is dropped, over others too (docs/design.md "Layout")
+      // A block the user drops stays where it is dropped, over others too (docs/design/layout.md "Layout")
       if (drop) dropped.push({ ...box, want: drop, byUser: true });
       else if (before && at && !replace(shape.rootId)) keptBlocks.push({ ...box, at, byUser: beforeByUser });
       else newBlocks.push({ ...box, want: blockWant(shape, (id) => appearing.has(id)), byUser: savedByUser });
@@ -482,7 +482,7 @@ export function Garden({
       const drop = kept.drops.get(s.id);
       const at = kept.birds.get(s.id);
       const saved = savedAt(s.id, FOOT_W);
-      // A bird the user drops stays where it is dropped, over others too, and opens there again (docs/design.md "Layout")
+      // A bird the user drops stays where it is dropped, over others too, and opens there again (docs/design/layout.md "Layout")
       if (drop) dropped.push({ ...box, want: drop, byUser: true });
       else if (at && !replace(s.id)) keptBirds.push({ ...box, at, byUser: kept.byUser.has(s.id) });
       else if (saved) newBirds.push({ ...box, want: saved, byUser: positions[s.id]?.byUser });
@@ -561,14 +561,14 @@ export function Garden({
       const byUser = new Set(
         [...kept.byUser].flatMap((id) => shapes.find((sh) => sh.rootId === id)?.memberIds ?? [id]),
       );
-      // The birds dropped now come in front of the others (docs/design.md "Layout")
+      // The birds dropped now come in front of the others (docs/design/layout.md "Layout")
       const front = new Set(dropped.flatMap((b) => shapes.find((sh) => sh.rootId === b.id)?.memberIds ?? [b.id]));
       dropSaveRef.current = { settled: new Map(birdAt), byUser, front, w: W, h: baseH };
       kept.dropCount++;
     }
     kept.drops.clear();
     // An Arrange whose birds all have a spot now (the window grew for them if it had to) is saved like a drop, with no
-    // bird marked as placed by the user and no front order, and the window shrinks once (docs/design.md "Layout")
+    // bird marked as placed by the user and no front order, and the window shrinks once (docs/design/layout.md "Layout")
     if (arrangeSettled(kept, overflowAtBase.length)) {
       dropSaveRef.current = { settled: new Map(birdAt), byUser: new Set(), front: new Set(), w: W, h: baseH };
     }
@@ -711,7 +711,7 @@ export function Garden({
     if (mid !== glyphMid) setGlyphMid(mid);
   });
 
-  // Where the bubbles go and how wide they may be (layoutBubbles, docs/design.md "Layout"): narrowed and moved sideways
+  // Where the bubbles go and how wide they may be (layoutBubbles, docs/design/layout.md "Layout"): narrowed and moved sideways
   // apart from the bubbles beside them that overlap them vertically, and above the icon when they would reach past the
   // garden's bottom. A bubble's height at a given max width is measured here by setting it on the bubble for a moment
   const [bubblePlaces, setBubblePlaces] = useState<Map<string, BubblePlace>>(new Map());
@@ -764,7 +764,7 @@ export function Garden({
     if (!same) setBubblePlaces(next);
   });
 
-  // After a drop, save where every bird settled, not where the pointer was released (docs/design.md "Layout"). Saved
+  // After a drop, save where every bird settled, not where the pointer was released (docs/design/layout.md "Layout"). Saved
   // spots of birds that are gone are pruned
   useEffect(() => {
     const pending = dropSaveRef.current;
@@ -802,13 +802,13 @@ export function Garden({
       // Everything in .page-body other than the garden (tab panel padding, the garden's margin) counts as overhead,
       // so the garden's own stretched height doesn't. The mock controls don't (mockPanelRoom)
       const others = othersInBody(body, el);
-      // The garden must never reach past the window (docs/design.md "Layout"); log it if it ever does
+      // The garden must never reach past the window (docs/design/layout.md "Layout"); log it if it ever does
       const past = body.scrollHeight - mockPanelRoom(body) - body.clientHeight;
       if (past > 1) {
         void invoke("log", { line: `[garden] content ${past}px past the window bottom` }).catch(() => {});
       }
       // A bubble past the garden's bottom or top grows the window too, as far as growing can give it room
-      // (docs/design.md "Layout")
+      // (docs/design/layout.md "Layout")
       const reach = bubbleReach(bubblePlaces, growRoom?.h ?? base.gardenH);
       const reachUp = bubbleReachUp(bubblePlaces, growRoom?.up ?? 0);
       fit = withBubbleUp(
@@ -834,7 +834,7 @@ export function Garden({
     return (
       <div className="empty garden-empty" hidden={paused}>
         {/* With no birds the Garden still fades, and this message is what stays at rest, acting as a second window
-            handle (docs/design.md "Fade until hovered") */}
+            handle (docs/design/fade-until-hovered.md "Fade until hovered") */}
         <span className="fade-handle garden-empty-label" onPointerDown={onFadeHandlePointerDown}>
           {t(hasGranted ? "emptyNoSessions" : "emptyNeedsReauth")}
         </span>
@@ -845,7 +845,7 @@ export function Garden({
   // Birds the user dragged, drawn in front of the others, the last dragged frontmost (gardenStack)
   const fronts = frontRanks(positions ?? {});
   // Birds outside a block in the same row as a bird with a bubble keep the bubble room, so the status lines of the row
-  // line up (docs/design.md "Layout")
+  // line up (docs/design/layout.md "Layout")
   const roomFor = bubbleRoomFor(
     sessions.flatMap((s) => {
       const p = positionOf(s.id);
@@ -857,7 +857,7 @@ export function Garden({
       className="garden"
       ref={containerRef}
       hidden={paused}
-      // The same menu on a bird, a watch block and an empty spot, in place of the WebView's own (docs/design.md "Layout")
+      // The same menu on a bird, a watch block and an empty spot, in place of the WebView's own (docs/design/layout.md "Layout")
       onContextMenu={(e) => {
         e.preventDefault();
         popupGardenMenu({ arrange });
@@ -867,7 +867,7 @@ export function Garden({
           neighbour rather than hiding under it. Among bubbles, newer turns are on top (bubbleOrder) */}
       <div className="garden-bubble-layer" ref={setBubbleLayer} />
       {/* Lines between linked birds of a watching group, from icon to icon. Laid under the bird layer and kept at rest
-          (docs/design.md "Watching") */}
+          (docs/design/watching.md "Watching") */}
       {shapes.length > 0 && (
         <svg className="garden-watch-lines" width={W} height={gardenH} aria-hidden>
           {shapes.flatMap((shape) => {
@@ -1028,13 +1028,13 @@ export function GardenNode({
   groupRootId?: string;
   onGroupMove?: (drag: GroupDrag) => void;
   onGroupDrop?: (drag: GroupDrag) => void;
-  // The concierge's node: its own image, no status lines or event marks (docs/design.md "Concierge")
+  // The concierge's node: its own image, no status lines or event marks (docs/design/concierge.md "Concierge")
   concierge?: ConciergeLook;
   // Dragging it moves the floating window instead of the bird (the Concierge tab, where the window is the concierge's
   // size); in the standard window it stays put
   dragMovesWindow?: boolean;
   // The name above the icon. The Concierge tab leaves it out, since the label under the handle already says it
-  // (docs/design.md "Concierge"); without it the bubble's placement goes by the icon's top
+  // (docs/design/concierge.md "Concierge"); without it the bubble's placement goes by the icon's top
   showName?: boolean;
   // What the bubble shows in place of its text (the Concierge tab: the suggestions and every session's line)
   bubbleContent?: ReactNode;
@@ -1067,7 +1067,7 @@ export function GardenNode({
     return () => observer.disconnect();
   }, []);
   // The name's top edge and width, and the icon's width: a bubble above goes above the name, its tail passing beside
-  // the name to the icon (docs/design.md "Layout"). Read after every render, as the name can change
+  // the name to the icon (docs/design/layout.md "Layout"). Read after every render, as the name can change
   const nameRef = useRef<HTMLSpanElement>(null);
   const [nameBox, setNameBox] = useState<
     { top: number; w: number; h: number; iconTop: number; iconW: number; iconH: number } | undefined
@@ -1181,7 +1181,7 @@ export function GardenNode({
         if (currentWindowMode() !== "normal") void getCurrentWindow().startDragging();
         return;
       }
-      // Near or past the garden's edge, the window grows that way (docs/design.md "Layout")
+      // Near or past the garden's edge, the window grows that way (docs/design/layout.md "Layout")
       if (containerRef.current) dragGrowAt(e, containerRef.current);
       const group = groupFromEvent(e);
       if (group) {
@@ -1225,7 +1225,7 @@ export function GardenNode({
   }, [containerRef]);
 
   const pos = live ?? position;
-  // A bird the user dragged comes in front of the other birds and bubbles, with its bubble (docs/design.md "Layout")
+  // A bird the user dragged comes in front of the other birds and bubbles, with its bubble (docs/design/layout.md "Layout")
   const stack = gardenStack({ dragging: Boolean(live) || groupDragging, front, bubbleOrder: stackOrder });
   const bubbleParent = stack.bubbleInLayer ? bubbleLayer : containerRef.current;
   // The speech bubble appears right below the icon and the node reserves that space (.garden-bubble-room), so it is
@@ -1238,7 +1238,7 @@ export function GardenNode({
   const left = `${pos.x}px`;
   const top = `${pos.y}px`;
   // The speech bubble is centered under the bird and pushed only to stay inside the garden frame (bubbleVars), for birds
-  // in a watching block too (docs/design.md "Layout")
+  // in a watching block too (docs/design/layout.md "Layout")
   const bubbleRange = bubbleRangeOf(containerRef.current);
   const tail =
     bubblePlace?.above && nameBox

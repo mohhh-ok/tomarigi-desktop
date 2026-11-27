@@ -1,4 +1,4 @@
-// The Claude desktop app's session proposal cards a session waits on the user to start (docs/design.md "The "?" for
+// The Claude desktop app's session proposal cards a session waits on the user to start (docs/design/waiting-question-mark.md "The "?" for
 // sessions waiting on you"). Doesn't depend on UI components or Tauri
 import type { TurnProposals } from "./transcript-desktop";
 

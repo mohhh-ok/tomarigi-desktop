@@ -1,4 +1,4 @@
-// The note shown for a few seconds when an edit of the settings file is taken (docs/design.md "Settings file"): what
+// The note shown for a few seconds when an edit of the settings file is taken (docs/design/settings-file.md "Settings file"): what
 // changed, from what to what, and what was refused and why. Several stack. The settings' "Settings file" section keeps
 // the list of this launch, for the ones made while the window was hidden
 import { MdClose } from "react-icons/md";

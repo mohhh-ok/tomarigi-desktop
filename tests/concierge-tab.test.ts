@@ -1,4 +1,4 @@
-// The Concierge tab (docs/design.md "Concierge"): first in the tab row, with or without a provider; without one it says
+// The Concierge tab (docs/design/concierge.md "Concierge"): first in the tab row, with or without a provider; without one it says
 // what it needs and the readout stays per session; the label under the handle says how many other birds there are and how many need a reply, and
 // the floating window shrinks to the concierge and its bubble
 import { describe, expect, test } from "bun:test";

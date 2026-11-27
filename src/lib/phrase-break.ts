@@ -1,4 +1,4 @@
-// Phrase breaks for the concierge's bubble (docs/design.md "Concierge", the detailed design under "a Japanese line in the
+// Phrase breaks for the concierge's bubble (docs/design/concierge.md "Concierge", the detailed design under "a Japanese line in the
 // bubble ... doesn't break inside a phrase"): a text with no spaces between its words (Japanese, Chinese) gets U+200B
 // between its phrases, found by BudouX, and `word-break: keep-all` on the part that holds it (styles/concierge.css,
 // [data-phrased]) then breaks a line only there and at spaces, in WebKit as in Chromium. A space inside a phrase next to a

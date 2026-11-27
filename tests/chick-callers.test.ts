@@ -1,5 +1,5 @@
 // Where a chick's completion record is found: a chick started by another chick (spawnDepth 2 or more) has it in the
-// transcript of the chick that started it, not in the parent's (docs/design.md "Removing birds of ended sessions")
+// transcript of the chick that started it, not in the parent's (docs/design/removing-ended-birds.md "Removing birds of ended sessions")
 import { describe, expect, test } from "bun:test";
 import type { NativeDirectoryHandle, NativeFile } from "../src/lib/native-fs.ts";
 import { callerCandidates, scanChicks } from "../src/lib/session-chicks.ts";

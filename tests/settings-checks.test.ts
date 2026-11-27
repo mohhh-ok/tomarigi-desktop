@@ -1,4 +1,4 @@
-// The rules shared by the settings screen and the settings file (lib/settings-checks.ts; docs/design.md "Settings file")
+// The rules shared by the settings screen and the settings file (lib/settings-checks.ts; docs/design/settings-file.md "Settings file")
 import { expect, test } from "bun:test";
 import {
   checkLocalAi,

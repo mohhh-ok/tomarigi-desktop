@@ -1,4 +1,4 @@
-// Local AI: an OpenAI-compatible server (Ollama, LM Studio, ...) for summaries and the concierge (docs/design.md
+// Local AI: an OpenAI-compatible server (Ollama, LM Studio, ...) for summaries and the concierge (docs/design/byok-api-keys.md
 // "BYOK API keys", Local AI). The provider is "Local" (ja: ローカル).
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {

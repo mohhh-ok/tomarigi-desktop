@@ -1,4 +1,4 @@
-// A Claude desktop app session puts its question in the wrap_up tool's `ask`, not in the reply's text (docs/design.md
+// A Claude desktop app session puts its question in the wrap_up tool's `ask`, not in the reply's text (docs/design/waiting-question-mark.md
 // "The "?" for sessions waiting on you"). A turn that ends so waits on the user, as a question tool does: it needs a
 // reply by the machine state, before any turn verdict. Before, plan-icons ended on 「この中身で試しを打ってよいですか？」
 // in the ask and was shown done, and the concierge didn't treat it as waiting (the user: 「はんのうしてない」)

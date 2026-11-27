@@ -1,4 +1,4 @@
-// One verdict per turn, kept across a reload and a restart (docs/design.md "Turn verdicts"). The reported case: the
+// One verdict per turn, kept across a reload and a restart (docs/design/turn-verdicts.md "Turn verdicts"). The reported case: the
 // same reply was asked about on three reloads and answered asking, asking, then not asking, and the last answer won
 import { describe, expect, test } from "bun:test";
 import type { TurnOutcome } from "../src/lib/summarize.ts";
@@ -60,7 +60,7 @@ describe("kept turn verdicts", () => {
 });
 
 // A kept turn isn't asked again, so after a reload or a restart the anger mark comes from the kept answers
-// (docs/design.md "Anger mark for abuse toward the AI": it stays until the next turn's verdict)
+// (docs/design/anger-mark.md "Anger mark for abuse toward the AI": it stays until the next turn's verdict)
 describe("anger mark from kept verdicts", () => {
   const abusive: TurnOutcome = { ...notAsking, abusive: true };
 

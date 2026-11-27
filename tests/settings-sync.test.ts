@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { FROM_SETTINGS_FILE, wantsReload } from "../src/lib/settings-sync.ts";
 
-describe("wantsReload (docs/design.md \"Settings window\")", () => {
+describe("wantsReload (docs/design/settings-window.md \"Settings window\")", () => {
   test("a key this window shows, saved by another window, is reloaded", () => {
     expect(wantsReload({ key: "muted", from: "main" }, ["muted", "chirpVolume"], "settings")).toBe(true);
   });

@@ -1,4 +1,4 @@
-// Shoots the settings' "Readout voice" in each of its states, for a UI check (docs/design.md "Readout voice (local TTS
+// Shoots the settings' "Readout voice" in each of its states, for a UI check (docs/design/readout-voice.md "Readout voice (local TTS
 // server)"). Headless, from a `vite build` output, with no dev server or port (setup and the build: tools/README.md
 // "Playwright"):
 //   DIST=/tmp/tomarigi-desktop/dist PLAYWRIGHT=/tmp/pw/node_modules/playwright OUT=/tmp/tomarigi-desktop/readout-shots \

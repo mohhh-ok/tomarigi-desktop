@@ -39,7 +39,7 @@ export interface TranscriptEntry {
     persistent?: unknown;
   };
   // Sender on the isMeta user line that received a cross-session message (kind: "peer" and name)
-  // from is the sender's address; for a Claude desktop app session it is its local_… id (docs/design.md "Watching")
+  // from is the sender's address; for a Claude desktop app session it is its local_… id (docs/design/watching.md "Watching")
   origin?: { kind?: unknown; name?: unknown; from?: unknown };
   // Cross-session messages that arrive mid-work are recorded in an attachment (queued_command) with the same origin
   attachment?: { origin?: { kind?: unknown; name?: unknown; from?: unknown } };
@@ -58,7 +58,7 @@ export interface Block {
 /**
  * Whether a transcript line is another session's: its `sessionId` is a string other than the session's own. A
  * transcript started as a fork (a side chat, or a fork another session started) begins with a copy of its parent's
- * lines, which keep the parent's `sessionId`; nothing is read from them (docs/design.md "Side chats and forked sessions
+ * lines, which keep the parent's `sessionId`; nothing is read from them (docs/design/side-chats-and-forks.md "Side chats and forked sessions
  * of the Claude desktop app"). A line without `sessionId`, or a read without an own id, counts as own.
  * is_foreign_line in src-tauri is the same rule
  */

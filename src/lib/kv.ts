@@ -1,5 +1,5 @@
 // The app's one key-value store, shared by every window of the app. The settings of the settings file
-// (docs/design.md "Settings file") live in Rust, which keeps the values that passed and writes ~/.tomarigi/settings.json;
+// (docs/design/settings-file.md "Settings file") live in Rust, which keeps the values that passed and writes ~/.tomarigi/settings.json;
 // every other key (the last section shown, notes closed, the event log, turn verdicts, garden positions, caches) is in
 // the "tomarigi" IndexedDB, store "kv" (the windows load the same origin). Every write goes through kvPut / kvDelete,
 // which tell the other windows (lib/settings-sync.ts). Outside the app (the browser mock) everything is in IndexedDB

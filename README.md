@@ -90,7 +90,7 @@ bun run test:llm              # the LLM regression test with real models (needs 
 ### LLM regression test
 
 The turn verdicts and the concierge are checked with real models by `bun run test:llm` (tools/llm-regression; usage in
-tools/README.md, rules in docs/design.md "LLM regression test"). It costs API calls, so it isn't run every time: before
+tools/README.md, rules in docs/design/llm-regression-test.md "LLM regression test"). It costs API calls, so it isn't run every time: before
 committing, run `bun run test:llm:needed`, and when it prints `run`, run `bun run test:llm` on every provider that has
 a key, with the result before the change as `--baseline`. Both need `bun install` first (they use `zod` and
 `typescript` from the dev dependencies). It prints `run` for any change to what the test reaches
@@ -135,7 +135,7 @@ Pass them when running the binary `Contents/MacOS/tomarigi-desktop` directly, or
 
 The dev server doesn't watch `src-tauri` (cargo rebuilds it) or `.claude` (agents' worktrees: adding or removing one used to reload the dev app's page; `server.watch.ignored` in vite.config.ts).
 
-Where BYOK API keys are stored is decided at launch (KeyStore in src-tauri/src/keys.rs); see "BYOK API keys" in docs/design.md.
+Where BYOK API keys are stored is decided at launch (KeyStore in src-tauri/src/keys.rs); see "BYOK API keys" in docs/design/byok-api-keys.md.
 
 Logs are appended to `~/Library/Logs/tomarigi-desktop/app-log.txt` (`~/.local/state/tomarigi-desktop/app-log.txt` on Linux, `%TEMP%\tomarigi-desktop\app-log.txt` on Windows). Past 10 MB the file becomes `app-log.1.txt` and a new one starts.
 

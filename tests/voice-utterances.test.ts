@@ -1,5 +1,5 @@
 // What the voice queues for each readout: the display name, then the body, as two utterances, and no utterance for a
-// text that is empty after sanitizing (docs/design.md "Readout in the Concierge tab")
+// text that is empty after sanitizing (docs/design/concierge.md "Readout in the Concierge tab")
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { isReadAloudType, speakEvent, speakSuggestions } from "../src/lib/voice.ts";
 import type { SessionEvent } from "../src/lib/session-types.ts";

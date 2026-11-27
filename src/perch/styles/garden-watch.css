@@ -1,7 +1,7 @@
 /* Watch lines and the peer count in the Garden */
 
 /* Lines between linked birds of a watching group (garden.tsx). Under the birds, bubbles, and status lines, and not a
-   hover or click target. Kept faint, to be seen only on a closer look (docs/design.md "Watching"). They stay at rest
+   hover or click target. Kept faint, to be seen only on a closer look (docs/design/watching.md "Watching"). They stay at rest
    ("Fade until hovered"), when the window background is gone, so a thin dark outline lies under a light core and the
    line can be made out over a light or a dark desktop */
 .garden-watch-lines {

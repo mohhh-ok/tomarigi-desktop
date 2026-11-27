@@ -39,7 +39,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   /* Semi-transparent, so what's behind shows blurred through the frosted glass behind the window (set_backdrop in
-     src-tauri). This is to feel less heavy, not to make the background readable (docs/design.md "Window and menu bar").
+     src-tauri). This is to feel less heavy, not to make the background readable (docs/design/window-and-menu-bar.md "Window and menu bar").
      The opacity is fixed */
   background: rgba(22, 22, 28, 0.75);
   border: 1px solid #2e2c25;
@@ -70,7 +70,7 @@ html[data-window-mode="normal"] .page {
   border-radius: 0;
 }
 
-/* Fade until hovered (docs/design.md "Fade until hovered"; data-fade is set by garden-fade.ts). At rest only the birds, their
+/* Fade until hovered (docs/design/fade-until-hovered.md "Fade until hovered"; data-fade is set by garden-fade.ts). At rest only the birds, their
    badges, bubbles, and the handle stay; everything else is fully transparent. The frosted glass and shadow are removed on the Rust
    side (apply_fade in src-tauri) */
 .page {
@@ -162,7 +162,7 @@ html[data-window-mode="normal"] .page {
 }
 
 /* In a narrow window the header's buttons get tighter, so they stay on the handle's row down to the narrowest window
-   (260px), and the window isn't made wider for them (docs/design.md "Concierge") */
+   (260px), and the window isn't made wider for them (docs/design/concierge.md "Concierge") */
 @media (max-width: 400px) {
   .header-controls {
     gap: 4px;
@@ -209,7 +209,7 @@ html:not([data-window-mode="normal"]) .fade-handle {
 /* At rest the handle is the only part of the window besides the birds that stays, over whatever is behind the window,
    so it gets a dark backing of its own to stay readable on light and busy backgrounds */
 :root[data-fade="rest"] .fade-handle {
-  /* Translucent at rest (docs/design.md "Fade until hovered"): the text and its backing together */
+  /* Translucent at rest (docs/design/fade-until-hovered.md "Fade until hovered"): the text and its backing together */
   opacity: 0.8;
   background-color: rgba(24, 23, 20, 0.82);
   box-shadow:
@@ -218,7 +218,7 @@ html:not([data-window-mode="normal"]) .fade-handle {
 }
 
 /* With no birds, the Garden's empty message stays at rest as a second handle (garden.tsx), at full strength so the
-   faded window can still be found (docs/design.md "Fade until hovered"). Its padding is kept when shown so it doesn't
+   faded window can still be found (docs/design/fade-until-hovered.md "Fade until hovered"). Its padding is kept when shown so it doesn't
    move */
 .garden-empty {
   text-align: center;
@@ -240,7 +240,7 @@ html:not([data-window-mode="normal"]) .fade-handle {
 }
 
 /* With the cursor on a bird at rest, the handle stands out, so it can be found to show the whole window
-   (docs/design.md "Fade until hovered"; data-fade-bird is set by garden-fade.ts) */
+   (docs/design/fade-until-hovered.md "Fade until hovered"; data-fade-bird is set by garden-fade.ts) */
 :root[data-fade="rest"][data-fade-bird] .fade-handle {
   opacity: 1;
   background-color: rgba(24, 23, 20, 0.94);

@@ -1,4 +1,4 @@
-// "Updates" on the settings screen (checking for, downloading, and installing app updates; docs/design.md "Updates").
+// "Updates" on the settings screen (checking for, downloading, and installing app updates; docs/design/updates.md "Updates").
 // Strings added in tomarigi-desktop. The menu bar item is Japanese / English only, in src-tauri/src/tray.rs.
 // Shape: Record<KeyName, Record<Locale, string>>.
 export default {

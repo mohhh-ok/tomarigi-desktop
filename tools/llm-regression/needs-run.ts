@@ -1,4 +1,4 @@
-// Whether a change can change the LLM regression test's results, so `bun run test:llm` has to run (docs/design.md
+// Whether a change can change the LLM regression test's results, so `bun run test:llm` has to run (docs/design/llm-regression-test.md
 // "LLM regression test"). What counts is found, not listed: every top-level declaration the test reaches from its own
 // files (tools/llm-regression/*.ts), following references through the TypeScript checker into src/ (the prompts, the
 // schemas, the models, the request bodies, the reading of answers, the payload builders, the checks after the answer

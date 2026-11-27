@@ -1,4 +1,4 @@
-// With a local TTS server chosen, every readout reaches ReadoutQueue, tagged by what it is for (docs/design.md
+// With a local TTS server chosen, every readout reaches ReadoutQueue, tagged by what it is for (docs/design/readout-voice.md
 // "Readout voice (local TTS server)"): the request goes to Rust's tts_speech and the log line says which readout it was
 import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
 

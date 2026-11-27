@@ -1,5 +1,5 @@
 // Concierge: an AI looks at every session together and gives one piece of advice about what to do next
-// (docs/design.md "Concierge"). A consumer of the verdict layer (runJudge / runOpenAiJudge / runLocalJudge), like the speech
+// (docs/design/concierge.md "Concierge"). A consumer of the verdict layer (runJudge / runOpenAiJudge / runLocalJudge), like the speech
 // bubble summaries.
 //
 // Watch links, chick counts, and what holds up what are computed here and passed as facts; the AI does not infer
@@ -65,9 +65,9 @@ interface PayloadSession {
   seconds_since_last_activity: number;
   line?: string;
   question?: string;
-  /** The turn verdict of a stopped turn: whether its last reply waits on the developer (docs/design.md "Turn verdicts") */
+  /** The turn verdict of a stopped turn: whether its last reply waits on the developer (docs/design/turn-verdicts.md "Turn verdicts") */
   asking?: boolean;
-  /** The turn verdict of a stopped turn: whether the session's work goes on in the background after it (docs/design.md
+  /** The turn verdict of a stopped turn: whether the session's work goes on in the background after it (docs/design/turn-verdicts.md
    * "Turn verdicts") */
   continuing?: boolean;
   /** The last CONCIERGE_REPLY_TAIL_CHARS of the last reply, when the session is done */
@@ -79,12 +79,12 @@ interface PayloadSession {
   watch_children?: string[];
   /** Started by another session and linked to an older one: that parent takes its results, a question its reply asks
    * in a turn that sent the parent a message, and its wrap_up's ask (needs_reply false then). A permission prompt or a
-   * question tool still needs the developer (needs_reply true, source machine; docs/design.md "Watching", "Sessions
+   * question tool still needs the developer (needs_reply true, source machine; docs/design/watching.md "Watching", "Sessions
    * started by another session") */
   parent_takes_over?: true;
   chicks_working?: number;
   /** Needs a reply now, and since its current wait began the developer replied to or jumped to another session
-   * (skippedWhileWaiting). Computed in code: the AI doesn't infer skips from recent_events (docs/design.md "Concierge") */
+   * (skippedWhileWaiting). Computed in code: the AI doesn't infer skips from recent_events (docs/design/concierge.md "Concierge") */
   skipped?: true;
 }
 
@@ -120,7 +120,7 @@ const unclip = (text: string) => (text.endsWith("…") ? text.slice(0, -1) : tex
 const conciergeNameOf = (view: SessionView) => clip(view.project)!;
 
 /** Whether a stopped session's result reached its watch parent: the parent is working, or it was active after the
- * session last was (docs/design.md "Concierge", watch links) */
+ * session last was (docs/design/concierge.md "Concierge", watch links) */
 function resultReachedParent(view: SessionView, parent: SessionView): boolean {
   return parent.state === "working" || parent.sinceMs < view.sinceMs;
 }
@@ -137,7 +137,7 @@ function eventKindOf(e: SessionEvent): EventKind | undefined {
  * The sessions among waitingIds that the developer skipped: after the event where the session's current wait began
  * (its last needs_reply), the developer replied to or jumped to another session. A needs_reply that the developer
  * answered (a user_replied for that session after it) was a wait of its own, not part of this one, so several waits
- * answered one after another are not a skip (docs/design.md "Concierge"). events is in time order
+ * answered one after another are not a skip (docs/design/concierge.md "Concierge"). events is in time order
  */
 export function skippedWhileWaiting(
   events: readonly { kind: EventKind; session: string }[],
@@ -195,10 +195,10 @@ export function buildConciergePayload(
     const ask = view.ask;
     // A parent takes over what it can answer (a reply that asks in a turn that sent the parent a message, a wrap_up's
     // ask), so that doesn't wait on the developer here; a permission prompt or a question tool does (parentCanAnswer;
-    // its bird gets the "?" either way; docs/design.md "Watching")
+    // its bird gets the "?" either way; docs/design/watching.md "Watching")
     const needsReply = waitsOnDeveloper(view);
     // The "?" comes from the machine state (a question tool, a permission prompt) or the turn verdict; both are facts
-    // (docs/design.md "Concierge")
+    // (docs/design/concierge.md "Concierge")
     const source = needsReply ? replyWaitSource(view.state, view.ask) : undefined;
     return {
       id: view.id,
@@ -214,7 +214,7 @@ export function buildConciergePayload(
       ...(ask && (ask.status === "asking" || ask.status === "not_asking") && { asking: ask.status === "asking" }),
       ...(view.continuing !== undefined && { continuing: view.continuing }),
       // A finished session gets it, so one that only waits on its own background work isn't taken as finished.
-      // Dozing doesn't: it has been stopped long enough not to be news (docs/design.md "Concierge")
+      // Dozing doesn't: it has been stopped long enough not to be news (docs/design/concierge.md "Concierge")
       ...(view.state === "done" && view.reply && { last_reply_tail: tail(view.reply.text) }),
       ...(parentId && ids.has(parentId) && { watch_parent: parentId }),
       ...(parentId && byId.has(parentId) && (view.state === "done" || view.state === "dozing") && {
@@ -229,7 +229,7 @@ export function buildConciergePayload(
 
   // What holds up what: a session is held up by one of its chicks that waits on a reply. A linked session that needs a
   // reply doesn't hold up the session watching it: whether the watcher waits on that answer depends on the work, and
-  // the linked session is advised on its own (docs/design.md "Concierge")
+  // the linked session is advised on its own (docs/design/concierge.md "Concierge")
   const holds: PayloadHold[] = [];
   for (const { view } of inputs) {
     for (const chick of view.chicks ?? []) {
@@ -252,7 +252,7 @@ interface ConciergeVerdict {
   action: ConciergeAction;
 }
 
-/** What the advice asks the developer to do now (docs/design.md "Concierge"). none: nothing they can do now, so the
+/** What the advice asks the developer to do now (docs/design/concierge.md "Concierge"). none: nothing they can do now, so the
  * advice isn't shown */
 export const CONCIERGE_ACTIONS = ["reply", "check_result", "none"] as const;
 export type ConciergeAction = (typeof CONCIERGE_ACTIONS)[number];
@@ -363,7 +363,7 @@ export type ConciergeSuggestionKind = (typeof CONCIERGE_SUGGESTION_KINDS)[number
 
 /**
  * The advice request while the Concierge tab is open: the same task, plus one to three suggestions in the same answer,
- * so there is no extra request (docs/design.md "Concierge"). Without the tab the request is CONCIERGE_TASK as it was
+ * so there is no extra request (docs/design/concierge.md "Concierge"). Without the tab the request is CONCIERGE_TASK as it was
  */
 export const CONCIERGE_TASK_WITH_SUGGESTIONS: JudgeTaskDefinition = {
   ...CONCIERGE_TASK,
@@ -429,7 +429,7 @@ const normalizeName = (text: string) => text.normalize("NFKC").toLowerCase();
 
 /**
  * Whether the advice names the session it is about. The name is compared after NFKC and lower case, and a name cut
- * for the request is compared without its cut mark (Claude's own decision, docs/design.md "Concierge")
+ * for the request is compared without its cut mark (Claude's own decision, docs/design/concierge.md "Concierge")
  */
 export function adviceNamesTarget(line: string, name: string): boolean {
   const n = normalizeName(unclip(name));
@@ -462,7 +462,7 @@ const watchesWorkingChild = (target: PayloadSession, sessions: PayloadSession[])
 /**
  * Whether the advice names a session other than its target. A name that is also part of the target's name doesn't
  * count, and neither does a child of the target whose result hasn't reached it: the advice about such a parent names
- * both (docs/design.md "Concierge")
+ * both (docs/design/concierge.md "Concierge")
  */
 function adviceNamesOtherSession(line: string, target: PayloadSession, sessions: PayloadSession[]): boolean {
   const targetName = normalizeName(unclip(target.name));
@@ -477,7 +477,7 @@ function adviceNamesOtherSession(line: string, target: PayloadSession, sessions:
 
 /**
  * The advice with its session's name put in front ("<name>: <text>") when the AI left the name out, so it is shown
- * rather than dropped (docs/design.md "Concierge"). Not when the text names another session sent: then it isn't clear
+ * rather than dropped (docs/design/concierge.md "Concierge"). Not when the text names another session sent: then it isn't clear
  * which session it is about, and it is dropped as before (no_name). Without a target, or with the name, it is as given
  */
 export function withTargetName(advice: ConciergeAdvice, sessions: PayloadSession[]): ConciergeAdvice {
@@ -494,7 +494,7 @@ const MIN_ELAPSED_NUMBER = 10;
 /**
  * The numbers the AI could copy from the facts' times: each seconds_since_last_activity and seconds_ago, and the same
  * in whole minutes and hours (cut and rounded), as text. Text with one of them is not shown (writesElapsedTime): the
- * prompt alone didn't hold (docs/design.md "Concierge"). Compared as numbers, so it holds in every language
+ * prompt alone didn't hold (docs/design/concierge.md "Concierge"). Compared as numbers, so it holds in every language
  */
 export function elapsedNumbers(payload: Pick<ConciergePayload, "sessions" | "recent_events">): Set<string> {
   const seconds = [
@@ -523,7 +523,7 @@ export function writesElapsedTime(line: string, numbers: ReadonlySet<string>): b
   });
 }
 
-/** Why an advice isn't shown, or undefined when it is (docs/design.md "Concierge"). ownName false skips the check that
+/** Why an advice isn't shown, or undefined when it is (docs/design/concierge.md "Concierge"). ownName false skips the check that
  * the text names its session: a suggestion's text is written without it (the app shows the name). waitingFirst false
  * skips the check that keeps every other session out while one needs a reply: the suggestions put those first instead */
 export function dropReason(
@@ -589,7 +589,7 @@ function suggestionTextOf(text: unknown, name: string): string {
  * The suggestions from a verdict's suggestions (objects with the sessions' own ids), checked in code like the advice
  * (dropReason, without the name check: the text has no name, and without not_waiting: a session needing a reply
  * doesn't keep a finished one out). Those that pass are put replies first, then results to check, each in the AI's
- * order, and the first CONCIERGE_MAX_SUGGESTIONS are kept (docs/design.md "Concierge")
+ * order, and the first CONCIERGE_MAX_SUGGESTIONS are kept (docs/design/concierge.md "Concierge")
  */
 export function parseConciergeSuggestions(
   list: unknown,
@@ -623,7 +623,7 @@ export function parseConciergeSuggestions(
 
 // The keys under which the facts hold session ids. While suggestions are asked for, the AI is sent short references
 // (s1, s2, …) in their place: the ids are long paths, and several objects with them filled the output (cut off at 512
-// tokens with 8 sessions, docs/design.md "Concierge")
+// tokens with 8 sessions, docs/design/concierge.md "Concierge")
 const ID_KEYS = new Set(["id", "watch_parent", "watch_children", "waiting_session", "held_up_by", "session"]);
 
 function withRefs(value: unknown, ref: (id: string) => string, key?: string): unknown {
@@ -666,11 +666,11 @@ export function conciergeRetryLogLine(c: ConciergeLogContext, retry: ConciergeRe
 
 /**
  * The app log lines of a request: one per session with the facts it was given, without any text from the sessions, so
- * an advice can be checked against them from the log alone (docs/design.md "Concierge"). One line each, in a fixed
+ * an advice can be checked against them from the log alone (docs/design/concierge.md "Concierge"). One line each, in a fixed
  * form to grep. source: machine is a question tool, a permission prompt, a wrap_up's ask or a proposal card (waiting_on
  * says which, when known), verdict is the turn verdict asking; verdict is the turn verdict of a stopped turn (asking /
  * not_asking); continuing is the session's continuing (expired when the turn verdict said continuing but it expired,
- * docs/design.md "Turn verdicts"; the payload then says false)
+ * docs/design/turn-verdicts.md "Turn verdicts"; the payload then says false)
  */
 export function conciergeRequestLogLines(
   c: ConciergeLogContext,
@@ -748,7 +748,7 @@ export async function askConcierge(
         withRefs(payload, (id) => refs.get(id) ?? id),
       )
     : await run<ConciergeVerdict & { suggestions?: unknown }>(CONCIERGE_TASK, payload);
-  // A local model's answer that isn't JSON matching the schema is no advice, not an error (docs/design.md "BYOK API
+  // A local model's answer that isn't JSON matching the schema is no advice, not an error (docs/design/byok-api-keys.md "BYOK API
   // keys", Local AI)
   if (!result.ok && result.kind === "malformed" && result.message === LOCAL_NO_MATCHING_JSON) {
     return { ok: true, verdict: null, noMatchingJson: true, ...(withSuggestions && { suggestions: [] }) };
@@ -812,7 +812,7 @@ export function conciergeStateOf(v: SessionView): ConciergeStateClass {
  * A session as the scheduler tells its changes apart: needs a reply (including the "?"), done, working, dozing, or
  * expired: dozing, but its continuing from the reply's text expired (TEXT_CONTINUING_EXPIRES_MS in lib/turn-verdict.ts)
  * less than DOZE_MS ago. The expiry is when it finished as far as the concierge knows, so it counts as done for as long
- * as a turn that just finished does (docs/design.md "Turn verdicts", "Concierge")
+ * as a turn that just finished does (docs/design/turn-verdicts.md "Turn verdicts", "Concierge")
  */
 export type ConciergeTriggerClass = "reply" | "done" | "working" | "dozing" | "expired";
 
@@ -825,7 +825,7 @@ function askable(states: ConciergeTriggerClass[]): boolean {
 export function conciergeTriggerClasses(views: SessionView[]): Map<string, ConciergeTriggerClass> {
   // A session whose wait the parent that takes it over can answer (a reply that asks it, a wrap_up's ask) waits on its
   // parent, not the developer: it counts as working. A permission prompt or a question tool waits on the developer
-  // (waitsOnDeveloper; docs/design.md "Watching")
+  // (waitsOnDeveloper; docs/design/watching.md "Watching")
   return new Map(
     views.map((v) => [
       v.id,
@@ -841,7 +841,7 @@ export function conciergeTriggerClasses(views: SessionView[]): Map<string, Conci
 }
 
 /**
- * Whether a change of sessions asks the concierge (docs/design.md "Concierge"): a session starts needing a reply, a
+ * Whether a change of sessions asks the concierge (docs/design/concierge.md "Concierge"): a session starts needing a reply, a
  * session that needed a reply is answered (or leaves the screen), a turn finishes (done), or a stopped session's
  * continuing from its reply's text expires (expired). Tool lines, working ↔ working, done → dozing, expired → dozing,
  * and a new prompt to a finished session don't. A session first seen needing a reply, done or expired counts as that
@@ -898,7 +898,7 @@ export function conciergeExpiredLogLines(
 /**
  * Whether advice kept after a failed request may stay: its target is still on screen in the state it was in when the
  * advice came (stateAtAdvice). Advice about a session that changed since (e.g. the user already replied) would send
- * the user to the wrong place (docs/design.md "Concierge"). Advice without a target stays
+ * the user to the wrong place (docs/design/concierge.md "Concierge"). Advice without a target stays
  */
 export function adviceStillHolds(
   advice: ConciergeAdvice,
@@ -912,7 +912,7 @@ export function adviceStillHolds(
 
 /**
  * Whether the advice's target is on screen in a state other than the one it was in when the advice came (e.g. the
- * user answered it). The advice is hidden on that poll (docs/design.md "Concierge"). A target that left the screen
+ * user answered it). The advice is hidden on that poll (docs/design/concierge.md "Concierge"). A target that left the screen
  * doesn't count: that advice stays without a jump target until the next request
  */
 export function adviceTargetChanged(
@@ -952,7 +952,7 @@ export function conciergeErrorIsTemporary(result: { ok: false; kind: JudgeErrorK
 }
 
 /**
- * When the concierge is asked (docs/design.md "Concierge"): on the changes conciergeTriggered tells, gathered for
+ * When the concierge is asked (docs/design/concierge.md "Concierge"): on the changes conciergeTriggered tells, gathered for
  * CONCIERGE_DEBOUNCE_MS, at most once per CONCIERGE_MIN_INTERVAL_MS (changes inside it make one request when it ends;
  * a session starting to need a reply, or an answer to one, doesn't wait for it),
  * and every CONCIERGE_REPEAT_MS while any session needs a reply. While no session needs a reply or is done (or
@@ -1037,7 +1037,7 @@ export class ConciergeScheduler {
 
   /**
    * Asks after CONCIERGE_DEBOUNCE_MS without waiting for the 60 seconds, when the user opened the Concierge tab and the
-   * suggestions at hand are none or out of date (docs/design.md "Concierge"). Like an answer to a waiting session it
+   * suggestions at hand are none or out of date (docs/design/concierge.md "Concierge"). Like an answer to a waiting session it
    * comes only at the user's pace. Only while a session needs a reply or is done, as any request; a retry waiting takes
    * it instead. Returns whether it was set
    */
@@ -1104,8 +1104,8 @@ export function recentJumps(): ConciergeJump[] {
   return [...jumps];
 }
 
-// ---- Requests and advice for the debug log screen (docs/design.md "Concierge"), plus speech bubble
-// summaries a local model didn't give (docs/design.md "BYOK API keys", Local AI) ----
+// ---- Requests and advice for the debug log screen (docs/design/concierge.md "Concierge"), plus speech bubble
+// summaries a local model didn't give (docs/design/byok-api-keys.md "BYOK API keys", Local AI) ----
 // In memory only (the debug log screen runs in the same WebView); the app log keeps them across launches
 
 export interface ConciergeLogEntry {
@@ -1118,7 +1118,7 @@ export interface ConciergeLogEntry {
   source?: "concierge" | "bubble" | "suggestion";
   text: string;
   /** The full input of a request, or the answer as the AI gave it, as JSON. Holds text from the sessions, so it is
-   * shown in the debug log screen only and never goes to the app log (docs/design.md "Concierge") */
+   * shown in the debug log screen only and never goes to the app log (docs/design/concierge.md "Concierge") */
   detail?: string;
 }
 

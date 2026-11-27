@@ -1,4 +1,4 @@
-// Which voice reads aloud: the system's (speechSynthesis) or a local TTS server (docs/design.md "Readout voice (local
+// Which voice reads aloud: the system's (speechSynthesis) or a local TTS server (docs/design/readout-voice.md "Readout voice (local
 // TTS server)"). Settings, not secrets: kept in IndexedDB with the others, like Local AI's base URL and model
 import { kvGet, kvPut } from "./settings-store";
 

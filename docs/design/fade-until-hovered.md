@@ -1,0 +1,21 @@
+# Fade until hovered
+
+Applies to the floating window's Garden and Concierge tabs only.
+
+- At rest, only the birds, their badges ("?", anger mark), speech bubbles, the watch lines between birds, and the handle are shown. The background (translucent color, frosted glass, border, shadow), the garden's frame, tabs, header buttons, names, and status lines are fully transparent (the user's decision: 「とうめいもーどのときは完全透明にして」). The scrollbar is not shown (the user's decision); it keeps its width so the birds don't shift when the window fades in. Bubbles are not a hover target and clicks on them go through at rest, except the concierge's, which takes clicks over its whole box (see "Platforms")
+- At rest, clicks anywhere except on a bird, the window handle, or the concierge's speech bubble go through to the window below. The bubble's tail is not part of its box and lets clicks through (Claude's own decision: it is a few pixels)
+- Birds can be clicked (jump to the terminal pane) and dragged while the window stays faded; hovering a bird no longer shows the whole window (the user's decision)
+- The window handle stays visible at rest. Dragging it moves the window; clicking it shows the whole window at full strength (the user's decision: 「どらっぐでまどがうごく、くりっくでとうめいかいじょ、いいね」)
+  - The handle has no menu of its own. The tabs and header buttons are reached by clicking it to show the window (the user's decision: 「透明解除されたらそこでめにゅーみれるもんな」)
+  - The handle is the text "Tomarigi" (the user's decision: 「えだってみえないやろ。普通にTomarigi文字にしろ」)
+  - It sits where the app name is in the header (top left). The header row is outside the Garden, so birds don't need to keep clear of it, and it stays at the window's top left when the window grows or shrinks (the user's decision: 「ヘッダーのとこでええわ」)
+  - A press on it becomes a window drag once the cursor moves 4px with the button held; released before that, it is a click (Claude's own decision: a drag started on press swallows the release, so the click could not be told apart)
+  - At rest it gets a dark backing of its own so it stays readable over light or busy windows behind; the backing's room is kept when shown, so the name doesn't move (Claude's own decision). It acts as the handle (drag moves the window) on every tab of the floating window, not only at rest
+  - At rest the handle (text and backing together) is translucent (the user's decision: 「tomarigiははんとうめいにしておいて」). Its opacity is 0.8: 0.6 was too faint (the user: 「tomarigiの半透明はもうちょっとみえるようにして」; the value 0.8 is Claude's own decision). Shown, it is at full strength
+  - While the cursor is on a bird at rest, the handle stands out (full strength, a light ring and glow) (the user's decision: 「とりにマウスオーバーした時にめだつようにして」; the look is Claude's own decision). The Rust side decides it from the cursor, since the WebView's :hover isn't reliable while clicks go through
+  - Not yet decided: whether hovering a bird shows only that bird's name and status (Claude's proposal). Until decided, hovering a bird shows nothing more
+- After clicking the handle, the whole window takes clicks until the cursor leaves the window's bounds (tabs, settings, dragging the window work as usual)
+- Once the cursor leaves the window's bounds, it fades again and clicks go through again
+- With no birds in the Garden it fades too (the user's decision: 「0ワの時は、透明にしたい」). The empty message (「いまは誰もとまっていません」, or the one asking to grant folder access again) then stays at rest at full strength on the same dark backing as the handle, since the handle alone is easy to miss (the user: 「なにかめだつものをおいておかないといかんよな。「tomarigi」はめだたないし」; the user chose the empty message among Claude's options). It acts as a second handle: dragging it moves the window, clicking it shows the whole window. Full strength rather than the handle's 0.8 is Claude's own decision
+- Perch, Recent activity, settings, and the standard window are not faded (Perch and Recent activity have no birds to hover). This scope is Claude's own decision
+- Because clicks go through, the WebView gets no mouse events at rest; the cursor position is watched on the Rust side to decide when a bird, the handle, or the concierge's speech bubble is under it. Once a drag starts there, clicks are taken until the button is released

@@ -1,4 +1,4 @@
-// What takes clicks at rest in "Fade until hovered" (docs/design.md "Platforms"; src/perch/fade-targets.ts): the
+// What takes clicks at rest in "Fade until hovered" (docs/design/platforms.md "Platforms"; src/perch/fade-targets.ts): the
 // concierge's speech bubble over its whole box, its empty space included, in the Garden and in the Concierge tab
 import { describe, expect, test } from "bun:test";
 import { birdRect, type Edges, type FadeRect, type MeasuredTarget, targetRects } from "../src/perch/fade-targets.ts";

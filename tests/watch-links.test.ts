@@ -1,4 +1,4 @@
-// Watching links (docs/design.md "Watching", "How links are found"): which traces in a transcript name a peer, and
+// Watching links (docs/design/watching.md "Watching", "How links are found"): which traces in a transcript name a peer, and
 // which running session a trace is matched to. The Claude desktop app's sessions are addressed by local_… ids
 import { describe, expect, test } from "bun:test";
 import type { NativeFile } from "../src/lib/native-fs.ts";

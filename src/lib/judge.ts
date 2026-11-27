@@ -1,6 +1,6 @@
 // Verdict layer that calls the Anthropic Messages API with BYOK (the user's own API key).
 //
-// Only Rust holds the keys (docs/design.md "BYOK API keys"). Here we build the request body and
+// Only Rust holds the keys (docs/design/byok-api-keys.md "BYOK API keys"). Here we build the request body and
 // have Rust's anthropic_messages command send it (key values are never passed to the WebView's JS).
 //
 // Why tool_choice forces a single tool_use: to pin the output to a structured verdict.
@@ -59,7 +59,7 @@ export function httpFailure(
 }
 
 /**
- * Model for verdicts (docs/design.md "BYOK API keys"). Claude Haiku 5.5 has no dated ID; claude-haiku-5-5 is itself a
+ * Model for verdicts (docs/design/byok-api-keys.md "BYOK API keys"). Claude Haiku 5.5 has no dated ID; claude-haiku-5-5 is itself a
  * pinned snapshot. It thinks adaptively by default, but a forced tool_choice makes the reply start with the tool call
  * and carry no thinking block, so max_tokens isn't spent on thinking
  */

@@ -1,5 +1,5 @@
 // A turn Claude Code marked as over (`system` / `turn_duration` last) is done at once, not working for 6 seconds after
-// its last write (docs/design.md "Bird states"). The reported case: a child ended its turn asking the user, the app
+// its last write (docs/design/bird-states.md "Bird states"). The reported case: a child ended its turn asking the user, the app
 // still showed it working for 6 seconds, and the concierge was asked during them with the session working
 import { describe, expect, test } from "bun:test";
 import { deriveState } from "../src/lib/bird-state.ts";

@@ -1,5 +1,5 @@
 // Structured output layer that calls the Responses API with the BYOK OpenAI API key. Only Rust holds the key;
-// this builds the body and has Rust's openai_responses command send it (docs/design.md "BYOK API keys").
+// this builds the body and has Rust's openai_responses command send it (docs/design/byok-api-keys.md "BYOK API keys").
 // Shares JudgeTaskDefinition / JudgeResult with the Anthropic version (lib/judge.ts),
 // so error semantics look the same from the settings screen and the summary code.
 
@@ -14,7 +14,7 @@ import {
 } from "./judge";
 
 /**
- * For summaries and the concierge (docs/design.md "BYOK API keys"). A light model that supports the Responses API,
+ * For summaries and the concierge (docs/design/byok-api-keys.md "BYOK API keys"). A light model that supports the Responses API,
  * Structured Outputs, and reasoning effort none.
  */
 export const OPENAI_JUDGE_MODEL = "gpt-5.6-luna";

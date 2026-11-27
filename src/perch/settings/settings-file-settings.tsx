@@ -1,4 +1,4 @@
-// "Settings file" on the settings screen (docs/design.md "Settings file", Detailed design (g)): where the file is, a
+// "Settings file" on the settings screen (docs/design/settings-file.md "Settings file", Detailed design (g)): where the file is, a
 // button that shows it in the file manager, the instruction to paste into an AI agent, and what this launch took from
 // the file. While it applies, the note that the MCP server was removed, with the command that unregisters it
 import { useEffect, useRef, useState } from "react";

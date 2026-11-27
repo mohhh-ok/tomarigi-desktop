@@ -16,14 +16,14 @@
   line-height: 1.35;
 }
 
-/* Garden: the whole text, never cut with "…" (docs/design.md "Speech bubbles"). As wide as the text up to 180px
+/* Garden: the whole text, never cut with "…" (docs/design/speech-bubbles.md "Speech bubbles"). As wide as the text up to 180px
    (BUBBLE_MAX_PX in garden-watch-layout.ts), wrapping onto more lines beyond that; garden.tsx narrows --bubble-max
    down to 120px so it stops 4px short of halfway to the bubbles beside it that overlap it vertically (layoutBubbles
    in garden-bubbles.ts). Inside the bubble anchor (.garden-bubble-anchor = same position and size as the bird), shown
    right below the icon's bottom edge (--bubble-top, measured and passed by garden.tsx). The outer frame (this) carries
    the tail and shadow. The shadow is a filter drop-shadow, cast by the body and tail as a single shape (no shadow line
    at the seam): a thin one all around, so a bubble over another bubble shows its edge on every side, and a soft one
-   below (docs/design.md "Layout").
+   below (docs/design/layout.md "Layout").
    It is centered under the bird, moved sideways by --bubble-shift when it still reaches over a neighbour at the width
    floor (layoutBubbles in garden-bubbles.ts), and pushed only to stay within --bubble-lo left and --bubble-hi right of
    the bird's center (bubbleVars in garden.tsx: inside the garden frame). Birds in a watch block follow the same rule,
@@ -47,7 +47,7 @@
 }
 
 /* Inside a watch block a bubble is at most a bird's width (the block's cell), wrapping onto more lines, so the bubbles
-   of birds side by side don't overlap: a block's birds can't be moved apart one by one (docs/design.md "Layout") */
+   of birds side by side don't overlap: a block's birds can't be moved apart one by one (docs/design/layout.md "Layout") */
 .garden-bubble-anchor.in-watch-block .speech-bubble-below {
   --bubble-max: 120px;
 }
@@ -80,7 +80,7 @@
 /* A bubble shown above its bird (layoutBubbles in garden-bubbles.ts) ends above the bird's name, so the name stays
    readable (--bubble-name-top, measured and passed by garden.tsx). Its tail is a stem straight down beside the name to
    the name's bottom, then a tip pointing at the icon's side, covering neither (aboveTail: --tail-base and --tail-tip px
-   from the bubble's left, --tail-knee and --tail-h px down from its bottom) (docs/design.md "Layout") */
+   from the bubble's left, --tail-knee and --tail-h px down from its bottom) (docs/design/layout.md "Layout") */
 .garden-bubble-anchor.above .speech-bubble-below {
   top: auto;
   bottom: calc(100% - var(--bubble-name-top, var(--bubble-icon-top, 0px)) + 7px);
@@ -111,7 +111,7 @@
 }
 
 /* The garden's speech bubble layer. Stacked above every bird with its name, marks and status lines (.garden-node), so
-   a bubble covers a neighbour rather than hiding under it (docs/design.md "Layout"). Birds the user dragged go above it
+   a bubble covers a neighbour rather than hiding under it (docs/design/layout.md "Layout"). Birds the user dragged go above it
    (BUBBLE_LAYER_Z in garden-stack.ts is this z-index). The layer itself can't be pressed,
    so it doesn't block dragging/clicking birds */
 .garden-bubble-layer {

@@ -52,7 +52,7 @@ export async function summarizeDoneEvent(
   return judgeRunnerFor(provider)<SummarizeVerdict>(SUMMARIZE_DONE_TASK, payload);
 }
 
-// ---- Turn verdicts: the bird's speech bubble, the "?", and the anger mark (docs/design.md "Turn verdicts") ----
+// ---- Turn verdicts: the bird's speech bubble, the "?", and the anger mark (docs/design/turn-verdicts.md "Turn verdicts") ----
 // One verdict per finished turn (two requests, summarizeTurn), exactly once. The caller (perch/use-turn-judgements.ts) prevents duplicates per turn
 // (turnKey), so there's no cache here either
 
@@ -156,7 +156,7 @@ export const SUMMARIZE_TURN_TASK: JudgeTaskDefinition = {
 };
 
 /**
- * The second request of every turn (docs/design.md "Turn verdicts"; the user's decision): asking alone, with a narrow
+ * The second request of every turn (docs/design/turn-verdicts.md "Turn verdicts"; the user's decision): asking alone, with a narrow
  * prompt, and the speech bubble line, written to match it. The first request decides the line, asking, abusive, and
  * continuing together, and wording that fixed one of them moved the others (even one field added at its end), so its
  * wording is left as it is. Same payload, same untrusted input
@@ -242,7 +242,7 @@ export function parseTurnVerdict(verdict: unknown): TurnVerdict | undefined {
 }
 
 /** What a turn's request gives the screens. On failure or an answer that doesn't match the schema: no bubble, a "?"
- * status of error (no "?"), abusive absent so the anger mark stays as it was, and continuing absent (docs/design.md
+ * status of error (no "?"), abusive absent so the anger mark stays as it was, and continuing absent (docs/design/turn-verdicts.md
  * "Turn verdicts") */
 export interface TurnOutcome {
   /** The speech bubble line. Absent on failure or when the line is empty */
@@ -271,7 +271,7 @@ export const TURN_TASKS = [SUMMARIZE_TURN_TASK, CONFIRM_ASKING_TASK] as const;
 
 /**
  * Asks for one turn's line, asking, abusive, and continuing: two requests (TURN_TASKS), SUMMARIZE_TURN_TASK and CONFIRM_ASKING_TASK,
- * put together by checkedVerdict (docs/design.md "Turn verdicts"). Errors are returned as a JudgeResult, not thrown;
+ * put together by checkedVerdict (docs/design/turn-verdicts.md "Turn verdicts"). Errors are returned as a JudgeResult, not thrown;
  * only the first request's error counts. An answer that doesn't match the schema is a malformed failure (noMatchingJson
  * when a local model gave no JSON matching it). usage is both requests'. run is swapped in tests
  */
