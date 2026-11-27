@@ -73,10 +73,22 @@ test("work handed to another session that is still going on is continuing, with 
   expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("I'll show you the photo candidates as soon as they arrive");
   // Work waiting on the user's approval isn't going on yet (app_v_17_ok: 「この件は終わったときに親に伝えます」 before the
   // approval it asks for)
-  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain("the work starts only after the user answers or does a step");
+  expect(SUMMARIZE_TURN_TASK.systemPrompt).toContain(
+    "the work starts only after the user answers, does a step, or says they're done",
+  );
   expect(SUMMARIZE_TURN_TASK.outputFields.continuing.description).toContain(
     "work handed to another session that is still going on",
   );
+});
+
+test("steps that end by asking to hear back here are asking in both requests, but not an answer in another pane", () => {
+  // steps_then_say_done_here; without the sentence on another pane, OpenAI turned the relay to a child's pane to
+  // asking (docs/design.md "Turn verdicts")
+  for (const task of [SUMMARIZE_TURN_TASK, CONFIRM_ASKING_TASK]) {
+    expect(task.systemPrompt).toContain("to tell it here, in this conversation, once");
+    expect(task.systemPrompt).toContain("only when the reply is asked for here, to this agent");
+    expect(task.systemPrompt).toContain("doesn't ask to hear back about");
+  }
 });
 
 test("a watching session is continuing whatever its reply says; otherwise the turn verdict's continuing", () => {
