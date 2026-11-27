@@ -13,6 +13,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    # A release is proposed only after it has been out this long (security updates are not held back)
+    cooldown:
+      default-days: 7
+      semver-minor-days: 7
+      semver-patch-days: 3
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
@@ -27,6 +32,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    # A release is proposed only after it has been out this long (security updates are not held back)
+    cooldown:
+      default-days: 7
+      semver-minor-days: 7
+      semver-patch-days: 3
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
@@ -37,6 +47,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    # A release is proposed only after it has been out this long (security updates are not held back)
+    cooldown:
+      default-days: 7
+      semver-minor-days: 7
+      semver-patch-days: 3
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
