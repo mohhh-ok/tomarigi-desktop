@@ -4,3 +4,52 @@ updates:
     directory: /
     schedule:
       interval: weekly
+
+  # minor/patch go into one PR per directory, which .github/workflows/dependabot-auto-merge.yml merges once CI passes.
+  # tauri on the npm side and on the Rust side has to stay on the same minor (tauri build stops on a mismatch, and CI
+  # doesn't run tauri build), so only its patch updates come here; minor/major are raised by hand on both sides together
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "@tauri-apps/api"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@tauri-apps/cli"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  - package-ecosystem: bun
+    directory: /vscode-extension
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # tauri-build and the tauri-* crates below are held to the minors tauri resolves to (src-tauri/Cargo.toml)
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "tauri"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "tauri-build"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "tauri-macros"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "tauri-utils"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "tauri-runtime"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "tauri-runtime-wry"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
