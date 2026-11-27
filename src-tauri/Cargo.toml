@@ -23,7 +23,7 @@ tauri = { version = "=2.12.7", features = ["macos-private-api", "tray-icon", "im
 tauri-plugin-opener = "~2.7"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rfd = { version = "0.15", default-features = false, features = ["tokio"] }
+rfd = { version = "0.16", default-features = false, features = ["tokio"] }
 tauri-plugin-single-instance = "2"
 # Calls the TypeSafe API (typesafe_systemone in keys.rs; requests from WKWebView are blocked by CORS)
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
