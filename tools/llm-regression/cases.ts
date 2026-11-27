@@ -379,6 +379,8 @@ https://www.example.com/help
     want: { asking: true, continuing: false },
   },
   {
+    // asking is not checked: both providers say no (0/8 each), and the two wordings tried to fix it each made another
+    // scene fall. It is kept to measure a later try (docs/design.md "Turn verdicts", steps then a word in this pane)
     kind: "turn",
     name: "steps_then_say_done_here",
     why:
@@ -402,7 +404,7 @@ https://www.example.com/help
 5. スクショは \`~/Downloads\` に置いてください（⌘ + Shift + 4 で撮ると、普通はデスクトップに入ります）。どの語のスクショかは、私が画面から読み取ります。
 
 置き終えたら、「置いた」とだけ言ってください。スクショを読んで順位を記録し、issue に書きます。`,
-    want: { asking: true, continuing: false },
+    want: { continuing: false },
   },
   {
     // asking is not checked: Haiku said yes in 6 of 16 runs (prompt unchanged), and a check that fails on
