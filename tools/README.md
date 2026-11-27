@@ -114,7 +114,8 @@ bun run test:llm -- --baseline /tmp/tomarigi-desktop/llm/llm-regression-<label>.
   (`<provider>: N/M concierge answers with no advice and no suggestions`, with `(baseline N/M)` when the baseline has
   the count; each row of the json carries it as `empty`), and an `NG` line for each scene under `--min-pass` or below
   its baseline.
-  Exits 1 when there is any. Every answer of every run is written to `$OUT/llm-regression-<label>.json` (`OUT` defaults
+  Exits 1 when there is any. A turn scene's answer also has each request's own asking (`[summarize_turn_line.asking=…
+  confirm_turn_asking.asking=…]`), to tell which of the two said no. Every answer of every run is written to `$OUT/llm-regression-<label>.json` (`OUT` defaults
   to /tmp/tomarigi-desktop/llm); pass that file as the next run's `--baseline`
 - When `test:llm:needed` says run but the change may not touch what is sent, dump the bodies on the base commit and on
   the change (`--dump-bodies`, per provider in `--providers`, default all three) and compare them: identical bodies

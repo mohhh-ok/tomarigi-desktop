@@ -379,6 +379,32 @@ https://www.example.com/help
     want: { asking: true, continuing: false },
   },
   {
+    kind: "turn",
+    name: "steps_then_say_done_here",
+    why:
+      "Steps for the user to do outside the session, ending by asking them to say one word in this pane when done: " +
+      "asking. What the agent says it will do after that word starts only then, so not continuing",
+    user: ["てじゅんおしえて"],
+    reply: `Mac の Safari で、次の順にお願いします。
+
+1. Safari でプライベートウインドウを開きます（⌘ + Shift + N）。どのサービスにもログインしないでください。
+2. 下の 4 つの URL を 1 つずつ、プライベートウインドウのアドレス欄に貼って開きます。
+   - 語 1 https://search.example.com/?q=blue+umbrella
+   - 語 2 https://search.example.com/?q=folding+umbrella+light
+   - 語 3 https://search.example.com/?q=umbrella+for+kids
+   - 語 4 https://search.example.com/?q=rain+boots+cheap
+3. 開いたら、結果が出そろうのを待ってから、スクショを撮ります（⌘ + Shift + 4 で範囲を選ぶ）。
+   - 上から 10 件の見出しと、右側の広告の枠の両方が写るようにしてください。
+   - 広告の枠が出ていなければ、そのまま撮ってください。
+   - 1 画面に収まらなければ、スクロールして何枚かに分けて撮ってください。
+4. 最後に、店の名前だけでもう 1 つ検索します。これは結果のいちばん上に出る店の説明文を見るためのものです。
+   - 語 5 https://search.example.com/?q=example+shop
+5. スクショは \`~/Downloads\` に置いてください（⌘ + Shift + 4 で撮ると、普通はデスクトップに入ります）。どの語のスクショかは、私が画面から読み取ります。
+
+置き終えたら、「置いた」とだけ言ってください。スクショを読んで順位を記録し、issue に書きます。`,
+    want: { asking: true, continuing: false },
+  },
+  {
     // asking is not checked: Haiku said yes in 6 of 16 runs (prompt unchanged), and a check that fails on
     // every run of the test would hide the other scenes' results. It is kept to measure that rate when the prompt
     // changes (docs/design.md "Turn verdicts", one verdict per turn)

@@ -121,10 +121,18 @@ function runOf(c: Case): Run {
     return {
       bodies: (p) => TURN_TASKS.map((task) => bodyFor(p, task, payload)),
       async once(runner, provider) {
-        const r = await summarizeTurn(provider, payload, runner);
+        // Each request's own asking, to tell which of the two said no (they are put together by checkedVerdict)
+        const own: Record<string, unknown> = {};
+        const recording: JudgeRunner = async (task, body) => {
+          const res = await runner(task, body);
+          if (res.ok) own[task.name] = (res.verdict as { asking?: unknown } | undefined)?.asking;
+          return res;
+        };
+        const r = await summarizeTurn(provider, payload, recording);
         if (!r.ok) return { fail: `error ${r.kind} ${r.status ?? ""} ${r.message ?? ""}`.trim(), line: "ERR" };
         const v = r.verdict;
-        const line = `asking=${v.asking} continuing=${v.continuing} abusive=${v.abusive} ${v.line}`;
+        const each = TURN_TASKS.map((t) => `${t.name}.asking=${own[t.name] ?? "-"}`).join(" ");
+        const line = `asking=${v.asking} continuing=${v.continuing} abusive=${v.abusive} [${each}] ${v.line}`;
         const wrong = (Object.keys(c.want) as (keyof typeof c.want)[]).filter((k) => v[k] !== c.want[k]).map((k) => `${k}=${v[k]}`);
         if (c.lineMustNot?.test(v.line)) wrong.push("line");
         return { ...(wrong.length && { fail: wrong.join(" ") }), line, usage: r.usage };
