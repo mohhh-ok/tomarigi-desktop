@@ -384,24 +384,24 @@ https://www.example.com/help
     why:
       "Steps for the user to do outside the session, ending by asking them to say one word in this pane when done: " +
       "asking. What the agent says it will do after that word starts only then, so not continuing",
-    user: ["てじゅんおしえて"],
-    reply: `Mac の Safari で、次の順にお願いします。
+    user: ["やりかた書いて"],
+    reply: `iPhone の地図アプリで、次の順にお願いします。
 
-1. Safari でプライベートウインドウを開きます（⌘ + Shift + N）。どのサービスにもログインしないでください。
-2. 下の 4 つの URL を 1 つずつ、プライベートウインドウのアドレス欄に貼って開きます。
-   - 語 1 https://search.example.com/?q=blue+umbrella
-   - 語 2 https://search.example.com/?q=folding+umbrella+light
-   - 語 3 https://search.example.com/?q=umbrella+for+kids
-   - 語 4 https://search.example.com/?q=rain+boots+cheap
-3. 開いたら、結果が出そろうのを待ってから、スクショを撮ります（⌘ + Shift + 4 で範囲を選ぶ）。
-   - 上から 10 件の見出しと、右側の広告の枠の両方が写るようにしてください。
-   - 広告の枠が出ていなければ、そのまま撮ってください。
-   - 1 画面に収まらなければ、スクロールして何枚かに分けて撮ってください。
-4. 最後に、店の名前だけでもう 1 つ検索します。これは結果のいちばん上に出る店の説明文を見るためのものです。
-   - 語 5 https://search.example.com/?q=example+shop
-5. スクショは \`~/Downloads\` に置いてください（⌘ + Shift + 4 で撮ると、普通はデスクトップに入ります）。どの語のスクショかは、私が画面から読み取ります。
+1. 設定で位置情報をオンにしてから、地図アプリを開きます。アカウントの切り替えはしないでください。
+2. 下の 4 つのリンクを 1 つずつ、iPhone の Safari で開きます。開くと地図アプリに切り替わります。
+   - 道 1 https://maps.example.com/route?from=north+gate&to=library
+   - 道 2 https://maps.example.com/route?from=north+gate&to=gym
+   - 道 3 https://maps.example.com/route?from=south+gate&to=library
+   - 道 4 https://maps.example.com/route?from=south+gate&to=cafeteria
+3. 道順が出たら、画面の写真を撮ります（横のボタンと音量を上げるボタンを同時に押す）。
+   - 所要時間と、途中の曲がり角の一覧の両方が入るようにしてください。
+   - 曲がり角の一覧が出ていなければ、下から引き上げてから撮ってください。
+   - 一覧が長ければ、送りながら何枚かに分けて撮ってください。
+4. 最後に、建物の名前だけでもう 1 つ開きます。入口の場所の説明を見るためのものです。
+   - 道 5 https://maps.example.com/place?q=main+hall
+5. 写真は共有のアルバム「道順」に入れてください（撮った写真は、まず写真アプリの最近の項目に入ります）。どの道の写真かは、こちらで画面から見分けます。
 
-置き終えたら、「置いた」とだけ言ってください。スクショを読んで順位を記録し、issue に書きます。`,
+入れ終えたら、ここで「できた」とだけ書いてください。写真を見て所要時間を表にまとめます。`,
     want: { asking: true, continuing: false },
   },
   {
