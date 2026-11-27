@@ -20,22 +20,22 @@
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
-    "@tauri-apps/api": "2.12.5",
+    "@tauri-apps/api": "2.12.4",
     "@tauri-apps/plugin-opener": "^2",
-    "budoux": "0.10.4",
-    "idb": "^8.0.4",
+    "budoux": "0.10.3",
+    "idb": "^8.0.3",
     "motion": "^13.4.2",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "react-icons": "^5.7.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.12.6",
+    "@tauri-apps/cli": "2.12.4",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^6.3.0",
+    "@vitejs/plugin-react": "^6.0.2",
     "typescript": "~6.0.3",
-    "vite": "^8.3.8",
+    "vite": "^8.0.16",
     "zod": "^4.6.7"
   }
 }
