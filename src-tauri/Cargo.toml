@@ -28,7 +28,7 @@ tauri-plugin-single-instance = "2"
 # Calls the TypeSafe API (typesafe_systemone in keys.rs; requests from WKWebView are blocked by CORS)
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 # Reads OpenCode's session database read-only (opencode.rs). Bundled so it doesn't depend on the system's libsqlite3
-rusqlite = { version = "0.43", features = ["bundled"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
 # Updates the app from latest.json on the newest GitHub Release (updater.rs; docs/design.md "Updates"). 2.10 or later
 # for .deb; 2.14 or later for zip 9 (the Windows update's unzip; zip before 9.0.5 has Dependabot's alerts #6-#8)
 tauri-plugin-updater = "~2.14"
