@@ -1,0 +1,35 @@
+name: Dependabot auto-merge
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      # 判定のスクリプトは PR の変更でなく base のコミットのものを使う
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Enable auto-merge for minor/patch updates
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+          # PR 内の dependabot のコミットの message を RS（0x1e）区切りで渡し、全部の依存が minor/patch のときだけマージする
+          # （update-type が無い間接依存のセキュリティ更新は、版の差から判定する）
+          msgs=$(gh api "repos/$REPO/pulls/$PR/commits" --paginate \
+            --jq '.[] | select(.author.login == "dependabot[bot]") | .commit.message + "\u001e"')
+          if printf '%s' "$msgs" | bash .github/scripts/dependabot-merge-decision.sh; then
+            gh pr merge --auto --squash "$PR_URL"
+          fi
